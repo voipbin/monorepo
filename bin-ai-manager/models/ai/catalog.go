@@ -9,6 +9,10 @@ const (
 
 	// RouteCustomOpenRouter is the single customer-keyed OpenRouter entry.
 	RouteCustomOpenRouter Route = "custom_openrouter"
+
+	// RouteLocal is an operator-registered local model (see local.go). The platform
+	// supplies the connection; the customer key is never used.
+	RouteLocal Route = "local"
 )
 
 // Key modes describe how the engine key is handled for a model.
@@ -51,32 +55,54 @@ type ModelInfo struct {
 }
 
 // CatalogView returns the customer-facing view of the catalog.
+// Local models are appended after the built-in ones. When a local default is
+// configured it is the only recommended model; the static catalog is not mutated.
 func CatalogView() []ModelInfo {
-	res := make([]ModelInfo, 0, len(catalog))
-	for _, e := range catalog {
+	local := localModels()
+	localDefault := false
+	for i := range local {
+		if local[i].Recommended {
+			localDefault = true
+		}
+	}
+
+	res := make([]ModelInfo, 0, len(catalog)+len(local))
+	appendEntry := func(e ModelEntry) {
 		tags := e.Tags
 		if tags == nil {
 			tags = []string{}
 		}
 		keyMode := KeyModeOwnOrDefault
 		switch e.Route {
-		case RouteOpenRouter:
+		case RouteOpenRouter, RouteLocal:
 			keyMode = KeyModePlatform
 		case RouteCustomOpenRouter:
 			keyMode = KeyModeOwnRequired
+		}
+
+		recommended := e.Recommended
+		if localDefault && e.Route != RouteLocal {
+			recommended = false
 		}
 
 		res = append(res, ModelInfo{
 			ID:              e.ID,
 			Label:           e.Label,
 			Vendor:          e.Vendor,
-			Recommended:     e.Recommended,
-			Tags:            tags,
+			Recommended:     recommended,
+			Tags:            append([]string{}, tags...),
 			Description:     e.Description,
-			PlatformManaged: e.Route == RouteOpenRouter,
+			PlatformManaged: e.Route == RouteOpenRouter || e.Route == RouteLocal,
 			KeyMode:         keyMode,
 			ModelIDPrefix:   e.CustomPrefix,
 		})
+	}
+
+	for _, e := range catalog {
+		appendEntry(e)
+	}
+	for _, e := range local {
+		appendEntry(e)
 	}
 	return res
 }

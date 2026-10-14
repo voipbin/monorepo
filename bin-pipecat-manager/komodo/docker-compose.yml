@@ -109,6 +109,7 @@ services:
       - OPENAI_API_KEY=[[BIN_MANAGER__OPENAI_API_KEY]]
       - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
       - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
+      - LOCAL_LLM_MODELS=[[BIN_MANAGER__LOCAL_LLM_MODELS]]
       - POD_IP=pipecat-manager-1
     command: ./pipecat-manager
     networks:
@@ -159,6 +160,7 @@ services:
       - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
       - GOOGLE_API_KEY=[[BIN_MANAGER__GOOGLE_API_KEY]]
       - OPENROUTER_API_KEY=[[BIN_MANAGER__OPENROUTER_API_KEY]]
+      - LOCAL_LLM_ENDPOINTS=[[BIN_MANAGER__LOCAL_LLM_ENDPOINTS]]
       - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/google_service_account.json
     command: ["python", "/app/scripts/pipecat/main.py"]
 
@@ -189,6 +191,7 @@ services:
       - OPENAI_API_KEY=[[BIN_MANAGER__OPENAI_API_KEY]]
       - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
       - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
+      - LOCAL_LLM_MODELS=[[BIN_MANAGER__LOCAL_LLM_MODELS]]
       - POD_IP=pipecat-manager-2
     command: ./pipecat-manager
     networks:
@@ -233,6 +236,7 @@ services:
       - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
       - GOOGLE_API_KEY=[[BIN_MANAGER__GOOGLE_API_KEY]]
       - OPENROUTER_API_KEY=[[BIN_MANAGER__OPENROUTER_API_KEY]]
+      - LOCAL_LLM_ENDPOINTS=[[BIN_MANAGER__LOCAL_LLM_ENDPOINTS]]
       - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/google_service_account.json
     command: ["python", "/app/scripts/pipecat/main.py"]
 networks:

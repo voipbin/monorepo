@@ -47,6 +47,7 @@ func main() {
 		Short: "Voipbin Pipecat Manager Daemon",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			config.LoadGlobalConfig()
+			config.ConfigureLocalModels()
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {

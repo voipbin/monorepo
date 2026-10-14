@@ -81,6 +81,7 @@ func initCommand() *cobra.Command {
 			}
 
 			config.LoadGlobalConfig()
+			config.ConfigureLocalModels()
 			return nil
 		},
 	}

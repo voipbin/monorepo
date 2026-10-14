@@ -13,6 +13,7 @@ All Go flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `redis_database` | `REDIS_DATABASE` | Redis DB index | no |
 | `prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
+| `local_llm_models` | `LOCAL_LLM_MODELS` | JSON list of operator-registered local models (no URL or key); same value as ai-manager. Read through `config.LocalLLMModels()`, not a `Config` field, because the daemon logs the whole `Config`. Invalid entries are skipped and logged as an error (counts only). | no |
 | `POD_IP` | `POD_IP` | Per-container identity (`pipecat-manager-1` / `-2` in `komodo/docker-compose.yml`); used as HostID for per-pod routing | yes |
 
 Python environment variables (set in `.env` or exported):
@@ -23,6 +24,7 @@ Python environment variables (set in `.env` or exported):
 | `XAI_API_KEY` | Grok (xAI) LLM |
 | `GOOGLE_API_KEY` | Gemini LLM only (passed explicitly to `GoogleLLMService`) |
 | `OPENROUTER_API_KEY` | Platform-held OpenRouter key for catalog models routed as `platform_openrouter.<slug>` (Claude, Llama, DeepSeek, Qwen, Mistral). Read only by the Python runner, never from the customer `engine_key`. Requests are sent with ZDR routing (`zdr`, `data_collection: deny`, `require_parameters`). An empty key makes these models fail at runner init with `OpenRouter is not configured`; an invalid non-empty key yields the provider authentication error like any other provider key (no special casing). |
+| `LOCAL_LLM_ENDPOINTS` | Secret JSON object `{"<endpoint>": {"base_url": "http://host:8000/v1", "api_key": ""}}` for `local.<endpoint>.<id>` models. Injected into the runner containers only; Go services never read it. `base_url` must be http or https without user information, query or fragment. An empty `api_key` becomes a fixed placeholder (never the `OPENAI_API_KEY`). A malformed value, a rule-violating entry or a missing endpoint fails the session start with the fixed message `local engine model is not available`; the value, URL and key are never put in an error or log line. The loaded endpoint count is logged at runner start. Do not set `OPENAI_ORG_ID` or `OPENAI_PROJECT_ID` on the runner. |
 | `ANTHROPIC_API_KEY` | Not used today. The runner's LLM dispatch (`run.py`) handles only OpenAI, Grok and Gemini, and no deployment provisions this key. |
 | `DEEPGRAM_API_KEY` | Deepgram STT |
 | `CARTESIA_API_KEY` | Cartesia TTS |
@@ -157,3 +159,9 @@ Three deviations from the Tier 1/2 template, all intentional:
   STT/LLM/TTS API-key env vars the GKE runner container had, plus the
   Google service account key GKE used to supply implicitly through the
   node metadata server (mounted as a Compose secret, VOIP-1482).
+
+## Local models
+
+Enable order (operator): create or update the two Komodo variables, redeploy the pipecat stack (pipecat-manager and the runners together, same image), then redeploy ai-manager last, so a model is never listed before every pipecat container can run it. Do not merge or redeploy ai-manager between the variable change and the pipecat redeploy. Removal is the reverse: move the AIs that use the model first (find them with a read-only query on `ai_ais.engine_model`; `ai-control ai list` filters by customer only), redeploy ai-manager first, the pipecat stack afterwards. After each deploy check the startup log line `Local llm models loaded.` (counts only; an error line means entries were skipped or the value was malformed). Compose value format: compact JSON, `$` written as `$$`. Create the Komodo variables (`BIN_MANAGER__LOCAL_LLM_MODELS=[]`, `BIN_MANAGER__LOCAL_LLM_ENDPOINTS={}`) before the merge that introduces them: a missing Komodo variable stops the containers from starting.
+
+Known limitation: a stopped or unreachable local server is classified as an unknown `pipeline_error` (`Connection error.`), which is not notified in a voice session; a hung server can stall a session for the OpenAI client default timeout. The authentication notice text mentions a custom engine key although local models use none.

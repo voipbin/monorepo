@@ -4139,7 +4139,7 @@ type AIManagerAIModel struct {
 	// Example: openrouter.
 	ModelIdPrefix *string `json:"model_id_prefix,omitempty"`
 
-	// PlatformManaged If true, the platform supplies the credentials and `engine_key` is not needed.
+	// PlatformManaged If true, the platform supplies the credentials and `engine_key` is not needed. This does not imply a particular routing provider.
 	//
 	// Example: false
 	PlatformManaged bool `json:"platform_managed"`
@@ -4149,7 +4149,7 @@ type AIManagerAIModel struct {
 	// Example: true
 	Recommended bool `json:"recommended"`
 
-	// Tags Model tags. Currently `low-cost` only.
+	// Tags Model tags. `low-cost`, and `tool-calling` for operator-registered local models that support tool calling.
 	//
 	// Example: ["low-cost"]
 	Tags []string `json:"tags"`

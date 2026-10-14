@@ -166,6 +166,7 @@ logger.remove()
 logger.add(
     sys.stdout,
     serialize=True,
+    diagnose=False,  # tracebacks must not print local variables (keys, endpoint URLs)
 )
 
 # --- run server ---

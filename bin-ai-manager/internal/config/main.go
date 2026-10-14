@@ -12,6 +12,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"monorepo/bin-ai-manager/models/ai"
 )
 
 var (
@@ -31,6 +33,8 @@ type Config struct {
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
 	EngineKeyChatGPT        string // EngineKeyChatGPT is the API key for ChatGPT engine.
 	GoogleAPIKey            string // GoogleAPIKey is the Google API key used for Gemini audit evaluation.
+
+	LocalLLMModels string // LocalLLMModels is the JSON list of operator-registered local (self-hosted) models. It holds no URL or key.
 
 	AIcallConversationIdleTimeoutHours int // Idle timeout (hours) after which a conversation-typed AIcall is treated as expired and a new one is created on the next inbound message.
 
@@ -137,6 +141,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("redis_database", 0, "Redis database index")
 	f.String("engine_key_chatgpt", "", "Engine key for chatgpt")
 	f.String("google_api_key", "", "Google API key for Gemini audit evaluation")
+	f.String("local_llm_models", "", "JSON list of operator-registered local (self-hosted OpenAI-compatible) models; no URL or key")
 	f.Int("aicall_conversation_idle_timeout_hours", 24, "Idle timeout (hours) for conversation-typed AIcalls before they expire")
 	f.Int("aicall_contact_case_recreate_rate_limit_minutes", 5, "Rate limit window (minutes) after a contact_case-typed AIcall terminates during which recreation for the same reference_id is blocked")
 	f.Int("aicall_insight_session_idle_minutes", 30, "Idle minutes after which reopening an Insight Case panel starts a new assistant session (prompt refresh + history boundary); 0 or less disables it")
@@ -188,6 +193,8 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_database":            "REDIS_DATABASE",
 		"engine_key_chatgpt":        "ENGINE_KEY_CHATGPT",
 		"google_api_key":            "GOOGLE_API_KEY",
+
+		"local_llm_models": "LOCAL_LLM_MODELS",
 
 		"aicall_conversation_idle_timeout_hours":          "AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS",
 		"aicall_contact_case_recreate_rate_limit_minutes": "AICALL_CONTACT_CASE_RECREATE_RATE_LIMIT_MINUTES",
@@ -268,6 +275,8 @@ func LoadGlobalConfig() {
 			RedisDatabase:           viper.GetInt("redis_database"),
 			EngineKeyChatGPT:        viper.GetString("engine_key_chatgpt"),
 			GoogleAPIKey:            viper.GetString("google_api_key"),
+
+			LocalLLMModels: viper.GetString("local_llm_models"),
 
 			AIcallConversationIdleTimeoutHours: viper.GetInt("aicall_conversation_idle_timeout_hours"),
 
@@ -602,4 +611,20 @@ func SetAIcallListenConversationMaxMessageCharsForTest(chars int) {
 // USE ONLY FROM TESTS.
 func SetAIcallListenConversationFlushJitterMsForTest(ms int) {
 	globalConfig.AIcallListenConversationFlushJitterMs = ms
+}
+
+// ConfigureLocalModels registers the local models from LOCAL_LLM_MODELS. Call it right
+// after LoadGlobalConfig and before anything serves. A bad value never stops the
+// service: it logs an error (counts only, never the value) and local models stay empty.
+func ConfigureLocalModels() {
+	res, err := ai.ConfigureLocalModels(Get().LocalLLMModels)
+	log := logrus.WithFields(res.LogFields())
+	switch {
+	case err != nil:
+		log.WithError(err).Error("Could not load local llm models. No local model is available.")
+	case res.Skipped > 0 || res.DuplicateDefaults > 0:
+		log.Error("Some local llm model entries were skipped.")
+	default:
+		log.Info("Local llm models loaded.")
+	}
 }
