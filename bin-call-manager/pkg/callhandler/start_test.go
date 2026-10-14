@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"monorepo/bin-call-manager/pkg/testhelper"
+	"strings"
 	"testing"
 	"time"
 
@@ -26,6 +27,8 @@ import (
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/ari"
@@ -1330,6 +1333,8 @@ func Test_warnExternalMembersInCallBridge(t *testing.T) {
 		responseBridge    *bridge.Bridge
 		responseBridgeErr error
 		responseChannels  map[string]*channel.Channel
+
+		expectWarn string
 	}{
 		{
 			name:     "call bridge holding an external member",
@@ -1343,6 +1348,20 @@ func Test_warnExternalMembersInCallBridge(t *testing.T) {
 			responseChannels: map[string]*channel.Channel{
 				"call-channel": {ID: "call-channel", Type: channel.TypeCall},
 				"ext-channel":  {ID: "ext-channel", Type: channel.TypeExternal},
+			},
+			expectWarn: "external_channels: [ext-channel]",
+		},
+		{
+			name:     "call bridge holding no external member",
+			callID:   "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
+			bridgeID: "ed08cbf8-4319-11ec-a768-23af5da287d4",
+			responseBridge: &bridge.Bridge{
+				ID:            "ed08cbf8-4319-11ec-a768-23af5da287d4",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"call-channel"},
+			},
+			responseChannels: map[string]*channel.Channel{
+				"call-channel": {ID: "call-channel", Type: channel.TypeCall},
 			},
 		},
 		{
@@ -1393,8 +1412,25 @@ func Test_warnExternalMembersInCallBridge(t *testing.T) {
 				}
 			}
 
+			hook := logrustest.NewGlobal()
+			defer logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+
 			// log only: no return value and no further calls
 			h.warnExternalMembersInCallBridge(ctx, tt.callID, tt.bridgeID)
+
+			warns := []string{}
+			for _, entry := range hook.AllEntries() {
+				if entry.Level == logrus.WarnLevel {
+					warns = append(warns, entry.Message)
+				}
+			}
+			if tt.expectWarn == "" {
+				if len(warns) != 0 {
+					t.Errorf("Wrong match. expect: no warning, got: %v", warns)
+				}
+			} else if len(warns) != 1 || !strings.Contains(warns[0], tt.expectWarn) {
+				t.Errorf("Wrong match. expect one warning containing: %s, got: %v", tt.expectWarn, warns)
+			}
 		})
 	}
 }
