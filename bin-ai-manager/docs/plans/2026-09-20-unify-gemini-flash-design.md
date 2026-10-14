@@ -1,7 +1,7 @@
 # 설계: 기본 LLM 모델을 최신 Gemini flash로 통일 (VOIP-1537, PR1=A+B)
 
 작성일: 2026-09-20
-작성자: Hermes (CPO)
+작성자: Hermes (제품 담당자)
 브랜치: VOIP-1537-unify-gemini-flash
 상태: 설계 (리뷰 대기)
 선행: 이슈 분석 `2026-09-20-unify-gemini-flash-analysis.md` (리뷰 4회, 2연속 Approve 확정)

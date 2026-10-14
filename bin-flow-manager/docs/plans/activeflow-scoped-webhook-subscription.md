@@ -1,7 +1,7 @@
 # Design: Activeflow-scoped Webhook Subscription
 
 Status: DRAFT (design review in progress)
-Author: CPO (Lux) on behalf of pchero
+Author: Product owner (Lux) on behalf of pchero
 Date: 2026-06-10
 
 ## 1. Problem

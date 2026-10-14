@@ -3,7 +3,7 @@
 - Date: 2026-07-15
 - Ticket: VOIP-1234 (last remaining subtask)
 - Service: bin-ai-manager (models/tool, pkg/toolhandler, pkg/aicallhandler)
-- Status: **FINAL — all in-scope decisions resolved by 대표님 2026-07-15. Prompt-injection framing (§5/§6-3) explicitly deferred to a separate consolidated ticket, not in scope here. Ready for TDD implementation.**
+- Status: **FINAL — all in-scope decisions resolved by the maintainer 2026-07-15. Prompt-injection framing (§5/§6-3) explicitly deferred to a separate consolidated ticket, not in scope here. Ready for TDD implementation.**
 
 ## 1. Context (already shipped, not touched by this memo)
 
@@ -108,7 +108,7 @@ answer, not an error).
 ### Reversed from the original draft
 
 The original draft recommended Tool 2 stay argument-less like Tool 1
-(walk every interaction, fetch every message, N+1 RPCs). 대표님 rejected this
+(walk every interaction, fetch every message, N+1 RPCs). The maintainer rejected this
 on two grounds: (a) it is wasteful (an unbounded-shaped RPC fan-out gated
 only by a page-size cap), and (b) more importantly, **which conversation
 to read is a judgment call the LLM should make explicitly, not one the
@@ -174,7 +174,7 @@ bulk export.
    thread, not just the single referenced message.
 
 Total: **2 RPC calls, fixed**, regardless of how many messages are in the
-conversation — this was the original inefficiency concern (대표님's "무작정
+conversation — this was the original inefficiency concern (the maintainer's "무작정
 모든 conversation을 다 조회할 순 없어") and it's resolved by filtering server-side
 on `conversation_id` in one list call rather than fetching messages one at a
 time.
@@ -186,7 +186,7 @@ context (a customer could type prompt-injection text into a chat message),
 the same class of concern `tool_resource.go`'s config-block framing
 (`configFrameOpen`/`configFrameClose`) addresses for session-config data.
 **Explicitly OUT OF SCOPE for this subtask (decided 2026-07-15): no
-framing/escaping is added here.** 대표님 wants prompt-injection defense handled
+framing/escaping is added here.** The maintainer wants prompt-injection defense handled
 as a separate, consolidated pass across all tools that return
 user-authored/external content (not just these two), rather than
 one-off per new tool. Ship Tool 1 and Tool 2 WITHOUT this framing now; track
@@ -216,7 +216,7 @@ either call -> honest `fillFailed`, never masked.
    `conversation_id` (defaulting to the Case's own conversation) resolved by a
    single conversation-scoped `ConversationV1MessageList`.
 3. **Prompt-injection framing on quoted message content**: **DEFERRED, not
-   in scope for this subtask.** 대표님 decided (2026-07-15) to handle this as a
+   in scope for this subtask.** The maintainer decided (2026-07-15) to handle this as a
    separate, consolidated effort across all tools that surface
    user-authored/external content, not as a one-off addition to these two
    new tools. Tool 1 and Tool 2 ship without this framing. Track separately.

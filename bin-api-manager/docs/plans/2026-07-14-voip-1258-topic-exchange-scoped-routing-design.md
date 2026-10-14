@@ -3,7 +3,7 @@
 ## 1. Origin and decisions already made
 
 Tracking ticket: VOIP-1258. Discovered and verified (2 independent adversarial review rounds,
-both APPROVED with zero changes requested) in a CPO/CEO discussion on 2026-07-14: per-pod
+both APPROVED with zero changes requested) in a maintainer discussion on 2026-07-14: per-pod
 processing cost for events published to `QueueNameWebhookEvent` is paid unconditionally for
 every published event, multiplied by api-manager pod count, with zero dependency on connected
 websocket client count. Chat-type events additionally pay a live `TalkV1ParticipantList` RPC

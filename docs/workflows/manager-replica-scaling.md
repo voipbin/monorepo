@@ -92,7 +92,7 @@ name, and Docker's embedded DNS returns every replica's IP.
 - **Redeploy blip (applies fleet-wide, the only downtime any service
   pays).** Non-Swarm Compose does not do rolling updates, so a redeploy
   is expected to recreate both replicas together. This was accepted
-  deliberately (CEO/CTO decision, see the rollout design doc) in place
+  deliberately (maintainer decision, see the rollout design doc) in place
   of a zero-downtime A/B scheme. Schedule deploys for low-traffic
   windows and announce them. Note the exact blip pattern has not been
   measured yet — what the pilot verified is the scale-up mechanism
@@ -166,7 +166,7 @@ new replica count.
   still unmeasured) — that is expected and confirms the redeploy
   actually recreated a replica, not a signal to silence. (Previously
   `for: 10m` absorbed the deploy-window dip; that guard was removed by
-  CEO/CTO decision so every redeploy is visible, at the cost of an
+  Maintainer decision so every redeploy is visible, at the cost of an
   alert on every one.) Section 4's manual check is still the
   authoritative verification at deploy time — the alert is now a fast
   confirmation signal alongside it, not a replacement for it.

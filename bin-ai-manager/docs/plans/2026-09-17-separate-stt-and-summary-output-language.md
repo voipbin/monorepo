@@ -1,7 +1,7 @@
 # 설계: STT 언어와 AI Summary 출력 언어 분리 (VOIP-1532)
 
 작성일: 2026-09-17
-작성자: Hermes (CPO)
+작성자: Hermes (제품 담당자)
 브랜치: VOIP-1532-separate-stt-and-summary-output-language
 상태: Draft (설계 리뷰 대기)
 결정(대표): STT는 기존 transcribe 재사용 우선. 스코프는 완전 해결(2축 분리) + 프론트 재노출.

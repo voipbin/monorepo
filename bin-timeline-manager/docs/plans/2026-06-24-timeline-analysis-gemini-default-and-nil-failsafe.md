@@ -19,7 +19,7 @@ Two defects, one prod outage:
    analysis feature (square-admin AI Analysis panel) is effectively off in
    prod even though the frontend (square-admin PR #330) correctly calls it.
 
-Separately, the CEO/CTO directs that the analysis LLM gateway should default to
+Separately, the maintainer directs that the analysis LLM gateway should default to
 a Google Gemini model instead of OpenAI `gpt-4o`, for cost reasons.
 
 ## Goals (numbered, testable)

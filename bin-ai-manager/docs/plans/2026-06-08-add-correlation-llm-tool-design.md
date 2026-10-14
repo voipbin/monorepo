@@ -35,7 +35,7 @@ This design exposes that capability as an LLM function-call tool (`get_correlati
 - Reuses the shipped timeline correlation endpoint and the established tool pattern (`search_knowledge` calls `reqHandler.RagV1RagQuery`, formats a text result, RunLLM:true). Low risk, all proven patterns.
 - Positioned internal-only because a correlation graph (resource IDs) is meaningless and potentially sensitive to an end customer.
 
-## 3. CPO Positioning Note
+## 3. Product Positioning Note
 
 A correlation graph answers "what resources are linked to this flow" — an operator/debugging question. For a customer on a call it is noise and a PII/info-exposure surface. Therefore:
 - The tool description's WHEN TO USE frames it as diagnostic ("analyze what happened in this call/session").
@@ -276,18 +276,18 @@ Per publisher: count resources, list data_type with counts, optionally first eve
 
 | # | Question | Recommendation | Owner |
 |---|---|---|---|
-| Q1 | Contract type vs listenhandler DTO | Single source in models/event + type alias (1차 #3 반영) | CTO |
-| Q2 | resource_id default to current activeflow when omitted | Yes — own session always ownership-safe | CPO/CTO |
-| Q3 | Include raw IDs in the summary or prose only | Include compact IDs (own-customer only, post-validation) so LLM can chain; lead with prose | CPO/CTO |
-| Q4 | RunLLM default | true (chaining is the point of a diagnostic tool) | CPO/CTO |
-| Q5 | Customer-facing exposure | Tool may appear in `"all"` configs; security is enforced by **ownership validation**, not exposure gating (1차 #1/#2 반영) | CPO/CTO |
-| Q6 | Performance: each call adds FlowV1ActiveflowGet RPC | Acceptable; 1 extra RPC per diagnostic call, low frequency | CTO |
+| Q1 | Contract type vs listenhandler DTO | Single source in models/event + type alias (1차 #3 반영) | 담당자 |
+| Q2 | resource_id default to current activeflow when omitted | Yes — own session always ownership-safe | maintainer |
+| Q3 | Include raw IDs in the summary or prose only | Include compact IDs (own-customer only, post-validation) so LLM can chain; lead with prose | maintainer |
+| Q4 | RunLLM default | true (chaining is the point of a diagnostic tool) | maintainer |
+| Q5 | Customer-facing exposure | Tool may appear in `"all"` configs; security is enforced by **ownership validation**, not exposure gating (1차 #1/#2 반영) | 담당자 |
+| Q6 | Performance: each call adds FlowV1ActiveflowGet RPC | Acceptable; 1 extra RPC per diagnostic call, low frequency | maintainer |
 
 ## 13. Review Summary (v1 → v2)
 
 1차 독립 design 리뷰(CHANGES REQUESTED)의 High 항목을 반영했다.
 
-- **[High #2 IDOR] 임의 resource_id cross-customer 조회** → 7절에 `FlowV1ActiveflowGet` 기반 ownership 검증 추가. 불일치 시 not-found와 동일 응답(정보 유출 차단). 대표님 결정으로 resource_id 인자는 유지(방향 2).
+- **[High #2 IDOR] 임의 resource_id cross-customer 조회** → 7절에 `FlowV1ActiveflowGet` 기반 ownership 검증 추가. 불일치 시 not-found와 동일 응답(정보 유출 차단). 담당자 결정으로 resource_id 인자는 유지(방향 2).
 - **[High #1 `"all"` 와일드카드]** → 노출은 수용하되 보안은 ownership 검증으로 보장한다고 명시(8절).
 - **[Medium #3 계약 타입 중복]** → models/event 단일 정의 + listenhandler DTO type alias (5절).
 - **[Medium #4 whitelist 오해]** → `ConversationSafeTools`에 추가하지 않음으로 정정(8절).

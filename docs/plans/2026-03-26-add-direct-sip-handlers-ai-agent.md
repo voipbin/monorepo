@@ -103,7 +103,7 @@ func Test_startIncomingDomainTypeSIP_directAI(t *testing.T) {
 				StasisData: map[channel.StasisDataType]string{
 					"context": "call-in",
 					"domain":  "sip.voipbin.net",
-					"source":  "222.112.233.190",
+					"source":  "203.0.113.10",
 				},
 			},
 
@@ -113,16 +113,16 @@ func Test_startIncomingDomainTypeSIP_directAI(t *testing.T) {
 			},
 			responseDirect: &dmdirect.Direct{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("27b03598-34df-46af-8b37-8d1ee0d7439d"),
+					ID:         uuid.FromStringOrNil("e1e2e3e4-0000-4000-8000-000000000001"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				ResourceType: "ai",
-				ResourceID:   uuid.FromStringOrNil("2a8f731f-f34a-46a8-b4ca-e101797728f3"),
+				ResourceID:   uuid.FromStringOrNil("e1e2e3e4-0000-4000-8000-000000000002"),
 				Hash:         "e90e5ce89f4d",
 			},
 			responseAI: &amai.AI{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("2a8f731f-f34a-46a8-b4ca-e101797728f3"),
+					ID:         uuid.FromStringOrNil("e1e2e3e4-0000-4000-8000-000000000002"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Name: "test-ai",
@@ -314,7 +314,7 @@ func Test_startIncomingDomainTypeSIP_directAI_aiGetError(t *testing.T) {
 				StasisData: map[channel.StasisDataType]string{
 					"context": "call-in",
 					"domain":  "sip.voipbin.net",
-					"source":  "222.112.233.190",
+					"source":  "203.0.113.10",
 				},
 			},
 		},
@@ -341,13 +341,13 @@ func Test_startIncomingDomainTypeSIP_directAI_aiGetError(t *testing.T) {
 			})
 			mockReq.EXPECT().DirectV1DirectGetByHash(ctx, "direct.e90e5ce89f4d").Return(&dmdirect.Direct{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("27b03598-34df-46af-8b37-8d1ee0d7439d"),
+					ID:         uuid.FromStringOrNil("e1e2e3e4-0000-4000-8000-000000000001"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				ResourceType: "ai",
-				ResourceID:   uuid.FromStringOrNil("2a8f731f-f34a-46a8-b4ca-e101797728f3"),
+				ResourceID:   uuid.FromStringOrNil("e1e2e3e4-0000-4000-8000-000000000002"),
 			}, nil)
-			mockReq.EXPECT().AIV1AIGet(ctx, uuid.FromStringOrNil("2a8f731f-f34a-46a8-b4ca-e101797728f3")).Return(nil, fmt.Errorf("ai not found"))
+			mockReq.EXPECT().AIV1AIGet(ctx, uuid.FromStringOrNil("e1e2e3e4-0000-4000-8000-000000000002")).Return(nil, fmt.Errorf("ai not found"))
 			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNoRouteDestination).Return(&channel.Channel{}, nil)
 
 			if err := h.startIncomingDomainTypeSIP(ctx, tt.channel); err != nil {
@@ -378,7 +378,7 @@ func Test_startIncomingDomainTypeSIP_directAI_flowCreateError(t *testing.T) {
 				StasisData: map[channel.StasisDataType]string{
 					"context": "call-in",
 					"domain":  "sip.voipbin.net",
-					"source":  "222.112.233.190",
+					"source":  "203.0.113.10",
 				},
 			},
 		},
@@ -401,7 +401,7 @@ func Test_startIncomingDomainTypeSIP_directAI_flowCreateError(t *testing.T) {
 
 			responseAI := &amai.AI{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("2a8f731f-f34a-46a8-b4ca-e101797728f3"),
+					ID:         uuid.FromStringOrNil("e1e2e3e4-0000-4000-8000-000000000002"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Name: "test-ai",
@@ -413,13 +413,13 @@ func Test_startIncomingDomainTypeSIP_directAI_flowCreateError(t *testing.T) {
 			})
 			mockReq.EXPECT().DirectV1DirectGetByHash(ctx, "direct.e90e5ce89f4d").Return(&dmdirect.Direct{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("27b03598-34df-46af-8b37-8d1ee0d7439d"),
+					ID:         uuid.FromStringOrNil("e1e2e3e4-0000-4000-8000-000000000001"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				ResourceType: "ai",
-				ResourceID:   uuid.FromStringOrNil("2a8f731f-f34a-46a8-b4ca-e101797728f3"),
+				ResourceID:   uuid.FromStringOrNil("e1e2e3e4-0000-4000-8000-000000000002"),
 			}, nil)
-			mockReq.EXPECT().AIV1AIGet(ctx, uuid.FromStringOrNil("2a8f731f-f34a-46a8-b4ca-e101797728f3")).Return(responseAI, nil)
+			mockReq.EXPECT().AIV1AIGet(ctx, uuid.FromStringOrNil("e1e2e3e4-0000-4000-8000-000000000002")).Return(responseAI, nil)
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, responseAI.CustomerID, fmflow.TypeFlow, "tmp", gomock.Any(), gomock.Any(), uuid.Nil, false).Return(nil, fmt.Errorf("flow create error"))
 			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNetworkOutOfOrder).Return(&channel.Channel{}, nil)
 
@@ -472,7 +472,7 @@ func Test_startIncomingDomainTypeSIP_directAITeam(t *testing.T) {
 				StasisData: map[channel.StasisDataType]string{
 					"context": "call-in",
 					"domain":  "sip.voipbin.net",
-					"source":  "222.112.233.190",
+					"source":  "203.0.113.10",
 				},
 			},
 
@@ -665,7 +665,7 @@ func Test_startIncomingDomainTypeSIP_directAITeam_teamGetError(t *testing.T) {
 				StasisData: map[channel.StasisDataType]string{
 					"context": "call-in",
 					"domain":  "sip.voipbin.net",
-					"source":  "222.112.233.190",
+					"source":  "203.0.113.10",
 				},
 			},
 		},
@@ -729,7 +729,7 @@ func Test_startIncomingDomainTypeSIP_directAITeam_flowCreateError(t *testing.T) 
 				StasisData: map[channel.StasisDataType]string{
 					"context": "call-in",
 					"domain":  "sip.voipbin.net",
-					"source":  "222.112.233.190",
+					"source":  "203.0.113.10",
 				},
 			},
 		},
@@ -823,7 +823,7 @@ func Test_startIncomingDomainTypeSIP_directAgent(t *testing.T) {
 				StasisData: map[channel.StasisDataType]string{
 					"context": "call-in",
 					"domain":  "sip.voipbin.net",
-					"source":  "222.112.233.190",
+					"source":  "203.0.113.10",
 				},
 			},
 
@@ -1020,7 +1020,7 @@ func Test_startIncomingDomainTypeSIP_directAgent_agentGetError(t *testing.T) {
 				StasisData: map[channel.StasisDataType]string{
 					"context": "call-in",
 					"domain":  "sip.voipbin.net",
-					"source":  "222.112.233.190",
+					"source":  "203.0.113.10",
 				},
 			},
 		},
@@ -1084,7 +1084,7 @@ func Test_startIncomingDomainTypeSIP_directAgent_flowCreateError(t *testing.T) {
 				StasisData: map[channel.StasisDataType]string{
 					"context": "call-in",
 					"domain":  "sip.voipbin.net",
-					"source":  "222.112.233.190",
+					"source":  "203.0.113.10",
 				},
 			},
 		},

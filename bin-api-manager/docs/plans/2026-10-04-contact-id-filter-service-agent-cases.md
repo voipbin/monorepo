@@ -2,7 +2,7 @@
 
 Status: Draft
 Ticket: VOIP-1563 (sibling: SQUARE-87, which depends on this)
-Source: square-talk in-call analysis decision (9) — CEO confirmed 9-a (2026-10-04): add the backend filter rather than client-side filtering (9-b), as a separate small ticket.
+Source: square-talk in-call analysis decision (9) — maintainer confirmed 9-a (2026-10-04): add the backend filter rather than client-side filtering (9-b), as a separate small ticket.
 
 ## 1. Problem statement
 
@@ -20,7 +20,7 @@ Consequence: square-talk (SQUARE-87) cannot reliably show "this contact's cases"
 
 ## 3. Non-goals
 
-- Any other `contact_cases` filter (status, owner_type, owner_id, reference_id) for the service-agent surface — out of scope, not requested, would need separate CEO sign-off on whether agents should see those filters.
+- Any other `contact_cases` filter (status, owner_type, owner_id, reference_id) for the service-agent surface — out of scope, not requested, would need separate maintainer sign-off on whether agents should see those filters.
 - `square-talk` frontend changes to actually call this new parameter — tracked in SQUARE-87, which depends on this ticket merging first.
 - Any permission model change — `ServiceAgentCaseList`'s existing `hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll)` check and tenant-scoping (`a.CustomerID`) are unchanged; `contact_id` is an additional narrowing filter within the same tenant boundary, never a cross-tenant query (enforced server-side identically to the admin surface, which resolves the same `ContactV1CaseList` RPC and has no reported cross-tenant leak).
 
@@ -135,7 +135,7 @@ and update the call site: `h.serviceHandler.ServiceAgentCaseList(c.Request.Conte
 
 ## 8. Open questions
 
-None outstanding. Scope was CEO-confirmed (decision 9, 9-a) before drafting.
+None outstanding. Scope was maintainer-confirmed (decision 9, 9-a) before drafting.
 
 ## 9. Approval status
 

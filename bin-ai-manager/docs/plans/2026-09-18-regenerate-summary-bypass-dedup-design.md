@@ -1,7 +1,7 @@
 # 설계: AI Summary Regenerate가 dedup을 우회해 실제 재생성하도록 수정 (VOIP-1535)
 
 작성일: 2026-09-18
-작성자: Hermes (CPO)
+작성자: Hermes (제품 담당자)
 브랜치: VOIP-1535-regenerate-summary-bypass-dedup
 상태: Draft (설계 리뷰 대기)
 선행: 이슈 분석 문서 `2026-09-18-regenerate-summary-bypass-dedup-analysis.md` (리뷰 6회, R5/R6 2연속 APPROVED)

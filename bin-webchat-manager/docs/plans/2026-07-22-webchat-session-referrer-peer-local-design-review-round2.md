@@ -26,7 +26,7 @@ Both now match §4.1's committed literal. **Round 1's finding is fixed, and no n
 
 Read the entire document top to bottom independently (not scoped to §4):
 
-- **§1 Problem / §2 Goals**: internally consistent; the "supersedes the CPO's earlier verbal rejection" framing in §1 is echoed correctly by §4.2's "zero information" discussion — no drift between the two.
+- **§1 Problem / §2 Goals**: internally consistent; the "supersedes the product owner's earlier verbal rejection" framing in §1 is echoed correctly by §4.2's "zero information" discussion — no drift between the two.
 - **§3 (`referrer`)**: unchanged from round 0/round 1 content; still describes the identical page_url-mirroring design, the `0d818afa1` XSS-fix precedent, and the `|| undefined` empty-string guard. No new claims introduced this round in this section, nothing to re-litigate.
 - **§4.1**: `TypeWebSession Type = "webchat_visitor"` is the single, unambiguously stated literal throughout — confirmed live: `bin-common-handler/models/address/main.go` does not yet define `TypeWebSession` (still pre-implementation, expected), and the enum block only has `TypeNone` through `TypeWhatsApp`, no collision. ✅
 - **§4.2**: now internally consistent with §4.1 (see §1 above). The "open question carried into round 1" framing is itself carried correctly into §6 (see §4 below).

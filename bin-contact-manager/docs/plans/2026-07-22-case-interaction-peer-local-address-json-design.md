@@ -2,10 +2,10 @@
 
 Repo: voipbin/monorepo
 Ticket: NOJIRA
-Author: Hermes (CPO) on behalf of pchero (CEO/CTO)
+Author: Hermes (product owner) on behalf of pchero (maintainer)
 Date: 2026-07-22
 Status: Draft, approved to implement (breaking external API change explicitly
-approved by CEO -- see §7)
+approved by maintainer -- see §7)
 
 ## Changelog
 
@@ -45,7 +45,7 @@ is the platform's standard shape for an endpoint (`Type`, `Target`,
 and `bin-call-manager/models/call/call.go`'s equivalent `Source` field are
 the existing precedent for JSON-column `commonaddress.Address` storage.
 
-Per CPO+CEO design discussion, the fix is not "add two new plain columns
+Per maintainer design discussion, the fix is not "add two new plain columns
 to Case for local_type/local_target and call it done." It is to unify BOTH
 Case and Interaction onto the same pattern used by Call/Message: a full
 `commonaddress.Address` JSON value for `Peer` (and `Local`), with the
@@ -66,7 +66,7 @@ JSON. This:
 - Matches the platform-wide convention (Call, Message) instead of Case/
   Interaction being permanently the odd ones out.
 
-This is an intentional, CEO-approved breaking change to the external REST
+This is an intentional, maintainer-approved breaking change to the external REST
 response shape for Case and Interaction (flat `peer_type`/`peer_target` ->
 nested `peer: {type, target, ...}`). No compatibility shim, no dual-field
 transition period, no deprecation window -- see §7.
@@ -1457,7 +1457,7 @@ fields and acts as the publication boundary." The same is true for
 and `list_response.go`), so changing the Go struct in §4 directly changes
 what `GET /contact_cases/{id}`, `GET /contact_cases`, `GET
 /contact_interactions`, etc. return. No compatibility shim, no dual
-flat-and-nested output, no deprecation window -- the CEO has explicitly
+flat-and-nested output, no deprecation window -- the maintainer has explicitly
 approved breaking this response shape.
 
 `bin-openapi-manager/openapi/openapi.yaml` already defines a reusable

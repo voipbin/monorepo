@@ -114,7 +114,7 @@ relitigate the verdict.
 Read the entire doc top to bottom without assuming prior rounds' section
 coverage was exhaustive.
 
-- **§1 Problem**: consistent framing; the "supersedes the CPO's earlier
+- **§1 Problem**: consistent framing; the "supersedes the product owner's earlier
   verbal rejection" claim correctly sets up §4.2's "zero information" reuse
   later. No drift.
 - **§2 Goals/Non-goals**: all three non-goals (Case/Interaction untouched,

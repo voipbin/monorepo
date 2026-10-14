@@ -1,7 +1,7 @@
 # 설계: AI Summary temperature 고정으로 None 요약 완화 (VOIP-1536)
 
 작성일: 2026-09-20
-작성자: Hermes (CPO)
+작성자: Hermes (제품 담당자)
 브랜치: VOIP-1536-summary-none-quality-guard
 상태: 설계 (리뷰 대기)
 선행: 이슈 분석 문서 `2026-09-20-summary-none-quality-analysis.md` (리뷰 6회, 2연속 Approve 확정)

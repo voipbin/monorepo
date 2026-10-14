@@ -1,10 +1,10 @@
 # PR Review Round 2 (final): webchat Session referrer + Peer/Local
 
-Reviewer: independent subagent (adversarial re-review), findings persisted by CPO
+Reviewer: independent subagent (adversarial re-review), findings persisted by product owner
 after the reviewing subagent ran out of tool-call budget before writing this
 file. All findings below are the subagent's own tool-verified results,
 transcribed here verbatim from its final summary -- not re-derived or
-embellished by the CPO.
+embellished by the product owner.
 
 Target: same 10-commit set reviewed in round 0/1 (Go: `b1395b2ba`,
 `5b7dca225`, `48e9f7fa7`, `5a9f23b26`, `13ba46b60`, `51af257e7`, `f0852361b`,
@@ -60,7 +60,7 @@ fields matched exactly**, empirically proving the reflection pipeline
 actually persists and retrieves these new fields, not just asserting it
 from code inspection. The scratch test file was cleaned up afterward
 (`git status --short` showed only the two pre-existing review docs as
-untracked, confirmed by the CPO before writing this file).
+untracked, confirmed by the product owner before writing this file).
 
 ## 6. Overall verdict rationale
 

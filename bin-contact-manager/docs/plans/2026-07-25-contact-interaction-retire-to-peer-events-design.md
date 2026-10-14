@@ -2,20 +2,20 @@
 
 ## 1. Decision and scope
 
-대표님 결정 (2026-07-25): `bin-contact-manager`의 자체 `contact_interactions`
+담당자 결정 (2026-07-25): `bin-contact-manager`의 자체 `contact_interactions`
 테이블/조회 로직(자동 매칭, ownership-period 기반 과거 이력, positive/negative
 resolution 수동 보정, `InteractionListUnresolved` 미해결 큐)을 전면 포기하고,
 `bin-timeline-manager`의 `peer_events` 조회 API(PR #1136, already merged)를
 CRM interaction의 유일한 소스로 삼는다.
 
-**손실 수용 항목 (명시적으로 대표님이 감수하기로 한 것, 재론하지 않음):**
+**손실 수용 항목 (명시적으로 담당자가 감수하기로 한 것, 재론하지 않음):**
 - CRM 자격 필터 (agent/ai/ai_team/conference/extension/sip/빈 값 peer 노이즈 제거) — 사라짐. 클라이언트가 노이즈 처리 책임.
 - Ownership-period 기반 과거 소유 이력 매칭 — 사라짐. `peer_events`는 Contact의 **현재** 주소 집합으로만 필터링.
 - 수동 positive/negative resolution 보정 — 사라짐. 대응 개념 없음.
 - `InteractionListUnresolved` 미해결 큐 — 사라짐. 대응 개념 없음.
 
 **Phase 1 스코프 = 백엔드만.** 프론트엔드(square-talk/square-admin)는 별도
-Phase 2로 명시적으로 분리됨 (대표님 지시, 2026-07-25). 이번 설계는 프론트엔드
+Phase 2로 명시적으로 분리됨 (담당자 지시, 2026-07-25). 이번 설계는 프론트엔드
 파일을 변경하지 않는다.
 
 **손실 수용 항목 추가 (Round 1 리뷰에서 확인됨, §5.1 참조):** `PeerEvent`에는
@@ -380,7 +380,7 @@ failure다. "구현 착수 시 확인"이 아니라 **단위 테스트로 포맷
 - `contact_interactions`/`contact_resolutions` 테이블 DROP — 후속 마이그레이션.
 - OpenAPI 스펙에서 `/contact_interactions/*` 경로 자체를 제거하는 것 — 유예기간
   동안 경로 존치 (응답 스펙은 그대로, 동작만 변경).
-- `peer_events`에 과거 이력/수동보정/미해결 큐를 재구현하는 것 — 대표님이
+- `peer_events`에 과거 이력/수동보정/미해결 큐를 재구현하는 것 — 담당자가
   명시적으로 포기하기로 결정.
 
 ## 7. Verification plan
@@ -456,15 +456,15 @@ failure다. "구현 착수 시 확인"이 아니라 **단위 테스트로 포맷
      짝을 이루는 필수 후속 작업이며, 생략 시 공개 문서(docs.voipbin.net)가
      존재하지 않는 API를 안내하게 된다.
 
-## 8. Revision 1 (2026-07-25, post-closure, 대표님 지시): 응답 호환성 제약 폐기 — 완전 단순화
+## 8. Revision 1 (2026-07-25, post-closure, 담당자 지시): 응답 호환성 제약 폐기 — 완전 단순화
 
 **트리거**: §1~§7(원 설계, 8라운드 리뷰로 승인 완료)은 "Phase 2 착수 전까지
 square-talk/square-admin이 완전히 깨지지 않아야 한다"는 전제 위에 세워졌다.
 이 전제 때문에 §3.2/§3.5/§5 전체가 "응답 필드를 기존 스키마에 맞춰 가공",
 "삭제된 기능의 REST 경로는 남기되 410/빈 리스트로 short-circuit" 같은
-호환성 장치로 채워져 있었다. 대표님이 이번에 그 전제 자체를 철회했다:
+호환성 장치로 채워져 있었다. 담당자가 이번에 그 전제 자체를 철회했다:
 **"깨져도 괜찮다. 현재 쓰는 사람이 우리뿐이고, Admin 쪽 깨짐은 무시해도
-된다."** 이어서 대표님은 두 옵션(①호환 장치 유지하되 가공 없이 원본
+된다."** 이어서 담당자는 두 옵션(①호환 장치 유지하되 가공 없이 원본
 그대로 통과, ②호환 장치 전부 제거 + 경로 자체 삭제) 중 **②를 선택**했다.
 
 **중요**: 아래는 §1~§7을 대체하는 것이 아니라 **위에 얹는 신규 결정**이다.
@@ -512,8 +512,8 @@ square-talk/square-admin이 완전히 깨지지 않아야 한다"는 전제 위�
    건드리지 않는다 — 이미 존재하고 이미 노이즈 포함 원본을 그대로
    반환하도록 되어 있다 (§2.3 참조).
 5. **`bin-contact-manager`의 `InteractionList`(§3.2 원문)는 RPC 자체는
-   유지하되 응답 구조체를 바꾼다 (대표님 정정 지시, 2026-07-25):** 처음
-   §8.1에서는 "REST 경로가 사라지니 RPC도 삭제"로 갔으나, 대표님이
+   유지하되 응답 구조체를 바꾼다 (담당자 정정 지시, 2026-07-25):** 처음
+   §8.1에서는 "REST 경로가 사라지니 RPC도 삭제"로 갔으나, 담당자가
    `bin-ai-manager`(§2.5, §8.3)가 **같은 RPC 도구를 계속 호출**해야 한다는
    점을 짚어 정정했다. 최종 결정:
    - `contacthandler.InteractionList`(RPC 핸들러 본체)와
@@ -633,7 +633,7 @@ square-talk/square-admin이 완전히 깨지지 않아야 한다"는 전제 위�
 
 `bin-ai-manager/pkg/aicallhandler/tool_insight.go`가 `ContactV1InteractionList`
 RPC를 직접 호출한다는 사실(§2.5)은 본 Revision의 **직접 설계 대상**이
-됐다. 최초 §8.1/§8.2 초안은 이 RPC 자체를 삭제하는 방향이었으나, 대표님이
+됐다. 최초 §8.1/§8.2 초안은 이 RPC 자체를 삭제하는 방향이었으나, 담당자가
 "contact-manager가 이 도구는 계속 지원하되, 내부 호출과 응답 포맷만
 바꾼다. ai-manager는 같은 도구를 계속 호출하지만 응답 구조체가 달라진다"고
 정정 지시했다 (§8.1-5 참조). 최종 결론:
@@ -674,10 +674,10 @@ RPC를 직접 호출한다는 사실(§2.5)은 본 Revision의 **직접 설계 �
 | §7 검증 계획 | 유효하나 대상 파일 목록이 §8.2 기준으로 확장됨 — `bin-common-handler` 자체 검증 워크플로우, `bin-api-manager/docsdev/source/` RST 갱신+재빌드가 §7 말미에 명시적으로 추가됨 (본 Revision 리뷰 Round 3 확인) |
 
 
-## 9. Revision 2 (2026-07-25, post-closure, 대표님 지시): List 경로는 유지, 응답만 peer_events로 교체
+## 9. Revision 2 (2026-07-25, post-closure, 담당자 지시): List 경로는 유지, 응답만 peer_events로 교체
 
 **트리거**: §8(Revision 1)은 `GET /contact_interactions`를 포함한 모든
-REST 경로를 완전 삭제하는 방향(§8.1 item 2)이었다. 대표님이 이를
+REST 경로를 완전 삭제하는 방향(§8.1 item 2)이었다. 담당자가 이를
 재검토해 "List 경로(`GET /contact_interactions`,
 `GET /service_agents/contact_interactions`)는 그대로 두고, 응답만
 peer_events로 바꾸면 되지 않나?"라고 물었고, 이어서 나머지
@@ -708,7 +708,7 @@ peer_events로 바꾸면 되지 않나?"라고 물었고, 이어서 나머지
    - `DELETE /contact_interactions/{id}/resolutions/{rid}`
    - `service_agents/contact_interactions` 하위의 동일 패턴 4개
    - 이 5+5=10개 경로는 §8.1 item 2가 이미 확정한 대로 OpenAPI 스펙에서도
-     통째로 삭제한다 (404 반환, 404/410 shim 남기지 않음 — 대표님이
+     통째로 삭제한다 (404 반환, 404/410 shim 남기지 않음 — 담당자가
      "단순화" 기조를 재확인).
 3. **왜 List만 남기고 나머지는 삭제하는가**: List(그리고 오직 List)만
    peer_events read API로 대응 가능한 진짜 조회 기능이기 때문이다
@@ -716,7 +716,7 @@ peer_events로 바꾸면 되지 않나?"라고 물었고, 이어서 나머지
    씀). 나머지 넷은 §1에서 이미 확정한 손실 항목(과거이력 매칭/수동보정/
    미해결큐)이거나 peer_events 구조상 원천적으로 불가능한 기능(§3.2의
    단건조회 불가 사유)이므로, 경로를 남겨봐야 항상 에러/빈 값만 반환하는
-   죽은 코드가 된다. "깨져도 된다"는 대표님 결정과 결합하면, 죽은
+   죽은 코드가 된다. "깨져도 된다"는 담당자 결정과 결합하면, 죽은
    shim보다 경로 삭제(순수 404)가 더 단순하다.
 
 ### 9.2 bin-api-manager 변경 (§8.2를 대체하는 최종 목록)

@@ -262,9 +262,9 @@ The message cannot be delivered to the bound session if the pod is dead, so the 
 api-manager → ai-manager.Send(aicall_id, "hello")
   → SendReferenceTypeCall(c)
     ├─ PipecatV1PipecatcallGet(c.PipecatcallID)        // shared queue, ~few ms
-    │   → pc{HostID: "10.4.2.18", ID: <uuid>}
+    │   → pc{HostID: "10.0.0.18", ID: <uuid>}
     ├─ messageHandler.Create(...)                       // DB write
-    ├─ pingPipecatHost("10.4.2.18")                     // NEW
+    ├─ pingPipecatHost("10.0.0.18")                     // NEW
     │   → cb.Allow → ok
     │   → RPC GET /v1/ping → response in ~few ms
     │   → cb.RecordSuccess → host_id echo matches → returns true
@@ -278,9 +278,9 @@ Net added latency on the live path: **one RabbitMQ round-trip (~few ms)**.
 ```
 api-manager → ai-manager.Send(aicall_id, "hello")
   → SendReferenceTypeCall(c)
-    ├─ PipecatV1PipecatcallGet(...) → pc{HostID: "10.4.2.18 (DEAD)"}
+    ├─ PipecatV1PipecatcallGet(...) → pc{HostID: "10.0.0.18 (DEAD)"}
     ├─ messageHandler.Create(...)
-    ├─ pingPipecatHost("10.4.2.18")
+    ├─ pingPipecatHost("10.0.0.18")
     │   → cb.Allow → ok (not yet tripped)
     │   → RPC GET /v1/ping → ctx deadline exceeded after 1 s
     │   → cb.RecordFailure → returns false

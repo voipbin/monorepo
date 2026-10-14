@@ -4,7 +4,7 @@ Status: APPROVED, revision 10 (rounds 8 and 9 both APPROVED by both reviewers; r
 
 This is the call-manager half of VOIP-1556. The Asterisk half (F14 tag re-register, Record-Route on the request, route set
 freeze) shipped in monorepo-voip PR #144 (main 7d27526, deployed 2026-10-01 20:26Z, verified). Recovery stays disabled in
-production (`RECOVERY_ENABLED` unset); enabling it is a separate CEO decision and is not part of this PR.
+production (`RECOVERY_ENABLED` unset); enabling it is a separate maintainer decision and is not part of this PR.
 
 ## 1. Issue validity (re-checked 2026-10-02 on monorepo main 02f3229de)
 
@@ -28,7 +28,7 @@ The VOIP-1556 issue analysis (agent note `VOIP-1556-analysis.md`, two consecutiv
 | F9c | `hangingUpWithCause` reads the call, writes `terminating` and hangs up `c.ChannelID` as read; if the call moved to another channel in between, the old (dead) channel is hung up and the call is left `terminating` with a live channel that nothing hangs up any more | `hangup.go:123-177` |
 | Dup | Nothing prevents two recovery legs for the same call (repeated container_died, manual `/v1/recovery`); the loser's BYE carries the same dialog identifiers and ends the recovered call | `recovery.go` (no guard) |
 
-Not in scope (CEO decision 2026-10-02, "켜도 안전하게 동작하는 핵심"): restoring side state (recording, snoop, external
+Not in scope (maintainer decision 2026-10-02, "켜도 안전하게 동작하는 핵심"): restoring side state (recording, snoop, external
 media, conference membership, chained/connect legs, groupcall), a concurrency limit N, re-recovery of an already recovered
 call, the manual `/v1/recovery` public semantics and docs (F10), Grafana. Section 8 lists them with triggers. Calls whose
 side state this PR cannot restore are skipped (section 4.1), not recovered half-way.
@@ -314,7 +314,7 @@ call moved. Error lines only for unexpected failures. No metrics in this PR.
 | `pkg/callhandler/arievent.go`, tests | 4.5 recovery context hook |
 | `pkg/callhandler/hangup.go`, `db.go`, tests | 4.6 conditional hangup for progressing calls, request-side channel |
 | `pkg/channelhandler/arievent.go`, tests | 4.4 type map |
-| `docs/domain.md`, `docs/operations.md` | new behaviour; recovery still disabled; enabling is a gated crash test approved by the CEO, go-live after drain (VOIP-1560); `HOMER_WHITELIST` described as the Kamailio outer-hop exclusion that dialog reconstruction depends on (`operations.md:109` today says "IP whitelist for Homer recovery endpoint", which is wrong); update the "must not be enabled before VOIP-1556" / "Keep disabled until VOIP-1556" wording at `domain.md:97`, `operations.md:13` and `operations.md:111-113` |
+| `docs/domain.md`, `docs/operations.md` | new behaviour; recovery still disabled; enabling is a gated crash test approved by the maintainer, go-live after drain (VOIP-1560); `HOMER_WHITELIST` described as the Kamailio outer-hop exclusion that dialog reconstruction depends on (`operations.md:109` today says "IP whitelist for Homer recovery endpoint", which is wrong); update the "must not be enabled before VOIP-1556" / "Keep disabled until VOIP-1556" wording at `domain.md:97`, `operations.md:13` and `operations.md:111-113` |
 
 ## 6. Verification
 
@@ -352,7 +352,7 @@ call moved. Error lines only for unexpected failures. No metrics in this PR.
   in a `git archive` copy.
 - Repo gates: `go build ./...`, `go test ./...`, `golangci-lint run`, monorepo `scripts/check-test-conventions.sh`.
 - No production change and no production test in this PR. End-to-end proof is the gated enablement crash test (analysis
-  section 4 step 4), a separate CEO decision after drain (VOIP-1560). A local call-manager integration run is not planned
+  section 4 step 4), a separate maintainer decision after drain (VOIP-1560). A local call-manager integration run is not planned
   (it needs RabbitMQ, MySQL, Redis, Homer and two Asterisks wired together); the Asterisk side was proven end to end in the
   spike and by the image smoke test.
 
@@ -379,7 +379,7 @@ call moved. Error lines only for unexpected failures. No metrics in this PR.
 
 | Item | Why not now | Trigger |
 |---|---|---|
-| Recovering calls with conference, chained/connect legs or external media (skipped in 4.1); restoring recording, snoop | CEO scope 2026-10-02 | enablement crash test or a real incident shows these calls matter |
+| Recovering calls with conference, chained/connect legs or external media (skipped in 4.1); restoring recording, snoop | maintainer scope 2026-10-02 | enablement crash test or a real incident shows these calls matter |
 | Concurrency limit N | no load signal; live calls per call Asterisk are few | after a crash, calls not switched before the fake destroy > 0 |
 | Re-run vs resume semantics of the current action | changing Flow semantics is a product decision | enablement test shows duplicated customer-visible effects |
 | Re-recovery of a recovered call | needs the recovery dialog's Call-ID and capture; rare (two crashes within one call) | a second crash during a recovered call is observed |

@@ -34,7 +34,7 @@ assignment를 역추적하고 (a) `GenerateListResponse` 래핑 여부, (b) 대�
 | 4 | `timelines.go:85` `GetTimelinesResourceTypeResourceIdEvents` | `TimelineEventList` → `([]*TimelineEvent, string, error)` | `allOf[CommonPagination,{result:array}]` (`paths/timelines/resource_events.yaml`) | 수동 `struct{Result interface{}; NextPageToken string}` |
 | 5 | `aggregated_events.go:82` `GetAggregatedEvents` | `AggregatedEventList` → `([]*TimelineEvent, string, error)` | `allOf[CommonPagination,{result:array}]` (`paths/timelines/aggregated_events.yaml`) | 수동 `struct{Result interface{}; NextPageToken string}` |
 
-### 2.3 스코프 제외 (대표님 확정, 2026-09-17)
+### 2.3 스코프 제외 (담당자 확정, 2026-09-17)
 
 - **#3 `available_numbers.go:68` `GetAvailableNumbers`**: 실시간 번호 검색으로 커서 페이지네이션 개념이
   없음. 스펙은 `{result}` 래퍼는 있으나 `CommonPagination`이 없고(`next_page_token` 미정의), 핸들러도

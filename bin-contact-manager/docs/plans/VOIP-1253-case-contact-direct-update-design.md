@@ -2,7 +2,7 @@
 
 Repo: voipbin/monorepo
 Ticket: VOIP-1253
-Author: Hermes (CPO) on behalf of pchero (CEO/CTO)
+Author: Hermes (product owner) on behalf of pchero (maintainer)
 Date: 2026-07-13
 Status: Draft, awaiting independent review
 
@@ -165,7 +165,7 @@ Status: Draft, awaiting independent review
     (600s at 2 API calls both times, an environment/setup issue rather
     than scope breadth -- round 6's timeout was a genuine breadth
     problem at 50 API calls, this was different). In lieu of a
-    subagent verdict, the CPO performed the round's core checks
+    subagent verdict, the product owner performed the round's core checks
     directly: read the full `bin-api-manager/server/contact_cases.go`
     on main line-by-line against v0.8's §5.5.1 sample (signature, log
     field construction, `getAuthIdentity`/`log.WithField` chaining,
