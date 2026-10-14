@@ -33,12 +33,12 @@ class TestLoadLocalEndpoints:
         assert run.load_local_endpoints(raw) == 0
 
     @pytest.mark.parametrize("base_url", [
-        "ftp://h/v1", "h/v1", "http://", "http://u:p@h/v1", "http://h/v1?x=1", "http://h/v1#f", "http://h:99999/v1", 5, None,
+        "ftp://h/v1", "h/v1", "http://h/v1 ", "http://h/v1\n", " http://h/v1", "http://", "http://u:p@h/v1", "http://h/v1?x=1", "http://h/v1#f", "http://h:99999/v1", 5, None,
     ])
     def test_rule_violating_base_url_skipped(self, base_url):
         assert _load({"a": {"base_url": base_url}}) == 0
 
-    @pytest.mark.parametrize("name", ["A", "a.b", "", "-a", "a" * 33])
+    @pytest.mark.parametrize("name", ["A", "a.b", "", "-a", "a" * 33, "a\n"])
     def test_bad_endpoint_name_skipped(self, name):
         assert _load({name: {"base_url": SECRET_URL}}) == 0
 

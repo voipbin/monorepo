@@ -620,7 +620,7 @@ _local_endpoints: dict = {}
 def _valid_local_base_url(value) -> bool:
     from urllib.parse import urlsplit
 
-    if not isinstance(value, str):
+    if not isinstance(value, str) or re.search(r"\s", value):
         return False
     try:
         parts = urlsplit(value)
@@ -656,7 +656,7 @@ def load_local_endpoints(raw=None) -> int:
         for name, item in data.items():
             if (
                 isinstance(name, str)
-                and _LOCAL_ENDPOINT_NAME.match(name)
+                and _LOCAL_ENDPOINT_NAME.fullmatch(name)
                 and isinstance(item, dict)
                 and _valid_local_base_url(item.get("base_url"))
                 and isinstance(item.get("api_key", ""), str)
