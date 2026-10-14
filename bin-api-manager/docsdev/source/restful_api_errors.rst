@@ -118,7 +118,7 @@ Reasons fired by call endpoints (``/calls``, ``/calls/{id}*``, ``/groupcalls``, 
      - Operation invalid for the current call state (e.g., transfer from a call that is not yet progressing). Check ``status`` via ``GET /calls/{id}`` and retry when the state matches the operation's prerequisite.
    * - ``EXTENSION_NOT_REGISTERED``
      - 409
-     - The destination extension has no registered SIP phone, so the call cannot be placed. Register a phone for the extension and retry. Returned by ``POST /calls`` when every destination fails, and by ``POST /groupcalls`` for a single ``extension`` destination with ``ringall``.
+     - The destination extension has no registered SIP phone, so the call cannot be placed. Register a phone for the extension and retry. Returned by ``POST /calls`` when every destination fails and at least one of them failed this way, and by ``POST /groupcalls`` for a single ``extension`` destination with ``ringall``.
    * - ``GROUPCALL_NOT_FOUND``
      - 404
      - Groupcall ID does not exist or belongs to another customer. Verify via ``GET /groupcalls``.

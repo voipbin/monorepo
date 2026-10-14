@@ -791,7 +791,7 @@
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">EXTENSION_NOT_REGISTERED</span></code></p></td>
 <td><p>409</p></td>
-<td><p>The destination extension has no registered SIP phone, so the call cannot be placed. Register a phone for the extension and retry. Returned by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> when every destination fails, and by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/groupcalls</span></code> for a single <code class="docutils literal notranslate"><span class="pre">extension</span></code> destination with <code class="docutils literal notranslate"><span class="pre">ringall</span></code>.</p></td>
+<td><p>The destination extension has no registered SIP phone, so the call cannot be placed. Register a phone for the extension and retry. Returned by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> when every destination fails and at least one of them failed this way, and by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/groupcalls</span></code> for a single <code class="docutils literal notranslate"><span class="pre">extension</span></code> destination with <code class="docutils literal notranslate"><span class="pre">ringall</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GROUPCALL_NOT_FOUND</span></code></p></td>
 <td><p>404</p></td>
