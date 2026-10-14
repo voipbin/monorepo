@@ -13,8 +13,9 @@ deploy_filters: &deploy_filters
 
 # Two deploy modes per service workflow (VOIP-1586).
 #
-# Approval-kept mode (most services today): build-approval gates test, build
-# and deploy on every branch; on main a human still approves the pipeline.
+# Approval-kept mode (services kept out of the allowlist, see DENY in
+# check-auto-deploy-config.rb): build-approval gates test, build and deploy on
+# every branch; on main a human still approves the pipeline.
 #
 # Auto-deploy mode (services listed in .circleci/auto-deploy-services.txt):
 # on main there is no approval, test-auto -> build -> deploy run right after
@@ -258,15 +259,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-api-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-api-manager-test:
+          name: bin-api-manager-test-auto
+          <<: *deploy_filters
       - bin-api-manager-build:
           <<: *context_production
           requires:
             - bin-api-manager-test
+            - bin-api-manager-test-auto
       - bin-api-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-api-manager
           requires:
             - bin-api-manager-build
   bin-billing-manager:
@@ -274,15 +282,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-billing-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-billing-manager-test:
+          name: bin-billing-manager-test-auto
+          <<: *deploy_filters
       - bin-billing-manager-build:
           <<: *context_production
           requires:
             - bin-billing-manager-test
+            - bin-billing-manager-test-auto
       - bin-billing-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-billing-manager
           requires:
             - bin-billing-manager-build
   bin-call-manager:
@@ -290,24 +305,25 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-call-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-call-manager-test:
+          name: bin-call-manager-test-auto
+          <<: *deploy_filters
       - bin-call-manager-build:
           <<: *context_production
           requires:
             - bin-call-manager-test
+            - bin-call-manager-test-auto
       - bin-call-manager-deploy:
           <<: [*context_production, *deploy_filters]
-          # Single approval gate (build-approval, above) covers the whole
-          # pipeline including this deploy - matches the old GKE release
-          # job's convenience (build-approval alone used to be enough to
-          # reach production). A second deploy-specific approval was tried
-          # and dropped: bm-nyc-01 is the only environment we have, so it
-          # doubles as staging, and requiring two clicks per deploy added
-          # friction without a safety benefit distinct from build-approval
-          # itself. Do not add a second approval gate here without
-          # re-confirming with the team first.
+          serial-group: << pipeline.project.slug >>/deploy-bin-call-manager
+          # Automatic deploy: on main there is no approval; test-auto, build and
+          # deploy run right after the merge. build-approval only gates test and
+          # build on non-main branches. See the mode note at the top of this file.
           requires:
             - bin-call-manager-build
 
@@ -316,15 +332,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-campaign-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-campaign-manager-test:
+          name: bin-campaign-manager-test-auto
+          <<: *deploy_filters
       - bin-campaign-manager-build:
           <<: *context_production
           requires:
             - bin-campaign-manager-test
+            - bin-campaign-manager-test-auto
       - bin-campaign-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-campaign-manager
           requires:
             - bin-campaign-manager-build
   bin-ai-manager:
@@ -332,15 +355,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-ai-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-ai-manager-test:
+          name: bin-ai-manager-test-auto
+          <<: *deploy_filters
       - bin-ai-manager-build:
           <<: *context_production
           requires:
             - bin-ai-manager-test
+            - bin-ai-manager-test-auto
       - bin-ai-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-ai-manager
           requires:
             - bin-ai-manager-build
   bin-common-handler:
@@ -380,15 +410,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-conference-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-conference-manager-test:
+          name: bin-conference-manager-test-auto
+          <<: *deploy_filters
       - bin-conference-manager-build:
           <<: *context_production
           requires:
             - bin-conference-manager-test
+            - bin-conference-manager-test-auto
       - bin-conference-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-conference-manager
           requires:
             - bin-conference-manager-build
   bin-conversation-manager:
@@ -396,15 +433,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-conversation-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-conversation-manager-test:
+          name: bin-conversation-manager-test-auto
+          <<: *deploy_filters
       - bin-conversation-manager-build:
           <<: *context_production
           requires:
             - bin-conversation-manager-test
+            - bin-conversation-manager-test-auto
       - bin-conversation-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-conversation-manager
           requires:
             - bin-conversation-manager-build
   bin-customer-manager:
@@ -412,15 +456,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-customer-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-customer-manager-test:
+          name: bin-customer-manager-test-auto
+          <<: *deploy_filters
       - bin-customer-manager-build:
           <<: *context_production
           requires:
             - bin-customer-manager-test
+            - bin-customer-manager-test-auto
       - bin-customer-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-customer-manager
           requires:
             - bin-customer-manager-build
   # bin-dbscheme-manager: CI does not apply migrations. The production
@@ -462,15 +513,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-direct-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-direct-manager-test:
+          name: bin-direct-manager-test-auto
+          <<: *deploy_filters
       - bin-direct-manager-build:
           <<: *context_production
           requires:
             - bin-direct-manager-test
+            - bin-direct-manager-test-auto
       - bin-direct-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-direct-manager
           requires:
             - bin-direct-manager-build
   bin-email-manager:
@@ -478,15 +536,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-email-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-email-manager-test:
+          name: bin-email-manager-test-auto
+          <<: *deploy_filters
       - bin-email-manager-build:
           <<: *context_production
           requires:
             - bin-email-manager-test
+            - bin-email-manager-test-auto
       - bin-email-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-email-manager
           requires:
             - bin-email-manager-build
   bin-flow-manager:
@@ -494,15 +559,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-flow-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-flow-manager-test:
+          name: bin-flow-manager-test-auto
+          <<: *deploy_filters
       - bin-flow-manager-build:
           <<: *context_production
           requires:
             - bin-flow-manager-test
+            - bin-flow-manager-test-auto
       - bin-flow-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-flow-manager
           requires:
             - bin-flow-manager-build
   bin-hook-manager:
@@ -510,15 +582,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-hook-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-hook-manager-test:
+          name: bin-hook-manager-test-auto
+          <<: *deploy_filters
       - bin-hook-manager-build:
           <<: *context_production
           requires:
             - bin-hook-manager-test
+            - bin-hook-manager-test-auto
       - bin-hook-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-hook-manager
           requires:
             - bin-hook-manager-build
   bin-message-manager:
@@ -526,15 +605,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-message-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-message-manager-test:
+          name: bin-message-manager-test-auto
+          <<: *deploy_filters
       - bin-message-manager-build:
           <<: *context_production
           requires:
             - bin-message-manager-test
+            - bin-message-manager-test-auto
       - bin-message-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-message-manager
           requires:
             - bin-message-manager-build
   bin-number-manager:
@@ -542,15 +628,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-number-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-number-manager-test:
+          name: bin-number-manager-test-auto
+          <<: *deploy_filters
       - bin-number-manager-build:
           <<: *context_production
           requires:
             - bin-number-manager-test
+            - bin-number-manager-test-auto
       - bin-number-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-number-manager
           requires:
             - bin-number-manager-build
   bin-openapi-manager:
@@ -567,15 +660,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-outdial-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-outdial-manager-test:
+          name: bin-outdial-manager-test-auto
+          <<: *deploy_filters
       - bin-outdial-manager-build:
           <<: *context_production
           requires:
             - bin-outdial-manager-test
+            - bin-outdial-manager-test-auto
       - bin-outdial-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-outdial-manager
           requires:
             - bin-outdial-manager-build
   bin-pipecat-manager:
@@ -583,15 +683,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-pipecat-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-pipecat-manager-test:
+          name: bin-pipecat-manager-test-auto
+          <<: *deploy_filters
       - bin-pipecat-manager-build:
           <<: *context_production
           requires:
             - bin-pipecat-manager-test
+            - bin-pipecat-manager-test-auto
       - bin-pipecat-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-pipecat-manager
           requires:
             - bin-pipecat-manager-build
   bin-queue-manager:
@@ -599,15 +706,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-queue-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-queue-manager-test:
+          name: bin-queue-manager-test-auto
+          <<: *deploy_filters
       - bin-queue-manager-build:
           <<: *context_production
           requires:
             - bin-queue-manager-test
+            - bin-queue-manager-test-auto
       - bin-queue-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-queue-manager
           requires:
             - bin-queue-manager-build
   bin-rag-manager:
@@ -631,15 +745,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-registrar-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-registrar-manager-test:
+          name: bin-registrar-manager-test-auto
+          <<: *deploy_filters
       - bin-registrar-manager-build:
           <<: *context_production
           requires:
             - bin-registrar-manager-test
+            - bin-registrar-manager-test-auto
       - bin-registrar-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-registrar-manager
           requires:
             - bin-registrar-manager-build
   bin-route-manager:
@@ -647,15 +768,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-route-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-route-manager-test:
+          name: bin-route-manager-test-auto
+          <<: *deploy_filters
       - bin-route-manager-build:
           <<: *context_production
           requires:
             - bin-route-manager-test
+            - bin-route-manager-test-auto
       - bin-route-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-route-manager
           requires:
             - bin-route-manager-build
   bin-schedule-manager:
@@ -663,15 +791,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-schedule-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-schedule-manager-test:
+          name: bin-schedule-manager-test-auto
+          <<: *deploy_filters
       - bin-schedule-manager-build:
           <<: *context_production
           requires:
             - bin-schedule-manager-test
+            - bin-schedule-manager-test-auto
       - bin-schedule-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-schedule-manager
           requires:
             - bin-schedule-manager-build
   bin-sentinel-manager:
@@ -679,15 +814,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-sentinel-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-sentinel-manager-test:
+          name: bin-sentinel-manager-test-auto
+          <<: *deploy_filters
       - bin-sentinel-manager-build:
           <<: *context_production
           requires:
             - bin-sentinel-manager-test
+            - bin-sentinel-manager-test-auto
       - bin-sentinel-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-sentinel-manager
           requires:
             - bin-sentinel-manager-build
   bin-storage-manager:
@@ -718,15 +860,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-tag-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-tag-manager-test:
+          name: bin-tag-manager-test-auto
+          <<: *deploy_filters
       - bin-tag-manager-build:
           <<: *context_production
           requires:
             - bin-tag-manager-test
+            - bin-tag-manager-test-auto
       - bin-tag-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-tag-manager
           requires:
             - bin-tag-manager-build
   bin-talk-manager:
@@ -734,15 +883,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-talk-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-talk-manager-test:
+          name: bin-talk-manager-test-auto
+          <<: *deploy_filters
       - bin-talk-manager-build:
           <<: *context_production
           requires:
             - bin-talk-manager-test
+            - bin-talk-manager-test-auto
       - bin-talk-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-talk-manager
           requires:
             - bin-talk-manager-build
   bin-timeline-manager:
@@ -766,15 +922,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-transcribe-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-transcribe-manager-test:
+          name: bin-transcribe-manager-test-auto
+          <<: *deploy_filters
       - bin-transcribe-manager-build:
           <<: *context_production
           requires:
             - bin-transcribe-manager-test
+            - bin-transcribe-manager-test-auto
       - bin-transcribe-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-transcribe-manager
           requires:
             - bin-transcribe-manager-build
   bin-transfer-manager:
@@ -782,15 +945,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-transfer-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-transfer-manager-test:
+          name: bin-transfer-manager-test-auto
+          <<: *deploy_filters
       - bin-transfer-manager-build:
           <<: *context_production
           requires:
             - bin-transfer-manager-test
+            - bin-transfer-manager-test-auto
       - bin-transfer-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-transfer-manager
           requires:
             - bin-transfer-manager-build
   bin-trigger-sender:
@@ -813,15 +983,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-tts-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-tts-manager-test:
+          name: bin-tts-manager-test-auto
+          <<: *deploy_filters
       - bin-tts-manager-build:
           <<: *context_production
           requires:
             - bin-tts-manager-test
+            - bin-tts-manager-test-auto
       - bin-tts-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-tts-manager
           requires:
             - bin-tts-manager-build
   bin-webchat-manager:
@@ -829,15 +1006,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-webchat-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-webchat-manager-test:
+          name: bin-webchat-manager-test-auto
+          <<: *deploy_filters
       - bin-webchat-manager-build:
           <<: *context_production
           requires:
             - bin-webchat-manager-test
+            - bin-webchat-manager-test-auto
       - bin-webchat-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-webchat-manager
           requires:
             - bin-webchat-manager-build
   bin-webhook-manager:
@@ -845,15 +1029,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-webhook-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-webhook-manager-test:
+          name: bin-webhook-manager-test-auto
+          <<: *deploy_filters
       - bin-webhook-manager-build:
           <<: *context_production
           requires:
             - bin-webhook-manager-test
+            - bin-webhook-manager-test-auto
       - bin-webhook-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-webhook-manager
           requires:
             - bin-webhook-manager-build
   ############################################
@@ -1009,6 +1200,7 @@ jobs:
       - run:
           name: Deploy bin-api-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-api-manager bin-openapi-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-api-manager bin-api-manager/komodo/docker-compose.yml bin-api-manager/komodo/environment.env
 
@@ -1044,6 +1236,7 @@ jobs:
       - run:
           name: Deploy bin-billing-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-billing-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-billing-manager bin-billing-manager/komodo/docker-compose.yml
 
@@ -1091,6 +1284,7 @@ jobs:
           # is a conservative estimate, not a measured value - tighten or
           # loosen once real deploy timings are observed.
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-call-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-call-manager bin-call-manager/komodo/docker-compose.yml
 
@@ -1126,6 +1320,7 @@ jobs:
       - run:
           name: Deploy bin-campaign-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-campaign-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-campaign-manager bin-campaign-manager/komodo/docker-compose.yml
 
@@ -1203,6 +1398,7 @@ jobs:
       - run:
           name: Deploy bin-ai-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-ai-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-ai-manager bin-ai-manager/komodo/docker-compose.yml
 
@@ -1282,6 +1478,7 @@ jobs:
       - run:
           name: Deploy bin-conference-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-conference-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-conference-manager bin-conference-manager/komodo/docker-compose.yml
 
@@ -1317,6 +1514,7 @@ jobs:
       - run:
           name: Deploy bin-conversation-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-conversation-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-conversation-manager bin-conversation-manager/komodo/docker-compose.yml
 
@@ -1352,6 +1550,7 @@ jobs:
       - run:
           name: Deploy bin-customer-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-customer-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-customer-manager bin-customer-manager/komodo/docker-compose.yml
 
@@ -1437,6 +1636,7 @@ jobs:
       - run:
           name: Deploy bin-direct-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-direct-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-direct-manager bin-direct-manager/komodo/docker-compose.yml
 
@@ -1472,6 +1672,7 @@ jobs:
       - run:
           name: Deploy bin-email-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-email-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-email-manager bin-email-manager/komodo/docker-compose.yml
 
@@ -1507,6 +1708,7 @@ jobs:
       - run:
           name: Deploy bin-flow-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-flow-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-flow-manager bin-flow-manager/komodo/docker-compose.yml
 
@@ -1539,6 +1741,7 @@ jobs:
       - run:
           name: Deploy bin-hook-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-hook-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-hook-manager bin-hook-manager/komodo/docker-compose.yml
 
@@ -1574,6 +1777,7 @@ jobs:
       - run:
           name: Deploy bin-message-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-message-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-message-manager bin-message-manager/komodo/docker-compose.yml
 
@@ -1609,6 +1813,7 @@ jobs:
       - run:
           name: Deploy bin-number-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-number-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-number-manager bin-number-manager/komodo/docker-compose.yml
 
@@ -1672,6 +1877,7 @@ jobs:
       - run:
           name: Deploy bin-outdial-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-outdial-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-outdial-manager bin-outdial-manager/komodo/docker-compose.yml
 
@@ -1703,6 +1909,7 @@ jobs:
       - run:
           name: Deploy bin-pipecat-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-pipecat-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-pipecat-manager bin-pipecat-manager/komodo/docker-compose.yml bin-pipecat-manager/komodo/environment.env
 
@@ -1738,6 +1945,7 @@ jobs:
       - run:
           name: Deploy bin-queue-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-queue-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-queue-manager bin-queue-manager/komodo/docker-compose.yml
 
@@ -1804,6 +2012,7 @@ jobs:
       - run:
           name: Deploy bin-registrar-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-registrar-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-registrar-manager bin-registrar-manager/komodo/docker-compose.yml
 
@@ -1839,6 +2048,7 @@ jobs:
       - run:
           name: Deploy bin-route-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-route-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-route-manager bin-route-manager/komodo/docker-compose.yml
 
@@ -1870,6 +2080,7 @@ jobs:
       - run:
           name: Deploy bin-schedule-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-schedule-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-schedule-manager bin-schedule-manager/komodo/docker-compose.yml
 
@@ -1908,6 +2119,7 @@ jobs:
       - run:
           name: Deploy bin-sentinel-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-sentinel-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-sentinel-manager bin-sentinel-manager/komodo/docker-compose.yml
 
@@ -1975,6 +2187,7 @@ jobs:
       - run:
           name: Deploy bin-tag-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-tag-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-tag-manager bin-tag-manager/komodo/docker-compose.yml
 
@@ -2010,6 +2223,7 @@ jobs:
       - run:
           name: Deploy bin-talk-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-talk-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-talk-manager bin-talk-manager/komodo/docker-compose.yml
 
@@ -2073,6 +2287,7 @@ jobs:
       - run:
           name: Deploy bin-transcribe-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-transcribe-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-transcribe-manager bin-transcribe-manager/komodo/docker-compose.yml bin-transcribe-manager/komodo/environment.env
 
@@ -2108,6 +2323,7 @@ jobs:
       - run:
           name: Deploy bin-transfer-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-transfer-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-transfer-manager bin-transfer-manager/komodo/docker-compose.yml
 
@@ -2160,6 +2376,7 @@ jobs:
       - run:
           name: Deploy bin-tts-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-tts-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-tts-manager bin-tts-manager/komodo/docker-compose.yml bin-tts-manager/komodo/environment.env
 
@@ -2195,6 +2412,7 @@ jobs:
       - run:
           name: Deploy bin-webchat-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-webchat-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-webchat-manager bin-webchat-manager/komodo/docker-compose.yml
 
@@ -2230,6 +2448,7 @@ jobs:
       - run:
           name: Deploy bin-webhook-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-webhook-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-webhook-manager bin-webhook-manager/komodo/docker-compose.yml
 
