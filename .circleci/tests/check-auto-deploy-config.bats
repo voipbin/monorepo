@@ -9,6 +9,7 @@ load 'test_helper'
 CHECKER="$SCRIPTS_DIR/check-auto-deploy-config.rb"
 REAL_CONFIG="$CIRCLECI_DIR/config_work.yml"
 REAL_LIST="$CIRCLECI_DIR/auto-deploy-services.txt"
+REAL_RUN_LIST="$CIRCLECI_DIR/auto-run-services.txt"
 
 setup() {
     setup_test_env
@@ -16,6 +17,8 @@ setup() {
     LST="$TEST_TEMP_DIR/auto-deploy-services.txt"
     cp "$REAL_CONFIG" "$CFG"
     cp "$REAL_LIST" "$LST"
+    RLST="$TEST_TEMP_DIR/auto-run-services.txt"
+    cp "$REAL_RUN_LIST" "$RLST"
     # The checker also reads the setup config (path-filtering mapping) and checks
     # that the directories named there exist: give it a copy and an empty tree.
     SETUP="$TEST_TEMP_DIR/setup-config.yml"
@@ -42,7 +45,7 @@ mutate() {
 }
 
 run_checker() {
-    run ruby "$CHECKER" "$CFG" "$LST" "$SETUP" "$ROOT"
+    run ruby "$CHECKER" "$CFG" "$LST" "$SETUP" "$ROOT" "$RLST"
 }
 
 # add_keep_fixture : insert an approval-kept service workflow (and its deploy job
@@ -421,6 +424,108 @@ expect_fail() {
     [ "$status" -eq 1 ]
     cp "$REAL_CONFIG" "$CFG"
     mutate "$CFG" $'            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-rag-manager" \\\n' ''
+    run_checker
+    [ "$status" -eq 1 ]
+}
+
+# ---- (g) auto-run workflows: verify-only, run on main without approval (VOIP-1597) ----
+
+@test "an auto-run workflow dropped from the auto-run list fails" {
+    grep -vx "bin-common-handler" "$REAL_RUN_LIST" > "$RLST"
+    run_checker
+    expect_fail "workflow bin-common-handler has a -test-auto job but is not in the allowlist"
+    cp "$REAL_RUN_LIST" "$RLST"
+    grep -vx "bin-openapi-manager" "$REAL_RUN_LIST" > "$RLST"
+    run_checker
+    expect_fail "workflow bin-openapi-manager has a -auto job but is not in the allowlist"
+}
+
+@test "a duplicate auto-run entry fails" {
+    echo "bin-common-handler" >> "$RLST"
+    run_checker
+    expect_fail "auto-run list has a duplicate entry: bin-common-handler"
+}
+
+@test "an auto-run entry that is also an auto-deploy entry fails" {
+    echo "bin-common-handler" >> "$LST"
+    run_checker
+    expect_fail "auto-run list entry is also in the auto-deploy allowlist: bin-common-handler"
+}
+
+@test "a deny-listed service in the auto-run list fails" {
+    echo "voip-kamailio-proxy" >> "$RLST"
+    run_checker
+    expect_fail "auto-run list entry is not allowed to be auto-run: voip-kamailio-proxy"
+}
+
+@test "an auto-run entry without a workflow fails" {
+    echo "bin-nope-manager" >> "$RLST"
+    run_checker
+    expect_fail "auto-run list entry has no workflow in config: bin-nope-manager"
+}
+
+@test "a missing auto-run list file fails closed" {
+    rm "$RLST"
+    run_checker
+    [ "$status" -eq 1 ]
+}
+
+@test "an auto-run auto job without the only-main filter fails" {
+    mutate "$CFG" $'          name: bin-common-handler-test-auto\n          <<: *deploy_filters' $'          name: bin-common-handler-test-auto'
+    run_checker
+    expect_fail "bin-common-handler-test-auto filters must be exactly only: main"
+}
+
+@test "an auto-run build-approval that is not ignored on main fails" {
+    mutate "$CFG" $'  bin-openapi-manager:\n    when: << pipeline.parameters.run-bin-openapi-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n          <<: *non_main_filters' $'  bin-openapi-manager:\n    when: << pipeline.parameters.run-bin-openapi-manager >>\n    jobs:\n      - build-approval:\n          type: approval'
+    run_checker
+    expect_fail "workflow bin-openapi-manager: build-approval filters must be exactly ignore: main"
+}
+
+@test "an auto-run verify job that no longer requires build-approval fails" {
+    mutate "$CFG" $'      - bin-openapi-manager-validate:\n          <<: *non_main_filters\n          requires:\n            - build-approval' $'      - bin-openapi-manager-validate:\n          <<: *non_main_filters'
+    run_checker
+    expect_fail "bin-openapi-manager-validate must require exactly build-approval"
+}
+
+@test "an auto-run auto job with requires fails" {
+    mutate "$CFG" $'          name: bin-openapi-manager-validate-auto\n          <<: *deploy_filters' $'          name: bin-openapi-manager-validate-auto\n          <<: *deploy_filters\n          requires:\n            - build-approval'
+    run_checker
+    expect_fail "bin-openapi-manager-validate-auto must not have requires"
+}
+
+@test "an auto-run workflow with an extra job fails" {
+    mutate "$CFG" $'          name: bin-common-handler-test-auto\n          <<: *deploy_filters' $'          name: bin-common-handler-test-auto\n          <<: *deploy_filters\n      - bin-common-handler-build:\n          <<: *context_production\n          requires:\n            - bin-common-handler-test-auto'
+    run_checker
+    expect_fail "workflow bin-common-handler: jobs must be exactly build-approval, one verify job and its -auto copy"
+}
+
+@test "an auto-run verify job renamed to something else fails" {
+    mutate "$CFG" $'      - bin-common-handler-test:\n          <<: *non_main_filters' $'      - bin-common-handler-test:\n          name: bin-common-handler-check\n          <<: *non_main_filters'
+    run_checker
+    [ "$status" -eq 1 ]
+}
+
+@test "a production context on an auto-run job fails" {
+    mutate "$CFG" $'          name: bin-common-handler-test-auto\n          <<: *deploy_filters' $'          name: bin-common-handler-test-auto\n          <<: [*deploy_filters, *context_production]'
+    run_checker
+    expect_fail "job bin-common-handler-test-auto must not use a context"
+}
+
+@test "a docker push in an auto-run job definition fails" {
+    mutate "$CFG" $'            cd bin-openapi-manager\n            go mod download' $'            cd bin-openapi-manager\n            docker push example/image:latest\n            go mod download'
+    run_checker
+    expect_fail "job definition bin-openapi-manager-validate must not run a deploy, a docker push, login or build, or gcloud"
+}
+
+@test "a komodo deploy call in an auto-run job definition fails" {
+    mutate "$CFG" $'            cd bin-openapi-manager\n            go mod download' $'            cd bin-openapi-manager\n            .circleci/scripts/komodo-api-deploy.sh bin-openapi-manager x\n            go mod download'
+    run_checker
+    expect_fail "job definition bin-openapi-manager-validate must not run a deploy, a docker push, login or build, or gcloud"
+}
+
+@test "an auto-run workflow that gains a deploy job fails" {
+    mutate "$CFG" $'          name: bin-openapi-manager-validate-auto\n          <<: *deploy_filters' $'          name: bin-openapi-manager-validate-auto\n          <<: *deploy_filters\n      - bin-openapi-manager-deploy:\n          requires:\n            - bin-openapi-manager-validate-auto'
     run_checker
     [ "$status" -eq 1 ]
 }
