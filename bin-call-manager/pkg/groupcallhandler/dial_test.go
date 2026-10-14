@@ -419,7 +419,7 @@ func Test_Start_extensionNotRegistered_typedError(t *testing.T) {
 	destination := commonaddress.Address{
 		Type:       commonaddress.TypeExtension,
 		TargetName: "jay-home",
-		Target:     "jay-home",
+		Target:     "e8f3a1c2-0b4d-4f6e-9a7c-3d2b1a0f9e8d",
 	}
 
 	mockReq.EXPECT().RegistrarV1ContactList(ctx, gomock.Any()).Return([]rmastcontact.AstContact{}, nil)

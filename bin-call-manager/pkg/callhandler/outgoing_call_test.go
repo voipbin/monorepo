@@ -1315,6 +1315,9 @@ func Test_CreateCallsOutgoing_groupcallStartFailure(t *testing.T) {
 			if tt.expectTyped && ve.Reason != tt.expectReason {
 				t.Errorf("Wrong reason. expect: %s, got: %s", tt.expectReason, ve.Reason)
 			}
+			if tt.expectTyped && ve.Status != cerrors.StatusFailedPrecondition {
+				t.Errorf("Wrong status. expect: %s, got: %s", cerrors.StatusFailedPrecondition, ve.Status)
+			}
 		})
 	}
 }

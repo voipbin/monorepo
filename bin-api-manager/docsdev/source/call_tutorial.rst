@@ -82,7 +82,7 @@ For more details on flows, see the :ref:`Flow tutorial <flow-main>`.
 Calling an extension that is not registered
 -------------------------------------------
 
-When a destination has ``"type": "extension"`` and no SIP phone is currently registered for that extension, the call cannot be placed. If every destination in the request fails this way, the API returns ``409 Conflict`` with the reason ``EXTENSION_NOT_REGISTERED`` instead of a server error, and no call is created. If at least one destination in the request is created successfully, the request succeeds and only the created calls are returned.
+When a destination has ``"type": "extension"`` and no SIP phone is currently registered for that extension, the call cannot be placed. If every destination in the request fails and at least one of them failed this way, the API returns ``409 Conflict`` with the reason ``EXTENSION_NOT_REGISTERED`` instead of a server error, and no call is created. If at least one destination in the request is created successfully, the request succeeds and only the created calls are returned.
 
 .. code::
 

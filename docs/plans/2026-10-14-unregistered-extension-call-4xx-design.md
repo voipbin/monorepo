@@ -17,7 +17,7 @@ Partial failure (some destinations succeed) already succeeds and skips the faile
 - Inside groupcall Start, a typed error is returned synchronously only for a single-destination ring_all start; multi-destination ring_all and linear fail inside goroutines (intentionally out of scope).
 - Surfaces that now return 409: POST /calls (CreateCallsOutgoing) and POST /groupcalls (processV1GroupcallsPost -> errorResponse), plus the admin provider test call that wraps CallV1CallsCreate.
 - Behavior by endpoint: POST /calls calls Start once per destination with a single destination, so it returns 409 when every destination failed (any extension destination unregistered, first typed error wins) and 200 when at least one destination succeeded. POST /groupcalls returns 409 only for a single-destination ring_all; multi-destination and linear start asynchronously and keep returning 200.
-- Out of scope: the temporary flow created by POST /calls is not deleted on failure (existing behavior).
+- Out of scope: typed errors raised in the sip/tel branch keep being dropped (generic 500); the empty target_name case echoes an empty name; the temporary flow created by POST /calls is not deleted on failure (existing behavior).
 - Callers flow, queue, route, transfer, api managers only branch on err != nil. ai-manager create_call passes err.Error() to the LLM, so its text becomes the typed message (an improvement).
 
 ## 4. Verification
