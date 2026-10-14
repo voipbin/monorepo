@@ -7,7 +7,9 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -15,6 +17,9 @@ import (
 
 	"monorepo/bin-call-manager/models/groupcall"
 )
+
+// ReasonExtensionNotRegistered is the error reason returned when the destination extension has no registered contact.
+const ReasonExtensionNotRegistered = "EXTENSION_NOT_REGISTERED"
 
 // dialNextDestination dials the next destination of the given groupcall.
 func (h *groupcallHandler) dialNextDestination(ctx context.Context, gc *groupcall.Groupcall) (*groupcall.Groupcall, error) {
@@ -196,7 +201,11 @@ func (h *groupcallHandler) getDialDestinationsAddressTypeExtension(ctx context.C
 
 	if len(contacts) == 0 {
 		log.Errorf("Could not find any registered contact for the extension. target_name: %s", destination.TargetName)
-		return nil, fmt.Errorf("no registered contact found for extension %s", destination.TargetName)
+		return nil, cerrors.FailedPrecondition(
+			commonoutline.ServiceNameCallManager,
+			ReasonExtensionNotRegistered,
+			fmt.Sprintf("The destination extension %q is not currently registered.", destination.TargetName),
+		)
 	}
 
 	res := []commonaddress.Address{}

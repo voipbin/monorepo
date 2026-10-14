@@ -61,6 +61,28 @@ func Test_errorResponse_typedThroughPkgErrorsWrap(t *testing.T) {
 	}
 }
 
+// Test_errorResponse_failedPreconditionThroughPkgErrorsWrap verifies that the
+// extension-not-registered error keeps its 409 status through the wrap chain.
+func Test_errorResponse_failedPreconditionThroughPkgErrorsWrap(t *testing.T) {
+	ve := cerrors.FailedPrecondition(
+		commonoutline.ServiceNameCallManager,
+		"EXTENSION_NOT_REGISTERED",
+		"The destination extension \"test-exten\" is not currently registered.",
+	)
+	wrapped := pkgerrors.Wrap(ve, "could not get dial addresses")
+
+	resp := errorResponse(wrapped)
+	if resp == nil {
+		t.Fatalf("expected response, got nil")
+	}
+	if resp.StatusCode != http.StatusConflict {
+		t.Errorf("StatusCode mismatch. expected: 409, got: %d", resp.StatusCode)
+	}
+	if resp.DataType != cerrors.DataTypeVoipbinError {
+		t.Errorf("DataType mismatch. expected: %s, got: %s", cerrors.DataTypeVoipbinError, resp.DataType)
+	}
+}
+
 // Test_errorResponse_legacyNotFound verifies that dbhandler.ErrNotFound
 // (wrapped via pkg/errors) preserves the legacy 404 mapping for code paths
 // that have not yet been migrated to typed errors.

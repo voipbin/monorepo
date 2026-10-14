@@ -2,12 +2,15 @@ package callhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"strconv"
 	"strings"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
@@ -30,6 +33,7 @@ import (
 	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-call-manager/models/groupcall"
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
+	"monorepo/bin-call-manager/pkg/groupcallhandler"
 	"monorepo/bin-call-manager/pkg/outboundconfighandler"
 )
 
@@ -70,6 +74,7 @@ func (h *callHandler) CreateCallsOutgoing(
 
 	resCalls := []*call.Call{}
 	resGroupcalls := []*groupcall.Groupcall{}
+	var groupcallTypedErr *cerrors.VoipbinError
 	for _, destination := range destinations {
 		switch {
 		case destination.Type == commonaddress.TypeSIP || destination.Type == commonaddress.TypeTel:
@@ -86,6 +91,15 @@ func (h *callHandler) CreateCallsOutgoing(
 			gc, err := h.createCallsOutgoingGroupcall(ctx, customerID, flowID, masterCallID, &source, &destination, anonymous, variables)
 			if err != nil {
 				log.Errorf("Could not create outgoing groupcall. err: %v", err)
+
+				// keep the first "extension is not registered" error so that, when every destination fails,
+				// the caller gets its 4xx status instead of a generic 500.
+				// only this error is kept: any other error keeps returning the generic error.
+				var ve *cerrors.VoipbinError
+				if groupcallTypedErr == nil && stderrors.As(err, &ve) &&
+					ve.Domain == string(commonoutline.ServiceNameCallManager) && ve.Reason == groupcallhandler.ReasonExtensionNotRegistered {
+					groupcallTypedErr = ve
+				}
 				continue
 			}
 			log.WithField("groupcall", gc).Debugf("Created outgoing groupcall. groupcall_id: %s, destination_type: %s, destination_target: %s", gc.ID, destination.Type, destination.Target)
@@ -98,6 +112,9 @@ func (h *callHandler) CreateCallsOutgoing(
 	}
 
 	if len(resCalls) == 0 && len(resGroupcalls) == 0 {
+		if groupcallTypedErr != nil {
+			return nil, nil, groupcallTypedErr
+		}
 		return nil, nil, fmt.Errorf("all destinations failed to create outgoing calls")
 	}
 
