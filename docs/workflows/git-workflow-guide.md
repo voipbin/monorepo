@@ -241,7 +241,7 @@ Only commit directly to main when user explicitly says:
 
 ## Merging to Main Branch {#merging-rules}
 
-**Merging to `main` is done by the QA role after QA verification passes (squash only). Developer roles never merge.** Migration PRs, migration changes of `bin-timeline-manager` and `bin-rag-manager` (migration SQL and the migration runner: `runMigrations`, `MigrationsPath`, Dockerfile COPY of migrations), and `monorepo-monitoring` PRs still need maintainer confirmation (other code-only changes to those two services are mergeable by QA, but their `main` deploy approval stays with the maintainer). PRs led by the coordinating role (the non-developer role that leads infrastructure, CI and documentation changes) are closed the same way, through a QA verification step, and that role does not merge them itself. A direct merge by anyone other than QA happens only when the maintainer (the human repository owner) explicitly instructs it. PRs that need human confirmation (see the exceptions in this section) are verified by QA but confirmed and merged by the maintainer.
+**Merging to `main` is done by the QA role after QA verification passes (squash only). Developer roles never merge.** PRs with destructive database schema operations (or where destructiveness is ambiguous) and `monorepo-monitoring` PRs still need maintainer confirmation. Other migration PRs, including migration changes of `bin-timeline-manager` and `bin-rag-manager` (migration SQL and the migration runner: `runMigrations`, `MigrationsPath`, Dockerfile COPY of migrations), are merged by QA after the strengthened schema verification described in `CLAUDE.md`, and both services deploy automatically on `main` like the other services in `.circleci/auto-deploy-services.txt`. Applying `bin-dbscheme-manager` migrations to production remains a manual step. PRs led by the coordinating role (the non-developer role that leads infrastructure, CI and documentation changes) are closed the same way, through a QA verification step, and that role does not merge them itself. A direct merge by anyone other than QA happens only when the maintainer (the human repository owner) explicitly instructs it. PRs that need human confirmation (see the exceptions in this section) are verified by QA but confirmed and merged by the maintainer.
 
 ### Prohibited Actions
 
@@ -272,7 +272,7 @@ Claude: "I'll push the current branch to remote. The QA role merges after verifi
 ### Who Merges
 
 - The QA role merges to main after QA verification passes (squash only). Developer roles never merge.
-- Migration PRs, migration changes of `bin-timeline-manager` and `bin-rag-manager`, and `monorepo-monitoring` PRs need maintainer confirmation before merge.
+- PRs with destructive database schema operations (or where destructiveness is ambiguous) and `monorepo-monitoring` PRs need maintainer confirmation before merge. Other migration PRs are merged by QA after the strengthened schema verification described in `CLAUDE.md`.
 - PRs led by the coordinating role are closed the same way, through a QA verification step, and that role does not merge them itself. A direct merge by anyone other than QA happens only when the maintainer explicitly instructs it. PRs that need human confirmation (see the exceptions in this section) are verified by QA but confirmed and merged by the maintainer.
 
 ### After PR is Merged
