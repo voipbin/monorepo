@@ -1,0 +1,16 @@
+  bin-fixture-manager:
+    when: << pipeline.parameters.run-bin-fixture-manager >>
+    jobs:
+      - build-approval:
+          type: approval
+      - bin-fixture-manager-test:
+          requires:
+            - build-approval
+      - bin-fixture-manager-build:
+          <<: *context_production
+          requires:
+            - bin-fixture-manager-test
+      - bin-fixture-manager-deploy:
+          <<: [*context_production, *deploy_filters]
+          requires:
+            - bin-fixture-manager-build

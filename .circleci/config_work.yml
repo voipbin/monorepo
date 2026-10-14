@@ -729,15 +729,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-rag-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-rag-manager-test:
+          name: bin-rag-manager-test-auto
+          <<: *deploy_filters
       - bin-rag-manager-build:
           <<: *context_production
           requires:
             - bin-rag-manager-test
+            - bin-rag-manager-test-auto
       - bin-rag-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-rag-manager
           requires:
             - bin-rag-manager-build
   bin-registrar-manager:
@@ -906,15 +913,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-timeline-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-timeline-manager-test:
+          name: bin-timeline-manager-test-auto
+          <<: *deploy_filters
       - bin-timeline-manager-build:
           <<: *context_production
           requires:
             - bin-timeline-manager-test
+            - bin-timeline-manager-test-auto
       - bin-timeline-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-timeline-manager
           requires:
             - bin-timeline-manager-build
   bin-transcribe-manager:
@@ -1977,6 +1991,7 @@ jobs:
       - run:
           name: Deploy bin-rag-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-rag-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-rag-manager bin-rag-manager/komodo/docker-compose.yml bin-rag-manager/komodo/environment.env
 
@@ -2256,6 +2271,7 @@ jobs:
       - run:
           name: Deploy bin-timeline-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-timeline-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-timeline-manager bin-timeline-manager/komodo/docker-compose.yml
 

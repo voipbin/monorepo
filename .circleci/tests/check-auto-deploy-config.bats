@@ -45,16 +45,18 @@ run_checker() {
     run ruby "$CHECKER" "$CFG" "$LST" "$SETUP" "$ROOT"
 }
 
-# add_synthetic_keep : append a copy of the bin-timeline-manager workflow block
-# under a name that is not in the checker's deny list, so an allowlist case is
-# judged on the rule under test alone and not on the deny list.
-add_synthetic_keep() {
+# add_keep_fixture : insert an approval-kept service workflow (and its deploy job
+# definition) named bin-fixture-manager, taken from tests/fixtures. No real
+# service stays approval-kept in the standard shape, so every approval-kept rule
+# is exercised on this fixture. bin-fixture-manager is not in the checker's deny
+# list, so a case is judged on the rule under test alone.
+add_keep_fixture() {
     ruby -e '
       f = ARGV[0]; s = File.read(f)
-      m = s.match(/^  bin-timeline-manager:\n(?:    .*\n|\n)*?(?=^  \S)/) or abort("block not found")
-      blk = m[0].gsub("bin-timeline-manager", "bin-fixture-manager")
-      s[m.end(0), 0] = blk
-      File.write(f, s)' "$CFG"
+      wf = File.read(ARGV[1]); jb = File.read(ARGV[2])
+      s.sub!("\nworkflows:\n", "\nworkflows:\n" + wf) or abort("workflows key not found")
+      s.sub!("\njobs:\n", "\njobs:\n" + jb) or abort("jobs key not found")
+      File.write(f, s)' "$CFG" "$TESTS_DIR/fixtures/keep-workflow.yml" "$TESTS_DIR/fixtures/keep-deploy-job.yml"
 }
 
 expect_fail() {
@@ -233,10 +235,11 @@ expect_fail() {
 }
 
 @test "an approval-kept deploy renamed so it no longer ends in -deploy is still checked" {
-    mutate "$CFG" $'      - bin-timeline-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-timeline-manager-deploy:\n          name: bin-timeline-manager-ship\n          <<: [*context_production, *deploy_filters]'
-    mutate "$CFG" $'      - bin-timeline-manager-build:\n          <<: *context_production\n          requires:\n            - bin-timeline-manager-test' $'      - bin-timeline-manager-build:\n          <<: *context_production'
+    add_keep_fixture
+    mutate "$CFG" $'      - bin-fixture-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-fixture-manager-deploy:\n          name: bin-fixture-manager-ship\n          <<: [*context_production, *deploy_filters]'
+    mutate "$CFG" $'      - bin-fixture-manager-build:\n          <<: *context_production\n          requires:\n            - bin-fixture-manager-test' $'      - bin-fixture-manager-build:\n          <<: *context_production'
     run_checker
-    expect_fail "bin-timeline-manager-ship is not gated by build-approval"
+    expect_fail "bin-fixture-manager-ship is not gated by build-approval"
 }
 
 @test "guard env hidden inside another variable's value fails" {
@@ -252,23 +255,26 @@ expect_fail() {
 }
 
 @test "an only-filter on the test job of an approval-kept workflow fails" {
-    mutate "$CFG" $'      - bin-timeline-manager-test:\n          requires:' $'      - bin-timeline-manager-test:\n          filters:\n            branches:\n              only: /^feature.*/\n          requires:'
+    add_keep_fixture
+    mutate "$CFG" $'      - bin-fixture-manager-test:\n          requires:' $'      - bin-fixture-manager-test:\n          filters:\n            branches:\n              only: /^feature.*/\n          requires:'
     run_checker
-    expect_fail "job bin-timeline-manager-test has a branch filter but bin-timeline-manager is not auto-deploy"
+    expect_fail "job bin-fixture-manager-test has a branch filter but bin-fixture-manager is not auto-deploy"
 }
 
 @test "an approval-kept deploy with a widened filter fails" {
-    mutate "$CFG" $'      - bin-timeline-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-timeline-manager-deploy:\n          <<: [*context_production, *deploy_filters]\n          filters:\n            branches:\n              only: /.*/'
+    add_keep_fixture
+    mutate "$CFG" $'      - bin-fixture-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-fixture-manager-deploy:\n          <<: [*context_production, *deploy_filters]\n          filters:\n            branches:\n              only: /.*/'
     run_checker
-    expect_fail "deploy job bin-timeline-manager-deploy has a branch filter other than only: main"
+    expect_fail "deploy job bin-fixture-manager-deploy has a branch filter other than only: main"
 }
 
 @test "an approval-kept deploy whose key and name no longer end in -deploy is found by its job definition" {
-    mutate "$CFG" $'      - bin-timeline-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-timeline-manager-ship:\n          <<: [*context_production, *deploy_filters]'
-    mutate "$CFG" $'  bin-timeline-manager-deploy:\n    docker:' $'  bin-timeline-manager-ship:\n    docker:'
-    mutate "$CFG" $'      - bin-timeline-manager-build:\n          <<: *context_production\n          requires:\n            - bin-timeline-manager-test' $'      - bin-timeline-manager-build:\n          <<: *context_production'
+    add_keep_fixture
+    mutate "$CFG" $'      - bin-fixture-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-fixture-manager-ship:\n          <<: [*context_production, *deploy_filters]'
+    mutate "$CFG" $'  bin-fixture-manager-deploy:\n    docker:' $'  bin-fixture-manager-ship:\n    docker:'
+    mutate "$CFG" $'      - bin-fixture-manager-build:\n          <<: *context_production\n          requires:\n            - bin-fixture-manager-test' $'      - bin-fixture-manager-build:\n          <<: *context_production'
     run_checker
-    expect_fail "bin-timeline-manager-ship is not gated by build-approval"
+    expect_fail "bin-fixture-manager-ship is not gated by build-approval"
 }
 
 @test "a comment line that mentions komodo-api-deploy.sh inside the deploy command is ignored (positive)" {
@@ -382,7 +388,7 @@ expect_fail() {
 }
 
 @test "allowlist entry whose workflow is not converted fails" {
-    add_synthetic_keep
+    add_keep_fixture
     echo "bin-fixture-manager" >> "$LST"
     run_checker
     expect_fail "workflow bin-fixture-manager: jobs must be exactly"
@@ -392,7 +398,7 @@ expect_fail() {
 # ---- (f) deny list ----
 
 @test "every deny-listed service is rejected from the allowlist" {
-    for svc in bin-timeline-manager bin-rag-manager bin-trigger-sender voip-asterisk-proxy voip-rtpengine-proxy voip-kamailio-proxy; do
+    for svc in bin-trigger-sender voip-asterisk-proxy voip-rtpengine-proxy voip-kamailio-proxy; do
         cp "$REAL_LIST" "$LST"
         echo "$svc" >> "$LST"
         run_checker
@@ -400,18 +406,39 @@ expect_fail() {
     done
 }
 
+@test "the migrating services are auto-deploy and a missing allowlist entry for either fails (VOIP-1595)" {
+    for svc in bin-timeline-manager bin-rag-manager; do
+        grep -qx "$svc" "$REAL_LIST"
+        grep -vx "$svc" "$REAL_LIST" > "$LST"
+        run_checker
+        expect_fail "workflow $svc has a -test-auto job but is not in the allowlist"
+    done
+}
+
+@test "the guard line removed from the timeline or rag deploy command fails (VOIP-1595)" {
+    mutate "$CFG" $'            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-timeline-manager" \\\n' ''
+    run_checker
+    [ "$status" -eq 1 ]
+    cp "$REAL_CONFIG" "$CFG"
+    mutate "$CFG" $'            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-rag-manager" \\\n' ''
+    run_checker
+    [ "$status" -eq 1 ]
+}
+
 # ---- (b)/(e) approval-kept workflows stay approval-kept ----
 
 @test "a -test-auto job added to a workflow outside the allowlist fails" {
-    mutate "$CFG" $'      - bin-timeline-manager-test:\n          requires:' $'      - bin-timeline-manager-test:\n          name: bin-timeline-manager-test-auto\n          requires:'
+    add_keep_fixture
+    mutate "$CFG" $'      - bin-fixture-manager-test:\n          requires:' $'      - bin-fixture-manager-test:\n          name: bin-fixture-manager-test-auto\n          requires:'
     run_checker
-    expect_fail "workflow bin-timeline-manager has a -test-auto job but is not in the allowlist"
+    expect_fail "workflow bin-fixture-manager has a -test-auto job but is not in the allowlist"
 }
 
 @test "an ignore-main filter added to an approval-kept workflow fails" {
-    mutate "$CFG" $'  bin-timeline-manager:\n    when: << pipeline.parameters.run-bin-timeline-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n' $'  bin-timeline-manager:\n    when: << pipeline.parameters.run-bin-timeline-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n          <<: *non_main_filters\n'
+    add_keep_fixture
+    mutate "$CFG" $'  bin-fixture-manager:\n    when: << pipeline.parameters.run-bin-fixture-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n' $'  bin-fixture-manager:\n    when: << pipeline.parameters.run-bin-fixture-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n          <<: *non_main_filters\n'
     run_checker
-    expect_fail "job build-approval has an ignore branch filter but bin-timeline-manager is not auto-deploy"
+    expect_fail "job build-approval has an ignore branch filter but bin-fixture-manager is not auto-deploy"
 }
 
 @test "build-approval removed from an approval-kept workflow fails" {
@@ -421,9 +448,10 @@ expect_fail() {
 }
 
 @test "an approval-kept deploy cut off from build-approval fails" {
-    mutate "$CFG" $'      - bin-timeline-manager-build:\n          <<: *context_production\n          requires:\n            - bin-timeline-manager-test' $'      - bin-timeline-manager-build:\n          <<: *context_production'
+    add_keep_fixture
+    mutate "$CFG" $'      - bin-fixture-manager-build:\n          <<: *context_production\n          requires:\n            - bin-fixture-manager-test' $'      - bin-fixture-manager-build:\n          <<: *context_production'
     run_checker
-    expect_fail "bin-timeline-manager-deploy is not gated by build-approval"
+    expect_fail "bin-fixture-manager-deploy is not gated by build-approval"
 }
 
 @test "an unreadable config fails closed" {

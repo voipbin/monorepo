@@ -19,8 +19,8 @@ DEFAULT_ROOT = File.expand_path('../..', __dir__)
 # Services that must stay approval-kept. Hard-coded on purpose: the allowlist
 # file is exactly what a careless change would edit.
 DENY = %w[
-  bin-timeline-manager bin-rag-manager bin-trigger-sender
-  voip-asterisk-proxy voip-rtpengine-proxy voip-kamailio-proxy
+  bin-trigger-sender voip-asterisk-proxy voip-rtpengine-proxy
+  voip-kamailio-proxy
 ].freeze
 
 ONLY_MAIN = { 'filters' => { 'branches' => { 'only' => 'main' } } }.freeze
