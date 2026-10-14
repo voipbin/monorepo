@@ -1,4 +1,4 @@
-# Services deployed automatically on main (no approval click). VOIP-1586.
+# Services deployed automatically on main (no approval click). VOIP-1586, VOIP-1592.
 # One service workflow name per line. Each must have the auto-deploy shape in
 # config_work.yml; check-auto-deploy-config.rb (run by shell-tests) fails if a
 # service here is missing the shape, or if a workflow has the shape but is not
@@ -7,7 +7,36 @@
 #   bin-trigger-sender, voip-asterisk-proxy, voip-rtpengine-proxy
 #   (build pushes :latest, approval is the production release),
 #   voip-kamailio-proxy (call SIP edge).
-# Design: docs/plans/2026-10-13-main-auto-deploy-design.md
+# Design: docs/plans/2026-10-13-main-auto-deploy-design.md and
+# docs/plans/2026-10-14-main-auto-deploy-phase2-design.md.
 bin-agent-manager
+bin-ai-manager
+bin-api-manager
+bin-billing-manager
+bin-call-manager
+bin-campaign-manager
+bin-conference-manager
 bin-contact-manager
+bin-conversation-manager
+bin-customer-manager
+bin-direct-manager
+bin-email-manager
+bin-flow-manager
+bin-hook-manager
+bin-message-manager
+bin-number-manager
+bin-outdial-manager
+bin-pipecat-manager
+bin-queue-manager
+bin-registrar-manager
+bin-route-manager
+bin-schedule-manager
+bin-sentinel-manager
 bin-storage-manager
+bin-tag-manager
+bin-talk-manager
+bin-transcribe-manager
+bin-transfer-manager
+bin-tts-manager
+bin-webchat-manager
+bin-webhook-manager

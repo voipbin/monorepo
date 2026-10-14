@@ -16,6 +16,15 @@ setup() {
     LST="$TEST_TEMP_DIR/auto-deploy-services.txt"
     cp "$REAL_CONFIG" "$CFG"
     cp "$REAL_LIST" "$LST"
+    # The checker also reads the setup config (path-filtering mapping) and checks
+    # that the directories named there exist: give it a copy and an empty tree.
+    SETUP="$TEST_TEMP_DIR/setup-config.yml"
+    ROOT="$TEST_TEMP_DIR/root"
+    cp "$CIRCLECI_DIR/config.yml" "$SETUP"
+    mkdir -p "$ROOT"
+    for d in $(awk '$2 ~ /^run-bin-/ {sub(/\/\.\*$/, "", $1); print $1}' "$SETUP"); do
+        mkdir -p "$ROOT/$d"
+    done
 }
 
 teardown() {
@@ -33,7 +42,19 @@ mutate() {
 }
 
 run_checker() {
-    run ruby "$CHECKER" "$CFG" "$LST"
+    run ruby "$CHECKER" "$CFG" "$LST" "$SETUP" "$ROOT"
+}
+
+# add_synthetic_keep : append a copy of the bin-timeline-manager workflow block
+# under a name that is not in the checker's deny list, so an allowlist case is
+# judged on the rule under test alone and not on the deny list.
+add_synthetic_keep() {
+    ruby -e '
+      f = ARGV[0]; s = File.read(f)
+      m = s.match(/^  bin-timeline-manager:\n(?:    .*\n|\n)*?(?=^  \S)/) or abort("block not found")
+      blk = m[0].gsub("bin-timeline-manager", "bin-fixture-manager")
+      s[m.end(0), 0] = blk
+      File.write(f, s)' "$CFG"
 }
 
 expect_fail() {
@@ -212,10 +233,10 @@ expect_fail() {
 }
 
 @test "an approval-kept deploy renamed so it no longer ends in -deploy is still checked" {
-    mutate "$CFG" $'      - bin-call-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-call-manager-deploy:\n          name: bin-call-manager-ship\n          <<: [*context_production, *deploy_filters]'
-    mutate "$CFG" $'      - bin-call-manager-build:\n          <<: *context_production\n          requires:\n            - bin-call-manager-test' $'      - bin-call-manager-build:\n          <<: *context_production'
+    mutate "$CFG" $'      - bin-timeline-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-timeline-manager-deploy:\n          name: bin-timeline-manager-ship\n          <<: [*context_production, *deploy_filters]'
+    mutate "$CFG" $'      - bin-timeline-manager-build:\n          <<: *context_production\n          requires:\n            - bin-timeline-manager-test' $'      - bin-timeline-manager-build:\n          <<: *context_production'
     run_checker
-    expect_fail "bin-call-manager-ship is not gated by build-approval"
+    expect_fail "bin-timeline-manager-ship is not gated by build-approval"
 }
 
 @test "guard env hidden inside another variable's value fails" {
@@ -231,29 +252,99 @@ expect_fail() {
 }
 
 @test "an only-filter on the test job of an approval-kept workflow fails" {
-    mutate "$CFG" $'      - bin-call-manager-test:\n          requires:' $'      - bin-call-manager-test:\n          filters:\n            branches:\n              only: /^feature.*/\n          requires:'
+    mutate "$CFG" $'      - bin-timeline-manager-test:\n          requires:' $'      - bin-timeline-manager-test:\n          filters:\n            branches:\n              only: /^feature.*/\n          requires:'
     run_checker
-    expect_fail "job bin-call-manager-test has a branch filter but bin-call-manager is not auto-deploy"
+    expect_fail "job bin-timeline-manager-test has a branch filter but bin-timeline-manager is not auto-deploy"
 }
 
 @test "an approval-kept deploy with a widened filter fails" {
-    mutate "$CFG" $'      - bin-call-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-call-manager-deploy:\n          <<: [*context_production, *deploy_filters]\n          filters:\n            branches:\n              only: /.*/'
+    mutate "$CFG" $'      - bin-timeline-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-timeline-manager-deploy:\n          <<: [*context_production, *deploy_filters]\n          filters:\n            branches:\n              only: /.*/'
     run_checker
-    expect_fail "deploy job bin-call-manager-deploy has a branch filter other than only: main"
+    expect_fail "deploy job bin-timeline-manager-deploy has a branch filter other than only: main"
 }
 
 @test "an approval-kept deploy whose key and name no longer end in -deploy is found by its job definition" {
-    mutate "$CFG" $'      - bin-call-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-call-manager-ship:\n          <<: [*context_production, *deploy_filters]'
-    mutate "$CFG" $'  bin-call-manager-deploy:\n    docker:' $'  bin-call-manager-ship:\n    docker:'
-    mutate "$CFG" $'      - bin-call-manager-build:\n          <<: *context_production\n          requires:\n            - bin-call-manager-test' $'      - bin-call-manager-build:\n          <<: *context_production'
+    mutate "$CFG" $'      - bin-timeline-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-timeline-manager-ship:\n          <<: [*context_production, *deploy_filters]'
+    mutate "$CFG" $'  bin-timeline-manager-deploy:\n    docker:' $'  bin-timeline-manager-ship:\n    docker:'
+    mutate "$CFG" $'      - bin-timeline-manager-build:\n          <<: *context_production\n          requires:\n            - bin-timeline-manager-test' $'      - bin-timeline-manager-build:\n          <<: *context_production'
     run_checker
-    expect_fail "bin-call-manager-ship is not gated by build-approval"
+    expect_fail "bin-timeline-manager-ship is not gated by build-approval"
 }
 
 @test "a comment line that mentions komodo-api-deploy.sh inside the deploy command is ignored (positive)" {
     mutate "$CFG" $'            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" \\\n' $'            # see komodo-api-deploy.sh for the guard\n            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" \\\n'
     run_checker
     [ "$status" -eq 0 ]
+}
+
+# ---- (g) guard paths derived from the workflow's `when` (VOIP-1592) ----
+
+@test "bin-api-manager guard covers bin-openapi-manager (positive)" {
+    grep -q 'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-api-manager bin-openapi-manager"' "$CFG"
+    run_checker
+    [ "$status" -eq 0 ]
+}
+
+@test "bin-api-manager guard missing the openapi path fails" {
+    mutate "$CFG" 'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-api-manager bin-openapi-manager"' 'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-api-manager"'
+    run_checker
+    expect_fail 'must set DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-api-manager bin-openapi-manager"'
+}
+
+@test "extra guard path on a service whose when has no extra parameter fails" {
+    mutate "$CFG" 'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager"' 'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager bin-openapi-manager"'
+    run_checker
+    expect_fail 'must set DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" exactly once'
+}
+
+@test "guard paths in another order fail" {
+    mutate "$CFG" 'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-api-manager bin-openapi-manager"' 'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-openapi-manager bin-api-manager"'
+    run_checker
+    expect_fail 'must set DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-api-manager bin-openapi-manager"'
+}
+
+@test "a when parameter that is not a mapped service directory fails" {
+    mutate "$CFG" '[<< pipeline.parameters.run-bin-api-manager >>, << pipeline.parameters.run-bin-openapi-manager >>]' '[<< pipeline.parameters.run-bin-api-manager >>, << pipeline.parameters.run-bin-nope-manager >>]'
+    run_checker
+    expect_fail 'when references run-bin-nope-manager that is not a mapped service directory'
+}
+
+@test "a when parameter whose mapping line points at another parameter fails" {
+    mutate "$SETUP" 'bin-openapi-manager/.*      run-bin-openapi-manager true' 'bin-openapi-manager/.*      run-bin-api-manager true'
+    run_checker
+    expect_fail 'when references run-bin-openapi-manager that is not a mapped service directory'
+}
+
+@test "a when parameter whose directory does not exist fails" {
+    rmdir "$ROOT/bin-openapi-manager"
+    run_checker
+    expect_fail 'when references run-bin-openapi-manager that is not a mapped service directory'
+}
+
+@test "a when without the service's own parameter fails" {
+    mutate "$CFG" $'  bin-agent-manager:\n    when: << pipeline.parameters.run-bin-agent-manager >>' $'  bin-agent-manager:\n    when: << pipeline.parameters.run-bin-contact-manager >>'
+    run_checker
+    expect_fail 'workflow bin-agent-manager: when must contain its own parameter run-bin-agent-manager'
+}
+
+@test "an unsupported when form fails" {
+    mutate "$CFG" $'  bin-agent-manager:\n    when: << pipeline.parameters.run-bin-agent-manager >>' $'  bin-agent-manager:\n    when:\n      and: [<< pipeline.parameters.run-bin-agent-manager >>, true]'
+    run_checker
+    expect_fail 'workflow bin-agent-manager: unsupported when form'
+}
+
+@test "build-approval no longer of type approval fails" {
+    mutate "$CFG" $'      - build-approval:\n          type: approval\n          <<: *non_main_filters\n      - bin-agent-manager-test:' $'      - build-approval:\n          type: build\n          <<: *non_main_filters\n      - bin-agent-manager-test:'
+    run_checker
+    expect_fail "workflow bin-agent-manager: build-approval must be type: approval"
+}
+
+@test "a when parameter that is not a run-bin parameter fails even if mapped and present" {
+    grep -q 'voip-asterisk-proxy/.\* *run-voip-asterisk-proxy true' "$SETUP"
+    mkdir -p "$ROOT/voip-asterisk-proxy"
+    mutate "$CFG" 'run-bin-openapi-manager >>]' 'run-voip-asterisk-proxy >>]'
+    run_checker
+    expect_fail "when references run-voip-asterisk-proxy that is not a mapped service directory"
 }
 
 # ---- (c) anchors ----
@@ -291,9 +382,11 @@ expect_fail() {
 }
 
 @test "allowlist entry whose workflow is not converted fails" {
-    echo "bin-call-manager" >> "$LST"
+    add_synthetic_keep
+    echo "bin-fixture-manager" >> "$LST"
     run_checker
-    expect_fail "workflow bin-call-manager: jobs must be exactly"
+    expect_fail "workflow bin-fixture-manager: jobs must be exactly"
+    [[ "$output" != *"not allowed to be auto-deployed"* ]]
 }
 
 # ---- (f) deny list ----
@@ -310,15 +403,15 @@ expect_fail() {
 # ---- (b)/(e) approval-kept workflows stay approval-kept ----
 
 @test "a -test-auto job added to a workflow outside the allowlist fails" {
-    mutate "$CFG" $'      - bin-call-manager-test:\n          requires:' $'      - bin-call-manager-test:\n          name: bin-call-manager-test-auto\n          requires:'
+    mutate "$CFG" $'      - bin-timeline-manager-test:\n          requires:' $'      - bin-timeline-manager-test:\n          name: bin-timeline-manager-test-auto\n          requires:'
     run_checker
-    expect_fail "workflow bin-call-manager has a -test-auto job but is not in the allowlist"
+    expect_fail "workflow bin-timeline-manager has a -test-auto job but is not in the allowlist"
 }
 
 @test "an ignore-main filter added to an approval-kept workflow fails" {
-    mutate "$CFG" $'  bin-call-manager:\n    when: << pipeline.parameters.run-bin-call-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n' $'  bin-call-manager:\n    when: << pipeline.parameters.run-bin-call-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n          <<: *non_main_filters\n'
+    mutate "$CFG" $'  bin-timeline-manager:\n    when: << pipeline.parameters.run-bin-timeline-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n' $'  bin-timeline-manager:\n    when: << pipeline.parameters.run-bin-timeline-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n          <<: *non_main_filters\n'
     run_checker
-    expect_fail "job build-approval has an ignore branch filter but bin-call-manager is not auto-deploy"
+    expect_fail "job build-approval has an ignore branch filter but bin-timeline-manager is not auto-deploy"
 }
 
 @test "build-approval removed from an approval-kept workflow fails" {
@@ -328,9 +421,9 @@ expect_fail() {
 }
 
 @test "an approval-kept deploy cut off from build-approval fails" {
-    mutate "$CFG" $'      - bin-call-manager-build:\n          <<: *context_production\n          requires:\n            - bin-call-manager-test' $'      - bin-call-manager-build:\n          <<: *context_production'
+    mutate "$CFG" $'      - bin-timeline-manager-build:\n          <<: *context_production\n          requires:\n            - bin-timeline-manager-test' $'      - bin-timeline-manager-build:\n          <<: *context_production'
     run_checker
-    expect_fail "bin-call-manager-deploy is not gated by build-approval"
+    expect_fail "bin-timeline-manager-deploy is not gated by build-approval"
 }
 
 @test "an unreadable config fails closed" {

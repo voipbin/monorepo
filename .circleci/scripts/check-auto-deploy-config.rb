@@ -3,7 +3,7 @@
 
 # Pins the auto-deploy shape of .circleci/config_work.yml (VOIP-1586).
 #
-# Usage: check-auto-deploy-config.rb [config_work.yml] [auto-deploy-services.txt]
+# Usage: check-auto-deploy-config.rb [config_work.yml] [auto-deploy-services.txt] [config.yml] [repo root]
 #
 # Exit 0 when every rule holds, 1 with one line per violation otherwise.
 # Parses the YAML (anchors and merge keys resolved), so comments and layout do
@@ -13,6 +13,8 @@ require 'yaml'
 
 DEFAULT_CONFIG = File.expand_path('../config_work.yml', __dir__)
 DEFAULT_LIST = File.expand_path('../auto-deploy-services.txt', __dir__)
+DEFAULT_SETUP = File.expand_path('../config.yml', __dir__)
+DEFAULT_ROOT = File.expand_path('../..', __dir__)
 
 # Services that must stay approval-kept. Hard-coded on purpose: the allowlist
 # file is exactly what a careless change would edit.
@@ -67,9 +69,56 @@ def logical_lines(job_def)
   end
 end
 
-def check(config_path, list_path)
+# The path-filtering mapping of the setup config as { pattern => parameter }.
+def load_mapping(setup_path)
+  setup = load_yaml(setup_path)
+  filter = Array(setup.dig('workflows', 'check-changes', 'jobs')).map { |e| normalize(e) }
+                      .find { |j| j[:key] == 'path-filtering/filter' }
+  raise 'config.yml has no path-filtering/filter job in workflow check-changes' unless filter
+
+  filter[:attrs]['mapping'].to_s.split("\n").map(&:strip).reject(&:empty?).map do |line|
+    pattern, param, flag = line.split(/\s+/)
+    raise "unparsable mapping line: #{line}" unless param && flag == 'true'
+
+    [pattern, param]
+  end.to_h
+end
+
+PARAM_REF = /\A<<\s*pipeline\.parameters\.([A-Za-z0-9_-]+)\s*>>\z/.freeze
+
+# The paths whose newest commit decides whether a deploy is stale: the service
+# directory first, then the directory of every extra run-bin-X parameter that
+# arms the workflow (bin-api-manager is armed by bin-openapi-manager too).
+# Returns [paths, error] with paths nil on error.
+def guard_paths_for(svc, wf, mapping_loader, repo_root)
+  w = wf['when']
+  refs = case w
+         when String then [w]
+         when Hash then w.keys == ['or'] && w['or'].is_a?(Array) ? w['or'] : nil
+         end
+  params = refs && refs.map { |r| r.is_a?(String) && (m = PARAM_REF.match(r)) ? m[1] : nil }
+  return [nil, "workflow #{svc}: unsupported when form (only a run-X parameter or or: [run-X, ...] is allowed)"] if params.nil? || params.any?(&:nil?)
+
+  own = "run-#{svc}"
+  return [nil, "workflow #{svc}: when must contain its own parameter #{own}"] unless params.include?(own)
+
+  paths = [svc]
+  (params - [own]).each do |param|
+    dir = param.sub(/\Arun-/, '')
+    mapping = mapping_loader.call
+    unless param.start_with?('run-bin-') && mapping["#{dir}/.*"] == param && File.directory?(File.join(repo_root, dir))
+      return [nil, "workflow #{svc}: when references #{param} that is not a mapped service directory"]
+    end
+    paths << dir
+  end
+  [paths, nil]
+end
+
+def check(config_path, list_path, setup_path = DEFAULT_SETUP, repo_root = DEFAULT_ROOT)
   errors = []
   cfg = load_yaml(config_path)
+  mapping = nil
+  mapping_loader = -> { mapping ||= load_mapping(setup_path) }
   list_lines = File.readlines(list_path).map { |l| l.sub(/#.*/, '').strip }.reject(&:empty?)
   workflows = cfg['workflows'] || {}
   jobs = cfg['jobs'] || {}
@@ -100,7 +149,9 @@ def check(config_path, list_path)
     errors << "workflow #{name} has a -test-auto job but is not in the allowlist" if has_auto && !listed
 
     if listed
-      check_auto_workflow(name, js, jobs, errors)
+      paths, err = guard_paths_for(name, wf, mapping_loader, repo_root)
+      errors << err if err
+      check_auto_workflow(name, js, jobs, errors, paths)
     else
       check_kept_workflow(name, js, jobs, errors)
     end
@@ -109,7 +160,7 @@ def check(config_path, list_path)
 end
 
 # (a) the exact auto-deploy shape.
-def check_auto_workflow(svc, js, jobs, errors)
+def check_auto_workflow(svc, js, jobs, errors, paths)
   where = "workflow #{svc}"
   expected = ['build-approval', "#{svc}-test", "#{svc}-test-auto", "#{svc}-build", "#{svc}-deploy"]
   ids = js.map { |j| j[:id] }
@@ -167,8 +218,9 @@ def check_auto_workflow(svc, js, jobs, errors)
       # Tokenize the assignments so only a variable whose whole name matches counts.
       assigns = m[1].scan(/([A-Za-z_][A-Za-z0-9_]*)=(?:"([^"]*)"|'([^']*)'|(\S*))/)
       guards = assigns.select { |name, *_| name == 'DEPLOY_REQUIRE_LATEST_FOR_PATHS' }.map { |_, *vals| vals.compact.first.to_s }
-      unless guards == [svc]
-        errors << %(#{where}: #{svc}-deploy command must set DEPLOY_REQUIRE_LATEST_FOR_PATHS="#{svc}" exactly once on the same command as komodo-api-deploy.sh)
+      want = (paths || [svc]).join(' ')
+      unless guards == [want]
+        errors << %(#{where}: #{svc}-deploy command must set DEPLOY_REQUIRE_LATEST_FOR_PATHS="#{want}" exactly once on the same command as komodo-api-deploy.sh)
       end
       errors << "#{where}: komodo-api-deploy.sh first argument must be #{svc}" unless m[3] == svc
     end
@@ -231,8 +283,10 @@ end
 if $PROGRAM_NAME == __FILE__
   config_path = ARGV[0] || DEFAULT_CONFIG
   list_path = ARGV[1] || DEFAULT_LIST
+  setup_path = ARGV[2] || DEFAULT_SETUP
+  repo_root = ARGV[3] || DEFAULT_ROOT
   begin
-    errors = check(config_path, list_path)
+    errors = check(config_path, list_path, setup_path, repo_root)
   rescue StandardError => e
     warn "check-auto-deploy-config: cannot check: #{e.class}: #{e.message}"
     exit 1
