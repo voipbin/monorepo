@@ -473,10 +473,12 @@ func Test_Start_startReferenceTypeCall_callBridge(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannelID)
 			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseChannel.AsteriskID, gomock.Any(), tt.externalHost, "rtp", "udp", "", "client", "ulaw", gomock.Any(), tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
 
-			mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil)
-			mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil)
+			// the created record keeps the requested directions and host
+			mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Cond(func(x any) bool {
+				em, ok := x.(*externalmedia.ExternalMedia)
+				return ok && em.ExternalHost == tt.externalHost && em.DirectionListen == tt.directionListen && em.DirectionSpeak == tt.directionSpeak
+			})).Return(nil).Times(2)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil).Times(2)
 
 			res, err := h.Start(ctx, tt.id, externalmedia.ReferenceTypeCall, tt.referenceID, tt.externalHost, externalmedia.EncapsulationRTP, "udp", "", "client", "ulaw", tt.directionListen, tt.directionSpeak)
 			if err != nil {
