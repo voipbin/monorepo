@@ -2,6 +2,7 @@ package externalmediahandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -485,6 +486,53 @@ func Test_Start_startReferenceTypeCall_callBridge(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectExternalMedia, res)
 			}
 		})
+	}
+}
+
+func Test_Start_startReferenceTypeCall_callBridge_startFailure(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockChannel := channelhandler.NewMockChannelHandler(mc)
+	mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+	h := &externalMediaHandler{
+		utilHandler:    mockUtil,
+		reqHandler:     mockReq,
+		db:             mockDB,
+		channelHandler: mockChannel,
+		bridgeHandler:  mockBridge,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("78473c24-b331-11ef-aa9c-e7c52f9d3f7b")
+	callID := uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57")
+	responseCall := &call.Call{
+		Identity:  commonidentity.Identity{ID: callID},
+		ChannelID: "8066017c-02fb-11ec-ba6c-c320820accf1",
+		BridgeID:  "51bf770e-7f1b-11f0-ac50-971ccbe0a7ba",
+		Status:    call.StatusProgressing,
+	}
+	responseChannel := &channel.Channel{
+		AsteriskID: "42:01:0a:a4:00:05",
+		ID:         "8066017c-02fb-11ec-ba6c-c320820accf1",
+	}
+
+	mockReq.EXPECT().CallV1CallGet(ctx, callID).Return(responseCall, nil)
+	mockChannel.EXPECT().Get(ctx, responseCall.ChannelID).Return(responseChannel, nil)
+	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("488feb00-96e3-11ed-8ae7-1fe9bc7a995f"))
+	mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Any()).Return(nil)
+	mockChannel.EXPECT().StartExternalMedia(ctx, responseChannel.AsteriskID, gomock.Any(), "INCOMING", "rtp", "udp", "", "client", "ulaw", gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("asterisk failure"))
+	mockDB.EXPECT().ExternalMediaDelete(ctx, id).Return(nil)
+
+	// no bridgeHandler.Destroy (the call bridge is never destroyed on this path) and no snoop HangingUp:
+	// gomock fails on any unexpected call.
+	_, err := h.Start(ctx, id, externalmedia.ReferenceTypeCall, callID, "INCOMING", externalmedia.EncapsulationRTP, "udp", "", "client", "ulaw", externalmedia.DirectionNone, externalmedia.DirectionOut)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
 	}
 }
 
