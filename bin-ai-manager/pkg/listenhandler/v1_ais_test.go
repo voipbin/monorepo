@@ -624,7 +624,7 @@ func Test_processV1AIsIDPut_McpServerIDsOmittedLeavesUntouched(t *testing.T) {
 }
 
 // Test_processV1AIsIDPut_McpServerIDsInvalidReturns400 pins the fix for a
-// bug found during CPO review: ValidateMcpServerIDs used to return a plain
+// bug found during product owner review: ValidateMcpServerIDs used to return a plain
 // fmt.Errorf, which errorResponse() (only maps *cerrors.VoipbinError to a
 // non-500 status) turned into an opaque 500 for what is a client-input
 // mistake (an invalid or cross-customer mcp_server_id). It must now surface

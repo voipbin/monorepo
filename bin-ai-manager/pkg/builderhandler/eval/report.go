@@ -335,7 +335,7 @@ func WriteReport(dir string, out Output, g GateReport, judge string) error {
 	case GatePass:
 		fmt.Fprintf(&b, "**GATE: PASS** (every automatic item passed and every group, scenario 15 included, reached its minimum of good verdicts; judge: %s).\n", judge)
 	case GateFail:
-		fmt.Fprintf(&b, "**GATE: FAIL** (%d group(s) cannot reach their minimum, automatic ok: %t). Fix the prompt, re-run in a NEW directory, and report to the CEO if three attempts fail.\n", g.Failed, g.AutoOK)
+		fmt.Fprintf(&b, "**GATE: FAIL** (%d group(s) cannot reach their minimum, automatic ok: %t). Fix the prompt, re-run in a NEW directory, and report to the maintainer if three attempts fail.\n", g.Failed, g.AutoOK)
 	}
 	b.WriteString("\nScenario 15 (synthetic checkpoint cases, s15-1.md to s15-5.md) is judged by a person like the others and is part of the gate; its run ids are s15-1#1 to s15-5#1.\n")
 	return os.WriteFile(filepath.Join(dir, "report.md"), []byte(b.String()), 0o644)

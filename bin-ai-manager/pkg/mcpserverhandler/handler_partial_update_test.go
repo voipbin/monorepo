@@ -12,7 +12,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 )
 
-// Test_Update_PartialFields pins the fix for the bug found during CPO
+// Test_Update_PartialFields pins the fix for the bug found during product owner
 // review of PR #1285/#1290's follow-up work: every non-secret field used
 // to be unconditionally written to the SQL UPDATE field map, so omitting
 // name/detail/api_key_header silently wiped them, omitting url/status

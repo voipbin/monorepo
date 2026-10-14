@@ -2351,7 +2351,7 @@ func Test_ReachableAddressTypes_SubsetOfWriteWhitelist(t *testing.T) {
 }
 
 // Test_IsValidContactAddressType_WebSession_WritableButNotReachable pins
-// down the VOIP-1270 follow-up decision (대표님 지시): web_session must be
+// down the VOIP-1270 follow-up decision (per maintainer): web_session must be
 // writable to contact_addresses (so a webchat-originated Case's Peer can be
 // reconciled into it, same as tel/email) but must NEVER be included in
 // contact.ReachableAddressTypes -- it is a temporary/internal attribution

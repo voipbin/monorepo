@@ -107,7 +107,7 @@ func Test_InteractionList_ByContact(t *testing.T) {
 	// exact regression this test guards against -- using the
 	// reachable-only list here would silently drop this row and the
 	// contact's web_session interaction history would never be
-	// searchable (the real-world bug 대표님 hit against a live browser
+	// searchable (the real-world bug the maintainer hit against a live browser
 	// session).
 	responseAddresses := []contact.Address{
 		{
