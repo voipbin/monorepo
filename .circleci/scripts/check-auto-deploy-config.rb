@@ -3,7 +3,7 @@
 
 # Pins the auto-deploy shape of .circleci/config_work.yml (VOIP-1586).
 #
-# Usage: check-auto-deploy-config.rb [config_work.yml] [auto-deploy-services.txt] [config.yml] [repo root]
+# Usage: check-auto-deploy-config.rb [config_work.yml] [auto-deploy-services.txt] [config.yml] [repo root] [auto-run-services.txt]
 #
 # Exit 0 when every rule holds, 1 with one line per violation otherwise.
 # Parses the YAML (anchors and merge keys resolved), so comments and layout do
@@ -13,6 +13,7 @@ require 'yaml'
 
 DEFAULT_CONFIG = File.expand_path('../config_work.yml', __dir__)
 DEFAULT_LIST = File.expand_path('../auto-deploy-services.txt', __dir__)
+DEFAULT_RUN_LIST = File.expand_path('../auto-run-services.txt', __dir__)
 DEFAULT_SETUP = File.expand_path('../config.yml', __dir__)
 DEFAULT_ROOT = File.expand_path('../..', __dir__)
 
@@ -114,12 +115,13 @@ def guard_paths_for(svc, wf, mapping_loader, repo_root)
   [paths, nil]
 end
 
-def check(config_path, list_path, setup_path = DEFAULT_SETUP, repo_root = DEFAULT_ROOT)
+def check(config_path, list_path, setup_path = DEFAULT_SETUP, repo_root = DEFAULT_ROOT, run_list_path = DEFAULT_RUN_LIST)
   errors = []
   cfg = load_yaml(config_path)
   mapping = nil
   mapping_loader = -> { mapping ||= load_mapping(setup_path) }
   list_lines = File.readlines(list_path).map { |l| l.sub(/#.*/, '').strip }.reject(&:empty?)
+  run_lines = File.readlines(run_list_path).map { |l| l.sub(/#.*/, '').strip }.reject(&:empty?)
   workflows = cfg['workflows'] || {}
   jobs = cfg['jobs'] || {}
 
@@ -135,20 +137,36 @@ def check(config_path, list_path, setup_path = DEFAULT_SETUP, repo_root = DEFAUL
     errors << "allowlist entry has no workflow in config: #{svc}" unless workflows.key?(svc)
   end
 
+  # Verify-only (auto-run) list hygiene: disjoint from the deploy allowlist and
+  # from the deny list, no duplicates, every entry has a workflow.
+  run_dups = run_lines.group_by { |x| x }.select { |_, v| v.size > 1 }.keys
+  run_dups.each { |d| errors << "auto-run list has a duplicate entry: #{d}" }
+  run_lines.each do |svc|
+    errors << "auto-run list entry is not allowed to be auto-run: #{svc}" if DENY.include?(svc)
+    errors << "auto-run list entry is also in the auto-deploy allowlist: #{svc}" if list_lines.include?(svc)
+    errors << "auto-run list entry has no workflow in config: #{svc}" unless workflows.key?(svc)
+  end
+
   workflows.each do |name, wf|
     unless wf.is_a?(Hash) && wf['jobs'].is_a?(Array)
-      errors << "workflow #{name} is in the allowlist but has no jobs list" if list_lines.include?(name)
+      errors << "workflow #{name} is in the allowlist but has no jobs list" if list_lines.include?(name) || run_lines.include?(name)
       next
     end
 
     js = wf['jobs'].map { |e| normalize(e) }
-    has_auto = js.any? { |j| j[:id].end_with?('-test-auto') }
+    has_auto = js.any? { |j| j[:id].end_with?('-auto') }
+    auto_kind = js.any? { |j| j[:id].end_with?('-test-auto') } ? '-test-auto' : '-auto'
     listed = list_lines.include?(name)
+    listed_run = run_lines.include?(name)
 
     # (d) shape without allowlist entry, and (b) none for everyone else.
-    errors << "workflow #{name} has a -test-auto job but is not in the allowlist" if has_auto && !listed
+    errors << "workflow #{name} has a #{auto_kind} job but is not in the allowlist" if has_auto && !listed && !listed_run
 
-    if listed
+    if listed && listed_run
+      next # already reported as a list conflict above
+    elsif listed_run
+      check_autorun_workflow(name, js, jobs, errors, cfg['commands'] || {})
+    elsif listed
       paths, err = guard_paths_for(name, wf, mapping_loader, repo_root)
       errors << err if err
       check_auto_workflow(name, js, jobs, errors, paths)
@@ -227,6 +245,92 @@ def check_auto_workflow(svc, js, jobs, errors, paths)
   end
 end
 
+# The exact auto-run shape (VOIP-1597): a verify-only workflow whose job runs on
+# main without approval. No deploy, no build, no production context, no push.
+AUTORUN_STEPS = %w[checkout run go-test store_test_results].freeze
+AUTORUN_FORBIDDEN = /komodo-api-deploy\.sh|docker\b[^\n]*\b(push|login|build|tag)\b|docker-(push|build)|buildx|kubectl|skopeo|crane|git\s+push|gcloud/.freeze
+
+# Step names that are not allowed in the shared go-test command (nested included).
+def deep_bad_steps(steps)
+  Array(steps).flat_map do |step|
+    name = step.is_a?(Hash) ? step.keys.first : step.to_s
+    next [name] unless %w[checkout run when unless store_test_results].include?(name)
+
+    inner = step.is_a?(Hash) && step[name].is_a?(Hash) ? deep_bad_steps(step[name]['steps']) : []
+    inner
+  end
+end
+
+# Command lines of every run step, including steps nested in when/unless.
+def deep_run_lines(steps)
+  Array(steps).flat_map do |step|
+    next [] unless step.is_a?(Hash)
+
+    nested = step.values.flat_map { |v| v.is_a?(Hash) ? deep_run_lines(v['steps']) : [] }
+    nested + logical_lines('steps' => [step])
+  end
+end
+
+def check_autorun_workflow(svc, js, jobs, errors, commands = {})
+  where = "workflow #{svc}"
+  ids = js.map { |j| j[:id] }
+  by_id = js.to_h { |j| [j[:id], j] }
+  autos = ids.select { |i| i.end_with?('-auto') }
+  bases = ids - ['build-approval'] - autos
+  unless ids.size == 3 && by_id['build-approval'] && autos.size == 1 && bases.size == 1
+    errors << "#{where}: jobs must be exactly build-approval, one verify job and its -auto copy (got #{ids.join(', ')})"
+    return
+  end
+
+  # The allowed go-test command is scanned like a run step (same forbidden list).
+  gt = commands['go-test']
+  if gt.nil? || deep_bad_steps(gt['steps']).any? || deep_run_lines(gt['steps']).any? { |l| AUTORUN_FORBIDDEN.match?(l) }
+    errors << "#{where}: command go-test is missing or runs a deploy, push, login, build, tag or gcloud"
+  end
+
+  base = bases.first
+  errors << "#{where}: verify job #{base} must be named #{svc}-test or #{svc}-validate" unless ["#{svc}-test", "#{svc}-validate"].include?(base)
+
+  a = by_id['build-approval'][:attrs]
+  errors << "#{where}: build-approval must be type: approval" unless a['type'] == 'approval'
+  errors << "#{where}: build-approval filters must be exactly ignore: main" unless a['filters'] == IGNORE_MAIN['filters']
+
+  b = by_id[base]
+  errors << "#{where}: #{base} key must be #{base}" unless b[:key] == base
+  errors << "#{where}: #{base} filters must be exactly ignore: main" unless b[:attrs]['filters'] == IGNORE_MAIN['filters']
+  errors << "#{where}: #{base} must require exactly build-approval" unless requires_of(b) == ['build-approval']
+
+  auto = by_id["#{base}-auto"]
+  if auto.nil?
+    errors << "#{where}: the -auto copy must be named #{base}-auto"
+  else
+    errors << "#{where}: #{base}-auto key must be #{base}" unless auto[:key] == base
+    errors << "#{where}: #{base}-auto filters must be exactly only: main" unless auto[:attrs]['filters'] == ONLY_MAIN['filters']
+    errors << "#{where}: #{base}-auto must not have requires" if auto[:attrs].key?('requires')
+  end
+
+  # Nothing that can reach production: no context, no deploy or build job, no
+  # deploy or push command in the job definitions. (Commands hidden inside a
+  # reusable command are not scanned; review covers those.)
+  js.each do |j|
+    errors << "#{where}: job #{j[:id]} must not use a context" if j[:attrs].key?('context')
+    if j[:id].end_with?('-deploy') || j[:key].end_with?('-deploy') || j[:id].end_with?('-build') || j[:key].end_with?('-build')
+      errors << "#{where}: job #{j[:id]} must not be a build or deploy job"
+    end
+    # Steps allowlist: any other command call (docker-build, setup_remote_docker,
+    # an orb command, ...) could hide a build, push or deploy, so it is rejected.
+    Array(jobs[j[:key]] && jobs[j[:key]]['steps']).each do |step|
+      name = step.is_a?(Hash) ? step.keys.first : step.to_s
+      next if AUTORUN_STEPS.include?(name)
+
+      errors << "#{where}: job definition #{j[:key]} uses a step that is not allowed in a verify-only job: #{name}"
+    end
+    if logical_lines(jobs[j[:key]]).any? { |l| AUTORUN_FORBIDDEN.match?(l) }
+      errors << "#{where}: job definition #{j[:key]} must not run a deploy, a docker push, login or build, or gcloud"
+    end
+  end
+end
+
 # (b)/(e) workflows that must keep approval before deploy.
 def check_kept_workflow(name, js, jobs, errors)
   where = "workflow #{name}"
@@ -285,8 +389,9 @@ if $PROGRAM_NAME == __FILE__
   list_path = ARGV[1] || DEFAULT_LIST
   setup_path = ARGV[2] || DEFAULT_SETUP
   repo_root = ARGV[3] || DEFAULT_ROOT
+  run_list_path = ARGV[4] || DEFAULT_RUN_LIST
   begin
-    errors = check(config_path, list_path, setup_path, repo_root)
+    errors = check(config_path, list_path, setup_path, repo_root, run_list_path)
   rescue StandardError => e
     warn "check-auto-deploy-config: cannot check: #{e.class}: #{e.message}"
     exit 1

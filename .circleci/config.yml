@@ -59,6 +59,7 @@ workflows:
             .circleci/scripts/.*        run-shell-tests true
             \.circleci/config_work\.yml run-shell-tests true
             \.circleci/auto-deploy-services\.txt run-shell-tests true
+            \.circleci/auto-run-services\.txt run-shell-tests true
             .circleci/tests/.*          run-shell-tests true
             docs/reference/extractor\.sh run-shell-tests true
             docs/reference/tests/.*     run-shell-tests true

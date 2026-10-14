@@ -28,6 +28,12 @@ deploy_filters: &deploy_filters
 # older commit that a newer one already superseded
 # (DEPLOY_REQUIRE_LATEST_FOR_PATHS, see komodo-api-deploy.sh).
 # .circleci/scripts/check-auto-deploy-config.rb pins this shape in CI.
+#
+# Auto-run mode (services listed in .circleci/auto-run-services.txt, VOIP-1597):
+# workflows that only verify (test or validate) and never build, push or deploy.
+# On main the verify job runs without an approval click (<job>-auto, only main);
+# on other branches build-approval still gates it. The checker rejects a context,
+# a deploy job or a push in these workflows.
 # Design: docs/plans/2026-10-13-main-auto-deploy-design.md.
 non_main_filters: &non_main_filters
   filters:
@@ -378,9 +384,14 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-common-handler-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-common-handler-test:
+          name: bin-common-handler-test-auto
+          <<: *deploy_filters
 
   bin-contact-manager:
     when: << pipeline.parameters.run-bin-contact-manager >>
@@ -651,9 +662,14 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-openapi-manager-validate:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-openapi-manager-validate:
+          name: bin-openapi-manager-validate-auto
+          <<: *deploy_filters
 
   bin-outdial-manager:
     when: << pipeline.parameters.run-bin-outdial-manager >>
