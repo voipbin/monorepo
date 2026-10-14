@@ -1,6 +1,6 @@
 # Self-hosted OpenAI-compatible LLM support (VOIP-1599)
 
-Status: design, revision 15 (design review loop closed). Scope: bin-ai-manager, bin-pipecat-manager (Go service and Python runner), bin-openapi-manager, bin-api-manager docs.
+Status: design, revision 16 (design review loop closed). This change implements Layer 1 only; Layer 2 is an unimplemented gate (proof of concept, its own design round and an earlier schema change come first, section 4). Scope: bin-ai-manager, bin-pipecat-manager (Go service and Python runner), bin-openapi-manager, bin-api-manager docs.
 
 ## 1. Issue analysis (current state, verified on main)
 
@@ -109,3 +109,17 @@ OpenAPI `AIManagerAIModel` tags text and `AIManagerAIEngineModel` text; Layer 2 
 
 ## 8. Impact analysis (schema)
 Layer 1 changes no schema. Layer 2 schema (additive columns) is analyzed with its own change.
+
+## 9. Layer 1 implementation plan (this change)
+Files and steps, each with its check.
+
+1. `bin-ai-manager/models/ai/local.go` (new): `RouteLocal`, `LocalModelsEnv` input parsing. `ParseLocalModels(raw string) (LocalParseResult, error)` with `LocalParseResult{Entries []ModelEntry, Skipped, DuplicateDefaults int}`; empty or blank input gives an empty result; malformed JSON returns an error (the caller logs it and starts with no local models). `SetLocalModels([]ModelEntry)` replaces the registry; `ConfigureLocalModels(raw)` = parse + set, used by the four entry points. Check: table tests for every rule in 3.1 (endpoint, id, label, 255 bytes, duplicate, unknown capability dropped, default handling, malformed JSON).
+2. `catalog.go`: add `RouteLocal`; `CatalogView` appends registry entries, treats `RouteLocal` as `key_mode=platform`, `platform_managed=true`, vendor `Local`, description `Local model.`, and clears the built-in `Recommended` flag only when a local default exists. Check: configured and unconfigured view tests; JSON contains no URL or key.
+3. `resolve.go`: after the `catalog` loop, look up the registry; return `Resolved{Entry, RunnerType: string(m), BlankKey: true}, OutcomeCatalog`. Check: resolve tests, key never forwarded (`resolveSessionLLM` test in pipecat-manager).
+4. Config: `LOCAL_LLM_MODELS` key in `bin-ai-manager/internal/config` and `bin-pipecat-manager/internal/config`; call `ConfigureLocalModels` and log the summary (counts only) in `cmd/ai-manager`, `cmd/ai-control`, `cmd/pipecat-manager`, `cmd/pipecat-control`. Check: config tests, build.
+5. Runner `run.py`: `local` branch (endpoint lookup from `LOCAL_LLM_ENDPOINTS`, parsed once; placeholder key; `OpenAILLMService(base_url, api_key)`), `_member_llm_type` guard for `local`. Check: pytest cases for success, missing endpoint, key placeholder never None with `OPENAI_API_KEY` set, member guard.
+6. `komodo/docker-compose.yml`: `LOCAL_LLM_ENDPOINTS` for both runner containers, `LOCAL_LLM_MODELS` for both pipecat-manager containers, and for ai-manager's compose if present. Check: `docker compose config` style parse.
+7. Docs/spec: OpenAPI tag text, `go generate` in `bin-openapi-manager` and `bin-api-manager`, RST files in section 5, service docs, docsdev rebuild.
+8. Real run: a stub OpenAI-compatible server and `create_llm_service` plus a streamed completion through the runner code path; real model latency and tool-call quality stay unverified.
+
+Not touched: frontend, billing, the Ollama constant, Layer 2 code and schema.
