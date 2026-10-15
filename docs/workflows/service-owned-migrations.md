@@ -9,7 +9,7 @@ A service that owns its tables applies its schema migrations itself at startup (
 - `cmd/<name>-manager/main.go`, right after the database connection and before the cache and the message broker:
   `migrationhandler.Run(cfg.DatabaseDSN, migrations.FS, migrations.VersionTable)`
 - `cmd/<name>-control/main.go`: `migrationhandler.NewMigrateCommand("migrate", open)`, where `open` returns `migrationhandler.New(dsn, migrations.FS, migrations.VersionTable)`. The command (`status`, `up`, `down`, `force <version>`) opens only the database, so it works while the cache or the broker are down. A service whose control binary already has a `migrate` command registers it under another name.
-- `migrations/migrations_test.go`: `migrationcheck.Check(FS, migrationcheck.Options{TableOptions: ...})` and a test that no non-.sql file sits next to the embedded files. For a migration directory below the service root pass `fs.Sub(FS, "<dir>")`.
+- `migrations/migrations_test.go`: `migrationcheck.Check(FS, migrationcheck.Options{TableOptions: ..., ColumnCharsets: ...})` and a test that no non-.sql file sits next to the embedded files. For a migration directory below the service root pass `fs.Sub(FS, "<dir>")`.
 
 ## Rules for the files
 
@@ -23,15 +23,15 @@ A service that owns its tables applies its schema migrations itself at startup (
 
 The baseline of a converted service must create what the Alembic head created.
 
-1. `CREATE TABLE` becomes `CREATE TABLE IF NOT EXISTS`; `ENGINE=InnoDB` and `ROW_FORMAT=DYNAMIC` are dropped (database defaults).
-2. Table options: only what Alembic declared is carried over, and only as one of the three strings of `migrationcheck` (`OptionUTF8MB4`, `OptionUTF8MB4UnicodeCI`, `OptionUTF8MB3`). The service test lists the table names that use one; a table that is not listed must have no table option. A collation that exists only in MariaDB (`*_uca1400_*`) is not copied.
+1. `CREATE TABLE` becomes `CREATE TABLE IF NOT EXISTS`; `ENGINE=InnoDB` is dropped (database default). `ROW_FORMAT=DYNAMIC` is kept only when Alembic wrote it, as part of the table option (rule 2).
+2. Table options: only what Alembic declared is carried over, and only as one of the four strings of `migrationcheck` (`OptionUTF8MB4`, `OptionUTF8MB4UnicodeCI`, `OptionUTF8MB4UnicodeCIDynamic` (with `ROW_FORMAT=DYNAMIC`), `OptionUTF8MB3`). The service test lists the table names that use one; a table that is not listed must have no table option. A collation that exists only in MariaDB (`*_uca1400_*`) is not copied.
 3. JSON columns are written as `json`; expression defaults are written as `DEFAULT (expr)`. Column comments are kept.
 4. Generation expressions are taken from the Alembic source, not from `SHOW CREATE TABLE` (MariaDB and MySQL print them differently).
 5. Foreign keys without a name stay without a name (MariaDB names them `1`, `2`, which MySQL rejects).
 6. Seed rows are not part of the baseline; a seed is its own file with one statement.
 7. A new database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`, like the install scripts do, otherwise most tables differ from the Alembic head.
 
-The result is accepted only when the extended normalized dump of the service tables is identical to the one of the Alembic head (`scripts/verify-service-migrations.sh`). `migrationcheck` is a deny list for the baseline text; the dump comparison is the final guard. `migrationcheck` also expects the statement to start with `CREATE TABLE IF NOT EXISTS <name> (` with an unquoted name (strip the backticks and the database prefix of `SHOW CREATE TABLE` output) and rejects the words of its deny list even as unquoted column names (quote such a column with backticks). A column level `CHARACTER SET` or `COLLATE` is rejected by `migrationcheck` for now, and so is any text outside its deny list that changes a collation (for example the `BINARY` column attribute); the dump comparison catches those.
+The result is accepted only when the extended normalized dump of the service tables is identical to the one of the Alembic head (`scripts/verify-service-migrations.sh`). `migrationcheck` is a deny list for the baseline text; the dump comparison is the final guard. `migrationcheck` also expects the statement to start with `CREATE TABLE IF NOT EXISTS <name> (` with an unquoted name (strip the backticks and the database prefix of `SHOW CREATE TABLE` output) and rejects the words of its deny list even as unquoted column names (quote such a column with backticks). A column level `CHARACTER SET` or `COLLATE` is rejected by `migrationcheck` unless the service declares the column in `Options.ColumnCharsets` (`"<table>.<column>"` mapped to `ColumnCharsetUTF8MB4GeneralCI`, the only allowed string, which Alembic `f46d9c5c4438` set on `ai_messages.content`); the column definition must then contain exactly that string outside quotes and parentheses, and a declaration for a table or column the baseline does not have is an error. Any text outside the deny list that changes a collation (for example the `BINARY` column attribute) is not caught; the dump comparison catches it.
 
 ## Checks
 
