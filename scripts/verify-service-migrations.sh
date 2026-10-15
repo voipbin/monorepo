@@ -27,6 +27,17 @@
 # lists the accepted differences as diff lines ("< reference" / "> E2"); every accepted line that
 # was used is printed as ALLOWED-DIFF. Any other difference fails.
 #
+# E1_ALLOWED_DIFF=<file> is the list for the other comparison: E1 (Alembic head plus the service
+# migrations) against E2 (empty database plus the service migrations), which is otherwise a strict
+# diff 0. Use it only for a baseline that reproduces a collation on purpose. It is not the list of
+# REFERENCE_DUMP (ALLOWED_DIFF): the reference comparison is not changed by it. The file holds
+# diff lines ("< E1" / "> E2") with the tab separated fields of the dump, limited to the TBL and
+# COL tags, and the two sides may differ only in the collation field (the 3rd field of TBL, the
+# 8th of COL); anything else is refused before a container starts. The dump lines carry no table
+# name, so a listed line is accepted for every table, and a line that appears in the diff N times
+# (N tables) is listed N times. Used lines are printed as ALLOWED-DIFF, lines no engine needed as
+# UNUSED-ALLOWED-DIFF (not a failure; an engine without the difference leaves them unused).
+#
 # --dump prints the extended normalized dump of the owned tables of <database>. The connection
 # comes from SQL_CMD (default "mysql -N -B"; put the credentials in a client option file). This
 # script does not open connections by itself in that mode.
@@ -43,6 +54,7 @@
 #   EXISTING_ROWS_SQL file with INSERT statements run against the Alembic database before the
 #                     service migrations [built in rows for tag_tags]
 #   REFERENCE_ENGINE engine image the REFERENCE_DUMP was made with (required with REFERENCE_DUMP)
+#   E1_ALLOWED_DIFF  file of accepted E1 versus E2 collation differences (see above) [none: diff 0]
 #   SEED_COMPARE_SQL  SELECT (@DB@ is the database name) whose output must be equal in E1 and E2
 set -euo pipefail
 
@@ -100,6 +112,25 @@ dump_complete() {
 }
 
 is_maria() { sql -e "SELECT VERSION()" | grep -qi mariadb; }
+
+# check_allowed_file <file>: validates a list of accepted E1 versus E2 differences. Prints the
+# reason and returns 1 when it is not usable. Lines that do not start with "<" or ">" are comments.
+check_allowed_file() {
+  local f="$1" bad
+  [ -f "$f" ] || { echo "$f is not a regular file"; return 1; }
+  if grep -q $'\r' "$f"; then echo "$f contains a carriage return"; return 1; fi
+  bad=$(grep -E '^[<>]' "$f" | grep -vE $'^[<>] (TBL|COL)\t' | head -1 || true)
+  if [ -n "$bad" ]; then echo "$f: only '< ' or '> ' lines of the TBL and COL tags with tab separated fields are accepted: $bad"; return 1; fi
+  grep -qE '^[<>] ' "$f" || { echo "$f has no '< ' or '> ' line"; return 1; }
+  awk 'BEGIN{FS=OFS="\t"}
+    /^[<>] /{
+      side=substr($1,1,1); tag=substr($1,3)
+      if (tag=="COL") { if (NF<8) { print "COL line has fewer than 8 fields: " $0; bad=1; next } $8="" }
+      else           { if (NF<3) { print "TBL line has fewer than 3 fields: " $0; bad=1; next } $3="" }
+      n[substr($0,3)] += (side=="<") ? 1 : -1
+    }
+    END{ for (k in n) if (n[k]!=0) { print "the two sides differ in more than the collation field (or in the number of lines): " k; bad=1 } exit bad?1:0 }' "$f" || return 1
+}
 
 # compare_dumps <reference> <actual> [<allowed diff file>]: 0 when the dumps are equal apart from
 # the listed accepted differences.
@@ -176,6 +207,35 @@ self_test() {
   printf '< COL\t9\tother\n' > "$WORK/allowed2.txt"
   if out=$(compare_dumps "$WORK/ref.txt" "$WORK/changed.txt" "$WORK/allowed2.txt"); then fail "reference compare: an unrelated allowance hid a difference"; else ok "reference compare: a difference outside the allowed list fails"; fi
 
+  # E1_ALLOWED_DIFF: file check and the E1 style comparison
+  local colu colz tblu tblz
+  colu=$'COL\t2\tname\tvarchar(10)\tYES\t\tutf8mb4\tutf8mb4_uca1400_ai_ci\t'
+  colz=$'COL\t2\tname\tvarchar(10)\tYES\t\tutf8mb4\tutf8mb4_0900_ai_ci\t'
+  tblu=$'TBL\tInnoDB\tutf8mb4_uca1400_ai_ci\tDynamic\t\t'
+  tblz=$'TBL\tInnoDB\tutf8mb4_0900_ai_ci\tDynamic\t\t'
+  printf '# a comment\n< %s\n> %s\n< %s\n> %s\n' "$colu" "$colz" "$tblu" "$tblz" > "$WORK/e1ok.txt"
+  check_allowed_file "$WORK/e1ok.txt" >/dev/null && ok "allowed file check: a collation only pair is accepted" || fail "allowed file check positive"
+  check_allowed_file "$WORK/does-not-exist.txt" >/dev/null && fail "allowed file check: a missing file passed" || ok "allowed file check: a missing file fails"
+  printf '# only a comment\n' > "$WORK/e1c.txt"
+  check_allowed_file "$WORK/e1c.txt" >/dev/null && fail "allowed file check: a comment only file passed" || ok "allowed file check: a file without a diff line fails"
+  printf '< FK\tfk_1\tCASCADE\tCASCADE\tt\n> FK\tfk_2\tCASCADE\tCASCADE\tt\n' > "$WORK/e1fk.txt"
+  check_allowed_file "$WORK/e1fk.txt" >/dev/null && fail "allowed file check: an FK line passed" || ok "allowed file check: a tag other than TBL and COL fails"
+  printf '< %s\r\n> %s\r\n' "$colu" "$colz" > "$WORK/e1cr.txt"
+  check_allowed_file "$WORK/e1cr.txt" >/dev/null && fail "allowed file check: a CRLF file passed" || ok "allowed file check: a carriage return fails"
+  printf '< %s\n> %s\n' "$colu" "${colz//varchar(10)/varchar(20)}" > "$WORK/e1type.txt"
+  check_allowed_file "$WORK/e1type.txt" >/dev/null && fail "allowed file check: a type change passed" || ok "allowed file check: a pair that differs in the type fails"
+  printf '< %s\n' "$colu" > "$WORK/e1one.txt"
+  check_allowed_file "$WORK/e1one.txt" >/dev/null && fail "allowed file check: one sided line passed" || ok "allowed file check: a line without its pair fails"
+  printf '<x\n> %s\n' "$colz" > "$WORK/e1bad.txt"
+  check_allowed_file "$WORK/e1bad.txt" >/dev/null && fail "allowed file check: a malformed marker passed" || ok "allowed file check: a malformed marker fails"
+  # two tables with the same lines: the accepted lines are needed twice
+  printf '## a\n%s\n## b\n%s\n' "$colu" "$colu" > "$WORK/e1ref.txt"
+  printf '## a\n%s\n## b\n%s\n' "$colz" "$colz" > "$WORK/e1act.txt"
+  printf '< %s\n> %s\n' "$colu" "$colz" > "$WORK/e1once.txt"
+  printf '< %s\n> %s\n< %s\n> %s\n' "$colu" "$colz" "$colu" "$colz" > "$WORK/e1twice.txt"
+  if compare_dumps "$WORK/e1ref.txt" "$WORK/e1act.txt" "$WORK/e1once.txt" >/dev/null; then fail "E1 compare: a line listed once covered two tables"; else ok "E1 compare: a line that appears for two tables must be listed twice"; fi
+  if out=$(compare_dumps "$WORK/e1ref.txt" "$WORK/e1act.txt" "$WORK/e1twice.txt") && [ "$(echo "$out" | grep -c '^ALLOWED-DIFF ')" = 4 ]; then ok "E1 compare: the lines listed twice are accepted and printed"; else fail "E1 compare twice"; fi
+
   for image in "${ENGINES[@]}"; do
     tag="${image//[:.]/_}"; cn="verify-selftest-${tag}-$$"
     echo "== self-test engine $image (container $cn)"
@@ -241,7 +301,10 @@ if [ "$DUMP_ONLY" = 1 ]; then
   exit
 fi
 
-if [ -n "${ALLOWED_DIFF:-}" ] && [ -z "${REFERENCE_DUMP:-}" ]; then echo "ALLOWED_DIFF is set without REFERENCE_DUMP"; exit 1; fi
+if [ -n "${ALLOWED_DIFF:-}" ] && [ -z "${REFERENCE_DUMP:-}" ]; then echo "ALLOWED_DIFF is set without REFERENCE_DUMP (E1_ALLOWED_DIFF is the list of the Alembic head comparison)"; exit 1; fi
+if [ -n "${E1_ALLOWED_DIFF:-}" ]; then
+  E1_MSG=$(check_allowed_file "$E1_ALLOWED_DIFF") || { echo "E1_ALLOWED_DIFF: $E1_MSG"; exit 1; }
+fi
 if [ -n "${REFERENCE_DUMP:-}" ]; then
   [ -n "${REFERENCE_ENGINE:-}" ] || { echo "REFERENCE_DUMP needs REFERENCE_ENGINE (the engine image the dump was made with)"; exit 1; }
   [ -s "$REFERENCE_DUMP" ] && [ -f "$REFERENCE_DUMP" ] || { echo "REFERENCE_DUMP $REFERENCE_DUMP is not a non-empty regular file"; exit 1; }
@@ -318,7 +381,12 @@ for IMAGE in "${ENGINES[@]}"; do
   # V1/V3 empty database, dump equals E1 with the service migrations applied
   ctl e2 up >/dev/null
   dump_db e2 > "$WORK/e2.txt"
-  if diff "$WORK/e1-after.txt" "$WORK/e2.txt" >"$WORK/diff.txt"; then ok "$IMAGE V1/V3 normalized dump E1 vs E2: diff 0 ($(wc -l < "$WORK/e2.txt") lines)"; else cat "$WORK/diff.txt"; fail "$IMAGE V3 dump differs"; fi
+  if [ -n "${E1_ALLOWED_DIFF:-}" ]; then
+    cmp_rc=0
+    compare_dumps "$WORK/e1-after.txt" "$WORK/e2.txt" "$E1_ALLOWED_DIFF" >"$WORK/cmp.out" || cmp_rc=$?
+    cat "$WORK/cmp.out"
+    if [ "$cmp_rc" = 0 ]; then ok "$IMAGE V1/V3 normalized dump E1 vs E2: diff 0 apart from E1_ALLOWED_DIFF ($(grep -c '^ALLOWED-DIFF ' "$WORK/cmp.out" || true) accepted lines used, $(grep -c '^UNUSED-ALLOWED-DIFF ' "$WORK/cmp.out" || true) unused)"; else fail "$IMAGE V3 dump differs outside E1_ALLOWED_DIFF"; fi
+  elif diff "$WORK/e1-after.txt" "$WORK/e2.txt" >"$WORK/diff.txt"; then ok "$IMAGE V1/V3 normalized dump E1 vs E2: diff 0 ($(wc -l < "$WORK/e2.txt") lines)"; else cat "$WORK/diff.txt"; fail "$IMAGE V3 dump differs"; fi
   [ "$(version_of e2)" = "$N" ] && ok "$IMAGE V1 version $N" || fail "$IMAGE V1 version"
   if dump_complete "$WORK/e1-after.txt" && dump_complete "$WORK/e2.txt"; then :; else fail "$IMAGE V3 a dump holds no columns"; fi
   if [ -n "${REFERENCE_DUMP:-}" ]; then
