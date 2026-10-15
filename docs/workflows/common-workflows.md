@@ -176,7 +176,9 @@ For full implementation details, see:
 
 ### Overview
 
-Database schema changes for VoIPbin services are managed through Alembic migrations in the `bin-dbscheme-manager` service. This is the ONLY way to modify database schemas - never run manual SQL DDL statements against production databases.
+Database schema changes for VoIPbin services are managed through Alembic migrations in the `bin-dbscheme-manager` service. This is the ONLY way to modify the schema of tables that `bin-dbscheme-manager` owns - never run manual SQL DDL statements against production databases.
+
+Exception: a service that has converted to service-owned migrations (listed in `bin-dbscheme-manager/docs/schema-ownership.md`, currently `bin-tag-manager`) keeps the schema of its own tables in its `migrations/` directory (golang-migrate, applied when the service starts; see that service's `CLAUDE.md`). Do not write Alembic migrations for those tables. The `bin-manager` Alembic stream is frozen: no new migrations are added to it, converted table or not (`asterisk_config` is not frozen).
 
 ### AI Security Boundaries
 
