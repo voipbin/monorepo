@@ -20,7 +20,8 @@ cmd/ai-manager/main.go
 ```
 
 **Supporting binaries:**
-- `cmd/ai-control/` — CLI tool for direct DB/cache operations (bypasses RabbitMQ)
+- `cmd/ai-control/` — CLI tool for direct DB/cache operations (bypasses RabbitMQ); `migrate` command for the schema migrations
+- `migrations/` — embedded golang-migrate SQL files (service-owned schema of the eleven `ai_*` tables); `cmd/ai-manager` applies them right after the database connection, before the cache and RabbitMQ
 
 ## Layer Responsibilities
 

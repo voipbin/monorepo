@@ -1,0 +1,29 @@
+# Intended differences of the 000001 baseline from the Alembic head, for E1_ALLOWED_DIFF of scripts/verify-service-migrations.sh.
+# Four tables declare COLLATE=utf8mb4_0900_ai_ci; on MariaDB the Alembic head has utf8mb4_uca1400_ai_ci there (collation field only).
+# A line is listed once per occurrence (4 TBL and 9 COL pairs).
+< COL	6	status	varchar(32)	NO		utf8mb4	utf8mb4_uca1400_ai_ci	
+> COL	6	status	varchar(32)	NO		utf8mb4	utf8mb4_0900_ai_ci	
+< COL	10	language	varchar(32)	NO		utf8mb4	utf8mb4_uca1400_ai_ci	
+< COL	11	error	text	YES		utf8mb4	utf8mb4_uca1400_ai_ci	
+> COL	10	language	varchar(32)	NO		utf8mb4	utf8mb4_0900_ai_ci	
+> COL	11	error	text	YES		utf8mb4	utf8mb4_0900_ai_ci	
+< TBL	InnoDB	utf8mb4_uca1400_ai_ci	Dynamic		
+> TBL	InnoDB	utf8mb4_0900_ai_ci	Dynamic		
+< TBL	InnoDB	utf8mb4_uca1400_ai_ci	Dynamic		
+> TBL	InnoDB	utf8mb4_0900_ai_ci	Dynamic		
+< COL	4	prompt	longtext	NO		utf8mb4	utf8mb4_uca1400_ai_ci	
+> COL	4	prompt	longtext	NO		utf8mb4	utf8mb4_0900_ai_ci	
+< TBL	InnoDB	utf8mb4_uca1400_ai_ci	Dynamic		
+> TBL	InnoDB	utf8mb4_0900_ai_ci	Dynamic		
+< COL	6	original_prompt	text	YES		utf8mb4	utf8mb4_uca1400_ai_ci	
+< COL	7	proposed_prompt	text	YES		utf8mb4	utf8mb4_uca1400_ai_ci	
+< COL	8	rationale	text	YES		utf8mb4	utf8mb4_uca1400_ai_ci	
+< COL	9	status	varchar(32)	NO		utf8mb4	utf8mb4_uca1400_ai_ci	
+< COL	10	error	varchar(128)	NO		utf8mb4	utf8mb4_uca1400_ai_ci	
+> COL	6	original_prompt	text	YES		utf8mb4	utf8mb4_0900_ai_ci	
+> COL	7	proposed_prompt	text	YES		utf8mb4	utf8mb4_0900_ai_ci	
+> COL	8	rationale	text	YES		utf8mb4	utf8mb4_0900_ai_ci	
+> COL	9	status	varchar(32)	NO		utf8mb4	utf8mb4_0900_ai_ci	
+> COL	10	error	varchar(128)	NO		utf8mb4	utf8mb4_0900_ai_ci	
+< TBL	InnoDB	utf8mb4_uca1400_ai_ci	Dynamic		
+> TBL	InnoDB	utf8mb4_0900_ai_ci	Dynamic		
