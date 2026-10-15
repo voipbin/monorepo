@@ -25,6 +25,7 @@ graph TD
 | `pkg/listenhandler` | RabbitMQ RPC request router (regex pattern matching) | `sock.Request`, `sock.Response` |
 | `pkg/subscribehandler` | Consumes call-manager events (confbridge join/leave) to update conference participant state | queue event structs |
 | `pkg/dbhandler` | MySQL CRUD using Squirrel query builder | all model structs |
+| `migrations` | Embedded golang-migrate SQL files (service-owned schema of the two conference tables); applied by `cmd/conference-manager` at startup through `bin-common-handler/pkg/migrationhandler`, after the database connection and before the cache connection | `migrations.FS`, `migrations.VersionTable` |
 | `pkg/cachehandler` | Redis fast-path lookups for conferences and conferencecalls | `conference.Conference`, `conferencecall.Conferencecall` |
 | `models/conference` | Conference data model, type/status constants, webhook types | `conference.Conference`, `conference.Type`, `conference.Status` |
 | `models/conferencecall` | Conferencecall data model, reference types, status constants | `conferencecall.Conferencecall`, `conferencecall.Status` |
