@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"monorepo/bin-agent-manager/internal/config"
+	"monorepo/bin-agent-manager/migrations"
 	"monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-agent-manager/pkg/agenthandler"
 	"monorepo/bin-agent-manager/pkg/cachehandler"
@@ -16,6 +17,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -103,6 +105,11 @@ func initCommand() *cobra.Command {
 
 	// one-time operational backfill (not part of the agent CRUD group)
 	cmdSub.AddCommand(cmdNormalizeAddresses())
+
+	// the migrate commands open only the database, so they do not depend on Redis or RabbitMQ
+	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {
+		return migrationhandler.New(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable)
+	}))
 
 	return cmdRoot
 }
