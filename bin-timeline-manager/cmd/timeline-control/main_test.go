@@ -21,19 +21,23 @@ func TestInitCommand(t *testing.T) {
 
 	// Check that subcommands are registered
 	subCmds := cmd.Commands()
-	if len(subCmds) != 2 {
-		t.Errorf("initCommand() has %d subcommands, want 2", len(subCmds))
+	if len(subCmds) != 3 {
+		t.Errorf("initCommand() has %d subcommands, want 3", len(subCmds))
 	}
 
 	// Check for event and migrate commands
 	hasEvent := false
 	hasMigrate := false
+	hasMigrateMySQL := false
 	for _, sub := range subCmds {
 		if sub.Use == "event" {
 			hasEvent = true
 		}
 		if sub.Use == "migrate" {
 			hasMigrate = true
+		}
+		if sub.Use == "migrate-mysql" {
+			hasMigrateMySQL = true
 		}
 	}
 
@@ -42,6 +46,9 @@ func TestInitCommand(t *testing.T) {
 	}
 	if !hasMigrate {
 		t.Error("initCommand() missing 'migrate' subcommand")
+	}
+	if !hasMigrateMySQL {
+		t.Error("initCommand() missing 'migrate-mysql' subcommand")
 	}
 }
 

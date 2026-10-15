@@ -17,7 +17,9 @@ import (
 	"github.com/spf13/viper"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-timeline-manager/internal/config"
+	mysqlmigrations "monorepo/bin-timeline-manager/migrations/mysql"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
 )
@@ -57,6 +59,12 @@ func initCommand() *cobra.Command {
 	cmdMigrate.AddCommand(cmdMigrateDown())
 	cmdMigrate.AddCommand(cmdMigrateStatus())
 	cmdRoot.AddCommand(cmdMigrate)
+
+	// MySQL (analysis store) migration recovery commands. They open the database only. The
+	// ClickHouse commands above keep the name "migrate".
+	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate-mysql", func() (*migrationhandler.Migrator, error) {
+		return migrationhandler.New(config.Get().DatabaseDSN, mysqlmigrations.FS, mysqlmigrations.VersionTable)
+	}))
 
 	return cmdRoot
 }
