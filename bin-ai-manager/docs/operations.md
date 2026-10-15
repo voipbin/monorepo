@@ -127,6 +127,20 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `conversation_reply_send_total` | Counter | — | Conversation replies sent |
 | `message_send` | Counter | — | Messages dispatched |
 
+## Database Migrations
+
+The service applies the migrations of its eleven tables itself (`migrations/`, embedded) on every start, after the database connection and before the cache and RabbitMQ; version table `ai_schema_migrations`. A failure exits the process with a non-zero code and the container restarts.
+
+| Symptom | Likely Cause | Resolution |
+|---------|-------------|------------|
+| `Dirty database version N. Fix and force version.` | A previous run stopped inside migration N (failure, kill) | Stop the crash-looping container. Check whether migration N's statement was applied. Run `ai-control migrate force <N-1>` if not (for N=1 use `force -- -1`), `force <N>` if so, then start again. The image has no shell, so run the command in a one-off container of the same image: `docker run --rm --entrypoint ./ai-control -e DATABASE_DSN=<dsn> <image> migrate force <N>` (quote a DSN that holds special characters) |
+| `can't acquire lock` | Another instance is migrating for longer than 10 seconds | The restart policy retries; no action unless it persists |
+| `Error 1205 ... Lock wait timeout` | A long transaction holds a metadata lock on a table (even `CREATE TABLE IF NOT EXISTS` takes it briefly) | Find the long transaction, then restart. If the database is marked dirty, follow the dirty row |
+| `CREATE command denied ... ai_schema_migrations` | The database account cannot create tables | Grant CREATE to the service account |
+| `db version N is ahead of this image (max M); skipping migrations` (warning) | An older image started after a newer one migrated | Expected during a rollback; no action |
+
+`ai-control migrate status` shows the applied version, the image version and the dirty flag (database only, no Redis or RabbitMQ). The new database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`. On a new database run the Alembic stream first and start the service afterwards; the reverse order is not supported. File rules and checks: [docs/workflows/service-owned-migrations.md](../../docs/workflows/service-owned-migrations.md).
+
 ## CLI Tool: ai-control
 
 `cmd/ai-control` — direct DB/cache management (bypasses RabbitMQ). All output is JSON on stdout; logs go to stderr.
@@ -139,6 +153,9 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 ./bin/ai-control ai list   --customer_id <uuid> [--limit 100] [--token]
 ./bin/ai-control ai update --id <uuid> [--name] [--engine_type] [--engine_model] [--parameter] [--init_prompt]
 ./bin/ai-control ai delete --id <uuid>
+
+# Schema migrations (database only)
+./bin/ai-control migrate status
 ```
 
 ## Common Commands

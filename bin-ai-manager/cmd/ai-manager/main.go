@@ -10,6 +10,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -22,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-ai-manager/internal/config"
+	"monorepo/bin-ai-manager/migrations"
 	"monorepo/bin-ai-manager/pkg/aiaudithandler"
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/aihandler"
@@ -95,6 +97,12 @@ func runDaemon() error {
 		return err
 	}
 	defer commondatabasehandler.Close(sqlDB)
+
+	// apply the schema migrations of the owned tables before the cache and anything else use them
+	if errMigrate := migrationhandler.Run(cfg.DatabaseDSN, migrations.FS, migrations.VersionTable); errMigrate != nil {
+		logrus.Errorf("Could not apply the database migrations. err: %v", errMigrate)
+		return errMigrate
+	}
 
 	// connect to cache
 	cache := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
