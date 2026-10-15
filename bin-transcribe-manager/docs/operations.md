@@ -13,6 +13,24 @@
 | `customer_deleted` cascade not running | Subscribe handler not consuming customer-manager events | Check queue binding: `bin-manager.customer-manager.event` |
 | Transcribe start/stop returns a `STT_NOT_CONFIGURED` error (`*cerrors.VoipbinError`, status `Unavailable`) | Neither GCP nor AWS STT client initialized at startup, so the service is running with the disabled streaming handler. Common causes: an invalid or placeholder `GOOGLE_APPLICATION_CREDENTIALS` key file plus no AWS credentials | Fix the GCP key file or set `AWS_ACCESS_KEY` / `AWS_SECRET_KEY`, then restart the service. Confirm with the provider-initialization log check below — a healthy boot logs `GCP STT provider initialized` and/or `AWS STT provider initialized`; a degraded boot logs `No STT providers available. Streaming transcribe is disabled until GCP or AWS credentials are configured.` |
 
+## Schema Migration Failures
+
+Migrations run at startup, before the service listens. A failure exits the process with a non-zero code.
+
+| Symptom (log) | Meaning | Action |
+|---|---|---|
+| `Dirty database version N. Fix and force version.` | A previous run stopped inside migration N (failure, kill) | Stop the crash-looping container. Check whether migration N's statement was applied. `transcribe-control migrate force <N-1>` if not (for N=1 use `force -- -1`), `force <N>` if so, then start again. See the migration section of `CLAUDE.md` |
+| `can't acquire lock` | Another instance is migrating for longer than 10 seconds | Restart policy retries; no action unless it persists |
+| `Error 1205 ... Lock wait timeout` | Only for ALTER style migrations after the baseline (the baseline does not block on an existing table): a long transaction holds the table; the migration left the database dirty | Find the long transaction, then force `N-1` and restart |
+| `CREATE command denied ... transcribe_schema_migrations` | The database account cannot create tables | Grant CREATE to the service account |
+| `db version N is ahead of this image (max M); skipping migrations` (warning) | An older image started after a newer one migrated | Expected during rollback; no action |
+
+`transcribe-control migrate status` shows the applied version, the image version and the dirty flag (it creates the version table if missing).
+
+## Order on a New Database
+
+On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates the tables first, `alembic upgrade head` fails with `Table 'transcribe_transcribes' already exists`. The service account also needs permission to create tables (for the version table). Create the database with `CHARACTER SET utf8 COLLATE utf8_general_ci`, like the install scripts do.
+
 ## Zombie-Session Invariant and Recovery
 
 `pkg/transcribehandler/stop.go`'s zombie-session invariant deliberately refuses to move a transcribe to `done` while any of its streaming sessions genuinely failed to stop (e.g. a transient call-manager RPC failure). This correctly prevents an orphaned live session from being marked done, but leaves the transcribe in `progressing` until the stop actually succeeds.
