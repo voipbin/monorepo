@@ -93,7 +93,7 @@ Schema migrations for a service that owns its tables (see [docs/workflows/servic
 - `Run(dsn, fsys, versionTable)` — applies the pending migrations of the embedded files (`New`, `Up`, `Close`)
 - `Migrator` — `New`, `Up`, `Down`, `Status`, `MaxVersion`, `Force`, `Close`; a dedicated connection with `lock_wait_timeout=10`, serialized by a MySQL named lock; a database version ahead of the image is skipped with a warning, a dirty database is refused
 - `NewMigrateCommand(use, open)` — cobra command `status`, `up`, `down`, `force <version>` for the service control binary
-- `migrationcheck.Check(fsys, opt)` — structure check of the migration files (pairs, contiguous numbers, one statement per file, baseline rules, table option allow list)
+- `migrationcheck.Check(fsys, opt)` — structure check of the migration files (pairs, contiguous numbers, one statement per file, baseline rules, table option allow list, declared column charsets)
 
 ### pkg/utilhandler
 General-purpose utilities:

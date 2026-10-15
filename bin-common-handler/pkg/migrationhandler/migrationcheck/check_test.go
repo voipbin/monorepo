@@ -178,6 +178,10 @@ func Test_Check_baselineTableOptions(t *testing.T) {
 		{"space before the parenthesis is optional", "CREATE TABLE IF NOT EXISTS a(id int);", Options{}, ""},
 		{"utf8mb4 declared", "CREATE TABLE IF NOT EXISTS a (id int) DEFAULT CHARSET=utf8mb4;", Options{TableOptions: map[string]string{"a": OptionUTF8MB4}}, ""},
 		{"unicode_ci declared", "CREATE TABLE IF NOT EXISTS a (id int) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", Options{TableOptions: map[string]string{"a": OptionUTF8MB4UnicodeCI}}, ""},
+		{"unicode_ci with row format declared", "CREATE TABLE IF NOT EXISTS a (id int) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;", Options{TableOptions: map[string]string{"a": OptionUTF8MB4UnicodeCIDynamic}}, ""},
+		{"row format in the tail but not declared", "CREATE TABLE IF NOT EXISTS a (id int) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;", Options{TableOptions: map[string]string{"a": OptionUTF8MB4UnicodeCI}}, "table options are"},
+		{"row format alone in the tail", "CREATE TABLE IF NOT EXISTS a (id int) ROW_FORMAT=DYNAMIC;", Options{}, "table options are"},
+		{"row format declared but not used", "CREATE TABLE IF NOT EXISTS a (id int) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", Options{TableOptions: map[string]string{"a": OptionUTF8MB4UnicodeCIDynamic}}, "table options are"},
 		{"utf8mb3 declared", "CREATE TABLE IF NOT EXISTS a (id int) DEFAULT CHARSET=utf8mb3;", Options{TableOptions: map[string]string{"a": OptionUTF8MB3}}, ""},
 		{"lower case and extra white space in the tail", "CREATE TABLE IF NOT EXISTS a (id int)\n  default  charset=UTF8MB4;", Options{TableOptions: map[string]string{"a": OptionUTF8MB4}}, ""},
 		{"option used but not declared", "CREATE TABLE IF NOT EXISTS a (id int) DEFAULT CHARSET=utf8mb4;", Options{}, "table options are"},
@@ -248,5 +252,139 @@ func Test_Check_baselineDownMustBeNoop(t *testing.T) {
 	}
 	if problems := strings.Join(Check(fsys, Options{}), "\n"); !strings.Contains(problems, "no-op SELECT 1") {
 		t.Errorf("Wrong match. expect: no-op SELECT 1 violation, got: %q", problems)
+	}
+}
+
+func Test_Check_columnCharsets(t *testing.T) {
+	file := func(s string) *fstest.MapFile { return &fstest.MapFile{Data: []byte(s)} }
+	baseline := func(up string) fstest.MapFS {
+		return fstest.MapFS{"000001_baseline.up.sql": file(up), "000001_baseline.down.sql": file("SELECT 1;")}
+	}
+	decl := func(keys ...string) Options {
+		res := Options{ColumnCharsets: map[string]string{}}
+		for _, key := range keys {
+			res.ColumnCharsets[key] = ColumnCharsetUTF8MB4GeneralCI
+		}
+		return res
+	}
+
+	tests := []struct {
+		name         string
+		up           string
+		opt          Options
+		expectSubstr string
+	}{
+		{"declared column", "CREATE TABLE IF NOT EXISTS a (id int, c longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL);", decl("a.c"), ""},
+		{"declared column with backticks", "CREATE TABLE IF NOT EXISTS a (`id` int, `c` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci);", decl("a.c"), ""},
+		{"declared column, lower case and extra white space", "CREATE TABLE IF NOT EXISTS a (c text character  set\nUTF8MB4 collate utf8mb4_general_ci);", decl("a.c"), ""},
+		{"declared column followed by other columns", "CREATE TABLE IF NOT EXISTS a (c varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci, d int, e text);", decl("a.c"), ""},
+		{"declared column with a comma in the type", "CREATE TABLE IF NOT EXISTS a (n decimal(10,2), c text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci);", decl("a.c"), ""},
+		{"declared column named key", "CREATE TABLE IF NOT EXISTS a (`key` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci);", decl("a.key"), ""},
+		{"two declared columns in two tables", "CREATE TABLE IF NOT EXISTS a (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci); CREATE TABLE IF NOT EXISTS b (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci);", decl("a.c", "b.c"), ""},
+		{"no declaration, no column charset", "CREATE TABLE IF NOT EXISTS a (c text);", Options{ColumnCharsets: map[string]string{}}, ""},
+
+		{"column charset not declared", "CREATE TABLE IF NOT EXISTS a (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci);", Options{}, "CHARACTER is not allowed"},
+		{"another column is declared, this one is not", "CREATE TABLE IF NOT EXISTS a (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci, d text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci);", decl("a.c"), "CHARACTER is not allowed"},
+		{"same column name in another table is not declared", "CREATE TABLE IF NOT EXISTS a (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci); CREATE TABLE IF NOT EXISTS b (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci);", decl("a.c"), "CHARACTER is not allowed"},
+		{"other collation on a declared column", "CREATE TABLE IF NOT EXISTS a (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin);", decl("a.c"), "does not contain"},
+		{"other charset on a declared column", "CREATE TABLE IF NOT EXISTS a (c text CHARACTER SET latin1 COLLATE latin1_swedish_ci);", decl("a.c"), "does not contain"},
+		{"declared column without any charset", "CREATE TABLE IF NOT EXISTS a (c text);", decl("a.c"), "does not contain"},
+		{"declared string only in a comment", "CREATE TABLE IF NOT EXISTS a (c text COMMENT 'CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci');", decl("a.c"), "does not contain"},
+		{"declared string only in a default", "CREATE TABLE IF NOT EXISTS a (c text DEFAULT 'CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci');", decl("a.c"), "does not contain"},
+		{"declared string only inside parentheses", "CREATE TABLE IF NOT EXISTS a (c text GENERATED ALWAYS AS (cast(d as char CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci)) STORED);", decl("a.c"), "does not contain"},
+		{"declared string twice in one column", "CREATE TABLE IF NOT EXISTS a (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci);", decl("a.c"), "CHARACTER is not allowed"},
+		{"extra collate after the declared string", "CREATE TABLE IF NOT EXISTS a (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COLLATE utf8mb4_bin);", decl("a.c"), "COLLATE is not allowed"},
+		{"partial word is no match", "CREATE TABLE IF NOT EXISTS a (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci_x);", decl("a.c"), "does not contain"},
+		{"collate before character set is no match", "CREATE TABLE IF NOT EXISTS a (c text COLLATE utf8mb4_general_ci CHARACTER SET utf8mb4);", decl("a.c"), "does not contain"},
+		{"declared string in a key item", "CREATE TABLE IF NOT EXISTS a (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci, KEY k (c) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci);", decl("a.c"), "CHARACTER is not allowed"},
+		{"declared string in the next column", "CREATE TABLE IF NOT EXISTS a (c text, d text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci);", decl("a.c"), "does not contain"},
+		{"table created twice, second without the string", "CREATE TABLE IF NOT EXISTS a (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci); CREATE TABLE IF NOT EXISTS a (c text);", decl("a.c"), "does not contain"},
+
+		{"declared column does not exist", "CREATE TABLE IF NOT EXISTS a (c text);", decl("a.d"), "column the table does not have"},
+		{"declared column that is a key item", "CREATE TABLE IF NOT EXISTS a (c int, KEY k (c));", decl("a.k"), "column the table does not have"},
+		{"declared column names are case sensitive", "CREATE TABLE IF NOT EXISTS a (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci);", decl("a.C"), "column the table does not have"},
+		{"declared table does not exist", "CREATE TABLE IF NOT EXISTS a (c text);", decl("b.c"), "table the baseline does not create"},
+		{"key without a dot", "CREATE TABLE IF NOT EXISTS a (c text);", decl("c"), "must be written as table.column"},
+		{"key with an empty column", "CREATE TABLE IF NOT EXISTS a (c text);", decl("a."), "must be written as table.column"},
+		{"key with an empty table", "CREATE TABLE IF NOT EXISTS a (c text);", decl(".c"), "must be written as table.column"},
+		{"value outside the allowed list", "CREATE TABLE IF NOT EXISTS a (c text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin);", Options{ColumnCharsets: map[string]string{"a.c": "CHARACTER SET utf8mb4 COLLATE utf8mb4_bin"}}, "not one of the allowed column charsets"},
+		{"empty value", "CREATE TABLE IF NOT EXISTS a (c text);", Options{ColumnCharsets: map[string]string{"a.c": ""}}, "not one of the allowed column charsets"},
+		{"unbalanced table reports no missing column", "CREATE TABLE IF NOT EXISTS a (c text;", decl("a.c"), "unbalanced"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			problems := strings.Join(Check(baseline(tt.up), tt.opt), "\n")
+			if tt.expectSubstr == "" {
+				if problems != "" {
+					t.Errorf("Wrong match. expect: no problem, got: %s", problems)
+				}
+				return
+			}
+			if !strings.Contains(problems, tt.expectSubstr) {
+				t.Errorf("Wrong match. expect: %q, got: %q", tt.expectSubstr, problems)
+			}
+		})
+	}
+}
+
+func Test_Check_unbalancedTableReportsOnlyUnbalanced(t *testing.T) {
+	fsys := fstest.MapFS{
+		"000001_baseline.up.sql":   &fstest.MapFile{Data: []byte("CREATE TABLE IF NOT EXISTS a (c text;")},
+		"000001_baseline.down.sql": &fstest.MapFile{Data: []byte("SELECT 1;")},
+	}
+	problems := Check(fsys, Options{ColumnCharsets: map[string]string{"a.c": ColumnCharsetUTF8MB4GeneralCI}})
+	if len(problems) != 1 || !strings.Contains(problems[0], "unbalanced") {
+		t.Errorf("Wrong match. expect: only the unbalanced problem, got: %q", problems)
+	}
+}
+
+func Test_splitTopLevel(t *testing.T) {
+	tests := []struct {
+		name   string
+		src    string
+		expect []string
+	}{
+		{"plain", "a int, b int", []string{"a int", " b int"}},
+		{"decimal", "a decimal(10,2), b int", []string{"a decimal(10,2)", " b int"}},
+		{"enum string with a comma", "a enum('x,y','z'), b int", []string{"a enum('x,y','z')", " b int"}},
+		{"comment with a comma", "a int COMMENT 'p,q', b int", []string{"a int COMMENT 'p,q'", " b int"}},
+		{"key columns", "KEY k (a,b), c int", []string{"KEY k (a,b)", " c int"}},
+		{"check with in list", "CHECK (a IN (1,2)), c int", []string{"CHECK (a IN (1,2))", " c int"}},
+		{"backtick name with a comma", "`a,b` int, c int", []string{"`a,b` int", " c int"}},
+		{"doubled quote and backslash escape", `a int COMMENT 'it''s, ok', b int COMMENT 'x\', y', c int`, []string{`a int COMMENT 'it''s, ok'`, ` b int COMMENT 'x\', y'`, " c int"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if res := splitTopLevel(tt.src); strings.Join(res, "|") != strings.Join(tt.expect, "|") {
+				t.Errorf("Wrong match. expect: %q, got: %q", tt.expect, res)
+			}
+		})
+	}
+}
+
+func Test_columnName(t *testing.T) {
+	tests := []struct {
+		name   string
+		item   string
+		expect string
+	}{
+		{"plain", " id int", "id"},
+		{"backticks", " `id` int", "id"},
+		{"backtick key", "`key` int", "key"},
+		{"primary key", "PRIMARY KEY (id)", ""},
+		{"lower case key", "key k (id)", ""},
+		{"unique key", "UNIQUE KEY k (id)", ""},
+		{"constraint", "CONSTRAINT fk FOREIGN KEY (b) REFERENCES c (id)", ""},
+		{"check", "CHECK (a > 0)", ""},
+		{"empty", "  ", ""},
+		{"unterminated backtick", "`id int", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if res := columnName(tt.item); res != tt.expect {
+				t.Errorf("Wrong match. expect: %q, got: %q", tt.expect, res)
+			}
+		})
 	}
 }

@@ -17,6 +17,14 @@ const (
 	OptionUTF8MB4          = "DEFAULT CHARSET=utf8mb4"
 	OptionUTF8MB4UnicodeCI = "DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
 	OptionUTF8MB3          = "DEFAULT CHARSET=utf8mb3"
+
+	OptionUTF8MB4UnicodeCIDynamic = "DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC"
+)
+
+// The column level charset a baseline may carry. A service declares which column uses it in
+// Options.ColumnCharsets; the list itself is fixed here so that a service cannot extend it.
+const (
+	ColumnCharsetUTF8MB4GeneralCI = "CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
 )
 
 // Options holds the service specific input of Check.
@@ -25,6 +33,11 @@ type Options struct {
 	// end with (one of the Option constants). A table that is not listed must have no table option.
 	// The migration directory is the root of the fs.FS passed to Check (use fs.Sub for a subdirectory).
 	TableOptions map[string]string
+
+	// ColumnCharsets maps "table.column" to the column level charset string that the column
+	// definition of the baseline must contain (one of the ColumnCharset constants). A column
+	// that is not listed must have no column level CHARACTER SET or COLLATE.
+	ColumnCharsets map[string]string
 }
 
 // Check validates the structure of the migration files at the root of fsys and returns every
@@ -325,10 +338,117 @@ func stripQuoted(s string) string {
 	return b.String()
 }
 
+var allowedColumnCharsets = map[string]bool{ColumnCharsetUTF8MB4GeneralCI: true}
+
+// nonColumnKeywords start a key or constraint item of a table definition, not a column.
+var nonColumnKeywords = map[string]bool{
+	"PRIMARY": true, "KEY": true, "UNIQUE": true, "INDEX": true, "CONSTRAINT": true,
+	"FOREIGN": true, "FULLTEXT": true, "SPATIAL": true, "CHECK": true,
+}
+
+// splitTopLevel splits a table definition at the commas outside quotes and parentheses.
+func splitTopLevel(s string) []string {
+	var (
+		res   []string
+		depth int
+		quote byte
+		start int
+	)
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if quote != 0 {
+			switch {
+			case c == '\\' && quote != '`' && i+1 < len(s):
+				i++
+			case c == quote:
+				quote = 0
+			}
+			continue
+		}
+		switch c {
+		case '\'', '"', '`':
+			quote = c
+		case '(':
+			depth++
+		case ')':
+			depth--
+		case ',':
+			if depth == 0 {
+				res = append(res, s[start:i])
+				start = i + 1
+			}
+		}
+	}
+	return append(res, s[start:])
+}
+
+// columnName returns the column name that starts an item of a table definition, or "" when the
+// item is a key or a constraint.
+func columnName(item string) string {
+	item = strings.TrimSpace(item)
+	if strings.HasPrefix(item, "`") {
+		if end := strings.Index(item[1:], "`"); end > 0 {
+			return item[1 : 1+end]
+		}
+		return ""
+	}
+	word := wordRegexp.FindString(item)
+	if word == "" || !strings.HasPrefix(item, word) || nonColumnKeywords[strings.ToUpper(word)] {
+		return ""
+	}
+	return word
+}
+
+type token struct {
+	word  string
+	depth int
+}
+
+// tokenize returns the words of s with their parenthesis depth. s must not contain quoted text.
+func tokenize(s string) []token {
+	var res []token
+	depth := 0
+	last := 0
+	for _, loc := range wordRegexp.FindAllStringIndex(s, -1) {
+		for _, c := range s[last:loc[0]] {
+			switch c {
+			case '(':
+				depth++
+			case ')':
+				depth--
+			}
+		}
+		last = loc[0]
+		res = append(res, token{word: s[loc[0]:loc[1]], depth: depth})
+	}
+	return res
+}
+
+// removeTokens removes the first run of consecutive top level tokens equal (case insensitive)
+// to words. It reports whether the run was found.
+func removeTokens(toks []token, words []string) ([]token, bool) {
+	for i := 0; i+len(words) <= len(toks); i++ {
+		match := true
+		for j, w := range words {
+			if toks[i+j].depth != 0 || !strings.EqualFold(toks[i+j].word, w) {
+				match = false
+				break
+			}
+		}
+		if match {
+			res := append([]token{}, toks[:i]...)
+			return append(res, toks[i+len(words):]...), true
+		}
+	}
+	return toks, false
+}
+
 // checkBaselineTables checks the table definitions of the baseline against Options.
 func checkBaselineTables(name string, stmts []string, opt Options) []string {
 	var res []string
 	seen := map[string]bool{}
+	broken := map[string]bool{}
+	colFound := map[string]bool{}
 
 	for _, stmt := range stmts {
 		m := createTableHeadRegexp.FindStringSubmatchIndex(stmt)
@@ -342,15 +462,31 @@ func checkBaselineTables(name string, stmts []string, opt Options) []string {
 		end := matchingParen(stmt, m[1]-1)
 		if end < 0 {
 			res = append(res, fmt.Sprintf("%s: %s: unbalanced parentheses", name, table))
+			broken[table] = true
 			continue
 		}
 
-		// the definition between the parentheses
-		words := wordRegexp.FindAllString(stripQuoted(stmt[m[1]:end]), -1)
-		for i, w := range words {
-			upper := strings.ToUpper(w)
-			if forbiddenWords[upper] || (upper == "CHAR" && i+1 < len(words) && strings.EqualFold(words[i+1], "SET")) {
-				res = append(res, fmt.Sprintf("%s: %s: %s is not allowed inside the table definition", name, table, upper))
+		// the definition between the parentheses, one item per column or key
+		for _, item := range splitTopLevel(stmt[m[1]:end]) {
+			col := columnName(item)
+			toks := tokenize(stripQuoted(item))
+
+			key := table + "." + col
+			if decl, ok := opt.ColumnCharsets[key]; ok && col != "" {
+				colFound[key] = true
+				if allowedColumnCharsets[decl] {
+					var removed bool
+					if toks, removed = removeTokens(toks, wordRegexp.FindAllString(decl, -1)); !removed {
+						res = append(res, fmt.Sprintf("%s: %s: the column definition does not contain %q", name, key, decl))
+					}
+				}
+			}
+
+			for i, tok := range toks {
+				upper := strings.ToUpper(tok.word)
+				if forbiddenWords[upper] || (upper == "CHAR" && i+1 < len(toks) && strings.EqualFold(toks[i+1].word, "SET")) {
+					res = append(res, fmt.Sprintf("%s: %s: %s is not allowed inside the table definition", name, table, upper))
+				}
 			}
 		}
 
@@ -361,7 +497,7 @@ func checkBaselineTables(name string, stmts []string, opt Options) []string {
 		}
 	}
 
-	allowed := map[string]bool{OptionUTF8MB4: true, OptionUTF8MB4UnicodeCI: true, OptionUTF8MB3: true}
+	allowed := map[string]bool{OptionUTF8MB4: true, OptionUTF8MB4UnicodeCI: true, OptionUTF8MB3: true, OptionUTF8MB4UnicodeCIDynamic: true}
 	tables := make([]string, 0, len(opt.TableOptions))
 	for table := range opt.TableOptions {
 		tables = append(tables, table)
@@ -373,6 +509,27 @@ func checkBaselineTables(name string, stmts []string, opt Options) []string {
 		}
 		if !seen[table] {
 			res = append(res, fmt.Sprintf("%s: %s: a table option is declared for a table the baseline does not create", name, table))
+		}
+	}
+
+	keys := make([]string, 0, len(opt.ColumnCharsets))
+	for key := range opt.ColumnCharsets {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		table, col, ok := strings.Cut(key, ".")
+		switch {
+		case !ok || table == "" || col == "":
+			res = append(res, fmt.Sprintf("%s: %q: a column charset key must be written as table.column", name, key))
+			continue
+		case !allowedColumnCharsets[opt.ColumnCharsets[key]]:
+			res = append(res, fmt.Sprintf("%s: %s: the column charset %q is not one of the allowed column charsets", name, key, opt.ColumnCharsets[key]))
+		}
+		if !seen[table] {
+			res = append(res, fmt.Sprintf("%s: %s: a column charset is declared for a table the baseline does not create", name, key))
+		} else if !colFound[key] && !broken[table] {
+			res = append(res, fmt.Sprintf("%s: %s: a column charset is declared for a column the table does not have", name, key))
 		}
 	}
 
