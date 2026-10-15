@@ -45,6 +45,20 @@ SELECT id, customer_id, resource_type, resource_id FROM direct_manager_direct
 WHERE hash = '<hash>' AND tm_delete = '9999-01-01 00:00:00.000000';
 ```
 
+## Database Migrations
+
+The service applies the migrations of its table itself (`migrations/`, embedded) on every start, after the database connection and before the cache and RabbitMQ; version table `direct_schema_migrations`. The database account needs the CREATE privilege (the baseline is `CREATE TABLE IF NOT EXISTS` and the version table is created by the migrator).
+
+| Situation | Behavior | Action |
+|-----------|----------|--------|
+| No pending migration | log `no pending migrations`, normal start | none |
+| Pending migration | applied under a MySQL named lock, then normal start; instances that start together serialize | none |
+| Database version higher than the image | skipped with a warning, normal start | none |
+| Database marked dirty (a migration failed half way) | the start is refused, the container restarts in a loop | stop the container, check whether the failed file was applied, then `direct-control migrate force <version>` against that database |
+| Lock not obtained within 10 seconds | the start fails and the container restarts | none, a restart retries |
+
+Check the state with `./bin/direct-control migrate status` (database only). The new database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`. File rules and checks: [docs/workflows/service-owned-migrations.md](../../docs/workflows/service-owned-migrations.md).
+
 ## Deployment
 
 bin-direct-manager deploys via Komodo (VOIP-1347 Tier 1 rollout, following the

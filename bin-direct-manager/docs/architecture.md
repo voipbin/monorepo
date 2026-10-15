@@ -10,8 +10,9 @@
 
 | Package | Role |
 |---------|------|
-| `cmd/direct-manager` | Daemon entry point; wires config, DB, cache, and handlers |
-| `cmd/direct-control` | CLI tool for direct DB/cache management (bypasses RabbitMQ) |
+| `cmd/direct-manager` | Daemon entry point; wires config, DB, cache, and handlers; applies the embedded schema migrations right after the DB connection (before the cache and RabbitMQ) |
+| `cmd/direct-control` | CLI tool for direct DB/cache management (bypasses RabbitMQ); `migrate` command for the schema migrations |
+| `migrations` | Embedded golang-migrate SQL files (service-owned schema of the `direct_directs` table) |
 | `pkg/config` | Configuration singleton via Cobra + Viper |
 | `pkg/listenhandler` | RabbitMQ RPC request handler with regex URI routing |
 | `pkg/subscribehandler` | Event subscriber for customer deletion cascades — consumes via a pattern binding on the global topic exchange `bin-manager.event`, the sole intake mechanism since VOIP-1407 |

@@ -33,10 +33,28 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 ./bin/direct-control direct regenerate --id <uuid>
 ```
 
+**Migration status (database only, no Redis or RabbitMQ):**
+```bash
+./bin/direct-control migrate status
+```
+
 **Mock regeneration:**
 ```bash
 go generate ./...
 ```
+
+## Database migrations
+
+The schema of `direct_directs` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax.
+
+- Files: `migrations/NNNNNN_<description>.up.sql` and `.down.sql` (six digits, from 000001 without gaps). `000001_baseline` is the schema at the time of the conversion (`CREATE TABLE IF NOT EXISTS`, no table options, down is the no-op `SELECT 1`). Version table: `direct_schema_migrations`.
+- `cmd/direct-manager` runs `migrationhandler.Run` in `run`, right after the database connection and before the cache and RabbitMQ. Failure stops the start (non-zero exit).
+- `direct-control migrate status|up|down|force <version>` talks to the database only. Run `up`, `down` and `force` only against a local throwaway database.
+- The migration code is the shared `bin-common-handler/pkg/migrationhandler`. Rules for new files (one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract), the checks and the recovery steps are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
+- A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do); other defaults make the table definition differ from the Alembic head.
+- New database order: Alembic first, then this service. The reverse fails in the Alembic stream (`Table 'direct_directs' already exists`) and is unsupported while the Alembic stream still creates the table.
+- Update `scripts/database_scripts_test/directs.sql` (the sqlite test schema) by hand when the schema changes.
+- Structure checks: `go test ./migrations/`. Git relative check: `scripts/check-service-migrations.sh bin-direct-manager` after `git fetch origin main`. Dynamic check on scratch containers: `ALEMBIC_VENV=<venv> scripts/verify-service-migrations.sh bin-direct-manager` (repo root).
 
 ## Key Facts
 
