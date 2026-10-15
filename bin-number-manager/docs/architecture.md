@@ -6,8 +6,9 @@
 
 ```
 cmd/number-manager/main.go
+    ├── migrations                  (embedded golang-migrate SQL files — service-owned schema of number_numbers)
     ├── pkg/cachehandler            (Redis — number lookups)
-    ├── pkg/dbhandler               (MySQL — number records, provider mappings)
+    ├── pkg/dbhandler               (MySQL — number records)
     ├── pkg/requestexternal         (HTTP clients for Telnyx/Twilio APIs)
     ├── pkg/numberhandlertelnyx     (Telnyx provider implementation)
     ├── pkg/numberhandlertwilio     (Twilio provider implementation)
@@ -23,14 +24,14 @@ Supporting binary:
 
 | Layer | Package | Responsibility |
 |-------|---------|---------------|
-| Entry | `cmd/number-manager` | Cobra + Viper config, dependency wiring, daemon start |
+| Entry | `cmd/number-manager` | Cobra + Viper config; applies the embedded schema migrations (`bin-common-handler/pkg/migrationhandler`) right after the database connection (before the cache and RabbitMQ); dependency wiring, daemon start |
 | Listen | `pkg/listenhandler` | RabbitMQ RPC routing; dispatches to numberhandler |
 | Subscribe | `pkg/subscribehandler` | Consumes customer/flow events via pattern bindings on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407); cascading deletes and flow-ref cleanup |
 | Business | `pkg/numberhandler` | Number CRUD, provider dispatch, billing validation |
 | Provider | `pkg/numberhandlertelnyx` | Telnyx API: purchase, release, list available numbers |
 | Provider | `pkg/numberhandlertwilio` | Twilio API: purchase, release, list available numbers |
 | External | `pkg/requestexternal` | HTTP client wrapper for provider APIs |
-| Data | `pkg/dbhandler` | MySQL queries for numbers and provider mappings |
+| Data | `pkg/dbhandler` | MySQL queries for numbers |
 | Cache | `pkg/cachehandler` | Redis cache for number lookups |
 | Models | `models/number` | Number, Status, EventType |
 | Models | `models/availablenumber` | AvailableNumber (search results from providers) |
