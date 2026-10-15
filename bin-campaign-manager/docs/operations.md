@@ -11,6 +11,24 @@
 | Service level not throttling correctly | queue_id not set or queue has no agents; service_level calculation issue | Verify campaign has `queue_id` set; check queue-manager agent availability; review `service_level` value (0-100 percentage) |
 | Campaign execute total not incrementing | The self-scheduling execute chain stalled (campaign-manager's consumer was down when the last delayed RPC fired, or the delayed message was lost); campaign status is `stop` | Check campaign-manager pod health and RabbitMQ delayed-exchange health; verify campaign status is `run`; call `POST /v1/campaigns/{id}/execute` manually to restart the chain |
 
+## Schema Migration Failures
+
+Migrations run at startup, before the service listens. A failure exits the process with a non-zero code.
+
+| Symptom (log) | Meaning | Action |
+|---|---|---|
+| `Dirty database version N. Fix and force version.` | A previous run stopped inside migration N (failure, kill) | Stop the crash-looping container. Check whether migration N's statement was applied. `campaign-control migrate force <N-1>` if not (for N=1 use `force -- -1`), `force <N>` if so, then start again. See the migration section of `CLAUDE.md` |
+| `can't acquire lock` | Another instance is migrating for longer than 10 seconds | The restart policy retries; no action unless it persists |
+| `Error 1205 ... Lock wait timeout` | Only for ALTER style migrations after the baseline: a long transaction holds the table; the migration left the database dirty | Find the long transaction, then force `N-1` and restart |
+| `CREATE command denied ... campaign_schema_migrations` | The database account cannot create tables | Grant CREATE to the service account |
+| `db version N is ahead of this image (max M); skipping migrations` (warning) | An older image started after a newer one migrated | Expected during rollback; no action |
+
+Run the `campaign-control migrate` commands with the DSN in the `DATABASE_DSN` environment variable (for example `DATABASE_DSN=<dsn> campaign-control migrate force 1`); the `--database_dsn` flag is not accepted after `migrate`. `campaign-control migrate status` shows the applied version, the image version and the dirty flag (it creates the version table if missing).
+
+### Order on a New Database
+
+On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates the campaign tables first, `alembic upgrade head` fails with `Table 'campaign_campaigns' already exists`. The new database must be created with the default character set `utf8` (collation `utf8_general_ci`), because the baseline gives no table options. The service account also needs permission to create tables (for the version table).
+
 ## Debugging Guide
 
 ### Key Log Patterns
