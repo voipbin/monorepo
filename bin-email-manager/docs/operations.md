@@ -45,6 +45,20 @@ MAILGUN_API_KEY="xxx" \
 **Check email delivery via SendGrid Activity Feed:**
 - SendGrid dashboard → Activity → search by recipient email or `provider_reference_id`
 
+## Database Migrations
+
+The service applies the migration of its table itself (`migrations/`, embedded) on every start, after the database connection and before the cache and RabbitMQ; version table `email_schema_migrations`.
+
+| Situation | Behavior | Action |
+|-----------|----------|--------|
+| No pending migration | log `no pending migrations`, normal start | none |
+| Pending migration | applied under a MySQL named lock, then normal start; two instances serialize | none |
+| Database version higher than the image | skipped with a warning, normal start | none |
+| Database marked dirty (a migration failed half way) | the start is refused, the container restarts in a loop | stop the container, check whether the failed file was applied, then `email-control migrate force <version>` against that database |
+| Lock not obtained within 10 seconds | the start fails and the container restarts | none, a restart retries |
+
+Check the state with `./bin/email-control migrate status` (database only). The new database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`. File rules and checks: [docs/workflows/service-owned-migrations.md](../../docs/workflows/service-owned-migrations.md).
+
 ## Deployment
 
 bin-email-manager deploys via Komodo (VOIP-1348 Tier 2 rollout, following
