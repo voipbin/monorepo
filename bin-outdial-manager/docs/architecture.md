@@ -10,8 +10,9 @@
 
 | Package | Role |
 |---------|------|
-| `cmd/outdial-manager` | Daemon entry point; wires config, DB, cache, and handlers |
-| `cmd/outdial-control` | CLI tool for direct DB/cache management (bypasses RabbitMQ) |
+| `cmd/outdial-manager` | Daemon entry point; wires config, DB, cache, and handlers; applies the embedded schema migrations right after the DB connection (before the cache and RabbitMQ) |
+| `cmd/outdial-control` | CLI tool for direct DB/cache management (bypasses RabbitMQ); `migrate` command for the schema migrations |
+| `migrations` | Embedded golang-migrate SQL files (service-owned schema of the three outdial tables) |
 | `pkg/listenhandler` | RabbitMQ RPC request handler with regex URI routing |
 | `pkg/outdialhandler` | Business logic for outdial container CRUD |
 | `pkg/outdialtargethandler` | Business logic for outdial target management and status transitions |
