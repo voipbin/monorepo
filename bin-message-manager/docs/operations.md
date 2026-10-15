@@ -11,6 +11,24 @@
 | Telnyx auth failure | Fallback provider fails | `authtoken_telnyx` expired or wrong |
 | Cache stale | Stale message data returned | Redis out of sync; restart clears cache |
 
+## Schema Migration Failures
+
+Migrations run at startup, before the RPC listener starts. A failure exits the process with a non-zero code.
+
+| Symptom (log) | Meaning | Action |
+|---|---|---|
+| `Dirty database version N. Fix and force version.` | A previous run stopped inside migration N (failure, kill) | Stop the crash-looping container. Check whether migration N's statement was applied. `message-control migrate force <N-1>` if not (for N=1 use `force -- -1`), `force <N>` if so (`force -- -1` resets to unversioned), then start again. See the migration section of `CLAUDE.md` |
+| `can't acquire lock` | Another instance is migrating for longer than 10 seconds | The restart policy retries; no action unless it persists |
+| `Error 1205 ... Lock wait timeout` | Only for ALTER style migrations after the baseline (the baseline does not block on an existing table): a long transaction holds the table; the migration left the database dirty | Find the long transaction, then force `N-1` and restart |
+| `CREATE command denied ... message_schema_migrations` | The database account cannot create tables | Grant CREATE to the service account |
+| `db version N is ahead of this image (max M); skipping migrations` (warning) | An older image started after a newer one migrated | Expected during rollback; no action |
+
+`message-control migrate status` shows the applied version, the image version and the dirty flag (it creates the version table if missing). `message-control` reads `DATABASE_DSN` and opens only the database. In the runtime image (distroless, no shell) run it as a one-off container with the same image and environment: `docker run --rm --entrypoint ./message-control <image> migrate status`.
+
+## Order on a New Database
+
+Create the database with `CHARACTER SET utf8 COLLATE utf8_general_ci` (as the install scripts do). On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates the message table first, `alembic upgrade head` fails with `Table 'message_messages' already exists`. The service account also needs permission to create tables (for the version table).
+
 ## Debugging Guide
 
 **Get a message (bypasses RabbitMQ):**
@@ -26,6 +44,11 @@
 **Delete a message:**
 ```bash
 ./bin/message-control message delete --id <uuid>
+```
+
+**Migration state of a local database:**
+```bash
+DATABASE_DSN='<user>:<password>@tcp(127.0.0.1:3306)/<database>' ./bin/message-control migrate status
 ```
 
 **Check provider webhook configuration:**
