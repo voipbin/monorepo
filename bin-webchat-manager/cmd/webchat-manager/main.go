@@ -9,6 +9,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -21,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-webchat-manager/internal/config"
+	"monorepo/bin-webchat-manager/migrations"
 	"monorepo/bin-webchat-manager/pkg/cachehandler"
 	"monorepo/bin-webchat-manager/pkg/dbhandler"
 	"monorepo/bin-webchat-manager/pkg/listenhandler"
@@ -67,6 +69,11 @@ func runDaemon() error {
 		return errors.Wrapf(err, "could not connect to database")
 	}
 	defer commondatabasehandler.Close(sqlDB)
+
+	// apply the schema migrations before anything else uses the database
+	if errMigrate := migrationhandler.Run(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable); errMigrate != nil {
+		return errors.Wrapf(errMigrate, "could not apply the database migrations")
+	}
 
 	// connect to cache
 	cache := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
