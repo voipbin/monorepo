@@ -36,6 +36,7 @@ cmd/conversation-manager/main.go
 | Platform | `pkg/smshandler` | SMS/MMS sending via RPC to message-manager |
 | Data | `pkg/dbhandler` | MySQL CRUD using Squirrel SQL builder |
 | Data | `pkg/cachehandler` | Redis cache for account/conversation lookups |
+| Data | `migrations` | Embedded golang-migrate SQL files (service-owned schema of the four conversation tables); applied by `cmd/conversation-manager` at startup through `bin-common-handler/pkg/migrationhandler`, after the database connection and before the cache connection |
 
 ## Request Routing
 
