@@ -22,7 +22,8 @@ Key supporting binaries:
 
 | Layer | Package | Responsibility |
 |-------|---------|---------------|
-| Entry | `cmd/billing-manager` | Config init (Viper+pflag), dependency wiring, daemon start |
+| Entry | `cmd/billing-manager` | Config init (Viper+pflag), dependency wiring, daemon start; applies the embedded schema migrations right after the DB connection (before the cache and RabbitMQ) |
+| Migrations | `migrations` | Embedded golang-migrate SQL files (service-owned schema of the three billing tables), applied through `bin-common-handler/pkg/migrationhandler`; `billing-control migrate` is the recovery tool |
 | Listen | `pkg/listenhandler` | RabbitMQ RPC request routing; dispatches to accounthandler or billinghandler |
 | Subscribe | `pkg/subscribehandler` | Consumes events from call/message/number/customer managers; triggers billing creation |
 | Business | `pkg/accounthandler` | Account CRUD, balance add/subtract, plan-type checks, Paddle webhook processing |
