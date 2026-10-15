@@ -13,7 +13,7 @@ Both publish sites are guarded by `if h.notifyHandler != nil` — a handler cons
 
 ### Global topic exchange (VOIP-1405 / VOIP-1407)
 
-`cmd/webchat-manager` (the service's only binary — there is no `webchat-control`) constructs its NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published to the global topic exchange `bin-manager.event` with the routing key `webchat-manager.<resource>.<subscription-id>.<action>`. **As of VOIP-1407, this is the sole publish path** — the previous per-service fanout exchange `bin-manager.webchat-manager.event` is no longer published to, and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will eventually be deleted from the broker. No code in this service changed for VOIP-1407; the behavior change (dual publish → topic-only) comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library update. A topic publish failure now propagates to the caller as an error (previously it was swallowed silently).
+`cmd/webchat-manager` constructs its NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published to the global topic exchange `bin-manager.event` with the routing key `webchat-manager.<resource>.<subscription-id>.<action>`. **As of VOIP-1407, this is the sole publish path** — the previous per-service fanout exchange `bin-manager.webchat-manager.event` is no longer published to, and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will eventually be deleted from the broker. No code in this service changed for VOIP-1407; the behavior change (dual publish → topic-only) comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library update. A topic publish failure now propagates to the caller as an error (previously it was swallowed silently).
 
 Both event types collapse onto the **same** resource segment `webchat` (the key schema splits the event type on its first `_`), and both resolve to the **same** subscription address: `Session` by its own id, and `*message.Message` through its `eventtopic.SubscriptionIdentifier` override returning the parent `SessionID` rather than the message's own id (VOIP-1405 Category B — a message id first appears in the event that announces it, so it is not an address anyone can bind to in advance). The consequence is that a single binding pattern follows an entire visitor conversation:
 
@@ -41,9 +41,4 @@ VOIP-1342/bin-call-manager pilot pattern) instead of the older SSH +
   [docs/plans/2026-08-18-bin-manager-komodo-rollout-tier1-design.md](../docs/plans/2026-08-18-bin-manager-komodo-rollout-tier1-design.md)
   (in the monorepo root, not this service's own `docs/`).
 
-Note: bin-webchat-manager does not have a `docs/operations.md` file (only
-`docs/plans/`) — see [VOIP-1352](https://voipbin.atlassian.net/browse/VOIP-1352)
-for generating the full architecture/operations/domain/dependencies doc
-suite that `docs/reference/extractor.sh` produces for other services. Once
-that ticket lands, this `## Deployment` section should move to the new
-`docs/operations.md` and be removed from here.
+Note: `docs/operations.md` holds the migration failure handling, the configuration and the deployment notes. The remaining architecture, domain and dependencies doc suite is still pending, see [VOIP-1352](https://voipbin.atlassian.net/browse/VOIP-1352).
