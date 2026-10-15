@@ -14,7 +14,8 @@ cmd/customer-manager/main.go
 ```
 
 Supporting binary:
-- `cmd/customer-control/` — CLI tool for direct DB/cache operations, bypasses RabbitMQ RPC.
+- `cmd/customer-control/` — CLI tool for direct DB/cache operations, bypasses RabbitMQ RPC; `migrate` command for the schema migrations.
+- `migrations/` — embedded golang-migrate SQL files (service-owned schema of `customer_customers` and `customer_accesskeys`).
 
 **Foundational role:** `bin-customer-manager` has no SubscribeHandler — it does not consume events from other services. All state changes are driven by inbound RPC requests. Because every other service scopes resources by `customer_id`, this service must be healthy for the platform to function.
 
@@ -22,7 +23,7 @@ Supporting binary:
 
 | Layer | Package | Responsibility |
 |-------|---------|---------------|
-| Entry | `cmd/customer-manager` | Cobra + Viper config, dependency wiring, daemon start |
+| Entry | `cmd/customer-manager` | Cobra + Viper config, dependency wiring, daemon start; applies the embedded schema migrations right after the DB connection (before the cache and RabbitMQ) |
 | Listen | `pkg/listenhandler` | RabbitMQ RPC routing; dispatches to customerhandler / accesskeyhandler |
 | Business | `pkg/customerhandler` | Customer lifecycle, email verification, freeze/recover, cross-service validation |
 | Business | `pkg/accesskeyhandler` | Access key creation, rotation, deletion |

@@ -32,6 +32,9 @@ go test -coverprofile cp.out -v $(go list ./...)
 # Verification (mandatory before commit)
 go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 
+# customer-control migrate status — database only (no Redis or RabbitMQ)
+./bin/customer-control migrate status
+
 # customer-control — direct DB/cache access, bypasses RabbitMQ
 ./bin/customer-control customer get --id <uuid>
 ./bin/customer-control customer list [--limit 100] [--token]
@@ -60,6 +63,19 @@ Uses `go.uber.org/mock` (gomock). Table-driven tests. Parameterized raw SQL (no 
 ```bash
 go test -v ./pkg/customerhandler -run Test_Delete
 ```
+
+## Database migrations
+
+The schema of `customer_customers` and `customer_accesskeys` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax.
+
+- Files: `migrations/NNNNNN_<description>.up.sql` and `.down.sql` (six digits, from 000001 without gaps). `000001_baseline` is the schema at the time of the conversion (`CREATE TABLE IF NOT EXISTS`, no table options, down is the no-op `SELECT 1`). Version table: `customer_schema_migrations`.
+- `cmd/customer-manager` runs `migrationhandler.Run` in `runDaemon`, right after the database connection and before the cache and RabbitMQ. Failure stops the start (non-zero exit).
+- `customer-control migrate status|up|down|force <version>` talks to the database only. Run `up`, `down` and `force` only against a local throwaway database.
+- The migration code is the shared `bin-common-handler/pkg/migrationhandler`. Rules for new files (one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract), the checks and the recovery steps are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
+- A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do); other defaults make the table definitions differ from the Alembic head.
+- New database order: Alembic first, then this service. The reverse fails in the Alembic stream (`Table 'customer_customers' already exists`) and is unsupported while the Alembic stream still creates the customer tables.
+- Update `scripts/database_scripts_test/*.sql` (the sqlite test schema) by hand when the schema changes.
+- Structure checks: `go test ./migrations/`. Git relative check: `scripts/check-service-migrations.sh bin-customer-manager` after `git fetch origin main`. Dynamic check on scratch containers: `ALEMBIC_VENV=<venv> scripts/verify-service-migrations.sh bin-customer-manager` (repo root).
 
 ## Database Tables
 
