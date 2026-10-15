@@ -25,6 +25,7 @@ Key packages:
 | `pkg/buckethandler` | Local file storage for generated audio in `/shared-data` |
 | `pkg/cachehandler` | Redis cache for TTS metadata |
 | `pkg/dbhandler` | MySQL persistence |
+| `migrations` | Embedded golang-migrate SQL files (service-owned schema of `tts_manager_speaking`); applied by `cmd/tts-manager` through `bin-common-handler/pkg/migrationhandler` right after the database connection, before the cache and RabbitMQ; `tts-control migrate` is the recovery tool |
 | `models/tts` | Batch TTS structs |
 | `models/streaming` | Streaming session structs |
 | `pkg/notifyhandler` (shared) | Publishes events to the global topic exchange `bin-manager.event` — topic-only since VOIP-1407 removed fanout publishing |

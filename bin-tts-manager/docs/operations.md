@@ -15,6 +15,22 @@
 | Keep-alive timeout | Network issue between pod and ElevenLabs | Check `streaming_error_total`; session is cleaned up automatically |
 | `POD_IP` not set | GKE: missing Downward API configuration. Compose: env dropped from the stack | GKE: verify `k8s/deployment.yml` injects `status.podIP` as `POD_IP`. Compose: verify `POD_IP=tts-manager-http` in `komodo/docker-compose.yml` |
 
+## Schema Migration Failures
+
+Migrations run at startup, before the service connects the cache and the message broker. A failure exits the process with a non-zero code and the container is restarted.
+
+| Symptom | Likely Cause | Resolution |
+|---------|-------------|------------|
+| `Dirty database version N. Fix and force version.` | A previous run stopped inside migration N (failure, kill) | Stop the crash-looping container. Check whether migration N's statement was applied. Run `tts-control migrate force <N-1>` if not (for N=1 use `force -- -1`), `force <N>` if so, then start again. The image has no shell, so run the command in a one-off container of the same image: `docker run --rm --entrypoint ./tts-control -e DATABASE_DSN=<dsn> <image> migrate force <N>` (the container must reach the database; quote a DSN that holds special characters) |
+| `can't acquire lock` | Another instance is migrating for longer than 10 seconds | The restart policy retries; no action unless it persists |
+| `Error 1205 ... Lock wait timeout` | A long transaction holds a metadata lock on the table (even `CREATE TABLE IF NOT EXISTS` takes it briefly) | Find the long transaction, then restart. If the database is marked dirty, follow the dirty row |
+| `CREATE command denied ... tts_schema_migrations` | The database account cannot create tables | Grant CREATE to the service account |
+| `db version N is ahead of this image (max M); skipping migrations` (warning) | An older image started after a newer one migrated | Expected during a rollback; no action |
+
+`tts-control migrate status` shows the applied version, the image version and the dirty flag (it creates the version table when it is missing).
+
+On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates `tts_manager_speaking` first, the Alembic migration that creates it fails with `Table 'tts_manager_speaking' already exists` (checked by `scripts/verify-service-migrations.sh`). The service account also needs permission to create tables (for the version table). The database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`, like the install scripts do.
+
 ## Debugging Guide
 
 **Check active streaming sessions (via metrics):**

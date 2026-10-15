@@ -46,6 +46,17 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 
 **No event subscriptions**: No SubscribeHandler — TTS is invoked synchronously via RPC only.
 
+## Database migrations
+
+The schema of `tts_manager_speaking` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`, shared code in `bin-common-handler/pkg/migrationhandler`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax. The full rules (file naming, one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract, baseline conversion) are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
+
+- Files: `migrations/NNNNNN_<table>_<verb>_<type>_<items>.up.sql` and `.down.sql`. `000001_baseline` is the schema at the time of the conversion; its down is a no-op. Version table: `tts_schema_migrations`.
+- `cmd/tts-manager` runs `migrationhandler.Run` right after the database connection, before the cache and RabbitMQ. Failure stops the start (non-zero exit).
+- `tts_manager_speaking` keeps the table option the Alembic stream declared (`DEFAULT CHARSET=utf8`, written as `DEFAULT CHARSET=utf8mb3`); the structure test `migrations/migrations_test.go` lists it.
+- There is no sqlite test schema for this table, so a schema change touches `migrations/` only.
+- `tts-control migrate status|up|down|force <version>` talks to the database only (no Redis or RabbitMQ). Run `up`, `down` and `force` only against a local throwaway database or as the recovery step in [docs/operations.md](docs/operations.md).
+- Verification: `go test ./migrations/` (structure) and, from the repo root, `ALEMBIC_VENV=<venv> scripts/verify-service-migrations.sh bin-tts-manager` (both engines).
+
 ## Per-Pod Queue Pattern
 
 See [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md) for the canonical pattern. Note: `bin-tts-manager` uses `HOSTNAME` as the HostID, while `bin-transcribe-manager` uses a random UUID generated fresh at each process start (not `POD_IP`).
