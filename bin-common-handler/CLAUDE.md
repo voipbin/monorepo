@@ -11,6 +11,7 @@ Shared Go library used by every `bin-*-manager` service in the monorepo. Provide
 - Single-consumer or dual-consumer packages belong in the consuming service(s).
 - If a package's usage later grows to 3+ services, it can be promoted here.
 - Internal plumbing packages (`rabbitmqhandler`, wrapped by `sockhandler`) are exempt.
+- Exception: `pkg/migrationhandler` is added ahead of its third consumer, because the services that own their tables adopt it one at a time (`bin-tag-manager` is the first). The rule is met once a third service adopts it.
 
 **Why:** Every change here triggers verification across all 38 consumer services. Keep the library lean.
 
@@ -30,6 +31,7 @@ Shared Go library used by every `bin-*-manager` service in the monorepo. Provide
 | `pkg/rabbitmqhandler` | Low-level RabbitMQ connection/channel management (internal) |
 | `pkg/circuitbreakerhandler` | Per-target CB; 5 failures → 30s open; integrated into every RPC |
 | `pkg/databasehandler` | SQL helpers: `PrepareFields`, `GetDBFields`, `ScanRow` |
+| `pkg/migrationhandler` | Startup schema migrations for services that own their tables: `Run`, `Migrator`, `NewMigrateCommand` (recovery command) and `migrationcheck.Check` (structure check of the migration files). Public API is frozen: additions only; a behavior change needs the two engine run of `scripts/verify-service-migrations.sh` (see [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md)) |
 | `pkg/utilhandler` | UUID, hashing, timestamp, email validation, URL utilities |
 
 ## Key rules

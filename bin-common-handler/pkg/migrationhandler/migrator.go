@@ -1,5 +1,7 @@
-// Package migrator applies the embedded schema migrations of bin-tag-manager with golang-migrate.
-package migrator
+// Package migrationhandler applies the embedded schema migrations of a service that owns its
+// tables with golang-migrate, and provides the recovery command (status, up, down, force) that
+// the service control binary registers.
+package migrationhandler
 
 import (
 	"database/sql"

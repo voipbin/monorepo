@@ -14,14 +14,13 @@ pkg/dbhandler/          — MySQL + Redis cache coordination
 pkg/cachehandler/       — Redis cache operations for tag lookups
 models/tag/             — Data structures (Tag, event types, WebhookMessage)
 migrations/             — Embedded golang-migrate SQL files (service-owned schema of tag_tags)
-internal/migrator/      — Applies migrations at startup; used by tag-control migrate
 ```
 
 ## Layer Responsibilities
 
 | Layer | Package | Responsibility |
 |-------|---------|---------------|
-| Entry | `cmd/tag-manager` | Configuration; applies the embedded schema migrations right after the database connection (before the cache and RabbitMQ), then starts ListenHandler and SubscribeHandler |
+| Entry | `cmd/tag-manager` | Configuration; applies the embedded schema migrations (`bin-common-handler/pkg/migrationhandler`) right after the database connection (before the cache and RabbitMQ), then starts ListenHandler and SubscribeHandler |
 | Transport | `pkg/listenhandler` | Consumes `bin-manager.tag-manager.request`; regex-routes to taghandler |
 | Events | `pkg/subscribehandler` | Consumes customer events via a pattern binding on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407); cascades customer deletes |
 | Business logic | `pkg/taghandler` | CRUD operations; publishes `tag_created`, `tag_updated`, `tag_deleted` events |

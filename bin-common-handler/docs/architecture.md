@@ -20,6 +20,7 @@ bin-common-handler/
     ├── rabbitmqhandler/        — RabbitMQ connection and queue management
     ├── circuitbreakerhandler/  — per-target circuit breaker
     ├── databasehandler/        — DB utilities (PrepareFields, GetDBFields, ScanRow)
+    ├── migrationhandler/       — startup schema migrations of services that own their tables (golang-migrate), migrate recovery command, migration file structure check
     └── utilhandler/            — general utilities (UUID, hashing, time, email, URL)
 ```
 
@@ -87,6 +88,13 @@ DB helper utilities:
 - `GetDBFields` — reflects struct db tags into column name lists
 - `ScanRow` — scans sql.Row/sql.Rows results into structs
 
+### pkg/migrationhandler
+Schema migrations for a service that owns its tables (see [docs/workflows/service-owned-migrations.md](../../docs/workflows/service-owned-migrations.md)):
+- `Run(dsn, fsys, versionTable)` — applies the pending migrations of the embedded files (`New`, `Up`, `Close`)
+- `Migrator` — `New`, `Up`, `Down`, `Status`, `MaxVersion`, `Force`, `Close`; a dedicated connection with `lock_wait_timeout=10`, serialized by a MySQL named lock; a database version ahead of the image is skipped with a warning, a dirty database is refused
+- `NewMigrateCommand(use, open)` — cobra command `status`, `up`, `down`, `force <version>` for the service control binary
+- `migrationcheck.Check(fsys, opt)` — structure check of the migration files (pairs, contiguous numbers, one statement per file, baseline rules, table option allow list)
+
 ### pkg/utilhandler
 General-purpose utilities:
 - UUID generation and parsing
@@ -102,6 +110,7 @@ General-purpose utilities:
 - Single-consumer or dual-consumer packages belong in the consuming service(s).
 - `rabbitmqhandler` is exempt — it is internal plumbing used only by `sockhandler`, which itself serves the whole library.
 - If a package's usage later grows to 3+ services, it can be promoted here.
+- Exception: `pkg/migrationhandler` is added ahead of its third consumer, because the services that own their tables adopt it one at a time (`bin-tag-manager` is the first). The rule is met once a third service adopts it.
 
 Every change to `bin-common-handler` triggers verification across all 37 consumer services. Keep the library lean.
 
