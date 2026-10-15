@@ -9,6 +9,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -22,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-registrar-manager/internal/config"
+	"monorepo/bin-registrar-manager/migrations"
 	"monorepo/bin-registrar-manager/pkg/cachehandler"
 	"monorepo/bin-registrar-manager/pkg/contacthandler"
 	"monorepo/bin-registrar-manager/pkg/customerdomainhandler"
@@ -82,6 +84,11 @@ func runDaemon() error {
 		return errors.Wrapf(err, "could not connect to the voipbin database")
 	}
 	defer commondatabasehandler.Close(sqlDBBin)
+
+	// apply the schema migrations of the owned tables (bin database only) before the asterisk database, the cache and anything else use them
+	if errMigrate := migrationhandler.Run(config.Get().DatabaseDSNBin, migrations.FS, migrations.VersionTable); errMigrate != nil {
+		return errors.Wrapf(errMigrate, "could not apply the database migrations")
+	}
 
 	sqlDBAsterisk, err := commondatabasehandler.Connect(config.Get().DatabaseDSNAsterisk)
 	if err != nil {

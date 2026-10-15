@@ -91,6 +91,20 @@ rabbitmqctl list_queues name messages consumers | grep registrar
 redis-cli -n 1 keys "registrar:contact:*" | head -10
 ```
 
+## Database Migrations
+
+The service applies the migrations of its four bin tables (`registrar_customer_domains`, `registrar_extensions`, `registrar_sip_auths`, `registrar_trunks`) itself (`migrations/`, embedded) on every start, right after the bin database connection (`DATABASE_DSN_BIN`) and before the asterisk connection, the cache and RabbitMQ; version table `registrar_schema_migrations`. The asterisk database (`DATABASE_DSN_ASTERISK`, `ps_*` tables) is not touched by this mechanism.
+
+| Situation | Behavior | Action |
+|-----------|----------|--------|
+| No pending migration | log `no pending migrations`, normal start | none |
+| Pending migration | applied under a MySQL named lock, then normal start; two instances serialize | none |
+| Database version higher than the image | skipped with a warning, normal start | none |
+| Database marked dirty (a migration failed half way) | the start is refused, the container restarts in a loop | stop the container, check whether the failed file was applied, then `registrar-control migrate force <version>` against that database (the image is distroless, so there is no shell for `docker exec`: run the control binary of the same image in a one-off container with the same environment, `--entrypoint /app/bin/registrar-control <image> migrate force <version>`) |
+| Lock not obtained within 10 seconds | the start fails and the container restarts | none, a restart retries |
+
+Check the state with `./bin/registrar-control migrate status` (bin database only; like every registrar-control command it loads the whole configuration, so `DOMAIN_NAME_EXTENSION` and `DOMAIN_NAME_TRUNK` must be set). The new database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`. File rules and checks: [docs/workflows/service-owned-migrations.md](../../docs/workflows/service-owned-migrations.md).
+
 ## Deployment
 
 bin-registrar-manager deploys via Komodo (VOIP-1348 Tier 2 rollout,

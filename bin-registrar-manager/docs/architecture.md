@@ -12,8 +12,9 @@ This service is unique in using **two separate databases**: the Asterisk DB (`ps
 
 | Package | Role |
 |---------|------|
-| `cmd/registrar-manager` | Daemon entry point; establishes both DB connections |
-| `cmd/registrar-control` | CLI tool for direct management (bypasses RabbitMQ); hosts the VOIP-1385 domain migration batch (`domain-migrate`, `domain-migrate-rollback`) |
+| `cmd/registrar-manager` | Daemon entry point; establishes both DB connections and applies the embedded schema migrations of the bin database right after the bin connection (before the asterisk connection, the cache and RabbitMQ) |
+| `cmd/registrar-control` | CLI tool for direct management (bypasses RabbitMQ); hosts the VOIP-1385 domain migration batch (`domain-migrate`, `domain-migrate-rollback`); `migrate` command for the schema migrations (bin database only) |
+| `migrations` | Embedded golang-migrate SQL files (service-owned schema of the four bin tables; the asterisk `ps_*` tables are not part of it) |
 | `pkg/listenhandler` | RabbitMQ RPC request handler with regex URI routing |
 | `pkg/subscribehandler` | Event subscriber: customer domain provisioning on create, cascading cleanup on delete |
 | `pkg/extensionhandler` | Business logic for SIP extension lifecycle |

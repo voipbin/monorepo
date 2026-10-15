@@ -10,10 +10,12 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-registrar-manager/internal/config"
+	"monorepo/bin-registrar-manager/migrations"
 	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/models/trunk"
@@ -71,6 +73,11 @@ func initCommand() *cobra.Command {
 	// Domain migration subcommands (VOIP-1385)
 	cmdRoot.AddCommand(cmdDomainMigrate())
 	cmdRoot.AddCommand(cmdDomainMigrateRollback())
+
+	// the migrate commands open only the bin database, so they do not depend on the asterisk database, Redis or RabbitMQ
+	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {
+		return migrationhandler.New(config.Get().DatabaseDSNBin, migrations.FS, migrations.VersionTable)
+	}))
 
 	return cmdRoot
 }
