@@ -10,6 +10,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -21,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-message-manager/internal/config"
+	"monorepo/bin-message-manager/migrations"
 	"monorepo/bin-message-manager/pkg/cachehandler"
 	"monorepo/bin-message-manager/pkg/dbhandler"
 	"monorepo/bin-message-manager/pkg/listenhandler"
@@ -75,6 +77,12 @@ func runService() error {
 		return err
 	}
 	defer commondatabasehandler.Close(sqlDB)
+
+	// apply the schema migrations before anything else uses the database
+	if errMigrate := migrationhandler.Run(cfg.DatabaseDSN, migrations.FS, migrations.VersionTable); errMigrate != nil {
+		log.Errorf("Could not apply the database migrations. err: %v", errMigrate)
+		return errMigrate
+	}
 
 	// connect to cache
 	cache := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)

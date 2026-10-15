@@ -14,7 +14,8 @@ cmd/message-manager/main.go
 ```
 
 Supporting binary:
-- `cmd/message-control/` — CLI for direct DB/cache operations, bypasses RabbitMQ RPC.
+- `cmd/message-control/` — CLI for direct DB/cache operations, bypasses RabbitMQ RPC. Its `migrate` command (status, up, down, force) opens only the database.
+- `migrations/` — embedded schema migration files; `cmd/message-manager` applies them right after the database connection, before the cache and RabbitMQ.
 
 **No SubscribeHandler.** Provider delivery status is received via inbound `POST /v1/hooks` webhooks forwarded through `bin-hook-manager`.
 
