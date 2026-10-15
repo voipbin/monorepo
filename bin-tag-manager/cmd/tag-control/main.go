@@ -96,6 +96,7 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdDelete())
 
 	cmdRoot.AddCommand(cmdSub)
+	cmdRoot.AddCommand(cmdMigrate())
 	return cmdRoot
 }
 

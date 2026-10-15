@@ -126,7 +126,7 @@ NOJIRA-brief-description-of-change
 
 **NEVER commit directly to `main` without explicit user permission.**
 **Merge responsibility:** Merging to `main` is done by the QA role after QA verification passes (squash only). Developer roles (backend, frontend, infra) never merge; they hand over after the review loop and CI (lint, test, build) pass on their branch. A review loop alone does not authorize a merge. PRs led by the coordinating role (the non-developer role that leads CI, scripts and documentation changes) are closed the same way, through a QA verification step, and that role does not merge them itself. A direct merge by anyone other than QA happens only when the maintainer (the human repository owner) explicitly instructs it. PRs that need human confirmation (see the exceptions in this section) are verified by QA but confirmed and merged by the maintainer. After a merge, release approvals (build-approval, release-approval) are done only for monorepo and monorepo-javascript, never for monorepo-etc (those approvals stay with the maintainer until its auto-deploy conversion), and service health is verified after deploy.
-**Human confirmation is still required (QA must not auto-merge) for:** PRs that contain destructive database schema operations (dropping a table, column, index or constraint, narrowing or changing a column type, renaming, data conversion, and similar) or where destructiveness is ambiguous, and `monorepo-monitoring` PRs authored by QA itself. The maintainer confirms these. PRs to `monorepo-etc` and `monorepo-monitoring` written by the infra role (the developer role for infrastructure) are merged by QA, without human confirmation, after QA's infrastructure verification. A `monorepo-monitoring` merge deploys on `main` and is followed by a post-deploy check. Other PRs that include DB migrations (`bin-dbscheme-manager`, alembic, `*/migrations/*`, `*.sql`, and the migration runner of services that migrate the database on startup such as `bin-timeline-manager` and `bin-rag-manager`) are merged by QA only after a strengthened schema verification: a written impact analysis (destructiveness, compatibility between the old code and the new schema and between the new code and the old schema, lock and duration, rollback, data loss), a check that no earlier migration of the same service is still unapplied, independent re-verification by QA, and an upgrade, downgrade, upgrade run on a scratch database. ClickHouse migrations of `bin-timeline-manager` must be idempotent because two replicas run them at startup without a database lock. Applying `bin-dbscheme-manager` migrations to production remains a manual step.
+**Human confirmation is still required (QA must not auto-merge) for:** PRs that contain destructive database schema operations (dropping a table, column, index or constraint, narrowing or changing a column type, renaming, data conversion, and similar) or where destructiveness is ambiguous, and `monorepo-monitoring` PRs authored by QA itself. The maintainer confirms these. PRs to `monorepo-etc` and `monorepo-monitoring` written by the infra role (the developer role for infrastructure) are merged by QA, without human confirmation, after QA's infrastructure verification. A `monorepo-monitoring` merge deploys on `main` and is followed by a post-deploy check. Other PRs that include DB migrations (`bin-dbscheme-manager`, alembic, `*/migrations/*`, `*.sql`, and the `migrations/` directory and the migration runner of services that own their schema and migrate the database on startup, currently `bin-timeline-manager`, `bin-rag-manager` and `bin-tag-manager`) are merged by QA only after a strengthened schema verification: a written impact analysis (destructiveness, compatibility between the old code and the new schema and between the new code and the old schema, lock and duration, rollback, data loss), a check that no earlier migration of the same service is still unapplied, independent re-verification by QA, and an upgrade, downgrade, upgrade run on a scratch database. ClickHouse migrations of `bin-timeline-manager` must be idempotent because two replicas run them at startup without a database lock. Applying `bin-dbscheme-manager` migrations to production remains a manual step.
 
 **CRITICAL: ALL PR merges MUST use squash merge — no exceptions.**
 
@@ -158,9 +158,9 @@ This keeps the main repository directory in sync with remote so new worktrees st
 
 → Detail: [docs/workflows/git-workflow-guide.md](docs/workflows/git-workflow-guide.md)
 
-## CRITICAL: Database via Alembic only
+## CRITICAL: Database schema changes: Alembic or service-owned migrations
 
-**CRITICAL: Database schema changes ONLY through Alembic migrations in `bin-dbscheme-manager`.**
+**CRITICAL: Tables owned by `bin-dbscheme-manager` (Alembic) change ONLY through Alembic migrations. Tables of a service that has converted to service-owned migrations change ONLY through that service's `migrations/` directory (golang-migrate, applied at service startup).** The converted services are listed in `bin-dbscheme-manager/docs/schema-ownership.md` (currently `bin-tag-manager`). The `bin-manager` Alembic stream is frozen: do not add new migrations to it (`asterisk_config` is not frozen).
 
 **What AI CAN do:**
 - ✅ Create migration files (`alembic -c alembic.ini revision -m "..."`)
@@ -171,11 +171,12 @@ This keeps the main repository directory in sync with remote so new worktrees st
 - 🚫 Run `alembic upgrade` (applies migrations to database)
 - 🚫 Run `alembic downgrade` (rolls back database changes)
 - 🚫 Execute any SQL that modifies database schema
+- 🚫 Run a service's own migration command (for example `tag-control migrate up|down|force`) against anything other than a local throwaway database
 - 🚫 Manually create migration files with hand-picked revision IDs — always use `alembic revision` to generate them (see `bin-dbscheme-manager/CLAUDE.md` for details)
 
 **Why:** Database changes are irreversible and require human authorization, testing, and VPN access.
 
-→ Detail: `bin-dbscheme-manager/CLAUDE.md`, [docs/workflows/common-workflows.md#database-migrations-with-alembic](docs/workflows/common-workflows.md#database-migrations-with-alembic)
+→ Detail: `bin-dbscheme-manager/CLAUDE.md`, `bin-tag-manager/CLAUDE.md` (service-owned migrations), [docs/workflows/common-workflows.md#database-migrations-with-alembic](docs/workflows/common-workflows.md#database-migrations-with-alembic)
 
 ## CRITICAL: RST docs sync
 

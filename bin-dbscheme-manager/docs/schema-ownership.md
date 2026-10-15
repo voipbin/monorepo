@@ -4,6 +4,16 @@ This document maps each database table to the service that owns it. "Owns" means
 
 All tables below are in the `bin_manager` MySQL database managed by `bin-manager/`. For Asterisk PJSIP tables (in the `asterisk` database), see the bottom section.
 
+## Service-Owned Schemas
+
+Tables are moving from Alembic to the owning service, which keeps its own `migrations/` directory and applies it at startup (see [bin-tag-manager/CLAUDE.md](../../bin-tag-manager/CLAUDE.md)). The `bin-manager` Alembic stream is frozen during the transition: do not add new migrations for any table, converted or not (`asterisk_config` is not frozen).
+
+| service | tables | schema source |
+|---|---|---|
+| bin-tag-manager | tag_tags | `bin-tag-manager/migrations/` |
+
+The table below is not exhaustive and is rewritten as services are converted; tables created by recent migrations may be missing from it.
+
 ## Table Ownership
 
 | table_name | owning_service | notes |
@@ -17,7 +27,6 @@ All tables below are in the `bin_manager` MySQL database managed by `bin-manager
 | billing_accounts | bin-billing-manager | Billing account balances |
 | billing_billings | bin-billing-manager | Individual billing events |
 | billing_failed_events | bin-billing-manager | Retry queue for failed billing events |
-| billing_allowances | bin-billing-manager | Per-account usage allowances |
 | call_calls | bin-call-manager | Active and historical calls |
 | call_confbridges | bin-call-manager | Conference bridge legs |
 | call_groupcalls | bin-call-manager | Group call sessions |
@@ -58,9 +67,9 @@ All tables below are in the `bin_manager` MySQL database managed by `bin-manager
 | route_providercalls | bin-route-manager | Per-provider call tracking |
 | storage_accounts | bin-storage-manager | Object storage bucket accounts |
 | storage_files | bin-storage-manager | Stored file metadata |
-| tag_tags | bin-tag-manager | Tag definitions |
-| transcripts | bin-ai-manager | STT transcription results (linked to transcribes) |
-| transcribes | TBD | Transcription job records |
+| tag_tags | bin-tag-manager | Tag definitions. **Service-owned**: schema changes live in `bin-tag-manager/migrations/`, not in Alembic |
+| transcribe_transcripts | bin-transcribe-manager | STT transcription results (linked to transcribes) |
+| transcribe_transcribes | bin-transcribe-manager | Transcription job records |
 | talk_chats | bin-talk-manager | Talk (agent UI) chat sessions |
 | talk_messages | bin-talk-manager | Messages in talk chats |
 | talk_participants | bin-talk-manager | Participants in talk sessions |

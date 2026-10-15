@@ -12,6 +12,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - [docs/schema-ownership.md](docs/schema-ownership.md) — Which service owns each database table
 - [docs/operations.md](docs/operations.md) — Environment access rules, emergency rollback, and common failure recovery
 
+## CRITICAL: bin-manager stream is frozen
+
+Do not add new Alembic migrations to `bin-manager/` (the `bin_manager` database). Tables are moving to their owning services, which keep their own `migrations/` directory and apply it at startup; the converted services are listed in [docs/schema-ownership.md](docs/schema-ownership.md). Never write an Alembic migration for a table of a converted service. The `asterisk_config/` stream is not frozen and keeps using Alembic.
+
 ## CRITICAL: AI Agent Prohibition on alembic upgrade / alembic downgrade
 
 **AI agents MUST NEVER run `alembic upgrade` or `alembic downgrade` against any database other than a local throwaway instance.**
