@@ -11,6 +11,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -22,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-campaign-manager/internal/config"
+	"monorepo/bin-campaign-manager/migrations"
 	"monorepo/bin-campaign-manager/pkg/cachehandler"
 	"monorepo/bin-campaign-manager/pkg/campaigncallhandler"
 	"monorepo/bin-campaign-manager/pkg/campaignhandler"
@@ -41,7 +43,10 @@ var rootCmd = &cobra.Command{
 	Use:   "campaign-manager",
 	Short: "Campaign Manager service for VoIPbin",
 	Long:  `Campaign Manager handles outbound dialing campaigns with service level tracking.`,
-	Run:   runService,
+	RunE:  runService,
+
+	// a failed start is reported by the log and the exit code, not by the usage text
+	SilenceUsage: true,
 }
 
 func init() {
@@ -62,7 +67,7 @@ func main() {
 	}
 }
 
-func runService(cmd *cobra.Command, args []string) {
+func runService(cmd *cobra.Command, args []string) error {
 	fmt.Printf("Hello world!\n")
 
 	// Load configuration
@@ -76,13 +81,15 @@ func runService(cmd *cobra.Command, args []string) {
 	// create dbhandler
 	dbHandler, err := createDBHandler(cfg)
 	if err != nil {
-		logrus.Errorf("Could not connect to the database or failed to initiate the cachehandler. err: ")
-		return
+		logrus.Errorf("Could not connect to the database, apply the migrations or initiate the cachehandler. err: %v", err)
+		return err
 	}
 
 	// run the service
 	run(dbHandler, cfg)
 	<-chDone
+
+	return nil
 }
 
 // initLog initializes log settings
@@ -120,12 +127,18 @@ func signalHandler() {
 	chDone <- true
 }
 
-// createDBHandler connects to the database and cachehandler
+// createDBHandler connects to the database, applies the schema migrations and connects to the cachehandler
 func createDBHandler(cfg *config.Config) (dbhandler.DBHandler, error) {
 	// connect to database
 	db, err := commondatabasehandler.Connect(cfg.DatabaseDSN)
 	if err != nil {
 		logrus.Errorf("Could not access to database. err: %v", err)
+		return nil, err
+	}
+
+	// apply the schema migrations before anything else uses the database
+	if err := migrationhandler.Run(cfg.DatabaseDSN, migrations.FS, migrations.VersionTable); err != nil {
+		logrus.Errorf("Could not apply the database migrations. err: %v", err)
 		return nil, err
 	}
 

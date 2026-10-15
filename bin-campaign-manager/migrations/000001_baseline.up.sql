@@ -1,0 +1,81 @@
+-- Baseline of the tables owned by bin-campaign-manager.
+-- Every statement is CREATE TABLE IF NOT EXISTS so that databases that already have the tables
+-- (created by the former Alembic stream) are left untouched.
+-- No table options are given on purpose: the database defaults are inherited, as Alembic did.
+CREATE TABLE IF NOT EXISTS campaign_campaigncalls (
+  id binary(16) NOT NULL,
+  customer_id binary(16) DEFAULT NULL,
+  campaign_id binary(16) DEFAULT NULL,
+  outplan_id binary(16) DEFAULT NULL,
+  outdial_id binary(16) DEFAULT NULL,
+  outdial_target_id binary(16) DEFAULT NULL,
+  queue_id binary(16) DEFAULT NULL,
+  activeflow_id binary(16) DEFAULT NULL,
+  flow_id binary(16) DEFAULT NULL,
+  reference_type varchar(255) DEFAULT NULL,
+  reference_id binary(16) DEFAULT NULL,
+  status varchar(255) DEFAULT NULL,
+  result varchar(255) DEFAULT NULL,
+  source json DEFAULT NULL,
+  destination json DEFAULT NULL,
+  destination_index int DEFAULT NULL,
+  try_count int DEFAULT NULL,
+  tm_create datetime(6) DEFAULT NULL,
+  tm_update datetime(6) DEFAULT NULL,
+  tm_delete datetime(6) DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY idx_campaign_campaigncalls_customer_id (customer_id),
+  KEY idx_campaign_campaigncalls_campaign_id (campaign_id),
+  KEY idx_campaign_campaigncalls_outdial_target_id (outdial_target_id),
+  KEY idx_campaign_campaigncalls_activeflow_id (activeflow_id),
+  KEY idx_campaign_campaigncalls_reference_id (reference_id),
+  KEY idx_campaign_campaigncalls_campaign_id_status (campaign_id, status)
+);
+
+CREATE TABLE IF NOT EXISTS campaign_campaigns (
+  id binary(16) NOT NULL,
+  customer_id binary(16) DEFAULT NULL,
+  type varchar(255) DEFAULT NULL,
+  execute varchar(255) DEFAULT NULL,
+  name varchar(255) DEFAULT NULL,
+  detail text DEFAULT NULL,
+  status varchar(255) DEFAULT NULL,
+  service_level int DEFAULT NULL,
+  end_handle varchar(255) DEFAULT NULL,
+  flow_id binary(16) DEFAULT NULL,
+  actions json DEFAULT NULL,
+  outplan_id binary(16) DEFAULT NULL,
+  outdial_id binary(16) DEFAULT NULL,
+  queue_id binary(16) DEFAULT NULL,
+  next_campaign_id binary(16) DEFAULT NULL,
+  tm_create datetime(6) DEFAULT NULL,
+  tm_update datetime(6) DEFAULT NULL,
+  tm_delete datetime(6) DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY idx_campaign_campaigns_customer_id (customer_id),
+  KEY idx_campaign_campaigns_flow_id (flow_id),
+  KEY idx_campaign_campaigns_outplan_id (outplan_id),
+  KEY idx_campaign_campaigns_outdial_id (outdial_id),
+  KEY idx_campaign_campaigns_queue_id (queue_id),
+  KEY idx_campaign_campaigns_tm_delete (tm_delete)
+);
+
+CREATE TABLE IF NOT EXISTS campaign_outplans (
+  id binary(16) NOT NULL,
+  customer_id binary(16) DEFAULT NULL,
+  name varchar(255) DEFAULT NULL,
+  detail text DEFAULT NULL,
+  source json DEFAULT NULL,
+  dial_timeout int DEFAULT NULL,
+  try_interval int DEFAULT NULL,
+  max_try_count_0 int DEFAULT NULL,
+  max_try_count_1 int DEFAULT NULL,
+  max_try_count_2 int DEFAULT NULL,
+  max_try_count_3 int DEFAULT NULL,
+  max_try_count_4 int DEFAULT NULL,
+  tm_create datetime(6) DEFAULT NULL,
+  tm_update datetime(6) DEFAULT NULL,
+  tm_delete datetime(6) DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY idx_campaign_outplans_customer_id (customer_id)
+);

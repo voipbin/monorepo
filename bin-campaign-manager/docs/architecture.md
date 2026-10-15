@@ -28,6 +28,7 @@ graph TD
 | `pkg/listenhandler` | RabbitMQ RPC request router (regex pattern matching) | `sock.Request`, `sock.Response` |
 | `pkg/subscribehandler` | Consumes events from call-manager and flow-manager to track call outcomes | queue event structs |
 | `pkg/dbhandler` | MySQL CRUD operations | all model structs |
+| `migrations` | Embedded golang-migrate SQL files (service-owned schema of the three campaign tables); applied by `cmd/campaign-manager` at startup through `bin-common-handler/pkg/migrationhandler`, after the database connection and before the cache connection | `migrations.FS`, `migrations.VersionTable` |
 | `pkg/cachehandler` | Redis fast-path lookups for campaigns and campaigncalls | `campaign.Campaign`, `campaigncall.Campaigncall` |
 | `models/campaign` | Campaign data model, status constants, event types | `campaign.Campaign`, `campaign.Status` |
 | `models/campaigncall` | Campaigncall data model, status constants | `campaigncall.Campaigncall`, `campaigncall.Status` |
