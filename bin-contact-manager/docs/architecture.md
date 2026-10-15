@@ -10,8 +10,9 @@
 
 | Package | Role |
 |---------|------|
-| `cmd/contact-manager` | Daemon entry point; wires config, DB, cache, and handlers |
-| `cmd/contact-control` | CLI tool for direct DB/cache management (bypasses RabbitMQ) |
+| `cmd/contact-manager` | Daemon entry point; wires config, DB, cache, and handlers; applies the embedded schema migrations right after the DB connection (before the cache and RabbitMQ) |
+| `cmd/contact-control` | CLI tool for direct DB/cache management (bypasses RabbitMQ); `migrate` command for the schema migrations |
+| `migrations` | Embedded golang-migrate SQL files (service-owned schema of the nine contact tables) |
 | `cmd/case-control` | CLI tool for case management (no NotifyHandler; publishes nothing) |
 | `pkg/listenhandler` | RabbitMQ RPC request handler with regex URI routing |
 | `pkg/subscribehandler` | Event subscriber for cascading deletes from customer-manager |
