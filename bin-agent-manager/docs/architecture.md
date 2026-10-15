@@ -18,6 +18,7 @@ graph TD
 
 | Package | Role | Key Types |
 |---------|------|-----------|
+| `migrations` | Embedded golang-migrate SQL files (service-owned schema of `agent_agents` and `agent_addresses`); applied by `cmd/agent-manager` through `bin-common-handler/pkg/migrationhandler` right after the database connection, before the cache and RabbitMQ; `agent-control migrate` is the recovery tool | embedded `migrations.FS` |
 | `pkg/agenthandler` | Core agent logic: CRUD, login/auth, status management, permission updates, password reset, address management | `agent.Agent`, `agent.Status`, `agent.Permission` |
 | `pkg/metricshandler` | Prometheus metrics registration and recording for agent operations | Prometheus counter/histogram types |
 | `pkg/listenhandler` | RabbitMQ RPC request router (regex pattern matching) | `sock.Request`, `sock.Response` |

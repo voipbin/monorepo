@@ -25,6 +25,18 @@
 | `golangci-lint run -v --timeout 5m` | Lint |
 | `go generate ./...` | Regenerate mocks |
 
+## Database Migrations
+
+The schema of `agent_agents` and `agent_addresses` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`, shared code in `bin-common-handler/pkg/migrationhandler`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax. The full rules (file naming, one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract, baseline conversion) are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
+
+- Files: `migrations/NNNNNN_<table>_<verb>_<type>_<items>.up.sql` and `.down.sql`. `000001_baseline` is the schema at the time of the conversion (`CREATE TABLE IF NOT EXISTS`, no table options, down is the no-op `SELECT 1`). Version table: `agent_schema_migrations`.
+- `cmd/agent-manager` runs `migrationhandler.Run` right after the database connection, before the cache and RabbitMQ. Failure stops the start (non-zero exit).
+- `agent-control migrate status|up|down|force <version>` talks to the database only (no Redis or RabbitMQ). Run `up`, `down` and `force` only against a local throwaway database or as the recovery step in [docs/operations.md](docs/operations.md).
+- A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do); other defaults make the table definitions differ from the Alembic head.
+- New database order: Alembic first, then this service. The reverse fails in the Alembic stream (`Table 'agent_agents' already exists`) and is unsupported while the Alembic stream still creates the agent tables.
+- Update `scripts/database_scripts_test/*.sql` (the sqlite test schema) by hand when the schema changes.
+- Verification: `go test ./migrations/` (structure) and, from the repo root, `ALEMBIC_VENV=<venv> scripts/verify-service-migrations.sh bin-agent-manager` (both engines).
+
 ## Architecture
 → [docs/architecture.md](docs/architecture.md)
 
