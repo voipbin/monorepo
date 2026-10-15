@@ -1,0 +1,70 @@
+-- Baseline of the tables owned by bin-queue-manager.
+-- Every statement is CREATE TABLE IF NOT EXISTS so that databases that already have the table
+-- (created by the former Alembic stream) are left untouched.
+-- No table options are given on purpose: the database defaults are inherited, as Alembic did.
+CREATE TABLE IF NOT EXISTS queue_queues (
+  id binary(16) NOT NULL,
+  customer_id binary(16) DEFAULT NULL,
+  name varchar(255) DEFAULT NULL,
+  detail text DEFAULT NULL,
+  routing_method varchar(16) DEFAULT NULL,
+  tag_ids json DEFAULT NULL,
+  wait_flow_id binary(16) DEFAULT NULL,
+  wait_queue_call_ids json DEFAULT NULL,
+  wait_timeout int(11) DEFAULT NULL,
+  service_queue_call_ids json DEFAULT NULL,
+  service_timeout int(11) DEFAULT NULL,
+  total_incoming_count int(11) DEFAULT NULL,
+  total_serviced_count int(11) DEFAULT NULL,
+  total_abandoned_count int(11) DEFAULT NULL,
+  tm_create datetime(6) DEFAULT NULL,
+  tm_update datetime(6) DEFAULT NULL,
+  tm_delete datetime(6) DEFAULT NULL,
+  direct_id binary(16) DEFAULT NULL,
+  direct_hash varchar(255) DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY idx_queue_queues_customer_id (customer_id)
+);
+CREATE TABLE IF NOT EXISTS queue_queuecalls (
+  id binary(16) NOT NULL,
+  customer_id binary(16) DEFAULT NULL,
+  queue_id binary(16) DEFAULT NULL,
+  reference_type varchar(255) DEFAULT NULL,
+  reference_id binary(16) DEFAULT NULL,
+  reference_activeflow_id binary(16) DEFAULT NULL,
+  forward_action_id binary(16) DEFAULT NULL,
+  confbridge_id binary(16) DEFAULT NULL,
+  groupcall_id binary(16) DEFAULT NULL,
+  source json DEFAULT NULL,
+  routing_method varchar(255) DEFAULT NULL,
+  tag_ids json DEFAULT NULL,
+  status varchar(255) DEFAULT NULL,
+  service_agent_id binary(16) DEFAULT NULL,
+  timeout_wait int(11) DEFAULT NULL,
+  timeout_service int(11) DEFAULT NULL,
+  duration_waiting int(11) DEFAULT 0,
+  duration_service int(11) DEFAULT 0,
+  tm_create datetime(6) DEFAULT NULL,
+  tm_service datetime(6) DEFAULT NULL,
+  tm_update datetime(6) DEFAULT NULL,
+  tm_end datetime(6) DEFAULT NULL,
+  tm_delete datetime(6) DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY idx_queue_queuecalls_customer_id (customer_id),
+  KEY idx_queue_queuecalls_queue_id (queue_id),
+  KEY idx_queue_queuecalls_reference_id (reference_id),
+  KEY idx_queue_queuecalls_reference_activeflow_id (reference_activeflow_id),
+  KEY idx_queue_queuecalls_service_agent_id (service_agent_id),
+  KEY idx_queue_queuecalls_queue_id_status (queue_id, status)
+);
+CREATE TABLE IF NOT EXISTS queue_queuecallreferences (
+  id binary(16) NOT NULL,
+  customer_id binary(16) DEFAULT NULL,
+  type varchar(255) DEFAULT NULL,
+  current_queuecall_id binary(16) DEFAULT NULL,
+  queuecall_ids json DEFAULT NULL,
+  tm_create datetime(6) DEFAULT NULL,
+  tm_update datetime(6) DEFAULT NULL,
+  tm_delete datetime(6) DEFAULT NULL,
+  PRIMARY KEY (id)
+);

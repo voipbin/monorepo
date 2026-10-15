@@ -23,6 +23,7 @@ graph TD
 | `pkg/queuehandler` | Queue CRUD, routing configuration, agent membership management, queue execution logic | `queue.Queue`, `queue.RoutingMethod` |
 | `pkg/queuecallhandler` | Queuecall lifecycle: create, execute, kick, timeout handling, health checks, status transitions | `queuecall.Queuecall`, `queuecall.Status` |
 | `pkg/listenhandler` | RabbitMQ RPC request router (regex pattern matching) | `sock.Request`, `sock.Response` |
+| `migrations` | Embedded golang-migrate SQL files (service-owned schema of the three queue tables); `cmd/queue-manager` applies them right after the DB connection (before the cache and RabbitMQ), `cmd/queue-control migrate` manages them | `migrations.FS`, `migrations.VersionTable` |
 | `pkg/subscribehandler` | Consumes call-manager, customer-manager, and agent-manager events via pattern bindings on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407) | queue event structs |
 | `pkg/dbhandler` | MySQL CRUD operations | all model structs |
 | `pkg/cachehandler` | Redis fast-path lookups for queues and queuecalls | `queue.Queue`, `queuecall.Queuecall` |
