@@ -10,6 +10,7 @@ import (
 	"log"
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -19,6 +20,7 @@ import (
 	"github.com/spf13/viper"
 
 	"monorepo/bin-schedule-manager/internal/config"
+	"monorepo/bin-schedule-manager/migrations"
 	"monorepo/bin-schedule-manager/models/execution"
 	"monorepo/bin-schedule-manager/models/schedule"
 	"monorepo/bin-schedule-manager/pkg/cachehandler"
@@ -87,6 +89,10 @@ func initCommand() *cobra.Command {
 
 	cmdRoot.AddCommand(cmdSchedule)
 	cmdRoot.AddCommand(cmdExecution)
+	// the migrate commands open only the database, so they do not depend on Redis or RabbitMQ
+	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {
+		return migrationhandler.New(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable)
+	}))
 	return cmdRoot
 }
 
