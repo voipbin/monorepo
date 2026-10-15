@@ -11,6 +11,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
@@ -24,6 +25,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-call-manager/internal/config"
+	"monorepo/bin-call-manager/migrations"
 	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-call-manager/pkg/arieventhandler"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
@@ -80,6 +82,12 @@ func runCommand(cmd *cobra.Command, args []string) error {
 		return errors.Wrapf(err, "could not connect to database")
 	}
 	defer commondatabasehandler.Close(sqlDB)
+
+	// apply the schema migrations of the owned tables before the cache and anything else use them
+	if errMigrate := migrationhandler.Run(cfg.DatabaseDSN, migrations.FS, migrations.VersionTable); errMigrate != nil {
+		log.Errorf("Could not apply the database migrations. err: %v", errMigrate)
+		return errors.Wrapf(errMigrate, "could not apply the database migrations")
+	}
 
 	// connect to cache
 	cache := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)

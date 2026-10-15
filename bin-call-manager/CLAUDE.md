@@ -28,6 +28,7 @@
 | `go generate ./...` | Regenerate mocks |
 | `./bin/call-control call get --id <uuid>` | Inspect a call (reads DB/Redis directly; still dials RabbitMQ on startup via `initHandler`, with an unbounded retry loop if unreachable — does not bypass it) |
 | `./bin/call-control call update-status --id <uuid> --status hangup` | Force-update call status |
+| `./bin/call-control migrate status` | Schema migration state (database only, no Redis or RabbitMQ) |
 
 ## Architecture
 → [docs/architecture.md](docs/architecture.md)
@@ -80,6 +81,21 @@ This service uses the **Squirrel query builder**, like the rest of the monorepo 
 - the `tm_delete = "9999-01-01 00:00:00.000000"` sentinel for active records — used by the other tables.
 
 Match whichever convention the table you are touching already uses. `commondatabasehandler.ApplyFields` translates a `deleted` filter to `tm_delete IS NULL` / `IS NOT NULL`, so it suits the first convention only.
+
+### Database Migrations
+
+The schema of `call_bridges`, `call_calls`, `call_channels`, `call_confbridges`, `call_groupcalls`, `call_outbound_configs` and `call_recordings` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax.
+
+- Files: `migrations/NNNNNN_<description>.up.sql` and `.down.sql` (six digits, from 000001 without gaps). `000001_baseline` is the schema at the time of the conversion (`CREATE TABLE IF NOT EXISTS`; only `call_outbound_configs` has a table option, `DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`; down is the no-op `SELECT 1`). Version table: `call_schema_migrations`.
+- `cmd/call-manager` runs `migrationhandler.Run` in `runCommand`, right after the database connection and before the cache and RabbitMQ. Failure stops the start (non-zero exit).
+- `call-control migrate status|up|down|force <version>` talks to the database only. Run `up`, `down` and `force` only against a local throwaway database.
+- The migration code is the shared `bin-common-handler/pkg/migrationhandler`. Rules for new files (one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract), the checks and the recovery steps are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
+- A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do); other defaults make the table definitions differ from the Alembic head.
+- New database order: Alembic first, then this service. The reverse fails in the Alembic stream (an `already exists` error) and is unsupported while the Alembic stream still creates the call tables.
+- The sqlite test schema `scripts/database_scripts_test/table_*.sql` is updated by hand when the schema changes; it is not generated from `migrations/`.
+- No customer row is seeded into `call_outbound_configs`: bin-api-manager creates it when a customer is created, and a missing row denies PSTN destinations.
+- Structure checks: `go test ./migrations/`. Git relative check: `scripts/check-service-migrations.sh bin-call-manager` after `git fetch origin main`. Dynamic check on scratch containers: `ALEMBIC_VENV=<venv> scripts/verify-service-migrations.sh bin-call-manager` (repo root; the daemon check needs `DAEMON_ENV` with `PROMETHEUS_ENDPOINT=/metrics`).
+- `call_outbound_configs` is created with `COLLATE=utf8mb4_0900_ai_ci` written out, so on MariaDB the dump differs from the Alembic head in the collation of its `name`, `detail` and `codecs` columns and of the table (4 `TBL`/`COL` lines per side). The comparison with the Alembic head therefore runs with `E1_ALLOWED_DIFF` listing exactly those pairs; MySQL 8.0 has no difference.
 
 ### Cache Strategy
 
