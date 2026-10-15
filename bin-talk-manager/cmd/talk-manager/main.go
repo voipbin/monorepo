@@ -15,11 +15,13 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondb "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 	commonnotify "monorepo/bin-common-handler/pkg/notifyhandler"
 	commonreq "monorepo/bin-common-handler/pkg/requesthandler"
 	commonsock "monorepo/bin-common-handler/pkg/sockhandler"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/internal/config"
+	"monorepo/bin-talk-manager/migrations"
 	"monorepo/bin-talk-manager/pkg/chathandler"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 	"monorepo/bin-talk-manager/pkg/listenhandler"
@@ -70,6 +72,11 @@ func runDaemon() error {
 		logrus.Fatalf("Could not connect to the database: %v", err)
 	}
 	defer commondb.Close(db)
+
+	// apply the schema migrations before anything else uses the database
+	if errMigrate := migrationhandler.Run(cfg.DatabaseDSN, migrations.FS, migrations.VersionTable); errMigrate != nil {
+		logrus.Fatalf("Could not apply the database migrations: %v", errMigrate)
+	}
 
 	// Initialize RabbitMQ
 	sockHandler := commonsock.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
