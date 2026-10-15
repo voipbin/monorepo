@@ -22,7 +22,7 @@ Run the following SQL commands:
 
 ```sql
 CREATE DATABASE asterisk CHARACTER SET utf8 COLLATE utf8_general_ci;
-CREATE DATABASE voipbin CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE bin_manager CHARACTER SET utf8 COLLATE utf8_general_ci;
 ```
 
 ## Initial Setup

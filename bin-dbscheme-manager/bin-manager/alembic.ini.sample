@@ -2,7 +2,7 @@
 script_location = main
 
 # Create database
-# CREATE DATABASE voipbin CHARACTER SET utf8 COLLATE utf8_general_ci;
+# CREATE DATABASE bin_manager CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 sqlalchemy.url = mysql://root@localhost/bin_manager
 
