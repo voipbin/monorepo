@@ -12,6 +12,7 @@
 | 27 queues failing to subscribe | RabbitMQ connection dropped | Check RabbitMQ connectivity; service will reconnect automatically |
 | Migration failure at startup | Missing `migrations_path` or ClickHouse unavailable | Verify `CLICKHOUSE_ADDRESS` and `MIGRATIONS_PATH` env vars |
 | `Dirty database version 4. Fix and force version.` at startup | The instance previously crash-looped on migration 000004's comment-semicolon bug (fixed 2026-07-31) and golang-migrate left `schema_migrations` at `dirty=1, version=4`; `m.Up()` refuses to proceed past a dirty version even after the file is fixed | One-time manual recovery, then restart the service. golang-migrate's ClickHouse `schema_migrations` is an append-only TinyLog table (no mutations; `Version()` reads the newest row by `sequence`), so recovery is an INSERT of a clean row rolling back to version 3: `INSERT INTO schema_migrations (version, dirty, sequence) VALUES (3, 0, toUnixTimestamp64Nano(now64(9)))` — the fixed 000004 then re-runs from a clean state. Its statements are safe to re-run (`ADD INDEX IF NOT EXISTS`; `MATERIALIZE` re-runs are harmless rewrites). Affects any ClickHouse that attempted 000004 between 2026-06-08 and the fix |
+| `could not apply the migrations: Dirty database version N` at startup (MySQL, analysis store) | A MySQL migration failed midway and left `timeline_schema_migrations` dirty; the daemon refuses to start on a dirty database | Inspect whether the failed file's statement was applied, then `timeline-control migrate-mysql force <N-1 or N>` against that database and restart. A MySQL migration that only could not get the migration lock (another replica holds it) is not dirty and is resolved by the restart |
 | Correlation returns incomplete results for old events after deploy | Migration 000004 `MATERIALIZE COLUMN`/`MATERIALIZE INDEX` run as async background mutations; migrate marks success before they finish | Monitor `SELECT * FROM system.mutations WHERE is_done = 0 OR latest_fail_reason != ''`; wait for completion before relying on historical correlation |
 
 ## Debugging Guide
@@ -45,6 +46,13 @@ kubectl logs -n voipbin -l app=timeline-manager --tail=200 | grep -E "ERROR|batc
 ./bin/timeline-control migrate version
 ```
 
+**Run the MySQL (analysis store) migration commands (via timeline-control, database only):**
+```bash
+./bin/timeline-control migrate-mysql status
+./bin/timeline-control migrate-mysql up
+```
+The daemon applies these migrations itself at startup (version table `timeline_schema_migrations`). `migrate-mysql force <version>` is the recovery step for a dirty database; `down` is for development only. `migrate` (without `-mysql`) is the ClickHouse command.
+
 **Test RPC query:**
 ```bash
 ./bin/timeline-control health
@@ -61,7 +69,7 @@ kubectl logs -n voipbin -l app=timeline-manager --tail=200 | grep -E "ERROR|batc
 | `homer_api_address` / `HOMER_API_ADDRESS` | Homer SIP analysis API endpoint | optional |
 | `homer_auth_token` / `HOMER_AUTH_TOKEN` | Homer API authentication token | optional |
 | `gcs_bucket_name` / `GCS_BUCKET_NAME` | GCS bucket for PCAP archival | optional |
-| `database_dsn` / `DATABASE_DSN` | MySQL DSN for the activeflow analysis store (VOIP-1197). Optional, but when unset ALL `/v1/analyses` routes return 503 and the analysis feature is disabled — production must set it | optional (required for analysis) |
+| `database_dsn` / `DATABASE_DSN` | MySQL DSN for the activeflow analysis store (VOIP-1197). Optional, but when unset ALL `/v1/analyses` routes return 503 and the analysis feature is disabled; production must set it | optional (required for analysis); the MySQL migrations are applied through it at startup |
 | `analysis_model_stage1` / `ANALYSIS_MODEL_STAGE1` | LLM model for analysis stage 1 (inventory). Unset falls back to the ai-manager gateway default (`gemini-2.5-flash`) | optional |
 | `analysis_model_stage2` / `ANALYSIS_MODEL_STAGE2` | LLM model for analysis stage 2 (content). Same fallback | optional |
 | `analysis_model_stage3` / `ANALYSIS_MODEL_STAGE3` | LLM model for analysis stage 3 (diagnosis). Same fallback | optional |

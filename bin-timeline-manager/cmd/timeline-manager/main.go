@@ -22,10 +22,12 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"monorepo/bin-timeline-manager/internal/config"
+	mysqlmigrations "monorepo/bin-timeline-manager/migrations/mysql"
 	"monorepo/bin-timeline-manager/pkg/analysisdbhandler"
 	"monorepo/bin-timeline-manager/pkg/analysishandler"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
@@ -136,6 +138,13 @@ func runMigrations() error {
 	return nil
 }
 
+// runMySQLMigrations applies the embedded MySQL migrations of the analysis store. The caller
+// runs it only when DATABASE_DSN is set: the MySQL store is optional and the analysis feature is
+// off without it.
+func runMySQLMigrations(dsn string) error {
+	return migrationhandler.Run(dsn, mysqlmigrations.FS, mysqlmigrations.VersionTable)
+}
+
 func initSignal() {
 	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go func() {
@@ -198,6 +207,11 @@ func runServices(ctx context.Context) (<-chan struct{}, error) {
 		sqlDB, err := commondatabasehandler.Connect(cfg.DatabaseDSN)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not connect to analysis MySQL store")
+		}
+
+		// apply the schema migrations of the analysis store before anything uses the tables
+		if errMigrate := runMySQLMigrations(cfg.DatabaseDSN); errMigrate != nil {
+			return nil, errors.Wrapf(errMigrate, "could not run the analysis MySQL migrations")
 		}
 
 		analysisDB := analysisdbhandler.NewAnalysisDBHandler(sqlDB)
