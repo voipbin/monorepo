@@ -32,6 +32,8 @@ graph TD
 
 | Package | Role | Key Types |
 |---------|------|-----------|
+| `cmd/call-manager` | Daemon entry point; applies the embedded schema migrations right after the DB connection (before the cache and RabbitMQ). `cmd/call-control` is the DB/cache CLI and has a `migrate` command for the schema migrations | `migrations.FS`, `migrations.VersionTable` |
+| `migrations` | Embedded golang-migrate SQL files (service-owned schema of the seven call tables) | `migrations.FS` |
 | `pkg/callhandler` | Core call business logic: create, hangup, hold, mute, play, talk, actions | `call.Call`, `call.Status`, `call.Type` |
 | `pkg/confbridgehandler` | Conference bridge management: join/leave calls, recording, flags | `confbridge.Confbridge`, `confbridge.Status`, `confbridge.Flag` |
 | `pkg/channelhandler` | Asterisk channel tracking; channel state transitions | `channel.Channel`, `ari.ChannelState` |
