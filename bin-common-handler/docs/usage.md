@@ -25,7 +25,21 @@ import (
 
 ### Admission rule reminder
 
-Before adding a new package to `bin-common-handler`, verify that 3 or more existing services need it. If fewer than 3 services use it, implement it in the consuming service(s) instead.
+Before adding a new package to `bin-common-handler`, verify that 3 or more existing services need it. If fewer than 3 services use it, implement it in the consuming service(s) instead. The one exception is `pkg/migrationhandler` (see the admission rule in `CLAUDE.md`).
+
+### Migrations (services that own their tables)
+
+```go
+// cmd/<name>-manager/main.go, right after the database connection and before the cache
+if err := migrationhandler.Run(cfg.DatabaseDSN, migrations.FS, migrations.VersionTable); err != nil {
+    return err
+}
+
+// cmd/<name>-control/main.go
+rootCmd.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {
+    return migrationhandler.New(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable)
+}))
+```
 
 ## Common Patterns
 

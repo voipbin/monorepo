@@ -232,6 +232,7 @@ bash docs/reference/extractor.sh <service-dir>
 - Single-consumer or dual-consumer packages belong in the consuming service(s).
 - If a package's usage later grows to 3+ services, it can be promoted to `bin-common-handler`.
 - Internal plumbing packages (e.g., `rabbitmqhandler` wrapped by `sockhandler`) are exempt since they serve the shared library itself.
+- Exception: `pkg/migrationhandler` is added ahead of its third consumer, because the services that own their tables adopt it one at a time (`bin-tag-manager` is the first). The rule is met once a third service adopts it.
 
 **Why:** `bin-common-handler` is a globally shared library — every change triggers verification across all 38 services. Keeping it lean reduces blast radius and maintenance burden.
 

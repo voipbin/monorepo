@@ -1,44 +1,41 @@
-package main
+package migrationhandler
 
 import (
 	"fmt"
 	"strconv"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-
-	"monorepo/bin-tag-manager/internal/config"
-	"monorepo/bin-tag-manager/internal/migrator"
-	"monorepo/bin-tag-manager/migrations"
 )
 
-// initMigrator opens only the database. The migrate commands are recovery tools, so they must
-// not depend on Redis or RabbitMQ being reachable.
-func initMigrator() (*migrator.Migrator, error) {
-	res, err := migrator.New(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not initialize the migrator")
-	}
-	return res, nil
-}
-
-func cmdMigrate() *cobra.Command {
-	cmd := &cobra.Command{Use: "migrate", Short: "Schema migration operations"}
-	cmd.AddCommand(cmdMigrateStatus())
-	cmd.AddCommand(cmdMigrateUp())
-	cmd.AddCommand(cmdMigrateDown())
-	cmd.AddCommand(cmdMigrateForce())
+// NewMigrateCommand returns the migration recovery command (use is the command name, normally
+// "migrate") with the subcommands status, up, down and force. open creates the Migrator for
+// every invocation; it must open the database only, so that the commands keep working when the
+// cache or the message broker are unreachable.
+func NewMigrateCommand(use string, open func() (*Migrator, error)) *cobra.Command {
+	cmd := &cobra.Command{Use: use, Short: "Schema migration operations"}
+	cmd.AddCommand(newStatusCommand(open))
+	cmd.AddCommand(newUpCommand(open))
+	cmd.AddCommand(newDownCommand(open))
+	cmd.AddCommand(newForceCommand(open))
 	return cmd
 }
 
-func cmdMigrateStatus() *cobra.Command {
+func openMigrator(open func() (*Migrator, error)) (*Migrator, error) {
+	m, err := open()
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize the migrator: %w", err)
+	}
+	return m, nil
+}
+
+func newStatusCommand(open func() (*Migrator, error)) *cobra.Command {
 	return &cobra.Command{
 		Use:          "status",
 		Short:        "Show the applied migration version (creates the version table when it is missing)",
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			m, err := initMigrator()
+			m, err := openMigrator(open)
 			if err != nil {
 				return err
 			}
@@ -57,14 +54,14 @@ func cmdMigrateStatus() *cobra.Command {
 	}
 }
 
-func cmdMigrateUp() *cobra.Command {
+func newUpCommand(open func() (*Migrator, error)) *cobra.Command {
 	return &cobra.Command{
 		Use:          "up",
 		Short:        "Apply all pending migrations",
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			m, err := initMigrator()
+			m, err := openMigrator(open)
 			if err != nil {
 				return err
 			}
@@ -80,14 +77,14 @@ func cmdMigrateUp() *cobra.Command {
 	}
 }
 
-func cmdMigrateDown() *cobra.Command {
+func newDownCommand(open func() (*Migrator, error)) *cobra.Command {
 	return &cobra.Command{
 		Use:          "down",
 		Short:        "Revert the latest applied migration (development and emergency use only)",
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			m, err := initMigrator()
+			m, err := openMigrator(open)
 			if err != nil {
 				return err
 			}
@@ -103,7 +100,7 @@ func cmdMigrateDown() *cobra.Command {
 	}
 }
 
-func cmdMigrateForce() *cobra.Command {
+func newForceCommand(open func() (*Migrator, error)) *cobra.Command {
 	return &cobra.Command{
 		Use:          "force <version>",
 		Short:        "Record a version as applied and clear the dirty flag without running migrations (-1 resets). Pass -1 after --",
@@ -112,10 +109,10 @@ func cmdMigrateForce() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			version, err := strconv.Atoi(args[0])
 			if err != nil {
-				return errors.Wrapf(err, "invalid version: %s", args[0])
+				return fmt.Errorf("invalid version: %s: %w", args[0], err)
 			}
 
-			m, err := initMigrator()
+			m, err := openMigrator(open)
 			if err != nil {
 				return err
 			}

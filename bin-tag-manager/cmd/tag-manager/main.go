@@ -12,6 +12,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -24,7 +25,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-tag-manager/internal/config"
-	"monorepo/bin-tag-manager/internal/migrator"
 	"monorepo/bin-tag-manager/migrations"
 	"monorepo/bin-tag-manager/pkg/cachehandler"
 	"monorepo/bin-tag-manager/pkg/dbhandler"
@@ -94,7 +94,7 @@ func run(cmd *cobra.Command, args []string) error {
 	defer commondatabasehandler.Close(sqlDB)
 
 	// apply the schema migrations before anything else uses the database
-	if err := runMigration(cfg.DatabaseDSN); err != nil {
+	if err := migrationhandler.Run(cfg.DatabaseDSN, migrations.FS, migrations.VersionTable); err != nil {
 		log.Errorf("Could not apply the database migrations. err: %v", err)
 		return err
 	}
@@ -112,17 +112,6 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 	<-chDone
 	return nil
-}
-
-// runMigration applies the pending schema migrations of the tables owned by this service.
-func runMigration(dsn string) error {
-	m, err := migrator.New(dsn, migrations.FS, migrations.VersionTable)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = m.Close() }()
-
-	return m.Up()
 }
 
 // signalHandler catches signals and set the done
