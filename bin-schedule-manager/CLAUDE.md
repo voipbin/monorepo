@@ -30,6 +30,19 @@ Platform-internal cron scheduler (VOIP-1283). Absorbs external cron surfaces (th
 | `pkg/dbhandler` | MySQL via squirrel; sqlite test harness |
 | `pkg/cachehandler` | Redis + redsync claim locks |
 
+## Database migrations
+
+The schema of `schedule_schedules` and `schedule_executions` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax. The shared code is `bin-common-handler/pkg/migrationhandler`; the workflow is in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md), and the rules for every new file (one DDL statement per file, up/down pairs, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract) are in the same document.
+
+- Files: `migrations/NNNNNN_<table>_<verb>_<type>_<items>.up.sql` and `.down.sql` (six digits, from 000001 without gaps). Version table: `schedule_schema_migrations`.
+  - `000001_baseline`: `CREATE TABLE IF NOT EXISTS` of the two tables, with the table option `DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC` that Alembic declared. The down is a no-op.
+  - `000002_schedule_schedules_seed_platform_jobs`: the nine platform schedules (`number-renew`, `database-backup`, `execution-retention`, `billing-monthly-topup`, `billing-failed-event-retry`, `ai-proposal-expiry`, `customer-unverified-cleanup`, `customer-frozen-expiry`, `campaign-flow-reconcile`). A single `INSERT ... SELECT` that inserts only when `schedule_schedules` has no row at all, so a database that already has rows (renamed, disabled or soft deleted seeds included) is never touched. Ids are generated per run (`UUID()`), the name is the stable handle. The down is a no-op.
+- `cmd/schedule-manager` runs `Up()` right after the database connection, before the cache and RabbitMQ. Failure stops the start (non-zero exit).
+- `schedule-control migrate status|up|down|force <version>` talks to the database only (no Redis or RabbitMQ). Run `up|down|force` only against a local throwaway database. Recovery from a dirty database: stop the crash-looping container, check whether the failed file's statement was applied, then `schedule-control migrate force <N-1 or N>`.
+- A new database needs the Alembic stream first and this service afterwards (see [docs/operations.md](docs/operations.md)).
+- The sqlite test schema `scripts/database_scripts_test/table_schedule_*.sql` is kept by hand: update it when the schema changes.
+- Structure checks: `go test ./migrations/`. Dynamic check on scratch containers: `ALEMBIC_VENV=<venv> scripts/verify-service-migrations.sh bin-schedule-manager` (repo root).
+
 ## Request routing
 
 | Pattern | Operations |
@@ -52,6 +65,7 @@ Direct DB/cache access, no RabbitMQ — `schedule disable` stops a misbehaving d
 ./bin/schedule-control schedule disable number-renew
 ./bin/schedule-control schedule enable number-renew
 ./bin/schedule-control execution list --schedule-id <uuid>
+./bin/schedule-control migrate status
 ```
 
 ## Common commands

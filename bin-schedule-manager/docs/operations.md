@@ -12,6 +12,23 @@
 | No schedules firing at all (no skips, no claims) | Redis unavailable — a non-busy lock error fails the claim closed, by design: at-most-once must not degrade to lockless firing | **Redis is a hard availability dependency of dispatch.** Restore Redis; firing resumes on the next tick with no catch-up backfill (single-fire catch-up per design §5.4) |
 | Runs ending `abandoned` | Replica killed mid-run (kill -9 / OOM / node loss), or job genuinely exceeded its deadline | Expected recovery path: the reaper records the loss and the next cron slot fires normally. Repeated abandonment of the same schedule ⇒ raise `timeout_ms` or investigate the target service |
 
+## Schema Migration Failures
+
+Migrations run at startup, before the service listens. A failure exits the process with a non-zero code.
+
+| Symptom | Likely Cause | Resolution |
+|---------|-------------|-----------|
+| `Dirty database version N. Fix and force version.` | A previous run stopped inside migration N (failure, kill) | Stop the crash-looping container. Check whether migration N's statement was applied. `schedule-control migrate force <N-1>` if not (for N=1 use `force -- -1`), `force <N>` if so, then start again. See the migration section of `CLAUDE.md` |
+| `can't acquire lock` | Another instance is migrating for longer than 10 seconds | Restart policy retries; no action unless it persists |
+| `CREATE command denied ... schedule_schema_migrations` | The database account cannot create tables | Grant CREATE to the service account |
+| `db version N is ahead of this image (max M); skipping migrations` (warning) | An older image started after a newer one migrated | Expected during rollback; no action |
+
+`schedule-control migrate status` shows the applied version, the image version and the dirty flag (it creates the version table if missing).
+
+## Order on a New Database
+
+On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates the tables first, the Alembic `schedule_schedules_create_table` revision fails with `Table 'schedule_schedules' already exists`. The seed file `000002` inserts the nine platform schedules only when `schedule_schedules` has no row; after the Alembic stream the table already holds them, so nothing is inserted. The service account also needs permission to create tables (for the version table).
+
 ## Debugging Guide
 
 ```bash

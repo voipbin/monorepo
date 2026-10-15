@@ -12,6 +12,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -23,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-schedule-manager/internal/config"
+	"monorepo/bin-schedule-manager/migrations"
 	"monorepo/bin-schedule-manager/pkg/backuphandler"
 	"monorepo/bin-schedule-manager/pkg/cachehandler"
 	"monorepo/bin-schedule-manager/pkg/dbhandler"
@@ -101,6 +103,11 @@ func runDaemon() error {
 		return errors.Wrapf(err, "could not connect to the database")
 	}
 	defer commondatabasehandler.Close(sqlDB)
+
+	// apply the schema migrations before the cache is connected and anything starts listening
+	if errMigrate := migrationhandler.Run(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable); errMigrate != nil {
+		return errors.Wrapf(errMigrate, "could not apply the database migrations")
+	}
 
 	cache, err := initCache()
 	if err != nil {
