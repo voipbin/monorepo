@@ -9,10 +9,12 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-email-manager/internal/config"
+	"monorepo/bin-email-manager/migrations"
 	"monorepo/bin-email-manager/pkg/emailhandler"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -107,13 +109,19 @@ func signalHandler() {
 	chDone <- true
 }
 
-// connectDatabase connects to the database and cachehandler
+// createDBHandler connects to the database, applies the schema migrations and connects to the cachehandler
 func createDBHandler(cfg *config.Config) (dbhandler.DBHandler, error) {
 	// connect to database
 	db, err := commondatabasehandler.Connect(cfg.DatabaseDSN)
 	if err != nil {
 		logrus.Errorf("Could not access to database. err: %v", err)
 		return nil, err
+	}
+
+	// apply the schema migrations of the owned table before the cache and anything else use it
+	if errMigrate := migrationhandler.Run(cfg.DatabaseDSN, migrations.FS, migrations.VersionTable); errMigrate != nil {
+		logrus.Errorf("Could not apply the database migrations. err: %v", errMigrate)
+		return nil, errMigrate
 	}
 
 	// connect to cache
