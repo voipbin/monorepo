@@ -42,6 +42,10 @@
 #       referenced table and columns, ON UPDATE and ON DELETE rules are compared per key).
 #   column-order <table> the column ordinals of the table may differ; the column set and every column
 #       definition are compared.
+#   check-name <table>   the CHECK constraints of the table may differ in the name only (the CON line of
+#       type CHECK and the CHK line; the multiset of check expressions is compared). A name that exists in
+#       both E1 and E2 must have the same table and expression (a swap of names is refused), and the list
+#       needs REFERENCE_DUMP (the comparison with the existing database) and an ALLOWED_DIFF without CON and CHK lines.
 # Used entries are printed as ALLOWED-DIFF, entries no engine needed as UNUSED-ALLOWED-DIFF (not a
 # failure; an engine without the difference leaves them unused).
 #
@@ -61,7 +65,7 @@
 #   EXISTING_ROWS_SQL file with INSERT statements run against the Alembic database before the
 #                     service migrations [built in rows for tag_tags]
 #   REFERENCE_ENGINE engine image the REFERENCE_DUMP was made with (required with REFERENCE_DUMP)
-#   E1_ALLOWED_DIFF  file of accepted E1 versus E2 differences: collation, fk-name, column-order (see above) [none: diff 0]
+#   E1_ALLOWED_DIFF  file of accepted E1 versus E2 differences: collation, fk-name, column-order, check-name (see above) [none: diff 0]
 #   SEED_COMPARE_SQL  SELECT (@DB@ is the database name) whose output must be equal in E1 and E2
 set -euo pipefail
 
@@ -122,20 +126,20 @@ is_maria() { sql -e "SELECT VERSION()" | grep -qi mariadb; }
 
 # check_allowed_file <file>: validates the list of accepted E1 versus E2 differences. Prints the
 # reason and returns 1 when it is not usable. A non empty line is a "#" comment, a "< " or "> "
-# pair line (TBL or COL tag, collation field only), or one directive "fk-name <table>" or
-# "column-order <table>" with a table of $TABLES.
+# pair line (TBL or COL tag, collation field only), or one directive "fk-name <table>",
+# "column-order <table>" or "check-name <table>" with a table of $TABLES.
 check_allowed_file() {
   local f="$1" bad dup t
   [ -f "$f" ] || { echo "$f is not a regular file"; return 1; }
   if grep -q $'\r' "$f"; then echo "$f contains a carriage return"; return 1; fi
-  bad=$(grep -vE '^$|^#|^[<>]|^(fk-name|column-order) [a-z0-9_]+$' "$f" | head -1 || true)
-  if [ -n "$bad" ]; then echo "$f: only comments (#), pair lines ('< ' or '> ') and the directives 'fk-name <table>' and 'column-order <table>' are accepted: $bad"; return 1; fi
+  bad=$(grep -vE '^$|^#|^[<>]|^(fk-name|column-order|check-name) [a-z0-9_]+$' "$f" | head -1 || true)
+  if [ -n "$bad" ]; then echo "$f: only comments (#), pair lines ('< ' or '> ') and the directives 'fk-name <table>', 'column-order <table>' and 'check-name <table>' are accepted: $bad"; return 1; fi
   bad=$(grep -E '^[<>]' "$f" | grep -vE $'^[<>] (TBL|COL)\t' | head -1 || true)
   if [ -n "$bad" ]; then echo "$f: only '< ' or '> ' lines of the TBL and COL tags with tab separated fields are accepted: $bad"; return 1; fi
-  grep -qE '^([<>] |fk-name |column-order )' "$f" || { echo "$f has no '< ' or '> ' line and no directive"; return 1; }
-  dup=$(grep -E '^(fk-name|column-order) ' "$f" | sort | uniq -d | head -1 || true)
+  grep -qE '^([<>] |fk-name |column-order |check-name )' "$f" || { echo "$f has no '< ' or '> ' line and no directive"; return 1; }
+  dup=$(grep -E '^(fk-name|column-order|check-name) ' "$f" | sort | uniq -d | head -1 || true)
   if [ -n "$dup" ]; then echo "$f: duplicate directive: $dup"; return 1; fi
-  for t in $(grep -E '^(fk-name|column-order) ' "$f" | cut -d' ' -f2); do
+  for t in $(grep -E '^(fk-name|column-order|check-name) ' "$f" | cut -d' ' -f2); do
     case " $(echo $TABLES) " in *" $t "*) ;; *) echo "$f: directive for $t, which is not a table of this service"; return 1;; esac
   done
   awk 'BEGIN{FS=OFS="\t"}
@@ -151,16 +155,20 @@ check_allowed_file() {
 # directive_tables <file> <directive>: the tables named by the directive lines, space separated.
 directive_tables() { { grep -E "^$2 [a-z0-9_]+\$" "$1" || true; } | cut -d' ' -f2 | tr '\n' ' '; }
 
-# canon_dump <dump> <fk-name tables> <column-order tables>: the dump with the two intended
-# differences removed for the listed tables (space separated lists; both empty: identical output).
+# canon_dump <dump> <fk-name tables> <column-order tables> <check-name tables>: the dump with the
+# three intended differences removed for the listed tables (space separated lists; all empty: identical output).
 #  - column-order: the COL lines are sorted by column name with an empty ordinal field, the DEF and
 #    GEN lines are sorted by column name. Column set and every definition stay compared.
 #  - fk-name: each foreign key gets one signature joining its KCU lines (ordinal, column,
 #    referenced table and column) and its FK line (rules, referenced table); the keys are renamed
 #    fk#1, fk#2, ... in signature order in the CON (type FOREIGN KEY), KCU and FK lines. The renamed
 #    CON lines follow the unchanged CON lines; the KCU and FK groups are sorted by new name.
+#  - check-name: each CHECK that has a CON line (type CHECK) and a CHK line gets the signature
+#    "<expression> <name>"; the checks are renamed chk#1, chk#2, ... in signature order in the CON
+#    (type CHECK) and CHK lines. Renamed CON lines follow the unchanged ones (checks before foreign
+#    keys); the CHK lines are sorted by new name, lines without a pair last and unchanged.
 canon_dump() {
-  LC_ALL=C awk -v fk=" $2 " -v ord=" $3 " '
+  LC_ALL=C awk -v fk=" $2 " -v ord=" $3 " -v chk=" ${4:-} " '
     function srt(K, V, n,   i, j, k, v) {
       for (i = 2; i <= n; i++) { k = K[i]; v = V[i]; j = i - 1
         while (j >= 1 && K[j] > k) { K[j+1] = K[j]; V[j+1] = V[j]; j-- }
@@ -178,12 +186,19 @@ canon_dump() {
         for (i = a; i <= b; i++) { tabs(L[i], f); K[i-a+1] = f[2] ""; V[i-a+1] = L[i] }
         srt(K, V, b - a + 1); for (i = 1; i <= b - a + 1; i++) print V[i]; return
       }
-      if (tag == "CON" && dofk) {
+      if (tag == "CON" && (dofk || dochk)) {
         m = 0
         for (i = a; i <= b; i++) { n = tabs(L[i], f)
-          if (f[3] == "FOREIGN KEY" && (f[2] in nn)) { m++; K[m] = sprintf("%06d", nidx[f[2]]); f[2] = nn[f[2]]; V[m] = join(f, n) }
+          if (dofk && f[3] == "FOREIGN KEY" && (f[2] in nn)) { m++; K[m] = sprintf("f%06d", nidx[f[2]]); f[2] = nn[f[2]]; V[m] = join(f, n) }
+          else if (dochk && f[3] == "CHECK" && (f[2] in nnc)) { m++; K[m] = sprintf("c%06d", nidxc[f[2]]); f[2] = nnc[f[2]]; V[m] = join(f, n) }
           else print L[i] }
         srt(K, V, m); for (i = 1; i <= m; i++) print V[i]; return
+      }
+      if (tag == "CHK" && dochk) {
+        for (i = a; i <= b; i++) { n = tabs(L[i], f)
+          if (f[2] in nnc) { K[i-a+1] = sprintf("%06d", nidxc[f[2]]); f[2] = nnc[f[2]]; V[i-a+1] = join(f, n) }
+          else { K[i-a+1] = "999999"; V[i-a+1] = L[i] } }
+        srt(K, V, b - a + 1); for (i = 1; i <= b - a + 1; i++) print V[i]; return
       }
       if ((tag == "KCU" || tag == "FK") && dofk) {
         for (i = a; i <= b; i++) { n = tabs(L[i], f)
@@ -193,12 +208,22 @@ canon_dump() {
       }
       for (i = a; i <= b; i++) print L[i]
     }
-    function section(   i, n, f, name, c, k, sg, SK, SV, a, tag, t2) {
+    function section(   i, n, f, name, c, k, sg, SK, SV, a, tag, t2, cl, j) {
       if (cnt == 0) return
       split(L[1], f, " "); t = f[2]
-      dofk = index(fk, " " t " ") > 0; doord = index(ord, " " t " ") > 0
+      dofk = index(fk, " " t " ") > 0; doord = index(ord, " " t " ") > 0; dochk = index(chk, " " t " ") > 0
+      delete nn; delete nidx; delete nnc; delete nidxc
+      if (dochk) {
+        delete csig; c = 0
+        for (i = 2; i <= cnt; i++) { n = tabs(L[i], f)
+          if (f[1] == "CHK") { cl = f[3]; for (j = 4; j <= n; j++) cl = cl "\t" f[j]; csig[f[2]] = cl } }
+        for (i = 2; i <= cnt; i++) { n = tabs(L[i], f)
+          if (f[1] == "CON" && f[3] == "CHECK" && (f[2] in csig)) { c++; SK[c] = csig[f[2]] "\003" f[2]; SV[c] = f[2] } }
+        srt(SK, SV, c)
+        for (i = 1; i <= c; i++) { nnc[SV[i]] = "chk#" i; nidxc[SV[i]] = i }
+      }
       if (dofk) {
-        delete ksig; delete fsig; delete nn; delete nidx; c = 0
+        delete ksig; delete fsig; c = 0
         for (i = 2; i <= cnt; i++) { n = tabs(L[i], f)
           if (f[1] == "KCU") ksig[f[2]] = ksig[f[2]] "\001" f[3] ":" f[4] ":" f[5] ":" f[6]
           else if (f[1] == "FK") fsig[f[2]] = f[3] "\001" f[4] "\001" f[5] }
@@ -221,29 +246,59 @@ canon_dump() {
   ' "$1"
 }
 
-# report_directives <e1 dump> <e2 dump> <fk tables> <order tables>: ALLOWED-DIFF for a directive
-# whose difference is present in the two raw dumps, UNUSED-ALLOWED-DIFF when it is not.
+# report_directives <e1 dump> <e2 dump> <fk tables> <order tables> <check tables>: ALLOWED-DIFF for a
+# directive whose difference is present in the two raw dumps, UNUSED-ALLOWED-DIFF when it is not.
 report_directives() {
   local t
-  proj() { awk -F'\t' -v t="## $1" -v m="$2" '$0==t{f=1;next} /^## /{f=0} f{ if (m=="fk") { if (($1=="CON"&&$3=="FOREIGN KEY")||$1=="KCU"||$1=="FK") print } else if ($1=="COL") print $2 ":" $3 }' "$3"; }
+  proj() { awk -F'\t' -v t="## $1" -v m="$2" '$0==t{f=1;next} /^## /{f=0} f{ if (m=="fk") { if (($1=="CON"&&$3=="FOREIGN KEY")||$1=="KCU"||$1=="FK") print } else if (m=="chk") { if (($1=="CON"&&$3=="CHECK")||$1=="CHK") print } else if ($1=="COL") print $2 ":" $3 }' "$3"; }
   for t in $3; do
     if [ "$(proj "$t" fk "$1")" != "$(proj "$t" fk "$2")" ]; then echo "ALLOWED-DIFF fk-name $t"; else echo "UNUSED-ALLOWED-DIFF fk-name $t"; fi
   done
   for t in $4; do
     if [ "$(proj "$t" col "$1")" != "$(proj "$t" col "$2")" ]; then echo "ALLOWED-DIFF column-order $t"; else echo "UNUSED-ALLOWED-DIFF column-order $t"; fi
   done
+  for t in ${5:-}; do
+    if [ "$(proj "$t" chk "$1")" != "$(proj "$t" chk "$2")" ]; then echo "ALLOWED-DIFF check-name $t"; else echo "UNUSED-ALLOWED-DIFF check-name $t"; fi
+  done
+  return 0
+}
+
+# check_name_guard <e1 dump> <e2 dump> <check-name tables>: a check name that exists in both dumps
+# must have the same (table, expression) set in both. Without it a swap of names (or a move of a
+# name to another listed table) would pass the canonical comparison, and a later DROP CHECK <name>
+# would act on another check. Returns 1 with a CHECK-NAME-GUARD line per such name.
+check_name_guard() {
+  awk -F'\t' -v tl=" $3 " '
+    FNR == 1 { fi++ }
+    /^## / { split($0, a, " "); t = a[2]; next }
+    $1 == "CHK" && index(tl, " " t " ") > 0 {
+      cl = $3; for (i = 4; i <= NF; i++) cl = cl "\t" $i
+      S[fi, $2] = S[fi, $2] "\002" t "\001" cl; seen[fi, $2] = 1; names[$2] = 1
+    }
+    END { for (k in names) if ((1, k) in seen && (2, k) in seen && S[1, k] != S[2, k]) { print "CHECK-NAME-GUARD: check " k " exists in both dumps with another table or expression"; bad = 1 } exit bad ? 1 : 0 }
+  ' "$1" "$2"
+}
+
+# check_e1_reference <E1_ALLOWED_DIFF> <REFERENCE_DUMP> <ALLOWED_DIFF>: a list with a check-name
+# directive needs the reference comparison (the baseline must equal the existing table), and the
+# ALLOWED_DIFF of that comparison must not hold CON or CHK lines.
+check_e1_reference() {
+  grep -qE '^check-name ' "$1" || return 0
+  [ -n "$2" ] || { echo "check-name needs REFERENCE_DUMP (the comparison with the existing table)"; return 1; }
+  if [ -n "$3" ] && [ -f "$3" ] && grep -qE $'^[<>] (CON|CHK)(\t|$)' "$3"; then echo "check-name does not allow CON or CHK lines in ALLOWED_DIFF"; return 1; fi
   return 0
 }
 
 # compare_e1 <e1 dump> <e2 dump> <list file>: the E1 versus E2 comparison with the accepted
 # differences of the list (pair lines and directives). Canonical dumps go to separate files.
 compare_e1() {
-  local e1="$1" e2="$2" list="$3" fkt ordt rc=0
-  fkt=$(directive_tables "$list" fk-name); ordt=$(directive_tables "$list" column-order)
-  canon_dump "$e1" "$fkt" "$ordt" > "$WORK/e1.canon" || return 1
-  canon_dump "$e2" "$fkt" "$ordt" > "$WORK/e2.canon" || return 1
-  report_directives "$e1" "$e2" "$fkt" "$ordt"
-  compare_dumps "$WORK/e1.canon" "$WORK/e2.canon" "$list" || rc=$?
+  local e1="$1" e2="$2" list="$3" fkt ordt chkt rc=0
+  fkt=$(directive_tables "$list" fk-name); ordt=$(directive_tables "$list" column-order); chkt=$(directive_tables "$list" check-name)
+  canon_dump "$e1" "$fkt" "$ordt" "$chkt" > "$WORK/e1.canon" || return 1
+  canon_dump "$e2" "$fkt" "$ordt" "$chkt" > "$WORK/e2.canon" || return 1
+  report_directives "$e1" "$e2" "$fkt" "$ordt" "$chkt"
+  if [ -n "$chkt" ]; then check_name_guard "$e1" "$e2" "$chkt" || rc=1; fi
+  compare_dumps "$WORK/e1.canon" "$WORK/e2.canon" "$list" || rc=1
   return $rc
 }
 
@@ -370,19 +425,25 @@ self_test() {
   # mkd <fk1> <fk2> <rule1> <rule2> <order a|b|c|d> <g type> <g expression>: synthetic dump of a parent and a
   # child table (two foreign keys, two generated columns g and h). order a: id a_id b_id g h; b: id h g a_id b_id;
   # c: a plus column x; d: a without b_id.
-  # An eighth argument "same" puts the second key on a_id as well.
+  # An eighth argument "same" puts the second key on a_id as well. A ninth and a tenth argument
+  # list the checks of the child and the parent as "name|expression;name|expression".
   mkd() {
-    local cols n=0 c ty ex
+    local cols n=0 c ty ex kv chkc chkp
+    chkc=(); chkp=(); IFS=';' read -ra chkc <<< "${9:-}"; IFS=';' read -ra chkp <<< "${10:-}"
     case "$5" in a) cols="id a_id b_id g h";; b) cols="id h g a_id b_id";; c) cols="id a_id b_id g h x";; d) cols="id a_id g h";; esac
-    printf '## st_parent\nCOL\t1\tid\tbinary(16)\tNO\t\t\t\t\nDEF\tid\t<none>\nIDX\tPRIMARY\t1\tid\t0\t\tBTREE\tA\t\nTBL\tInnoDB\tutf8mb4_uca1400_ai_ci\tDynamic\t\t\nCON\tPRIMARY\tPRIMARY KEY\n## st_child\n'
+    printf '## st_parent\nCOL\t1\tid\tbinary(16)\tNO\t\t\t\t\nDEF\tid\t<none>\nIDX\tPRIMARY\t1\tid\t0\t\tBTREE\tA\t\nTBL\tInnoDB\tutf8mb4_uca1400_ai_ci\tDynamic\t\t\n'
+    { printf 'CON\tPRIMARY\tPRIMARY KEY\n'; for kv in "${chkp[@]}"; do [ -n "$kv" ] && printf 'CON\t%s\tCHECK\n' "${kv%%|*}"; done; } | LC_ALL=C sort -s -t$'\t' -k2,2
+    for kv in "${chkp[@]}"; do [ -n "$kv" ] && printf 'CHK\t%s\t%s\n' "${kv%%|*}" "${kv#*|}"; done | LC_ALL=C sort -s -t$'\t' -k2,2
+    printf '## st_child\n'
     for c in $cols; do n=$((n+1)); ty='binary(16)'; ex=''; [ "$c" = g ] && { ty="$6"; ex='STORED GENERATED'; }; [ "$c" = h ] && ex='STORED GENERATED';
       printf 'COL\t%s\t%s\t%s\tYES\t%s\t\t\t\n' "$n" "$c" "$ty" "$ex"; done
     for c in $cols; do printf 'DEF\t%s\tNULL\n' "$c"; done
     for c in $cols; do [ "$c" = g ] && printf 'GEN\tg\t%s\n' "$7"; [ "$c" = h ] && printf 'GEN\th\t(`id` + 3)\n'; done
     printf 'IDX\tPRIMARY\t1\tid\t0\t\tBTREE\tA\t\nTBL\tInnoDB\tutf8mb4_uca1400_ai_ci\tDynamic\t\t\n'
-    printf 'CON\tPRIMARY\tPRIMARY KEY\nCON\t%s\tFOREIGN KEY\nCON\t%s\tFOREIGN KEY\n' "$1" "$2" | LC_ALL=C sort -s -t$'\t' -k2,2
+    { printf 'CON\tPRIMARY\tPRIMARY KEY\nCON\t%s\tFOREIGN KEY\nCON\t%s\tFOREIGN KEY\n' "$1" "$2"; for kv in "${chkc[@]}"; do [ -n "$kv" ] && printf 'CON\t%s\tCHECK\n' "${kv%%|*}"; done; } | LC_ALL=C sort -s -t$'\t' -k2,2
     printf 'KCU\t%s\t1\ta_id\tst_parent\tid\nKCU\t%s\t1\t%s\tst_parent\tid\n' "$1" "$2" "$([ "${8:-}" = same ] && echo a_id || echo b_id)" | LC_ALL=C sort -s -t$'\t' -k2,2
     printf 'FK\t%s\tRESTRICT\t%s\tst_parent\nFK\t%s\tRESTRICT\t%s\tst_parent\n' "$1" "$3" "$2" "$4" | LC_ALL=C sort -s -t$'\t' -k2,2
+    for kv in "${chkc[@]}"; do [ -n "$kv" ] && printf 'CHK\t%s\t%s\n' "${kv%%|*}" "${kv#*|}"; done | LC_ALL=C sort -s -t$'\t' -k2,2
   }
   local ge='(`id` + 1)'
   printf 'fk-name st_child\n' > "$WORK/lfk.txt"; printf 'column-order st_child\n' > "$WORK/lord.txt"
@@ -390,7 +451,7 @@ self_test() {
   printf 'fk-name st_child\ncolumn-order st_child\n' > "$WORK/lboth.txt"; printf 'fk-name st_parent\n' > "$WORK/lparent.txt"
   mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" > "$WORK/d_unnamed.txt"
   mkd st_child_ibfk_1 st_child_ibfk_2 CASCADE 'SET NULL' a binary\(16\) "$ge" > "$WORK/d_named.txt"
-  canon_dump "$WORK/d_unnamed.txt" "" "" | cmp -s - "$WORK/d_unnamed.txt" && ok "canon_dump with no listed table is the identity" || fail "canon_dump identity"
+  canon_dump "$WORK/d_unnamed.txt" "" "" "" | cmp -s - "$WORK/d_unnamed.txt" && ok "canon_dump with no listed table is the identity" || fail "canon_dump identity"
   if compare_dumps "$WORK/d_unnamed.txt" "$WORK/d_named.txt" >/dev/null; then fail "E1 compare: renamed foreign keys passed without a directive"; else ok "E1 compare: renamed foreign keys fail without a directive"; fi
   if out=$(compare_e1 "$WORK/d_unnamed.txt" "$WORK/d_named.txt" "$WORK/lfk.txt") && [ "$out" = "ALLOWED-DIFF fk-name st_child" ]; then ok "E1 compare: renamed foreign keys pass with fk-name and are reported"; else fail "E1 compare fk-name: $out"; fi
   if out=$(compare_e1 "$WORK/d_named.txt" "$WORK/d_named.txt" "$WORK/lfk.txt") && [ "$out" = "UNUSED-ALLOWED-DIFF fk-name st_child" ]; then ok "E1 compare: equal names leave fk-name unused"; else fail "E1 compare fk-name unused: $out"; fi
@@ -423,6 +484,78 @@ self_test() {
   mkd st_child_ibfk_1 st_child_ibfk_2 CASCADE 'SET NULL' b binary\(16\) "$ge" > "$WORK/d_named_b.txt"
   if out=$(compare_e1 "$WORK/d_unnamed.txt" "$WORK/d_named_b.txt" "$WORK/lboth.txt") && [ "$(echo "$out" | grep -c '^ALLOWED-DIFF ')" = 2 ]; then ok "E1 compare: a rename and a reorder together pass with both directives"; else fail "E1 compare both: $out"; fi
   if compare_e1 "$WORK/d_unnamed.txt" "$WORK/d_named_b.txt" "$WORK/lfk.txt" >/dev/null; then fail "E1 compare: a rename and a reorder passed with fk-name only"; else ok "E1 compare: a rename and a reorder fail with fk-name only"; fi
+
+  # check-name: file check, canon_dump, the guard and the E1 comparison
+  printf 'check-name st_child\nfk-name st_child\ncolumn-order st_child\n' > "$WORK/kok.txt"
+  check_allowed_file "$WORK/kok.txt" >/dev/null && ok "allowed file check: check-name with fk-name and column-order of the same table is accepted" || fail "allowed file check check-name"
+  printf 'check-name st_other\n' > "$WORK/ktab.txt"
+  check_allowed_file "$WORK/ktab.txt" >/dev/null && fail "allowed file check: check-name for an unknown table passed" || ok "allowed file check: check-name for an unknown table fails"
+  printf 'check-name st_child\ncheck-name st_child\n' > "$WORK/kdup.txt"
+  check_allowed_file "$WORK/kdup.txt" >/dev/null && fail "allowed file check: a duplicate check-name passed" || ok "allowed file check: a duplicate check-name fails"
+  printf 'check-names st_child\n' > "$WORK/ktypo.txt"
+  check_allowed_file "$WORK/ktypo.txt" >/dev/null && fail "allowed file check: a misspelled check-name passed" || ok "allowed file check: a misspelled check-name fails"
+  printf 'check-name st_child extra\n' > "$WORK/kextra.txt"
+  check_allowed_file "$WORK/kextra.txt" >/dev/null && fail "allowed file check: check-name with extra words passed" || ok "allowed file check: check-name with extra words fails"
+  printf 'check-name st_child\r\n' > "$WORK/kcr.txt"
+  check_allowed_file "$WORK/kcr.txt" >/dev/null && fail "allowed file check: a CRLF check-name passed" || ok "allowed file check: a CRLF check-name fails"
+  # reference precondition
+  printf 'check-name st_child\n' > "$WORK/lchk.txt"; printf 'check-name st_child\ncheck-name st_parent\n' > "$WORK/lchk2.txt"
+  printf 'check-name st_child\nfk-name st_child\n' > "$WORK/lchkfk.txt"; printf 'check-name st_parent\n' > "$WORK/lchkp.txt"
+  printf '< COL\t1\ta\n> COL\t1\tb\n' > "$WORK/ad_ok.txt"; printf '< CHK\tc1\tx\n> CHK\tn1\tx\n' > "$WORK/ad_chk.txt"; printf '< CON\tc1\tCHECK\n> CON\tn1\tCHECK\n' > "$WORK/ad_con.txt"
+  check_e1_reference "$WORK/lchk.txt" "" "" >/dev/null && fail "reference precondition: check-name without REFERENCE_DUMP passed" || ok "reference precondition: check-name without REFERENCE_DUMP fails"
+  check_e1_reference "$WORK/lchk.txt" "$WORK/ref.txt" "$WORK/ad_chk.txt" >/dev/null && fail "reference precondition: a CHK line in ALLOWED_DIFF passed" || ok "reference precondition: a CHK line in ALLOWED_DIFF fails"
+  check_e1_reference "$WORK/lchk.txt" "$WORK/ref.txt" "$WORK/ad_con.txt" >/dev/null && fail "reference precondition: a CON line in ALLOWED_DIFF passed" || ok "reference precondition: a CON line in ALLOWED_DIFF fails"
+  check_e1_reference "$WORK/lchk.txt" "$WORK/ref.txt" "$WORK/ad_ok.txt" >/dev/null && ok "reference precondition: REFERENCE_DUMP with a COL only ALLOWED_DIFF passes" || fail "reference precondition positive"
+  check_e1_reference "$WORK/lfk.txt" "" "" >/dev/null && ok "reference precondition: a list without check-name needs nothing" || fail "reference precondition without check-name"
+
+  local cx='(`id` > 0)' cy='(`a_id` > 1)' cz='(`b_id` > 2)'
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "c1|$cx;c2|$cy" > "$WORK/k_e1.txt"
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "n1|$cx;n2|$cy" > "$WORK/k_e2.txt"
+  canon_dump "$WORK/k_e1.txt" "" "" "" | cmp -s - "$WORK/k_e1.txt" && ok "canon_dump with checks and no listed table is the identity" || fail "canon_dump identity with checks"
+  if compare_dumps "$WORK/k_e1.txt" "$WORK/k_e2.txt" >/dev/null; then fail "E1 compare: renamed checks passed without a directive"; else ok "E1 compare: renamed checks fail without a directive"; fi
+  if out=$(compare_e1 "$WORK/k_e1.txt" "$WORK/k_e2.txt" "$WORK/lchk.txt") && [ "$out" = "ALLOWED-DIFF check-name st_child" ]; then ok "E1 compare: renamed checks pass with check-name and are reported"; else fail "E1 compare check-name: $out"; fi
+  if out=$(compare_e1 "$WORK/k_e2.txt" "$WORK/k_e2.txt" "$WORK/lchk.txt") && [ "$out" = "UNUSED-ALLOWED-DIFF check-name st_child" ]; then ok "E1 compare: equal check names leave check-name unused"; else fail "E1 compare check-name unused: $out"; fi
+  if compare_e1 "$WORK/k_e1.txt" "$WORK/k_e2.txt" "$WORK/lchkp.txt" >/dev/null; then fail "E1 compare: check-name for another table hid a rename"; else ok "E1 compare: check-name for another table does not accept the rename"; fi
+  if compare_e1 "$WORK/k_e1.txt" "$WORK/k_e2.txt" "$WORK/lfk.txt" >/dev/null; then fail "E1 compare: fk-name accepted a check rename"; else ok "E1 compare: fk-name does not accept a check rename"; fi
+  if compare_e1 "$WORK/k_e1.txt" "$WORK/k_e2.txt" "$WORK/lord.txt" >/dev/null; then fail "E1 compare: column-order accepted a check rename"; else ok "E1 compare: column-order does not accept a check rename"; fi
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" > "$WORK/k_none.txt"
+  mkd st_child_ibfk_1 st_child_ibfk_2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "n1|$cx;n2|$cy" > "$WORK/k_fk2.txt"
+  if compare_e1 "$WORK/k_e1.txt" "$WORK/k_fk2.txt" "$WORK/lchk.txt" >/dev/null; then fail "E1 compare: check-name accepted a foreign key rename"; else ok "E1 compare: check-name does not accept a foreign key rename"; fi
+  if out=$(compare_e1 "$WORK/k_e1.txt" "$WORK/k_fk2.txt" "$WORK/lchkfk.txt") && [ "$(echo "$out" | grep -c '^ALLOWED-DIFF ')" = 2 ]; then ok "E1 compare: a check rename and a foreign key rename pass together"; else fail "E1 compare check and fk: $out"; fi
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "n1|$cx;n2|$cz" > "$WORK/k_expr.txt"
+  if compare_e1 "$WORK/k_e1.txt" "$WORK/k_expr.txt" "$WORK/lchk.txt" >/dev/null; then fail "E1 compare: a rename with a changed check expression passed"; else ok "E1 compare: a rename with a changed check expression fails"; fi
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "c1|$cx;c2|$cz" > "$WORK/k_expr2.txt"
+  if compare_e1 "$WORK/k_e1.txt" "$WORK/k_expr2.txt" "$WORK/lchk.txt" >/dev/null; then fail "E1 compare: a changed check expression with the same names passed"; else ok "E1 compare: a changed check expression with the same names fails"; fi
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "n1|$cx;n2|$cy;n3|$cz" > "$WORK/k_add.txt"
+  if compare_e1 "$WORK/k_e1.txt" "$WORK/k_add.txt" "$WORK/lchk.txt" >/dev/null; then fail "E1 compare: an added check passed"; else ok "E1 compare: an added check fails"; fi
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "n1|$cx" > "$WORK/k_drop.txt"
+  if compare_e1 "$WORK/k_e1.txt" "$WORK/k_drop.txt" "$WORK/lchk.txt" >/dev/null; then fail "E1 compare: a dropped check passed"; else ok "E1 compare: a dropped check fails"; fi
+  if compare_e1 "$WORK/k_e1.txt" "$WORK/k_none.txt" "$WORK/lchk.txt" >/dev/null; then fail "E1 compare: all checks dropped passed"; else ok "E1 compare: all checks dropped fails"; fi
+  sed 's/^CON\tn2\tCHECK$/CON\tn2\tUNIQUE/' "$WORK/k_e2.txt" > "$WORK/k_kind.txt"
+  if cmp -s "$WORK/k_kind.txt" "$WORK/k_e2.txt" || compare_e1 "$WORK/k_e1.txt" "$WORK/k_kind.txt" "$WORK/lchk.txt" >/dev/null; then fail "E1 compare: a check changed to another kind passed"; else ok "E1 compare: a check changed to another kind fails"; fi
+  grep -v $'^CHK\tn1\t' "$WORK/k_e2.txt" > "$WORK/k_orph1.txt"; grep -v $'^CON\tn1\tCHECK$' "$WORK/k_e2.txt" > "$WORK/k_orph2.txt"
+  if cmp -s "$WORK/k_orph1.txt" "$WORK/k_e2.txt" || compare_e1 "$WORK/k_e1.txt" "$WORK/k_orph1.txt" "$WORK/lchk.txt" >/dev/null; then fail "E1 compare: a CON line without its CHK line passed"; else ok "E1 compare: a CON line without its CHK line fails"; fi
+  if cmp -s "$WORK/k_orph2.txt" "$WORK/k_e2.txt" || compare_e1 "$WORK/k_e1.txt" "$WORK/k_orph2.txt" "$WORK/lchk.txt" >/dev/null; then fail "E1 compare: a CHK line without its CON line passed"; else ok "E1 compare: a CHK line without its CON line fails"; fi
+  # swaps: the canonical dumps are equal, only the guard refuses
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "a|$cx;b|$cy" > "$WORK/k_s1.txt"
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "a|$cy;b|$cx" > "$WORK/k_s2.txt"
+  canon_dump "$WORK/k_s1.txt" "" "" "st_child" > "$WORK/k_s1.canon"; canon_dump "$WORK/k_s2.txt" "" "" "st_child" > "$WORK/k_s2.canon"
+  cmp -s "$WORK/k_s1.canon" "$WORK/k_s2.canon" && ok "check swap: the canonical dumps are equal (the guard is needed)" || fail "check swap canonical dumps"
+  if out=$(compare_e1 "$WORK/k_s1.txt" "$WORK/k_s2.txt" "$WORK/lchk.txt") ; then fail "E1 compare: a swap of two check names passed"; else echo "$out" | grep -q '^CHECK-NAME-GUARD: ' && ok "E1 compare: a swap of two check names fails by the guard" || fail "E1 compare swap message: $out"; fi
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "b|$cx;c|$cy" > "$WORK/k_p2.txt"
+  if compare_e1 "$WORK/k_s1.txt" "$WORK/k_p2.txt" "$WORK/lchk.txt" >/dev/null; then fail "E1 compare: a partial swap with a shared name passed"; else ok "E1 compare: a partial swap with a shared name fails"; fi
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "a|$cx;n|$cy" > "$WORK/k_p3.txt"
+  if out=$(compare_e1 "$WORK/k_s1.txt" "$WORK/k_p3.txt" "$WORK/lchk.txt") && [ "$out" = "ALLOWED-DIFF check-name st_child" ]; then ok "E1 compare: one check keeps its name and the other is renamed"; else fail "E1 compare kept name: $out"; fi
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "a|$cx;b|$cx" > "$WORK/k_d1.txt"; mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "m|$cx;n|$cx" > "$WORK/k_d2.txt"
+  if out=$(compare_e1 "$WORK/k_d1.txt" "$WORK/k_d2.txt" "$WORK/lchk.txt") && [ "$out" = "ALLOWED-DIFF check-name st_child" ]; then ok "E1 compare: two checks with the same expression are renamed"; else fail "E1 compare same expression: $out"; fi
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "c1|1;c2|2;c3|10;c4|9" > "$WORK/k_n1.txt"; mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "n1|9;n2|10;n3|2;n4|1" > "$WORK/k_n2.txt"
+  if out=$(compare_e1 "$WORK/k_n1.txt" "$WORK/k_n2.txt" "$WORK/lchk.txt") && [ "$out" = "ALLOWED-DIFF check-name st_child" ]; then ok "E1 compare: expressions that are digits are compared as strings"; else fail "E1 compare digit expressions: $out"; fi
+  # a swap between two listed tables
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "n2|$cy" "n1|$cx" > "$WORK/k_t1.txt"
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "n1|$cy" "n2|$cx" > "$WORK/k_t2.txt"
+  if compare_e1 "$WORK/k_t1.txt" "$WORK/k_t2.txt" "$WORK/lchk2.txt" >/dev/null; then fail "E1 compare: a swap of names between two tables passed"; else ok "E1 compare: a swap of names between two tables fails"; fi
+  mkd 1 2 CASCADE 'SET NULL' a binary\(16\) "$ge" "" "m2|$cy" "m1|$cx" > "$WORK/k_t3.txt"
+  if out=$(compare_e1 "$WORK/k_t1.txt" "$WORK/k_t3.txt" "$WORK/lchk2.txt") && [ "$(echo "$out" | grep -c '^ALLOWED-DIFF ')" = 2 ]; then ok "E1 compare: checks renamed in two tables pass and are reported per table"; else fail "E1 compare two tables: $out"; fi
 
   for image in "${ENGINES[@]}"; do
     tag="${image//[:.]/_}"; cn="verify-selftest-${tag}-$$"
@@ -492,6 +625,7 @@ fi
 if [ -n "${ALLOWED_DIFF:-}" ] && [ -z "${REFERENCE_DUMP:-}" ]; then echo "ALLOWED_DIFF is set without REFERENCE_DUMP (E1_ALLOWED_DIFF is the list of the Alembic head comparison)"; exit 1; fi
 if [ -n "${E1_ALLOWED_DIFF:-}" ]; then
   E1_MSG=$(check_allowed_file "$E1_ALLOWED_DIFF") || { echo "E1_ALLOWED_DIFF: $E1_MSG"; exit 1; }
+  E1_MSG=$(check_e1_reference "$E1_ALLOWED_DIFF" "${REFERENCE_DUMP:-}" "${ALLOWED_DIFF:-}") || { echo "E1_ALLOWED_DIFF: $E1_MSG"; exit 1; }
 fi
 if [ -n "${REFERENCE_DUMP:-}" ]; then
   [ -n "${REFERENCE_ENGINE:-}" ] || { echo "REFERENCE_DUMP needs REFERENCE_ENGINE (the engine image the dump was made with)"; exit 1; }
