@@ -84,7 +84,7 @@ bin-<service-name>/
 ### SQL File Format
 
 - Simplified CREATE TABLE statements compatible with SQLite
-- Copied and adapted from real schema in `bin-dbscheme-manager` Alembic migrations
+- Copied and adapted from the real schema in the service's `migrations/` directory
 - MySQL-specific features removed or simplified (e.g., `BINARY(16)` → `BLOB`, `DATETIME(6)` → `TEXT`)
 - Primary keys and basic indexes included
 - Foreign keys simplified (SQLite has limited FK support in older versions)
@@ -129,14 +129,14 @@ func TestChatCreate(t *testing.T) {
 
 ### Important Notes
 
-- These SQL files are NOT the source of truth (that's `bin-dbscheme-manager` Alembic migrations)
+- These SQL files are NOT the source of truth (that is the service's `migrations/` directory)
 - These are test fixtures, manually created/updated as needed
 - Not all MySQL features work in SQLite (stored procedures, full-text search, etc.)
 - For integration tests requiring MySQL-specific features, use actual MySQL test database
 
 ### When to Update
 
-- After creating new Alembic migration in `bin-dbscheme-manager`
+- After adding a migration to the service's `migrations/` directory
 - When adding new tables or significant schema changes
 - When database handler tests fail due to schema mismatch
 

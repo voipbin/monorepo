@@ -110,7 +110,6 @@ General-purpose utilities:
 - Single-consumer or dual-consumer packages belong in the consuming service(s).
 - `rabbitmqhandler` is exempt — it is internal plumbing used only by `sockhandler`, which itself serves the whole library.
 - If a package's usage later grows to 3+ services, it can be promoted here.
-- Exception: `pkg/migrationhandler` is added ahead of its third consumer, because the services that own their tables adopt it one at a time (`bin-tag-manager` is the first). The rule is met once a third service adopts it.
 
 Every change to `bin-common-handler` triggers verification across all 37 consumer services. Keep the library lean.
 

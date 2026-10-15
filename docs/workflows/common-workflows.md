@@ -176,9 +176,9 @@ For full implementation details, see:
 
 ### Overview
 
-Database schema changes for VoIPbin services are managed through Alembic migrations in the `bin-dbscheme-manager` service. This is the ONLY way to modify the schema of tables that `bin-dbscheme-manager` owns - never run manual SQL DDL statements against production databases.
+Every application table in the `bin_manager` database is owned by a service that keeps its schema in its own `migrations/` directory (golang-migrate, applied when the service starts; see `docs/workflows/service-owned-migrations.md`). Alembic in `bin-dbscheme-manager` now manages only the `asterisk_config` stream; the `bin-manager` stream is frozen. Never run manual SQL DDL statements against production databases.
 
-Exception: a service that has converted to service-owned migrations (listed in `bin-dbscheme-manager/docs/schema-ownership.md`, currently `bin-tag-manager`) keeps the schema of its own tables in its `migrations/` directory (golang-migrate, applied when the service starts; see that service's `CLAUDE.md`). Do not write Alembic migrations for those tables. The `bin-manager` Alembic stream is frozen: no new migrations are added to it, converted table or not (`asterisk_config` is not frozen).
+The services and their tables are listed in `bin-dbscheme-manager/docs/schema-ownership.md`; see each service's `CLAUDE.md` for its migrations. Do not write Alembic migrations for those tables. The `bin-manager` Alembic stream is frozen: no new migrations are added to it (`asterisk_config` is not frozen).
 
 ### AI Security Boundaries
 
@@ -207,6 +207,8 @@ AI can assist with creating and reviewing migration files, but database executio
 
 ### When to Create Migrations
 
+The Alembic procedure below applies to the `asterisk_config` stream only (the `asterisk` database). The `bin-manager` stream is frozen: tables of `bin_manager` change through the owning service's `migrations/` directory (see `docs/workflows/service-owned-migrations.md`).
+
 Create an Alembic migration whenever you:
 - Add new columns to existing tables
 - Create new tables
@@ -215,7 +217,7 @@ Create an Alembic migration whenever you:
 - Change foreign key relationships
 
 **Common scenarios:**
-- Adding fields to a model (e.g., adding `owner_type` column to `storage_files` table)
+- Adding fields to a model (e.g., adding `example_flag` column to `ps_endpoints` table)
 - Creating tables for new features
 - Database refactoring to support new functionality
 
@@ -223,7 +225,7 @@ Create an Alembic migration whenever you:
 
 **Step 1: Navigate to bin-dbscheme-manager**
 ```bash
-cd bin-dbscheme-manager/bin-manager
+cd bin-dbscheme-manager/asterisk_config
 ```
 
 **Step 2: Configure Alembic (first time only)**
@@ -238,10 +240,10 @@ cp alembic.ini.sample alembic.ini
 **Step 3: Create migration file**
 ```bash
 # Use descriptive naming: <table>_<action>_<type>_<items>
-alembic -c alembic.ini revision -m "storage_files add column owner_type"
+alembic -c alembic.ini revision -m "ps_endpoints add column example_flag"
 ```
 
-This creates a new file in `main/versions/` with format: `<hash>_storage_files_add_column_owner_type.py`
+This creates a new file in `config/versions/` with format: `<hash>_ps_endpoints_add_column_example_flag.py`
 
 **Step 4: Edit migration file**
 
@@ -249,22 +251,22 @@ Edit the generated file to add your SQL changes:
 ```python
 def upgrade():
     op.execute("""
-        ALTER TABLE storage_files
-        ADD COLUMN owner_type VARCHAR(255) DEFAULT '' AFTER owner_id
+        ALTER TABLE ps_endpoints
+        ADD COLUMN example_flag VARCHAR(255) DEFAULT ''
     """)
 
 def downgrade():
     op.execute("""
-        ALTER TABLE storage_files
-        DROP COLUMN owner_type
+        ALTER TABLE ps_endpoints
+        DROP COLUMN example_flag
     """)
 ```
 
 **Step 5: Commit and push** (AI can do this)
 ```bash
 cd /home/pchero/gitvoipbin/monorepo
-git add bin-dbscheme-manager/bin-manager/main/versions/<hash>_*.py
-git commit -m "feat(dbscheme): add owner_type column to storage_files table"
+git add bin-dbscheme-manager/asterisk_config/config/versions/<hash>_*.py
+git commit -m "feat(dbscheme): add example_flag column to ps_endpoints table"
 git push
 ```
 
@@ -276,7 +278,7 @@ git push
 alembic -c alembic.ini upgrade head
 
 # Verify schema change
-mysql -u user -p voipbin -e "DESCRIBE storage_files;"
+mysql -u user -p asterisk -e "DESCRIBE ps_endpoints;"
 
 # Test rollback (optional)
 alembic -c alembic.ini downgrade -1
@@ -289,7 +291,7 @@ Connect to VPN first (REQUIRED), then apply migration:
 ```bash
 # 🚫 AI MUST NOT execute these commands
 
-cd bin-dbscheme-manager/bin-manager
+cd bin-dbscheme-manager/asterisk_config
 alembic -c alembic.ini upgrade head
 ```
 

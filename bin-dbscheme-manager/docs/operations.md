@@ -1,6 +1,6 @@
 # Operations
 
-> **Freeze notice:** The `bin-manager` stream is frozen. Do not add new Alembic migrations for the `bin_manager` database, for tables of converted services or for any other table; a table of a converted service is changed only through that service's `migrations/` directory (see [schema-ownership.md](schema-ownership.md)). The `asterisk_config` stream is not frozen and keeps using Alembic.
+> **Freeze notice:** The `bin-manager` stream is frozen. Do not add new Alembic migrations for the `bin_manager` database; every application table there is changed only through the owning service's `migrations/` directory (see [schema-ownership.md](schema-ownership.md)). The `asterisk_config` stream is not frozen and keeps using Alembic.
 
 Operational reference for applying, verifying, and recovering Alembic migrations.
 

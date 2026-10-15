@@ -1,6 +1,6 @@
 # Migrations
 
-> **Freeze notice:** The `bin-manager` stream is frozen. Do not add new Alembic migrations for the `bin_manager` database, for tables of converted services or for any other table; a table of a converted service is changed only through that service's `migrations/` directory (see [schema-ownership.md](schema-ownership.md)). The `asterisk_config` stream is not frozen and keeps using Alembic.
+> **Freeze notice:** The `bin-manager` stream is frozen. Do not add new Alembic migrations for the `bin_manager` database; every application table there is changed only through the owning service's `migrations/` directory (see [schema-ownership.md](schema-ownership.md)). The `asterisk_config` stream is not frozen and keeps using Alembic.
 
 This document covers how to create, name, and verify Alembic migration files for the `bin_manager` and `asterisk` databases.
 
@@ -11,10 +11,7 @@ Always use `alembic revision` to generate migration files. Never create them by 
 **Step-by-step:**
 
 ```bash
-# For the bin_manager database (most service tables)
-cd bin-dbscheme-manager/bin-manager
-alembic -c alembic.ini revision -m "customers_add_column_email"
-# → creates main/versions/<id>_customers_add_column_email.py
+# The bin_manager stream (bin-dbscheme-manager/bin-manager) is frozen: no new revisions.
 
 # For the asterisk database (PJSIP config tables)
 cd bin-dbscheme-manager/asterisk_config
