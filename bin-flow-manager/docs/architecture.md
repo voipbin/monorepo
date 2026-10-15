@@ -32,6 +32,7 @@ graph TD
 | `pkg/variablehandler` | Variable resolution and substitution: replaces `{{variable}}` tokens in action parameters | `variable.Variable` |
 | `pkg/listenhandler` | RabbitMQ RPC request router (regex pattern matching) | `sock.Request`, `sock.Response` |
 | `pkg/subscribehandler` | Consumes customer-manager events via a pattern binding on the global topic exchange `bin-manager.event`, the sole intake mechanism since VOIP-1407 | queue event structs |
+| `migrations` | Embedded golang-migrate SQL files (service-owned schema of `flow_flows` and `flow_activeflows`); applied by `cmd/flow-manager` through `bin-common-handler/pkg/migrationhandler` right after the database connection, before the cache and RabbitMQ; `flow-control migrate` is the recovery tool | `migrations.FS` |
 | `pkg/dbhandler` | MySQL CRUD using Squirrel query builder | all model structs |
 | `pkg/cachehandler` | Redis fast-path lookups for activeflows | `activeflow.Activeflow` |
 | `models/flow` | Flow and Action data model, action types | `flow.Flow`, `flow.Action` |

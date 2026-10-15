@@ -12,6 +12,22 @@
 | High latency on `/execute` or `/next` requests | MySQL slow queries or Redis cache miss on activeflow lookup | Check `receive_request_process_time` histogram; inspect slow query logs; verify Redis connectivity |
 | Flow CRUD operations slow | Large action arrays on flows; MySQL table scan on `flows` | Check `flow_crud_total` metric; ensure proper indexing on `customer_id`; consider breaking large flows into sub-flows |
 
+## Schema Migration Failures
+
+Migrations run at startup, before the service connects the cache and the message broker. A failure exits the process with a non-zero code and the container is restarted. Version table: `flow_schema_migrations`.
+
+| Symptom | Likely Cause | Resolution |
+|---------|-------------|------------|
+| `Dirty database version N. Fix and force version.` | A previous run stopped inside migration N (failure, kill) | Stop the crash-looping container. Check whether migration N's statement was applied. Run `flow-control migrate force <N-1>` if not (for N=1 use `force -- -1`), `force <N>` if so, then start again. The image has no shell, so run the command in a one-off container of the same image: `docker run --rm --entrypoint ./flow-control -e DATABASE_DSN=<dsn> <image> migrate force <N>` (the container must reach the database; quote a DSN that holds special characters) |
+| `can't acquire lock` | Another instance is migrating for longer than 10 seconds | The restart policy retries; no action unless it persists |
+| `Error 1205 ... Lock wait timeout` | A long transaction holds a metadata lock on a flow table (even `CREATE TABLE IF NOT EXISTS` takes it briefly) | Find the long transaction, then restart. If the database is marked dirty, follow the dirty row |
+| `CREATE command denied ... flow_schema_migrations` | The database account cannot create tables | Grant CREATE to the service account |
+| `db version N is ahead of this image (max M); skipping migrations` (warning) | An older image started after a newer one migrated | Expected during a rollback; no action |
+
+`flow-control migrate status` shows the applied version, the image version and the dirty flag (it creates the version table when it is missing).
+
+On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates the tables first, the Alembic migration that renames `activeflows` to `flow_activeflows` (and `flows` to `flow_flows`) fails with `Table 'flow_activeflows' already exists` (error 1050). The service account also needs permission to create tables (for the version table). The database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`, like the install scripts do.
+
 ## Debugging Guide
 
 ### Key Log Patterns
