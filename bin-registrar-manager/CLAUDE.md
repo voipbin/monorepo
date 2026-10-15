@@ -38,10 +38,27 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 ./bin/registrar-control trunk list --customer_id <uuid>
 ```
 
+**Migration status (bin database only, no asterisk database, Redis or RabbitMQ):**
+```bash
+./bin/registrar-control migrate status
+```
+
 **Mock regeneration:**
 ```bash
 go generate ./...
 ```
+
+## Database migrations
+
+The schema of `registrar_customer_domains`, `registrar_extensions`, `registrar_sip_auths` and `registrar_trunks` (bin database) is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. The asterisk database (`ps_*` tables) stays in the Alembic `asterisk_config` stream and is not touched. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax.
+
+- Files: `migrations/NNNNNN_<description>.up.sql` and `.down.sql` (six digits, from 000001 without gaps). `000001_baseline` is the schema at the time of the conversion (`CREATE TABLE IF NOT EXISTS`, no table options, down is the no-op `SELECT 1`). Version table: `registrar_schema_migrations`.
+- `cmd/registrar-manager` runs `migrationhandler.Run` with `DATABASE_DSN_BIN` in `runDaemon`, right after the bin database connection and before the asterisk connection, the cache and RabbitMQ. Failure stops the start (non-zero exit).
+- `registrar-control migrate status|up|down|force <version>` talks to the bin database only (it still needs the same `DOMAIN_NAME_EXTENSION` and `DOMAIN_NAME_TRUNK` settings as every registrar-control command, because the root command loads the whole configuration). Run `up`, `down` and `force` only against a local throwaway database.
+- The migration code is the shared `bin-common-handler/pkg/migrationhandler`. Rules for new files (one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract), the checks and the recovery steps are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
+- A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do); other defaults make the table definitions differ from the Alembic head.
+- New database order: Alembic first, then this service. The reverse fails in the Alembic stream (`Table 'registrar_extensions' already exists`) and is unsupported while the Alembic stream still creates the registrar tables.
+- Structure checks: `go test ./migrations/`. Git relative check: `scripts/check-service-migrations.sh bin-registrar-manager` after `git fetch origin main`. Dynamic check on scratch containers: `ALEMBIC_VENV=<venv> scripts/verify-service-migrations.sh bin-registrar-manager` with `DSN_VAR=DATABASE_DSN_BIN` and a `DAEMON_ENV` that also sets `DATABASE_DSN_ASTERISK` (repo root).
 
 ## Key Facts
 
