@@ -11,6 +11,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -23,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-storage-manager/internal/config"
+	"monorepo/bin-storage-manager/migrations"
 	"monorepo/bin-storage-manager/pkg/accounthandler"
 	"monorepo/bin-storage-manager/pkg/cachehandler"
 	"monorepo/bin-storage-manager/pkg/dbhandler"
@@ -122,6 +124,12 @@ func createDBHandler() (dbhandler.DBHandler, error) {
 	db, err := commondatabasehandler.Connect(cfg.DatabaseDSN)
 	if err != nil {
 		logrus.Errorf("Could not access to database. err: %v", err)
+		return nil, err
+	}
+
+	// apply the schema migrations before anything else uses the database
+	if err := migrationhandler.Run(cfg.DatabaseDSN, migrations.FS, migrations.VersionTable); err != nil {
+		logrus.Errorf("Could not apply the database migrations. err: %v", err)
 		return nil, err
 	}
 

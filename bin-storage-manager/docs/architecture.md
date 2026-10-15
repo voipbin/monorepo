@@ -15,13 +15,14 @@ pkg/accounthandler/     — Storage account management and quota enforcement
 pkg/dbhandler/          — MySQL + Redis cache coordination
 pkg/cachehandler/       — Redis cache operations for files and accounts
 models/                 — Data structures (file, account, bucketfile, compressfile)
+migrations/             — Embedded golang-migrate SQL files (service-owned schema of storage_accounts, storage_files)
 ```
 
 ## Layer Responsibilities
 
 | Layer | Package | Responsibility |
 |-------|---------|---------------|
-| Entry | `cmd/storage-manager` | Configuration; starts ListenHandler and SubscribeHandler |
+| Entry | `cmd/storage-manager` | Configuration; applies the embedded schema migrations (`bin-common-handler/pkg/migrationhandler`) right after the database connection (before the cache and RabbitMQ), then starts ListenHandler and SubscribeHandler |
 | Transport | `pkg/listenhandler` | Consumes `bin-manager.storage-manager.request`; regex-routes to storagehandler |
 | Events | `pkg/subscribehandler` | Consumes customer events via pattern bindings on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407); handles cascading deletes |
 | Business logic | `pkg/storagehandler` | Coordinates file lifecycle, quota checks, recording compression |
