@@ -102,6 +102,20 @@ VOIP-1342/bin-call-manager pilot pattern) instead of the older SSH +
   watch for `WARN`-level "healthcheck lock" log lines during a Redis
   incident, which is the passive signal this is happening.
 
+## Database Migrations
+
+The service applies the migrations of its three tables itself (`migrations/`, embedded) on every start, after the database connection and before the cache and RabbitMQ; version table `route_schema_migrations`.
+
+| Situation | Behavior | Action |
+|-----------|----------|--------|
+| No pending migration | log `no pending migrations`, normal start | none |
+| Pending migration | applied under a MySQL named lock, then normal start; multiple instances serialize | none |
+| Database version higher than the image | skipped with a warning, normal start | none |
+| Database marked dirty (a migration failed half way) | the start is refused, the container restarts in a loop | stop the container, check whether the failed file was applied, then `route-control migrate force <version>` against that database |
+| Lock not obtained within 10 seconds | the start fails and the container restarts | none, a restart retries |
+
+Check the state with `./bin/route-control migrate status` (database only). The new database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`. File rules and checks: [docs/workflows/service-owned-migrations.md](../../docs/workflows/service-owned-migrations.md).
+
 ## Configuration
 
 | Flag | Environment Variable | Default | Description |

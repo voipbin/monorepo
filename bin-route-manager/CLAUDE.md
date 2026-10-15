@@ -32,6 +32,11 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 ./bin/route-control route dialroute-list --customer_id <uuid> --target 1
 ```
 
+**Migration status (database only, no Redis or RabbitMQ):**
+```bash
+./bin/route-control migrate status
+```
+
 **Mock regeneration:**
 ```bash
 go generate ./pkg/listenhandler/...
@@ -40,6 +45,19 @@ go generate ./pkg/providerhandler/...
 go generate ./pkg/dbhandler/...
 go generate ./pkg/cachehandler/...
 ```
+
+## Database migrations
+
+The schema of `route_providercalls`, `route_providers` and `route_routes` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax.
+
+- Files: `migrations/NNNNNN_<description>.up.sql` and `.down.sql` (six digits, from 000001 without gaps). `000001_baseline` is the schema at the time of the conversion (`CREATE TABLE IF NOT EXISTS`, no table options, down is the no-op `SELECT 1`). Version table: `route_schema_migrations`.
+- `cmd/route-manager` runs `migrationhandler.Run` right after the database connection and before the cache and RabbitMQ. Failure stops the start (non-zero exit).
+- `route-control migrate status|up|down|force <version>` talks to the database only. Run `up`, `down` and `force` only against a local throwaway database.
+- The migration code is the shared `bin-common-handler/pkg/migrationhandler`. Rules for new files (one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract), the checks and the recovery steps are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
+- A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do); other defaults make the table definitions differ from the Alembic head.
+- New database order: Alembic first, then this service. The reverse fails in the Alembic stream (`Table 'route_providers' already exists`) and is unsupported while the Alembic stream still creates the route tables.
+- Update `scripts/database_scripts/table_*.sql` (the sqlite test schema) by hand when the schema changes.
+- Structure checks: `go test ./migrations/`. Git relative check: `scripts/check-service-migrations.sh bin-route-manager` after `git fetch origin main`. Dynamic check on scratch containers: `ALEMBIC_VENV=<venv> scripts/verify-service-migrations.sh bin-route-manager` (repo root).
 
 ## Key Facts
 
