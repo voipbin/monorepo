@@ -6,6 +6,7 @@
 
 ```
 cmd/pipecat-manager/main.go  (Go, port 8080)
+    ├── migrations                 (embedded schema migrations, applied right after the DB connection)
     ├── pkg/dbhandler              (MySQL + Redis cache)
     ├── pkg/cachehandler           (Redis operations)
     ├── pkg/listenhandler          (RabbitMQ RPC router — shared + per-pod queues)
