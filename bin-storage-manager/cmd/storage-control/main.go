@@ -10,10 +10,12 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-storage-manager/internal/config"
+	"monorepo/bin-storage-manager/migrations"
 	"monorepo/bin-storage-manager/models/account"
 	"monorepo/bin-storage-manager/models/file"
 	"monorepo/bin-storage-manager/pkg/accounthandler"
@@ -144,6 +146,10 @@ func initCommand() *cobra.Command {
 	cmdRoot.AddCommand(cmdFile)
 	cmdRoot.AddCommand(cmdAccount)
 	cmdRoot.AddCommand(cmdRecording)
+	// the migrate commands open only the database, so they do not depend on Redis or RabbitMQ
+	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {
+		return migrationhandler.New(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable)
+	}))
 	return cmdRoot
 }
 

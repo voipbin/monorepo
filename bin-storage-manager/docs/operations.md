@@ -15,6 +15,24 @@
 | Redis cache stale | Crash between DB write and cache invalidation | Restart pod — cache keys expire; DB is the source of truth |
 | Compressfile generation slow | Many large recordings with same `reference_id` | Expected; zip is built synchronously on first request |
 
+## Schema Migration Failures
+
+Migrations run at startup, before the service listens. A failure exits the process with a non-zero code.
+
+| Symptom (log) | Meaning | Action |
+|---|---|---|
+| `Dirty database version N. Fix and force version.` | A previous run stopped inside migration N (failure, kill) | Stop the crash-looping container. Check whether migration N's statement was applied. `storage-control migrate force <N-1>` if not (for N=1 use `force -- -1`), `force <N>` if so (`force -- -1` resets to unversioned), then start again. See the migration section of `CLAUDE.md` |
+| `can't acquire lock` | Another instance is migrating for longer than 10 seconds | Restart policy retries; no action unless it persists |
+| `Error 1205 ... Lock wait timeout` | Only for ALTER style migrations after the baseline (the baseline does not block on an existing table): a long transaction holds the table; the migration left the database dirty | Find the long transaction, then force `N-1` and restart |
+| `CREATE command denied ... storage_schema_migrations` | The database account cannot create tables | Grant CREATE to the service account |
+| `db version N is ahead of this image (max M); skipping migrations` (warning) | An older image started after a newer one migrated | Expected during rollback; no action |
+
+A failed first migration shows as version 1 dirty; only a failed down of the first migration is shown as version 0 not dirty (the library hides the marker for an unversioned database), in which case `up` still refuses with `Dirty database version` and the table above applies. `storage-control migrate status` shows the applied version, the image version and the dirty flag (it creates the version table if missing).
+
+## Order on a New Database
+
+On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates `storage_accounts` and `storage_files` first, `alembic upgrade head` fails with `already exists` on one of them (checked by `scripts/verify-service-migrations.sh`). The service account also needs permission to create tables (for the version table). A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do).
+
 ## Debugging Guide
 
 ```bash
@@ -26,6 +44,9 @@ kubectl logs -n voipbin -l app=storage-manager --tail=100
 
 # List files for a customer
 ./bin/storage-control file list --customer_id <uuid> --limit 50
+
+# Schema migration status (database only, no Redis or RabbitMQ)
+./bin/storage-control migrate status
 
 # Check recording files
 ./bin/storage-control recording list --customer_id <uuid> --limit 20
