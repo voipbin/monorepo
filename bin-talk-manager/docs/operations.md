@@ -28,6 +28,12 @@ kubectl logs -n voipbin -l app=talk-manager --tail=100 | grep -E "ERROR|Could no
 kubectl exec -n voipbin deploy/talk-manager -- mysql -u root -p -e "SELECT COUNT(*) FROM talk_chats; SELECT COUNT(*) FROM talk_messages;"
 ```
 
+**Check the schema migration state (database only):**
+```bash
+./bin/talk-control migrate status
+```
+The service applies its schema migrations at startup (version table `talk_schema_migrations`); a dirty database refuses to start. Recovery steps are in `CLAUDE.md` (Database migrations) and `docs/workflows/service-owned-migrations.md` in the monorepo root.
+
 **Check reaction JSON corruption:**
 ```sql
 SELECT id, metadata FROM talk_messages WHERE JSON_VALID(metadata) = 0;
