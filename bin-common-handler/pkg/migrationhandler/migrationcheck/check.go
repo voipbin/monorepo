@@ -19,6 +19,10 @@ const (
 	OptionUTF8MB3          = "DEFAULT CHARSET=utf8mb3"
 
 	OptionUTF8MB4UnicodeCIDynamic = "DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC"
+
+	// OptionUTF8MB4Collate0900AI names the collation explicitly, for a table that must keep the
+	// collation of an existing database.
+	OptionUTF8MB4Collate0900AI = "DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci"
 )
 
 // The column level charset a baseline may carry. A service declares which column uses it in
@@ -497,7 +501,7 @@ func checkBaselineTables(name string, stmts []string, opt Options) []string {
 		}
 	}
 
-	allowed := map[string]bool{OptionUTF8MB4: true, OptionUTF8MB4UnicodeCI: true, OptionUTF8MB3: true, OptionUTF8MB4UnicodeCIDynamic: true}
+	allowed := map[string]bool{OptionUTF8MB4: true, OptionUTF8MB4UnicodeCI: true, OptionUTF8MB3: true, OptionUTF8MB4UnicodeCIDynamic: true, OptionUTF8MB4Collate0900AI: true}
 	tables := make([]string, 0, len(opt.TableOptions))
 	for table := range opt.TableOptions {
 		tables = append(tables, table)
