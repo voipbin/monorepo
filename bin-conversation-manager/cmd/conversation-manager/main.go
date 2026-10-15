@@ -15,6 +15,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -23,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-conversation-manager/internal/config"
+	"monorepo/bin-conversation-manager/migrations"
 	"monorepo/bin-conversation-manager/pkg/accounthandler"
 	"monorepo/bin-conversation-manager/pkg/cachehandler"
 	"monorepo/bin-conversation-manager/pkg/conversationhandler"
@@ -47,7 +49,10 @@ var rootCmd = &cobra.Command{
 	Use:   "conversation-manager",
 	Short: "Conversation Manager Service",
 	Long:  `A microservice for managing conversation thread management.`,
-	Run:   runMain,
+	RunE:  runMain,
+
+	// a failed start is reported by the log and the exit code, not by the usage text
+	SilenceUsage: true,
 }
 
 func init() {
@@ -65,7 +70,7 @@ func main() {
 	}
 }
 
-func runMain(cmd *cobra.Command, args []string) {
+func runMain(cmd *cobra.Command, args []string) error {
 	log := logrus.WithField("func", "main")
 	log.Info("Starting conversation-manager.")
 
@@ -83,21 +88,29 @@ func runMain(cmd *cobra.Command, args []string) {
 	sqlDB, err := commondatabasehandler.Connect(cfg.DatabaseDSN)
 	if err != nil {
 		logrus.Errorf("Could not access to database. err: %v", err)
-		return
+		return err
 	}
 	defer commondatabasehandler.Close(sqlDB)
+
+	// apply the schema migrations before anything else uses the database
+	if errMigrate := migrationhandler.Run(cfg.DatabaseDSN, migrations.FS, migrations.VersionTable); errMigrate != nil {
+		logrus.Errorf("Could not apply the database migrations. err: %v", errMigrate)
+		return errMigrate
+	}
 
 	// connect to cache
 	cache := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
 	if err := cache.Connect(); err != nil {
 		logrus.Errorf("Could not connect to cache server. err: %v", err)
-		return
+		return err
 	}
 
 	_ = run(sqlDB, cache, cfg)
 	<-chDone
 
 	log.Info("Finishing conversation-manager.")
+
+	return nil
 }
 
 // signalHandler catches signals and set the done
