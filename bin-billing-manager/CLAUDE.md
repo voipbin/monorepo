@@ -45,6 +45,17 @@ REDIS_ADDRESS="127.0.0.1:6379" \
 ./bin/billing-manager
 ```
 
+## Database Migrations
+
+The schema of `billing_accounts`, `billing_billings` and `billing_failed_events` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`, shared code in `bin-common-handler/pkg/migrationhandler`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax. The full rules (file naming, one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract, baseline conversion) are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
+
+- Files: `migrations/NNNNNN_<table>_<verb>_<type>_<items>.up.sql` and `.down.sql`. `000001_baseline` is the schema at the time of the conversion (`CREATE TABLE IF NOT EXISTS`, no table options; its down is the no-op `SELECT 1`). Version table: `billing_schema_migrations`.
+- `cmd/billing-manager` runs `migrationhandler.Run` right after the database connection, before the cache and RabbitMQ. Failure stops the start (non-zero exit).
+- `billing-control migrate status|up|down|force <version>` talks to the database only (no Redis or RabbitMQ). Run `up`, `down` and `force` only against a local throwaway database or as the recovery step in [docs/operations.md](docs/operations.md).
+- A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do); other defaults make the table definitions differ from the Alembic head.
+- Update `scripts/database_scripts_test/table_billing*.sql` in this service (the sqlite test schema) by hand when the schema changes.
+- Verification: `go test ./migrations/` (structure) and, from the repo root, `ALEMBIC_VENV=<venv> scripts/verify-service-migrations.sh bin-billing-manager` (both engines).
+
 ## Architecture Summary
 
 - **ListenHandler**: consumes `bin-manager.billing-manager.request`; routes to accounthandler / billinghandler
