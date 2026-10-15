@@ -25,6 +25,20 @@
 | `go test -v ./pkg/queuecallhandler/...` | Test a specific package |
 | `golangci-lint run -v --timeout 5m` | Lint |
 | `go generate ./...` | Regenerate mocks |
+| `./bin/queue-control migrate status` | Migration status (database only, no Redis or RabbitMQ) |
+
+## Database migrations
+
+The schema of `queue_queues`, `queue_queuecalls` and `queue_queuecallreferences` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax.
+
+- Files: `migrations/NNNNNN_<description>.up.sql` and `.down.sql` (six digits, from 000001 without gaps). `000001_baseline` is the schema at the time of the conversion (`CREATE TABLE IF NOT EXISTS`, no table options, down is the no-op `SELECT 1`). Version table: `queue_schema_migrations`.
+- `cmd/queue-manager` runs `migrationhandler.Run` in `runDaemon`, right after the database connection and before the cache and RabbitMQ. Failure stops the start (non-zero exit).
+- `queue-control migrate status|up|down|force <version>` talks to the database only. Run `up`, `down` and `force` only against a local throwaway database.
+- The migration code is the shared `bin-common-handler/pkg/migrationhandler`. Rules for new files (one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract), the checks and the recovery steps are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
+- A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do); other defaults make the table definitions differ from the Alembic head.
+- New database order: Alembic first, then this service. The reverse fails in the Alembic stream (`Table 'queue_queues' already exists`) and is unsupported while the Alembic stream still creates the queue tables.
+- Update `scripts/database_scripts_test/*.sql` in this service directory (the sqlite test schema) by hand when the schema changes.
+- Structure checks: `go test ./migrations/`. Git relative check: `scripts/check-service-migrations.sh bin-queue-manager` after `git fetch origin main`. Dynamic check on scratch containers: `ALEMBIC_VENV=<venv> scripts/verify-service-migrations.sh bin-queue-manager` (repo root).
 
 ## Architecture
 → [docs/architecture.md](docs/architecture.md)
