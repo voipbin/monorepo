@@ -11,6 +11,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -22,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-conference-manager/internal/config"
+	"monorepo/bin-conference-manager/migrations"
 	"monorepo/bin-conference-manager/pkg/cachehandler"
 	"monorepo/bin-conference-manager/pkg/conferencecallhandler"
 	"monorepo/bin-conference-manager/pkg/conferencehandler"
@@ -42,7 +44,10 @@ var rootCmd = &cobra.Command{
 	Use:   "conference-manager",
 	Short: "Conference Manager Service",
 	Long:  `A microservice for managing audio conferencing with recording, transcription, and media streaming.`,
-	Run:   runMain,
+	RunE:  runMain,
+
+	// a failed start is reported by the log and the exit code, not by the usage text
+	SilenceUsage: true,
 }
 
 func init() {
@@ -60,7 +65,7 @@ func main() {
 	}
 }
 
-func runMain(cmd *cobra.Command, args []string) {
+func runMain(cmd *cobra.Command, args []string) error {
 	log := logrus.WithField("func", "main")
 	log.Info("Starting conference-manager.")
 
@@ -78,21 +83,29 @@ func runMain(cmd *cobra.Command, args []string) {
 	sqlDB, err := commondatabasehandler.Connect(cfg.DatabaseDSN)
 	if err != nil {
 		logrus.Errorf("Could not access to database. err: %v", err)
-		return
+		return err
 	}
 	defer commondatabasehandler.Close(sqlDB)
+
+	// apply the schema migrations before anything else uses the database
+	if err := migrationhandler.Run(cfg.DatabaseDSN, migrations.FS, migrations.VersionTable); err != nil {
+		logrus.Errorf("Could not apply the database migrations. err: %v", err)
+		return err
+	}
 
 	// connect to cache
 	cache := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
 	if err := cache.Connect(); err != nil {
 		logrus.Errorf("Could not connect to cache server. err: %v", err)
-		return
+		return err
 	}
 
 	_ = run(sqlDB, cache, cfg)
 	<-chDone
 
 	log.Info("Finishing conference-manager.")
+
+	return nil
 }
 
 // signalHandler catches signals and set the done
