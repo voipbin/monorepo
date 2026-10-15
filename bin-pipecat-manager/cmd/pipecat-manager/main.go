@@ -11,6 +11,8 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/migrationhandler"
+	"monorepo/bin-pipecat-manager/migrations"
 	"monorepo/bin-pipecat-manager/pkg/cachehandler"
 	"monorepo/bin-pipecat-manager/pkg/dbhandler"
 	"monorepo/bin-pipecat-manager/pkg/httphandler"
@@ -187,13 +189,19 @@ func runHttp(httpHandler httphandler.HttpHandler) error {
 	return nil
 }
 
-// connectDatabase connects to the database and cachehandler
+// createDBHandler connects to the database, applies the schema migrations and connects to the cachehandler
 func createDBHandler() (dbhandler.DBHandler, error) {
 	// connect to database
 	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
 		logrus.Errorf("Could not access to database. err: %v", err)
 		return nil, err
+	}
+
+	// apply the schema migrations of the owned table before the cache and anything else use it
+	if errMigrate := migrationhandler.Run(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable); errMigrate != nil {
+		logrus.Errorf("Could not apply the database migrations. err: %v", errMigrate)
+		return nil, errMigrate
 	}
 
 	// connect to cache
