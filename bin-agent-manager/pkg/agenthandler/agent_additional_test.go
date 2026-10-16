@@ -2,10 +2,12 @@ package agenthandler
 
 import (
 	"context"
+	stderrors "errors"
 	reflect "reflect"
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -335,10 +337,14 @@ func Test_Delete_errors(t *testing.T) {
 		id uuid.UUID
 
 		mockFunc func(mockDB *dbhandler.MockDBHandler, id uuid.UUID)
+
+		expectReason string
 	}{
 		{
 			name: "guest agent error",
 			id:   agent.GuestAgentID,
+
+			expectReason: "AGENT_GUEST_IMMUTABLE",
 			mockFunc: func(mockDB *dbhandler.MockDBHandler, id uuid.UUID) {
 				// No mocks needed - should fail before database call
 			},
@@ -346,6 +352,8 @@ func Test_Delete_errors(t *testing.T) {
 		{
 			name: "only admin error",
 			id:   uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
+
+			expectReason: "AGENT_LAST_ADMIN",
 			mockFunc: func(mockDB *dbhandler.MockDBHandler, id uuid.UUID) {
 				responseAgent := &agent.Agent{
 					Identity: commonidentity.Identity{
@@ -382,8 +390,12 @@ func Test_Delete_errors(t *testing.T) {
 			tt.mockFunc(mockDB, tt.id)
 
 			_, err := h.Delete(ctx, tt.id)
-			if err == nil {
-				t.Errorf("Wrong match. expect:error, got:nil")
+			var ve *cerrors.VoipbinError
+			if !stderrors.As(err, &ve) {
+				t.Fatalf("Wrong match. expect: VoipbinError, got: %v", err)
+			}
+			if ve.Reason != tt.expectReason {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectReason, ve.Reason)
 			}
 		})
 	}
