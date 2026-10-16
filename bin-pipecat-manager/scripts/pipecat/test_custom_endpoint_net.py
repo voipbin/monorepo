@@ -895,7 +895,7 @@ def test_customer_id_is_canonical(value):
         assert net.parse_customer_id(value) == CUSTOMER
 
 
-@pytest.mark.parametrize("value", [None, "", "x", 5, "11111111-2222-3333-4444-55555555555", "urn:uuid:" + CUSTOMER, CUSTOMER + "zz", "g" * 36])
+@pytest.mark.parametrize("value", [None, "", "x", 5, "11111111-2222-3333-4444-55555555555", "urn:uuid:" + CUSTOMER, CUSTOMER + "zz", "g" * 36, "00000000-0000-0000-0000-000000000000", "0" * 32])
 def test_customer_id_missing_or_malformed_is_refused(value):
     with pytest.raises(ValueError) as ei:
         net.parse_customer_id(value)

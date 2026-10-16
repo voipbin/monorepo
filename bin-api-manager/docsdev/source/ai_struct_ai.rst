@@ -102,7 +102,6 @@ Example
         "engine_model": "openai.gpt-5-mini",
         "parameter": {},
         "engine_key": "sk-...",
-        "engine_base_url": "",
         "rag_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "init_prompt": "You are a friendly sales assistant. Help customers find the right products.",
         "tts_type": "elevenlabs",

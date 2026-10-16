@@ -2606,7 +2606,7 @@
                   },
                   "engine_base_url": {
                     "type": "string",
-                    "description": "Base URL of the customer-hosted OpenAI-compatible server. Required when engine_model starts with `customendpoint.` (400 ENGINE_BASE_URL_REQUIRED if empty); not allowed for any other model (400 ENGINE_BASE_URL_NOT_ALLOWED). Only https is accepted. Do not put credentials, tokens or other secrets in the URL; the URL is not secret and is returned in responses, events and webhooks. Send the key in `engine_base_key` instead. A call that is already running keeps the URL and key it read when it started; a changed URL or key applies from the next call or turn. A client that sends PUT for an existing `customendpoint.` AI without this field gets 400 ENGINE_BASE_URL_REQUIRED.",
+                    "description": "Base URL of the customer-hosted OpenAI-compatible server. Required when engine_model starts with `customendpoint.` (400 ENGINE_BASE_URL_REQUIRED if empty); not allowed for any other model (400 ENGINE_BASE_URL_NOT_ALLOWED). Only https is accepted. Do not put credentials, tokens or other secrets in the URL; the URL is not secret and is returned in responses, events and webhooks. Send the key in `engine_base_key` instead. A call that is already running keeps the URL and key it read when it started; a changed URL or key applies from the next call or turn.",
                     "example": "https://llm.example.com/v1"
                   },
                   "engine_base_key": {

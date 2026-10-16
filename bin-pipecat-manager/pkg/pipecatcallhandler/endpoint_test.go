@@ -707,3 +707,73 @@ func Test_receiveMessage_errorResponseCustomEndpointWithholdsText(t *testing.T) 
 		}
 	}
 }
+
+// Test_resolveTeamForPython_wireNames pins the json names the runner (main.py ResolvedAI) parses.
+func Test_resolveTeamForPython_wireNames(t *testing.T) {
+	teamID := uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-0000000000a9")
+	memberID := uuid.FromStringOrNil("bbbbbbbb-0000-0000-0000-0000000000a9")
+	live := testCustomAI()
+
+	stubEndpointResolver(t, "93.184.216.34")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockTool := toolhandler.NewMockToolHandler(mc)
+	h := &pipecatcallHandler{requestHandler: mockReq, toolHandler: mockTool}
+	mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amteam.Team{
+		Identity: commonidentity.Identity{ID: teamID}, StartMemberID: memberID,
+		Members: []amteam.Member{{ID: memberID, Name: "one", AIID: live.ID}},
+	}, nil)
+	mockReq.EXPECT().AIV1AIGet(gomock.Any(), live.ID).Return(live, nil)
+	mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).Return([]aitool.Tool{})
+
+	res, err := h.resolveTeamForPython(context.Background(), &amaicall.AIcall{AssistanceType: amaicall.AssistanceTypeTeam, AssistanceID: teamID}, testEndpointCustomerID)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	b, errMarshal := json.Marshal(res)
+	if errMarshal != nil {
+		t.Fatalf("marshal: %v", errMarshal)
+	}
+	var wire struct {
+		Members []struct {
+			AI map[string]any `json:"ai"`
+		} `json:"members"`
+	}
+	if err := json.Unmarshal(b, &wire); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	ai := wire.Members[0].AI
+	if ai["llm_base_url"] != testEndpointURL || ai["llm_base_key"] != testEndpointKey || ai["llm_type"] != "customendpoint.my-model" {
+		t.Errorf("wire names of the member endpoint changed: %v", ai)
+	}
+}
+
+// Test_resolveTeamEndpoints_boundedByOneSecond: a name server that never answers must not hold the
+// team start longer than the lookup bound, and the member then carries the rejection signal.
+func Test_resolveTeamEndpoints_boundedByOneSecond(t *testing.T) {
+	restore := amai.SetEngineResolverForTest(func(ctx context.Context, _ string) ([]netip.Addr, error) {
+		<-ctx.Done()
+		return nil, ctx.Err()
+	})
+	defer restore()
+
+	a1, a2 := testCustomAI(), testCustomAI()
+	resolved := &resolvedTeamData{Members: []resolvedMemberData{
+		{AI: resolvedAIData{LLMType: "customendpoint.my-model"}},
+		{AI: resolvedAIData{LLMType: "customendpoint.my-model"}},
+	}}
+	h := &pipecatcallHandler{}
+
+	start := time.Now()
+	h.resolveTeamEndpoints(context.Background(), resolved, testEndpointCustomerID, []teamEndpointCheck{{index: 0, ai: a1}, {index: 1, ai: a2}})
+	if elapsed := time.Since(start); elapsed > 2*time.Second {
+		t.Errorf("team endpoint checks took %s, want about one second in total", elapsed)
+	}
+	for i, m := range resolved.Members {
+		if m.AI.LLMType != "" || m.AI.LLMBaseURL != "" || m.AI.LLMBaseKey != "" {
+			t.Errorf("member %d must carry the rejection signal: %+v", i, m.AI)
+		}
+	}
+}

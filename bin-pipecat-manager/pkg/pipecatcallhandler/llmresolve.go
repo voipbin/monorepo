@@ -124,7 +124,7 @@ func resolveSessionEndpoint(ctx context.Context, llmType pipecatcall.LLMType, cu
 
 	cctx, cancel := context.WithTimeout(ctx, endpointLookupTimeout)
 	defer cancel()
-	if err := amai.ValidateEngineBaseURL(cctx, liveAI.EngineBaseURL); err != nil {
+	if err := amai.ValidateEngineBaseURLForSession(cctx, liveAI.EngineBaseURL); err != nil {
 		return nil, errEngineEndpointNotAvailable
 	}
 

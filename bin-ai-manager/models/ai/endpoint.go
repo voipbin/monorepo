@@ -163,7 +163,23 @@ func parseEngineBaseURL(raw string) (host string, literal netip.Addr, err error)
 // ValidateEngineBaseURL checks the rules of a customer specified base URL. A host name is resolved
 // (absolute name, 1 second) and every answer must be outside the block table. The errors never
 // carry the URL.
+//
+// At most maxEngineLookups validation lookups run at once in the process, taken without blocking,
+// so that a slow name server of one customer cannot hold the RPC workers of ai-manager. Callers
+// outside ai-manager use ValidateEngineBaseURLForSession.
 func ValidateEngineBaseURL(ctx context.Context, raw string) error {
+	return validateEngineBaseURL(ctx, raw, true)
+}
+
+// ValidateEngineBaseURLForSession applies the same rules as ValidateEngineBaseURL without the
+// in-process limit of concurrent lookups. The limit protects the RPC workers of ai-manager; a
+// session start (pipecat-manager) bounds each lookup by its own deadline, and a team with several
+// custom endpoint members must not be rejected because its members are checked at the same time.
+func ValidateEngineBaseURLForSession(ctx context.Context, raw string) error {
+	return validateEngineBaseURL(ctx, raw, false)
+}
+
+func validateEngineBaseURL(ctx context.Context, raw string, limited bool) error {
 	host, literal, err := parseEngineBaseURL(raw)
 	if err != nil {
 		return err
@@ -176,11 +192,13 @@ func ValidateEngineBaseURL(ctx context.Context, raw string) error {
 		return nil
 	}
 
-	select {
-	case engineLookupSlots <- struct{}{}:
-		defer func() { <-engineLookupSlots }()
-	default:
-		return ErrEngineBaseURLRejected
+	if limited {
+		select {
+		case engineLookupSlots <- struct{}{}:
+			defer func() { <-engineLookupSlots }()
+		default:
+			return ErrEngineBaseURLRejected
+		}
 	}
 
 	engineResolverMu.RLock()

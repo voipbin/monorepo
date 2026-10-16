@@ -551,9 +551,13 @@ def parse_customer_id(value) -> str:
     if not isinstance(value, str) or not _UUID_RE.match(value):
         raise ValueError(FIXED_ERROR)
     try:
-        return str(uuid.UUID(value))
+        parsed = uuid.UUID(value)
     except ValueError:
         raise ValueError(FIXED_ERROR) from None
+    if parsed.int == 0:
+        # The nil UUID would put every caller that sends it into one bucket.
+        raise ValueError(FIXED_ERROR)
+    return str(parsed)
 
 
 def check_runner_base_url(value) -> str:

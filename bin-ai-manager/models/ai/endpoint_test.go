@@ -508,3 +508,57 @@ func Test_AI_JSONRoundTripKeepsCiphertext(t *testing.T) {
 		t.Errorf("the plaintext must be carried by the get-by-id JSON: %s", raw)
 	}
 }
+
+// Test_ValidateEngineBaseURLForSession_noInProcessLimit pins that a session start is not subject to
+// the limit of concurrent lookups that protects the ai-manager RPC workers (a team with several
+// custom endpoint members is checked at the same time), while ValidateEngineBaseURL keeps it.
+func Test_ValidateEngineBaseURLForSession_noInProcessLimit(t *testing.T) {
+	const parallel = maxEngineLookups + 4
+
+	started := make(chan struct{}, parallel)
+	release := make(chan struct{})
+	restore := SetEngineResolverForTest(func(_ context.Context, _ string) ([]netip.Addr, error) {
+		started <- struct{}{}
+		<-release
+		return []netip.Addr{netip.MustParseAddr("93.184.216.34")}, nil
+	})
+	defer restore()
+
+	run := func(f func(context.Context, string) error) []error {
+		results := make(chan error, parallel)
+		for i := 0; i < parallel; i++ {
+			go func() { results <- f(context.Background(), "https://llm.example-endpoint.test/v1") }()
+		}
+		// every call that is allowed to look up is now waiting in the resolver
+		time.Sleep(100 * time.Millisecond)
+		close(release)
+		out := []error{}
+		for i := 0; i < parallel; i++ {
+			out = append(out, <-results)
+		}
+		return out
+	}
+
+	countErr := func(errs []error) int {
+		n := 0
+		for _, e := range errs {
+			if e != nil {
+				n++
+			}
+		}
+		return n
+	}
+
+	if n := countErr(run(ValidateEngineBaseURLForSession)); n != 0 {
+		t.Errorf("session validation must not reject concurrent lookups, got %d errors", n)
+	}
+
+	// the limited variant rejects the calls over the limit (fresh release channel)
+	release = make(chan struct{})
+	for len(started) > 0 {
+		<-started
+	}
+	if n := countErr(run(ValidateEngineBaseURL)); n != parallel-maxEngineLookups {
+		t.Errorf("limited validation must reject the calls over the limit, got %d errors", n)
+	}
+}
