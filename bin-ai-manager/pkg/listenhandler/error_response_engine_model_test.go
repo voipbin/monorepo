@@ -55,11 +55,11 @@ func Test_errorResponse_invalidEngineModel(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := aihandler.NewAIHandler(requesthandler.NewMockRequestHandler(mc), notifyhandler.NewMockNotifyHandler(mc), mockDB)
+	h := aihandler.NewAIHandler(requesthandler.NewMockRequestHandler(mc), notifyhandler.NewMockNotifyHandler(mc), mockDB, nil)
 
 	t.Run("create", func(t *testing.T) {
 		_, err := h.Create(context.Background(), uuid.Must(uuid.NewV4()), "n", "d", ai.TypeNormal,
-			ai.EngineModel("invalid.model"), nil, "", uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
+			ai.EngineModel("invalid.model"), nil, "", "", nil, uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
 			[]tool.ToolName{}, nil, false, false)
 		assertEngineModel400(t, err)
 	})
@@ -67,14 +67,14 @@ func Test_errorResponse_invalidEngineModel(t *testing.T) {
 	t.Run("update", func(t *testing.T) {
 		mockDB.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(&ai.AI{EngineModel: ai.EngineModelOpenaiGPT5}, nil).Times(1)
 		_, err := h.Update(context.Background(), uuid.Must(uuid.NewV4()), "n", "d", ai.TypeNormal,
-			ai.EngineModel("unknown.invalid"), nil, "", uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
+			ai.EngineModel("unknown.invalid"), nil, "", "", nil, uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
 			[]tool.ToolName{}, nil, false, false)
 		assertEngineModel400(t, err)
 	})
 
 	t.Run("create custom model without key", func(t *testing.T) {
 		_, err := h.Create(context.Background(), uuid.Must(uuid.NewV4()), "n", "d", ai.TypeNormal,
-			ai.EngineModel("openrouter.vendor/model-a"), nil, "", uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
+			ai.EngineModel("openrouter.vendor/model-a"), nil, "", "", nil, uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
 			[]tool.ToolName{}, nil, false, false)
 		assertEngine400Reason(t, err, "ENGINE_KEY_REQUIRED")
 	})

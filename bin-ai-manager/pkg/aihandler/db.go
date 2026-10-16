@@ -30,6 +30,8 @@ func (h *aiHandler) dbCreate(
 	engineModel ai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
+	engineBaseURL string,
+	engineBaseKeyEnc []byte,
 	ragID uuid.UUID,
 	initPrompt string,
 	ttsType ai.TTSType,
@@ -70,6 +72,9 @@ func (h *aiHandler) dbCreate(
 		Parameter:   parameter,
 		EngineKey:   engineKey,
 		RagID:       ragID,
+
+		EngineBaseURL:    engineBaseURL,
+		EngineBaseKeyEnc: engineBaseKeyEnc,
 
 		InitPrompt: initPrompt,
 
@@ -189,9 +194,10 @@ func (h *aiHandler) dbUpdate(
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
 	autoAICallAuditEnabled bool,
+	ep endpointWrite,
 ) (*ai.AI, error) {
 	fields := h.buildUpdateFields(name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt,
-		ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
+		ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled, ep)
 
 	if err := h.db.AIUpdate(ctx, id, fields); err != nil {
 		return nil, errors.Wrapf(err, "could not update ai")
@@ -270,6 +276,7 @@ func (h *aiHandler) buildUpdateFields(
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
 	autoAICallAuditEnabled bool,
+	ep endpointWrite,
 ) map[ai.Field]any {
 	res := map[ai.Field]any{
 		ai.FieldName:                   name,
@@ -288,6 +295,15 @@ func (h *aiHandler) buildUpdateFields(
 		ai.FieldVADConfig:              vadConfig,
 		ai.FieldSmartTurnEnabled:       smartTurnEnabled,
 		ai.FieldAutoAICallAuditEnabled: autoAICallAuditEnabled,
+	}
+
+	// The endpoint URL and its ciphertext are added here and nowhere else (section 3.4). A nil
+	// ciphertext is written as NULL.
+	if ep.writeURL {
+		res[ai.FieldEngineBaseURL] = ep.url
+	}
+	if ep.writeEnc {
+		res[ai.FieldEngineBaseKeyEnc] = ep.enc
 	}
 
 	// Any row that is not (or is no longer) an Insight AI must not keep an

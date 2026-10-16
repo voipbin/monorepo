@@ -441,6 +441,12 @@ Reasons fired by agent endpoints (``/agents``, ``/agents/{id}*``, ``/service_age
    * - ``AGENT_NOT_FOUND``
      - 404
      - Agent ID does not exist or belongs to another customer. Fired by ``GET /agents/{id}``, ``PUT /agents/{id}``, ``DELETE /agents/{id}``, ``PUT /agents/{id}/addresses``, ``PUT /agents/{id}/tag_ids``, ``PUT /agents/{id}/status``, ``PUT /agents/{id}/permission``, ``PUT /agents/{id}/password``, and ``POST /agents/{id}/direct_hash_regenerate``. **Fix:** Verify the ID was obtained from a recent ``GET /agents`` list call.
+   * - ``AGENT_LAST_ADMIN``
+     - 409
+     - The agent is the only admin of the customer and cannot be removed or demoted. Fired by ``DELETE /agents/{id}`` and ``PUT /agents/{id}/permission`` (when the new permission is not customer admin). **Fix:** Grant admin permission to another agent with ``PUT /agents/{id}/permission`` first, then retry.
+   * - ``AGENT_GUEST_IMMUTABLE``
+     - 400
+     - The guest agent is built in and cannot be changed or deleted. Fired by ``DELETE /agents/{id}`` and ``PUT /agents/{id}/permission``. **Fix:** Use a regular agent ID obtained from ``GET /agents``.
 
 Tag Reasons
 ^^^^^^^^^^^

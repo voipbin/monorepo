@@ -67,6 +67,14 @@ type AI struct {
 	EngineKey   string         `json:"engine_key,omitempty" db:"engine_key"` // ai(llm) service api key
 	RagID       uuid.UUID      `json:"rag_id,omitempty" db:"rag_id,uuid"`
 
+	// Customer specified OpenAI compatible endpoint (customendpoint. models only).
+	// EngineBaseKeyEnc is the packed ciphertext of the endpoint key and is cached with the row.
+	// EngineBaseKey is the plaintext and is filled only by the get-by-id response; it is never
+	// stored or cached (db:"-").
+	EngineBaseURL    string         `json:"engine_base_url,omitempty" db:"engine_base_url"`
+	EngineBaseKeyEnc []byte         `json:"engine_base_key_enc,omitempty" db:"engine_base_key_enc"`
+	EngineBaseKey    RedactedString `json:"engine_base_key,omitempty" db:"-"`
+
 	InitPrompt string `json:"init_prompt,omitempty" db:"init_prompt"`
 
 	CurrentPromptHistoryID uuid.UUID `json:"current_prompt_history_id" db:"current_prompt_history_id,uuid"`

@@ -137,7 +137,7 @@ func Test_resolveTeamForPython_llmType(t *testing.T) {
 			res, err := h.resolveTeamForPython(context.Background(), &amaicall.AIcall{
 				AssistanceType: amaicall.AssistanceTypeTeam,
 				AssistanceID:   teamID,
-			})
+			}, customerID)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}

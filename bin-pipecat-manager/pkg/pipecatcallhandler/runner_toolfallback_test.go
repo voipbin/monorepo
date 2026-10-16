@@ -71,7 +71,7 @@ func Test_runnerStartScript_toolResolveFallback(t *testing.T) {
 	mockPython.EXPECT().Start(
 		gomock.Any(), pc.ID, gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 	).Return(nil)
 
 	before := testutil.ToFloat64(metricsToolResolveFallbackTotal)

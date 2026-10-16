@@ -52,6 +52,9 @@ type PythonRunner interface {
 		resolvedTeam *resolvedTeamData,
 		vadConfig *amai.VADConfig,
 		smartTurnEnabled bool,
+		customerID uuid.UUID,
+		llmBaseURL string,
+		llmBaseKey string,
 	) error
 	Stop(ctx context.Context, pipecatcallID uuid.UUID) error
 }
@@ -75,6 +78,9 @@ func (h *pythonRunner) Start(
 	resolvedTeam *resolvedTeamData,
 	vadConfig *amai.VADConfig,
 	smartTurnEnabled bool,
+	customerID uuid.UUID,
+	llmBaseURL string,
+	llmBaseKey string,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Start",
@@ -95,6 +101,9 @@ func (h *pythonRunner) Start(
 		ResolvedTeam     *resolvedTeamData `json:"resolved_team,omitempty"`
 		VADConfig        *amai.VADConfig   `json:"vad_config,omitempty"`
 		SmartTurnEnabled bool              `json:"smart_turn_enabled"`
+		CustomerID       uuid.UUID         `json:"customer_id,omitempty"`
+		LLMBaseURL       string            `json:"llm_base_url,omitempty"`
+		LLMBaseKey       string            `json:"llm_base_key,omitempty"`
 	}{
 		ID:               pipecatcallID,
 		LLMType:          llmType,
@@ -109,6 +118,9 @@ func (h *pythonRunner) Start(
 		ResolvedTeam:     resolvedTeam,
 		VADConfig:        vadConfig,
 		SmartTurnEnabled: smartTurnEnabled,
+		CustomerID:       customerID,
+		LLMBaseURL:       llmBaseURL,
+		LLMBaseKey:       llmBaseKey,
 	}
 
 	jsonData, err := json.Marshal(reqBody)
@@ -138,10 +150,24 @@ func (h *pythonRunner) Start(
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		if requestHasEndpoint(llmType, llmBaseURL, resolvedTeam) {
+			// The body of a request that carried an endpoint is not put into the error text.
+			return errors.Errorf("python runner returned non-200 status: %s", resp.Status)
+		}
 		return errors.Errorf("python runner returned non-200 status: %s, body: %s", resp.Status, string(body))
 	}
 
 	return nil
+}
+
+// requestHasEndpoint reports whether the runner request carries, or was meant to carry, a customer
+// specified endpoint (the same notion as the runner: the type of the request or of any member).
+func requestHasEndpoint(llmType string, llmBaseURL string, team *resolvedTeamData) bool {
+	if llmBaseURL != "" || amai.IsCustomEndpointModel(amai.EngineModel(llmType)) {
+		return true
+	}
+
+	return team != nil && teamHasCustomEndpoint(team)
 }
 
 func (h *pythonRunner) Stop(ctx context.Context, pipecatcallID uuid.UUID) error {

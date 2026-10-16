@@ -14,6 +14,7 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 )
 
 // AIHandler interface
@@ -27,6 +28,8 @@ type AIHandler interface {
 		engineModel ai.EngineModel,
 		parameter map[string]any,
 		engineKey string,
+		engineBaseURL string,
+		engineBaseKey *string,
 		ragID uuid.UUID,
 		initPrompt string,
 		ttsType ai.TTSType,
@@ -50,6 +53,8 @@ type AIHandler interface {
 		engineModel ai.EngineModel,
 		parameter map[string]any,
 		engineKey string,
+		engineBaseURL string,
+		engineBaseKey *string,
 		ragID uuid.UUID,
 		initPrompt string,
 		ttsType ai.TTSType,
@@ -63,6 +68,10 @@ type AIHandler interface {
 	) (*ai.AI, error)
 	ActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*ai.AI, error)
+
+	// FillEngineBaseKey returns a copy of the AI with the plaintext endpoint key filled from the
+	// stored ciphertext. Only the get-by-id response uses it; the input is never modified.
+	FillEngineBaseKey(a *ai.AI) *ai.AI
 
 	// ValidateMcpServerIDs checks that every id in ids refers to an
 	// existing McpServer row owned by customerID (IDOR guard), and that any
@@ -88,6 +97,7 @@ type aiHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
+	crypto        *mcpserverhandler.SecretCrypto
 }
 
 // NewAIHandler define
@@ -95,11 +105,13 @@ func NewAIHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
+	crypto *mcpserverhandler.SecretCrypto,
 ) AIHandler {
 	return &aiHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,
 		db:            db,
+		crypto:        crypto,
 	}
 }

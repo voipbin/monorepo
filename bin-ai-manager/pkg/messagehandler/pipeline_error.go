@@ -36,6 +36,7 @@ var pipelineErrorNoticeText = map[pmmessage.ErrorCategory]string{
 	pmmessage.ErrorCategoryRateLimited:    "An AI service provider rejected the request due to a rate limit or quota. Try again later.",
 	pmmessage.ErrorCategoryTimeout:        "The AI language model did not respond in time.",
 	pmmessage.ErrorCategoryUnknown:        "An AI service provider returned an error.",
+	pmmessage.ErrorCategoryConnection:     "The AI language model could not be reached. If this AI uses a custom base URL, verify that the address is correct and reachable over HTTPS.",
 }
 
 // PipelineErrorNotice is the JSON content of a pipeline_error notification message.

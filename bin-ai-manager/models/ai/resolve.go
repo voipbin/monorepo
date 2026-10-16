@@ -17,7 +17,8 @@ const (
 	OutcomeRejected Outcome = iota
 	OutcomeCatalog
 	OutcomeDirectPassthrough
-	OutcomeCustomOpenRouter // appended last to keep the iota values stable
+	OutcomeCustomOpenRouter // appended to keep the iota values stable
+	OutcomeCustomEndpoint   // customer specified OpenAI compatible endpoint; appended last
 )
 
 // Resolved is what a session start hands over to the runner.
@@ -35,6 +36,9 @@ var (
 
 // customModelIDPattern is the "<author>/<slug>" form: exactly one slash, no variant suffix.
 var customModelIDPattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*$`)
+
+// customEndpointIDPattern is the id part after the customendpoint. prefix (same rule as local ids).
+var customEndpointIDPattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._:/-]*$`)
 
 // maxEngineModelLen is the engine_model column width.
 const maxEngineModelLen = 255
@@ -99,6 +103,17 @@ func ResolveEngine(m EngineModel) (Resolved, Outcome) {
 	if strings.HasPrefix(string(m), EngineModelPrefixCustomOpenRouter) {
 		if ValidateCustomModelID(strings.TrimPrefix(string(m), EngineModelPrefixCustomOpenRouter)) {
 			return Resolved{RunnerType: string(m), RequireKey: true}, OutcomeCustomOpenRouter
+		}
+
+		return Resolved{}, OutcomeRejected
+	}
+
+	// Customer endpoint: exact, case-sensitive prefix. The legacy engine key is never forwarded;
+	// the endpoint key comes from its own column.
+	if IsCustomEndpointModel(m) {
+		id := strings.TrimPrefix(string(m), CustomEndpointPrefix)
+		if len(m) <= maxEngineModelLen && customEndpointIDPattern.MatchString(id) {
+			return Resolved{RunnerType: string(m), BlankKey: true}, OutcomeCustomEndpoint
 		}
 
 		return Resolved{}, OutcomeRejected

@@ -149,7 +149,7 @@ func Test_DirectHashLog_NoSecret_Create(t *testing.T) {
 	mockDB.EXPECT().AIGet(ctx, id).Return(responseAI, nil)
 	mockNotify.EXPECT().PublishWebhookEvent(ctx, customerID, ai.EventTypeCreated, responseAI)
 
-	if _, err := h.dbCreate(ctx, customerID, "n", "d", ai.TypeNormal, ai.EngineModelOpenaiGPT5Dot1, nil, "", uuid.Nil, "", ai.TTSTypeCartesia, "v", ai.STTTypeDeepgram, "", nil, nil, false, false, uuid.Nil); err != nil {
+	if _, err := h.dbCreate(ctx, customerID, "n", "d", ai.TypeNormal, ai.EngineModelOpenaiGPT5Dot1, nil, "", "", nil, uuid.Nil, "", ai.TTSTypeCartesia, "v", ai.STTTypeDeepgram, "", nil, nil, false, false, uuid.Nil); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 

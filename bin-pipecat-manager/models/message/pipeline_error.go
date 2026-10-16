@@ -12,14 +12,15 @@ type ErrorCategory string
 
 // list of error categories.
 //
-// Only ErrorCategoryAuthentication, ErrorCategoryRateLimited, ErrorCategoryTimeout and
-// ErrorCategoryUnknown ever reach a PipelineErrorEvent payload. ErrorCategoryFunctionCall and
+// Only ErrorCategoryAuthentication, ErrorCategoryRateLimited, ErrorCategoryTimeout,
+// ErrorCategoryConnection and ErrorCategoryUnknown ever reach a PipelineErrorEvent payload. ErrorCategoryFunctionCall and
 // ErrorCategoryInternal are platform-side failures (our own tool handler raised, or a malformed
 // RTVI envelope) and are only logged and counted.
 const (
 	ErrorCategoryAuthentication ErrorCategory = "authentication"
 	ErrorCategoryRateLimited    ErrorCategory = "rate_limited"
 	ErrorCategoryTimeout        ErrorCategory = "timeout"
+	ErrorCategoryConnection     ErrorCategory = "connection"
 	ErrorCategoryUnknown        ErrorCategory = "unknown"
 
 	ErrorCategoryFunctionCall ErrorCategory = "function_call"

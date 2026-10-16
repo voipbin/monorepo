@@ -55,6 +55,15 @@ post:
             engine_key:
               type: string
               description: "API key or credential for the AI engine. Required when engine_model starts with openrouter. (400 ENGINE_KEY_REQUIRED if empty)."
+            engine_base_url:
+              type: string
+              description: "Base URL of the customer-hosted OpenAI-compatible server. Required when engine_model starts with `customendpoint.` (400 ENGINE_BASE_URL_REQUIRED if empty); not allowed for any other model (400 ENGINE_BASE_URL_NOT_ALLOWED). Only https is accepted. Do not put credentials, tokens or other secrets in the URL; the URL is not secret and is returned in responses, events and webhooks. Send the key in `engine_base_key` instead."
+              example: "https://llm.example.com/v1"
+            engine_base_key:
+              type: string
+              nullable: true
+              writeOnly: true
+              description: "API key for the server at `engine_base_url`. Write-only; never returned. Optional. Allowed only with a `customendpoint.` model. A key is 1 to 512 printable ASCII characters."
             rag_id:
               type: string
               description: "The knowledge base ID (UUID) for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response. Send empty string or omit to clear."

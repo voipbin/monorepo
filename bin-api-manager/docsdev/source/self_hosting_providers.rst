@@ -147,8 +147,59 @@ To enable: set both variables, redeploy ``pipecat-manager`` and
 model first, then redeploy ``ai-manager`` first and the pipecat services
 afterwards. A session that uses a removed or unreachable model fails. Do not set
 ``OPENAI_ORG_ID`` or ``OPENAI_PROJECT_ID`` on the runner: the OpenAI client
-would send them to your server. If the server is down, a voice session does
-not tell the caller; the failure is visible only in the logs.
+would send them to your server. If the server cannot be reached, a voice session does
+not tell the caller; the failure is recorded on the AI call as a
+``pipeline_error`` message with category ``connection``.
+
+Customer-specified endpoints (``customendpoint.`` models)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Users can also point an AI at their own OpenAI-compatible server by setting
+``engine_model`` to ``customendpoint.<model-id>`` and ``engine_base_url``
+through the API. The optional key for that server (``engine_base_key``) is
+stored encrypted by ``ai-manager``. This needs one variable, which only
+``ai-manager`` reads:
+
+- ``ENGINE_BASE_KEY_ENCRYPTION_KEYS`` (secret): a comma separated list of
+  ``<version>:<base64 32 bytes>`` entries, for example
+  ``1:<base64 of 32 random bytes>`` or ``1:<key1>,2:<key2>``. The version is
+  a number from 1 to 65535. The highest version encrypts new keys, and every
+  listed version can decrypt. This is a separate key set from
+  ``MCP_SECRET_ENCRYPTION_KEYS``.
+
+Generate a key with ``openssl rand -base64 32`` and write it with its
+version, for example ``ENGINE_BASE_KEY_ENCRYPTION_KEYS=1:<output>``. Keep the
+value in your secret store. Then restart ``ai-manager``:
+
+.. code-block:: bash
+
+    sudo ./voipbin restart ai-manager           # ENGINE_BASE_KEY_ENCRYPTION_KEYS
+
+Behavior to know about:
+
+- A malformed value stops ``ai-manager`` from starting. An empty value lets
+  it start with a warning, and a request that stores a key then fails with
+  a server error. Endpoints without a key keep working.
+- If you lose the key set, the stored endpoint keys can no longer be
+  decrypted. This fails closed: those AIs are not sent any key and calls
+  that need one fail, until each customer enters the key again. There is no
+  other recovery.
+- To rotate, add a new entry with a higher version to the list on every
+  ``ai-manager`` replica first, restart all of them, and keep the old
+  versions listed until no stored key uses them. A key is re-encrypted with
+  the highest version when the customer sends it again. During a rotation a
+  replica that does not yet have the new version cannot decrypt keys written
+  with it, and calls that start in that period fail closed, so rotate in a
+  quiet window.
+- If you deploy from a separate install repository, add the same variable to
+  its ``.env.template`` and pass it to the ``ai-manager`` service there too.
+  A missing variable in that repository means the customers' endpoint keys
+  cannot be stored.
+- The platform connects to a customer's address only over ``https`` and only
+  when it resolves to a public address, so a private or loopback address
+  cannot be used for this feature. Use the ``local.`` models above for a
+  server inside your own network. If the server cannot be reached, the AI
+  records a ``pipeline_error`` message with category ``connection``.
 
 After setting an AI provider key, restart the service(s) that actually
 consume that specific variable, per the tables above:

@@ -811,7 +811,7 @@ func Test_resolveTeamForPython(t *testing.T) {
 				toolHandler:    mockTool,
 			}
 
-			result, err := h.resolveTeamForPython(context.Background(), tt.aicall)
+			result, err := h.resolveTeamForPython(context.Background(), tt.aicall, uuid.Nil)
 			if tt.expectedErr {
 				if err == nil {
 					t.Errorf("Expected error but got nil")

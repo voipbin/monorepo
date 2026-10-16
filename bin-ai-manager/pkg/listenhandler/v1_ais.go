@@ -117,6 +117,8 @@ func (h *listenHandler) processV1AIsPost(ctx context.Context, m *sock.Request) (
 		req.EngineModel,
 		req.Parameter,
 		req.EngineKey,
+		req.EngineBaseURL,
+		req.EngineBaseKey,
 		req.RagID,
 		req.InitPrompt,
 		req.TTSType,
@@ -182,7 +184,9 @@ func (h *listenHandler) processV1AIsIDGet(ctx context.Context, m *sock.Request) 
 		return errorResponse(err), nil
 	}
 
-	data, err := json.Marshal(tmp)
+	// The plaintext endpoint key is filled on a copy, only here and only for this response:
+	// list, create, update and delete responses carry the ciphertext at most.
+	data, err := json.Marshal(h.aiHandler.FillEngineBaseKey(tmp))
 	if err != nil {
 		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
@@ -297,6 +301,8 @@ func (h *listenHandler) processV1AIsIDPut(ctx context.Context, m *sock.Request) 
 		req.EngineModel,
 		req.Parameter,
 		req.EngineKey,
+		req.EngineBaseURL,
+		req.EngineBaseKey,
 		req.RagID,
 		req.InitPrompt,
 		req.TTSType,

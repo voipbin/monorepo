@@ -21,6 +21,13 @@ type V1DataAIsPost struct {
 	EngineKey   string         `json:"engine_key,omitempty"`
 	RagID       uuid.UUID      `json:"rag_id,omitempty"`
 
+	// EngineBaseURL is the customer specified base URL of a customendpoint. model.
+	EngineBaseURL string `json:"engine_base_url,omitempty"`
+
+	// EngineBaseKey is a pointer so that omitted (keep) and "" (delete) stay
+	// apart end to end. It is write-only.
+	EngineBaseKey *string `json:"engine_base_key,omitempty"`
+
 	InitPrompt string `json:"init_prompt,omitempty"`
 
 	TTSType    ai.TTSType `json:"tts_type,omitempty"`
@@ -59,6 +66,13 @@ type V1DataAIsIDPut struct {
 	Parameter   map[string]any `json:"parameter,omitempty"`
 	EngineKey   string         `json:"engine_key,omitempty"`
 	RagID       uuid.UUID      `json:"rag_id,omitempty"`
+
+	// EngineBaseURL is the customer specified base URL of a customendpoint. model.
+	EngineBaseURL string `json:"engine_base_url,omitempty"`
+
+	// EngineBaseKey is a pointer so that omitted (keep) and "" (delete) stay
+	// apart end to end. It is write-only.
+	EngineBaseKey *string `json:"engine_base_key,omitempty"`
 
 	InitPrompt string `json:"init_prompt,omitempty"`
 

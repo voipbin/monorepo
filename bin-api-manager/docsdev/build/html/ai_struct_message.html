@@ -766,6 +766,7 @@
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>For the <code class="docutils literal notranslate"><span class="pre">connection</span></code> category the <code class="docutils literal notranslate"><span class="pre">message</span></code> is: <code class="docutils literal notranslate"><span class="pre">The</span> <span class="pre">AI</span> <span class="pre">language</span> <span class="pre">model</span> <span class="pre">could</span> <span class="pre">not</span> <span class="pre">be</span> <span class="pre">reached.</span> <span class="pre">If</span> <span class="pre">this</span> <span class="pre">AI</span> <span class="pre">uses</span> <span class="pre">a</span> <span class="pre">custom</span> <span class="pre">base</span> <span class="pre">URL,</span> <span class="pre">verify</span> <span class="pre">that</span> <span class="pre">the</span> <span class="pre">address</span> <span class="pre">is</span> <span class="pre">correct</span> <span class="pre">and</span> <span class="pre">reachable</span> <span class="pre">over</span> <span class="pre">HTTPS.</span></code></p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">category</span></code> (enum string): The failure class.</p>
 <div class="table-wrapper docutils container">
@@ -785,7 +786,10 @@
 <tr class="row-even"><td><p>timeout</p></td>
 <td><p>The language model did not respond in time.</p></td>
 </tr>
-<tr class="row-odd"><td><p>unknown</p></td>
+<tr class="row-odd"><td><p>connection</p></td>
+<td><p>The language model could not be reached: the connection was refused or broken, the address could not be resolved or is not allowed, or the server certificate is not valid. This category applies to every OpenAI-compatible language model provider, and it is the one to check first for an AI that uses a custom <code class="docutils literal notranslate"><span class="pre">engine_base_url</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p>unknown</p></td>
 <td><p>Any other provider error. For voice calls, only errors that stop the AI session are reported with this category.</p></td>
 </tr>
 </tbody>

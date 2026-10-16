@@ -7,7 +7,7 @@ The AI Models endpoint returns the catalog of LLM models that can be used as the
 
 .. note:: **AI Implementation Hint**
 
-   Always read the model ``id`` from ``GET /ai_models`` response rather than hard-coding it. The catalog can change over time. An ``id`` that is not in the list (and does not use the ``openai.``, ``gemini.``, or ``grok.`` prefix, or the ``openrouter.<author>/<slug>`` custom form) is rejected with ``HTTP 400 INVALID_ENGINE_MODEL`` when you create or update an AI. A custom OpenRouter model without an ``engine_key`` is rejected with ``HTTP 400 ENGINE_KEY_REQUIRED``.
+   Always read the model ``id`` from ``GET /ai_models`` response rather than hard-coding it. The catalog can change over time. An ``id`` that is not in the list (and does not use the ``openai.``, ``gemini.``, or ``grok.`` prefix, or the ``openrouter.<author>/<slug>`` custom form) is rejected with ``HTTP 400 INVALID_ENGINE_MODEL`` when you create or update an AI. A custom OpenRouter model without an ``engine_key`` is rejected with ``HTTP 400 ENGINE_KEY_REQUIRED``. A ``customendpoint.<model-id>`` model without ``engine_base_url`` is rejected with ``HTTP 400 ENGINE_BASE_URL_REQUIRED``.
 
 .. _ai-models-get:
 
@@ -84,3 +84,8 @@ Local models
 ------------
 
 When the platform operator has registered self-hosted OpenAI-compatible models, they appear in the list with ``vendor`` ``Local``, ``key_mode`` ``platform`` and an ``id`` of the form ``local.<endpoint>.<model>``. The server address is never shown. ``engine_key`` is ignored for these models. When the operator has marked one local model as the default, it is the only model with ``recommended`` set to ``true``. If no local model is registered, none is listed.
+
+Custom endpoint models
+----------------------
+
+A model on a server that you host is not listed in this catalog. Select it by setting ``engine_model`` to ``customendpoint.<model-id>`` and ``engine_base_url`` to the HTTPS address of your OpenAI-compatible server, and optionally ``engine_base_key``. ``engine_key`` is not used for these models. The address and the key belong to the AI configuration that you create, are not shared with other customers, and the key is never returned. See :ref:`Custom endpoint models <ai-struct-ai-custom-endpoint>` for the URL rules, the key semantics and the errors.

@@ -5,6 +5,7 @@ import re
 import sys
 import json
 import common
+import custom_endpoint_net as ce_net
 import time
 
 from loguru import logger
@@ -204,11 +205,15 @@ async def init_pipeline(
     resolved_team: dict = None,
     vad_config: dict = None,
     smart_turn_enabled: bool = False,
+    customer_id: str = None,
+    llm_base_url: str = None,
+    llm_base_key: str = None,
 ) -> dict:
     """Initialize the pipeline. Returns context dict. Raises on failure."""
     if resolved_team:
         ctx = await init_team_pipeline(
             id, resolved_team,
+            customer_id=customer_id,
             stt_language=stt_language,
             tts_language=tts_language,
             stt_type=stt_type,
@@ -226,6 +231,9 @@ async def init_pipeline(
             tts_voice_id, tools_data,
             vad_config=vad_config,
             smart_turn_enabled=smart_turn_enabled,
+            customer_id=customer_id,
+            llm_base_url=llm_base_url,
+            llm_base_key=llm_base_key,
         )
         ctx["type"] = "single"
         return ctx
@@ -252,9 +260,13 @@ async def init_single_ai_pipeline(
     tools_data: list = None,
     vad_config: dict = None,
     smart_turn_enabled: bool = False,
+    customer_id: str = None,
+    llm_base_url: str = None,
+    llm_base_key: str = None,
 ) -> dict:
     """Initialize single AI pipeline. Returns context dict. Raises on failure."""
     total_start = time.monotonic()
+    custom_endpoint = ce_net.is_custom_endpoint_type(llm_type)
     logger.info(f"[INIT] Starting Pipecat client pipeline id={id}")
 
     if llm_messages is None:
@@ -298,7 +310,10 @@ async def init_single_ai_pipeline(
 
     async def init_llm():
         start = time.monotonic()
-        llm_service, aggregator = create_llm_service(llm_type, llm_key, llm_messages, openai_tools, pipeline_id=id)
+        llm_service, aggregator = create_llm_service(
+            llm_type, llm_key, llm_messages, openai_tools, pipeline_id=id,
+            customer_id=customer_id, llm_base_url=llm_base_url, llm_base_key=llm_base_key,
+        )
         logger.info(f"[INIT][llm] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
         return {
             "llm_service": llm_service,
@@ -319,7 +334,7 @@ async def init_single_ai_pipeline(
     try:
         results_list = await asyncio.gather(*init_tasks.values())
     except Exception as e:
-        logger.error(f"[INIT] Pipeline initialization failed: {e}")
+        logger.error(f"[INIT] Pipeline initialization failed: {_error_text(e, custom_endpoint)}")
         for t in init_tasks.values():
             if not t.done():
                 t.cancel()
@@ -411,11 +426,21 @@ async def init_single_ai_pipeline(
         "tts_service": tts_service,
         "stt_service": stt_service,
         "tool_names": tool_names,
+        "custom_endpoint": custom_endpoint,
     }
 
 
 async def execute_single_ai_pipeline(id: str, ctx: dict):
     """Run the single AI pipeline loop and cleanup. Runs as background task."""
+    try:
+        await _run_single_ai_pipeline(id, ctx)
+    finally:
+        # Safety net: the cleanup chain is a sequence of awaits in which an earlier failure or a
+        # cancellation skips the later steps. Gives back every custom endpoint slot of this pipeline.
+        await ce_net.release_pipeline(id)
+
+
+async def _run_single_ai_pipeline(id: str, ctx: dict):
     task = ctx["task"]
     transport_input = ctx["transport_input"]
     transport_output = ctx["transport_output"]
@@ -423,6 +448,7 @@ async def execute_single_ai_pipeline(id: str, ctx: dict):
     tts_service = ctx["tts_service"]
     stt_service = ctx["stt_service"]
     tool_names = ctx["tool_names"]
+    custom_endpoint = bool(ctx.get("custom_endpoint"))
 
     try:
         runner = PipelineRunner()
@@ -431,7 +457,7 @@ async def execute_single_ai_pipeline(id: str, ctx: dict):
     except asyncio.CancelledError:
         logger.info(f"[RUN] Pipeline cancelled. pipeline id={id}")
     except Exception as e:
-        logger.error(f"[RUN] Pipeline error: {e}. pipeline id={id}")
+        logger.error(f"[RUN] Pipeline error: {_error_text(e, custom_endpoint)}. pipeline id={id}")
     finally:
         logger.info(f"[CLEANUP] Cleaning up pipeline. pipeline id={id}")
         if task:
@@ -449,6 +475,14 @@ async def execute_single_ai_pipeline(id: str, ctx: dict):
             await llm_service.cleanup()
         await task_manager.remove(id)
         logger.info(f"[CLEANUP] Pipeline cleaned. pipeline id={id}")
+
+
+def _error_text(e: BaseException, custom_endpoint: bool) -> str:
+    """Exception text for a log line; fixed for a custom endpoint session (the text can carry the
+    customer server's response body, the URL or the key)."""
+    if custom_endpoint:
+        return "custom endpoint session error (details withheld)"
+    return str(e)
 
 
 def _parse_language(language_str: str) -> Language:
@@ -581,7 +615,7 @@ def _member_llm_type(ai: dict) -> str:
     if resolved is None:
         fallback = ai.get("engine_model") or ""
         svc = fallback.replace(":", ".", 1).split(".", 1)[0].lower() if fallback else ""
-        if svc in ("platform_openrouter", "openrouter", "local"):
+        if svc in ("platform_openrouter", "openrouter", "local", ce_net.SERVICE_NAME):
             raise ValueError("engine model is not available")
         return fallback
     if resolved == "":
@@ -791,6 +825,34 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
 
         return llm, aggregator
 
+    elif service_name == ce_net.SERVICE_NAME:
+        # Customer specified endpoint (customendpoint.<model id>). The key argument (the legacy
+        # engine key) is ignored: only the dedicated endpoint key from the options is used. Every
+        # failure is the fixed text below; the cause (URL, key, DNS answer) is never in a message.
+        try:
+            from custom_endpoint import build_custom_endpoint_llm
+
+            llm = build_custom_endpoint_llm(
+                model_name,
+                base_url=options.get("llm_base_url"),
+                api_key=options.get("llm_base_key"),
+                customer_id=options.get("customer_id"),
+                pipeline_id=pipeline_id,
+            )
+        except Exception:
+            raise ValueError(ce_net.FIXED_ERROR) from None
+
+        try:
+            standard_tools = _openai_tools_to_standard(tools)
+            tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
+            ctx = LLMContext(messages=valid_messages, tools=tools_schema)
+            aggregator = _make_aggregator(ctx)
+        except Exception:
+            llm.release_slot()
+            raise ValueError(ce_net.FIXED_ERROR) from None
+
+        return llm, aggregator
+
     else:
         raise ValueError(f"Unsupported LLM service: {service_name}")
 
@@ -882,6 +944,7 @@ def create_websocket_transport(direction: str, id: str, vad_analyzer=None, turn_
 async def init_team_pipeline(
     id: str,
     resolved_team: dict,
+    customer_id: str = None,
     stt_language: str = None,
     tts_language: str = None,
     stt_type: str = None,
@@ -919,12 +982,20 @@ async def init_team_pipeline(
     # Some service constructors (e.g. GoogleTTSService) internally create gRPC
     # async channels that require a running event loop, which thread pool threads
     # lack. Running them on the event loop is safe — they are fast object creation.
+    custom_endpoint = False
     for member in members:
         mid = member["id"]
         ai = member["ai"]
         start = time.monotonic()
 
-        llm_svc, _ = create_llm_service(_member_llm_type(ai), ai["engine_key"], [], [], pipeline_id=id)
+        member_type = _member_llm_type(ai)
+        custom_endpoint = custom_endpoint or ce_net.is_custom_endpoint_type(member_type)
+        llm_svc, _ = create_llm_service(
+            member_type, ai["engine_key"], [], [], pipeline_id=id,
+            customer_id=customer_id,
+            llm_base_url=ai.get("llm_base_url"),
+            llm_base_key=ai.get("llm_base_key"),
+        )
         # Design 2.5: flows tools default to cancel_on_interruption=False, which
         # makes 1.12 compose an ASYNC TOOLS system instruction; keep the member
         # init_prompt in the system slot (1.4 parity). Private API, guarded by
@@ -1095,17 +1166,26 @@ async def init_team_pipeline(
         "routing_llm": routing_llm,
         "routing_tts": routing_tts,
         "routing_stt": routing_stt,
+        "custom_endpoint": custom_endpoint,
     }
 
 
 async def execute_team_pipeline(id: str, ctx: dict):
     """Run the team pipeline loop and cleanup. Runs as background task."""
+    try:
+        await _run_team_pipeline(id, ctx)
+    finally:
+        await ce_net.release_pipeline(id)
+
+
+async def _run_team_pipeline(id: str, ctx: dict):
     task = ctx["task"]
     transport_input = ctx["transport_input"]
     transport_output = ctx["transport_output"]
     routing_llm = ctx["routing_llm"]
     routing_tts = ctx["routing_tts"]
     routing_stt = ctx["routing_stt"]
+    custom_endpoint = bool(ctx.get("custom_endpoint"))
 
     try:
         runner = PipelineRunner()
@@ -1114,7 +1194,7 @@ async def execute_team_pipeline(id: str, ctx: dict):
     except asyncio.CancelledError:
         logger.info(f"[TEAM][RUN] Pipeline cancelled. pipeline id={id}")
     except Exception as e:
-        logger.error(f"[TEAM][RUN] Pipeline error: {e}. pipeline id={id}")
+        logger.error(f"[TEAM][RUN] Pipeline error: {_error_text(e, custom_endpoint)}. pipeline id={id}")
     finally:
         logger.info(f"[TEAM][CLEANUP] Cleaning up team pipeline. pipeline id={id}")
         if task:

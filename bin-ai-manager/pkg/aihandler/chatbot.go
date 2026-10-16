@@ -46,14 +46,67 @@ func errInvalidCustomModelID() error {
 	)
 }
 
+// errInvalidCustomEndpointModelID returns INVALID_ENGINE_MODEL for a malformed customendpoint model ID.
+// The input is deliberately not echoed.
+func errInvalidCustomEndpointModelID() error {
+	return cerrors.InvalidArgument(
+		commonoutline.ServiceNameAIManager,
+		"INVALID_ENGINE_MODEL",
+		"invalid engine_model: the customendpoint model ID is not valid. Start with a letter or digit and use letters, digits, '.', '_', ':', '/' and '-' only.",
+	)
+}
+
+// endpointValidationError converts the endpoint validators' errors to the typed customer-facing
+// errors. No message echoes the URL or the key (either may carry a credential the customer pasted).
+func endpointValidationError(err error) error {
+	switch {
+	case errors.Is(err, ai.ErrInvalidEngineBaseURL):
+		return cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_ENGINE_BASE_URL",
+			"engine_base_url must be an https URL of at most 512 ASCII characters with a host name that has at least one dot (or a public IP address), no user info, no query and no fragment, and a port from 1 to 65535. Do not put credentials in the URL.")
+	case errors.Is(err, ai.ErrEngineBaseURLRejected):
+		return cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "ENGINE_BASE_URL_REJECTED",
+			"The host could not be resolved to a public address.")
+	case errors.Is(err, ai.ErrEngineBaseURLRequired):
+		return cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "ENGINE_BASE_URL_REQUIRED",
+			"engine_base_url is required for customendpoint models.")
+	case errors.Is(err, ai.ErrEngineBaseURLNotAllowed):
+		return cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "ENGINE_BASE_URL_NOT_ALLOWED",
+			"engine_base_url is allowed only for customendpoint models.")
+	case errors.Is(err, ai.ErrInvalidEngineBaseKey):
+		return cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_ENGINE_BASE_KEY",
+			"engine_base_key must be 1 to 512 printable ASCII characters without spaces.")
+	case errors.Is(err, ai.ErrEngineBaseKeyNotAllowed):
+		return cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "ENGINE_BASE_KEY_NOT_ALLOWED",
+			"engine_base_key is allowed only for customendpoint models.")
+	}
+
+	return err
+}
+
+// validateEndpointPure runs the pure endpoint checks of section 3.4: the model/URL tie and the key rules.
+func validateEndpointPure(engineModel ai.EngineModel, engineBaseURL string, engineBaseKey *string) error {
+	if err := ai.ValidateEngineEndpoint(engineModel, engineBaseURL); err != nil {
+		return endpointValidationError(err)
+	}
+	if err := ai.ValidateEngineBaseKey(engineModel, engineBaseKey); err != nil {
+		return endpointValidationError(err)
+	}
+
+	return nil
+}
+
 // engineValidationError converts an ai.ValidateEngine error to the typed customer-facing error.
 func engineValidationError(engineModel ai.EngineModel, err error) error {
 	switch {
 	case errors.Is(err, ai.ErrEngineKeyRequired):
 		return errEngineKeyRequired()
 	case errors.Is(err, ai.ErrInvalidEngineModel):
-		if strings.HasPrefix(strings.ToLower(strings.TrimSpace(string(engineModel))), ai.EngineModelPrefixCustomOpenRouter) {
+		lower := strings.ToLower(strings.TrimSpace(string(engineModel)))
+		if strings.HasPrefix(lower, ai.EngineModelPrefixCustomOpenRouter) {
 			return errInvalidCustomModelID()
+		}
+		if strings.HasPrefix(lower, ai.CustomEndpointPrefix) {
+			return errInvalidCustomEndpointModelID()
 		}
 		return errInvalidEngineModel(engineModel)
 	}
@@ -70,6 +123,8 @@ func (h *aiHandler) Create(
 	engineModel ai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
+	engineBaseURL string,
+	engineBaseKey *string,
 	ragID uuid.UUID,
 	initPrompt string,
 	ttsType ai.TTSType,
@@ -84,6 +139,10 @@ func (h *aiHandler) Create(
 
 	if err := ai.ValidateEngine(engineModel, engineKey, true); err != nil {
 		return nil, engineValidationError(engineModel, err)
+	}
+
+	if err := validateEndpointPure(engineModel, engineBaseURL, engineBaseKey); err != nil {
+		return nil, err
 	}
 
 	if aiType == ai.TypeNone {
@@ -109,13 +168,30 @@ func (h *aiHandler) Create(
 		return nil, fmt.Errorf("invalid vad_config: %w", err)
 	}
 
+	// The network check and the sealing run after the cheap checks and before anything is created
+	// (the direct hash is made inside dbCreate), so a rejection leaves nothing behind.
+	var engineBaseKeyEnc []byte
+	if ai.IsCustomEndpointModel(engineModel) {
+		if err := ai.ValidateEngineBaseURL(ctx, engineBaseURL); err != nil {
+			return nil, endpointValidationError(err)
+		}
+		if engineBaseKey != nil && *engineBaseKey != "" {
+			enc, err := h.sealEngineBaseKey(*engineBaseKey)
+			if err != nil {
+				logrus.WithField("func", "Create").Errorf("Could not seal the engine base key. err: %v", err)
+				return nil, errors.New("could not store the engine base key")
+			}
+			engineBaseKeyEnc = enc
+		}
+	}
+
 	// Pre-generate the history ID so we can write it into the AI row at creation time
 	var currentPromptHistoryID uuid.UUID
 	if initPrompt != "" {
 		currentPromptHistoryID = h.utilHandler.UUIDCreate()
 	}
 
-	res, err := h.dbCreate(ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, ragID,
+	res, err := h.dbCreate(ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKeyEnc, ragID,
 		initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled,
 		autoAICallAuditEnabled, currentPromptHistoryID)
 	if err != nil {
@@ -148,6 +224,8 @@ func (h *aiHandler) Update(
 	engineModel ai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
+	engineBaseURL string,
+	engineBaseKey *string,
 	ragID uuid.UUID,
 	initPrompt string,
 	ttsType ai.TTSType,
@@ -184,6 +262,10 @@ func (h *aiHandler) Update(
 		return nil, engineValidationError(engineModel, err)
 	}
 
+	if err := validateEndpointPure(engineModel, engineBaseURL, engineBaseKey); err != nil {
+		return nil, err
+	}
+
 	// A caller omitting the type field (aiType == TypeNone) means "leave it
 	// unchanged", not "reset to normal" -- unlike Create, Update must not
 	// silently downgrade an existing Insight AI to Normal on a partial PUT
@@ -202,6 +284,20 @@ func (h *aiHandler) Update(
 		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_TOOL_NAMES", err.Error()).Wrap(err)
 	}
 
+	// The key decision of section 3.2 is made once from the stored snapshot and passed on as a value;
+	// buildUpdateFields is the single place that adds the two columns. The network check runs only
+	// when the AI newly uses, or changes, its endpoint URL.
+	if ai.IsCustomEndpointModel(engineModel) && endpointChanged(preUpdateAI, engineBaseURL) {
+		if err := ai.ValidateEngineBaseURL(ctx, engineBaseURL); err != nil {
+			return nil, endpointValidationError(err)
+		}
+	}
+	ep, errEP := h.decideEndpointWrite(preUpdateAI, engineModel, engineBaseURL, engineBaseKey)
+	if errEP != nil {
+		logrus.WithField("func", "Update").Errorf("Could not seal the engine base key. err: %v", errEP)
+		return nil, errors.New("could not store the engine base key")
+	}
+
 	promptChanged := initPrompt != "" && initPrompt != preUpdateAI.InitPrompt
 	promptCleared := initPrompt == "" && preUpdateAI.InitPrompt != ""
 
@@ -209,7 +305,7 @@ func (h *aiHandler) Update(
 	case promptChanged:
 		historyID := h.utilHandler.UUIDCreate()
 		fields := h.buildUpdateFields(name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt,
-			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
+			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled, ep)
 		fields[ai.FieldCurrentPromptHistoryID] = historyID
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
 			return nil, errors.Wrapf(err, "could not update ai")
@@ -233,7 +329,7 @@ func (h *aiHandler) Update(
 
 	case promptCleared:
 		fields := h.buildUpdateFields(name, detail, aiType, engineModel, parameter, engineKey, ragID, "",
-			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
+			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled, ep)
 		fields[ai.FieldCurrentPromptHistoryID] = uuid.Nil
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
 			return nil, errors.Wrapf(err, "could not update ai (clear prompt)")
@@ -247,6 +343,6 @@ func (h *aiHandler) Update(
 
 	default: // prompt unchanged
 		return h.dbUpdate(ctx, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt,
-			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
+			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled, ep)
 	}
 }

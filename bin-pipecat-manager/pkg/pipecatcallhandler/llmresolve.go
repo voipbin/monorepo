@@ -1,9 +1,12 @@
 package pipecatcallhandler
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
 	amai "monorepo/bin-ai-manager/models/ai"
@@ -14,7 +17,8 @@ import (
 // prefix is customer free text (it may even be a pasted key), so it is never
 // echoed back or logged.
 func errEngineModelNotAvailable(llmType pipecatcall.LLMType) error {
-	if strings.HasPrefix(strings.ToLower(strings.TrimSpace(string(llmType))), amai.EngineModelPrefixCustomOpenRouter) {
+	lower := strings.ToLower(strings.TrimSpace(string(llmType)))
+	if strings.HasPrefix(lower, amai.EngineModelPrefixCustomOpenRouter) || strings.HasPrefix(lower, amai.CustomEndpointPrefix) {
 		return errors.New("engine model is not available")
 	}
 	return fmt.Errorf("engine model is not available: %s", llmType)
@@ -86,4 +90,43 @@ func checkLiveEngineVendor(llmType pipecatcall.LLMType, liveAI *amai.AI, runnerK
 	}
 
 	return nil
+}
+
+// endpointLookupTimeout bounds the start path lookup of a custom endpoint host.
+const endpointLookupTimeout = time.Second
+
+// errEngineEndpointNotAvailable is the one fixed error of every custom endpoint start failure. It
+// carries no URL, key or cause (the URL may hold what the customer pasted).
+var errEngineEndpointNotAvailable = errors.New("engine endpoint is not available")
+
+// sessionEndpoint is the customer specified endpoint of a session, read from the live AI.
+type sessionEndpoint struct {
+	BaseURL amai.RedactedString
+	BaseKey amai.RedactedString
+}
+
+// resolveSessionEndpoint returns the endpoint the runner must use. It returns nil unless the
+// session's own model resolves to the custom endpoint outcome, so a URL is never forwarded for
+// another type even if the live AI changed. For a custom session it fails closed when the live AI
+// is missing, belongs to another customer, is deleted, has no URL, has a stored key it could not
+// decrypt, or when the host does not pass the network validation.
+func resolveSessionEndpoint(ctx context.Context, llmType pipecatcall.LLMType, customerID uuid.UUID, liveAI *amai.AI) (*sessionEndpoint, error) {
+	if _, outcome := amai.ResolveEngine(amai.EngineModel(llmType)); outcome != amai.OutcomeCustomEndpoint {
+		return nil, nil
+	}
+
+	if liveAI == nil || customerID == uuid.Nil || liveAI.CustomerID != customerID || liveAI.TMDelete != nil || liveAI.EngineBaseURL == "" {
+		return nil, errEngineEndpointNotAvailable
+	}
+	if len(liveAI.EngineBaseKeyEnc) > 0 && liveAI.EngineBaseKey == "" {
+		return nil, errEngineEndpointNotAvailable
+	}
+
+	cctx, cancel := context.WithTimeout(ctx, endpointLookupTimeout)
+	defer cancel()
+	if err := amai.ValidateEngineBaseURLForSession(cctx, liveAI.EngineBaseURL); err != nil {
+		return nil, errEngineEndpointNotAvailable
+	}
+
+	return &sessionEndpoint{BaseURL: amai.RedactedString(liveAI.EngineBaseURL), BaseKey: liveAI.EngineBaseKey}, nil
 }

@@ -590,3 +590,27 @@ func Test_Validate_ErrorNamesEveryOffendingValue(t *testing.T) {
 		}
 	}
 }
+
+// The endpoint key set has its own variable and never falls back to the MCP one.
+func Test_EngineBaseKeyEncryptionKeys_OwnEnvVariable(t *testing.T) {
+	const engineKeys = "3:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+	const mcpKeys = "4:BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB="
+
+	t.Setenv("ENGINE_BASE_KEY_ENCRYPTION_KEYS", engineKeys)
+	t.Setenv("MCP_SECRET_ENCRYPTION_KEYS", mcpKeys)
+
+	if err := Bootstrap(&cobra.Command{}); err != nil {
+		t.Fatalf("Bootstrap() error = %v", err)
+	}
+	once = sync.Once{}
+	LoadGlobalConfig()
+	t.Cleanup(func() { once = sync.Once{} })
+
+	cfg := Get()
+	if cfg.EngineBaseKeyEncryptionKeys != engineKeys {
+		t.Errorf("Wrong match. expect: %q, got: %q", engineKeys, cfg.EngineBaseKeyEncryptionKeys)
+	}
+	if cfg.McpSecretEncryptionKeys != mcpKeys {
+		t.Errorf("Wrong match. expect: %q, got: %q", mcpKeys, cfg.McpSecretEncryptionKeys)
+	}
+}

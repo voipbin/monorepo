@@ -144,6 +144,8 @@ func (h *handler) AIDelete(ctx context.Context, id uuid.UUID) error {
 			// the unique-index slot on soft delete, which would otherwise leave a
 			// stale is_insight_active = true readable on a deleted row.
 			"is_insight_active": false,
+			// The endpoint key must not outlive its AI. The URL is kept.
+			"engine_base_key_enc": nil,
 		}).
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()

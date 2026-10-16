@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"errors"
+	"io"
+	"os"
 	"strings"
 	"testing"
 
@@ -95,5 +97,55 @@ func Test_validateEngineModelUpdate(t *testing.T) {
 				t.Errorf("fetch calls = %d, expectFetch %v", g.calls, tt.expectFetch)
 			}
 		})
+	}
+}
+
+func Test_withoutEndpointCiphertext(t *testing.T) {
+	in := &ai.AI{EngineBaseURL: "https://llm.example.com", EngineBaseKeyEnc: []byte("cipher"), EngineBaseKey: "plain"}
+
+	out, ok := withoutEndpointCiphertext(in).(*ai.AI)
+	if !ok || out.EngineBaseKeyEnc != nil || out.EngineBaseKey != "" || out.EngineBaseURL != in.EngineBaseURL {
+		t.Errorf("the printed AI must carry no key material and keep the url. got: %+v", out)
+	}
+	if in.EngineBaseKeyEnc == nil || in.EngineBaseKey == "" {
+		t.Errorf("the input must stay untouched")
+	}
+
+	list, ok := withoutEndpointCiphertext([]*ai.AI{in, in}).([]*ai.AI)
+	if !ok || len(list) != 2 || list[0].EngineBaseKeyEnc != nil || list[1].EngineBaseKeyEnc != nil {
+		t.Errorf("a list must be cleared too")
+	}
+}
+
+func Test_engineCheckError_CustomEndpointPrefix(t *testing.T) {
+	err := engineCheckError(ai.EngineModel("customendpoint.bad id with sentinel-secret"), ai.ErrInvalidEngineModel)
+	if err == nil || strings.Contains(err.Error(), "sentinel-secret") {
+		t.Errorf("the rejected value must not be echoed. got: %v", err)
+	}
+}
+
+// printJSON is what the operator sees: no ciphertext, whatever the handler returned.
+func Test_printJSON_HidesEndpointCiphertext(t *testing.T) {
+	orig := os.Stdout
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("could not create a pipe: %v", err)
+	}
+	os.Stdout = w
+	defer func() { os.Stdout = orig }()
+
+	errPrint := printJSON(&ai.AI{EngineBaseURL: "https://llm.example.com", EngineBaseKeyEnc: []byte("cipher-sentinel"), EngineBaseKey: "plain-sentinel"})
+	_ = w.Close()
+	os.Stdout = orig
+
+	out, _ := io.ReadAll(r)
+	if errPrint != nil {
+		t.Fatalf("unexpected error: %v", errPrint)
+	}
+	if strings.Contains(string(out), "Y2lwaGVyLXNlbnRpbmVs") || strings.Contains(string(out), "cipher-sentinel") || strings.Contains(string(out), "plain-sentinel") {
+		t.Errorf("the output carries key material: %s", out)
+	}
+	if !strings.Contains(string(out), "https://llm.example.com") {
+		t.Errorf("the url must be printed: %s", out)
 	}
 }

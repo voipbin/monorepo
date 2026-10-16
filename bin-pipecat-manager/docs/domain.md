@@ -52,14 +52,14 @@ The routing keys are pinned by `models/pipecatcall/routingkey_golden_test.go`; t
 
 ### Pipeline errors (VOIP-1542)
 
-The runner's RTVIProcessor turns every pipeline `ErrorFrame` (LLM, STT, TTS, function-call handler) into an RTVI `error` frame. `receiveMessageFrameTypeMessage` classifies its text (`classifyPipelineError`, `pkg/pipecatcallhandler/pipelineerror.go`) into `authentication`, `rate_limited`, `timeout`, `function_call`, `internal` or `unknown`, counts it (`pipecat_manager_pipeline_error_total`), logs the first frame of each category per session at WARN (repeats at DEBUG), and publishes `pipeline_error` only when `shouldNotifyPipelineError` allows it:
+The runner's RTVIProcessor turns every pipeline `ErrorFrame` (LLM, STT, TTS, function-call handler) into an RTVI `error` frame. `receiveMessageFrameTypeMessage` classifies its text (`classifyPipelineError`, `pkg/pipecatcallhandler/pipelineerror.go`) into `authentication`, `rate_limited`, `timeout`, `connection`, `function_call`, `internal` or `unknown`, counts it (`pipecat_manager_pipeline_error_total`), logs the first frame of each category per session at WARN (repeats at DEBUG), and publishes `pipeline_error` only when `shouldNotifyPipelineError` allows it:
 
 - `function_call` / `internal`: never (platform-side bug, operator signal only).
 - `fatal=true`: always (future-proofing; no wired service pushes fatal today).
-- `authentication` / `rate_limited` / `timeout`: always.
+- `authentication` / `rate_limited` / `timeout` / `connection`: always. `connection` is the phrase `Error during completion: Connection error.` that the OpenAI client produces for every OpenAI compatible provider (refused connection, blocked address, unresolvable name, certificate failure).
 - `unknown`: only when the session has no STT (`Session.HasSTT=false`). Voice sessions receive transient STT reconnect errors as `unknown`, which would be false alarms.
 
-At most one event per (pipecatcall, category). The raw provider text is never put on the event (it can contain platform-internal detail when the platform key is used); it stays in the WARN log. RTVI `error-response` frames (the runner rejected a request pipecat-manager sent, e.g. `send-text`) are WARN-logged and counted in `pipecat_manager_rtvi_error_response_total`, never published.
+At most one event per (pipecatcall, category). The raw provider text is never put on the event (it can contain platform-internal detail when the platform key is used); it stays in the WARN log (a session that uses a customer specified endpoint logs the category only, never the text). RTVI `error-response` frames (the runner rejected a request pipecat-manager sent, e.g. `send-text`) are WARN-logged and counted in `pipecat_manager_rtvi_error_response_total`, never published.
 
 ## Pipecat Pipeline
 

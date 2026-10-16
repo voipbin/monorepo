@@ -84,6 +84,7 @@ Operator-hosted OpenAI-compatible LLM servers (vLLM, llama.cpp, Ollama): reached
 
 Managed via `scripts/pipecat/requirements.txt`:
 - `pipecat-ai` (>=1.12, <1.13, minor-capped because the runner relies on pipecat internals; run `scripts/pipecat_realtest` before any minor bump) — core voice pipeline framework; Flows is built in (`pipecat.flows`), the standalone `pipecat-ai-flows` package is no longer used
+- `httpx`, `httpcore`, `h11`, `anyio`, `openai` — pinned exactly (custom endpoint client reads private attributes of httpx and httpcore)
 - `fastapi`, `uvicorn` — HTTP server for Go → Python communication
 - LLM SDK libraries (openai, google-generativeai, anthropic, etc.)
 - STT/TTS provider SDKs

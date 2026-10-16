@@ -233,7 +233,7 @@ func Test_buildUpdateFields_ClearsIsInsightActiveForNonInsightTypes(t *testing.T
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fields := h.buildUpdateFields("n", "d", tt.aiType, ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil, "",
-				ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
+				ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false, endpointWrite{})
 
 			got, ok := fields[ai.FieldIsInsightActive]
 			if ok != tt.expectField {

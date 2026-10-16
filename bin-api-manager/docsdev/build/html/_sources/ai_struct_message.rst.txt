@@ -106,6 +106,8 @@ A message with ``role`` ``notification`` records a session event rather than con
         "message": "An AI service provider rejected the credentials or denied access. If this AI uses a custom engine key, verify that the key is valid and permitted for the selected model."
     }
 
+For the ``connection`` category the ``message`` is: ``The AI language model could not be reached. If this AI uses a custom base URL, verify that the address is correct and reachable over HTTPS.``
+
 * ``category`` (enum string): The failure class.
 
   ================ ===========
@@ -114,6 +116,7 @@ A message with ``role`` ``notification`` records a session event rather than con
   authentication   The provider rejected the credentials or denied access. If the AI has a custom ``engine_key``, check that it is valid and allowed to use the selected model.
   rate_limited     The provider rejected the request because of a rate limit or quota.
   timeout          The language model did not respond in time.
+  connection       The language model could not be reached: the connection was refused or broken, the address could not be resolved or is not allowed, or the server certificate is not valid. This category applies to every OpenAI-compatible language model provider, and it is the one to check first for an AI that uses a custom ``engine_base_url``.
   unknown          Any other provider error. For voice calls, only errors that stop the AI session are reported with this category.
   ================ ===========
 
