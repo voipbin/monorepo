@@ -1276,6 +1276,14 @@
 <td><p>404</p></td>
 <td><p>Agent ID does not exist or belongs to another customer. Fired by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/agents/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/addresses</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/tag_ids</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/status</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/permission</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/password</span></code>, and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/agents/{id}/direct_hash_regenerate</span></code>. <strong>Fix:</strong> Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code> list call.</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">AGENT_LAST_ADMIN</span></code></p></td>
+<td><p>409</p></td>
+<td><p>The agent is the only admin of the customer and cannot be removed or demoted. Fired by <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/agents/{id}</span></code> and <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/permission</span></code> (when the new permission is not customer admin). <strong>Fix:</strong> Grant admin permission to another agent with <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/permission</span></code> first, then retry.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">AGENT_GUEST_IMMUTABLE</span></code></p></td>
+<td><p>400</p></td>
+<td><p>The guest agent is built in and cannot be changed or deleted. Fired by <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/agents/{id}</span></code> and <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/permission</span></code>. <strong>Fix:</strong> Use a regular agent ID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></td>
+</tr>
 </tbody>
 </table>
 </div>

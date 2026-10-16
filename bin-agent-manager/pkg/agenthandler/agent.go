@@ -15,6 +15,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
@@ -170,12 +171,16 @@ func (h *agentHandler) Delete(ctx context.Context, id uuid.UUID) (*agent.Agent, 
 
 	// check the agent is deletable
 	if id == agent.GuestAgentID {
-		return nil, errors.Errorf("agent is guest agent")
+		return nil, errGuestImmutable()
 	}
 
-	onlyAdmin := h.isOnlyAdmin(ctx, id)
+	onlyAdmin, err := h.isOnlyAdmin(ctx, id)
+	if err != nil {
+		log.Errorf("Could not verify the other admin agents. err: %v", err)
+		return nil, err
+	}
 	if onlyAdmin {
-		return nil, errors.Errorf("the agent is the only admin")
+		return nil, errLastAdmin()
 	}
 
 	res, err := h.deleteForce(ctx, id)
@@ -203,52 +208,78 @@ func (h *agentHandler) deleteForce(ctx context.Context, id uuid.UUID) (*agent.Ag
 	return res, nil
 }
 
-// isOnlyAdmin returns true if the given agent is the only admin
-func (h *agentHandler) isOnlyAdmin(ctx context.Context, id uuid.UUID) bool {
-	log := logrus.WithFields(logrus.Fields{
-		"func":     "isOnlyAdmin",
-		"agent_id": id,
-	})
+// onlyAdminPageSize is the page size used while searching for another admin agent.
+const onlyAdminPageSize = 1000
 
-	// get agnet
+// errLastAdmin returns the error for refusing to remove or demote the last admin of a customer.
+func errLastAdmin() error {
+	return cerrors.FailedPrecondition(
+		commonoutline.ServiceNameAgentManager,
+		"AGENT_LAST_ADMIN",
+		"The last admin of the customer cannot be deleted or demoted.",
+	)
+}
+
+// errGuestImmutable returns the error for changing the guest agent.
+func errGuestImmutable() error {
+	return cerrors.InvalidArgument(
+		commonoutline.ServiceNameAgentManager,
+		"AGENT_GUEST_IMMUTABLE",
+		"The guest agent cannot be changed.",
+	)
+}
+
+// isOnlyAdmin returns true if the given agent is the only admin of its customer.
+//
+// A lookup failure is returned as an error and never as true, so that the caller can
+// deny the operation (fail-safe) without reporting it as the last admin.
+func (h *agentHandler) isOnlyAdmin(ctx context.Context, id uuid.UUID) (bool, error) {
+	// get agent. A typed not found error is returned as is.
 	a, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get agent info. err: %v", err)
-		return true
+		return false, err
 	}
 
-	if !a.HasPermission(agent.PermissionCustomerAdmin) && !a.HasPermission(agent.PermissionProjectSuperAdmin) {
+	if !isAdminAgent(a) {
 		// the agent has no admin permission. no need to check the other agent
-		log.Debugf("The agent has no admin permission.")
-		return false
+		return false, nil
 	}
 
-	// get agents
 	filters := map[agent.Field]any{
 		agent.FieldCustomerID: a.CustomerID,
 		agent.FieldDeleted:    false,
 	}
 
-	agents, err := h.dbList(ctx, 1000, "", filters)
-	if err != nil {
-		log.Warnf("Could not get agents info while verifying other admin agents. Treating the given agent as sole admin and denying operation as a fail-safe. agent_id: %s, err: %v", id.String(), err)
-		return true
-	}
-
-	// check that there is another admin agent
-	for _, a := range agents {
-		if a.ID == id {
-			continue
+	// The list is ordered by tm_create DESC and the next page starts strictly below the
+	// token, so the token decreases on every page and the loop ends.
+	token := ""
+	for {
+		agents, err := h.dbList(ctx, onlyAdminPageSize, token, filters)
+		if err != nil {
+			return false, errors.Wrap(err, "could not list the agents to verify the other admin agents")
 		}
 
-		if a.HasPermission(agent.PermissionCustomerAdmin) || a.HasPermission(agent.PermissionProjectSuperAdmin) {
-			// found admin permission agent.
-			// return the true
-			return false
+		for _, o := range agents {
+			if o.ID != id && isAdminAgent(o) {
+				return false, nil
+			}
 		}
-	}
 
-	return true
+		if len(agents) < onlyAdminPageSize {
+			return true, nil
+		}
+
+		last := agents[len(agents)-1]
+		if last.TMCreate == nil {
+			return false, errors.Errorf("could not page the agents to verify the other admin agents. no tm_create. agent_id: %s", last.ID)
+		}
+		token = last.TMCreate.UTC().Format(utilhandler.ISO8601Layout)
+	}
+}
+
+// isAdminAgent returns true if the agent holds a customer admin or project super admin permission.
+func isAdminAgent(a *agent.Agent) bool {
+	return a.HasPermission(agent.PermissionCustomerAdmin) || a.HasPermission(agent.PermissionProjectSuperAdmin)
 }
 
 // Login validate the username and password.
@@ -319,13 +350,17 @@ func (h *agentHandler) UpdatePermission(ctx context.Context, id uuid.UUID, permi
 	log.Debug("Updating the agent's permission'.")
 
 	if id == agent.GuestAgentID {
-		return nil, fmt.Errorf("agent id is guest agent")
+		return nil, errGuestImmutable()
 	}
 
 	if permission != agent.PermissionCustomerAdmin {
-		onlyAdmin := h.isOnlyAdmin(ctx, id)
+		onlyAdmin, err := h.isOnlyAdmin(ctx, id)
+		if err != nil {
+			log.Errorf("Could not verify the other admin agents. err: %v", err)
+			return nil, err
+		}
 		if onlyAdmin {
-			return nil, fmt.Errorf("the agent is the only admin")
+			return nil, errLastAdmin()
 		}
 	}
 

@@ -25738,6 +25738,20 @@ func (response DeleteAgentsId404JSONResponse) VisitDeleteAgentsIdResponse(w http
 	return err
 }
 
+type DeleteAgentsId409JSONResponse struct{ ConflictJSONResponse }
+
+func (response DeleteAgentsId409JSONResponse) VisitDeleteAgentsIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type DeleteAgentsId500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response DeleteAgentsId500JSONResponse) VisitDeleteAgentsIdResponse(w http.ResponseWriter) error {
@@ -26290,6 +26304,20 @@ func (response PutAgentsIdPermission404JSONResponse) VisitPutAgentsIdPermissionR
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutAgentsIdPermission409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PutAgentsIdPermission409JSONResponse) VisitPutAgentsIdPermissionResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
 	_, err := buf.WriteTo(w)
 	return err
 }

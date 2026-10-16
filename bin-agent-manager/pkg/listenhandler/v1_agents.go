@@ -535,7 +535,7 @@ func (h *listenHandler) processV1AgentsIDPermissionPut(ctx context.Context, m *s
 	tmp, err := h.agentHandler.UpdatePermission(ctx, id, agent.Permission(reqData.Permission))
 	if err != nil {
 		log.Errorf("Could not update the agent's permission info. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

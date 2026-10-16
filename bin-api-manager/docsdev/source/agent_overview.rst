@@ -344,6 +344,7 @@ Every customer account automatically has a guest agent created:
     o Cannot be deleted
     o Cannot have password changed
     o Ensures account always has at least one admin
+    o Deleting or demoting the last admin of a customer is rejected with 409 AGENT_LAST_ADMIN
 
 
 How Agents Receive Queue Calls

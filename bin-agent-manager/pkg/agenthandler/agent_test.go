@@ -3,7 +3,6 @@ package agenthandler
 import (
 	"context"
 	stderrors "errors"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -665,9 +664,13 @@ func Test_UpdatePermission_error(t *testing.T) {
 		adminList   []*agent.Agent
 
 		mockFunc func(mockDB *dbhandler.MockDBHandler, ttID uuid.UUID, ttPerm agent.Permission, agentBefore *agent.Agent, adminList []*agent.Agent)
+
+		expectReason string
 	}{
 		{
 			name: "not found",
+
+			expectReason: "AGENT_NOT_FOUND",
 
 			id:         uuid.FromStringOrNil("88316036-2d93-11ef-9364-2309605d8162"),
 			permission: agent.PermissionCustomerManager,
@@ -675,11 +678,13 @@ func Test_UpdatePermission_error(t *testing.T) {
 			agentBefore: nil,
 			adminList:   nil,
 			mockFunc: func(mockDB *dbhandler.MockDBHandler, id uuid.UUID, perm agent.Permission, before *agent.Agent, list []*agent.Agent) {
-				mockDB.EXPECT().AgentGet(gomock.Any(), id).Return(nil, fmt.Errorf("not found"))
+				mockDB.EXPECT().AgentGet(gomock.Any(), id).Return(nil, dbhandler.ErrNotFound)
 			},
 		},
 		{
 			name: "downgrade only admin",
+
+			expectReason: "AGENT_LAST_ADMIN",
 
 			id:         uuid.FromStringOrNil("88316036-2d93-11ef-9364-2309605d8162"),
 			permission: agent.PermissionNone,
@@ -727,8 +732,12 @@ func Test_UpdatePermission_error(t *testing.T) {
 			tt.mockFunc(mockDB, tt.id, tt.permission, tt.agentBefore, tt.adminList)
 
 			_, err := h.UpdatePermission(ctx, tt.id, tt.permission)
-			if err == nil {
-				t.Errorf("Wrong match. expect:error, got:nil")
+			var ve *cerrors.VoipbinError
+			if !stderrors.As(err, &ve) {
+				t.Fatalf("Wrong match. expect: VoipbinError, got: %v", err)
+			}
+			if ve.Reason != tt.expectReason {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectReason, ve.Reason)
 			}
 		})
 	}
@@ -924,7 +933,10 @@ func Test_isOnlyAdmin(t *testing.T) {
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockDB.EXPECT().AgentList(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseAgents, nil)
 
-			res := h.isOnlyAdmin(ctx, tt.id)
+			res, err := h.isOnlyAdmin(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 			if res != tt.expectRes {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
