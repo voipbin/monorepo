@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -129,7 +128,7 @@ func runMigrations(cfg config.Config) error {
 
 	m, err := migrate.New(sourceURL, cfg.PostgreSQLDSN)
 	if err != nil {
-		return fmt.Errorf("failed to initialize migrate: %w", err)
+		return fmt.Errorf("failed to initialize migrate: %w", redactDSNError(err))
 	}
 	defer func() { _, _ = m.Close() }()
 
@@ -157,15 +156,12 @@ func runService(cfg config.Config) error {
 	sockHandler.Connect()
 
 	// PostgreSQL connection
-	db, err := sql.Open("postgres", cfg.PostgreSQLDSN)
+	db, err := openPostgres(cfg.PostgreSQLDSN)
 	if err != nil {
-		return fmt.Errorf("could not connect to PostgreSQL: %w", err)
+		return err
 	}
 	defer func() { _ = db.Close() }()
 
-	if err := db.Ping(); err != nil {
-		return fmt.Errorf("could not ping PostgreSQL: %w", err)
-	}
 	log.Info("Connected to PostgreSQL")
 
 	// Request handler

@@ -5,6 +5,7 @@ package rabbitmqhandler
 import (
 	"context"
 	"monorepo/bin-common-handler/models/sock"
+	"regexp"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -90,6 +91,23 @@ func (rc *realConnection) Channel() (amqpChannel, error) {
 		return nil, err
 	}
 	return ch, nil
+}
+
+// amqpDial is the dial function of connect(). It is a variable so that tests can observe the logs
+// of the connect loop without a broker.
+var amqpDial = amqp.Dial
+
+// reURIUserinfo matches the userinfo part of a URI in a message: scheme://userinfo@
+// It runs to the last '@' before the next unescaped double quote (the url.Error text quotes the URI
+// with %q, so a quote inside it appears as \"), so a userinfo that the URL parser rejected (spaces,
+// quotes, control characters) is masked as well.
+var reURIUserinfo = regexp.MustCompile(`([A-Za-z][A-Za-z0-9+.\-]*://)(?:\\.|[^"\\])*@`)
+
+// redactUserinfo masks the userinfo of every URI in the given error message.
+// The connection URI carries the broker credentials and the dial errors (for example the
+// url.Parse error of a malformed URI) can echo it back.
+func redactUserinfo(err error) string {
+	return reURIUserinfo.ReplaceAllString(err.Error(), "${1}***@")
 }
 
 // rabbit struct for rabbitmq
@@ -185,9 +203,7 @@ func (r *rabbit) Connect() {
 
 // Close close the Queue.
 func (r *rabbit) Close() {
-	logrus.WithFields(logrus.Fields{
-		"url": r.uri,
-	}).Info("Close the rabbitmq connection.")
+	logrus.Info("Close the rabbitmq connection.")
 
 	r.closed.Store(true)
 
@@ -237,17 +253,15 @@ func (r *rabbit) reconnector() {
 
 // connect connects to rabbitmq.
 func (r *rabbit) connect() {
-	log := logrus.WithFields(logrus.Fields{
-		"url": r.uri,
-	})
+	log := logrus.WithField("func", "connect")
 
 	for {
 		log.Debug("Connecting to rabbitmq")
 
 		// connect
-		conn, err := amqp.Dial(r.uri)
+		conn, err := amqpDial(r.uri)
 		if err != nil {
-			log.Errorf("Could not connect to rabbitmq. Will retry again after 1 sec. err: %v", err)
+			log.Errorf("Could not connect to rabbitmq. Will retry again after 1 sec. err: %s", redactUserinfo(err))
 			time.Sleep(time.Second * 1)
 			continue
 		}
