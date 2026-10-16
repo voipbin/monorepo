@@ -72,10 +72,15 @@ Model
 * ``label`` (String): Human-readable model name for display.
 * ``vendor`` (String): The model vendor (e.g., ``Google``, ``OpenAI``, ``Anthropic``). Use it to group models in a picker.
 * ``recommended`` (Boolean): ``true`` when the platform recommends this model as a starting point.
-* ``tags`` (Array of String): Model tags. Currently ``low-cost`` is the only tag.
+* ``tags`` (Array of String): Model tags: ``low-cost``, and ``tool-calling`` for a local model whose operator marked it as supporting tool calling. The tags are informational and are not enforced.
 * ``description`` (String): A short description of the model.
-* ``platform_managed`` (Boolean): ``true`` when the platform supplies the credentials for this model. The ``engine_key`` of the AI is not needed: send an empty string and any value you send is ignored. ``false`` means you must provide your own provider key in ``engine_key``. Prefer ``key_mode``, which is more precise.
+* ``platform_managed`` (Boolean): ``true`` when the platform supplies the credentials for this model. It does not mean the model is served by a particular provider or routing. The ``engine_key`` of the AI is not needed: send an empty string and any value you send is ignored. ``false`` means you must provide your own provider key in ``engine_key``. Prefer ``key_mode``, which is more precise.
 * ``key_mode`` (String): How ``engine_key`` is handled. ``platform``: the platform supplies access and ``engine_key`` is ignored. ``own_or_default``: your ``engine_key`` is used, or the platform default key when it is empty. ``own_required``: ``engine_key`` is mandatory.
 * ``model_id_prefix`` (String, Optional): Present only for the entry where you type the model ID yourself (the custom OpenRouter entry, prefix ``openrouter.``). Send ``engine_model`` as this prefix followed by the model ID, for example ``openrouter.mistralai/mistral-large-2411``. The ``id`` of this entry (``custom.openrouter``) cannot be used as ``engine_model`` directly.
 
 See :ref:`Engine Model <ai-struct-ai-engine_model>` for the provider prefixes and validation rules.
+
+Local models
+------------
+
+When the platform operator has registered self-hosted OpenAI-compatible models, they appear in the list with ``vendor`` ``Local``, ``key_mode`` ``platform`` and an ``id`` of the form ``local.<endpoint>.<model>``. The server address is never shown. ``engine_key`` is ignored for these models. When the operator has marked one local model as the default, it is the only model with ``recommended`` set to ``true``. If no local model is registered, none is listed.

@@ -172,206 +172,53 @@ For full implementation details, see:
 - `bin-common-handler/pkg/utilhandler/filters.go` - Generic filter parsing functions
 - `docs/plans/2026-01-14-listenhandler-filter-parsing-implementation-plan.md` - Complete implementation guide
 
-## Database Migrations with Alembic
+## Database Migrations
 
 ### Overview
 
-Every application table in the `bin_manager` database is owned by a service that keeps its schema in its own `migrations/` directory (golang-migrate, applied when the service starts; see `docs/workflows/service-owned-migrations.md`). Alembic in `bin-dbscheme-manager` now manages only the `asterisk_config` stream; the `bin-manager` stream is frozen. Never run manual SQL DDL statements against production databases.
+Two mechanisms change database schemas, one per database:
 
-The services and their tables are listed in `bin-dbscheme-manager/docs/schema-ownership.md`; see each service's `CLAUDE.md` for its migrations. Do not write Alembic migrations for those tables. The `bin-manager` Alembic stream is frozen: no new migrations are added to it (`asterisk_config` is not frozen).
+- `bin_manager`: every application table is owned by one service and changes only through that service's `migrations/` directory (golang-migrate, applied when the service starts, version table `<prefix>_schema_migrations`). The rules and the procedure are in `docs/workflows/service-owned-migrations.md`; the services and their tables are listed in `bin-dbscheme-manager/docs/schema-ownership.md`.
+- `asterisk`: the `asterisk_config` stream in `bin-dbscheme-manager` keeps using Alembic (see [Alembic for the asterisk database](#alembic-for-the-asterisk-database) below).
+
+The `bin-manager` Alembic stream in `bin-dbscheme-manager` is frozen read-only history: never add a revision to it. The directory stays because the install scripts still run that chain to catch up existing installations and older pins, and `scripts/verify-service-migrations.sh` builds its Alembic head (E1) reference from it. The migration hooks (`.githooks/pre-commit`, `.claude/settings.json`, `.claude/scripts/check-migration-*.sh`) behave as before and still check that tree.
+
+Never run manual SQL DDL statements against shared databases.
 
 ### AI Security Boundaries
 
-**⚠️ CRITICAL: AI Security Boundaries**
-
 **What AI CAN do:**
-- ✅ Create migration files (`alembic -c alembic.ini revision -m "..."`)
-- ✅ Edit migration files to add SQL in upgrade()/downgrade() functions
+- ✅ Add service migration files (`migrations/NNNNNN_<description>.up.sql` and `.down.sql`) and Alembic revision files for `asterisk_config`
 - ✅ Read and explain migration file contents
+- ✅ Run the structure and verify checks, which use scratch databases only
 - ✅ Commit migration files to git
 
 **What AI MUST NEVER do:**
-- 🚫 Run `alembic upgrade` (applies migrations to database)
-- 🚫 Run `alembic downgrade` (rolls back database changes)
-- 🚫 Execute any SQL that modifies database schema
-- 🚫 Apply migrations automatically
+- 🚫 Run a service's migration command (`<name>-control migrate` with `up`, `down` or `force`; for `bin-timeline-manager` also `migrate-mysql`) against anything other than a local throwaway database
+- 🚫 Run `alembic upgrade` or `alembic downgrade` for either stream (`asterisk_config` or the frozen `bin-manager`) against anything other than a local throwaway database
+- 🚫 Add a revision to the frozen `bin-manager` Alembic stream
+- 🚫 Execute any SQL that modifies a database schema
 
-**Why:** Database schema changes are irreversible operations requiring:
-- Human review and explicit authorization
-- Testing on development environment first
-- VPN access to production database
-- Coordination with deployment schedule
-- Risk of data loss or service outages
+**Why:** Schema changes on shared databases can lose data or stop services, so they need human review before they reach those databases.
 
-AI can assist with creating and reviewing migration files, but database execution requires human control.
+### Changing a `bin_manager` Table
 
-### When to Create Migrations
+Follow `docs/workflows/service-owned-migrations.md`; this section does not repeat it. In short: add a new numbered file pair in the owning service's `migrations/` directory, one statement per file, never edit a merged file, run `scripts/check-service-migrations.sh <service-dir>` and the verify script, and state the impact analysis in the PR. The owning service's `CLAUDE.md` and `docs/operations.md` describe its version table and recovery commands.
 
-The Alembic procedure below applies to the `asterisk_config` stream only (the `asterisk` database). The `bin-manager` stream is frozen: tables of `bin_manager` change through the owning service's `migrations/` directory (see `docs/workflows/service-owned-migrations.md`).
+### Alembic for the asterisk Database
 
-Create an Alembic migration whenever you:
-- Add new columns to existing tables
-- Create new tables
-- Modify column types or constraints
-- Add/remove indexes
-- Change foreign key relationships
+Only the `asterisk_config` stream accepts new Alembic revisions. The full procedure is in `bin-dbscheme-manager/CLAUDE.md` and `bin-dbscheme-manager/docs/migrations.md`.
 
-**Common scenarios:**
-- Adding fields to a model (e.g., adding `example_flag` column to `ps_endpoints` table)
-- Creating tables for new features
-- Database refactoring to support new functionality
-
-### Migration Workflow
-
-**Step 1: Navigate to bin-dbscheme-manager**
 ```bash
 cd bin-dbscheme-manager/asterisk_config
-```
-
-**Step 2: Configure Alembic (first time only)**
-```bash
-# Copy sample config
-cp alembic.ini.sample alembic.ini
-
-# Edit alembic.ini and set database connection
-# sqlalchemy.url = mysql://user:pass@host/voipbin
-```
-
-**Step 3: Create migration file**
-```bash
-# Use descriptive naming: <table>_<action>_<type>_<items>
+cp alembic.ini.sample alembic.ini   # first time only, points at a local database
 alembic -c alembic.ini revision -m "ps_endpoints add column example_flag"
 ```
 
-This creates a new file in `config/versions/` with format: `<hash>_ps_endpoints_add_column_example_flag.py`
-
-**Step 4: Edit migration file**
-
-Edit the generated file to add your SQL changes:
-```python
-def upgrade():
-    op.execute("""
-        ALTER TABLE ps_endpoints
-        ADD COLUMN example_flag VARCHAR(255) DEFAULT ''
-    """)
-
-def downgrade():
-    op.execute("""
-        ALTER TABLE ps_endpoints
-        DROP COLUMN example_flag
-    """)
-```
-
-**Step 5: Commit and push** (AI can do this)
-```bash
-cd /home/pchero/gitvoipbin/monorepo
-git add bin-dbscheme-manager/asterisk_config/config/versions/<hash>_*.py
-git commit -m "feat(dbscheme): add example_flag column to ps_endpoints table"
-git push
-```
-
-**Step 6: (HUMAN ONLY) Test migration locally**
-```bash
-# 🚫 AI MUST NOT execute these commands
-
-# Apply migration to local database
-alembic -c alembic.ini upgrade head
-
-# Verify schema change
-mysql -u user -p asterisk -e "DESCRIBE ps_endpoints;"
-
-# Test rollback (optional)
-alembic -c alembic.ini downgrade -1
-alembic -c alembic.ini upgrade head
-```
-
-**Step 7: (HUMAN ONLY) Apply to staging/production**
-
-Connect to VPN first (REQUIRED), then apply migration:
-```bash
-# 🚫 AI MUST NOT execute these commands
-
-cd bin-dbscheme-manager/asterisk_config
-alembic -c alembic.ini upgrade head
-```
-
-### Migration Best Practices
-
-1. **Always add rollback logic** - Implement both `upgrade()` and `downgrade()` functions
-2. **Use raw SQL** - Migrations use `op.execute()` with raw SQL, not SQLAlchemy DDL
-3. **Test locally first** - Never run untested migrations against staging/production
-4. **One change per migration** - Keep migrations focused and atomic
-5. **Descriptive names** - Follow naming convention: `<table>_<action>_<type>_<items>`
-6. **Coordinate with code** - Deploy code changes that depend on schema changes AFTER migration runs
-
-### Common Migration Patterns
-
-**Add column:**
-```python
-def upgrade():
-    op.execute("""
-        ALTER TABLE <table_name>
-        ADD COLUMN <column_name> <type> DEFAULT <default_value> AFTER <existing_column>
-    """)
-
-def downgrade():
-    op.execute("""
-        ALTER TABLE <table_name>
-        DROP COLUMN <column_name>
-    """)
-```
-
-**Create table:**
-```python
-def upgrade():
-    op.execute("""
-        CREATE TABLE <table_name> (
-            id BINARY(16) NOT NULL PRIMARY KEY,
-            customer_id BINARY(16) NOT NULL,
-            name VARCHAR(255) NOT NULL,
-            tm_create DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-            INDEX idx_customer_id (customer_id)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-    """)
-
-def downgrade():
-    op.execute("""DROP TABLE <table_name>""")
-```
+Edit the generated file in `config/versions/` with raw SQL in both `upgrade()` and `downgrade()` (`op.execute(...)`), one change per revision, and never modify a merged revision.
 
 ### Troubleshooting
 
-**Issue: "Target database is not up to date"**
-```bash
-# Check current migration version
-alembic -c alembic.ini current
+**Service-owned migrations (`bin_manager`):** a service that fails to migrate exits at startup with the error in its log. `<name>-control migrate status` shows the applied version, the image version and the dirty flag. The meaning of each error and the `force` recovery are in the owning service's `docs/operations.md` or `CLAUDE.md`; a dirty version is fixed by checking whether the statement was applied and forcing to `N` or `N-1`. A rollback of a deployed service is the previous image: the migration helper skips a database version that is ahead of the image.
 
-# View migration history
-alembic -c alembic.ini history
-
-# Apply missing migrations
-alembic -c alembic.ini upgrade head
-```
-
-**Issue: Migration fails to apply**
-1. Check database connection in `alembic.ini`
-2. Verify VPN connection for remote databases
-3. Check SQL syntax in migration file
-4. Review error messages for constraint violations
-
-**Issue: Need to rollback migration**
-```bash
-# Rollback last migration
-alembic -c alembic.ini downgrade -1
-
-# Rollback to specific revision
-alembic -c alembic.ini downgrade <revision_id>
-```
-
-### Important Notes
-
-- VPN connection is MANDATORY for staging/production migrations
-- Never modify applied migrations - create new ones instead
-- Coordinate schema changes with dependent services
-- Test migrations against realistic data volumes
-- Document breaking changes in migration docstrings
-- See `bin-dbscheme-manager/CLAUDE.md` for service-specific details
+**Alembic (`asterisk`):** `alembic -c alembic.ini current`, `history` and `heads` are read-only status checks; a stream must have exactly one head. Rollback with `alembic -c alembic.ini downgrade -1` is a human-only step. See `bin-dbscheme-manager/docs/operations.md`.

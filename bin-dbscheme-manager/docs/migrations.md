@@ -1,8 +1,8 @@
 # Migrations
 
-> **Freeze notice:** The `bin-manager` stream is frozen. Do not add new Alembic migrations for the `bin_manager` database; every application table there is changed only through the owning service's `migrations/` directory (see [schema-ownership.md](schema-ownership.md)). The `asterisk_config` stream is not frozen and keeps using Alembic.
+> **Freeze notice:** The `bin-manager` stream is frozen read-only history (last head `b0307529af4a`), used for install catch-up and the verify E1 reference. Do not add new Alembic migrations for the `bin_manager` database; every application table there is changed only through the owning service's `migrations/` directory (see [schema-ownership.md](schema-ownership.md)). The `asterisk_config` stream is not frozen and keeps using Alembic. The directory stays because the install scripts still run this chain to catch up existing installations and older pins, `scripts/verify-service-migrations.sh` builds its E1 (Alembic head) reference from it, and `tests/` uses it as real revisions. The migration hooks and scripts that check it behave as before.
 
-This document covers how to create, name, and verify Alembic migration files for the `bin_manager` and `asterisk` databases.
+This document covers how to create, name, and verify Alembic migration files for the `asterisk` database. The CI and classifier sections also apply to the frozen `bin-manager` history, which they keep checking.
 
 ## Creating a Migration
 

@@ -8,7 +8,9 @@ database resources:
 -   **asterisk_config** -- Manages Asterisk-related database
     schema.
 -   **bin-manager** -- The original schema history of the `bin_manager`
-    database. Frozen: the tables are now owned by the services.
+    database. Frozen read-only history: the tables are now owned by the
+    services. The install scripts still run this chain to catch up
+    existing installations and older pins.
 
 When this project runs via **GitLab CI/CD** or other CI/CD, the associated pod and job
 remain until the next pipeline execution, at which point they are
@@ -51,10 +53,19 @@ connection details.
 
 ## Adding a Database Change
 
-The **bin-manager** stream is frozen: do not create new migrations in
-it. Every application table of the `bin_manager` database is owned by a
-service and changes through that service's `migrations/` directory (see
+The **bin-manager** stream is frozen read-only history (last head
+`b0307529af4a`): do not create new migrations in it. Every application
+table of the `bin_manager` database is owned by a service and changes
+through that service's `migrations/` directory (see
 [docs/schema-ownership.md](docs/schema-ownership.md)).
+
+The directory is kept, not deleted. The install scripts still run this
+chain for existing installations and older pins (catch-up, and today a
+new installation also creates the `bin_manager` schema with it before
+the services start; the service baselines then find the tables and do
+nothing), `scripts/verify-service-migrations.sh` builds its E1 (Alembic
+head) reference from it, and `tests/` uses it as real revisions. The
+migration hooks and scripts that check it behave as before.
 
 To create a new migration for **asterisk_config**:
 
@@ -83,7 +94,7 @@ alembic -c alembic.ini revision -m "ps_example create table"
 
 Ensure you are connected to the **VPN** before running migrations.
 
-For **bin-manager**:
+For **bin-manager** (frozen; this only catches an older database up to the last revision):
 
 ``` sh
 cd bin-manager
@@ -118,8 +129,10 @@ Example:
 alembic -c alembic.ini downgrade ae1027a6acf
 ```
 
-Run these commands inside either `bin-manager` or `asterisk_config`,
-depending on which schema you need to roll back.
+Run these commands inside `asterisk_config` only. Do not downgrade the
+frozen `bin-manager` stream: its tables are owned by the services, and a
+service migration is reverted through that service (see
+`docs/workflows/service-owned-migrations.md`).
 
 
 ## Checking Migration Status
@@ -183,7 +196,7 @@ history for each database.
 - Uses a **fixed Alembic table name**: `alembic_version_config → alembic_version`
 
 **VoIPBin Database (bin-manager)**
-- The original schema history of the `bin_manager` database. Frozen: the tables are now owned by the services.
+- The original schema history of the `bin_manager` database. Frozen read-only history: the tables are now owned by the services; the install scripts still run it for catch-up.
 
 ## Updating Asterisk Database Schema
 

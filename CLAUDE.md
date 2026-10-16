@@ -160,11 +160,11 @@ This keeps the main repository directory in sync with remote so new worktrees st
 
 ## CRITICAL: Database schema changes: Alembic or service-owned migrations
 
-**CRITICAL: Tables owned by `bin-dbscheme-manager` (Alembic) change ONLY through Alembic migrations. Tables of a service that has converted to service-owned migrations change ONLY through that service's `migrations/` directory (golang-migrate, applied at service startup).** The converted services are listed in `bin-dbscheme-manager/docs/schema-ownership.md`; every service that owns tables in `bin_manager` has converted. The `bin-manager` Alembic stream is frozen: do not add new migrations to it (`asterisk_config` is not frozen).
+**CRITICAL: Every application table in `bin_manager` changes ONLY through the owning service's `migrations/` directory (golang-migrate, applied at service startup). Only the `asterisk` database (`asterisk_config` stream in `bin-dbscheme-manager`) changes through Alembic migrations.** The services and their tables are listed in `bin-dbscheme-manager/docs/schema-ownership.md`. The `bin-manager` Alembic stream is frozen read-only history: never add a revision to it. Its directory stays because the install scripts still run it to catch up existing installations and older pins, and `scripts/verify-service-migrations.sh` builds its E1 (Alembic head) reference from it. The migration hooks and scripts behave as before.
 
 **What AI CAN do:**
-- ✅ Create migration files (`alembic -c alembic.ini revision -m "..."`)
-- ✅ Edit migration files to add SQL in upgrade()/downgrade() functions
+- ✅ Create service migration files, and `asterisk_config` revisions with `alembic -c alembic.ini revision -m "..."`
+- ✅ Edit migration files (SQL in `.up.sql`/`.down.sql`, or in Alembic upgrade()/downgrade() functions)
 - ✅ Commit migration files to git
 
 **What AI MUST NEVER do:**
@@ -176,7 +176,7 @@ This keeps the main repository directory in sync with remote so new worktrees st
 
 **Why:** Database changes are irreversible and require human authorization, testing, and VPN access.
 
-→ Detail: `bin-dbscheme-manager/CLAUDE.md`, `docs/workflows/service-owned-migrations.md` (service-owned migrations), [docs/workflows/common-workflows.md#database-migrations-with-alembic](docs/workflows/common-workflows.md#database-migrations-with-alembic)
+→ Detail: `bin-dbscheme-manager/CLAUDE.md`, `docs/workflows/service-owned-migrations.md` (service-owned migrations), [docs/workflows/common-workflows.md#database-migrations](docs/workflows/common-workflows.md#database-migrations)
 
 ## CRITICAL: RST docs sync
 

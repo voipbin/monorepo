@@ -1241,12 +1241,17 @@ and Mistral models that <code class="docutils literal notranslate"><span class="
 <code class="docutils literal notranslate"><span class="pre">platform_managed</span></code> set to <code class="docutils literal notranslate"><span class="pre">true</span></code>)</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">OPENROUTER_API_KEY</span></code> (restart <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code>)</p></td>
 </tr>
-<tr class="row-odd"><td><p>Speech-to-text</p></td>
+<tr class="row-odd"><td><p>LLM / conversation (real-time voice pipeline, local models)</p></td>
+<td><p>Self-hosted OpenAI-compatible servers (vLLM, llama.cpp, Ollama, and similar)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">LOCAL_LLM_MODELS</span></code> (restart <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>),
+<code class="docutils literal notranslate"><span class="pre">LOCAL_LLM_ENDPOINTS</span></code> (restart <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p>Speech-to-text</p></td>
 <td><p>Deepgram, AWS Transcribe, Google Cloud Speech-to-Text</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">DEEPGRAM_API_KEY</span></code>; <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code>/<code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code>;
 <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> (restart <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>)</p></td>
 </tr>
-<tr class="row-even"><td><p>Text-to-speech</p></td>
+<tr class="row-odd"><td><p>Text-to-speech</p></td>
 <td><p>ElevenLabs, Cartesia, AWS Polly, Google Cloud TTS</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">ELEVENLABS_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">CARTESIA_API_KEY</span></code>;
 <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code>/<code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code>;
@@ -1313,6 +1318,48 @@ runner image that contains the platform-managed model support is
 adopted (for example with <code class="docutils literal notranslate"><span class="pre">scripts/sync-compose-images.sh</span></code>). Setting the key
 while the pinned image is older does nothing.</p></li>
 </ul>
+</section>
+<section id="local-models-self-hosted-openai-compatible-servers">
+<h4>Local models (self-hosted OpenAI-compatible servers)<a class="headerlink" href="#local-models-self-hosted-openai-compatible-servers" title="Link to this heading">¶</a></h4>
+<p>You can register models that run on your own server, such as vLLM,
+llama.cpp or Ollama, as long as the server implements the OpenAI chat
+completions API. Registered models appear in <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ai_models</span></code> with vendor
+<code class="docutils literal notranslate"><span class="pre">Local</span></code> and an <code class="docutils literal notranslate"><span class="pre">id</span></code> of <code class="docutils literal notranslate"><span class="pre">local.&lt;endpoint&gt;.&lt;model&gt;</span></code>. Users only pick the
+model; the server address and key are never shown. Private network
+addresses and plain <code class="docutils literal notranslate"><span class="pre">http</span></code> are allowed, because the server is inside your
+trust boundary. Nothing is listed until you set the variables below. There is
+no separate on/off switch. This is not the same as the OpenRouter models above:
+<code class="docutils literal notranslate"><span class="pre">platform_managed</span></code> only says that you, the operator, supply the connection.</p>
+<p>Two variables, kept apart on purpose so that the secret stays in the runner
+only. Write each value as compact JSON (no space after a colon or comma) and
+write a <code class="docutils literal notranslate"><span class="pre">$</span></code> character as <code class="docutils literal notranslate"><span class="pre">$$</span></code> in Docker Compose.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">LOCAL_LLM_ENDPOINTS</span></code> (secret, <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> only): a JSON
+object that maps an endpoint name to its connection, for example
+<code class="docutils literal notranslate"><span class="pre">{&quot;vllm-a&quot;:{&quot;base_url&quot;:&quot;http://llm.internal:8000/v1&quot;,&quot;api_key&quot;:&quot;&quot;}}</span></code>.
+The name is lower case letters, digits and <code class="docutils literal notranslate"><span class="pre">-</span></code> (up to 32 characters).
+<code class="docutils literal notranslate"><span class="pre">base_url</span></code> is <code class="docutils literal notranslate"><span class="pre">http</span></code> or <code class="docutils literal notranslate"><span class="pre">https</span></code> without user information, query or
+fragment. An empty <code class="docutils literal notranslate"><span class="pre">api_key</span></code> is allowed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LOCAL_LLM_MODELS</span></code> (no secret, <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>): a
+JSON list, for example
+<code class="docutils literal notranslate"><span class="pre">[{&quot;endpoint&quot;:&quot;vllm-a&quot;,&quot;id&quot;:&quot;qwen3-8b&quot;,&quot;label&quot;:&quot;Qwen3</span> <span class="pre">8B&quot;,&quot;capabilities&quot;:[&quot;tool-calling&quot;],&quot;default&quot;:false}]</span></code>.
+<code class="docutils literal notranslate"><span class="pre">id</span></code> may contain letters, digits and <code class="docutils literal notranslate"><span class="pre">.</span> <span class="pre">_</span> <span class="pre">:</span> <span class="pre">/</span> <span class="pre">-</span></code>. <code class="docutils literal notranslate"><span class="pre">label</span></code> is ASCII
+only (up to 64 characters). <code class="docutils literal notranslate"><span class="pre">capabilities</span></code> may contain <code class="docutils literal notranslate"><span class="pre">tool-calling</span></code>
+and <code class="docutils literal notranslate"><span class="pre">low-cost</span></code>; they are informational. At most one entry should set
+<code class="docutils literal notranslate"><span class="pre">default</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code>; it becomes the only <code class="docutils literal notranslate"><span class="pre">recommended</span></code> model. At most
+200 models are read. Invalid entries are skipped and logged as an error
+(counts only); the service still starts, so check the log after a change.
+The endpoint name, <code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">label</span></code> are shown to users, so do not put
+internal host names in them.</p></li>
+</ul>
+<p>To enable: set both variables, redeploy <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> and
+<code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> together (same image), then redeploy
+<code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> last. To remove a model: move the AIs that use it to another
+model first, then redeploy <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> first and the pipecat services
+afterwards. A session that uses a removed or unreachable model fails. Do not set
+<code class="docutils literal notranslate"><span class="pre">OPENAI_ORG_ID</span></code> or <code class="docutils literal notranslate"><span class="pre">OPENAI_PROJECT_ID</span></code> on the runner: the OpenAI client
+would send them to your server. If the server is down, a voice session does
+not tell the caller; the failure is visible only in the logs.</p>
 <p>After setting an AI provider key, restart the service(s) that actually
 consume that specific variable, per the tables above:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>ai-manager<span class="w">           </span><span class="c1"># OPENAI_API_KEY (batch)</span>
@@ -1928,6 +1975,7 @@ the full output of <code class="docutils literal notranslate"><span class="pre">
 <li><a class="reference internal" href="#provider-configuration">Provider configuration</a><ul>
 <li><a class="reference internal" href="#ai-voice-agent-providers">AI voice agent providers</a><ul>
 <li><a class="reference internal" href="#openrouter-key-for-platform-managed-models">OpenRouter key for platform-managed models</a></li>
+<li><a class="reference internal" href="#local-models-self-hosted-openai-compatible-servers">Local models (self-hosted OpenAI-compatible servers)</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#shared-gcp-storage-and-project-variables">Shared GCP storage and project variables</a></li>
