@@ -11,7 +11,6 @@ Shared Go library used by every `bin-*-manager` service in the monorepo. Provide
 - Single-consumer or dual-consumer packages belong in the consuming service(s).
 - If a package's usage later grows to 3+ services, it can be promoted here.
 - Internal plumbing packages (`rabbitmqhandler`, wrapped by `sockhandler`) are exempt.
-- Exception: `pkg/migrationhandler` is added ahead of its third consumer, because the services that own their tables adopt it one at a time (`bin-tag-manager` is the first). The rule is met once a third service adopts it.
 
 **Why:** Every change here triggers verification across all 38 consumer services. Keep the library lean.
 

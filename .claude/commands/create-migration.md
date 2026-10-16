@@ -2,6 +2,8 @@
 
 Create an Alembic database migration file following VoIPbin naming conventions.
 
+⚠️ **Only the `asterisk` schema is accepted.** The `bin-manager` stream is frozen: every application table of the `bin_manager` database is owned by a service and changes through that service's `migrations/` directory (see `docs/workflows/service-owned-migrations.md`). Refuse `bin-manager` as the schema argument.
+
 ⚠️ **CRITICAL: This command ONLY creates the migration file. It does NOT apply migrations to the database.**
 
 🚫 **AI MUST NEVER run `alembic upgrade` or `alembic downgrade` commands. Database migrations require explicit human authorization.**
@@ -15,9 +17,8 @@ Create an Alembic database migration file following VoIPbin naming conventions.
 ## Arguments
 
 - `schema`: Which database schema
-  - `bin-manager` - VoIPbin core database (voipbin)
-  - `asterisk` - Asterisk configuration database
-- `table`: Table name (e.g., "customers", "storage_files", "ps_endpoints")
+  - `asterisk` - Asterisk configuration database (the only accepted value; `bin-manager` is frozen)
+- `table`: Table name (e.g., "ps_endpoints", "ps_aors")
 - `action`: Type of change
   - `add` - Adding columns, indexes, constraints
   - `remove` - Removing columns, indexes, constraints
@@ -30,10 +31,8 @@ Create an Alembic database migration file following VoIPbin naming conventions.
 
 **This command ONLY creates a migration file. It does NOT modify the database.**
 
-1. Validates schema argument (bin-manager or asterisk)
-2. Navigates to correct directory:
-   - `bin-manager` → `bin-dbscheme-manager/bin-manager/`
-   - `asterisk` → `bin-dbscheme-manager/asterisk_config/`
+1. Validates the schema argument (only `asterisk`; `bin-manager` is refused because the stream is frozen)
+2. Navigates to `bin-dbscheme-manager/asterisk_config/`
 3. Checks if `alembic.ini` exists (errors if missing)
 4. Generates migration with proper naming: `<table>_<action>_<description>`
 5. Runs: `alembic -c alembic.ini revision -m "<migration_name>"` (creates file only)
@@ -44,34 +43,25 @@ Create an Alembic database migration file following VoIPbin naming conventions.
 
 ```bash
 # Add column to existing table
-/create-migration bin-manager storage_files add "column owner_type"
-
-# Create new table
-/create-migration bin-manager registrar_trunks create table
-
-# Add index
-/create-migration bin-manager calls add "index idx_customer_id_tm_create"
-
-# Update asterisk schema
 /create-migration asterisk ps_endpoints add "column dtls_auto_gen"
 
-# Add multiple columns
-/create-migration bin-manager customers add "column email phone_number address"
+# Create new table
+/create-migration asterisk ps_example create table
 
-# Remove column
-/create-migration bin-manager conversations remove "column legacy_field"
+# Add index
+/create-migration asterisk ps_contacts add "index idx_endpoint"
 ```
 
 ## Output Example
 
 ```
-✓ Schema: bin-manager (voipbin database)
-✓ Navigated to: /home/pchero/gitvoipbin/monorepo/bin-dbscheme-manager/bin-manager
-✓ Found alembic.ini (connected to: mysql://user@localhost/voipbin)
-✓ Creating migration: storage_files_add_column_owner_type
+✓ Schema: asterisk (asterisk database)
+✓ Navigated to: bin-dbscheme-manager/asterisk_config
+✓ Found alembic.ini (connected to: mysql://user@localhost/asterisk)
+✓ Creating migration: ps_endpoints_add_column_dtls_auto_gen
 
 Generated migration file:
-  main/versions/b1201e50b736_storage_files_add_column_owner_type.py
+  config/versions/b1201e50b736_ps_endpoints_add_column_dtls_auto_gen.py
 
 ⚠️  MANUAL NEXT STEPS (Human must execute these - AI will NOT do this):
 
@@ -80,12 +70,12 @@ Generated migration file:
      - Add rollback SQL in downgrade() function
 
   2. Commit migration file:
-     git add main/versions/b1201e50b736_*.py
-     git commit -m "feat(dbscheme): add owner_type to storage_files"
+     git add config/versions/b1201e50b736_*.py
+     git commit -m "feat(dbscheme): add dtls_auto_gen to ps_endpoints"
 
   3. (HUMAN ONLY) Test locally on development database:
      alembic -c alembic.ini upgrade head
-     mysql -u root -p voipbin -e "DESCRIBE storage_files;"
+     mysql -u root -p asterisk -e "DESCRIBE ps_endpoints;"
 
   4. (HUMAN ONLY) Test rollback:
      alembic -c alembic.ini downgrade -1
@@ -101,22 +91,22 @@ Generated migration file:
 
 **Missing alembic.ini:**
 ```
-✗ ERROR: alembic.ini not found in bin-manager/
+✗ ERROR: alembic.ini not found in asterisk_config/
 
 To fix:
-  cd bin-dbscheme-manager/bin-manager
+  cd bin-dbscheme-manager/asterisk_config
   cp alembic.ini.sample alembic.ini
 
 Edit alembic.ini and set your database connection:
-  sqlalchemy.url = mysql://user:pass@host/voipbin
+  sqlalchemy.url = mysql://user:pass@host/asterisk
 ```
 
 **Invalid schema:**
 ```
-✗ ERROR: Invalid schema 'production'
+✗ ERROR: Invalid schema 'bin-manager'
 
-Valid schemas:
-  - bin-manager (for voipbin database)
+The bin-manager stream is frozen. Change bin_manager tables through the owning
+service's migrations/ directory. Valid schema:
   - asterisk (for asterisk database)
 ```
 

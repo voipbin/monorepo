@@ -7,8 +7,8 @@ database resources:
 
 -   **asterisk_config** -- Manages Asterisk-related database
     schema.
--   **bin-manager** -- Manages most of **VoIPBin's** database
-    resources.
+-   **bin-manager** -- The original schema history of the `bin_manager`
+    database. Frozen: the tables are now owned by the services.
 
 When this project runs via **GitLab CI/CD** or other CI/CD, the associated pod and job
 remain until the next pipeline execution, at which point they are
@@ -51,17 +51,12 @@ connection details.
 
 ## Adding a Database Change
 
-To create a new database migration, navigate to the appropriate
-directory.
+The **bin-manager** stream is frozen: do not create new migrations in
+it. Every application table of the `bin_manager` database is owned by a
+service and changes through that service's `migrations/` directory (see
+[docs/schema-ownership.md](docs/schema-ownership.md)).
 
-For **bin-manager**:
-
-``` sh
-cd bin-manager
-alembic -c alembic.ini revision -m "<your change title>"
-```
-
-For **asterisk_config**:
+To create a new migration for **asterisk_config**:
 
 ``` sh
 cd asterisk_config
@@ -79,8 +74,8 @@ Follow this format for migration messages:
 ### Examples:
 
 ``` sh
-alembic -c alembic.ini revision -m "customers add column email phone_number address"
-alembic -c alembic.ini revision -m "registrar_trunks create table"
+alembic -c alembic.ini revision -m "ps_endpoints add column dtls_auto_gen"
+alembic -c alembic.ini revision -m "ps_example create table"
 ```
 
 
@@ -188,7 +183,7 @@ history for each database.
 - Uses a **fixed Alembic table name**: `alembic_version_config → alembic_version`
 
 **VoIPBin Database (bin-manager)**
-- Manages most of **VoIPBin's** database resources, excluding Asterisk-related data.
+- The original schema history of the `bin_manager` database. Frozen: the tables are now owned by the services.
 
 ## Updating Asterisk Database Schema
 

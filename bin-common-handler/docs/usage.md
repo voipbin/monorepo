@@ -25,7 +25,7 @@ import (
 
 ### Admission rule reminder
 
-Before adding a new package to `bin-common-handler`, verify that 3 or more existing services need it. If fewer than 3 services use it, implement it in the consuming service(s) instead. The one exception is `pkg/migrationhandler` (see the admission rule in `CLAUDE.md`).
+Before adding a new package to `bin-common-handler`, verify that 3 or more existing services need it. If fewer than 3 services use it, implement it in the consuming service(s) instead.
 
 ### Migrations (services that own their tables)
 
