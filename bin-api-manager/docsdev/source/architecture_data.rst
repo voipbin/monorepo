@@ -5,7 +5,7 @@ Data Architecture
 
 .. note:: **AI Context**
 
-   This page describes VoIPBin's data layer: shared MySQL database (schema organization, common table patterns, migrations via Alembic), Redis cache (cache-aside pattern, key naming, TTL strategies), and session management. Relevant when an AI agent needs to understand database schema conventions, caching strategies, data consistency models, or backup/recovery procedures.
+   This page describes VoIPBin's data layer: shared MySQL database (schema organization, common table patterns, schema migrations applied by the owning services), Redis cache (cache-aside pattern, key naming, TTL strategies), and session management. Relevant when an AI agent needs to understand database schema conventions, caching strategies, data consistency models, or backup/recovery procedures.
 
 VoIPBin uses a shared data layer with MySQL for persistent storage and Redis for caching and session management. This architecture provides consistency across services while enabling high-performance data access.
 
@@ -259,58 +259,52 @@ VoIPBin optimizes queries for performance:
 
 .. note:: **AI Implementation Hint**
 
-   All database schema changes must go through Alembic migrations in ``bin-dbscheme-manager``. Never modify the database schema directly. All records use UUID primary keys and soft deletes (``tm_delete`` set to ``9999-01-01`` for active records). When querying via the API, deleted records are automatically excluded from results.
+   Each table in the ``bin_manager`` database changes only through a new migration file in the ``migrations/`` directory of the service that owns it; the service applies pending migrations when it starts. Never modify the database schema directly. All records use UUID primary keys and soft deletes (``tm_delete`` set to ``9999-01-01`` for active records). When querying via the API, deleted records are automatically excluded from results.
 
 Database Migrations
 -------------------
 
-Schema changes are managed through Alembic migrations:
+Every application table in the shared ``bin_manager`` database is owned by exactly one service. The owning service keeps its schema as numbered SQL files in its own ``migrations/`` directory and applies the pending files when it starts (golang-migrate). Each service records its progress in its own version table, ``<prefix>_schema_migrations``, so services migrate independently of each other. The Asterisk configuration database (``asterisk``) is the exception: its schema is still managed by Alembic in ``bin-dbscheme-manager``.
 
 .. code::
 
-    Migration Workflow:
+    Migration Workflow (bin_manager tables):
 
-    Development                 Migration Script              Production
+    Development                 Owning Service Repo           Runtime
          |                            |                           |
          |  1. Schema Change          |                           |
          |     Needed                 |                           |
          v                            |                           |
     +-------------+                   |                           |
-    | Create      |                   |                           |
-    | Migration   |------------------>|                           |
-    | Script      |                   |                           |
+    | Add new     |                   |                           |
+    | NNNNNN_*    |------------------>|                           |
+    | up/down SQL |  migrations/      |                           |
     +-------------+                   |                           |
          |                            |                           |
-         |  2. Test Locally           |                           |
-         v                            |                           |
-    +-------------+                   |                           |
-    | Run         |                   |                           |
-    | Migration   |<------------------|                           |
-    | (dev DB)    |                   |                           |
-    +-------------+                   |                           |
-         |                            |                           |
-         |  3. Commit to Git          |                           |
+         |  2. Verify on throwaway    |                           |
+         |     databases              |                           |
          v                            |                           |
     +-------------+                   |                           |
     | Code Review |                   |                           |
     | & Approval  |                   |                           |
     +-------------+                   |                           |
          |                            |                           |
-         |  4. Deploy                 |                           |
-         |                            |  5. Manual Execution      |
-         |                            |     (by human)            |
+         |  3. Merge and Deploy       |                           |
+         |                            |  4. Service starts and    |
+         |                            |     applies pending files |
          |                            +-------------------------->>
          |                            |                           |
-         |                            |  alembic upgrade head     |
+         |                            |  version recorded in      |
+         |                            |  <prefix>_schema_migrations
          |                            |                           |
 
 **Migration Best Practices:**
 
-* **Version Control**: All migrations in git
-* **Forward Only**: Never modify existing migrations
-* **Backward Compatible**: Support gradual rollout
-* **Manual Execution**: Humans run migrations, not automation
-* **Testing**: Test on staging before production
+* **Version Control**: All migrations in git, next to the code of the owning service
+* **Forward Only**: Never modify a merged migration file; add a new numbered file instead
+* **One Change per File**: Each migration file holds a single statement with a matching down file
+* **Backward Compatible**: Support gradual rollout (expand first, contract later)
+* **Testing**: Verify migrations on throwaway databases before merging
 
 Redis Cache
 -----------

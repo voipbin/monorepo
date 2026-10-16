@@ -143,4 +143,4 @@ service's migrations/ directory. Valid schema:
 
 ## Related Documentation
 
-See `CLAUDE.md` section "Database Migrations with Alembic" for detailed workflow and patterns.
+See `docs/workflows/common-workflows.md` section "Database Migrations" and `bin-dbscheme-manager/docs/migrations.md` for the workflow and patterns.

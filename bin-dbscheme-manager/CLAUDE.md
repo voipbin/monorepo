@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-`bin-dbscheme-manager` is the canonical home for database schema management in VoIPbin using Alembic migrations. It holds two independent Alembic streams: `asterisk_config/` for the Asterisk PJSIP config database, and `bin-manager/` for the `bin_manager` database, which is frozen because every application table there is now owned by a service (see below).
+`bin-dbscheme-manager` is the canonical home for database schema management in VoIPbin using Alembic migrations. It holds two independent Alembic streams: `asterisk_config/` for the Asterisk PJSIP config database, and `bin-manager/` for the `bin_manager` database, which is frozen read-only history because every application table there is now owned by a service (see below).
 
 > Cross-cutting rules (verification workflow, branch/commit format, worktree usage, RST sync, the general "Database schema changes: Alembic or service-owned migrations" rule) live in the root [CLAUDE.md](../CLAUDE.md). This file is the authoritative reference for Alembic-specific procedures.
 
@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## CRITICAL: bin-manager stream is frozen
 
-Do not add new Alembic migrations to `bin-manager/` (the `bin_manager` database). Every application table in `bin_manager` (except the unused legacy `users` table) is owned by a service that keeps its own `migrations/` directory and applies it at startup; the services are listed in [docs/schema-ownership.md](docs/schema-ownership.md). Never write an Alembic migration for those tables. The `asterisk_config/` stream is not frozen and keeps using Alembic.
+The `bin-manager/` stream is read-only history (last head `b0307529af4a`), used for install catch-up and the verify E1 reference. Do not add new Alembic migrations to `bin-manager/` (the `bin_manager` database). Every application table in `bin_manager` (except the unused legacy `users` table) is owned by a service that keeps its own `migrations/` directory and applies it at startup; the services are listed in [docs/schema-ownership.md](docs/schema-ownership.md). Never write an Alembic migration for those tables. The `asterisk_config/` stream is not frozen and keeps using Alembic. The directory stays because the install scripts still run this chain to catch up existing installations and older pins, `scripts/verify-service-migrations.sh` builds its E1 (Alembic head) reference from it, and `tests/` uses it as real revisions. The migration hooks and scripts that check it behave as before.
 
 ## CRITICAL: AI Agent Prohibition on alembic upgrade / alembic downgrade
 

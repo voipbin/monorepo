@@ -1,6 +1,6 @@
 # Operations
 
-> **Freeze notice:** The `bin-manager` stream is frozen. Do not add new Alembic migrations for the `bin_manager` database; every application table there is changed only through the owning service's `migrations/` directory (see [schema-ownership.md](schema-ownership.md)). The `asterisk_config` stream is not frozen and keeps using Alembic.
+> **Freeze notice:** The `bin-manager` stream is frozen read-only history (last head `b0307529af4a`), used for install catch-up and the verify E1 reference. Do not add new Alembic migrations for the `bin_manager` database; every application table there is changed only through the owning service's `migrations/` directory (see [schema-ownership.md](schema-ownership.md)). The `asterisk_config` stream is not frozen and keeps using Alembic. The directory stays because the install scripts still run this chain to catch up existing installations and older pins, `scripts/verify-service-migrations.sh` builds its E1 (Alembic head) reference from it, and `tests/` uses it as real revisions. The migration hooks and scripts that check it behave as before.
 
 Operational reference for applying, verifying, and recovering Alembic migrations.
 
@@ -38,13 +38,13 @@ If CI-driven migration is revisited in the future, do the network-reachability c
 
 ## Emergency Rollback
 
-Use `alembic downgrade` only when a migration has caused a production incident and reverting is the fastest path to restore service.
+Use `alembic downgrade` only for the `asterisk_config` stream, and only when a migration has caused a production incident and reverting is the fastest path to restore service. Never downgrade the frozen `bin-manager` stream: its tables are owned by the services, and a service migration is reverted through that service (see `docs/workflows/service-owned-migrations.md`).
 
 **Procedure:**
 
 ```bash
 # 1. Connect to VPN and confirm you are targeting the right database.
-cd bin-dbscheme-manager/bin-manager
+cd bin-dbscheme-manager/asterisk_config
 alembic -c alembic.ini current --verbose
 # Verify the currently applied revision matches what you expect.
 
