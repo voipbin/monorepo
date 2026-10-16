@@ -11,6 +11,8 @@ create table ai_ais(
   engine_model  varchar(255),
   parameter     json,
   engine_key    varchar(255),
+  engine_base_url      varchar(512) not null default '',   -- customer endpoint base URL
+  engine_base_key_enc  blob,                                -- encrypted customer endpoint key
   rag_id        binary(16),
 
   init_prompt   text,           -- initial prompt

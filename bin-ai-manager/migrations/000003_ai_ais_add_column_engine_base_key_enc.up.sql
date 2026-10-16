@@ -1,0 +1,1 @@
+ALTER TABLE ai_ais ADD COLUMN engine_base_key_enc varbinary(1024) DEFAULT NULL, ALGORITHM=INPLACE, LOCK=NONE;
