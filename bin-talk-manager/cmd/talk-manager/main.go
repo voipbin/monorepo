@@ -64,7 +64,7 @@ func runDaemon() error {
 
 	logger := logrus.WithField("func", "runDaemon")
 	cfg := config.Get()
-	logger.WithField("config", cfg).Info("Starting talk-manager...")
+	logStartup(logger, cfg)
 
 	// Initialize database
 	db, err := commondb.Connect(cfg.DatabaseDSN)
@@ -161,4 +161,14 @@ func initProm(endpoint, listen string) {
 			logrus.Errorf("Prometheus server error: %v", err)
 		}
 	}()
+}
+
+// logStartup logs the settings at startup. The credentials of the config are left out on purpose.
+func logStartup(log *logrus.Entry, cfg *config.Config) {
+	log.WithFields(logrus.Fields{
+		"prometheus_endpoint":       cfg.PrometheusEndpoint,
+		"prometheus_listen_address": cfg.PrometheusListenAddress,
+		"redis_address":             cfg.RedisAddress,
+		"redis_database":            cfg.RedisDatabase,
+	}).Info("Starting talk-manager...")
 }

@@ -70,7 +70,7 @@ func runDaemon() error {
 	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
 
 	log := logrus.WithField("func", "runDaemon")
-	log.WithField("config", config.Get()).Info("Starting timeline-manager...")
+	logStartup(log, config.Get())
 
 	// Run database migrations before starting services
 	if errMigrate := runMigrations(); errMigrate != nil {
@@ -264,4 +264,20 @@ func runSubscribe(ctx context.Context, sockHandler sockhandler.SockHandler, db d
 	}
 
 	return doneCh, nil
+}
+
+// logStartup logs the settings at startup. The credentials of the config are left out on purpose.
+func logStartup(log *logrus.Entry, cfg *config.Config) {
+	log.WithFields(logrus.Fields{
+		"prometheus_endpoint":       cfg.PrometheusEndpoint,
+		"prometheus_listen_address": cfg.PrometheusListenAddress,
+		"clickhouse_address":        cfg.ClickHouseAddress,
+		"clickhouse_database":       cfg.ClickHouseDatabase,
+		"migrations_path":           cfg.MigrationsPath,
+		"homer_api_address":         cfg.HomerAPIAddress,
+		"gcs_bucket_name":           cfg.GCSBucketName,
+		"analysis_model_stage1":     cfg.AnalysisModelStage1,
+		"analysis_model_stage2":     cfg.AnalysisModelStage2,
+		"analysis_model_stage3":     cfg.AnalysisModelStage3,
+	}).Info("Starting timeline-manager...")
 }
