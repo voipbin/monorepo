@@ -25,6 +25,9 @@ _INIT_FAILED_DETAIL = "pipeline initialization failed"
 
 @app.exception_handler(RequestValidationError)
 async def request_validation_handler(request: Request, exc: RequestValidationError):
+    # Only the field path and the error type are logged: "input" would repeat the request.
+    problems = [f"{'.'.join(str(p) for p in e.get('loc', ()))}:{e.get('type', '')}" for e in exc.errors()]
+    logger.error(f"Request validation failed: {', '.join(problems[:10])}")
     return JSONResponse(status_code=422, content={"detail": _INVALID_REQUEST_DETAIL})
 
 

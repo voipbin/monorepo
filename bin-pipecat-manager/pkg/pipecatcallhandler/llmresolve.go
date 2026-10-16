@@ -115,7 +115,7 @@ func resolveSessionEndpoint(ctx context.Context, llmType pipecatcall.LLMType, cu
 		return nil, nil
 	}
 
-	if liveAI == nil || liveAI.CustomerID != customerID || liveAI.TMDelete != nil || liveAI.EngineBaseURL == "" {
+	if liveAI == nil || customerID == uuid.Nil || liveAI.CustomerID != customerID || liveAI.TMDelete != nil || liveAI.EngineBaseURL == "" {
 		return nil, errEngineEndpointNotAvailable
 	}
 	if len(liveAI.EngineBaseKeyEnc) > 0 && liveAI.EngineBaseKey == "" {

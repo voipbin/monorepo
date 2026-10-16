@@ -69,6 +69,14 @@ def test_validation_error_body_is_fixed_and_does_not_echo_the_request(client):
     assert KEY not in r.text and URL not in r.text and "LEGACY" not in r.text
 
 
+def test_validation_error_logs_field_and_type_only(client, logs):
+    r = client.post("/run", json=body(id=5, llm_messages="not-a-list"))
+    assert r.status_code == 422
+    text = text_of(logs)
+    assert "Request validation failed" in text and "llm_messages" in text
+    assert KEY not in text and URL not in text and "LEGACY" not in text and "not-a-list" not in text
+
+
 def test_validation_error_for_a_missing_body_is_fixed_too(client):
     r = client.post("/run", content=b"not json", headers={"content-type": "application/json"})
     assert r.status_code == 422 and r.json() == {"detail": "invalid request"}

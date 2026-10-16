@@ -185,7 +185,7 @@ Status / reason                         Cause
 ``400 ENGINE_BASE_URL_REQUIRED``        The ``engine_model`` starts with ``customendpoint.`` and ``engine_base_url`` is empty. Returned on create and update, including a ``PUT`` from a client that does not send ``engine_base_url`` for an existing custom endpoint AI. Nothing is changed in that case.
 ``400 ENGINE_BASE_URL_NOT_ALLOWED``     ``engine_base_url`` is set but ``engine_model`` does not start with ``customendpoint.``.
 ``400 INVALID_ENGINE_BASE_URL``         ``engine_base_url`` breaks the format rules (see :ref:`Custom endpoint models <ai-struct-ai-custom-endpoint>`). The message states the rules and does not repeat the value.
-``400 ENGINE_BASE_URL_REJECTED``        The host could not be resolved to a public address. The message is the same for an unknown name, a name that resolves to a private, loopback or link-local address, and a lookup that failed or timed out.
+``400 ENGINE_BASE_URL_REJECTED``        The host could not be resolved to a public address. The message is the same for an unknown name, a name that resolves to a private, loopback or link-local address, and a lookup that failed or timed out. The same error is returned when the platform is busy with other address checks, so retry the request once before changing the address.
 ``400 INVALID_ENGINE_BASE_KEY``         ``engine_base_key`` is not 1 to 512 printable ASCII characters.
 ``400 ENGINE_BASE_KEY_NOT_ALLOWED``     ``engine_base_key`` is set but ``engine_model`` does not start with ``customendpoint.``.
 ``404 AI_NOT_FOUND``                    The target AI does not exist or has been deleted.

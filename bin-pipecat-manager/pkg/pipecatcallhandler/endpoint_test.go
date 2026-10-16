@@ -777,3 +777,56 @@ func Test_resolveTeamEndpoints_boundedByOneSecond(t *testing.T) {
 		}
 	}
 }
+
+func Test_resolveSessionEndpoint_nilCustomerFailsClosed(t *testing.T) {
+	stubEndpointResolver(t, "93.184.216.34")
+
+	live := testCustomAI()
+	live.CustomerID = uuid.Nil
+	if ep, err := resolveSessionEndpoint(context.Background(), "customendpoint.my-model", uuid.Nil, live); err == nil || ep != nil {
+		t.Errorf("a nil customer id must fail closed, got (%v, %v)", ep, err)
+	}
+}
+
+// A team session never sends a top-level endpoint, even if the session carries one.
+func Test_runnerStartScript_teamSendsNoTopLevelEndpoint(t *testing.T) {
+	teamID := uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-0000000000c9")
+	memberID := uuid.FromStringOrNil("bbbbbbbb-0000-0000-0000-0000000000c9")
+	aiID := uuid.FromStringOrNil("dddddddd-0000-0000-0000-0000000000c9")
+	aicallID := uuid.FromStringOrNil("eeeeeeee-0000-0000-0000-0000000000c9")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockTool := toolhandler.NewMockToolHandler(mc)
+	mockPython := NewMockPythonRunner(mc)
+	h := &pipecatcallHandler{requestHandler: mockReq, toolHandler: mockTool, pythonRunner: mockPython}
+
+	pc := &pipecatcall.Pipecatcall{
+		Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("7e1f0a52-1111-2222-3333-4444555566c9"), CustomerID: testEndpointCustomerID},
+		ReferenceType: pipecatcall.ReferenceTypeAICall,
+		ReferenceID:   aicallID,
+	}
+	se := &pipecatcall.Session{Ctx: context.Background(), LLMRunnerType: "openai.gpt-5", LLMBaseURL: testEndpointURL, LLMBaseKey: testEndpointKey}
+
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(&amaicall.AIcall{AssistanceType: amaicall.AssistanceTypeTeam, AssistanceID: teamID}, nil)
+	mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amteam.Team{
+		Identity: commonidentity.Identity{ID: teamID}, StartMemberID: memberID,
+		Members: []amteam.Member{{ID: memberID, Name: "one", AIID: aiID}},
+	}, nil)
+	mockReq.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{
+		Identity: commonidentity.Identity{ID: aiID, CustomerID: testEndpointCustomerID}, EngineModel: "openai.gpt-5", EngineKey: "dummy-member-key",
+	}, nil)
+	mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).Return([]aitool.Tool{}).AnyTimes()
+
+	mockPython.EXPECT().Start(
+		gomock.Any(), pc.ID, gomock.Any(), "",
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		testEndpointCustomerID, "", "",
+	).Return(nil)
+
+	if err := h.runnerStartScript(pc, se); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}

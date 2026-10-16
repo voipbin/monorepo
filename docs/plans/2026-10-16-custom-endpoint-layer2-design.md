@@ -1,6 +1,6 @@
 # Customer-specified OpenAI-compatible endpoint, Layer 2 detailed design (VOIP-1599)
 
-Status: draft. Layer 1 (operator-registered local models) is merged. This document is the design that `docs/plans/2026-10-15-self-hosted-llm-design.md` section 4 requires before any Layer 2 code or schema. Section 4 of that document stays authoritative for the gates and invariants; this document only fixes what section 4 left open (write path, validator placement, request DTO, key update semantics, schema columns, exact files, rollout order) and records the values that the proof of concept refined. 
+Status: implemented in the same pull request (the schema change is merged separately). Layer 1 (operator-registered local models) is merged. This document is the design that `docs/plans/2026-10-15-self-hosted-llm-design.md` section 4 requires before any Layer 2 code or schema. Section 4 of that document stays authoritative for the gates and invariants; this document only fixes what section 4 left open (write path, validator placement, request DTO, key update semantics, schema columns, exact files, rollout order) and records the values that the proof of concept refined. 
 
 Scope: bin-ai-manager, bin-pipecat-manager (Go service and Python runner), bin-api-manager, bin-openapi-manager, bin-common-handler (`requesthandler`), docs. Out of scope: front-end, billing, private address allowlists, global on/off flags.
 

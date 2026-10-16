@@ -857,7 +857,7 @@ no versioned prompt history has been recorded yet.</p></li>
 <td><p><code class="docutils literal notranslate"><span class="pre">engine_base_url</span></code> breaks the format rules (see <a class="reference internal" href="#ai-struct-ai-custom-endpoint"><span class="std std-ref">Custom endpoint models</span></a>). The message states the rules and does not repeat the value.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">ENGINE_BASE_URL_REJECTED</span></code></p></td>
-<td><p>The host could not be resolved to a public address. The message is the same for an unknown name, a name that resolves to a private, loopback or link-local address, and a lookup that failed or timed out.</p></td>
+<td><p>The host could not be resolved to a public address. The message is the same for an unknown name, a name that resolves to a private, loopback or link-local address, and a lookup that failed or timed out. The same error is returned when the platform is busy with other address checks, so retry the request once before changing the address.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">INVALID_ENGINE_BASE_KEY</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">engine_base_key</span></code> is not 1 to 512 printable ASCII characters.</p></td>
