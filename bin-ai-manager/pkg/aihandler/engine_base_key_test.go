@@ -352,17 +352,21 @@ func Test_Update_KeyTable(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		for _, prompt := range []string{"", "new prompt"} {
-			name := tt.name + "/prompt_unchanged"
-			if prompt != "" {
-				name = tt.name + "/prompt_changed"
-			}
+		// The three branches of Update: prompt unchanged, changed and cleared.
+		for _, pv := range []struct{ suffix, stored, prompt string }{
+			{"/prompt_unchanged", "", ""},
+			{"/prompt_changed", "", "new prompt"},
+			{"/prompt_cleared", "old prompt", ""},
+		} {
+			prompt := pv.prompt
+			name := tt.name + pv.suffix
 			t.Run(name, func(t *testing.T) {
 				pre := &ai.AI{
 					Identity:         commonidentity.Identity{ID: uuid.Must(uuid.NewV4()), CustomerID: uuid.Must(uuid.NewV4())},
 					EngineModel:      tt.storedModel,
 					EngineBaseURL:    tt.storedURL,
 					EngineBaseKeyEnc: tt.storedEnc,
+					InitPrompt:       pv.stored,
 				}
 				u := newUpdateHarness(t, pre)
 

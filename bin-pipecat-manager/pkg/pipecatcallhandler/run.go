@@ -48,7 +48,7 @@ type resolvedAIData struct {
 	EngineKey string `json:"engine_key"`
 	// LLMBaseURL and LLMBaseKey are the customer specified endpoint of a customendpoint. member
 	// (empty for every other member). The key type keeps it out of fmt based output.
-	LLMBaseURL       string              `json:"llm_base_url,omitempty"`
+	LLMBaseURL       amai.RedactedString `json:"llm_base_url,omitempty"`
 	LLMBaseKey       amai.RedactedString `json:"llm_base_key,omitempty"`
 	InitPrompt       string              `json:"init_prompt"`
 	Parameter        map[string]any      `json:"parameter,omitempty"`
@@ -359,7 +359,7 @@ func (h *pipecatcallHandler) resolveTeamEndpoints(ctx context.Context, resolved 
 // teamHasCustomEndpoint reports whether any member of the team uses a customendpoint. model.
 func teamHasCustomEndpoint(t *resolvedTeamData) bool {
 	for _, m := range t.Members {
-		if amai.IsCustomEndpointModel(amai.EngineModel(m.AI.EngineModel)) || amai.IsCustomEndpointModel(amai.EngineModel(m.AI.LLMType)) {
+		if m.AI.LLMBaseURL != "" || amai.IsCustomEndpointModel(amai.EngineModel(m.AI.EngineModel)) || amai.IsCustomEndpointModel(amai.EngineModel(m.AI.LLMType)) {
 			return true
 		}
 	}

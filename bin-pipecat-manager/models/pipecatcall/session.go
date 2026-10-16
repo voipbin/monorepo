@@ -39,8 +39,8 @@ type Session struct {
 
 	// Customer specified endpoint (customendpoint. models, VOIP-1599). The URL and key reach the
 	// runner through the separate request struct of pythonrunner.go; the redacted type keeps them
-	// out of fmt based output.
-	LLMBaseURL string              `json:"-"`
+	// out of fmt based output (the URL is customer free text and may hold pasted credentials).
+	LLMBaseURL amai.RedactedString `json:"-"`
 	LLMBaseKey amai.RedactedString `json:"-"`
 
 	// CustomEndpoint is set when the session's own type or the type of any team member is a

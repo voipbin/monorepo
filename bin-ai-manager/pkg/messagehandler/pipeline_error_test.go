@@ -131,7 +131,7 @@ func Test_EventPMPipelineError_currentPipecatcall(t *testing.T) {
 		},
 		{
 			name:          "connection",
-			category:      errorCategoryConnection,
+			category:      pmmessage.ErrorCategoryConnection,
 			expectContent: `{"type":"pipeline_error","category":"connection","fatal":false,"pipecatcall_id":"9c5c6e64-6289-4ac9-ad88-b20796a6bc96","message":"The AI language model could not be reached. If this AI uses a custom base URL, verify that the address is correct and reachable over HTTPS."}`,
 		},
 		{
@@ -447,5 +447,21 @@ func Test_EventPMPipelineError_unrecognizedCategoryDedup(t *testing.T) {
 
 			m.h.EventPMPipelineError(context.Background(), newPipelineErrorEvent(tt.category))
 		})
+	}
+}
+
+// Test_pipelineErrorNoticeText_coversNotifiedCategories pins that every category pipecat-manager
+// can publish has a fixed customer text (an unknown one would be recorded as unknown).
+func Test_pipelineErrorNoticeText_coversNotifiedCategories(t *testing.T) {
+	for _, c := range []pmmessage.ErrorCategory{
+		pmmessage.ErrorCategoryAuthentication,
+		pmmessage.ErrorCategoryRateLimited,
+		pmmessage.ErrorCategoryTimeout,
+		pmmessage.ErrorCategoryConnection,
+		pmmessage.ErrorCategoryUnknown,
+	} {
+		if pipelineErrorNoticeText[c] == "" {
+			t.Errorf("category %q has no notice text", c)
+		}
 	}
 }

@@ -128,7 +128,7 @@ func Test_resolveSessionEndpoint(t *testing.T) {
 				}
 				return
 			}
-			if ep == nil || ep.BaseURL != live.EngineBaseURL || string(ep.BaseKey) != string(live.EngineBaseKey) {
+			if ep == nil || string(ep.BaseURL) != live.EngineBaseURL || string(ep.BaseKey) != string(live.EngineBaseKey) {
 				t.Fatalf("unexpected endpoint: %+v", ep)
 			}
 		})
@@ -573,5 +573,137 @@ func Test_runGetLLMKey_customEndpointFailsClosed(t *testing.T) {
 	typ, key, err := h.runGetLLMKey(context.Background(), pc)
 	if err == nil {
 		t.Fatalf("expected the call path to fail closed for a custom endpoint session, got (%q, %q)", typ, key)
+	}
+}
+
+// Test_customEndpoint_noLogEntryCarriesUrlOrKey runs the start paths and the runner start with a
+// distinctive URL and key at debug level and asserts that no captured log entry (message or
+// fields, text and JSON rendering) carries either (design 3.9).
+func Test_customEndpoint_noLogEntryCarriesUrlOrKey(t *testing.T) {
+	hook := logrustest.NewGlobal()
+	defer hook.Reset()
+	orig := logrus.GetLevel()
+	logrus.SetLevel(logrus.DebugLevel)
+	defer logrus.SetLevel(orig)
+
+	stubEndpointResolver(t, "93.184.216.34")
+
+	pcID := uuid.FromStringOrNil("7e1f0a52-1111-2222-3333-4444555566a1")
+	aicallID := uuid.FromStringOrNil("eeeeeeee-0000-0000-0000-0000000000f1")
+	teamID := uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-0000000000f1")
+	memberID := uuid.FromStringOrNil("bbbbbbbb-0000-0000-0000-0000000000f1")
+	live := testCustomAI()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockTool := toolhandler.NewMockToolHandler(mc)
+	mockPython := NewMockPythonRunner(mc)
+	h := &pipecatcallHandler{
+		requestHandler:        mockReq,
+		toolHandler:           mockTool,
+		pythonRunner:          mockPython,
+		mapPipecatcallSession: map[uuid.UUID]*pipecatcall.Session{},
+		muPipecatcallSession:  sync.Mutex{},
+	}
+	mockReq.EXPECT().AIV1AIGet(gomock.Any(), live.ID).Return(live, nil).AnyTimes()
+	mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).Return([]aitool.Tool{}).AnyTimes()
+	mockReq.EXPECT().AIV1AIcallToolList(gomock.Any(), aicallID).Return(nil, nil).AnyTimes()
+
+	// 1. single AI start path (task reference) up to the runner start.
+	pc := &pipecatcall.Pipecatcall{
+		Identity:      commonidentity.Identity{ID: pcID, CustomerID: testEndpointCustomerID},
+		ReferenceType: pipecatcall.ReferenceTypeAICall,
+		ReferenceID:   aicallID,
+		LLMType:       "customendpoint.my-model",
+	}
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(&amaicall.AIcall{
+		Identity:       commonidentity.Identity{ID: aicallID},
+		ReferenceType:  amaicall.ReferenceTypeTask,
+		AssistanceType: amaicall.AssistanceTypeAI,
+		AssistanceID:   live.ID,
+	}, nil).Times(2) // start path and runner start
+	started := make(chan struct{}, 1)
+	mockPython.EXPECT().Start(gomock.Any(), pcID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ uuid.UUID, _ string, _ string, _ any, _, _, _, _, _ string, _ any, _ any, _ any, _ bool, _ uuid.UUID, _, _ string) error {
+			started <- struct{}{}
+			return nil
+		}).Times(1)
+	if err := h.startReferenceTypeAIcall(context.Background(), pc); err != nil {
+		t.Fatalf("start: %v", err)
+	}
+	select {
+	case <-started:
+	case <-time.After(3 * time.Second):
+		t.Fatal("runner never started")
+	}
+	if se, err := h.SessionGet(pcID); err == nil {
+		se.Cancel()
+	}
+
+	// 2. reference type call path fails closed (error text only).
+	pcCall := &pipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: pcID, CustomerID: testEndpointCustomerID}, ReferenceType: pipecatcall.ReferenceTypeCall, LLMType: "customendpoint.my-model"}
+	if _, _, err := h.runGetLLMKey(context.Background(), pcCall); err == nil {
+		t.Fatal("expected a fail closed error")
+	}
+
+	// 3. team resolution and runner start with a team.
+	mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amteam.Team{
+		Identity: commonidentity.Identity{ID: teamID}, StartMemberID: memberID,
+		Members: []amteam.Member{{ID: memberID, Name: "one", AIID: live.ID}},
+	}, nil).AnyTimes()
+	team, err := h.resolveTeamForPython(context.Background(), &amaicall.AIcall{AssistanceType: amaicall.AssistanceTypeTeam, AssistanceID: teamID}, testEndpointCustomerID)
+	if err != nil || team == nil {
+		t.Fatalf("team: %v", err)
+	}
+
+	// 4. renderings of the carriers of the endpoint.
+	se := &pipecatcall.Session{Ctx: context.Background(), LLMRunnerType: "customendpoint.my-model", LLMBaseURL: testEndpointURL, LLMBaseKey: testEndpointKey}
+	// The JSON form of the runner request structs is plain by design (it is the wire format), so
+	// they are rendered through the fmt verbs only; no production path logs them as fields.
+	logrus.WithField("session", se).Debugf("render %v %+v %#v %v %+v", se, team, team.Members[0].AI, se.LLMBaseURL, se.LLMBaseKey)
+
+	if len(hook.AllEntries()) == 0 {
+		t.Fatal("no log entries captured")
+	}
+	for _, e := range hook.AllEntries() {
+		for name, f := range map[string]logrus.Formatter{"text": &logrus.TextFormatter{DisableColors: true}, "json": &logrus.JSONFormatter{}} {
+			b, errFmt := f.Format(e)
+			if errFmt != nil {
+				t.Fatalf("format: %v", errFmt)
+			}
+			out := string(b)
+			if strings.Contains(out, testEndpointKey) || strings.Contains(out, "example-endpoint") {
+				t.Errorf("%s rendering of a log entry carries the url or key: %s", name, out)
+			}
+		}
+	}
+}
+
+func Test_receiveMessage_errorResponseCustomEndpointWithholdsText(t *testing.T) {
+	hook := logrustest.NewGlobal()
+	defer hook.Reset()
+
+	h := pipecatcallHandler{}
+	frame := []byte(`{"label":"rtvi-ai","type":"error-response","id":"1","data":{"error":"echo ` + testEndpointKey + `"}}`)
+
+	for _, custom := range []bool{false, true} {
+		hook.Reset()
+		se := newPipelineErrorTestSession(true)
+		se.CustomEndpoint.Store(custom)
+		if err := h.receiveMessageFrameTypeMessage(se, frame); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		leaked := false
+		for _, e := range hook.AllEntries() {
+			if strings.Contains(e.Message, testEndpointKey) {
+				leaked = true
+			}
+		}
+		if leaked == custom {
+			t.Errorf("custom=%v: text leaked=%v", custom, leaked)
+		}
 	}
 }

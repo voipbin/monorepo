@@ -216,7 +216,7 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 	// A team session builds every member's LLM from resolvedTeam, so the runner
 	// never reads the top-level key. Do not send it.
 	llmKey := string(se.LLMKey)
-	llmBaseURL := se.LLMBaseURL
+	llmBaseURL := string(se.LLMBaseURL)
 	llmBaseKey := string(se.LLMBaseKey)
 	if resolvedTeam != nil {
 		llmKey = ""
@@ -743,7 +743,11 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return errors.Wrapf(errUnmarshal, "could not unmarshal error-response message")
 		}
 		metricsRTVIErrorResponseTotal.Inc()
-		log.Warnf("The pipecat runner rejected a request. request_id: %s, error: %s", msg.ID, truncateForLog(msg.Data.Error, pipelineErrorLogMaxLen))
+		errText := truncateForLog(msg.Data.Error, pipelineErrorLogMaxLen)
+		if se.CustomEndpoint.Load() {
+			errText = "(details withheld, custom endpoint session)"
+		}
+		log.Warnf("The pipecat runner rejected a request. request_id: %s, error: %s", msg.ID, errText)
 
 	default:
 		log.WithField("frame", frame).Debugf("Unrecognized RTVI message type: %s", frame.Type)

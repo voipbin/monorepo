@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"os"
 	"os/signal"
 	"strings"
@@ -149,8 +150,10 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// storing an endpoint key then fails.
 	engineBaseKeyCrypto, err := mcpserverhandler.NewSecretCrypto(cfg.EngineBaseKeyEncryptionKeys)
 	if err != nil {
-		log.Errorf("Could not parse the engine base key encryption keys. err: %v", err)
-		return err
+		// The error text of the parser quotes the malformed entry, which is the key itself when the
+		// version prefix is missing, so only a fixed text is logged and returned.
+		log.Errorf("Could not parse ENGINE_BASE_KEY_ENCRYPTION_KEYS. Expected <version>:<base64 32 bytes>[,...].")
+		return errors.New("invalid engine base key encryption keys")
 	}
 	if strings.TrimSpace(cfg.EngineBaseKeyEncryptionKeys) == "" {
 		log.Warnf("ENGINE_BASE_KEY_ENCRYPTION_KEYS is empty. Storing a customer endpoint key will fail until it is set.")

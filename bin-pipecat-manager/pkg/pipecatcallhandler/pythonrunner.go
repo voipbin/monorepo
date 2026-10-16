@@ -150,7 +150,7 @@ func (h *pythonRunner) Start(
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		if requestHasEndpoint(llmBaseURL, resolvedTeam) {
+		if requestHasEndpoint(llmType, llmBaseURL, resolvedTeam) {
 			// The body of a request that carried an endpoint is not put into the error text.
 			return errors.Errorf("python runner returned non-200 status: %s", resp.Status)
 		}
@@ -160,20 +160,14 @@ func (h *pythonRunner) Start(
 	return nil
 }
 
-// requestHasEndpoint reports whether the runner request carries a customer specified endpoint.
-func requestHasEndpoint(llmBaseURL string, team *resolvedTeamData) bool {
-	if llmBaseURL != "" {
+// requestHasEndpoint reports whether the runner request carries, or was meant to carry, a customer
+// specified endpoint (the same notion as the runner: the type of the request or of any member).
+func requestHasEndpoint(llmType string, llmBaseURL string, team *resolvedTeamData) bool {
+	if llmBaseURL != "" || amai.IsCustomEndpointModel(amai.EngineModel(llmType)) {
 		return true
 	}
-	if team != nil {
-		for _, m := range team.Members {
-			if m.AI.LLMBaseURL != "" {
-				return true
-			}
-		}
-	}
 
-	return false
+	return team != nil && teamHasCustomEndpoint(team)
 }
 
 func (h *pythonRunner) Stop(ctx context.Context, pipecatcallID uuid.UUID) error {

@@ -101,7 +101,7 @@ var errEngineEndpointNotAvailable = errors.New("engine endpoint is not available
 
 // sessionEndpoint is the customer specified endpoint of a session, read from the live AI.
 type sessionEndpoint struct {
-	BaseURL string
+	BaseURL amai.RedactedString
 	BaseKey amai.RedactedString
 }
 
@@ -128,5 +128,5 @@ func resolveSessionEndpoint(ctx context.Context, llmType pipecatcall.LLMType, cu
 		return nil, errEngineEndpointNotAvailable
 	}
 
-	return &sessionEndpoint{BaseURL: liveAI.EngineBaseURL, BaseKey: liveAI.EngineBaseKey}, nil
+	return &sessionEndpoint{BaseURL: amai.RedactedString(liveAI.EngineBaseURL), BaseKey: liveAI.EngineBaseKey}, nil
 }
