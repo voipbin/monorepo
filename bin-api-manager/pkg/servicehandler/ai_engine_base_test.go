@@ -11,7 +11,6 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	amai "monorepo/bin-ai-manager/models/ai"
-	amrequest "monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/models/auth"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -117,7 +116,7 @@ func Test_AIUpdate_EngineBaseKeyStatesRoundTrip(t *testing.T) {
 				t.Errorf("Wrong wire presence of engine_base_key. expect: %v, got: %v, wire: %s", tt.expectInWire, got, *captured)
 			}
 
-			var dto amrequest.V1DataAIsIDPut
+			var dto engineBaseWire
 			if err := json.Unmarshal(*captured, &dto); err != nil {
 				t.Fatalf("could not unmarshal the DTO: %v", err)
 			}
@@ -164,7 +163,7 @@ func Test_AICreate_EngineBaseKeyStatesRoundTrip(t *testing.T) {
 				t.Fatalf("AICreate failed: %v", err)
 			}
 
-			var dto amrequest.V1DataAIsPost
+			var dto engineBaseWire
 			if err := json.Unmarshal(*captured, &dto); err != nil {
 				t.Fatalf("could not unmarshal the DTO: %v", err)
 			}
@@ -223,4 +222,11 @@ func Test_loggableEngineModel_customendpoint(t *testing.T) {
 			}
 		})
 	}
+}
+
+// engineBaseWire is the part of the ai-manager request body these tests read (the transport DTO
+// package of ai-manager is not imported here).
+type engineBaseWire struct {
+	EngineBaseURL string  `json:"engine_base_url"`
+	EngineBaseKey *string `json:"engine_base_key"`
 }
