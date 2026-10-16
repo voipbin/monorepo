@@ -3,10 +3,13 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -111,6 +114,20 @@ func signalHandler() {
 	chDone <- true
 }
 
+// validatePostgreSQLDSN rejects a DSN that is not a parsable postgres URL. The errors that
+// golang-migrate and lib/pq return for such a value embed the whole DSN, password included,
+// and they end up in the startup log.
+func validatePostgreSQLDSN(dsn string) error {
+	if !strings.HasPrefix(dsn, "postgres://") && !strings.HasPrefix(dsn, "postgresql://") {
+		return errors.New("invalid PostgreSQL DSN format")
+	}
+	if _, err := url.Parse(dsn); err != nil {
+		return errors.New("invalid PostgreSQL DSN format")
+	}
+
+	return nil
+}
+
 // runMigrations applies pending database migrations at startup
 func runMigrations(cfg config.Config) error {
 	log := logrus.WithField("func", "runMigrations")
@@ -118,6 +135,10 @@ func runMigrations(cfg config.Config) error {
 	if cfg.PostgreSQLDSN == "" {
 		log.Warn("PostgreSQL DSN not configured, skipping migrations")
 		return nil
+	}
+
+	if err := validatePostgreSQLDSN(cfg.PostgreSQLDSN); err != nil {
+		return err
 	}
 
 	const migrationsPath = "./migrations"

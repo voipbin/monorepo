@@ -4,7 +4,9 @@ package rabbitmqhandler
 
 import (
 	"context"
+	"errors"
 	"monorepo/bin-common-handler/models/sock"
+	"net/url"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -185,8 +187,9 @@ func (r *rabbit) Connect() {
 
 // Close close the Queue.
 func (r *rabbit) Close() {
+	host, _ := uriHost(r.uri)
 	logrus.WithFields(logrus.Fields{
-		"url": r.uri,
+		"host": host,
 	}).Info("Close the rabbitmq connection.")
 
 	r.closed.Store(true)
@@ -235,10 +238,25 @@ func (r *rabbit) reconnector() {
 	}
 }
 
+var errInvalidURI = errors.New("invalid rabbitmq address format")
+
+// uriHost returns the host part of the address, which is the only part that is safe to log: the
+// address carries the credentials as userinfo. valid is false when the address cannot be parsed,
+// in which case any error derived from it (amqp.Dial) embeds the raw address and must not be logged.
+func uriHost(uri string) (host string, valid bool) {
+	u, err := url.Parse(uri)
+	if err != nil {
+		return "", false
+	}
+
+	return u.Host, true
+}
+
 // connect connects to rabbitmq.
 func (r *rabbit) connect() {
+	host, valid := uriHost(r.uri)
 	log := logrus.WithFields(logrus.Fields{
-		"url": r.uri,
+		"host": host,
 	})
 
 	for {
@@ -247,6 +265,10 @@ func (r *rabbit) connect() {
 		// connect
 		conn, err := amqp.Dial(r.uri)
 		if err != nil {
+			if !valid {
+				// url.Parse errors embed the whole address, credentials included.
+				err = errInvalidURI
+			}
 			log.Errorf("Could not connect to rabbitmq. Will retry again after 1 sec. err: %v", err)
 			time.Sleep(time.Second * 1)
 			continue

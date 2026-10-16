@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -63,5 +64,23 @@ func TestRunDialFailure(t *testing.T) {
 	err := run("amqp://127.0.0.1:1", "queue", "/v1/test", "POST", "application/json", "", 5000)
 	if err == nil {
 		t.Fatal("expected error for unreachable broker, got nil")
+	}
+}
+
+func Test_run_invalid_address_no_credentials(t *testing.T) {
+	tests := []string{
+		"amqp://user:SENTINEL@broker.example:99x/",
+		"amqp://user:SENTINEL@broker.example/%zz",
+		"amqp://user:SENTINEL%zz@broker.example/",
+	}
+
+	for _, addr := range tests {
+		err := run(addr, "queue", "/v1/test", "POST", "application/json", "", 100)
+		if err == nil {
+			t.Fatalf("expected an error for %q", addr)
+		}
+		if strings.Contains(err.Error(), "SENTINEL") {
+			t.Errorf("error contains the credential: %v", err)
+		}
 	}
 }

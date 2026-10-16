@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"time"
 
@@ -79,6 +81,11 @@ func buildRequest(uri, method, dataType, data string) *request {
 }
 
 func run(rabbitAddr, queue, uri, method, dataType, data string, timeoutMs int) error {
+	// url.Parse errors embed the whole address, credentials included, and amqp.Dial returns them as is.
+	if _, err := url.Parse(rabbitAddr); err != nil {
+		return errors.New("invalid RabbitMQ address format")
+	}
+
 	conn, err := amqp.Dial(rabbitAddr)
 	if err != nil {
 		return fmt.Errorf("dial RabbitMQ: %w", err)
