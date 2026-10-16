@@ -35,13 +35,13 @@ Usage of ./registrar-manager:
 $ ./registrar-manager \
     -prom_endpoint /metrics \
     -prom_listen_addr :2112 \
-    -dbDSNAstasterisk:b62160b0-ea4a-11ea-9d60-8b6c204cab46@tcp(10.126.80.5:3306)/asterisk \
-    -dbDSNBin bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager \
+    -dbDSNAst <db-user>:<db-password>@tcp(<db-host>:3306)/asterisk \
+    -dbDSNBin <db-user>:<db-password>@tcp(<db-host>:3306)/bin_manager \
     -rabbit_addr amqp://guest:guest@rabbitmq.voipbin.net:5672 \
     -rabbit_queue_listen bin-manager.registrar-manager.request \
     -rabbit_queue_notify bin-manager.registrar-manager.event \
     -rabbit_exchange_delay bin-manager.delay \
-    -redis_addr 10.164.15.220:6379 \
+    -redis_addr <redis-host>:6379 \
     -redis_db 1
 ```
 

@@ -148,10 +148,10 @@ Example output:
 ``` text
 INFO  [alembic.runtime.migration] Context impl MySQLImpl.
 INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
-Current revision(s) for mysql://bin-manager:XXXXX@10.126.80.5/bin_manager:
+Current revision(s) for mysql://<db-user>:XXXXX@<db-host>/bin_manager:
 Rev: c939ba877f8f
 Parent: 6a7807e971e1
-Path: /home/pchero/gitlab/voipbin/bin-manager/dbscheme-bin-manager/bin-manager/main/versions/c939ba877f8f_add_table_extensions.py
+Path: <repo-root>/bin-dbscheme-manager/bin-manager/main/versions/c939ba877f8f_add_table_extensions.py
 
     add table extensions
 
@@ -176,7 +176,7 @@ Example output:
 ``` text
 Rev: 5d2aab77fd9d (head)
 Parent: c939ba877f8f
-Path: /home/pchero/gitlab/voipbin/bin-manager/dbscheme-bin-manager/bin-manager/main/versions/5d2aab77fd9d_add_provider_info.py
+Path: <repo-root>/bin-dbscheme-manager/bin-manager/main/versions/5d2aab77fd9d_add_provider_info.py
 
     add provider info
 
@@ -203,8 +203,8 @@ history for each database.
 To fetch the latest Asterisk DB schema:
 
 ``` sh
-cd /home/pchero/gittmp/asterisk
+cd <asterisk-source>
 git pull
-cp /home/pchero/gittmp/asterisk/contrib/ast-db-manage/config/versions/* /home/pchero/gitlab/voipbin/bin-manager/dbscheme-bin-manager/asterisk_config/config/versions
+cp <asterisk-source>/contrib/ast-db-manage/config/versions/* <repo-root>/bin-dbscheme-manager/asterisk_config/config/versions
 ```
 <!-- Updated dependencies: 2026-02-20 -->

@@ -1,6 +1,6 @@
 # Test
 ```
-$ mysql -u call-manager -p call_manager -h 10.126.80.5 < ./table_channels.sql
+$ mysql -u <db-user> -p call_manager -h <db-host> < ./table_channels.sql
 ```
 
 
@@ -44,8 +44,8 @@ hangup cause
 ```
 
 # NOTE
-id: call-manager
-pass: 47f94686-8184-11ea-bfe8-e791e06ef5ef
+id: `<db-user>`
+pass: `<db-password>`
 
 database: call_manager
 
