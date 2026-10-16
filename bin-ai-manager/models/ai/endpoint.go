@@ -118,7 +118,7 @@ func parseEngineBaseURL(raw string) (host string, literal netip.Addr, err error)
 	if len(raw) == 0 || len(raw) > maxEngineBaseURLLen || !isPrintableASCII(raw) {
 		return "", netip.Addr{}, ErrInvalidEngineBaseURL
 	}
-	if strings.ContainsAny(raw, "?#") || !strings.HasPrefix(raw, "https://") {
+	if strings.ContainsAny(raw, "?#\\") || !strings.HasPrefix(raw, "https://") {
 		return "", netip.Addr{}, ErrInvalidEngineBaseURL
 	}
 

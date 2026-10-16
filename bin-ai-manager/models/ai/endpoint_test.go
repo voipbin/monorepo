@@ -137,6 +137,7 @@ func Test_ValidateEngineBaseURL_PureRules(t *testing.T) {
 		{"percent_host", "https://a%41.example.com", ErrInvalidEngineBaseURL},
 		{"ipv6_zone", "https://[fe80::1%25eth0]", ErrInvalidEngineBaseURL},
 		{"backslash_host", "https://llm.example.com\\@evil.com", ErrInvalidEngineBaseURL},
+		{"backslash_in_path", "https://llm.example.com/v1\\x", ErrInvalidEngineBaseURL},
 		{"label_too_long", "https://" + strings.Repeat("a", 64) + ".example.com", ErrInvalidEngineBaseURL},
 
 		// literal addresses are checked against the table immediately

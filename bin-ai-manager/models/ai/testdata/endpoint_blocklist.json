@@ -664,6 +664,10 @@
     {
       "addr": "8.8.8.8 ",
       "blocked": true
+    },
+    {
+      "addr": "8.8.8.8%eth0",
+      "blocked": true
     }
   ]
 }

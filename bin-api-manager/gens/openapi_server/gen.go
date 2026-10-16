@@ -8409,7 +8409,7 @@ type PostAisJSONBody struct {
 	AutoAicallAuditEnabled *bool  `json:"auto_aicall_audit_enabled,omitempty"`
 	Detail                 string `json:"detail"`
 
-	// EngineBaseKey API key for the server at `engine_base_url`. Write-only; never returned. Optional. Omitted or null keeps the stored key (null is the same as omitting the field); an empty string deletes the stored key; a value replaces it. Changing `engine_base_url` discards the stored key unless the same request sends a non-empty `engine_base_key`. Allowed only with a `customendpoint.` model. A key is 1 to 512 printable ASCII characters.
+	// EngineBaseKey API key for the server at `engine_base_url`. Write-only; never returned. Optional. Allowed only with a `customendpoint.` model. A key is 1 to 512 printable ASCII characters.
 	EngineBaseKey *string `json:"engine_base_key,omitempty"`
 
 	// EngineBaseUrl Base URL of the customer-hosted OpenAI-compatible server. Required when engine_model starts with `customendpoint.` (400 ENGINE_BASE_URL_REQUIRED if empty); not allowed for any other model (400 ENGINE_BASE_URL_NOT_ALLOWED). Only https is accepted. Do not put credentials, tokens or other secrets in the URL; the URL is not secret and is returned in responses, events and webhooks. Send the key in `engine_base_key` instead.
