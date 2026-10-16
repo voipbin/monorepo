@@ -104,8 +104,8 @@ func initLog() {
 	logrus.SetLevel(logrus.DebugLevel)
 }
 
-// LocalLLMModels returns the LOCAL_LLM_MODELS value. It is read from viper and is not a
-// Config field because the daemon logs the whole Config struct at start.
+// LocalLLMModels returns the LOCAL_LLM_MODELS value. It is read from viper and is
+// deliberately not a Config field, so a log of the whole Config can never include it.
 func LocalLLMModels() string {
 	return viper.GetString("local_llm_models")
 }

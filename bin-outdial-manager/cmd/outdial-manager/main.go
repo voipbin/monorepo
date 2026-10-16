@@ -61,7 +61,7 @@ func runDaemon() error {
 	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
 
 	log := logrus.WithField("func", "runDaemon")
-	log.WithField("config", config.Get()).Info("Starting outdial-manager...")
+	logStartup(log, config.Get())
 
 	// create dbhandler
 	dbHandler, err := createDBHandler()
@@ -165,4 +165,14 @@ func runListen(
 	}
 
 	return nil
+}
+
+// logStartup logs the settings at startup. The credentials of the config are left out on purpose.
+func logStartup(log *logrus.Entry, cfg *config.Config) {
+	log.WithFields(logrus.Fields{
+		"prometheus_endpoint":       cfg.PrometheusEndpoint,
+		"prometheus_listen_address": cfg.PrometheusListenAddress,
+		"redis_address":             cfg.RedisAddress,
+		"redis_database":            cfg.RedisDatabase,
+	}).Info("Starting outdial-manager...")
 }

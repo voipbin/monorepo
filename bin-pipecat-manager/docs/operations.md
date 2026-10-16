@@ -13,7 +13,7 @@ All Go flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `redis_database` | `REDIS_DATABASE` | Redis DB index | no |
 | `prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
-| `local_llm_models` | `LOCAL_LLM_MODELS` | JSON list of operator-registered local models (no URL or key); same value as ai-manager. Read through `config.LocalLLMModels()`, not a `Config` field, because the daemon logs the whole `Config`. Invalid entries are skipped and logged as an error (counts only). | no |
+| `local_llm_models` | `LOCAL_LLM_MODELS` | JSON list of operator-registered local models (no URL or key); same value as ai-manager. Read through `config.LocalLLMModels()`, deliberately not a `Config` field, so a log of the whole `Config` can never include it. Invalid entries are skipped and logged as an error (counts only). | no |
 | `POD_IP` | `POD_IP` | Per-container identity (`pipecat-manager-1` / `-2` in `komodo/docker-compose.yml`); used as HostID for per-pod routing | yes |
 
 Python environment variables (set in `.env` or exported):

@@ -45,7 +45,7 @@ func Test_ConfigureLocalModelsBadValueDoesNotStop(t *testing.T) {
 	}
 }
 
-// The daemon logs the whole Config struct at start, so the models value must not be a field.
+// The models value is deliberately not a Config field, so a log of the whole Config can never include it.
 func Test_ConfigStructHasNoLocalLLMField(t *testing.T) {
 	typ := reflect.TypeOf(Config{})
 	for i := 0; i < typ.NumField(); i++ {

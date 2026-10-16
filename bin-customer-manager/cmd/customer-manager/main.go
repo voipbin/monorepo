@@ -63,7 +63,7 @@ func runDaemon() error {
 	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddr)
 
 	log := logrus.WithField("func", "runDaemon")
-	log.WithField("config", config.Get()).Info("Starting customer-manager...")
+	logStartup(log, config.Get())
 
 	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
@@ -131,4 +131,15 @@ func initProm(endpoint, listen string) {
 			logrus.Errorf("Prometheus server error: %v", err)
 		}
 	}()
+}
+
+// logStartup logs the settings at startup. The credentials of the config are left out on purpose.
+func logStartup(log *logrus.Entry, cfg *config.Config) {
+	log.WithFields(logrus.Fields{
+		"prometheus_endpoint":       cfg.PrometheusEndpoint,
+		"prometheus_listen_address": cfg.PrometheusListenAddr,
+		"redis_address":             cfg.RedisAddress,
+		"redis_database":            cfg.RedisDatabase,
+		"email_verify_base_url":     cfg.EmailVerifyBaseURL,
+	}).Info("Starting customer-manager...")
 }
