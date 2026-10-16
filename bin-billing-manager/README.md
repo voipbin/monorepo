@@ -95,7 +95,7 @@ Usage of ./billing-manager:
 # EXAMPLE
 ```
 ./billing-manager \
-        -dbDSN 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager' \
+        -dbDSN '<db-user>:<db-password>@tcp(<db-host>:3306)/bin_manager' \
         -prom_endpoint /metrics \
         -prom_listen_addr :2112 \
         -rabbit_addr amqp://guest:guest@rabbitmq.voipbin.net:5672 \
@@ -104,7 +104,7 @@ Usage of ./billing-manager:
         -rabbit_queue_listen bin-manager.webhook-manager.request \
         -rabbit_queue_notify bin-manager.webhook-manager.event \
         -rabbit_queue_susbscribe bin-manager.webhook-manager.subscribe \
-        -redis_addr 10.164.15.220:6379 \
+        -redis_addr <redis-host>:6379 \
         -redis_db 1
 ```
 
