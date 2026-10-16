@@ -3,6 +3,7 @@ package pipecatcallhandler
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
@@ -43,15 +44,19 @@ type resolvedAIData struct {
 	EngineModel string `json:"engine_model"`
 	// LLMType is what the runner must use (resolved server-side, fail-closed).
 	// No omitempty: an empty value is the explicit "rejected" signal.
-	LLMType          string          `json:"llm_type"`
-	EngineKey        string          `json:"engine_key"`
-	InitPrompt       string          `json:"init_prompt"`
-	Parameter        map[string]any  `json:"parameter,omitempty"`
-	TTSType          string          `json:"tts_type"`
-	TTSVoiceID       string          `json:"tts_voice_id"`
-	STTType          string          `json:"stt_type"`
-	VADConfig        *amai.VADConfig `json:"vad_config,omitempty"`
-	SmartTurnEnabled bool            `json:"smart_turn_enabled"`
+	LLMType   string `json:"llm_type"`
+	EngineKey string `json:"engine_key"`
+	// LLMBaseURL and LLMBaseKey are the customer specified endpoint of a customendpoint. member
+	// (empty for every other member). The key type keeps it out of fmt based output.
+	LLMBaseURL       string              `json:"llm_base_url,omitempty"`
+	LLMBaseKey       amai.RedactedString `json:"llm_base_key,omitempty"`
+	InitPrompt       string              `json:"init_prompt"`
+	Parameter        map[string]any      `json:"parameter,omitempty"`
+	TTSType          string              `json:"tts_type"`
+	TTSVoiceID       string              `json:"tts_voice_id"`
+	STTType          string              `json:"stt_type"`
+	VADConfig        *amai.VADConfig     `json:"vad_config,omitempty"`
+	SmartTurnEnabled bool                `json:"smart_turn_enabled"`
 }
 
 func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(se *pipecatcall.Session) {
@@ -153,13 +158,19 @@ func (h *pipecatcallHandler) runGetLLMKey(ctx context.Context, pc *pipecatcall.P
 		return "", "", errCheck
 	}
 
+	// This path (reference type call) has no live AI to read an endpoint from, so a custom
+	// endpoint session fails closed here.
+	if _, errEndpoint := resolveSessionEndpoint(ctx, pc.LLMType, pc.CustomerID, nil); errEndpoint != nil {
+		return "", "", errEndpoint
+	}
+
 	return runnerType, runnerKey, nil
 }
 
 // resolveTeamForPython builds the full team data for the Python runner, including engine keys.
 // Returns nil if the AIcall is not team-backed.
 func (h *pipecatcallHandler) resolveTeamForPython(
-	ctx context.Context, c *amaicall.AIcall,
+	ctx context.Context, c *amaicall.AIcall, customerID uuid.UUID,
 ) (*resolvedTeamData, error) {
 	if c.AssistanceType != amaicall.AssistanceTypeTeam {
 		return nil, nil
@@ -191,6 +202,9 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 		StartMemberID: startMemberID,
 		Members:       []resolvedMemberData{},
 	}
+
+	// Custom endpoint members are checked concurrently after the loop.
+	checks := []teamEndpointCheck{}
 
 	for _, m := range team.Members {
 		ai, errAI := h.requestHandler.AIV1AIGet(ctx, m.AIID)
@@ -232,6 +246,10 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 			}).Errorf("Team member has an engine model that is not available; the member will fail at pipeline init. member_id: %s, customer_id: %s", m.ID, ai.CustomerID)
 		}
 
+		if _, outcome := amai.ResolveEngine(ai.EngineModel); errResolve == nil && outcome == amai.OutcomeCustomEndpoint {
+			checks = append(checks, teamEndpointCheck{index: len(resolved.Members), ai: ai})
+		}
+
 		resolved.Members = append(resolved.Members, resolvedMemberData{
 			ID:   m.ID,
 			Name: m.Name,
@@ -250,6 +268,10 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 			Tools:       tools,
 			Transitions: transitions,
 		})
+	}
+
+	if len(checks) > 0 {
+		h.resolveTeamEndpoints(ctx, resolved, customerID, checks)
 	}
 
 	return resolved, nil
@@ -291,4 +313,56 @@ func (h *pipecatcallHandler) resolveAIFromAIcall(ctx context.Context, c *amaical
 		// AssistanceTypeAI or any other: AssistanceID is the AI ID
 		return h.requestHandler.AIV1AIGet(ctx, c.AssistanceID)
 	}
+}
+
+// teamEndpointCheck pairs a member slot with the live AI that has to pass the endpoint check.
+type teamEndpointCheck struct {
+	index int
+	ai    *amai.AI
+}
+
+// resolveTeamEndpoints runs resolveSessionEndpoint for the custom endpoint members concurrently
+// under one overall bound. A member that fails keeps the rejection signal (empty llm_type, key and
+// URL), so the runner fails the team start as a whole.
+func (h *pipecatcallHandler) resolveTeamEndpoints(ctx context.Context, resolved *resolvedTeamData, customerID uuid.UUID, checks []teamEndpointCheck) {
+	cctx, cancel := context.WithTimeout(ctx, endpointLookupTimeout)
+	defer cancel()
+
+	var wg sync.WaitGroup
+	for _, ck := range checks {
+		wg.Add(1)
+		go func(ck teamEndpointCheck) {
+			defer wg.Done()
+
+			member := &resolved.Members[ck.index]
+			ep, err := resolveSessionEndpoint(cctx, pipecatcall.LLMType(ck.ai.EngineModel), customerID, ck.ai)
+			if err != nil || ep == nil {
+				member.AI.LLMType = ""
+				member.AI.EngineKey = ""
+				member.AI.LLMBaseURL = ""
+				member.AI.LLMBaseKey = ""
+				logrus.WithFields(logrus.Fields{
+					"func":      "resolveTeamEndpoints",
+					"member_id": member.ID,
+					"ai_id":     ck.ai.ID,
+				}).Errorf("Team member endpoint is not available; the member will fail at pipeline init. member_id: %s", member.ID)
+				return
+			}
+
+			member.AI.LLMBaseURL = ep.BaseURL
+			member.AI.LLMBaseKey = ep.BaseKey
+		}(ck)
+	}
+	wg.Wait()
+}
+
+// teamHasCustomEndpoint reports whether any member of the team uses a customendpoint. model.
+func teamHasCustomEndpoint(t *resolvedTeamData) bool {
+	for _, m := range t.Members {
+		if amai.IsCustomEndpointModel(amai.EngineModel(m.AI.EngineModel)) || amai.IsCustomEndpointModel(amai.EngineModel(m.AI.LLMType)) {
+			return true
+		}
+	}
+
+	return false
 }

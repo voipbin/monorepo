@@ -19,6 +19,8 @@ import (
 // request path may include it, even when the downstream handler fails.
 func Test_processRequest_errorLogOmitsRequestBody(t *testing.T) {
 	const dummy = "dummy-engine-key-not-real"
+	const dummyBaseKey = "dummy-endpoint-key-not-real"
+	const dummyBaseURL = "https://llm.example.com/dummy-url-path-not-real"
 
 	tests := []struct {
 		name    string
@@ -30,10 +32,10 @@ func Test_processRequest_errorLogOmitsRequestBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/ais",
 				Method: sock.RequestMethodPost,
-				Data:   []byte(`{"customer_id":"58e7502c-a770-11ed-9b86-7fabe2dba847","name":"n","engine_model":"openrouter.vendor/model-a","engine_key":"` + dummy + `"}`),
+				Data:   []byte(`{"customer_id":"58e7502c-a770-11ed-9b86-7fabe2dba847","name":"n","engine_model":"openrouter.vendor/model-a","engine_key":"` + dummy + `","engine_base_url":"` + dummyBaseURL + `","engine_base_key":"` + dummyBaseKey + `"}`),
 			},
 			setup: func(m *aihandler.MockAIHandler) {
-				m.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("create failed"))
+				m.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("create failed"))
 			},
 		},
 		{
@@ -41,10 +43,10 @@ func Test_processRequest_errorLogOmitsRequestBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/ais/fa4d3b6a-f82f-11ed-9176-d32f5705e10c",
 				Method: sock.RequestMethodPut,
-				Data:   []byte(`{"name":"n","engine_model":"openrouter.vendor/model-a","engine_key":"` + dummy + `"}`),
+				Data:   []byte(`{"name":"n","engine_model":"openrouter.vendor/model-a","engine_key":"` + dummy + `","engine_base_url":"` + dummyBaseURL + `","engine_base_key":"` + dummyBaseKey + `"}`),
 			},
 			setup: func(m *aihandler.MockAIHandler) {
-				m.EXPECT().Update(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("update failed"))
+				m.EXPECT().Update(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("update failed"))
 			},
 		},
 		{
@@ -52,7 +54,7 @@ func Test_processRequest_errorLogOmitsRequestBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/unknown-resource",
 				Method: sock.RequestMethodPost,
-				Data:   []byte(`{"engine_key":"` + dummy + `"}`),
+				Data:   []byte(`{"engine_key":"` + dummy + `","engine_base_url":"` + dummyBaseURL + `","engine_base_key":"` + dummyBaseKey + `"}`),
 			},
 			setup: func(m *aihandler.MockAIHandler) {},
 		},
@@ -84,8 +86,10 @@ func Test_processRequest_errorLogOmitsRequestBody(t *testing.T) {
 			}
 
 			logs := buf.String()
-			if strings.Contains(logs, dummy) {
-				t.Errorf("the request body leaked into the log:\n%s", logs)
+			for _, secret := range []string{dummy, dummyBaseKey, "dummy-url-path-not-real"} {
+				if strings.Contains(logs, secret) {
+					t.Errorf("the request body leaked into the log:\n%s", logs)
+				}
 			}
 			if !strings.Contains(logs, tt.request.URI) {
 				t.Errorf("the log must keep the request uri:\n%s", logs)

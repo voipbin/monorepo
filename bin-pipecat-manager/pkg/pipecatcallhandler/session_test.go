@@ -103,7 +103,7 @@ func TestSessionCreate(t *testing.T) {
 				h.mapPipecatcallSession[tt.existingSession.ID] = tt.existingSession
 			}
 
-			result, err := h.SessionCreate(tt.pc, tt.asteriskStreamingID, nil, nil, tt.llmRunnerType, tt.llmKey)
+			result, err := h.SessionCreate(tt.pc, tt.asteriskStreamingID, nil, nil, tt.llmRunnerType, tt.llmKey, nil)
 
 			if tt.expectErr {
 				if err == nil {
@@ -519,7 +519,7 @@ func Test_SessionCreate_runnerTypeAndKeyNotSwapped(t *testing.T) {
 		},
 	}
 
-	se, err := h.SessionCreate(pc, pc.ID, nil, nil, "platform_openrouter.anthropic/claude-haiku-4.5", "")
+	se, err := h.SessionCreate(pc, pc.ID, nil, nil, "platform_openrouter.anthropic/claude-haiku-4.5", "", nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -528,7 +528,7 @@ func Test_SessionCreate_runnerTypeAndKeyNotSwapped(t *testing.T) {
 	}
 
 	pc2 := &pipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("0f1e2d3c-1111-2222-3333-444455557777")}}
-	se2, err := h.SessionCreate(pc2, pc2.ID, nil, nil, "openai.gpt-5", "customer-key")
+	se2, err := h.SessionCreate(pc2, pc2.ID, nil, nil, "openai.gpt-5", "customer-key", nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

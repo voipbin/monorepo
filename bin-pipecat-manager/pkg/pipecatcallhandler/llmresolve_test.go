@@ -462,11 +462,11 @@ func Test_startReferenceTypeAIcall_runnerHandoff(t *testing.T) {
 				mockPython.EXPECT().Start(
 					gomock.Any(), pcID, gomock.Any(), gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 				).DoAndReturn(func(
 					_ context.Context, _ uuid.UUID, llmType string, llmKey string, _ any,
 					_ string, _ string, _ string, _ string, _ string,
-					_ []aitool.Tool, _ any, _ any, _ bool,
+					_ []aitool.Tool, _ any, _ any, _ bool, _ uuid.UUID, _ string, _ string,
 				) error {
 					started <- handoff{llmType, llmKey}
 					return nil
@@ -588,11 +588,11 @@ func Test_teamSession_skipsLiveVendorCheck(t *testing.T) {
 			mockPython.EXPECT().Start(
 				gomock.Any(), pcID, gomock.Any(), gomock.Any(), gomock.Any(),
 				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 			).DoAndReturn(func(
 				_ context.Context, _ uuid.UUID, _ string, _ string, _ any,
 				_ string, _ string, _ string, _ string, _ string,
-				_ []aitool.Tool, _ any, _ any, _ bool,
+				_ []aitool.Tool, _ any, _ any, _ bool, _ uuid.UUID, _ string, _ string,
 			) error {
 				started <- struct{}{}
 				return nil

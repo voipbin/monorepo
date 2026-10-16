@@ -43,6 +43,8 @@ func (h *serviceHandler) AICreate(
 	engineModel amai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
+	engineBaseURL string,
+	engineBaseKey *string,
 	ragID uuid.UUID,
 	initPrompt string,
 	ttsType amai.TTSType,
@@ -104,6 +106,8 @@ func (h *serviceHandler) AICreate(
 		engineModel,
 		parameter,
 		engineKey,
+		engineBaseURL,
+		engineBaseKey,
 		ragID,
 		initPrompt,
 		ttsType,
@@ -378,6 +382,8 @@ func (h *serviceHandler) AIUpdate(
 	engineModel amai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
+	engineBaseURL string,
+	engineBaseKey *string,
 	ragID uuid.UUID,
 	initPrompt string,
 	ttsType amai.TTSType,
@@ -447,6 +453,8 @@ func (h *serviceHandler) AIUpdate(
 		engineModel,
 		parameter,
 		engineKey,
+		engineBaseURL,
+		engineBaseKey,
 		ragID,
 		initPrompt,
 		ttsType,
@@ -467,11 +475,15 @@ func (h *serviceHandler) AIUpdate(
 	return res, nil
 }
 
-// loggableEngineModel hides the model ID of custom OpenRouter models, which is
+// loggableEngineModel hides the model ID of custom OpenRouter and customendpoint. models, which is
 // free-form customer input, so it is never written to logs.
 func loggableEngineModel(m amai.EngineModel) string {
-	if strings.HasPrefix(strings.ToLower(strings.TrimSpace(string(m))), "openrouter.") {
+	lower := strings.ToLower(strings.TrimSpace(string(m)))
+	if strings.HasPrefix(lower, "openrouter.") {
 		return "openrouter.<redacted>"
+	}
+	if strings.HasPrefix(lower, "customendpoint.") {
+		return "customendpoint.<redacted>"
 	}
 	return string(m)
 }

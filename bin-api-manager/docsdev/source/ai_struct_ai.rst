@@ -20,6 +20,7 @@ AI
         "engine_model": "<string>",
         "parameter": "<object>",
         "engine_key": "<string>",
+        "engine_base_url": "<string>",
         "rag_id": "<string>",
         "init_prompt": "<string>",
         "current_prompt_history_id": "<string>",
@@ -52,6 +53,8 @@ AI
 * ``engine_model`` (String, Required): The LLM provider and model. Format: ``<provider>.<model>`` (e.g., ``openai.gpt-5-mini``, ``gemini.gemini-2.5-flash``). Use an ``id`` returned by ``GET /ai_models``. See :ref:`Engine Models <ai-struct-ai-engine_model>` and :ref:`AI Models <ai-models>`.
 * ``parameter`` (Object, Optional): Custom key-value parameter data for the AI configuration. Supports flow variable substitution at runtime. Typically left as ``{}``.
 * ``engine_key`` (String, Required): The API key for the LLM provider. Must be a valid key from the provider's dashboard. For models whose ``platform_managed`` field in ``GET /ai_models`` is ``true`` (OpenRouter models and local models), the platform supplies the credentials: send an empty string, and any value you send is ignored. For a custom OpenRouter model (``engine_model`` starts with ``openrouter.``), your OpenRouter API key is required: an empty value is rejected with ``400 ENGINE_KEY_REQUIRED``. ``PUT /ais/{id}`` replaces the whole configuration, so omitting ``engine_key`` is treated as an empty value. When you update an ``openrouter.<model-id>`` AI, send the key again even if you do not want to change it.
+* ``engine_base_url`` (String, Optional): The base URL of an OpenAI-compatible language model server that you host. Required when ``engine_model`` starts with ``customendpoint.`` (``400 ENGINE_BASE_URL_REQUIRED`` if empty), and not allowed for any other model (``400 ENGINE_BASE_URL_NOT_ALLOWED``). Only ``https`` is accepted. Do not put credentials or other secrets in the URL: the URL is not secret and is returned in API responses, events and webhooks. Send the key in ``engine_base_key`` instead. See :ref:`Custom endpoint models <ai-struct-ai-custom-endpoint>`.
+* ``engine_base_key`` (String, Optional, request only): The API key for the server at ``engine_base_url``. Write-only: it is accepted on ``POST /ais`` and ``PUT /ais/{id}`` and is **never returned** by any response, event or webhook, so it does not appear in the structure above. See :ref:`Custom endpoint models <ai-struct-ai-custom-endpoint>` for what omitting the field, ``null``, an empty string and a value mean.
 * ``rag_id`` (UUID, Optional): The knowledge base ID for the ``search_knowledge`` tool. Obtained from the ``id`` field of ``GET https://api.voipbin.net/v1.0/rags``. When set, the AI assistant can search this knowledge base during voice calls. Set to ``00000000-0000-0000-0000-000000000000`` or omit to disable.
 * ``init_prompt`` (String, Required): The system prompt that defines the AI's behavior, persona, and instructions. No enforced length limit.
 * ``current_prompt_history_id`` (string/UUID): UUID of the most-recent ``ai_ai_prompt_histories``
@@ -99,6 +102,7 @@ Example
         "engine_model": "openai.gpt-5-mini",
         "parameter": {},
         "engine_key": "sk-...",
+        "engine_base_url": "",
         "rag_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "init_prompt": "You are a friendly sales assistant. Help customers find the right products.",
         "tts_type": "elevenlabs",
@@ -179,6 +183,12 @@ Status / reason                         Cause
 ``400 AI_NOT_INSIGHT_TYPE``             The target AI is not ``type=insight``. Only Insight AIs can be activated.
 ``400 INVALID_ENGINE_MODEL``            The ``engine_model`` is not returned by ``GET /ai_models`` (this includes a ``local.`` model that the operator has not registered), does not use an allowed provider prefix (``openai``, ``gemini``, ``grok``), and is not a valid ``openrouter.<author>/<slug>`` custom model. The OpenRouter model ID must have exactly one ``/`` and use only letters, digits, ``.``, ``_`` and ``-``. Variant suffixes such as ``:free`` and router IDs such as ``openrouter/auto`` are not supported. Returned on create and update.
 ``400 ENGINE_KEY_REQUIRED``             The ``engine_model`` is a custom OpenRouter model and ``engine_key`` is empty. Returned on create and update, including an update that does not change the model.
+``400 ENGINE_BASE_URL_REQUIRED``        The ``engine_model`` starts with ``customendpoint.`` and ``engine_base_url`` is empty. Returned on create and update, including a ``PUT`` from a client that does not send ``engine_base_url`` for an existing custom endpoint AI. Nothing is changed in that case.
+``400 ENGINE_BASE_URL_NOT_ALLOWED``     ``engine_base_url`` is set but ``engine_model`` does not start with ``customendpoint.``.
+``400 INVALID_ENGINE_BASE_URL``         ``engine_base_url`` breaks the format rules (see :ref:`Custom endpoint models <ai-struct-ai-custom-endpoint>`). The message states the rules and does not repeat the value.
+``400 ENGINE_BASE_URL_REJECTED``        The host could not be resolved to a public address. The message is the same for an unknown name, a name that resolves to a private, loopback or link-local address, and a lookup that failed or timed out.
+``400 INVALID_ENGINE_BASE_KEY``         ``engine_base_key`` is not 1 to 512 printable ASCII characters.
+``400 ENGINE_BASE_KEY_NOT_ALLOWED``     ``engine_base_key`` is set but ``engine_model`` does not start with ``customendpoint.``.
 ``404 AI_NOT_FOUND``                    The target AI does not exist or has been deleted.
 ``409 AI_INSIGHT_ACTIVATION_CONFLICT``  Another activation for the same customer was in flight. Retry the request.
 ======================================= ============================================================
@@ -212,6 +222,10 @@ Models listed as "Not required" are managed by the platform (``key_mode`` is ``p
 
 When the platform operator registers self-hosted models, they are listed in ``GET /ai_models`` with the format ``local.<endpoint>.<model>`` and ``key_mode`` ``platform``. Send an empty ``engine_key``. The server address is not shown, and a ``local.`` value that is not in the list is rejected.
 
+**Custom endpoint models**
+
+To use a model on your own OpenAI-compatible server, set ``engine_model`` to ``customendpoint.<model-id>`` and set ``engine_base_url``. See :ref:`Custom endpoint models <ai-struct-ai-custom-endpoint>`. These models are not listed in ``GET /ai_models``.
+
 **Custom OpenRouter models**
 
 To use any other model offered by OpenRouter, set ``engine_model`` to ``openrouter.<author>/<slug>`` (for example ``openrouter.mistralai/mistral-large-2411``) and set ``engine_key`` to your own OpenRouter API key. The key is required. ``GET /ai_models`` lists one entry for this option, with ``key_mode`` ``own_required`` and ``model_id_prefix`` ``openrouter.``. That entry's ``id`` cannot be used as ``engine_model`` directly: combine ``model_id_prefix`` with the model ID.
@@ -223,8 +237,48 @@ To use any other model offered by OpenRouter, set ``engine_model`` to ``openrout
 **Validation**
 
 * On ``POST /ais``, ``engine_model`` must be an ``id`` from ``GET /ai_models``. Models that use the ``openai.``, ``gemini.``, or ``grok.`` prefix and are not in the list are also accepted and run with your own ``engine_key``. A value in the form ``openrouter.<author>/<slug>`` is also accepted and requires your OpenRouter ``engine_key``.
+* A value in the form ``customendpoint.<model-id>`` is also accepted and requires ``engine_base_url``.
 * Any other value (for example an ``anthropic.`` model that is not in the list) is rejected.
 * On ``PUT /ais/{id}``, the model check runs only when ``engine_model`` changes, so an existing AI that already stores an older value can still be updated without touching the model. The ``engine_key`` requirement for custom OpenRouter models is checked on every update.
+
+.. _ai-struct-ai-custom-endpoint:
+
+Custom endpoint models
+----------------------
+A custom endpoint model runs on a server that you host and that implements the OpenAI chat completions API (for example vLLM, llama.cpp or Ollama). Set ``engine_model`` to ``customendpoint.<model-id>`` and ``engine_base_url`` to the base URL of your server, for example ``https://llm.example.com/v1``. The model id is the name your server expects. It starts with a letter or digit and may contain letters, digits and ``. _ : / -``. The whole ``engine_model`` value is at most 255 bytes, and the prefix is case sensitive. This option is separate from the ``local.`` models, which the platform operator registers.
+
+**Base URL rules**
+
+* Only ``https`` is accepted. User information, a query string and a fragment are not allowed, and the URL may not contain credentials. Do not put a token in the path either.
+* ASCII only, 1 to 512 bytes. A port from 1 to 65535 is allowed.
+* The host must be a dotted domain name such as ``llm.example.com``, or an IP address. A single label name such as ``llm`` and a name that ends with a dot are rejected.
+* The host must resolve to public addresses only. A name that resolves to a private, loopback, link-local or other internal address is rejected with ``ENGINE_BASE_URL_REJECTED``. The address is checked again each time the platform connects to your server, and the server certificate must be valid for the host name.
+
+**engine_base_key semantics**
+
+The key is optional, because some servers need none. The same rules apply to ``POST /ais`` and ``PUT /ais/{id}``.
+
+========================================= ==========================================================
+Request                                   Result
+========================================= ==========================================================
+``engine_base_key`` omitted or ``null``   Keeps the stored key. ``null`` is the same as omitting.
+``engine_base_key`` is ``""``             Deletes the stored key.
+``engine_base_key`` is a value            Replaces the stored key.
+``engine_base_url`` changed               The stored key is discarded, unless the same request sends a non-empty ``engine_base_key``.
+Model changed to a non custom model       ``engine_base_url`` and the stored key are cleared.
+========================================= ==========================================================
+
+The key is stored encrypted and is never returned. A key is 1 to 512 printable ASCII characters. The legacy ``engine_key`` is never sent to your server: use ``engine_base_key``.
+
+``PUT /ais/{id}`` replaces the whole configuration, so send ``engine_base_url`` again on every update of a ``customendpoint.`` AI. A client that does not know the field and omits it receives ``400 ENGINE_BASE_URL_REQUIRED``, and the stored settings are not changed.
+
+**When a change takes effect**
+
+A call that is already running keeps the key and URL it read when it started. A changed or deleted key, and a changed URL, apply from the next call or, for conversations, the next turn. For a long voice call this can be as long as the call. If a key leaks, replace or delete it and also end the calls that are in progress.
+
+**Failures**
+
+When the platform cannot reach your server (name does not resolve, connection refused, address not allowed, certificate not valid) a ``pipeline_error`` message with category ``connection`` is recorded. See :ref:`AI Message <ai-struct-message>`. Other errors that your server returns over HTTP, such as an unknown model or a server error, are not reported with this category. A 401 or 403 answer is reported as ``authentication``.
 
 .. _ai-struct-ai-tts_type:
 

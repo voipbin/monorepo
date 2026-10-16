@@ -17,7 +17,11 @@ const (
 	FieldEngineModel Field = "engine_model"
 	FieldParameter   Field = "parameter"
 	FieldEngineKey   Field = "engine_key"
-	FieldRagID       Field = "rag_id"
+
+	FieldEngineBaseURL    Field = "engine_base_url"
+	FieldEngineBaseKeyEnc Field = "engine_base_key_enc"
+
+	FieldRagID Field = "rag_id"
 
 	FieldInitPrompt Field = "init_prompt"
 

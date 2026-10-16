@@ -77,11 +77,11 @@ func Test_runnerStartScript_mcpToolList(t *testing.T) {
 		mockPython.EXPECT().Start(
 			gomock.Any(), pc.ID, gomock.Any(), gomock.Any(), gomock.Any(),
 			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		).DoAndReturn(func(
 			_ context.Context, _ uuid.UUID, _ string, _ string, _ any,
 			_ string, _ string, _ string, _ string, _ string,
-			tools []aitool.Tool, _ any, _ any, _ bool,
+			tools []aitool.Tool, _ any, _ any, _ bool, _ uuid.UUID, _ string, _ string,
 		) error {
 			if len(tools) != 2 {
 				t.Fatalf("expected 2 tools (1 builtin + 1 mcp), got %d: %+v", len(tools), tools)
@@ -132,11 +132,11 @@ func Test_runnerStartScript_mcpToolList(t *testing.T) {
 		mockPython.EXPECT().Start(
 			gomock.Any(), pc.ID, gomock.Any(), gomock.Any(), gomock.Any(),
 			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		).DoAndReturn(func(
 			_ context.Context, _ uuid.UUID, _ string, _ string, _ any,
 			_ string, _ string, _ string, _ string, _ string,
-			tools []aitool.Tool, _ any, _ any, _ bool,
+			tools []aitool.Tool, _ any, _ any, _ bool, _ uuid.UUID, _ string, _ string,
 		) error {
 			if len(tools) != 1 || tools[0].Name != "call_hangup" {
 				t.Fatalf("expected builtins-only fallback, got %+v", tools)

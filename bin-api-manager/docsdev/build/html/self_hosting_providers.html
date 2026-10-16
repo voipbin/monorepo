@@ -797,8 +797,57 @@ internal host names in them.</p></li>
 model first, then redeploy <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> first and the pipecat services
 afterwards. A session that uses a removed or unreachable model fails. Do not set
 <code class="docutils literal notranslate"><span class="pre">OPENAI_ORG_ID</span></code> or <code class="docutils literal notranslate"><span class="pre">OPENAI_PROJECT_ID</span></code> on the runner: the OpenAI client
-would send them to your server. If the server is down, a voice session does
-not tell the caller; the failure is visible only in the logs.</p>
+would send them to your server. If the server cannot be reached, a voice session does
+not tell the caller; the failure is recorded on the AI call as a
+<code class="docutils literal notranslate"><span class="pre">pipeline_error</span></code> message with category <code class="docutils literal notranslate"><span class="pre">connection</span></code>.</p>
+</section>
+<section id="customer-specified-endpoints-customendpoint-models">
+<h3>Customer-specified endpoints (<code class="docutils literal notranslate"><span class="pre">customendpoint.</span></code> models)<a class="headerlink" href="#customer-specified-endpoints-customendpoint-models" title="Link to this heading">¶</a></h3>
+<p>Users can also point an AI at their own OpenAI-compatible server by setting
+<code class="docutils literal notranslate"><span class="pre">engine_model</span></code> to <code class="docutils literal notranslate"><span class="pre">customendpoint.&lt;model-id&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">engine_base_url</span></code>
+through the API. The optional key for that server (<code class="docutils literal notranslate"><span class="pre">engine_base_key</span></code>) is
+stored encrypted by <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>. This needs one variable, which only
+<code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> reads:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ENGINE_BASE_KEY_ENCRYPTION_KEYS</span></code> (secret): a comma separated list of
+<code class="docutils literal notranslate"><span class="pre">&lt;version&gt;:&lt;base64</span> <span class="pre">32</span> <span class="pre">bytes&gt;</span></code> entries, for example
+<code class="docutils literal notranslate"><span class="pre">1:&lt;base64</span> <span class="pre">of</span> <span class="pre">32</span> <span class="pre">random</span> <span class="pre">bytes&gt;</span></code> or <code class="docutils literal notranslate"><span class="pre">1:&lt;key1&gt;,2:&lt;key2&gt;</span></code>. The version is
+a number from 1 to 65535. The highest version encrypts new keys, and every
+listed version can decrypt. This is a separate key set from
+<code class="docutils literal notranslate"><span class="pre">MCP_SECRET_ENCRYPTION_KEYS</span></code>.</p></li>
+</ul>
+<p>Generate a key with <code class="docutils literal notranslate"><span class="pre">openssl</span> <span class="pre">rand</span> <span class="pre">-base64</span> <span class="pre">32</span></code> and write it with its
+version, for example <code class="docutils literal notranslate"><span class="pre">ENGINE_BASE_KEY_ENCRYPTION_KEYS=1:&lt;output&gt;</span></code>. Keep the
+value in your secret store. Then restart <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>ai-manager<span class="w">           </span><span class="c1"># ENGINE_BASE_KEY_ENCRYPTION_KEYS</span>
+</pre></div>
+</div>
+<p>Behavior to know about:</p>
+<ul class="simple">
+<li><p>A malformed value stops <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> from starting. An empty value lets
+it start with a warning, and a request that stores a key then fails with
+a server error. Endpoints without a key keep working.</p></li>
+<li><p>If you lose the key set, the stored endpoint keys can no longer be
+decrypted. This fails closed: those AIs are not sent any key and calls
+that need one fail, until each customer enters the key again. There is no
+other recovery.</p></li>
+<li><p>To rotate, add a new entry with a higher version to the list on every
+<code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> replica first, restart all of them, and keep the old
+versions listed until no stored key uses them. A key is re-encrypted with
+the highest version when the customer sends it again. During a rotation a
+replica that does not yet have the new version cannot decrypt keys written
+with it, and calls that start in that period fail closed, so rotate in a
+quiet window.</p></li>
+<li><p>If you deploy from a separate install repository, add the same variable to
+its <code class="docutils literal notranslate"><span class="pre">.env.template</span></code> and pass it to the <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> service there too.
+A missing variable in that repository means the customers’ endpoint keys
+cannot be stored.</p></li>
+<li><p>The platform connects to a customer’s address only over <code class="docutils literal notranslate"><span class="pre">https</span></code> and only
+when it resolves to a public address, so a private or loopback address
+cannot be used for this feature. Use the <code class="docutils literal notranslate"><span class="pre">local.</span></code> models above for a
+server inside your own network. If the server cannot be reached, the AI
+records a <code class="docutils literal notranslate"><span class="pre">pipeline_error</span></code> message with category <code class="docutils literal notranslate"><span class="pre">connection</span></code>.</p></li>
+</ul>
 <p>After setting an AI provider key, restart the service(s) that actually
 consume that specific variable, per the tables above:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>ai-manager<span class="w">           </span><span class="c1"># OPENAI_API_KEY (batch)</span>
@@ -1002,6 +1051,7 @@ its verification email.</p>
 <li><a class="reference internal" href="#ai-voice-agent-providers">AI voice agent providers</a><ul>
 <li><a class="reference internal" href="#openrouter-key-for-platform-managed-models">OpenRouter key for platform-managed models</a></li>
 <li><a class="reference internal" href="#local-models-self-hosted-openai-compatible-servers">Local models (self-hosted OpenAI-compatible servers)</a></li>
+<li><a class="reference internal" href="#customer-specified-endpoints-customendpoint-models">Customer-specified endpoints (<code class="docutils literal notranslate"><span class="pre">customendpoint.</span></code> models)</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#shared-gcp-storage-and-project-variables">Shared GCP storage and project variables</a></li>

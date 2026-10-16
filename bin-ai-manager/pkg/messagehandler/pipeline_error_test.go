@@ -130,6 +130,11 @@ func Test_EventPMPipelineError_currentPipecatcall(t *testing.T) {
 			expectContent: `{"type":"pipeline_error","category":"timeout","fatal":false,"pipecatcall_id":"9c5c6e64-6289-4ac9-ad88-b20796a6bc96","message":"The AI language model did not respond in time."}`,
 		},
 		{
+			name:          "connection",
+			category:      errorCategoryConnection,
+			expectContent: `{"type":"pipeline_error","category":"connection","fatal":false,"pipecatcall_id":"9c5c6e64-6289-4ac9-ad88-b20796a6bc96","message":"The AI language model could not be reached. If this AI uses a custom base URL, verify that the address is correct and reachable over HTTPS."}`,
+		},
+		{
 			name:          "unknown fatal",
 			category:      pmmessage.ErrorCategoryUnknown,
 			fatal:         true,

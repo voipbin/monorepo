@@ -105,3 +105,9 @@ func TestFieldConstants(t *testing.T) {
 		})
 	}
 }
+
+func Test_FieldConstants_EngineBase(t *testing.T) {
+	if FieldEngineBaseURL != "engine_base_url" || FieldEngineBaseKeyEnc != "engine_base_key_enc" {
+		t.Errorf("unexpected field names: %s %s", FieldEngineBaseURL, FieldEngineBaseKeyEnc)
+	}
+}

@@ -144,7 +144,18 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// topic exchange" contract holds regardless of which process published.
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNameAIEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	aiHandler := aihandler.NewAIHandler(requestHandler, notifyHandler, db)
+	// A second instance next to the MCP one: the endpoint keys have their own key set, so MCP key
+	// rotation never touches them. A malformed value stops the start; an empty one only warns and
+	// storing an endpoint key then fails.
+	engineBaseKeyCrypto, err := mcpserverhandler.NewSecretCrypto(cfg.EngineBaseKeyEncryptionKeys)
+	if err != nil {
+		log.Errorf("Could not parse the engine base key encryption keys. err: %v", err)
+		return err
+	}
+	if strings.TrimSpace(cfg.EngineBaseKeyEncryptionKeys) == "" {
+		log.Warnf("ENGINE_BASE_KEY_ENCRYPTION_KEYS is empty. Storing a customer endpoint key will fail until it is set.")
+	}
+	aiHandler := aihandler.NewAIHandler(requestHandler, notifyHandler, db, engineBaseKeyCrypto)
 	teamHandler := teamhandler.NewTeamHandler(requestHandler, notifyHandler, db)
 
 	mcpServerHandler, err := mcpserverhandler.NewMcpServerHandler(notifyHandler, db, cfg.McpSecretEncryptionKeys)

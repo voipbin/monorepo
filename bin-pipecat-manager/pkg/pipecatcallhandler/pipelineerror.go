@@ -41,6 +41,10 @@ var (
 		"504 gateway timeout",                        // gemini HTTP error response (reason phrase form)
 		"504 deadline_exceeded",                      // gemini in-stream error chunk
 	}
+
+	// tier 3, after timeout: the openai SDK connection failure (refused, blocked address, name not
+	// resolved, certificate failure) as pipecat reports it for every OpenAI compatible provider.
+	pipelineErrorPhrasesConnection = []string{"error during completion: connection error"}
 )
 
 // classifyPipelineError maps a raw RTVI error text to a category. Deterministic and pure.
@@ -81,6 +85,9 @@ func classifyPipelineError(raw string) message.ErrorCategory {
 	if containsAny(s, pipelineErrorPhrasesTimeout) {
 		return message.ErrorCategoryTimeout
 	}
+	if containsAny(s, pipelineErrorPhrasesConnection) {
+		return message.ErrorCategoryConnection
+	}
 
 	return message.ErrorCategoryUnknown
 }
@@ -90,7 +97,7 @@ func classifyPipelineError(raw string) message.ErrorCategory {
 //  1. function_call / internal: never (platform-side bug, operator signal only).
 //  2. fatal: always (the pipeline is being cancelled). Future-proofing: no service VoIPBin wires
 //     today pushes fatal=true.
-//  3. authentication / rate_limited / timeout: always (actionable, persistent or LLM-origin).
+//  3. authentication / rate_limited / timeout / connection: always (actionable, persistent or LLM-origin).
 //  4. unknown: only for sessions without STT. In text sessions every error is LLM-origin; in voice
 //     sessions a non-fatal unknown includes transient STT reconnects, which would be false alarms.
 func shouldNotifyPipelineError(category message.ErrorCategory, fatal bool, hasSTT bool) bool {
@@ -104,7 +111,7 @@ func shouldNotifyPipelineError(category message.ErrorCategory, fatal bool, hasST
 	}
 
 	switch category {
-	case message.ErrorCategoryAuthentication, message.ErrorCategoryRateLimited, message.ErrorCategoryTimeout:
+	case message.ErrorCategoryAuthentication, message.ErrorCategoryRateLimited, message.ErrorCategoryTimeout, message.ErrorCategoryConnection:
 		return true
 	case message.ErrorCategoryUnknown:
 		return !hasSTT

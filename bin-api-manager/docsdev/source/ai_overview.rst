@@ -173,6 +173,10 @@ VoIPBin's AI uses Speech-to-Text (STT) to convert spoken words into text, proces
     :alt: AI implementation using TTS/STT + AI Engine
     :align: center
 
+Language Model Options
+----------------------
+The language model of an AI is chosen with ``engine_model``. Besides the models in ``GET /ai_models`` and custom OpenRouter models, an AI can use a model on an OpenAI-compatible server that you host. Set ``engine_model`` to ``customendpoint.<model-id>``, ``engine_base_url`` to the HTTPS address of your server, and ``engine_base_key`` to its API key if it needs one. Key behavior on update: omitted or ``null`` keeps the key, an empty string deletes it, a value replaces it, and changing the URL discards the old key. The key is encrypted, write-only and never returned. A call that is already running keeps the URL and key it started with. If the platform cannot reach your server, a ``pipeline_error`` message with category ``connection`` is recorded. Details are in :ref:`Custom endpoint models <ai-struct-ai-custom-endpoint>`.
+
 Voice Detection and Play Interruption
 -------------------------------------
 VoIPBin incorporates voice detection for natural conversational flow. While the AI is speaking (TTS playback), if the system detects the user's voice, it immediately stops TTS and routes the user's speech to STT and then to the LLM. This ensures user input is prioritized, enabling dynamic interaction that resembles real conversation.
@@ -818,7 +822,7 @@ Troubleshooting
 **Common HTTP Errors**
 
 * **400 Bad Request:**
-    * **Cause:** Invalid ``engine_model`` (reason ``INVALID_ENGINE_MODEL``). The value must be returned by ``GET /ai_models``, use an allowed provider prefix (``openai``, ``gemini``, ``grok``), or be a valid ``openrouter.<author>/<slug>`` custom model, for example ``openai.gpt-5-mini``. A custom OpenRouter model without an ``engine_key`` is rejected with reason ``ENGINE_KEY_REQUIRED``.
+    * **Cause:** Invalid ``engine_model`` (reason ``INVALID_ENGINE_MODEL``). The value must be returned by ``GET /ai_models``, use an allowed provider prefix (``openai``, ``gemini``, ``grok``), or be a valid ``openrouter.<author>/<slug>`` custom model, for example ``openai.gpt-5-mini``. A custom OpenRouter model without an ``engine_key`` is rejected with reason ``ENGINE_KEY_REQUIRED``. A ``customendpoint.`` model without ``engine_base_url`` is rejected with reason ``ENGINE_BASE_URL_REQUIRED``, and an address that does not resolve to a public address with reason ``ENGINE_BASE_URL_REJECTED``.
     * **Fix:** Pick an ``id`` from ``GET /ai_models`` (see :ref:`AI Models <ai-models>`) and check the provider table in :ref:`Engine Models <ai-struct-ai-engine_model>`.
 
 * **402 Payment Required:**

@@ -3,6 +3,7 @@ package pipecatcallhandler
 import (
 	"context"
 	"fmt"
+	amai "monorepo/bin-ai-manager/models/ai"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
@@ -18,6 +19,7 @@ func (h *pipecatcallHandler) SessionCreate(
 	connAstDone chan struct{},
 	llmRunnerType string,
 	llmKey string,
+	endpoint *sessionEndpoint,
 ) (*pipecatcall.Session, error) {
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -50,6 +52,14 @@ func (h *pipecatcallHandler) SessionCreate(
 		LLMKey:        llmKey,
 
 		HasSTT: pc.STTType != pipecatcall.STTTypeNone,
+	}
+	if endpoint != nil {
+		res.LLMBaseURL = endpoint.BaseURL
+		res.LLMBaseKey = endpoint.BaseKey
+	}
+	// A session of a custom endpoint model never logs the raw text of a pipeline error.
+	if amai.IsCustomEndpointModel(amai.EngineModel(llmRunnerType)) {
+		res.CustomEndpoint.Store(true)
 	}
 
 	h.muPipecatcallSession.Lock()

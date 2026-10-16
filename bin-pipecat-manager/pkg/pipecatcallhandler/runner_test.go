@@ -391,7 +391,7 @@ func Test_runnerStartScript_llmRunnerType(t *testing.T) {
 			gomock.Any(), pc.ID,
 			"platform_openrouter.anthropic/claude-haiku-4.5", "",
 			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		).Return(nil)
 
 		se := &pipecatcall.Session{
@@ -452,9 +452,9 @@ func Test_runnerStartScript_teamSendsNoTopLevelKey(t *testing.T) {
 			mockPython.EXPECT().Start(
 				gomock.Any(), pc.ID, "openai.gpt-5", tt.expectKey,
 				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 			).DoAndReturn(func(_ context.Context, _ uuid.UUID, _ string, _ string, _ any, _, _, _, _, _ string,
-				_ any, team *resolvedTeamData, _ any, _ bool) error {
+				_ any, team *resolvedTeamData, _ any, _ bool, _ uuid.UUID, _, _ string) error {
 				if (team != nil) != tt.expectMember {
 					t.Errorf("resolved team presence = %v, want %v", team != nil, tt.expectMember)
 				}

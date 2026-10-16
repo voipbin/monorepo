@@ -102,6 +102,8 @@ func Test_AICreate(t *testing.T) {
 				tt.engineModel,
 				tt.engineData,
 				tt.engineKey,
+				"",       // engineBaseURL
+				nil,      // engineBaseKey
 				uuid.Nil, // ragID
 				tt.initPrompt,
 				tt.ttsType,
@@ -122,6 +124,8 @@ func Test_AICreate(t *testing.T) {
 				tt.engineModel,
 				tt.engineData,
 				tt.engineKey,
+				"",       // engineBaseURL
+				nil,      // engineBaseKey
 				uuid.Nil, // ragID
 				tt.initPrompt,
 				tt.ttsType,

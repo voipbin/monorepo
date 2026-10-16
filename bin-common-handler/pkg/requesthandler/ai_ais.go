@@ -85,6 +85,8 @@ func (r *requestHandler) AIV1AICreate(
 	engineModel amai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
+	engineBaseURL string,
+	engineBaseKey *string,
 	ragID uuid.UUID,
 	initPrompt string,
 	ttsType amai.TTSType,
@@ -107,6 +109,9 @@ func (r *requestHandler) AIV1AICreate(
 		Parameter:   parameter,
 		EngineKey:   engineKey,
 		RagID:       ragID,
+
+		EngineBaseURL: engineBaseURL,
+		EngineBaseKey: engineBaseKey,
 
 		InitPrompt: initPrompt,
 
@@ -209,6 +214,8 @@ func (r *requestHandler) AIV1AIUpdate(
 	engineModel amai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
+	engineBaseURL string,
+	engineBaseKey *string,
 	ragID uuid.UUID,
 	initPrompt string,
 	ttsType amai.TTSType,
@@ -230,6 +237,9 @@ func (r *requestHandler) AIV1AIUpdate(
 		Parameter:   parameter,
 		EngineKey:   engineKey,
 		RagID:       ragID,
+
+		EngineBaseURL: engineBaseURL,
+		EngineBaseKey: engineBaseKey,
 
 		InitPrompt: initPrompt,
 

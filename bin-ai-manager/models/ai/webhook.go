@@ -29,6 +29,9 @@ type WebhookMessage struct {
 	EngineKey   string         `json:"engine_key,omitempty"`
 	RagID       uuid.UUID      `json:"rag_id,omitempty"`
 
+	// EngineBaseURL is not a secret. The endpoint key, its ciphertext and its plaintext are never here.
+	EngineBaseURL string `json:"engine_base_url,omitempty"`
+
 	InitPrompt             string    `json:"init_prompt,omitempty"`
 	CurrentPromptHistoryID uuid.UUID `json:"current_prompt_history_id"`
 
@@ -69,6 +72,8 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		Parameter:   h.Parameter,
 		EngineKey:   h.EngineKey,
 		RagID:       h.RagID,
+
+		EngineBaseURL: h.EngineBaseURL,
 
 		InitPrompt:             h.InitPrompt,
 		CurrentPromptHistoryID: h.CurrentPromptHistoryID,

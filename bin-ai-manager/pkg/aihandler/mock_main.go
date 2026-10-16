@@ -59,18 +59,18 @@ func (mr *MockAIHandlerMockRecorder) ActivateInsight(ctx, id any) *gomock.Call {
 }
 
 // Create mocks base method.
-func (m *MockAIHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, vadConfig *ai.VADConfig, smartTurnEnabled, autoAICallAuditEnabled bool) (*ai.AI, error) {
+func (m *MockAIHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey, engineBaseURL string, engineBaseKey *string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, vadConfig *ai.VADConfig, smartTurnEnabled, autoAICallAuditEnabled bool) (*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockAIHandlerMockRecorder) Create(ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled any) *gomock.Call {
+func (mr *MockAIHandlerMockRecorder) Create(ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAIHandler)(nil).Create), ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAIHandler)(nil).Create), ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 }
 
 // Delete mocks base method.
@@ -101,6 +101,20 @@ func (m *MockAIHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) 
 func (mr *MockAIHandlerMockRecorder) DirectHashRegenerate(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectHashRegenerate", reflect.TypeOf((*MockAIHandler)(nil).DirectHashRegenerate), ctx, id)
+}
+
+// FillEngineBaseKey mocks base method.
+func (m *MockAIHandler) FillEngineBaseKey(a *ai.AI) *ai.AI {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FillEngineBaseKey", a)
+	ret0, _ := ret[0].(*ai.AI)
+	return ret0
+}
+
+// FillEngineBaseKey indicates an expected call of FillEngineBaseKey.
+func (mr *MockAIHandlerMockRecorder) FillEngineBaseKey(a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FillEngineBaseKey", reflect.TypeOf((*MockAIHandler)(nil).FillEngineBaseKey), a)
 }
 
 // Get mocks base method.
@@ -134,18 +148,18 @@ func (mr *MockAIHandlerMockRecorder) List(ctx, size, token, filters any) *gomock
 }
 
 // Update mocks base method.
-func (m *MockAIHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoice string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, vadConfig *ai.VADConfig, smartTurnEnabled, autoAICallAuditEnabled bool) (*ai.AI, error) {
+func (m *MockAIHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey, engineBaseURL string, engineBaseKey *string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoice string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, vadConfig *ai.VADConfig, smartTurnEnabled, autoAICallAuditEnabled bool) (*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
+	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockAIHandlerMockRecorder) Update(ctx, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled any) *gomock.Call {
+func (mr *MockAIHandlerMockRecorder) Update(ctx, id, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockAIHandler)(nil).Update), ctx, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockAIHandler)(nil).Update), ctx, id, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 }
 
 // UpdateMcpServerIDs mocks base method.

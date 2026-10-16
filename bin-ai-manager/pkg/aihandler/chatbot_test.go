@@ -192,6 +192,7 @@ func TestCreate(t *testing.T) {
 				tt.engineModel,
 				nil,
 				"test-key",
+				"", nil,
 				uuid.Nil,
 				"Test prompt",
 				tt.ttsType,
@@ -387,6 +388,7 @@ func TestUpdate(t *testing.T) {
 				tt.engineModel,
 				nil,
 				"updated-key",
+				"", nil,
 				uuid.Nil,
 				"Updated prompt",
 				tt.ttsType,
@@ -450,6 +452,7 @@ func TestCreate_RecordsPromptHistory(t *testing.T) {
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
+		"", nil,
 		uuid.Nil,
 		"You are helpful.",
 		ai.TTSTypeNone,
@@ -499,6 +502,7 @@ func TestCreate_EmptyPrompt_NoHistory(t *testing.T) {
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
+		"", nil,
 		uuid.Nil,
 		"",
 		ai.TTSTypeNone,
@@ -555,6 +559,7 @@ func TestUpdate_NewPrompt_RecordsHistory(t *testing.T) {
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
+		"", nil,
 		uuid.Nil,
 		"new prompt",
 		ai.TTSTypeNone,
@@ -610,6 +615,7 @@ func TestUpdate_SamePrompt_NoHistory(t *testing.T) {
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
+		"", nil,
 		uuid.Nil,
 		"same prompt",
 		ai.TTSTypeNone,
@@ -660,6 +666,7 @@ func TestUpdate_EmptyPrompt_AlreadyEmpty_NoHistory(t *testing.T) {
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
+		"", nil,
 		uuid.Nil,
 		"",
 		ai.TTSTypeNone,
@@ -710,6 +717,7 @@ func TestCreate_HistoryFails_CreateSucceeds(t *testing.T) {
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
+		"", nil,
 		uuid.Nil,
 		"Some prompt",
 		ai.TTSTypeNone,
@@ -780,6 +788,7 @@ func TestCreate_WithPrompt_SetsCurrentHistoryIDAtomically(t *testing.T) {
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
+		"", nil,
 		uuid.Nil,
 		"initial system prompt",
 		ai.TTSTypeNone,
@@ -829,6 +838,7 @@ func TestCreate_WithoutPrompt_NoCurrentHistoryID(t *testing.T) {
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
+		"", nil,
 		uuid.Nil,
 		"",
 		ai.TTSTypeNone,
@@ -881,7 +891,7 @@ func TestUpdate_promptChangedCreatesHistoryAndSetsID(t *testing.T) {
 		notifyHandler: mockNotify,
 		utilHandler:   mockUtil,
 	}
-	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
+	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, "", "", nil, uuid.Nil,
 		"new prompt", ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -925,7 +935,7 @@ func TestUpdate_promptClearedResetsID(t *testing.T) {
 		notifyHandler: mockNotify,
 		utilHandler:   mockUtil,
 	}
-	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
+	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, "", "", nil, uuid.Nil,
 		"", ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -959,7 +969,7 @@ func TestUpdate_promptUnchangedDoesNotCreateHistory(t *testing.T) {
 		notifyHandler: mockNotify,
 		utilHandler:   mockUtil,
 	}
-	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
+	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, "", "", nil, uuid.Nil,
 		same, ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -1025,6 +1035,7 @@ func TestCreate_RejectsInsightAIWithNormalTools(t *testing.T) {
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"test-key",
+		"", nil,
 		uuid.Nil,
 		"",
 		ai.TTSTypeNone,
@@ -1069,6 +1080,7 @@ func TestCreate_RejectsNormalAIWithInsightTools(t *testing.T) {
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"test-key",
+		"", nil,
 		uuid.Nil,
 		"",
 		ai.TTSTypeNone,
@@ -1123,6 +1135,7 @@ func TestCreate_AllowsValidInsightAI(t *testing.T) {
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"test-key",
+		"", nil,
 		uuid.Nil,
 		"",
 		ai.TTSTypeNone,
@@ -1194,6 +1207,7 @@ func TestUpdate_RejectsInsightAIWithNormalTools(t *testing.T) {
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"test-key",
+		"", nil,
 		uuid.Nil,
 		"",
 		ai.TTSTypeNone,

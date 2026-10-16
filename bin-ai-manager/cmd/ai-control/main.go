@@ -249,6 +249,8 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		engineModel,
 		map[string]any{}, // engineData - empty for now
 		engineKey,
+		"",       // engineBaseURL - ai-control does not manage customendpoint models
+		nil,      // engineBaseKey
 		uuid.Nil, // ragID - not supported via CLI yet
 		initPrompt,
 		ttsType,
@@ -373,6 +375,8 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		engineModel,
 		map[string]any{}, // engineData - empty for now
 		engineKey,
+		"",       // engineBaseURL - ai-control does not manage customendpoint models
+		nil,      // engineBaseKey
 		uuid.Nil, // ragID - not supported via CLI yet
 		initPrompt,
 		ttsType,
@@ -426,6 +430,9 @@ func engineCheckError(engineModel ai.EngineModel, err error) error {
 	case errors.Is(err, ai.ErrInvalidEngineModel):
 		if strings.HasPrefix(strings.ToLower(strings.TrimSpace(string(engineModel))), ai.EngineModelPrefixCustomOpenRouter) {
 			return fmt.Errorf("invalid engine model: the OpenRouter model ID is not valid")
+		}
+		if strings.HasPrefix(strings.ToLower(strings.TrimSpace(string(engineModel))), ai.CustomEndpointPrefix) {
+			return fmt.Errorf("invalid engine model: the customendpoint model ID is not valid")
 		}
 		return fmt.Errorf("invalid engine model: %s", engineModel)
 	}
@@ -496,7 +503,8 @@ func initAIHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (aihandler.AI
 	// the same logical stream, so both must dual publish or consumers would see gaps.
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	return aihandler.NewAIHandler(reqHandler, notifyHandler, db), nil
+	// The crypto is nil on purpose: ai-control never stores or decrypts an endpoint key.
+	return aihandler.NewAIHandler(reqHandler, notifyHandler, db, nil), nil
 }
 
 func resolveUUID(flagName string, label string) (uuid.UUID, error) {
@@ -513,8 +521,31 @@ func resolveUUID(flagName string, label string) (uuid.UUID, error) {
 	return res, nil
 }
 
+// withoutEndpointCiphertext returns a copy of an AI (or a list of AIs) whose endpoint ciphertext
+// is cleared, so the terminal never shows it.
+func withoutEndpointCiphertext(v any) any {
+	switch t := v.(type) {
+	case *ai.AI:
+		if t == nil {
+			return t
+		}
+		c := *t
+		c.EngineBaseKeyEnc = nil
+		c.EngineBaseKey = ""
+		return &c
+	case []*ai.AI:
+		res := make([]*ai.AI, 0, len(t))
+		for _, a := range t {
+			res = append(res, withoutEndpointCiphertext(a).(*ai.AI))
+		}
+		return res
+	}
+
+	return v
+}
+
 func printJSON(v any) error {
-	data, err := json.MarshalIndent(v, "", "  ")
+	data, err := json.MarshalIndent(withoutEndpointCiphertext(v), "", "  ")
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal JSON")
 	}

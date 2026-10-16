@@ -125,12 +125,15 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		smartTurnEnabled = aicall.AISmartTurnEnabled
 
 		// Resolve team first — if team-backed, per-member tools come from resolvedTeam
-		resolvedTeam, err = h.resolveTeamForPython(se.Ctx, aicall)
+		resolvedTeam, err = h.resolveTeamForPython(se.Ctx, aicall, pc.CustomerID)
 		if err != nil {
 			return fmt.Errorf("could not resolve team for python: %w", err)
 		}
 
 		if resolvedTeam != nil {
+			if teamHasCustomEndpoint(resolvedTeam) {
+				se.CustomEndpoint.Store(true)
+			}
 			// Team pipeline: per-member tools are in resolvedTeam, no top-level tools needed
 			log.WithField("team_id", resolvedTeam.ID).Debugf("Resolved team for python runner")
 		} else {
@@ -213,8 +216,12 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 	// A team session builds every member's LLM from resolvedTeam, so the runner
 	// never reads the top-level key. Do not send it.
 	llmKey := string(se.LLMKey)
+	llmBaseURL := se.LLMBaseURL
+	llmBaseKey := string(se.LLMBaseKey)
 	if resolvedTeam != nil {
 		llmKey = ""
+		llmBaseURL = ""
+		llmBaseKey = ""
 	}
 
 	if errStart := h.pythonRunner.Start(
@@ -232,6 +239,9 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		resolvedTeam,
 		vadConfig,
 		smartTurnEnabled,
+		pc.CustomerID,
+		llmBaseURL,
+		llmBaseKey,
 	); errStart != nil {
 		return errors.Wrapf(errStart, "could not start python client")
 	}
@@ -758,6 +768,11 @@ func (h *pipecatcallHandler) runnerHandlePipelineError(se *pipecatcall.Session, 
 
 	firstSeen := se.MarkPipelineErrorSeen(string(category))
 	logText := truncateForLog(rawError, pipelineErrorLogMaxLen)
+	if se.CustomEndpoint.Load() {
+		// The text of an error of a customer chosen host can carry its response body, the URL or
+		// the key. Only the category is logged.
+		logText = "(details withheld, custom endpoint session)"
+	}
 	if firstSeen {
 		log.WithField("category", category).Warnf("Pipeline error. fatal: %v, error: %s", fatal, logText)
 	} else {

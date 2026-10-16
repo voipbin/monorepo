@@ -174,6 +174,7 @@ func Test_processV1AIsPost(t *testing.T) {
 				tt.expectEngineModel,
 				tt.expectParameter,
 				tt.expectEngineKey,
+				"", (*string)(nil),
 				gomock.Any(), // ragID
 				tt.expectInitPrompt,
 				tt.expectTTSType,
@@ -245,6 +246,7 @@ func Test_processV1AIsIDGet(t *testing.T) {
 			}
 
 			mockAI.EXPECT().Get(gomock.Any(), tt.expectID).Return(tt.responseAI, nil)
+			mockAI.EXPECT().FillEngineBaseKey(tt.responseAI).Return(tt.responseAI)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -395,6 +397,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 				tt.expectEngineModel,
 				tt.expectParameter,
 				tt.expectEngineKey,
+				"", (*string)(nil),
 				gomock.Any(), // ragID
 				tt.expectInitPrompt,
 				tt.expectTTSType,
@@ -569,6 +572,7 @@ func Test_processV1AIsIDPut_McpServerIDsEmptyArrayClears(t *testing.T) {
 	mockAI.EXPECT().Get(gomock.Any(), id).Return(preUpdate, nil)
 	mockAI.EXPECT().Update(
 		gomock.Any(), id, "", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), "",
+		"", (*string)(nil),
 		uuid.Nil, "", ai.TTSType(""), "", ai.STTType(""), "", []tool.ToolName(nil), (*ai.VADConfig)(nil), false, false,
 	).Return(preUpdate, nil)
 
@@ -611,6 +615,7 @@ func Test_processV1AIsIDPut_McpServerIDsOmittedLeavesUntouched(t *testing.T) {
 
 	mockAI.EXPECT().Update(
 		gomock.Any(), id, "renamed", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), "",
+		"", (*string)(nil),
 		uuid.Nil, "", ai.TTSType(""), "", ai.STTType(""), "", []tool.ToolName(nil), (*ai.VADConfig)(nil), false, false,
 	).Return(&ai.AI{Identity: identity.Identity{ID: id}}, nil)
 
@@ -772,6 +777,7 @@ func Test_processV1AIsIDPut_McpServerIDsPassesStoredWhitelist(t *testing.T) {
 
 	mockAI.EXPECT().Update(
 		gomock.Any(), id, "", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), "",
+		"", (*string)(nil),
 		uuid.Nil, "", ai.TTSType(""), "", ai.STTType(""), "", []tool.ToolName(nil), (*ai.VADConfig)(nil), false, false,
 	).Return(preUpdate, nil)
 	mockAI.EXPECT().UpdateMcpServerIDs(gomock.Any(), id, []uuid.UUID{storedServerID}).Return(preUpdate, nil)
@@ -842,6 +848,7 @@ func Test_processV1AIsPost_McpServerIDsValidAccepted(t *testing.T) {
 		ai.EngineModel(""),
 		map[string]any(nil),
 		"",
+		"", (*string)(nil),
 		uuid.Nil, // ragID
 		"",
 		ai.TTSType(""),

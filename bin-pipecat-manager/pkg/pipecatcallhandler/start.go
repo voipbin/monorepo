@@ -3,6 +3,7 @@ package pipecatcallhandler
 import (
 	"context"
 	"fmt"
+	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
@@ -100,7 +101,7 @@ func (h *pipecatcallHandler) startReferenceTypeCall(ctx context.Context, pc *pip
 	}
 
 	// Create session with nil Asterisk connection — Python runner can start immediately
-	se, err := h.SessionCreate(pc, pc.ID, nil, nil, llmRunnerType, llmKey)
+	se, err := h.SessionCreate(pc, pc.ID, nil, nil, llmRunnerType, llmKey, nil)
 	if err != nil {
 		return errors.Wrapf(err, "could not create pipecatcall session")
 	}
@@ -218,10 +219,24 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		}
 	}
 
+	// A custom endpoint is read from the live AI. Team sessions are skipped: each member is
+	// resolved with its own AI in resolveTeamForPython.
+	var endpoint *sessionEndpoint
+	if c.AssistanceType != amaicall.AssistanceTypeTeam {
+		var liveAI *amai.AI
+		if errAI == nil {
+			liveAI = ai
+		}
+		endpoint, err = resolveSessionEndpoint(ctx, pc.LLMType, pc.CustomerID, liveAI)
+		if err != nil {
+			return errors.Wrapf(err, "could not resolve llm type")
+		}
+	}
+
 	switch c.ReferenceType {
 	case amaicall.ReferenceTypeCall:
 		// Create session with nil Asterisk connection — Python runner can start immediately
-		se, err := h.SessionCreate(pc, pc.ID, nil, nil, llmRunnerType, llmKey)
+		se, err := h.SessionCreate(pc, pc.ID, nil, nil, llmRunnerType, llmKey, endpoint)
 		if err != nil {
 			return errors.Wrapf(err, "could not create pipecatcall session")
 		}
@@ -298,7 +313,7 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		return nil
 
 	default:
-		se, err := h.SessionCreate(pc, uuid.Nil, nil, nil, llmRunnerType, llmKey)
+		se, err := h.SessionCreate(pc, uuid.Nil, nil, nil, llmRunnerType, llmKey, endpoint)
 		if err != nil {
 			return errors.Wrapf(err, "could not create pipecatcall session")
 		}

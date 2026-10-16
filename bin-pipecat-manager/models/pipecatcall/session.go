@@ -6,6 +6,8 @@ import (
 	"sync"
 	"sync/atomic"
 
+	amai "monorepo/bin-ai-manager/models/ai"
+
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
 )
@@ -34,6 +36,16 @@ type Session struct {
 	// LLMRunnerType is the resolved type handed to the python runner (never pc.LLMType).
 	LLMRunnerType string `json:"-"`
 	LLMKey        string `json:"-"`
+
+	// Customer specified endpoint (customendpoint. models, VOIP-1599). The URL and key reach the
+	// runner through the separate request struct of pythonrunner.go; the redacted type keeps them
+	// out of fmt based output.
+	LLMBaseURL string              `json:"-"`
+	LLMBaseKey amai.RedactedString `json:"-"`
+
+	// CustomEndpoint is set when the session's own type or the type of any team member is a
+	// customendpoint. model. The websocket loop logs only the error category for such a session.
+	CustomEndpoint atomic.Bool `json:"-"`
 
 	// InReplyToMessageID correlation (VOIP-1234 §4-1): prevents cross-talk when
 	// an aicall is reused for a rapid sequence of send-text requests (e.g. an

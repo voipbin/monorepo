@@ -222,18 +222,18 @@ func (mr *MockServiceHandlerMockRecorder) AIBuilderStatus(ctx, a any) *gomock.Ca
 }
 
 // AICreate mocks base method.
-func (m *MockServiceHandler) AICreate(ctx context.Context, a *auth.AuthIdentity, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, mcpServerIDs *[]uuid.UUID, autoAICallAuditEnabled bool) (*ai.WebhookMessage, error) {
+func (m *MockServiceHandler) AICreate(ctx context.Context, a *auth.AuthIdentity, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey, engineBaseURL string, engineBaseKey *string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, mcpServerIDs *[]uuid.UUID, autoAICallAuditEnabled bool) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AICreate", ctx, a, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
+	ret := m.ctrl.Call(m, "AICreate", ctx, a, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 	ret0, _ := ret[0].(*ai.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AICreate indicates an expected call of AICreate.
-func (mr *MockServiceHandlerMockRecorder) AICreate(ctx, a, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) AICreate(ctx, a, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AICreate", reflect.TypeOf((*MockServiceHandler)(nil).AICreate), ctx, a, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AICreate", reflect.TypeOf((*MockServiceHandler)(nil).AICreate), ctx, a, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 }
 
 // AIDelete mocks base method.
@@ -522,18 +522,18 @@ func (mr *MockServiceHandlerMockRecorder) AISummaryRegenerate(ctx, a, id, langua
 }
 
 // AIUpdate mocks base method.
-func (m *MockServiceHandler) AIUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, mcpServerIDs *[]uuid.UUID, autoAICallAuditEnabled bool) (*ai.WebhookMessage, error) {
+func (m *MockServiceHandler) AIUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey, engineBaseURL string, engineBaseKey *string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, mcpServerIDs *[]uuid.UUID, autoAICallAuditEnabled bool) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIUpdate", ctx, a, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
+	ret := m.ctrl.Call(m, "AIUpdate", ctx, a, id, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 	ret0, _ := ret[0].(*ai.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIUpdate indicates an expected call of AIUpdate.
-func (mr *MockServiceHandlerMockRecorder) AIUpdate(ctx, a, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) AIUpdate(ctx, a, id, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIUpdate", reflect.TypeOf((*MockServiceHandler)(nil).AIUpdate), ctx, a, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIUpdate", reflect.TypeOf((*MockServiceHandler)(nil).AIUpdate), ctx, a, id, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 }
 
 // AIcallCreate mocks base method.

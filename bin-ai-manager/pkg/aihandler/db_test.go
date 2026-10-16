@@ -131,7 +131,7 @@ func Test_Create(t *testing.T) {
 			// prompt history recorded (best-effort) using the pre-generated history UUID
 			mockDB.EXPECT().AIPromptHistoryCreate(ctx, gomock.Any()).Return(nil)
 
-			res, err := h.Create(ctx, tt.customerID, tt.aiName, tt.detail, ai.TypeNormal, tt.engineModel, tt.parameter, tt.engineKey, uuid.Nil, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, "", nil, nil, false, false)
+			res, err := h.Create(ctx, tt.customerID, tt.aiName, tt.detail, ai.TypeNormal, tt.engineModel, tt.parameter, tt.engineKey, "", nil, uuid.Nil, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, "", nil, nil, false, false)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -402,6 +402,7 @@ func Test_Update(t *testing.T) {
 				tt.engineModel,
 				tt.parameter,
 				tt.engineKey,
+				"", nil,
 				uuid.Nil,
 				tt.initPrompt,
 				tt.ttsType,

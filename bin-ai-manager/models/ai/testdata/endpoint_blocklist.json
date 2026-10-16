@@ -1,0 +1,669 @@
+{
+  "v4": [
+    "0.0.0.0/8",
+    "10.0.0.0/8",
+    "172.16.0.0/12",
+    "192.168.0.0/16",
+    "127.0.0.0/8",
+    "169.254.0.0/16",
+    "100.64.0.0/10",
+    "198.18.0.0/15",
+    "192.0.0.0/24",
+    "224.0.0.0/4",
+    "240.0.0.0/4",
+    "192.0.2.0/24",
+    "198.51.100.0/24",
+    "203.0.113.0/24",
+    "192.88.99.0/24",
+    "192.175.48.0/24"
+  ],
+  "v6": [
+    "::/128",
+    "::1/128",
+    "fc00::/7",
+    "fe80::/10",
+    "ff00::/8",
+    "64:ff9b:1::/48",
+    "100::/64",
+    "::/96",
+    "::ffff:0:0:0/96",
+    "fec0::/10",
+    "2001::/32",
+    "2001:db8::/32",
+    "2001:2::/48",
+    "3fff::/20"
+  ],
+  "nat64": [
+    "64:ff9b::/96"
+  ],
+  "cases": [
+    {
+      "addr": "0.0.0.0",
+      "blocked": true
+    },
+    {
+      "addr": "0.255.255.255",
+      "blocked": true
+    },
+    {
+      "addr": "1.0.0.0",
+      "blocked": false
+    },
+    {
+      "addr": "10.0.0.0",
+      "blocked": true
+    },
+    {
+      "addr": "10.255.255.255",
+      "blocked": true
+    },
+    {
+      "addr": "9.255.255.255",
+      "blocked": false
+    },
+    {
+      "addr": "11.0.0.0",
+      "blocked": false
+    },
+    {
+      "addr": "172.16.0.0",
+      "blocked": true
+    },
+    {
+      "addr": "172.31.255.255",
+      "blocked": true
+    },
+    {
+      "addr": "172.15.255.255",
+      "blocked": false
+    },
+    {
+      "addr": "172.32.0.0",
+      "blocked": false
+    },
+    {
+      "addr": "192.168.0.0",
+      "blocked": true
+    },
+    {
+      "addr": "192.168.255.255",
+      "blocked": true
+    },
+    {
+      "addr": "192.167.255.255",
+      "blocked": false
+    },
+    {
+      "addr": "192.169.0.0",
+      "blocked": false
+    },
+    {
+      "addr": "127.0.0.0",
+      "blocked": true
+    },
+    {
+      "addr": "127.255.255.255",
+      "blocked": true
+    },
+    {
+      "addr": "126.255.255.255",
+      "blocked": false
+    },
+    {
+      "addr": "128.0.0.0",
+      "blocked": false
+    },
+    {
+      "addr": "169.254.0.0",
+      "blocked": true
+    },
+    {
+      "addr": "169.254.255.255",
+      "blocked": true
+    },
+    {
+      "addr": "169.253.255.255",
+      "blocked": false
+    },
+    {
+      "addr": "169.255.0.0",
+      "blocked": false
+    },
+    {
+      "addr": "100.64.0.0",
+      "blocked": true
+    },
+    {
+      "addr": "100.127.255.255",
+      "blocked": true
+    },
+    {
+      "addr": "100.63.255.255",
+      "blocked": false
+    },
+    {
+      "addr": "100.128.0.0",
+      "blocked": false
+    },
+    {
+      "addr": "198.18.0.0",
+      "blocked": true
+    },
+    {
+      "addr": "198.19.255.255",
+      "blocked": true
+    },
+    {
+      "addr": "198.17.255.255",
+      "blocked": false
+    },
+    {
+      "addr": "198.20.0.0",
+      "blocked": false
+    },
+    {
+      "addr": "192.0.0.0",
+      "blocked": true
+    },
+    {
+      "addr": "192.0.0.255",
+      "blocked": true
+    },
+    {
+      "addr": "191.255.255.255",
+      "blocked": false
+    },
+    {
+      "addr": "192.0.1.0",
+      "blocked": false
+    },
+    {
+      "addr": "224.0.0.0",
+      "blocked": true
+    },
+    {
+      "addr": "239.255.255.255",
+      "blocked": true
+    },
+    {
+      "addr": "223.255.255.255",
+      "blocked": false
+    },
+    {
+      "addr": "240.0.0.0",
+      "blocked": true
+    },
+    {
+      "addr": "255.255.255.255",
+      "blocked": true
+    },
+    {
+      "addr": "192.0.2.0",
+      "blocked": true
+    },
+    {
+      "addr": "192.0.2.255",
+      "blocked": true
+    },
+    {
+      "addr": "192.0.1.255",
+      "blocked": false
+    },
+    {
+      "addr": "192.0.3.0",
+      "blocked": false
+    },
+    {
+      "addr": "198.51.100.0",
+      "blocked": true
+    },
+    {
+      "addr": "198.51.100.255",
+      "blocked": true
+    },
+    {
+      "addr": "198.51.99.255",
+      "blocked": false
+    },
+    {
+      "addr": "198.51.101.0",
+      "blocked": false
+    },
+    {
+      "addr": "203.0.113.0",
+      "blocked": true
+    },
+    {
+      "addr": "203.0.113.255",
+      "blocked": true
+    },
+    {
+      "addr": "203.0.112.255",
+      "blocked": false
+    },
+    {
+      "addr": "203.0.114.0",
+      "blocked": false
+    },
+    {
+      "addr": "192.88.99.0",
+      "blocked": true
+    },
+    {
+      "addr": "192.88.99.255",
+      "blocked": true
+    },
+    {
+      "addr": "192.88.98.255",
+      "blocked": false
+    },
+    {
+      "addr": "192.88.100.0",
+      "blocked": false
+    },
+    {
+      "addr": "192.175.48.0",
+      "blocked": true
+    },
+    {
+      "addr": "192.175.48.255",
+      "blocked": true
+    },
+    {
+      "addr": "192.175.47.255",
+      "blocked": false
+    },
+    {
+      "addr": "192.175.49.0",
+      "blocked": false
+    },
+    {
+      "addr": "8.8.8.8",
+      "blocked": false
+    },
+    {
+      "addr": "1.1.1.1",
+      "blocked": false
+    },
+    {
+      "addr": "93.184.216.34",
+      "blocked": false
+    },
+    {
+      "addr": "192.0.1.1",
+      "blocked": false
+    },
+    {
+      "addr": "192.0.3.1",
+      "blocked": false
+    },
+    {
+      "addr": "127.1.2.3",
+      "blocked": true
+    },
+    {
+      "addr": "169.254.169.254",
+      "blocked": true
+    },
+    {
+      "addr": "::",
+      "blocked": true
+    },
+    {
+      "addr": "::1",
+      "blocked": true
+    },
+    {
+      "addr": "fc00::",
+      "blocked": true
+    },
+    {
+      "addr": "fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+      "blocked": true
+    },
+    {
+      "addr": "fe80::",
+      "blocked": true
+    },
+    {
+      "addr": "febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+      "blocked": true
+    },
+    {
+      "addr": "ff00::",
+      "blocked": true
+    },
+    {
+      "addr": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+      "blocked": true
+    },
+    {
+      "addr": "64:ff9b:1::",
+      "blocked": true
+    },
+    {
+      "addr": "64:ff9b:1:ffff:ffff:ffff:ffff:ffff",
+      "blocked": true
+    },
+    {
+      "addr": "100::",
+      "blocked": true
+    },
+    {
+      "addr": "100::ffff:ffff:ffff:ffff",
+      "blocked": true
+    },
+    {
+      "addr": "::ffff:ffff",
+      "blocked": true
+    },
+    {
+      "addr": "::ffff:0:0:0",
+      "blocked": true
+    },
+    {
+      "addr": "::ffff:0:ffff:ffff",
+      "blocked": true
+    },
+    {
+      "addr": "fec0::",
+      "blocked": true
+    },
+    {
+      "addr": "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+      "blocked": true
+    },
+    {
+      "addr": "2001::",
+      "blocked": true
+    },
+    {
+      "addr": "2001:0:ffff:ffff:ffff:ffff:ffff:ffff",
+      "blocked": true
+    },
+    {
+      "addr": "2001:db8::",
+      "blocked": true
+    },
+    {
+      "addr": "2001:db8:ffff:ffff:ffff:ffff:ffff:ffff",
+      "blocked": true
+    },
+    {
+      "addr": "2001:2::",
+      "blocked": true
+    },
+    {
+      "addr": "2001:2:0:ffff:ffff:ffff:ffff:ffff",
+      "blocked": true
+    },
+    {
+      "addr": "3fff::",
+      "blocked": true
+    },
+    {
+      "addr": "3fff:fff:ffff:ffff:ffff:ffff:ffff:ffff",
+      "blocked": true
+    },
+    {
+      "addr": "2606:4700:4700::1111",
+      "blocked": false
+    },
+    {
+      "addr": "2001:4860:4860::8888",
+      "blocked": false
+    },
+    {
+      "addr": "2a00:1450:4009:81f::200e",
+      "blocked": false
+    },
+    {
+      "addr": "2001:1::1",
+      "blocked": false
+    },
+    {
+      "addr": "2001:3::1",
+      "blocked": false
+    },
+    {
+      "addr": "2001:2:0:1::1",
+      "blocked": true
+    },
+    {
+      "addr": "2001:2:1::1",
+      "blocked": false
+    },
+    {
+      "addr": "2001:0:1::1",
+      "blocked": true
+    },
+    {
+      "addr": "2001:1:ffff::1",
+      "blocked": false
+    },
+    {
+      "addr": "fe7f::1",
+      "blocked": false
+    },
+    {
+      "addr": "fec0::1",
+      "blocked": true
+    },
+    {
+      "addr": "feff::1",
+      "blocked": true
+    },
+    {
+      "addr": "ff02::1",
+      "blocked": true
+    },
+    {
+      "addr": "fbff::1",
+      "blocked": false
+    },
+    {
+      "addr": "fc00::1",
+      "blocked": true
+    },
+    {
+      "addr": "fdff::1",
+      "blocked": true
+    },
+    {
+      "addr": "100:0:0:1::1",
+      "blocked": false
+    },
+    {
+      "addr": "64:ff9b:1::1",
+      "blocked": true
+    },
+    {
+      "addr": "64:ff9b:2::1",
+      "blocked": false
+    },
+    {
+      "addr": "3fff:fff::1",
+      "blocked": true
+    },
+    {
+      "addr": "3fff:1000::1",
+      "blocked": false
+    },
+    {
+      "addr": "4000::1",
+      "blocked": false
+    },
+    {
+      "addr": "1::1",
+      "blocked": false
+    },
+    {
+      "addr": "::2",
+      "blocked": true
+    },
+    {
+      "addr": "::1:0:0",
+      "blocked": false
+    },
+    {
+      "addr": "2001:db8::1",
+      "blocked": true
+    },
+    {
+      "addr": "2001:db9::1",
+      "blocked": false
+    },
+    {
+      "addr": "::ffff:8.8.8.8",
+      "blocked": false
+    },
+    {
+      "addr": "::ffff:10.0.0.1",
+      "blocked": true
+    },
+    {
+      "addr": "::ffff:127.0.0.1",
+      "blocked": true
+    },
+    {
+      "addr": "::ffff:169.254.169.254",
+      "blocked": true
+    },
+    {
+      "addr": "::ffff:192.168.1.1",
+      "blocked": true
+    },
+    {
+      "addr": "::ffff:0.0.0.0",
+      "blocked": true
+    },
+    {
+      "addr": "::ffff:93.184.216.34",
+      "blocked": false
+    },
+    {
+      "addr": "::ffff:808:808",
+      "blocked": false
+    },
+    {
+      "addr": "::ffff:a00:1",
+      "blocked": true
+    },
+    {
+      "addr": "64:ff9b::8.8.8.8",
+      "blocked": false
+    },
+    {
+      "addr": "64:ff9b::808:808",
+      "blocked": false
+    },
+    {
+      "addr": "64:ff9b::a00:1",
+      "blocked": true
+    },
+    {
+      "addr": "64:ff9b::7f00:1",
+      "blocked": true
+    },
+    {
+      "addr": "64:ff9b::a9fe:a9fe",
+      "blocked": true
+    },
+    {
+      "addr": "64:ff9b::c0a8:101",
+      "blocked": true
+    },
+    {
+      "addr": "64:ff9b::",
+      "blocked": true
+    },
+    {
+      "addr": "2002:808:808::1",
+      "blocked": false
+    },
+    {
+      "addr": "2002:a00:1::1",
+      "blocked": true
+    },
+    {
+      "addr": "2002:7f00:1::1",
+      "blocked": true
+    },
+    {
+      "addr": "2002:a9fe:a9fe::1",
+      "blocked": true
+    },
+    {
+      "addr": "2002:c0a8:101::",
+      "blocked": true
+    },
+    {
+      "addr": "2002:5db8:d822::1",
+      "blocked": false
+    },
+    {
+      "addr": "fe80::1%eth0",
+      "blocked": true
+    },
+    {
+      "addr": "2606:4700:4700::1111%eth0",
+      "blocked": false
+    },
+    {
+      "addr": "::1%lo",
+      "blocked": true
+    },
+    {
+      "addr": "",
+      "blocked": true
+    },
+    {
+      "addr": "not-an-ip",
+      "blocked": true
+    },
+    {
+      "addr": "1.2.3",
+      "blocked": true
+    },
+    {
+      "addr": "1.2.3.4.5",
+      "blocked": true
+    },
+    {
+      "addr": "256.1.1.1",
+      "blocked": true
+    },
+    {
+      "addr": "[::1]",
+      "blocked": true
+    },
+    {
+      "addr": "0x7f.1",
+      "blocked": true
+    },
+    {
+      "addr": "127.1",
+      "blocked": true
+    },
+    {
+      "addr": "0177.0.0.1",
+      "blocked": true
+    },
+    {
+      "addr": "::g",
+      "blocked": true
+    },
+    {
+      "addr": "1.2.3.4/8",
+      "blocked": true
+    },
+    {
+      "addr": " 8.8.8.8",
+      "blocked": true
+    },
+    {
+      "addr": "8.8.8.8 ",
+      "blocked": true
+    }
+  ]
+}

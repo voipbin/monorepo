@@ -50,6 +50,11 @@ func (h *server) PostAis(c *gin.Context) {
 		ragID = uuid.FromStringOrNil(*req.RagId)
 	}
 
+	var engineBaseURL string
+	if req.EngineBaseUrl != nil {
+		engineBaseURL = *req.EngineBaseUrl
+	}
+
 	var sttLanguage string
 	if req.SttLanguage != nil {
 		sttLanguage = *req.SttLanguage
@@ -89,6 +94,8 @@ func (h *server) PostAis(c *gin.Context) {
 		amai.EngineModel(req.EngineModel),
 		req.Parameter,
 		req.EngineKey,
+		engineBaseURL,
+		req.EngineBaseKey,
 		ragID,
 		req.InitPrompt,
 		amai.TTSType(req.TtsType),
@@ -269,6 +276,11 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		ragID = uuid.FromStringOrNil(*req.RagId)
 	}
 
+	var engineBaseURL string
+	if req.EngineBaseUrl != nil {
+		engineBaseURL = *req.EngineBaseUrl
+	}
+
 	var sttLanguage string
 	if req.SttLanguage != nil {
 		sttLanguage = *req.SttLanguage
@@ -309,6 +321,8 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		amai.EngineModel(req.EngineModel),
 		req.Parameter,
 		req.EngineKey,
+		engineBaseURL,
+		req.EngineBaseKey,
 		ragID,
 		req.InitPrompt,
 		amai.TTSType(req.TtsType),

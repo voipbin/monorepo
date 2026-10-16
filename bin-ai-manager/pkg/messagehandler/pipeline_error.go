@@ -28,6 +28,11 @@ const (
 	pipelineErrorNoticeScanSize = 50
 )
 
+// errorCategoryConnection is the wire value of the pipecat-manager category for a failure to
+// reach the LLM server (VOIP-1599). It is spelled here so this package builds independently of the
+// order in which the pipecat-manager constant lands; an unknown category is recorded as unknown.
+const errorCategoryConnection = pmmessage.ErrorCategory("connection")
+
 // pipelineErrorNoticeText is the fixed, plain-text, customer-facing sentence per category. The
 // RTVI error does not say which service (LLM, STT or TTS) failed, nor whether the key was the
 // customer's or the platform's, so the wording names the failure class without blaming a key.
@@ -36,6 +41,7 @@ var pipelineErrorNoticeText = map[pmmessage.ErrorCategory]string{
 	pmmessage.ErrorCategoryRateLimited:    "An AI service provider rejected the request due to a rate limit or quota. Try again later.",
 	pmmessage.ErrorCategoryTimeout:        "The AI language model did not respond in time.",
 	pmmessage.ErrorCategoryUnknown:        "An AI service provider returned an error.",
+	errorCategoryConnection:               "The AI language model could not be reached. If this AI uses a custom base URL, verify that the address is correct and reachable over HTTPS.",
 }
 
 // PipelineErrorNotice is the JSON content of a pipeline_error notification message.

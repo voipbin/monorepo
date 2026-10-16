@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -278,6 +279,8 @@ func Test_PostAis(t *testing.T) {
 				tt.expectedEngineModel,
 				tt.expectedParameter,
 				tt.expectedEngineKey,
+				"",
+				(*string)(nil),
 				tt.expectedRagID,
 				tt.expectedInitPrompt,
 				tt.expectedTTSType,
@@ -344,6 +347,8 @@ func Test_PutAisId_McpServerIDsEmptyArrayClears(t *testing.T) {
 		amai.EngineModel(""),
 		map[string]any(nil),
 		"",
+		"",
+		(*string)(nil),
 		uuid.Nil,
 		"",
 		amai.TTSType(""),
@@ -401,6 +406,8 @@ func Test_PutAisId_McpServerIDsOmittedLeavesUntouched(t *testing.T) {
 		amai.EngineModel(""),
 		map[string]any(nil),
 		"",
+		"",
+		(*string)(nil),
 		uuid.Nil,
 		"",
 		amai.TTSType(""),
@@ -893,6 +900,8 @@ func Test_PutAisId(t *testing.T) {
 				tt.epxectedEngineModel,
 				tt.expectedParameter,
 				tt.expectedEngineKey,
+				"",
+				(*string)(nil),
 				tt.expectedRagID,
 				tt.expectedInitPrompt,
 				tt.expectedTTSType,
@@ -1035,5 +1044,159 @@ func Test_PostAisIdActivateInsight(t *testing.T) {
 	}
 	if !strings.Contains(w.Body.String(), `"is_insight_active":true`) {
 		t.Errorf("response body must expose is_insight_active. got: %s", w.Body.String())
+	}
+}
+
+// Test_PutAisId_EngineBase pins the three states of engine_base_key and the
+// URL on the way from the HTTP body to the servicehandler: omitted and JSON
+// null both arrive as nil (keep), an empty string arrives as a pointer to ""
+// (delete), a value arrives as a pointer to the value.
+func Test_PutAisId_EngineBase(t *testing.T) {
+	tests := []struct {
+		name string
+		body string
+
+		expectURL string
+		expectKey *string
+	}{
+		{"omitted", `{"engine_base_url":"https://llm.example.com/v1"}`, "https://llm.example.com/v1", nil},
+		{"null", `{"engine_base_url":"https://llm.example.com/v1","engine_base_key":null}`, "https://llm.example.com/v1", nil},
+		{"empty string", `{"engine_base_url":"https://llm.example.com/v1","engine_base_key":""}`, "https://llm.example.com/v1", strPtr("")},
+		{"value", `{"engine_base_url":"https://llm.example.com/v1","engine_base_key":"k-1"}`, "https://llm.example.com/v1", strPtr("k-1")},
+		{"no url no key", `{"name":"x"}`, "", nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{serviceHandler: mockSvc}
+
+			agent := auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")},
+			})
+			id := uuid.FromStringOrNil("dbceb866-4506-4e86-9851-a82d4d3ced88")
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+			r.Use(func(c *gin.Context) { c.Set("auth_identity", agent) })
+			openapi_server.RegisterHandlers(r, h)
+
+			var gotURL string
+			var gotKey *string
+			ret := &amai.WebhookMessage{Identity: commonidentity.Identity{ID: id}}
+			mockSvc.EXPECT().AIUpdate(
+				gomock.Any(), agent, id,
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+			).DoAndReturn(func(_ context.Context, _ *auth.AuthIdentity, _ uuid.UUID, _, _ string, _ amai.Type, _ amai.EngineModel, _ map[string]any, _ string, url string, key *string, _ uuid.UUID, _ string, _ amai.TTSType, _ string, _ amai.STTType, _ string, _ []amtool.ToolName, _ *[]uuid.UUID, _ bool) (*amai.WebhookMessage, error) {
+				gotURL, gotKey = url, key
+				return ret, nil
+			})
+
+			req, _ := http.NewRequest("PUT", "/ais/"+id.String(), bytes.NewBufferString(tt.body))
+			req.Header.Set("Content-Type", "application/json")
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Fatalf("Wrong code. got: %d, body: %s", w.Code, w.Body.String())
+			}
+
+			if gotURL != tt.expectURL {
+				t.Errorf("Wrong url. expect: %q, got: %q", tt.expectURL, gotURL)
+			}
+			if (gotKey == nil) != (tt.expectKey == nil) || (gotKey != nil && *gotKey != *tt.expectKey) {
+				t.Errorf("Wrong key. expect: %v, got: %v", tt.expectKey, gotKey)
+			}
+		})
+	}
+}
+
+// Test_PostAis_EngineBase checks the same fields on create.
+func Test_PostAis_EngineBase(t *testing.T) {
+	tests := []struct {
+		name      string
+		body      string
+		expectKey *string
+	}{
+		{"omitted", `{"engine_base_url":"https://a.example.com"}`, nil},
+		{"null", `{"engine_base_url":"https://a.example.com","engine_base_key":null}`, nil},
+		{"empty string", `{"engine_base_url":"https://a.example.com","engine_base_key":""}`, strPtr("")},
+		{"value", `{"engine_base_url":"https://a.example.com","engine_base_key":"k-1"}`, strPtr("k-1")},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{serviceHandler: mockSvc}
+
+			agent := auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")},
+			})
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+			r.Use(func(c *gin.Context) { c.Set("auth_identity", agent) })
+			openapi_server.RegisterHandlers(r, h)
+
+			var gotURL string
+			var gotKey *string
+			mockSvc.EXPECT().AICreate(
+				gomock.Any(), agent,
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+			).DoAndReturn(func(_ context.Context, _ *auth.AuthIdentity, _, _ string, _ amai.Type, _ amai.EngineModel, _ map[string]any, _ string, url string, key *string, _ uuid.UUID, _ string, _ amai.TTSType, _ string, _ amai.STTType, _ string, _ []amtool.ToolName, _ *[]uuid.UUID, _ bool) (*amai.WebhookMessage, error) {
+				gotURL, gotKey = url, key
+				return &amai.WebhookMessage{}, nil
+			})
+
+			req, _ := http.NewRequest("POST", "/ais", bytes.NewBufferString(tt.body))
+			req.Header.Set("Content-Type", "application/json")
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Fatalf("Wrong code. got: %d, body: %s", w.Code, w.Body.String())
+			}
+
+			if gotURL != "https://a.example.com" {
+				t.Errorf("Wrong url. got: %q", gotURL)
+			}
+			if (gotKey == nil) != (tt.expectKey == nil) || (gotKey != nil && *gotKey != *tt.expectKey) {
+				t.Errorf("Wrong key. expect: %v, got: %v", tt.expectKey, gotKey)
+			}
+		})
 	}
 }

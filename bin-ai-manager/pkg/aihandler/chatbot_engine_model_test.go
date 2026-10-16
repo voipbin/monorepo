@@ -56,7 +56,7 @@ func Test_Create_EngineModelPolicy(t *testing.T) {
 
 			h := &aiHandler{db: mockDB, reqHandler: mockReq, notifyHandler: mockNotify, utilHandler: utilhandler.NewUtilHandler()}
 
-			_, err := h.Create(context.Background(), uuid.Must(uuid.NewV4()), "n", "", ai.TypeNormal, tt.engineModel, nil, tt.engineKey, uuid.Nil, "prompt",
+			_, err := h.Create(context.Background(), uuid.Must(uuid.NewV4()), "n", "", ai.TypeNormal, tt.engineModel, nil, tt.engineKey, "", nil, uuid.Nil, "prompt",
 				ai.TTSTypeNone, "", ai.STTTypeNone, "", []tool.ToolName{}, nil, false, false)
 			if (err != nil) != tt.wantError {
 				t.Errorf("Create() error = %v, wantError %v", err, tt.wantError)
@@ -114,7 +114,7 @@ func Test_Update_EngineModelValidatedOnlyOnChange(t *testing.T) {
 
 			h := &aiHandler{db: mockDB, notifyHandler: mockNotify, utilHandler: utilhandler.NewUtilHandler()}
 
-			_, err := h.Update(context.Background(), stored.ID, "n", "", ai.TypeNormal, tt.requested, nil, tt.engineKey, uuid.Nil, "prompt",
+			_, err := h.Update(context.Background(), stored.ID, "n", "", ai.TypeNormal, tt.requested, nil, tt.engineKey, "", nil, uuid.Nil, "prompt",
 				ai.TTSTypeNone, "", ai.STTTypeNone, "", []tool.ToolName{}, nil, false, false)
 			if (err != nil) != tt.wantError {
 				t.Errorf("Update() error = %v, wantError %v", err, tt.wantError)
