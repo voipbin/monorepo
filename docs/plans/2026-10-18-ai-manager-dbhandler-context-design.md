@@ -11,19 +11,22 @@
 ## 취소 부작용 판단
 - 캐시 갱신 defer(ai.go AIActivateInsight, aipromptproposal.go AIAcceptProposal)의 context.Background() 는 의도(커밋 뒤 캐시 갱신이 취소로 건너뛰지 않도록)이므로 그대로 유지.
 - BeginTx 는 이미 ctx 사용. Rollback 은 ctx 인자 없는 API 이며 database/sql 이 ctx 취소 시 tx 를 자동 롤백. 변경 없음.
-- public 경로의 aicallUpdateToCache(ctx) 등은 redis 호출에 이미 ctx 사용. 취소 시 DB 재조회도 함께 중단되어 일관됨(캐시 미갱신은 TTL 과 다음 조회가 복구). 쓰기 자체는 Exec 가 이미 끝난 뒤라 영향 없음.
-- 쓰기 Exec 도중 취소되면 드라이버가 쿼리를 중단하고 에러를 반환(기존에는 완료까지 대기). 호출부는 이미 에러 경로를 처리.
+- 쓰기 직후의 *UpdateToCache(ctx)(Create/Update/Delete류 공통)는 DB 재조회와 redis Set 이 모두 ctx 에 묶인다. ctx 가 만료/취소되면 갱신이 건너뛰어져 캐시가 stale 로 남을 수 있고(에러는 _ = 로 무시), Delete 후에는 삭제된 행이 캐시 TTL 24h(cachehandler/handler.go:37) 동안 캐시 우선 조회(AIcallGet 등)에 남고, 캐시 우선 AIcallGet 으로 읽은 뒤 FieldMetadata 전체를 다시 쓰는 경로(UpdateListenState, stopListening, persistToolMap)가 stale 스냅샷을 쓸 수 있다. 다만 변경 전에도 만료된 ctx 에서는 redis Set(ctx)가 실패해 같은 stale 결과였으므로 새로 생기는 결과 종류가 아니고(DB 재조회 단계가 ctx 에 묶이며 창이 약간 넓어질 뿐), 쓰기 후 갱신을 WithoutCancel 로 분리하는 것은 범위 확대이므로 하지 않고 수용한다. 분리가 필요하면 별도 후속 판단.
+- 쓰기 Exec 도중 취소되면 드라이버가 에러를 반환하지만 서버에는 이미 반영됐을 수 있음(결과 모호). 변경 전에는 완료까지 대기해 성공/실패가 확정됐음. 모호한 경로: Create류(AIcallCreate 등)와 rows-affected 판정(AIcallUpdateIfActive, SummaryUpdateStatusDoneIfNotDone). 호출부는 에러를 실패로 반환한다(AIcallCreate 호출처 aicallhandler/db.go:83,158). RPC 경로는 context.Background() 기반이라 이 모호성은 위 deadline 경로나 호출자 ctx 가 실제로 만료된 경우에만 발생하고, 그 경우 호출자는 이미 결과를 포기한 상태이므로 수용(자동 재시도 로직은 이 변경으로 추가하지 않음).
 
 - AIActivateInsight: 커밋 뒤 두 번의 aiGetFromDB 는 WithTimeout(WithoutCancel(ctx), 5s) 로 분리. 커밋된 활성화가 취소 때문에 에러로 보이면 호출부가 update 이벤트 발행을 건너뛰기 때문.
-- aicallhandler.rollbackListenState: 이 함수는 만료된 deadline ctx 에서도 호출되고 결과가 버려진다. DB 읽기와 쓰기를 WithTimeout(WithoutCancel(ctx), 기존 락 해제 타임아웃) 으로 분리(같은 파일의 락 해제 패턴). 변경 전에는 DB 가 ctx 를 무시해 롤백이 성공했으므로 동작 보존. 이 파일 변경은 dbhandler 변경의 직접 결과이므로 범위 안.
-- 호출 경로 조사: listenhandler, subscribehandler 는 context.Background() 를 사용해 RPC 취소가 전파되지 않음. 파생 WithTimeout 은 start.go 5s fetchCtx, mcp 2s/mcpCtx 등 읽기 전용(best-effort)뿐.
+- aicallhandler.rollbackListenState: 이 함수는 만료된 deadline ctx 에서도 호출되고 결과가 버려진다. DB 읽기와 쓰기를 WithTimeout(WithoutCancel(ctx), AIcallListenStartLockReleaseTimeoutSeconds) 으로 분리(같은 파일의 락 해제 패턴). 읽기와 쓰기가 한 예산을 공유하며 기본 3초(config/main.go) 의존, 설정 0 이면 즉시 만료되므로 운영 설정이 0이 아님을 전제. 변경 전에는 DB 가 ctx 를 무시해 DB 롤백이 성공했으므로 DB 부분의 동작을 보존(ListenAIcallIDRemove(ctx)는 전과 같이 만료 ctx 에서 실패). 이 파일 변경은 dbhandler 변경의 직접 결과이므로 범위 안.
+- 호출 경로 조사: listenhandler, subscribehandler 는 context.Background() 를 사용해 RPC 취소가 전파되지 않음. deadline 을 가진 파생 ctx 아래의 DB 호출은 다음과 같고, 변경 후 만료 시 중단된다(전에는 DB 가 ctx 를 무시). 해당 timeout 들은 후처리가 무한히 계속되지 않도록 묶는 목적이므로(tool.go B25 주석) 의도된 동작으로 수용하고 분리하지 않는다.
+  - 쓰기 포함: listen_trigger.go:72 runListenStart(AIcallListenEnsureGoroutineTimeoutSeconds) 안의 UpdateListenState(:531 선쓰기, :507 재사용, :591 승자 채택)와 AIcallGetSkipCache(:479). :531, :591 실패는 rollbackListenState 로 보정되고 :507 실패는 롤백 없이 "failed" 반환(DB 반영 뒤 redis SADD 가 없는 상태가 남을 수 있으며 기존 SADD 실패 경로와 같은 종류). listen.go:547,561 stopListening 의 AIcallGet + AIcallUpdateNoTouchTMUpdate(2분 turnCtx 안, 턴 초반 호출, redis 호출도 같은 ctx 라 위험 낮음).
+  - 읽기만: listen.go:126 messageHandler.List 등 turnCtx 읽기, tool.go:178 mcpCtx 아래 resolveActiveAIForMcp 와 mcpServerHandler.Get(fillSuccess/fillFailed 는 메모리 내 함수이고 결과 메시지 toolCreateResultMessage 는 바깥 ctx 로 생성), mcp_tool.go:85 discoverCtx, start.go:103 5s fetchCtx, aiaudithandler/main.go:194 geminiCtx 의 MessageList, aipromptproposalhandler/main.go:162 의 loadAuditBlocks(최종 쓰기는 별도 writeCtx). 만료 시 해당 작업이 실패 처리됨.
 
 ## 범위 밖
 goroutine 과 context.Background 8곳, 거대 함수 분리, %w 전환, 다른 서비스, 마이그레이션.
 
 ## 검증
-- noctx 임시 설정으로 35건 -> 0건, 표준 lint 0건.
+- noctx 임시 설정으로 non-test 코드 35건 -> 0건(_test.go 12건은 남으며 표준 lint 가 테스트를 제외), 표준 lint 0건.
 - 신규 rollback_listen_ctx_test.go: 만료된 ctx 에서도 롤백이 살아있는 ctx 로 DB 호출(수정 전 실패 확인).
 - 신규 ctxcancel_test.go: 취소된 ctx 로 read/write/list 가 중단됨(변경 전 코드에서 실패 확인).
 - go mod tidy/vendor/generate/test/lint 5단계 통과.
+- deadline 경로(runListenStart, turnCtx, mcpCtx)의 만료 시 중단과 쓰기 결과 모호성은 위 판단으로 수용하며 전용 테스트는 없음(결정적 주입 어려움).
 - 미검증: AIActivateInsight 커밋 뒤 읽기의 WithoutCancel 분리는 전용 테스트가 없음(단일 커넥션 sqlite 에서 커밋 직후 취소를 결정적으로 주입하기 어려움). 코드 리뷰와 호출 경로 조사로 대체.
