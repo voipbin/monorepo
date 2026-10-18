@@ -714,7 +714,16 @@ func (h *aicallHandler) rollbackListenState(ctx context.Context, aicallID uuid.U
 	// below -- including its choice of the cache-first AIcallGet over
 	// AIcallGetSkipCache, for the reason spelled out in that function's doc
 	// comment.
-	cur, err := h.db.AIcallGet(ctx, aicallID)
+	//
+	// The DB read and write are detached from ctx's cancellation/deadline:
+	// this runs on failure paths that are often triggered by ctx itself
+	// expiring, and the callers discard the result, so an expired ctx must
+	// not leave the speculative pre-write behind.
+	releaseTimeout := time.Duration(config.Get().AIcallListenStartLockReleaseTimeoutSeconds) * time.Second
+	dbCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), releaseTimeout)
+	defer cancel()
+
+	cur, err := h.db.AIcallGet(dbCtx, aicallID)
 	if err != nil {
 		return err
 	}
@@ -729,7 +738,7 @@ func (h *aicallHandler) rollbackListenState(ctx context.Context, aicallID uuid.U
 	// Same targeted, tm_update-bypassing write UpdateListenState uses -- a
 	// rollback must not bump tm_update either, or it feeds Send()'s cooldown
 	// for a session that never even started.
-	return h.db.AIcallUpdateNoTouchTMUpdate(ctx, aicallID, map[aicall.Field]any{
+	return h.db.AIcallUpdateNoTouchTMUpdate(dbCtx, aicallID, map[aicall.Field]any{
 		aicall.FieldListenCallID: uuid.Nil,
 		aicall.FieldMetadata:     metadata,
 	})

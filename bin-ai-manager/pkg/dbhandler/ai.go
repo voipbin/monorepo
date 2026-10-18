@@ -343,7 +343,11 @@ func (h *handler) AIActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, 
 
 	// Read straight from the DB: the deferred cache refresh has not run yet, so
 	// a cache-first AIGet here could still return the pre-activation row.
-	res, err := h.aiGetFromDB(ctx, id)
+	// The activation is already committed, so these reads are detached from
+	// ctx's cancellation: a cancelled request must not turn a committed
+	// activation into an error (the caller would skip the update event).
+	readCtx := context.WithoutCancel(ctx)
+	res, err := h.aiGetFromDB(readCtx, id)
 	if err != nil {
 		return nil, nil, fmt.Errorf("AIActivateInsight: could not get activated ai. err: %w", err)
 	}
@@ -352,7 +356,7 @@ func (h *handler) AIActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, 
 	// event; nil when nothing was displaced.
 	var previous *ai.AI
 	if previousID != uuid.Nil && !alreadyActive {
-		previous, err = h.aiGetFromDB(ctx, previousID)
+		previous, err = h.aiGetFromDB(readCtx, previousID)
 		if err != nil {
 			return nil, nil, fmt.Errorf("AIActivateInsight: could not get deactivated ai. err: %w", err)
 		}
