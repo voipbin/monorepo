@@ -26,3 +26,4 @@ goroutine 과 context.Background 8곳, 거대 함수 분리, %w 전환, 다른 �
 - 신규 rollback_listen_ctx_test.go: 만료된 ctx 에서도 롤백이 살아있는 ctx 로 DB 호출(수정 전 실패 확인).
 - 신규 ctxcancel_test.go: 취소된 ctx 로 read/write/list 가 중단됨(변경 전 코드에서 실패 확인).
 - go mod tidy/vendor/generate/test/lint 5단계 통과.
+- 미검증: AIActivateInsight 커밋 뒤 읽기의 WithoutCancel 분리는 전용 테스트가 없음(단일 커넥션 sqlite 에서 커밋 직후 취소를 결정적으로 주입하기 어려움). 코드 리뷰와 호출 경로 조사로 대체.

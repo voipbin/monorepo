@@ -696,7 +696,7 @@ func Test_runListenStart_EventOrdering(t *testing.T) {
 		m.util.EXPECT().UUIDCreate().Return(newTranscribeID)
 
 		// UpdateListenState's own fresh read fails.
-		m.db.EXPECT().AIcallGet(gomock.Any(), ltAIcallID).Return(nil, fmt.Errorf("db down"))
+		m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(nil, fmt.Errorf("db down"))
 
 		// The pre-write failure now ROLLS BACK rather than assuming there is
 		// nothing to undo (review round 1 finding MEDIUM-4): the DB row is
