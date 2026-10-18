@@ -72,6 +72,9 @@ func (h *handler) teamGetFromDB(ctx context.Context, id uuid.UUID) (*team.Team, 
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, fmt.Errorf("teamGetFromDB: could not iterate rows. err: %v", errRows)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -187,6 +190,10 @@ func (h *handler) TeamList(ctx context.Context, size uint64, token string, filte
 			return nil, fmt.Errorf("TeamList: could not scan row. err: %v", err)
 		}
 		res = append(res, t)
+	}
+
+	if errRows := rows.Err(); errRows != nil {
+		return nil, fmt.Errorf("TeamList: could not iterate rows. err: %v", errRows)
 	}
 
 	return res, nil

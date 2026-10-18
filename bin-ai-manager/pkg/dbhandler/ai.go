@@ -82,6 +82,9 @@ func (h *handler) aiGetFromDB(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, fmt.Errorf("aiGetFromDB: could not iterate rows. err: %v", errRows)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -206,6 +209,10 @@ func (h *handler) AIList(ctx context.Context, size uint64, token string, filters
 			return nil, fmt.Errorf("AIList: could not scan row. err: %v", err)
 		}
 		res = append(res, u)
+	}
+
+	if errRows := rows.Err(); errRows != nil {
+		return nil, fmt.Errorf("AIList: could not iterate rows. err: %v", errRows)
 	}
 
 	return res, nil
