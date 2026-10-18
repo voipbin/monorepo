@@ -22,7 +22,7 @@
   - 읽기만: listen.go:126 messageHandler.List 등 turnCtx 읽기, tool.go:178 mcpCtx 아래 resolveActiveAIForMcp 와 mcpServerHandler.Get(fillSuccess/fillFailed 는 메모리 내 함수이고 결과 메시지 toolCreateResultMessage 는 바깥 ctx 로 생성), mcp_tool.go:85 discoverCtx, start.go:103 5s fetchCtx, aiaudithandler/main.go:194 geminiCtx 의 MessageList, aipromptproposalhandler/main.go:162 의 loadAuditBlocks(최종 쓰기는 별도 writeCtx). 만료 시 대체로 해당 작업이 실패 처리되며, 순회 중 만료는 위 rows.Err 항목처럼 조용한 부분 결과가 가능.
 
 ## 범위 밖
-goroutine 과 dbhandler, aicallhandler 의 기존 context.Background() 사용처(14곳), 거대 함수 분리, %w 전환, 다른 서비스, 마이그레이션.
+goroutine 과 dbhandler, aicallhandler 의 기존 context.Background() 호출(건수 미특정), 거대 함수 분리, %w 전환, 다른 서비스, 마이그레이션.
 
 ## 검증
 - noctx 임시 설정으로 non-test 코드 35건 -> 0건(_test.go 12건은 남으며 표준 lint 가 테스트를 제외), 표준 lint 0건.
