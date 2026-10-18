@@ -66,7 +66,7 @@ func (h *handler) AIAuditUpsert(ctx context.Context, a *aiaudit.AIAudit) (int64,
 }
 
 // aiauditGetFromDB returns an audit record from the DB by ID.
-func (h *handler) aiauditGetFromDB(id uuid.UUID) (*aiaudit.AIAudit, error) {
+func (h *handler) aiauditGetFromDB(ctx context.Context, id uuid.UUID) (*aiaudit.AIAudit, error) {
 	cols := commondatabasehandler.GetDBFields(aiaudit.AIAudit{})
 
 	query, args, err := sq.Select(cols...).
@@ -80,7 +80,7 @@ func (h *handler) aiauditGetFromDB(id uuid.UUID) (*aiaudit.AIAudit, error) {
 		return nil, fmt.Errorf("aiauditGetFromDB: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("aiauditGetFromDB: could not query. err: %v", err)
 	}
@@ -100,7 +100,7 @@ func (h *handler) aiauditGetFromDB(id uuid.UUID) (*aiaudit.AIAudit, error) {
 
 // AIAuditGet returns an audit record by ID.
 func (h *handler) AIAuditGet(ctx context.Context, id uuid.UUID) (*aiaudit.AIAudit, error) {
-	return h.aiauditGetFromDB(id)
+	return h.aiauditGetFromDB(ctx, id)
 }
 
 // AIAuditList returns a paginated list of audit records.
@@ -127,7 +127,7 @@ func (h *handler) AIAuditList(ctx context.Context, size uint64, token string, fi
 		return nil, fmt.Errorf("AIAuditList: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("AIAuditList: could not query. err: %v", err)
 	}

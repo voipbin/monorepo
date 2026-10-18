@@ -31,7 +31,7 @@ func (h *handler) MessageCreate(ctx context.Context, c *message.Message) error {
 		return fmt.Errorf("MessageCreate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("MessageCreate: could not execute query. err: %v", err)
 	}
@@ -64,7 +64,7 @@ func (h *handler) messageGetFromDB(ctx context.Context, id uuid.UUID) (*message.
 		return nil, fmt.Errorf("messageGetFromDB: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("messageGetFromDB: could not query. err: %v", err)
 	}
@@ -137,7 +137,7 @@ func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("MessageDelete: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("MessageDelete: could not execute. err: %v", err)
 	}
@@ -225,7 +225,7 @@ func (h *handler) MessageList(ctx context.Context, size uint64, token string, fi
 		return nil, fmt.Errorf("MessageList: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("MessageList: could not query. err: %v", err)
 	}

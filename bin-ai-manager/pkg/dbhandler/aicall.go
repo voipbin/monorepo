@@ -33,7 +33,7 @@ func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
 		return fmt.Errorf("AIcallCreate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AIcallCreate: could not execute. err: %v", err)
 	}
@@ -55,7 +55,7 @@ func (h *handler) aicallGetFromCache(ctx context.Context, id uuid.UUID) (*aicall
 }
 
 // aicallGetFromDB gets aicall from the database.
-func (h *handler) aicallGetFromDB(id uuid.UUID) (*aicall.AIcall, error) {
+func (h *handler) aicallGetFromDB(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 	cols := commondatabasehandler.GetDBFields(aicall.AIcall{})
 
 	query, args, err := sq.Select(cols...).
@@ -66,7 +66,7 @@ func (h *handler) aicallGetFromDB(id uuid.UUID) (*aicall.AIcall, error) {
 		return nil, fmt.Errorf("aicallGetFromDB: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("aicallGetFromDB: could not query. err: %v", err)
 	}
@@ -86,7 +86,7 @@ func (h *handler) aicallGetFromDB(id uuid.UUID) (*aicall.AIcall, error) {
 
 // aicallUpdateToCache gets the aicall from the DB and updates the cache.
 func (h *handler) aicallUpdateToCache(ctx context.Context, id uuid.UUID) error {
-	res, err := h.aicallGetFromDB(id)
+	res, err := h.aicallGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,7 @@ func (h *handler) AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, 
 		return res, nil
 	}
 
-	res, err = h.aicallGetFromDB(id)
+	res, err = h.aicallGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (h *handler) AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, 
 // has just established that the cached copy was suspect, so leaving the stale
 // copy in place would make the next ordinary AIcallGet wrong again.
 func (h *handler) AIcallGetSkipCache(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
-	res, err := h.aicallGetFromDB(id)
+	res, err := h.aicallGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (h *handler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.U
 		return nil, fmt.Errorf("AIcallGetByReferenceID: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("AIcallGetByReferenceID: could not query. err: %v", err)
 	}
@@ -195,7 +195,7 @@ func (h *handler) AIcallDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("AIcallDelete: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AIcallDelete: could not execute. err: %v", err)
 	}
@@ -230,7 +230,7 @@ func (h *handler) AIcallList(ctx context.Context, size uint64, token string, fil
 		return nil, fmt.Errorf("AIcallList: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("AIcallList: could not query. err: %v", err)
 	}
@@ -269,7 +269,7 @@ func (h *handler) AIcallUpdate(ctx context.Context, id uuid.UUID, fields map[aic
 		return fmt.Errorf("AIcallUpdate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AIcallUpdate: could not execute. err: %v", err)
 	}
@@ -319,7 +319,7 @@ func (h *handler) AIcallUpdateNoTouchTMUpdate(ctx context.Context, id uuid.UUID,
 		return fmt.Errorf("AIcallUpdateNoTouchTMUpdate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AIcallUpdateNoTouchTMUpdate: could not execute. err: %v", err)
 	}
@@ -357,7 +357,7 @@ func (h *handler) AIcallUpdateIfActive(ctx context.Context, id uuid.UUID, fields
 		return 0, fmt.Errorf("AIcallUpdateIfActive: could not build query. err: %v", err)
 	}
 
-	res, err := h.db.Exec(query, args...)
+	res, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, fmt.Errorf("AIcallUpdateIfActive: could not execute. err: %v", err)
 	}

@@ -30,7 +30,7 @@ func (h *handler) AIPromptHistoryCreate(ctx context.Context, p *aiprompthistory.
 		return fmt.Errorf("AIPromptHistoryCreate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AIPromptHistoryCreate: could not execute query. err: %v", err)
 	}
@@ -39,7 +39,7 @@ func (h *handler) AIPromptHistoryCreate(ctx context.Context, p *aiprompthistory.
 }
 
 // aiPromptHistoryGetFromDB fetches a single row by primary key.
-func (h *handler) aiPromptHistoryGetFromDB(id uuid.UUID) (*aiprompthistory.AIPromptHistory, error) {
+func (h *handler) aiPromptHistoryGetFromDB(ctx context.Context, id uuid.UUID) (*aiprompthistory.AIPromptHistory, error) {
 	cols := commondatabasehandler.GetDBFields(aiprompthistory.AIPromptHistory{})
 
 	query, args, err := sq.Select(cols...).
@@ -50,7 +50,7 @@ func (h *handler) aiPromptHistoryGetFromDB(id uuid.UUID) (*aiprompthistory.AIPro
 		return nil, fmt.Errorf("aiPromptHistoryGetFromDB: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("aiPromptHistoryGetFromDB: could not query. err: %v", err)
 	}
@@ -71,7 +71,7 @@ func (h *handler) aiPromptHistoryGetFromDB(id uuid.UUID) (*aiprompthistory.AIPro
 // AIPromptHistoryGet returns a single entry by ID.
 // No cache — infrequent access; prompt history is append-only.
 func (h *handler) AIPromptHistoryGet(ctx context.Context, id uuid.UUID) (*aiprompthistory.AIPromptHistory, error) {
-	return h.aiPromptHistoryGetFromDB(id)
+	return h.aiPromptHistoryGetFromDB(ctx, id)
 }
 
 // AIPromptHistoryGetsByAIID returns entries for the given AI, newest first.
@@ -95,7 +95,7 @@ func (h *handler) AIPromptHistoryGetsByAIID(ctx context.Context, aiID uuid.UUID,
 		return nil, fmt.Errorf("AIPromptHistoryGetsByAIID: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("AIPromptHistoryGetsByAIID: could not query. err: %v", err)
 	}
