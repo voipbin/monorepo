@@ -46,7 +46,7 @@ func (h *handler) AIPromptProposalCreate(ctx context.Context, p *aipromptproposa
 }
 
 // aipromptproposalGetFromDB fetches one row by ID, active (tm_delete IS NULL) only.
-func (h *handler) aipromptproposalGetFromDB(id uuid.UUID) (*aipromptproposal.AIPromptProposal, error) {
+func (h *handler) aipromptproposalGetFromDB(ctx context.Context, id uuid.UUID) (*aipromptproposal.AIPromptProposal, error) {
 	cols := commondatabasehandler.GetDBFields(aipromptproposal.AIPromptProposal{})
 
 	query, args, err := sq.Select(cols...).
@@ -57,13 +57,16 @@ func (h *handler) aipromptproposalGetFromDB(id uuid.UUID) (*aipromptproposal.AIP
 		return nil, fmt.Errorf("aipromptproposalGetFromDB: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("aipromptproposalGetFromDB: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, fmt.Errorf("aipromptproposalGetFromDB: could not iterate rows. err: %w", errRows)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -76,7 +79,7 @@ func (h *handler) aipromptproposalGetFromDB(id uuid.UUID) (*aipromptproposal.AIP
 
 // AIPromptProposalGet returns one proposal by ID.
 func (h *handler) AIPromptProposalGet(ctx context.Context, id uuid.UUID) (*aipromptproposal.AIPromptProposal, error) {
-	return h.aipromptproposalGetFromDB(id)
+	return h.aipromptproposalGetFromDB(ctx, id)
 }
 
 // AIPromptProposalList — token interpreted as WHERE tm_create < token (mirrors AIAuditList).
@@ -103,7 +106,7 @@ func (h *handler) AIPromptProposalList(ctx context.Context, size uint64, token s
 		return nil, fmt.Errorf("AIPromptProposalList: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("AIPromptProposalList: could not query. err: %v", err)
 	}
@@ -116,6 +119,10 @@ func (h *handler) AIPromptProposalList(ctx context.Context, size uint64, token s
 			return nil, fmt.Errorf("AIPromptProposalList: could not scan. err: %v", err)
 		}
 		res = append(res, p)
+	}
+
+	if errRows := rows.Err(); errRows != nil {
+		return nil, fmt.Errorf("AIPromptProposalList: could not iterate rows. err: %w", errRows)
 	}
 	return res, nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	uuid "github.com/gofrs/uuid"
@@ -15,6 +16,10 @@ import (
 
 const (
 	aiTable = "ai_ais"
+
+	// postCommitReadTimeout bounds the reads AIActivateInsight runs after its
+	// commit on a context detached from the caller's cancellation.
+	postCommitReadTimeout = 5 * time.Second
 )
 
 // ErrNotInsightAI is returned by AIActivateInsight when the target AI is not
@@ -37,7 +42,7 @@ func (h *handler) AICreate(ctx context.Context, c *ai.AI) error {
 		return fmt.Errorf("AICreate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AICreate: could not execute query. err: %v", err)
 	}
@@ -70,13 +75,16 @@ func (h *handler) aiGetFromDB(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 		return nil, fmt.Errorf("aiGetFromDB: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("aiGetFromDB: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, fmt.Errorf("aiGetFromDB: could not iterate rows. err: %w", errRows)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -153,7 +161,7 @@ func (h *handler) AIDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("AIDelete: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AIDelete: could not execute. err: %v", err)
 	}
@@ -188,7 +196,7 @@ func (h *handler) AIList(ctx context.Context, size uint64, token string, filters
 		return nil, fmt.Errorf("AIList: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("AIList: could not query. err: %v", err)
 	}
@@ -201,6 +209,10 @@ func (h *handler) AIList(ctx context.Context, size uint64, token string, filters
 			return nil, fmt.Errorf("AIList: could not scan row. err: %v", err)
 		}
 		res = append(res, u)
+	}
+
+	if errRows := rows.Err(); errRows != nil {
+		return nil, fmt.Errorf("AIList: could not iterate rows. err: %w", errRows)
 	}
 
 	return res, nil
@@ -343,7 +355,12 @@ func (h *handler) AIActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, 
 
 	// Read straight from the DB: the deferred cache refresh has not run yet, so
 	// a cache-first AIGet here could still return the pre-activation row.
-	res, err := h.aiGetFromDB(ctx, id)
+	// The activation is already committed, so these reads are detached from
+	// ctx's cancellation: a cancelled request must not turn a committed
+	// activation into an error (the caller would skip the update event).
+	readCtx, cancelRead := context.WithTimeout(context.WithoutCancel(ctx), postCommitReadTimeout)
+	defer cancelRead()
+	res, err := h.aiGetFromDB(readCtx, id)
 	if err != nil {
 		return nil, nil, fmt.Errorf("AIActivateInsight: could not get activated ai. err: %w", err)
 	}
@@ -352,7 +369,7 @@ func (h *handler) AIActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, 
 	// event; nil when nothing was displaced.
 	var previous *ai.AI
 	if previousID != uuid.Nil && !alreadyActive {
-		previous, err = h.aiGetFromDB(ctx, previousID)
+		previous, err = h.aiGetFromDB(readCtx, previousID)
 		if err != nil {
 			return nil, nil, fmt.Errorf("AIActivateInsight: could not get deactivated ai. err: %w", err)
 		}
@@ -382,7 +399,7 @@ func (h *handler) AIUpdate(ctx context.Context, id uuid.UUID, fields map[ai.Fiel
 		return fmt.Errorf("AIUpdate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AIUpdate: could not execute. err: %v", err)
 	}

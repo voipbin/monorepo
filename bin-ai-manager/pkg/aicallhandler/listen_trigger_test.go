@@ -703,7 +703,7 @@ func Test_runListenStart_EventOrdering(t *testing.T) {
 		// written before the Redis SADD, so a SADD failure genuinely leaves
 		// state behind.
 		m.cache.EXPECT().ListenAIcallIDRemove(ctx, newTranscribeID, ltAIcallID).Return(nil)
-		m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(nil, fmt.Errorf("db down"))
+		m.db.EXPECT().AIcallGet(gomock.Any(), ltAIcallID).Return(nil, fmt.Errorf("db down"))
 
 		// Fail closed: nothing was created, so nothing is billed.
 		m.req.EXPECT().TranscribeV1TranscribeStart(
@@ -745,8 +745,8 @@ func Test_runListenStart_EventOrdering(t *testing.T) {
 
 		// rollbackListenState, against the pre-generated id specifically.
 		m.cache.EXPECT().ListenAIcallIDRemove(ctx, newTranscribeID, ltAIcallID).Return(nil)
-		m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
-		m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
+		m.db.EXPECT().AIcallGet(gomock.Any(), ltAIcallID).Return(c, nil)
+		m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(gomock.Any(), ltAIcallID, gomock.Any()).Return(nil)
 
 		res, err := m.h.startListenTranscribe(ctx, c, listenEligibleCall(), ltCallID)
 		if err == nil {
@@ -834,8 +834,8 @@ func Test_runListenStart_EventOrdering(t *testing.T) {
 		).Return(nil, alreadyProgressing)
 
 		m.cache.EXPECT().ListenAIcallIDRemove(ctx, newTranscribeID, ltAIcallID).Return(nil)
-		m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
-		m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
+		m.db.EXPECT().AIcallGet(gomock.Any(), ltAIcallID).Return(c, nil)
+		m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(gomock.Any(), ltAIcallID, gomock.Any()).Return(nil)
 
 		res, err := m.h.startListenTranscribe(ctx, c, listenEligibleCall(), ltCallID)
 		if err == nil {
@@ -1955,8 +1955,8 @@ func Test_startListenTranscribe_ReuseOwnershipVerification(t *testing.T) {
 		// Same treatment as "no winner found": roll back our own speculative
 		// id and give up. The foreign id is never adopted.
 		m.cache.EXPECT().ListenAIcallIDRemove(ctx, newTranscribeID, ltAIcallID).Return(nil)
-		m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
-		m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
+		m.db.EXPECT().AIcallGet(gomock.Any(), ltAIcallID).Return(c, nil)
+		m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(gomock.Any(), ltAIcallID, gomock.Any()).Return(nil)
 		m.cache.EXPECT().ListenAIcallIDAdd(ctx, foreignID, gomock.Any(), gomock.Any()).Times(0)
 
 		res, err := m.h.startListenTranscribe(ctx, c, listenEligibleCall(), ltCallID)

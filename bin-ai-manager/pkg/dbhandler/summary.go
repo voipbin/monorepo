@@ -32,7 +32,7 @@ func (h *handler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
 		return fmt.Errorf("SummaryCreate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("SummaryCreate: could not execute query. err: %v", err)
 	}
@@ -54,7 +54,7 @@ func (h *handler) summaryGetFromCache(ctx context.Context, id uuid.UUID) (*summa
 }
 
 // summaryGetFromDB returns summary from the DB.
-func (h *handler) summaryGetFromDB(id uuid.UUID) (*summary.Summary, error) {
+func (h *handler) summaryGetFromDB(ctx context.Context, id uuid.UUID) (*summary.Summary, error) {
 	cols := commondatabasehandler.GetDBFields(summary.Summary{})
 
 	query, args, err := sq.Select(cols...).
@@ -65,13 +65,16 @@ func (h *handler) summaryGetFromDB(id uuid.UUID) (*summary.Summary, error) {
 		return nil, fmt.Errorf("summaryGetFromDB: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("summaryGetFromDB: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, fmt.Errorf("summaryGetFromDB: could not iterate rows. err: %w", errRows)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -85,7 +88,7 @@ func (h *handler) summaryGetFromDB(id uuid.UUID) (*summary.Summary, error) {
 
 // summaryUpdateToCache gets the summary from the DB and updates the cache.
 func (h *handler) summaryUpdateToCache(ctx context.Context, id uuid.UUID) error {
-	res, err := h.summaryGetFromDB(id)
+	res, err := h.summaryGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -113,7 +116,7 @@ func (h *handler) SummaryGet(ctx context.Context, id uuid.UUID) (*summary.Summar
 		return res, nil
 	}
 
-	res, err = h.summaryGetFromDB(id)
+	res, err = h.summaryGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +142,7 @@ func (h *handler) SummaryDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("SummaryDelete: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("SummaryDelete: could not execute. err: %v", err)
 	}
@@ -174,7 +177,7 @@ func (h *handler) SummaryList(ctx context.Context, size uint64, token string, fi
 		return nil, fmt.Errorf("SummaryList: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("SummaryList: could not query. err: %v", err)
 	}
@@ -187,6 +190,10 @@ func (h *handler) SummaryList(ctx context.Context, size uint64, token string, fi
 			return nil, fmt.Errorf("SummaryList: could not scan row. err: %v", err)
 		}
 		res = append(res, u)
+	}
+
+	if errRows := rows.Err(); errRows != nil {
+		return nil, fmt.Errorf("SummaryList: could not iterate rows. err: %w", errRows)
 	}
 
 	return res, nil
@@ -220,7 +227,7 @@ func (h *handler) SummaryUpdate(ctx context.Context, id uuid.UUID, fields map[su
 		return fmt.Errorf("SummaryUpdate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("SummaryUpdate: could not execute. err: %v", err)
 	}
@@ -262,7 +269,7 @@ func (h *handler) SummaryUpdateStatusDoneIfNotDone(ctx context.Context, id uuid.
 		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not build query. err: %v", err)
 	}
 
-	res, err := h.db.Exec(query, args...)
+	res, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not execute. err: %v", err)
 	}

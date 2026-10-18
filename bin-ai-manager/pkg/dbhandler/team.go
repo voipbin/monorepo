@@ -32,7 +32,7 @@ func (h *handler) TeamCreate(ctx context.Context, t *team.Team) error {
 		return fmt.Errorf("TeamCreate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("TeamCreate: could not execute query. err: %v", err)
 	}
@@ -65,13 +65,16 @@ func (h *handler) teamGetFromDB(ctx context.Context, id uuid.UUID) (*team.Team, 
 		return nil, fmt.Errorf("teamGetFromDB: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("teamGetFromDB: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, fmt.Errorf("teamGetFromDB: could not iterate rows. err: %w", errRows)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -139,7 +142,7 @@ func (h *handler) TeamDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("TeamDelete: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("TeamDelete: could not execute. err: %v", err)
 	}
@@ -174,7 +177,7 @@ func (h *handler) TeamList(ctx context.Context, size uint64, token string, filte
 		return nil, fmt.Errorf("TeamList: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("TeamList: could not query. err: %v", err)
 	}
@@ -187,6 +190,10 @@ func (h *handler) TeamList(ctx context.Context, size uint64, token string, filte
 			return nil, fmt.Errorf("TeamList: could not scan row. err: %v", err)
 		}
 		res = append(res, t)
+	}
+
+	if errRows := rows.Err(); errRows != nil {
+		return nil, fmt.Errorf("TeamList: could not iterate rows. err: %w", errRows)
 	}
 
 	return res, nil
@@ -213,7 +220,7 @@ func (h *handler) TeamUpdate(ctx context.Context, id uuid.UUID, fields map[team.
 		return fmt.Errorf("TeamUpdate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("TeamUpdate: could not execute. err: %v", err)
 	}
