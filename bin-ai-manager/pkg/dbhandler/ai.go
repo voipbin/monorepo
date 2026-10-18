@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	uuid "github.com/gofrs/uuid"
@@ -15,6 +16,10 @@ import (
 
 const (
 	aiTable = "ai_ais"
+
+	// postCommitReadTimeout bounds the reads AIActivateInsight runs after its
+	// commit on a context detached from the caller's cancellation.
+	postCommitReadTimeout = 5 * time.Second
 )
 
 // ErrNotInsightAI is returned by AIActivateInsight when the target AI is not
@@ -346,7 +351,8 @@ func (h *handler) AIActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, 
 	// The activation is already committed, so these reads are detached from
 	// ctx's cancellation: a cancelled request must not turn a committed
 	// activation into an error (the caller would skip the update event).
-	readCtx := context.WithoutCancel(ctx)
+	readCtx, cancelRead := context.WithTimeout(context.WithoutCancel(ctx), postCommitReadTimeout)
+	defer cancelRead()
 	res, err := h.aiGetFromDB(readCtx, id)
 	if err != nil {
 		return nil, nil, fmt.Errorf("AIActivateInsight: could not get activated ai. err: %w", err)

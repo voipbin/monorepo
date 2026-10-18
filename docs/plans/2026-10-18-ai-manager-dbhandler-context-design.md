@@ -14,7 +14,7 @@
 - public 경로의 aicallUpdateToCache(ctx) 등은 redis 호출에 이미 ctx 사용. 취소 시 DB 재조회도 함께 중단되어 일관됨(캐시 미갱신은 TTL 과 다음 조회가 복구). 쓰기 자체는 Exec 가 이미 끝난 뒤라 영향 없음.
 - 쓰기 Exec 도중 취소되면 드라이버가 쿼리를 중단하고 에러를 반환(기존에는 완료까지 대기). 호출부는 이미 에러 경로를 처리.
 
-- AIActivateInsight: 커밋 뒤 두 번의 aiGetFromDB 는 context.WithoutCancel(ctx) 로 분리. 커밋된 활성화가 취소 때문에 에러로 보이면 호출부가 update 이벤트 발행을 건너뛰기 때문.
+- AIActivateInsight: 커밋 뒤 두 번의 aiGetFromDB 는 WithTimeout(WithoutCancel(ctx), 5s) 로 분리. 커밋된 활성화가 취소 때문에 에러로 보이면 호출부가 update 이벤트 발행을 건너뛰기 때문.
 - aicallhandler.rollbackListenState: 이 함수는 만료된 deadline ctx 에서도 호출되고 결과가 버려진다. DB 읽기와 쓰기를 WithTimeout(WithoutCancel(ctx), 기존 락 해제 타임아웃) 으로 분리(같은 파일의 락 해제 패턴). 변경 전에는 DB 가 ctx 를 무시해 롤백이 성공했으므로 동작 보존. 이 파일 변경은 dbhandler 변경의 직접 결과이므로 범위 안.
 - 호출 경로 조사: listenhandler, subscribehandler 는 context.Background() 를 사용해 RPC 취소가 전파되지 않음. 파생 WithTimeout 은 start.go 5s fetchCtx, mcp 2s/mcpCtx 등 읽기 전용(best-effort)뿐.
 
