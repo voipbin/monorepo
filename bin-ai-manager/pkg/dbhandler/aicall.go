@@ -74,7 +74,7 @@ func (h *handler) aicallGetFromDB(ctx context.Context, id uuid.UUID) (*aicall.AI
 
 	if !rows.Next() {
 		if errRows := rows.Err(); errRows != nil {
-			return nil, fmt.Errorf("aicallGetFromDB: could not iterate rows. err: %v", errRows)
+			return nil, fmt.Errorf("aicallGetFromDB: could not iterate rows. err: %w", errRows)
 		}
 		return nil, ErrNotFound
 	}
@@ -171,7 +171,7 @@ func (h *handler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.U
 
 	if !rows.Next() {
 		if errRows := rows.Err(); errRows != nil {
-			return nil, fmt.Errorf("AIcallGetByReferenceID: could not iterate rows. err: %v", errRows)
+			return nil, fmt.Errorf("AIcallGetByReferenceID: could not iterate rows. err: %w", errRows)
 		}
 		return nil, ErrNotFound
 	}
@@ -252,7 +252,7 @@ func (h *handler) AIcallList(ctx context.Context, size uint64, token string, fil
 	}
 
 	if errRows := rows.Err(); errRows != nil {
-		return nil, fmt.Errorf("AIcallList: could not iterate rows. err: %v", errRows)
+		return nil, fmt.Errorf("AIcallList: could not iterate rows. err: %w", errRows)
 	}
 
 	return res, nil

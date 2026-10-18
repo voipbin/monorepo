@@ -65,7 +65,7 @@ func (h *handler) aipromptproposalGetFromDB(ctx context.Context, id uuid.UUID) (
 
 	if !rows.Next() {
 		if errRows := rows.Err(); errRows != nil {
-			return nil, fmt.Errorf("aipromptproposalGetFromDB: could not iterate rows. err: %v", errRows)
+			return nil, fmt.Errorf("aipromptproposalGetFromDB: could not iterate rows. err: %w", errRows)
 		}
 		return nil, ErrNotFound
 	}
@@ -122,7 +122,7 @@ func (h *handler) AIPromptProposalList(ctx context.Context, size uint64, token s
 	}
 
 	if errRows := rows.Err(); errRows != nil {
-		return nil, fmt.Errorf("AIPromptProposalList: could not iterate rows. err: %v", errRows)
+		return nil, fmt.Errorf("AIPromptProposalList: could not iterate rows. err: %w", errRows)
 	}
 	return res, nil
 }

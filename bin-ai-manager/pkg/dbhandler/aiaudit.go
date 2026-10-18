@@ -88,7 +88,7 @@ func (h *handler) aiauditGetFromDB(ctx context.Context, id uuid.UUID) (*aiaudit.
 
 	if !rows.Next() {
 		if errRows := rows.Err(); errRows != nil {
-			return nil, fmt.Errorf("aiauditGetFromDB: could not iterate rows. err: %v", errRows)
+			return nil, fmt.Errorf("aiauditGetFromDB: could not iterate rows. err: %w", errRows)
 		}
 		return nil, ErrNotFound
 	}
@@ -146,7 +146,7 @@ func (h *handler) AIAuditList(ctx context.Context, size uint64, token string, fi
 	}
 
 	if errRows := rows.Err(); errRows != nil {
-		return nil, fmt.Errorf("AIAuditList: could not iterate rows. err: %v", errRows)
+		return nil, fmt.Errorf("AIAuditList: could not iterate rows. err: %w", errRows)
 	}
 
 	return res, nil
