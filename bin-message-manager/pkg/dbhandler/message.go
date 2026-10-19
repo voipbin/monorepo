@@ -58,7 +58,7 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		return errors.Wrap(err, "could not build query. MessageCreate")
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return errors.Wrap(err, "could not execute. MessageCreate")
 	}
@@ -114,7 +114,7 @@ func (h *handler) messageGetFromDB(ctx context.Context, id uuid.UUID) (*message.
 		return nil, errors.Wrap(err, "could not build query. messageGetFromDB")
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not query. messageGetFromDB")
 	}
@@ -123,6 +123,9 @@ func (h *handler) messageGetFromDB(ctx context.Context, id uuid.UUID) (*message.
 	}()
 
 	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, fmt.Errorf("could not iterate the rows. messageGetFromDB. err: %w", errRows)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -170,7 +173,7 @@ func (h *handler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[me
 		return errors.Wrap(err, "could not build query. MessageUpdate")
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return errors.Wrap(err, "could not execute. MessageUpdate")
 	}
@@ -216,7 +219,7 @@ func (h *handler) MessageList(ctx context.Context, token string, size uint64, fi
 		return nil, errors.Wrap(err, "could not build query. MessageList")
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not query. MessageList")
 	}
@@ -232,6 +235,9 @@ func (h *handler) MessageList(ctx context.Context, token string, size uint64, fi
 		}
 
 		res = append(res, m)
+	}
+	if errRows := rows.Err(); errRows != nil {
+		return nil, fmt.Errorf("could not iterate the rows. MessageList. err: %w", errRows)
 	}
 
 	return res, nil
@@ -259,7 +265,7 @@ func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 		return errors.Wrap(err, "could not build query. MessageDelete")
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return errors.Wrap(err, "could not execute. MessageDelete")
 	}
