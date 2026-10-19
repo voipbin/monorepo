@@ -273,14 +273,14 @@ func (h *aicallHandler) startReferenceTypeCall(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 	}
-	log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
+	log.WithField("aicall_id", res.ID).Debugf("Created aicall. aicall_id: %s", res.ID)
 
 	// start pipecatcall
 	tmpPipecatcall, err := h.startPipecatcall(ctx, res)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not start pipecatcall for aicall. aicall_id: %s", res.ID)
 	}
-	log.WithField("pipecatcall", tmpPipecatcall).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
+	log.WithField("pipecatcall_id", tmpPipecatcall.ID).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
 	return res, nil
 }
@@ -386,7 +386,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 			}
 		}
 	}
-	log.WithField("aicall", res).Debugf("AIcall ready. aicall_id: %s", res.ID)
+	log.WithField("aicall_id", res.ID).Debugf("AIcall ready. aicall_id: %s", res.ID)
 
 	// note: after create a new aicall, we need to create a new message for the conversation message
 	// TODO: for AssistanceTypeTeam the reuse path now fetches the team THREE times:
@@ -399,7 +399,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the message. aicall_id: %s", res.ID)
 	}
-	log.WithField("message", tmp).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", res.ID, res.ID)
+	log.WithFields(logrus.Fields{"message_id": tmp.ID, "content_len": len(tmp.Content)}).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", res.ID, tmp.ID)
 
 	// NOTE: Tool whitelist for conversation-typed AIcalls is deferred to v2 — see
 	// docs/plans/2026-04-27-conversation-ai-talk-design.md §13 and the Slice 0
@@ -410,7 +410,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not start pipecatcall for aicall. aicall_id: %s", res.ID)
 	}
-	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
+	log.WithField("pipecatcall_id", pc.ID).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
 	if errTerminate := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout); errTerminate != nil {
 		log.Errorf("Could not send the pipecatcall terminate request correctly. err: %v", errTerminate)
@@ -501,7 +501,7 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 		// bail rather than retry.
 		res, err := h.startAIcallByMessaging(ctx, id, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeContactCase, referenceID, false, teamParameter, currentMemberID)
 		if err == nil {
-			log.WithField("aicall", res).Debugf("Created aicall for contact_case. aicall_id: %s", res.ID)
+			log.WithField("aicall_id", res.ID).Debugf("Created aicall for contact_case. aicall_id: %s", res.ID)
 
 			// Trigger the first AI turn exactly once, only here — this branch
 			// runs only when the INSERT genuinely succeeded (no duplicate-key
@@ -586,7 +586,7 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 			// above always advances to Progressing immediately after
 			// startPipecatcall succeeds. Retry the turn-starting sequence on
 			// this existing row instead of returning it stuck forever.
-			log.WithField("aicall", existing).Infof("Existing aicall for contact_case is stuck at Initiating — retrying pipecatcall start. aicall_id: %s", existing.ID)
+			log.WithField("aicall_id", existing.ID).Infof("Existing aicall for contact_case is stuck at Initiating — retrying pipecatcall start. aicall_id: %s", existing.ID)
 			updated, errTurn := h.startContactCaseTurn(ctx, log, existing)
 			if errTurn != nil {
 				return nil, errTurn
@@ -595,7 +595,7 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 			return updated, nil
 		}
 
-		log.WithField("aicall", existing).Debugf("Reusing existing active aicall for contact_case. aicall_id: %s", existing.ID)
+		log.WithField("aicall_id", existing.ID).Debugf("Reusing existing active aicall for contact_case. aicall_id: %s", existing.ID)
 
 		// A reused Insight thread that has been idle long enough starts a new
 		// session here (VOIP-1484): refreshed prompt, and a boundary after which
@@ -621,7 +621,7 @@ func (h *aicallHandler) startContactCaseTurn(ctx context.Context, log *logrus.En
 	if errStart != nil {
 		return nil, errors.Wrapf(errStart, "could not start pipecatcall for contact_case aicall. aicall_id: %s", c.ID)
 	}
-	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for contact_case aicall. aicall_id: %s", c.ID)
+	log.WithField("pipecatcall_id", pc.ID).Debugf("Started pipecatcall for contact_case aicall. aicall_id: %s", c.ID)
 
 	// Register the initial pipecatcall id as a genuine listen turn (VOIP-1510).
 	//
@@ -732,7 +732,7 @@ func (h *aicallHandler) startReferenceTypeNone(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall with no reference")
 	}
-	log.WithField("aicall", tmp).Debugf("Created aicall. aicall_id: %s", tmp.ID)
+	log.WithField("aicall_id", tmp.ID).Debugf("Created aicall. aicall_id: %s", tmp.ID)
 
 	res, err := h.UpdateStatus(ctx, tmp.ID, aicall.StatusProgressing)
 	if err != nil {
@@ -976,7 +976,7 @@ func (h *aicallHandler) startPipecatcall(ctx context.Context, c *aicall.AIcall) 
 		log.Errorf("Could not start pipecatcall. err: %v", err)
 		return nil, errors.Wrap(err, "could not start pipecatcall")
 	}
-	log.WithField("pipecatcall", res).Debugf("Started pipecatcall. pipecatcall_id: %s", res.ID)
+	log.WithField("pipecatcall_id", res.ID).Debugf("Started pipecatcall. pipecatcall_id: %s", res.ID)
 
 	return res, nil
 }
@@ -1014,7 +1014,7 @@ func (h *aicallHandler) startPipecatcallTask(ctx context.Context, c *aicall.AIca
 		log.Errorf("Could not start pipecatcall. err: %v", err)
 		return nil, errors.Wrap(err, "could not start pipecatcall")
 	}
-	log.WithField("pipecatcall", res).Debugf("Started pipecatcall. pipecatcall_id: %s", res.ID)
+	log.WithField("pipecatcall_id", res.ID).Debugf("Started pipecatcall. pipecatcall_id: %s", res.ID)
 
 	return res, nil
 }
@@ -1076,7 +1076,7 @@ func (h *aicallHandler) writeSystemRows(ctx context.Context, a *ai.AI, c *aicall
 		if err != nil {
 			return res, errors.Wrapf(err, "could not create the init message to the ai. aicall_id: %s", c.ID)
 		}
-		log.WithField("message", tmp).Debugf("Created the init message to the ai. aicall_id: %s", c.ID)
+		log.WithFields(logrus.Fields{"message_id": tmp.ID, "content_len": len(tmp.Content)}).Debugf("Created the init message to the ai. aicall_id: %s", c.ID)
 		res = append(res, tmp)
 	}
 
@@ -1134,7 +1134,7 @@ func (h *aicallHandler) startAIcallByRealtime(
 		log.Errorf("Could not create aicall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create aicall.")
 	}
-	log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
+	log.WithField("aicall_id", res.ID).Debugf("Created aicall. aicall_id: %s", res.ID)
 
 	if h.participantHandler != nil {
 		if err := h.participantHandler.Create(ctx, res.ID, a.ID); err != nil {
@@ -1203,7 +1203,7 @@ func (h *aicallHandler) startAIcallByMessaging(
 		log.Errorf("Could not create aicall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create aicall.")
 	}
-	log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
+	log.WithField("aicall_id", res.ID).Debugf("Created aicall. aicall_id: %s", res.ID)
 
 	if h.participantHandler != nil {
 		if err := h.participantHandler.Create(ctx, res.ID, a.ID); err != nil {
@@ -1251,7 +1251,7 @@ func (h *aicallHandler) StartTask(ctx context.Context, assistanceType aicall.Ass
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not start pipecatcall for aicall. aicall_id: %s", res.ID)
 	}
-	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
+	log.WithField("pipecatcall_id", pc.ID).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
 	if errTerminate := h.reqHandler.AIV1AIcallTerminateWithDelay(ctx, res.ID, defaultAITaskTimeout); errTerminate != nil {
 		// note: the delayed termination request has failed, but we just log it and continue

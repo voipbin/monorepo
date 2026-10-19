@@ -110,7 +110,7 @@ func (h *aicallHandler) toolHandleEmitInfoCard(ctx context.Context, c *aicall.AI
 	// has one. See design doc D2 (round 7 correction).
 	fillSuccess(res, "card", "", fmt.Sprintf("Displayed an info card titled '%s'.", title))
 
-	log.Debugf("Created info card. title: %s, field_count: %d", title, len(truncatedFields))
+	log.Debugf("Created info card. title_len: %d, field_count: %d", len(title), len(truncatedFields))
 
 	return res
 }

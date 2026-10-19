@@ -19,8 +19,10 @@ import (
 // SMEMBERS) lives in aicallHandler.EventCVMessageCreated with the listen state.
 func (h *subscribeHandler) processEventCVMessageCreated(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventCVMessageCreated",
-		"event": m,
+		"func":      "processEventCVMessageCreated",
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
 	})
 
 	var evt cvmessage.Message

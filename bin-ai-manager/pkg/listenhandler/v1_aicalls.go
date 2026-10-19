@@ -20,8 +20,10 @@ import (
 // processV1AIcallsGet handles GET /v1/aicall request
 func (h *listenHandler) processV1AIcallsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1AIcallsGet",
-		"request": m,
+		"handler":  "processV1AIcallsGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	u, err := url.Parse(m.URI)
@@ -63,7 +65,7 @@ func (h *listenHandler) processV1AIcallsGet(ctx context.Context, m *sock.Request
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -79,8 +81,10 @@ func (h *listenHandler) processV1AIcallsGet(ctx context.Context, m *sock.Request
 // processV1AIcallsPost handles POST /v1/aicalls request
 func (h *listenHandler) processV1AIcallsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1AIcallsPost",
-		"request": m,
+		"handler":  "processV1AIcallsPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataAIcallsPost
@@ -97,7 +101,7 @@ func (h *listenHandler) processV1AIcallsPost(ctx context.Context, m *sock.Reques
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -119,8 +123,10 @@ func (h *listenHandler) processV1AIcallsPost(ctx context.Context, m *sock.Reques
 // docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.4(b).
 func (h *listenHandler) processV1AIcallsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1AIcallsIDGet",
-		"request": m,
+		"handler":  "processV1AIcallsIDGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	// url.Parse, not strings.Split(m.URI, "/"): with a query string attached,
@@ -158,7 +164,7 @@ func (h *listenHandler) processV1AIcallsIDGet(ctx context.Context, m *sock.Reque
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -174,8 +180,10 @@ func (h *listenHandler) processV1AIcallsIDGet(ctx context.Context, m *sock.Reque
 // processV1AIcallsIDDelete handles DELETE /v1/aicalls/<aicall-id> request
 func (h *listenHandler) processV1AIcallsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1AIcallsIDDelete",
-		"request": m,
+		"handler":  "processV1AIcallsIDDelete",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -197,7 +205,7 @@ func (h *listenHandler) processV1AIcallsIDDelete(ctx context.Context, m *sock.Re
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -213,8 +221,10 @@ func (h *listenHandler) processV1AIcallsIDDelete(ctx context.Context, m *sock.Re
 // processV1AIcallsPost handles POST /v1/aicalls/<aicall-id>/terminate request
 func (h *listenHandler) processV1AIcallsIDTerminatePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1AIcallsIDTerminatePost",
-		"request": m,
+		"handler":  "processV1AIcallsIDTerminatePost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -236,7 +246,7 @@ func (h *listenHandler) processV1AIcallsIDTerminatePost(ctx context.Context, m *
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -263,8 +273,10 @@ func (h *listenHandler) processV1AIcallsIDTerminatePost(ctx context.Context, m *
 // trailing segment -- do not "fix" this one to match the public path.
 func (h *listenHandler) processV1AIcallsIDListenPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1AIcallsIDListenPost",
-		"request": m,
+		"handler":  "processV1AIcallsIDListenPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -286,7 +298,7 @@ func (h *listenHandler) processV1AIcallsIDListenPost(ctx context.Context, m *soc
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -302,8 +314,10 @@ func (h *listenHandler) processV1AIcallsIDListenPost(ctx context.Context, m *soc
 // processV1AIcallsIDToolExecutePost handles POST /v1/aicalls/<aicall-id>/tool_execute request
 func (h *listenHandler) processV1AIcallsIDToolExecutePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1AIcallsIDToolExecutePost",
-		"request": m,
+		"handler":  "processV1AIcallsIDToolExecutePost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -327,7 +341,7 @@ func (h *listenHandler) processV1AIcallsIDToolExecutePost(ctx context.Context, m
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -347,8 +361,10 @@ func (h *listenHandler) processV1AIcallsIDToolExecutePost(ctx context.Context, m
 // AIV1ToolList's existing response shape).
 func (h *listenHandler) processV1AIcallsIDToolsMcpGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1AIcallsIDToolsMcpGet",
-		"request": m,
+		"handler":  "processV1AIcallsIDToolsMcpGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -374,7 +390,7 @@ func (h *listenHandler) processV1AIcallsIDToolsMcpGet(ctx context.Context, m *so
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

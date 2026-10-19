@@ -114,8 +114,11 @@ func (h *messageHandler) resolveTeamMemberAIID(ctx context.Context, aicallID, me
 
 func (h *messageHandler) EventPMMessageUserTranscription(ctx context.Context, evt *pmmessage.Message) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "EventPMMessageUserTranscription",
-		"event": evt,
+		"func":           "EventPMMessageUserTranscription",
+		"aicall_id":      evt.PipecatcallReferenceID,
+		"pipecatcall_id": evt.PipecatcallID,
+		"event_id":       evt.ID,
+		"text_len":       len(evt.Text),
 	})
 
 	if evt.PipecatcallReferenceType != pmpipecatcall.ReferenceTypeAICall {
@@ -129,13 +132,16 @@ func (h *messageHandler) EventPMMessageUserTranscription(ctx context.Context, ev
 		log.Errorf("Could not create the message. err: %v", err)
 		return
 	}
-	log.WithField("message", tmp).Debugf("Created message from the pipecat-manager's user transcription.")
+	log.WithFields(logrus.Fields{"message_id": tmp.ID, "content_len": len(tmp.Content)}).Debugf("Created message from the pipecat-manager's user transcription.")
 }
 
 func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessage.Message) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "EventPMMessageBotLLM",
-		"event": evt,
+		"func":           "EventPMMessageBotLLM",
+		"aicall_id":      evt.PipecatcallReferenceID,
+		"pipecatcall_id": evt.PipecatcallID,
+		"event_id":       evt.ID,
+		"text_len":       len(evt.Text),
 	})
 
 	if evt.Text == "" {
@@ -153,7 +159,7 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 			log.Errorf("Could not create the message. err: %v", err)
 			return
 		}
-		log.WithField("message", tmp).Debugf("Created message.")
+		log.WithFields(logrus.Fields{"message_id": tmp.ID, "content_len": len(tmp.Content)}).Debugf("Created message.")
 		return
 	}
 
@@ -162,7 +168,7 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 		log.WithField("aicall_id", evt.PipecatcallReferenceID).Errorf("Could not get aicall — skipping conversation delivery. err: %v", err)
 		return
 	}
-	log.WithField("aicall", ac).Debugf("Retrieved aicall info. aicall_id: %s", ac.ID)
+	log.WithField("aicall_id", ac.ID).Debugf("Retrieved aicall info. aicall_id: %s", ac.ID)
 
 	// Voice / task: keep existing behavior — persist, no delivery.
 	if ac.ReferenceType != aicall.ReferenceTypeConversation {
@@ -201,7 +207,7 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 			log.Errorf("Could not create the message. err: %v", errCreate)
 			return
 		}
-		log.WithField("message", tmp).Debugf("Created message.")
+		log.WithFields(logrus.Fields{"message_id": tmp.ID, "content_len": len(tmp.Content)}).Debugf("Created message.")
 		return
 	}
 
@@ -228,7 +234,7 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 		log.Errorf("Could not create the message. err: %v", err)
 		return
 	}
-	log.WithField("message", tmp).Debugf("Created message.")
+	log.WithFields(logrus.Fields{"message_id": tmp.ID, "content_len": len(tmp.Content)}).Debugf("Created message.")
 
 	// Guard #2 (secondary) — re-check after persistence to narrow the dual-delivery race window.
 	// On failure here the row stays 'pending' on purpose — the backstop will fire.
@@ -250,7 +256,7 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 	// user-visible reply. If retry becomes necessary, gate it on an idempotency
 	// key (e.g., evt.ID) honored by conversation-manager — see design doc §11
 	// (Accepted v1 limits) for the dual-delivery race window.
-	sent, errSend := h.reqHandler.ConversationV1MessageSend(ctx, acFinal.ReferenceID, evt.Text, []cvmedia.Media{})
+	_, errSend := h.reqHandler.ConversationV1MessageSend(ctx, acFinal.ReferenceID, evt.Text, []cvmedia.Media{})
 	if errSend != nil {
 		log.WithFields(logrus.Fields{
 			"aicall_id":       acFinal.ID,
@@ -263,9 +269,8 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 	}
 	promConversationReplySendTotal.WithLabelValues("success").Inc()
 	log.WithFields(logrus.Fields{
-		"aicall_id":            acFinal.ID,
-		"conversation_id":      acFinal.ReferenceID,
-		"conversation_message": sent,
+		"aicall_id":       acFinal.ID,
+		"conversation_id": acFinal.ReferenceID,
 	}).Debugf("Sent conversation reply.")
 
 	// Mark the row as delivered post-send. A single retry after a short delay is
@@ -285,8 +290,11 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 
 func (h *messageHandler) EventPMMessageBotLLMIntermediate(ctx context.Context, evt *pmmessage.Message) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "EventPMMessageBotLLMIntermediate",
-		"event": evt,
+		"func":           "EventPMMessageBotLLMIntermediate",
+		"aicall_id":      evt.PipecatcallReferenceID,
+		"pipecatcall_id": evt.PipecatcallID,
+		"event_id":       evt.ID,
+		"text_len":       len(evt.Text),
 	})
 
 	if evt.Text == "" {
@@ -340,8 +348,11 @@ func (h *messageHandler) EventPMMessageBotLLMIntermediate(ctx context.Context, e
 
 func (h *messageHandler) EventPMMessageUserLLM(ctx context.Context, evt *pmmessage.Message) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "EventPMMessageUserLLM",
-		"event": evt,
+		"func":           "EventPMMessageUserLLM",
+		"aicall_id":      evt.PipecatcallReferenceID,
+		"pipecatcall_id": evt.PipecatcallID,
+		"event_id":       evt.ID,
+		"text_len":       len(evt.Text),
 	})
 
 	activeAIID := h.resolveActiveAIID(ctx, evt.PipecatcallReferenceID)
@@ -351,13 +362,14 @@ func (h *messageHandler) EventPMMessageUserLLM(ctx context.Context, evt *pmmessa
 		log.Errorf("Could not create the message. err: %v", err)
 		return
 	}
-	log.WithField("message", tmp).Debugf("Created message.")
+	log.WithFields(logrus.Fields{"message_id": tmp.ID, "content_len": len(tmp.Content)}).Debugf("Created message.")
 }
 
 func (h *messageHandler) EventPMTeamMemberSwitched(ctx context.Context, evt *pmmessage.MemberSwitchedEvent) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "EventPMTeamMemberSwitched",
-		"event": evt,
+		"func":           "EventPMTeamMemberSwitched",
+		"aicall_id":      evt.PipecatcallReferenceID,
+		"pipecatcall_id": evt.PipecatcallID,
 	})
 
 	contentMap := map[string]any{
@@ -399,7 +411,7 @@ func (h *messageHandler) EventPMTeamMemberSwitched(ctx context.Context, evt *pmm
 		log.Errorf("Could not create the notification message. err: %v", err)
 		return
 	}
-	log.WithField("message", tmp).Debugf("Created member-switched notification message.")
+	log.WithFields(logrus.Fields{"message_id": tmp.ID, "content_len": len(tmp.Content)}).Debugf("Created member-switched notification message.")
 
 	if h.participantHandler != nil {
 		if toAIID == uuid.Nil {

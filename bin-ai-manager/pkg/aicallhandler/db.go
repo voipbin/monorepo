@@ -78,7 +78,7 @@ func (h *aicallHandler) Create(
 		Status: aicall.StatusInitiating,
 	}
 	log = log.WithField("aicall_id", id.String())
-	log.WithField("aicall", tmp).Debugf("Creating aicall. aicall_id: %s", tmp.ID)
+	log.WithField("aicall_id", tmp.ID).Debugf("Creating aicall. aicall_id: %s", tmp.ID)
 
 	if errCreate := h.db.AIcallCreate(ctx, tmp); errCreate != nil {
 		log.Errorf("Could not create a new aicall. err: %v", errCreate)
@@ -153,7 +153,7 @@ func (h *aicallHandler) CreateByMessaging(
 		Status: aicall.StatusInitiating,
 	}
 	log = log.WithField("aicall_id", id.String())
-	log.WithField("aicall", tmp).Debugf("Creating aicall by messaging. aicall_id: %s", tmp.ID)
+	log.WithField("aicall_id", tmp.ID).Debugf("Creating aicall by messaging. aicall_id: %s", tmp.ID)
 
 	if errCreate := h.db.AIcallCreate(ctx, tmp); errCreate != nil {
 		log.Errorf("Could not create a new aicall. err: %v", errCreate)

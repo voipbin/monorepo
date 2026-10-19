@@ -151,7 +151,7 @@ func (h *aicallHandler) runInsightSessionRefresh(ctx context.Context, log *logru
 		return existing, insightSessionRefreshFailed
 	}
 
-	log.WithField("aicall", res).Infof("Started a new insight session. aicall_id: %s, boundary: %s", existing.ID, boundary.UTC().Format(time.RFC3339Nano))
+	log.WithField("aicall_id", res.ID).Infof("Started a new insight session. aicall_id: %s, boundary: %s", existing.ID, boundary.UTC().Format(time.RFC3339Nano))
 	return res, insightSessionRefreshRefreshed
 }
 

@@ -21,8 +21,10 @@ import (
 // processV1McpServersGet handles GET /v1/mcp_servers request
 func (h *listenHandler) processV1McpServersGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1McpServersGet",
-		"request": m,
+		"func":     "processV1McpServersGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	u, err := url.Parse(m.URI)
@@ -64,7 +66,7 @@ func (h *listenHandler) processV1McpServersGet(ctx context.Context, m *sock.Requ
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -80,8 +82,10 @@ func (h *listenHandler) processV1McpServersGet(ctx context.Context, m *sock.Requ
 // processV1McpServersPost handles POST /v1/mcp_servers request
 func (h *listenHandler) processV1McpServersPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1McpServersPost",
-		"request": m,
+		"handler":  "processV1McpServersPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataMcpServersPost
@@ -108,7 +112,7 @@ func (h *listenHandler) processV1McpServersPost(ctx context.Context, m *sock.Req
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -124,8 +128,10 @@ func (h *listenHandler) processV1McpServersPost(ctx context.Context, m *sock.Req
 // processV1McpServersIDGet handles GET /v1/mcp_servers/<mcp-server-id> request
 func (h *listenHandler) processV1McpServersIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1McpServersIDGet",
-		"request": m,
+		"handler":  "processV1McpServersIDGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -147,7 +153,7 @@ func (h *listenHandler) processV1McpServersIDGet(ctx context.Context, m *sock.Re
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -163,8 +169,10 @@ func (h *listenHandler) processV1McpServersIDGet(ctx context.Context, m *sock.Re
 // processV1McpServersIDPut handles PUT /v1/mcp_servers/<mcp-server-id> request
 func (h *listenHandler) processV1McpServersIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1McpServersIDPut",
-		"request": m,
+		"handler":  "processV1McpServersIDPut",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataMcpServersIDPut
@@ -202,7 +210,7 @@ func (h *listenHandler) processV1McpServersIDPut(ctx context.Context, m *sock.Re
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -218,8 +226,10 @@ func (h *listenHandler) processV1McpServersIDPut(ctx context.Context, m *sock.Re
 // processV1McpServersOAuthStartPost handles POST /v1/mcp_servers/oauth/start request
 func (h *listenHandler) processV1McpServersOAuthStartPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1McpServersOAuthStartPost",
-		"request": m,
+		"handler":  "processV1McpServersOAuthStartPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataMcpServersOAuthStartPost
@@ -241,7 +251,7 @@ func (h *listenHandler) processV1McpServersOAuthStartPost(ctx context.Context, m
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", res, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -255,8 +265,10 @@ func (h *listenHandler) processV1McpServersOAuthStartPost(ctx context.Context, m
 // processV1McpServersOAuthCallbackGet handles GET /v1/mcp_servers/oauth/callback request
 func (h *listenHandler) processV1McpServersOAuthCallbackGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1McpServersOAuthCallbackGet",
-		"request": m,
+		"handler":  "processV1McpServersOAuthCallbackGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	u, err := url.Parse(m.URI)
@@ -278,7 +290,7 @@ func (h *listenHandler) processV1McpServersOAuthCallbackGet(ctx context.Context,
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", res, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -292,8 +304,10 @@ func (h *listenHandler) processV1McpServersOAuthCallbackGet(ctx context.Context,
 // processV1McpServersOAuthCompletePost handles POST /v1/mcp_servers/oauth/complete request
 func (h *listenHandler) processV1McpServersOAuthCompletePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1McpServersOAuthCompletePost",
-		"request": m,
+		"handler":  "processV1McpServersOAuthCompletePost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataMcpServersOAuthCompletePost
@@ -310,7 +324,7 @@ func (h *listenHandler) processV1McpServersOAuthCompletePost(ctx context.Context
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -324,8 +338,10 @@ func (h *listenHandler) processV1McpServersOAuthCompletePost(ctx context.Context
 // processV1McpServersIDDelete handles DELETE /v1/mcp_servers/<mcp-server-id> request
 func (h *listenHandler) processV1McpServersIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1McpServersIDDelete",
-		"request": m,
+		"handler":  "processV1McpServersIDDelete",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -347,7 +363,7 @@ func (h *listenHandler) processV1McpServersIDDelete(ctx context.Context, m *sock
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

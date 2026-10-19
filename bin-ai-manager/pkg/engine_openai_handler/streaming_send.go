@@ -49,7 +49,7 @@ func (h *engineOpenaiHandler) StreamingSend(ctx context.Context, cc *aicall.AIca
 		Messages: tmpMessages,
 		Tools:    tools,
 	}
-	log = log.WithField("request", req)
+	log = log.WithField("message_count", len(req.Messages))
 
 	// send the request
 	chanMsg, chanTool, err := h.streamingSend(ctx, req)
@@ -69,7 +69,7 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 	// Set Stream: true for streaming requests
 	req.Stream = true
 
-	log.WithField("request", req).Debugf("Sending streaming chat completion request to OpenAI.")
+	log.WithField("message_count", len(req.Messages)).Debugf("Sending streaming chat completion request to OpenAI.")
 	stream, err := h.client.CreateChatCompletionStream(ctx, *req)
 	if err != nil {
 		return nil, nil, fmt.Errorf("CreateChatCompletionStream error: %w", err)
@@ -176,9 +176,9 @@ func (h *engineOpenaiHandler) streamingResponseHandleText(chanMsg chan string, t
 
 func (h *engineOpenaiHandler) streamingResponseHandleTool(chanTool chan *message.ToolCall, id string, name string, arg strings.Builder) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "streamingResponseHandleTool",
-		"tool_name": name,
-		"tool_arg":  arg.String(),
+		"func":         "streamingResponseHandleTool",
+		"tool_name":    name,
+		"tool_arg_len": arg.Len(),
 	})
 	if name == "" {
 		return
@@ -192,7 +192,7 @@ func (h *engineOpenaiHandler) streamingResponseHandleTool(chanTool chan *message
 		// 	Arguments: arg.String(),
 		// },
 	}
-	log.WithField("tool_call", toolCall).Debugf("Prepared the tool call.")
+	log.WithField("tool_call_id", toolCall.ID).Debugf("Prepared the tool call.")
 
 	chanTool <- toolCall
 }

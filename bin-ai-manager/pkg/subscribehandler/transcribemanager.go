@@ -23,8 +23,10 @@ import (
 // aicallHandler.EventTMTranscriptCreated, which is where the listen state is.
 func (h *subscribeHandler) processEventTMTranscriptCreated(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventTMTranscriptCreated",
-		"event": m,
+		"func":      "processEventTMTranscriptCreated",
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
 	})
 
 	var evt tmtranscript.Transcript

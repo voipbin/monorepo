@@ -20,9 +20,10 @@ import (
 
 func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *aicall.AIcall, m *message.Message) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "MessageSend",
-		"aicall":  cc,
-		"message": m,
+		"func":        "MessageSend",
+		"aicall_id":   cc.ID,
+		"message_id":  m.ID,
+		"content_len": len(m.Content),
 	})
 
 	var data engine_dialogflow.EngineDialogflow
@@ -45,13 +46,13 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *aicall.AI
 	}
 
 	req := h.getRequest(&data, cc, m)
-	log.Debugf("Checking value. request: %v", req)
+	log.Debugf("Created the dialogflow request.")
 
 	resp, err := h.send(ctx, client, req)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the request")
 	}
-	log.Debugf("Received response. response: %v", resp)
+	log.Debugf("Received the dialogflow response.")
 
 	content := ""
 	if resp.GetQueryResult() == nil {

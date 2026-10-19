@@ -102,14 +102,14 @@ func (h *aicallHandler) EventCMDTMFReceived(ctx context.Context, evt *cmdtmf.DTM
 	}
 
 	messageText := fmt.Sprintf("type: %s\ndigit: %s\nduration: %d\n", defaultDTMFEvent, evt.Digit, evt.Duration)
-	log.Debugf("Prepared the dtmf message to send to the aicall. message: %s", messageText)
+	log.WithField("message_len", len(messageText)).Debugf("Prepared the dtmf message to send to the aicall.")
 
-	tmp, err := h.SendReferenceTypeCall(ctx, cc, message.RoleUser, messageText, true, true)
+	_, err = h.SendReferenceTypeCall(ctx, cc, message.RoleUser, messageText, true, true)
 	if err != nil {
 		log.Errorf("Could not send dtmf message to aicall. err: %v", err)
 		return
 	}
-	log.WithField("message", tmp).Debugf("Sent the dtmf message to the aicall.")
+	log.Debugf("Sent the dtmf message to the aicall.")
 }
 
 func (h *aicallHandler) EventPMPipecatcallInitialized(ctx context.Context, evt *pmpipecatcall.Pipecatcall) {

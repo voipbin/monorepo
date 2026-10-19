@@ -452,10 +452,11 @@ func Test_pythonRunnerStart_requestBody(t *testing.T) {
 	if err == nil || strings.Contains(err.Error(), testEndpointKey) {
 		t.Errorf("team error must exist and not carry the body: %v", err)
 	}
-	// Without an endpoint the existing behavior stays.
+	// Without an endpoint the error keeps the status and the body length, not the body: the runner
+	// answer can carry request text (VOIP-1633).
 	err = r.Start(context.Background(), id, "openai.gpt-5", "", nil, "", "", "", "", "", nil, nil, nil, false, testEndpointCustomerID, "", "")
-	if err == nil || !strings.Contains(err.Error(), "body:") {
-		t.Errorf("a request without an endpoint keeps the body in the error: %v", err)
+	if err == nil || !strings.Contains(err.Error(), "body_len:") || strings.Contains(err.Error(), testEndpointKey) {
+		t.Errorf("a request without an endpoint keeps the status and the body length only: %v", err)
 	}
 }
 

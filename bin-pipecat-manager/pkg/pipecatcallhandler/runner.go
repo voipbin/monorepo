@@ -271,15 +271,13 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleInput(id uuid.UUID, c *gin.Con
 		"remote_addr":    c.Request.RemoteAddr,
 		"uri":            c.Request.RequestURI,
 		"method":         c.Request.Method,
-		"headers":        c.Request.Header,
-		"params":         c.Params,
 	})
 
 	se, err := h.SessionGet(id)
 	if err != nil {
 		return fmt.Errorf("could not get pipecatcall session: %w", err)
 	}
-	log.WithField("session", se).Debugf("Pipecatcall session retrieved. pipecatcall_id: %s", id)
+	log.Debugf("Pipecatcall session retrieved. pipecatcall_id: %s", id)
 
 	ws, err := h.websocketHandler.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -333,9 +331,9 @@ func (h *pipecatcallHandler) runnerWebsocketHandleInputReceiver(se *pipecatcall.
 
 		switch msgType {
 		case websocket.BinaryMessage:
-			log.WithField("message", message).Debugf("Received Protobuf Frame from client.")
+			log.WithField("message_len", len(message)).Debugf("Received Protobuf Frame from client.")
 		case websocket.TextMessage:
-			log.WithField("message", message).Debugf("Received Text message from client.")
+			log.WithField("message_len", len(message)).Debugf("Received Text message from client.")
 		case websocket.CloseMessage:
 			log.Debugf("Received Close message from client.")
 			return
@@ -349,7 +347,7 @@ func (h *pipecatcallHandler) runnerWebsocketHandleInputReceiver(se *pipecatcall.
 		case websocket.PongMessage:
 			log.Debugf("Received Pong message from client.")
 		default:
-			log.Debugf("Received unknown message type %d, message: %s", msgType, message)
+			log.WithField("message_len", len(message)).Debugf("Received unknown message type %d", msgType)
 		}
 	}
 }
@@ -361,15 +359,13 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 		"remote_addr":    c.Request.RemoteAddr,
 		"uri":            c.Request.RequestURI,
 		"method":         c.Request.Method,
-		"headers":        c.Request.Header,
-		"params":         c.Params,
 	})
 
 	se, err := h.SessionGet(id)
 	if err != nil {
 		return fmt.Errorf("could not get pipecatcall session: %w", err)
 	}
-	log.WithField("session", se).Debugf("Pipecatcall session retrieved. pipecatcall_id: %s", id)
+	log.Debugf("Pipecatcall session retrieved. pipecatcall_id: %s", id)
 
 	ws, err := h.websocketHandler.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -390,7 +386,7 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 	// this is used to start sending audio from asterisk to pipecat runner
 	// we consider the pipecatcall initialized when the output websocket is connected
 	// because once the output websocket is connected, we are ready to receiving the audio from the pipecat runner.
-	log.WithField("pipecatcall", pc).Debugf("Publishing pipecatcall_initialized event. tm_create: %v, tm_update: %v, tm_delete: %v", pc.TMCreate, pc.TMUpdate, pc.TMDelete)
+	log.WithField("pipecatcall_id", pc.ID).Debugf("Publishing pipecatcall_initialized event. tm_create: %v, tm_update: %v, tm_delete: %v", pc.TMCreate, pc.TMUpdate, pc.TMDelete)
 	h.notifyHandler.PublishEvent(se.Ctx, pipecatcall.EventTypeInitialized, pc)
 	log.Debugf("Notified that pipecatcall is initialized. pipecatcall_id: %s", id)
 
@@ -419,7 +415,7 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 
 			switch x := frame.Frame.(type) {
 			case *pipecatframe.Frame_Text:
-				log.Debugf("Received TextFrame: ID=%d, Name=%s, Text='%s'", x.Text.Id, x.Text.Name, x.Text.Text)
+				log.WithField("text_len", len(x.Text.Text)).Debugf("Received TextFrame: ID=%d, Name=%s", x.Text.Id, x.Text.Name)
 				h.runnerHandleTextFrame(se, x.Text.Text)
 
 			case *pipecatframe.Frame_Audio:
@@ -442,7 +438,7 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 				}
 
 			case *pipecatframe.Frame_Transcription:
-				log.Debugf("Received TranscriptionFrame: ID=%d, Name=%s, Text='%s', UserID=%s, Timestamp=%s", x.Transcription.Id, x.Transcription.Name, x.Transcription.Text, x.Transcription.UserId, x.Transcription.Timestamp)
+				log.WithField("text_len", len(x.Transcription.Text)).Debugf("Received TranscriptionFrame: ID=%d, Name=%s, UserID=%s, Timestamp=%s", x.Transcription.Id, x.Transcription.Name, x.Transcription.UserId, x.Transcription.Timestamp)
 
 			case *pipecatframe.Frame_Message:
 				if errMessage := h.receiveMessageFrameTypeMessage(se, []byte(x.Message.Data)); errMessage != nil {
@@ -484,17 +480,17 @@ func (h *pipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) erro
 	ctx := c.Request.Context()
 
 	// get pipecatcall session
-	se, err := h.SessionGet(id)
+	_, err := h.SessionGet(id)
 	if err != nil {
 		return fmt.Errorf("could not get pipecatcall session: %w", err)
 	}
-	log.WithField("session", se).Debugf("Pipecatcall session retrieved. pipecatcall_id: %s", id)
+	log.Debugf("Pipecatcall session retrieved. pipecatcall_id: %s", id)
 
 	pc, err := h.Get(ctx, id)
 	if err != nil {
 		return fmt.Errorf("could not get pipecatcall: %w", err)
 	}
-	log.WithField("pipecatcall", pc).Debugf("Pipecatcall retrieved. pipecatcall_id: %s", id)
+	log.WithField("pipecatcall_id", pc.ID).Debugf("Pipecatcall retrieved. pipecatcall_id: %s", id)
 
 	// send request to the ai-manager to get tool information
 	if pc.ReferenceType != pipecatcall.ReferenceTypeAICall {
@@ -531,17 +527,17 @@ func (h *pipecatcallHandler) RunnerMemberSwitchedHandle(id uuid.UUID, c *gin.Con
 	})
 	ctx := c.Request.Context()
 
-	se, err := h.SessionGet(id)
+	_, err := h.SessionGet(id)
 	if err != nil {
 		return fmt.Errorf("could not get pipecatcall session: %w", err)
 	}
-	log.WithField("session", se).Debugf("Pipecatcall session retrieved. pipecatcall_id: %s", id)
+	log.Debugf("Pipecatcall session retrieved. pipecatcall_id: %s", id)
 
 	pc, err := h.Get(ctx, id)
 	if err != nil {
 		return fmt.Errorf("could not get pipecatcall: %w", err)
 	}
-	log.WithField("pipecatcall", pc).Debugf("Pipecatcall retrieved. pipecatcall_id: %s", id)
+	log.WithField("pipecatcall_id", pc.ID).Debugf("Pipecatcall retrieved. pipecatcall_id: %s", id)
 
 	if pc.ReferenceType != pipecatcall.ReferenceTypeAICall {
 		return fmt.Errorf("pipecatcall reference type is not ai-call. reference_type: %s", pc.ReferenceType)
@@ -750,7 +746,7 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		log.Warnf("The pipecat runner rejected a request. request_id: %s, error: %s", msg.ID, errText)
 
 	default:
-		log.WithField("frame", frame).Debugf("Unrecognized RTVI message type: %s", frame.Type)
+		log.Debugf("Unrecognized RTVI message type: %s", frame.Type)
 	}
 
 	return nil

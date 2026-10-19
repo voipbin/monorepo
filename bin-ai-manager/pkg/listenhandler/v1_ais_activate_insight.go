@@ -23,7 +23,11 @@ func (h *listenHandler) processV1AIsIDActivateInsightPost(ctx context.Context, m
 		"func":  "processV1AIsIDActivateInsightPost",
 		"ai_id": id,
 	})
-	log.WithField("request", m).Debug("Received request.")
+	log.WithFields(logrus.Fields{
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
+	}).Debug("Received request.")
 
 	if id == uuid.Nil {
 		log.Error("Invalid AI ID.")

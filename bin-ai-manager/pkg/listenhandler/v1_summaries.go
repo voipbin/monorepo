@@ -19,8 +19,10 @@ import (
 // processV1SummariesGet handles GET /v1/summaries request
 func (h *listenHandler) processV1SummariesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1SummariesGet",
-		"request": m,
+		"handler":  "processV1SummariesGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	u, err := url.Parse(m.URI)
@@ -62,7 +64,7 @@ func (h *listenHandler) processV1SummariesGet(ctx context.Context, m *sock.Reque
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -78,8 +80,10 @@ func (h *listenHandler) processV1SummariesGet(ctx context.Context, m *sock.Reque
 // processV1SummariesPost handles POST /v1/summaries request
 func (h *listenHandler) processV1SummariesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1SummariesPost",
-		"request": m,
+		"handler":  "processV1SummariesPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataSummariesPost
@@ -96,7 +100,7 @@ func (h *listenHandler) processV1SummariesPost(ctx context.Context, m *sock.Requ
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -112,8 +116,10 @@ func (h *listenHandler) processV1SummariesPost(ctx context.Context, m *sock.Requ
 // processV1SummariesIDGet handles GET /v1/summaries/<summary-id> request
 func (h *listenHandler) processV1SummariesIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1SummariesIDGet",
-		"request": m,
+		"handler":  "processV1SummariesIDGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -135,7 +141,7 @@ func (h *listenHandler) processV1SummariesIDGet(ctx context.Context, m *sock.Req
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -151,8 +157,10 @@ func (h *listenHandler) processV1SummariesIDGet(ctx context.Context, m *sock.Req
 // processV1SummariesIDRegeneratePost handles POST /v1/summaries/<summary-id>/regenerate request
 func (h *listenHandler) processV1SummariesIDRegeneratePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1SummariesIDRegeneratePost",
-		"request": m,
+		"handler":  "processV1SummariesIDRegeneratePost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -180,7 +188,7 @@ func (h *listenHandler) processV1SummariesIDRegeneratePost(ctx context.Context, 
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -196,8 +204,10 @@ func (h *listenHandler) processV1SummariesIDRegeneratePost(ctx context.Context, 
 // processV1SummariesIDDelete handles DELETE /v1/summaries/<summary-id> request
 func (h *listenHandler) processV1SummariesIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1SummariesIDDelete",
-		"request": m,
+		"handler":  "processV1SummariesIDDelete",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -219,7 +229,7 @@ func (h *listenHandler) processV1SummariesIDDelete(ctx context.Context, m *sock.
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

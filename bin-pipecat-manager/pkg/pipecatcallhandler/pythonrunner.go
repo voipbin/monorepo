@@ -154,7 +154,7 @@ func (h *pythonRunner) Start(
 			// The body of a request that carried an endpoint is not put into the error text.
 			return errors.Errorf("python runner returned non-200 status: %s", resp.Status)
 		}
-		return errors.Errorf("python runner returned non-200 status: %s, body: %s", resp.Status, string(body))
+		return errors.Errorf("python runner returned non-200 status: %s, body_len: %d", resp.Status, len(body))
 	}
 
 	return nil
@@ -197,7 +197,7 @@ func (h *pythonRunner) Stop(ctx context.Context, pipecatcallID uuid.UUID) error 
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.Errorf("python runner returned non-200 status on stop: %s, body: %s", resp.Status, string(body))
+		return errors.Errorf("python runner returned non-200 status on stop: %s, body_len: %d", resp.Status, len(body))
 	}
 
 	return nil

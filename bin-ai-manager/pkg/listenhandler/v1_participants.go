@@ -17,8 +17,10 @@ import (
 // processV1AIcallsIDParticipantsGet handles GET /v1/aicalls/<aicall-id>/participants
 func (h *listenHandler) processV1AIcallsIDParticipantsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1AIcallsIDParticipantsGet",
-		"request": m,
+		"handler":  "processV1AIcallsIDParticipantsGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -64,8 +66,10 @@ func (h *listenHandler) processV1AIcallsIDParticipantsGet(ctx context.Context, m
 // processV1AIsIDParticipantsGet handles GET /v1/ais/<ai-id>/participants
 func (h *listenHandler) processV1AIsIDParticipantsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1AIsIDParticipantsGet",
-		"request": m,
+		"handler":  "processV1AIsIDParticipantsGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")

@@ -27,8 +27,8 @@ type RequestContent struct {
 
 func (h *summaryHandler) ContentProcess(ctx context.Context, sm *summary.Summary) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "ContentProcess",
-		"summary": sm,
+		"func":       "ContentProcess",
+		"summary_id": sm.ID,
 	})
 
 	var err error
@@ -69,7 +69,7 @@ func (h *summaryHandler) contentProcessReferenceTypeCall(ctx context.Context, ca
 	if err != nil {
 		return errors.Wrapf(err, "could not send the request")
 	}
-	log.WithField("content", content).Debugf("Parsed summary content.")
+	log.WithField("content_len", len(content)).Debugf("Parsed summary content.")
 
 	tmp, err := h.UpdateStatusDone(ctx, sm.ID, content)
 	if stderrors.Is(err, ErrSummaryAlreadyDone) {
@@ -80,7 +80,7 @@ func (h *summaryHandler) contentProcessReferenceTypeCall(ctx context.Context, ca
 	if err != nil {
 		return errors.Wrapf(err, "could not update the status")
 	}
-	log.WithField("summary", tmp).Debugf("Updated the summary status")
+	log.WithField("summary_id", tmp.ID).Debugf("Updated the summary status")
 
 	if errFlow := h.startOnEndFlow(ctx, tmp); errFlow != nil {
 		// we could not start the on end flow, but we can continue the process
@@ -116,7 +116,7 @@ func (h *summaryHandler) contentProcessReferenceTypeConference(ctx context.Conte
 	if err != nil {
 		return errors.Wrapf(err, "could not send the request")
 	}
-	log.WithField("content", content).Debugf("Parsed summary content.")
+	log.WithField("content_len", len(content)).Debugf("Parsed summary content.")
 
 	tmp, err := h.UpdateStatusDone(ctx, sm.ID, content)
 	if stderrors.Is(err, ErrSummaryAlreadyDone) {
@@ -132,7 +132,7 @@ func (h *summaryHandler) contentProcessReferenceTypeConference(ctx context.Conte
 	if err != nil {
 		return errors.Wrapf(err, "could not update the status")
 	}
-	log.WithField("summary", tmp).Debugf("Updated the summary status")
+	log.WithField("summary_id", tmp.ID).Debugf("Updated the summary status")
 
 	if errFlow := h.startOnEndFlow(ctx, tmp); errFlow != nil {
 		// we could not start the on end flow, but we can continue the process
@@ -197,7 +197,7 @@ func (h *summaryHandler) contentGet(ctx context.Context, activeflowID uuid.UUID,
 		if err != nil {
 			return "", errors.Wrapf(err, "could not get the variable")
 		}
-		log.WithField("variable", tmp).Debugf("Received variable")
+		log.WithField("variable_count", len(tmp.Variables)).Debugf("Received variable")
 
 		variables = tmp.Variables
 	}
@@ -214,7 +214,7 @@ func (h *summaryHandler) contentGet(ctx context.Context, activeflowID uuid.UUID,
 	if err != nil {
 		return "", errors.Wrapf(err, "could not marshal the data")
 	}
-	log.WithField("request_content", requestContent).Debugf("Created request content.")
+	log.WithField("transcript_count", len(requestContent.Transcripts)).Debugf("Created request content.")
 
 	// First-pass enforcement: pin the output language by value in a system
 	// message ([system, user]), removing the previous self-reference indirection.
@@ -239,7 +239,7 @@ func (h *summaryHandler) contentGet(ctx context.Context, activeflowID uuid.UUID,
 		if errSend != nil {
 			return "", errors.Wrapf(errSend, "could not send the request")
 		}
-		log.WithField("response", tmpRes).Debugf("Received response")
+		log.Debugf("Received response")
 
 		if tmpRes == nil || len(tmpRes.Choices) == 0 {
 			log.Debugf("Received response with empty choices")
@@ -371,7 +371,7 @@ func (h *summaryHandler) verifyOutputLanguage(ctx context.Context, content strin
 	case strings.HasPrefix(answer, "no"):
 		return false
 	default:
-		log.Debugf("Unexpected verification answer %q, treating as pass.", answer)
+		log.Debugf("Unexpected verification answer, treating as pass. answer_len: %d", len(answer))
 		return true
 	}
 }

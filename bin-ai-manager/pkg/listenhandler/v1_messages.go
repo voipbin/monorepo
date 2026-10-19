@@ -19,8 +19,10 @@ import (
 // processV1MessagesGet handles GET /v1/messages request
 func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1MessagesGet",
-		"request": m,
+		"func":     "processV1MessagesGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	u, err := url.Parse(m.URI)
@@ -62,7 +64,7 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -78,8 +80,10 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 // processV1MessagesPost handles POST /v1/messages request
 func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1MessagesPost",
-		"request": m,
+		"handler":  "processV1MessagesPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataMessagesPost
@@ -96,7 +100,7 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -112,8 +116,10 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 // processV1MessagesIDGet handles POST /v1/messages/<message-id> request
 func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1MessagesIDGet",
-		"request": m,
+		"handler":  "processV1MessagesIDGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -135,7 +141,7 @@ func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, m *sock.Requ
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

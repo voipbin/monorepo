@@ -19,7 +19,7 @@ import (
 
 // processV1AIPromptProposalsPost handles POST /v1/aipromptproposals.
 func (h *listenHandler) processV1AIPromptProposalsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsPost", "request": m})
+	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsPost", "method": m.Method, "uri": m.URI, "data_len": len(m.Data)})
 
 	var req request.V1DataAIPromptProposalsPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
@@ -56,7 +56,7 @@ func (h *listenHandler) processV1AIPromptProposalsPost(ctx context.Context, m *s
 // It sweeps completed proposals whose basis prompt has drifted, marking them expired
 // (design §4/§6: scheduled sweep, invoked by the seeded ai-proposal-expiry schedule).
 func (h *listenHandler) processV1AIPromptProposalsExpirePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsExpirePost", "request": m})
+	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsExpirePost", "method": m.Method, "uri": m.URI, "data_len": len(m.Data)})
 
 	expired, err := h.aipromptproposalHandler.SweepExpiredProposals(ctx)
 	if err != nil {
@@ -78,7 +78,7 @@ func (h *listenHandler) processV1AIPromptProposalsExpirePost(ctx context.Context
 
 // processV1AIPromptProposalsGet handles GET /v1/aipromptproposals.
 func (h *listenHandler) processV1AIPromptProposalsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsGet", "request": m})
+	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsGet", "method": m.Method, "uri": m.URI, "data_len": len(m.Data)})
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -117,7 +117,7 @@ func (h *listenHandler) processV1AIPromptProposalsGet(ctx context.Context, m *so
 
 // processV1AIPromptProposalsIDGet handles GET /v1/aipromptproposals/<id>.
 func (h *listenHandler) processV1AIPromptProposalsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsIDGet", "request": m})
+	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsIDGet", "method": m.Method, "uri": m.URI, "data_len": len(m.Data)})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -145,7 +145,7 @@ func (h *listenHandler) processV1AIPromptProposalsIDGet(ctx context.Context, m *
 
 // processV1AIPromptProposalsIDAcceptPost handles POST /v1/aipromptproposals/<id>/accept.
 func (h *listenHandler) processV1AIPromptProposalsIDAcceptPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsIDAcceptPost", "request": m})
+	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsIDAcceptPost", "method": m.Method, "uri": m.URI, "data_len": len(m.Data)})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -189,7 +189,7 @@ func (h *listenHandler) processV1AIPromptProposalsIDAcceptPost(ctx context.Conte
 
 // processV1AIPromptProposalsIDRejectPost handles POST /v1/aipromptproposals/<id>/reject.
 func (h *listenHandler) processV1AIPromptProposalsIDRejectPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsIDRejectPost", "request": m})
+	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsIDRejectPost", "method": m.Method, "uri": m.URI, "data_len": len(m.Data)})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -231,7 +231,7 @@ func (h *listenHandler) processV1AIPromptProposalsIDRejectPost(ctx context.Conte
 
 // processV1AIPromptProposalsIDDelete handles DELETE /v1/aipromptproposals/<id>.
 func (h *listenHandler) processV1AIPromptProposalsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsIDDelete", "request": m})
+	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsIDDelete", "method": m.Method, "uri": m.URI, "data_len": len(m.Data)})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {

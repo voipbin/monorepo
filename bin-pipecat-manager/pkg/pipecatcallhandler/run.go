@@ -180,7 +180,7 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 	if err != nil {
 		return nil, fmt.Errorf("could not get team: %w", err)
 	}
-	logrus.WithField("team", team).Debugf("Retrieved team info. team_id: %s", team.ID)
+	logrus.WithField("team_id", team.ID).Debugf("Retrieved team info. team_id: %s", team.ID)
 
 	// Resume the team flow at the AIcall's CurrentMemberID if it's set and valid.
 	// Otherwise fall back to the team's StartMemberID. Without this, every new

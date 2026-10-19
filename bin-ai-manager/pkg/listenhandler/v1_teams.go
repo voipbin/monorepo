@@ -20,8 +20,10 @@ import (
 // processV1TeamsGet handles GET /v1/teams request
 func (h *listenHandler) processV1TeamsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1TeamsGet",
-		"request": m,
+		"func":     "processV1TeamsGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	u, err := url.Parse(m.URI)
@@ -63,7 +65,7 @@ func (h *listenHandler) processV1TeamsGet(ctx context.Context, m *sock.Request) 
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -79,8 +81,10 @@ func (h *listenHandler) processV1TeamsGet(ctx context.Context, m *sock.Request) 
 // processV1TeamsPost handles POST /v1/teams request
 func (h *listenHandler) processV1TeamsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1TeamsPost",
-		"request": m,
+		"handler":  "processV1TeamsPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataTeamsPost
@@ -105,7 +109,7 @@ func (h *listenHandler) processV1TeamsPost(ctx context.Context, m *sock.Request)
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -121,8 +125,10 @@ func (h *listenHandler) processV1TeamsPost(ctx context.Context, m *sock.Request)
 // processV1TeamsIDGet handles GET /v1/teams/<team-id> request
 func (h *listenHandler) processV1TeamsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1TeamsIDGet",
-		"request": m,
+		"handler":  "processV1TeamsIDGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -144,7 +150,7 @@ func (h *listenHandler) processV1TeamsIDGet(ctx context.Context, m *sock.Request
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -160,8 +166,10 @@ func (h *listenHandler) processV1TeamsIDGet(ctx context.Context, m *sock.Request
 // processV1TeamsIDPut handles PUT /v1/teams/<team-id> request
 func (h *listenHandler) processV1TeamsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1TeamsIDPut",
-		"request": m,
+		"handler":  "processV1TeamsIDPut",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataTeamsIDPut
@@ -197,7 +205,7 @@ func (h *listenHandler) processV1TeamsIDPut(ctx context.Context, m *sock.Request
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -213,8 +221,10 @@ func (h *listenHandler) processV1TeamsIDPut(ctx context.Context, m *sock.Request
 // processV1TeamsIDDelete handles DELETE /v1/teams/<team-id> request
 func (h *listenHandler) processV1TeamsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1TeamsIDDelete",
-		"request": m,
+		"handler":  "processV1TeamsIDDelete",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -236,7 +246,7 @@ func (h *listenHandler) processV1TeamsIDDelete(ctx context.Context, m *sock.Requ
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

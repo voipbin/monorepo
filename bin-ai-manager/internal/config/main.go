@@ -136,6 +136,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("rabbitmq_address", "", "RabbitMQ server address")
 	f.String("prometheus_endpoint", "", "Prometheus metrics endpoint")
 	f.String("prometheus_listen_address", "", "Prometheus listen address")
+	f.String("log_level", "info", "Log level: debug, info, warn or error. Debug lines are written only when this is debug")
 	f.String("database_dsn", "", "Database connection DSN")
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
@@ -189,6 +190,7 @@ func bindConfig(cmd *cobra.Command) error {
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
 		"prometheus_endpoint":       "PROMETHEUS_ENDPOINT",
 		"prometheus_listen_address": "PROMETHEUS_LISTEN_ADDRESS",
+		"log_level":                 "LOG_LEVEL",
 		"database_dsn":              "DATABASE_DSN",
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
@@ -268,6 +270,8 @@ func Get() *Config {
 // If called before binding, it will load empty/default values.
 func LoadGlobalConfig() {
 	once.Do(func() {
+		applyLogLevel(viper.GetString("log_level"))
+
 		globalConfig = Config{
 			RabbitMQAddress:         viper.GetString("rabbitmq_address"),
 			PrometheusEndpoint:      viper.GetString("prometheus_endpoint"),
@@ -339,7 +343,25 @@ func LoadGlobalConfig() {
 
 func initLog() {
 	logrus.SetFormatter(joonix.NewFormatter())
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.InfoLevel)
+}
+
+// applyLogLevel sets the log level from the log_level setting. The default is info: Debug lines are
+// written only when debug is asked for explicitly. An unknown value keeps info and says so.
+func applyLogLevel(value string) {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "debug":
+		logrus.SetLevel(logrus.DebugLevel)
+	case "", "info":
+		logrus.SetLevel(logrus.InfoLevel)
+	case "warn":
+		logrus.SetLevel(logrus.WarnLevel)
+	case "error":
+		logrus.SetLevel(logrus.ErrorLevel)
+	default:
+		logrus.SetLevel(logrus.InfoLevel)
+		logrus.Warn("Unknown log_level, keeping info. Allowed values: debug, info, warn, error.")
+	}
 }
 
 // SetAIcallConversationIdleTimeoutHoursForTest overrides the idle timeout in

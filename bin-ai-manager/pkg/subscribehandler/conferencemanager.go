@@ -18,8 +18,10 @@ import (
 // comment.
 func (h *subscribeHandler) processEventCMConferenceUpdated(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventCMConferenceUpdated",
-		"event": m,
+		"func":      "processEventCMConferenceUpdated",
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
 	})
 
 	evt := cfconference.Conference{}

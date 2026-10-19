@@ -13,8 +13,10 @@ import (
 // This is the per-pod liveness probe used by ai-manager preflight.
 func (h *listenHandler) processV1PingGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1PingGet",
-		"request": m,
+		"func":     "processV1PingGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	res, err := h.pipecatcallHandler.Ping(ctx)
