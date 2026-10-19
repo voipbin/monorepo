@@ -32,13 +32,16 @@ func (h *handler) BillingGetByIdempotencyKey(ctx context.Context, idempotencyKey
 		return nil, fmt.Errorf("could not build query: %w", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not execute query: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("could not iterate rows: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 

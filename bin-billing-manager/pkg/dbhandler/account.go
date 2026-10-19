@@ -45,7 +45,7 @@ func (h *handler) AccountCreate(ctx context.Context, c *account.Account) error {
 		return fmt.Errorf("AccountCreate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AccountCreate: could not execute query. err: %v", err)
 	}
@@ -78,13 +78,16 @@ func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.
 		return nil, fmt.Errorf("accountGetFromDB: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("accountGetFromDB: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("accountGetFromDB: row iteration error: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -161,7 +164,7 @@ func (h *handler) AccountList(ctx context.Context, size uint64, token string, fi
 		return nil, fmt.Errorf("AccountList: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("AccountList: could not query. err: %v", err)
 	}
@@ -174,6 +177,10 @@ func (h *handler) AccountList(ctx context.Context, size uint64, token string, fi
 			return nil, fmt.Errorf("AccountList: could not scan row. err: %v", err)
 		}
 		res = append(res, u)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("AccountList: row iteration error. err: %w", err)
 	}
 
 	return res, nil
@@ -210,7 +217,7 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 		return fmt.Errorf("AccountUpdate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AccountUpdate: could not execute. err: %v", err)
 	}
@@ -439,7 +446,7 @@ func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("AccountDelete: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AccountDelete: could not execute. err: %v", err)
 	}
@@ -465,7 +472,7 @@ func (h *handler) AccountSetStatus(ctx context.Context, id uuid.UUID, status acc
 		return fmt.Errorf("AccountSetStatus: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AccountSetStatus: could not execute. err: %v", err)
 	}
