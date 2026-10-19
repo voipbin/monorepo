@@ -3,6 +3,7 @@ package analysisdbhandler
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -255,5 +256,152 @@ func Test_AnalysisCountProgressing(t *testing.T) {
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("expectations not met: %v", err)
+	}
+}
+
+func Test_AnalysisGet_rows_err(t *testing.T) {
+	h, mock, mc := newTestHandler(t)
+	defer mc.Finish()
+
+	id := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	owner := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	rowErr := errors.New("iteration failed")
+
+	rows := sqlmock.NewRows(analysisCols()).
+		AddRow(id.Bytes(), owner.Bytes(), uuid.Nil.Bytes(), "completed", nil, "", "", time.Now(), nil).
+		RowError(0, rowErr)
+	mock.ExpectQuery("SELECT .* FROM timeline_analyses").WillReturnRows(rows)
+
+	_, err := h.AnalysisGet(context.Background(), owner, id)
+	if !errors.Is(err, rowErr) {
+		t.Fatalf("expected the injected row error, got: %v", err)
+	}
+	if errors.Is(err, ErrNotFound) {
+		t.Fatalf("iteration error must not be reported as ErrNotFound: %v", err)
+	}
+}
+
+func Test_AnalysisGetByActiveflowID_rows_err(t *testing.T) {
+	h, mock, mc := newTestHandler(t)
+	defer mc.Finish()
+
+	id := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	owner := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	af := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333")
+	rowErr := errors.New("iteration failed")
+
+	rows := sqlmock.NewRows(analysisCols()).
+		AddRow(id.Bytes(), owner.Bytes(), af.Bytes(), "completed", nil, "", "", time.Now(), nil).
+		RowError(0, rowErr)
+	mock.ExpectQuery("SELECT .* FROM timeline_analyses").WillReturnRows(rows)
+
+	_, err := h.AnalysisGetByActiveflowID(context.Background(), owner, af)
+	if !errors.Is(err, rowErr) {
+		t.Fatalf("expected the injected row error, got: %v", err)
+	}
+	if errors.Is(err, ErrNotFound) {
+		t.Fatalf("iteration error must not be reported as ErrNotFound: %v", err)
+	}
+}
+
+func Test_AnalysisDelete_get_rows_err(t *testing.T) {
+	h, mock, mc := newTestHandler(t)
+	defer mc.Finish()
+
+	id := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	owner := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	rowErr := errors.New("iteration failed")
+
+	rows := sqlmock.NewRows(analysisCols()).
+		AddRow(id.Bytes(), owner.Bytes(), uuid.Nil.Bytes(), "completed", nil, "", "", time.Now(), nil).
+		RowError(0, rowErr)
+	mock.ExpectQuery("SELECT .* FROM timeline_analyses").WillReturnRows(rows)
+	// no ExpectExec: a DELETE after a failed lookup would fail the mock.
+
+	_, err := h.AnalysisDelete(context.Background(), owner, id)
+	if !errors.Is(err, rowErr) {
+		t.Fatalf("expected the injected row error, got: %v", err)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("expectations not met: %v", err)
+	}
+}
+
+func Test_AnalysisList_rows_err(t *testing.T) {
+	h, mock, mc := newTestHandler(t)
+	defer mc.Finish()
+	mockUtil := h.utilHandler.(*utilhandler.MockUtilHandler)
+	mockUtil.EXPECT().TimeGetCurTime().Return("2026-06-23T00:00:00.000000Z")
+
+	id := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	owner := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	rowErr := errors.New("iteration failed")
+
+	rows := sqlmock.NewRows(analysisCols()).
+		AddRow(id.Bytes(), owner.Bytes(), uuid.Nil.Bytes(), "completed", nil, "", "", time.Now(), nil).
+		AddRow(id.Bytes(), owner.Bytes(), uuid.Nil.Bytes(), "completed", nil, "", "", time.Now(), nil).
+		RowError(1, rowErr)
+	mock.ExpectQuery("SELECT .* FROM timeline_analyses").WillReturnRows(rows)
+
+	res, err := h.AnalysisList(context.Background(), owner, 10, "", nil)
+	if !errors.Is(err, rowErr) {
+		t.Fatalf("expected the injected row error, got: %v", err)
+	}
+	if res != nil {
+		t.Fatalf("partial result must be discarded on iteration error, got %d rows", len(res))
+	}
+}
+
+func Test_canceled_ctx(t *testing.T) {
+	owner := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	id := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+
+	tests := []struct {
+		name string
+		call func(ctx context.Context, h *handler) error
+	}{
+		{
+			name: "AnalysisGet",
+			call: func(ctx context.Context, h *handler) error {
+				_, err := h.AnalysisGet(ctx, owner, id)
+				return err
+			},
+		},
+		{
+			name: "AnalysisGetByActiveflowID",
+			call: func(ctx context.Context, h *handler) error {
+				_, err := h.AnalysisGetByActiveflowID(ctx, owner, id)
+				return err
+			},
+		},
+		{
+			name: "AnalysisList",
+			call: func(ctx context.Context, h *handler) error {
+				_, err := h.AnalysisList(ctx, owner, 10, "", nil)
+				return err
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h, _, mc := newTestHandler(t)
+			defer mc.Finish()
+			mockUtil := h.utilHandler.(*utilhandler.MockUtilHandler)
+			mockUtil.EXPECT().TimeGetCurTime().Return("2026-06-23T00:00:00.000000Z").AnyTimes()
+
+			// no ExpectQuery and no ExpectationsWereMet on purpose: a canceled
+			// context must stop database/sql before the driver is called.
+			// Registering an expectation here would blur that intent (and stay
+			// unconsumed).
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+
+			err := tt.call(ctx, h)
+			// the production error lines wrap with %v, so match on the message.
+			if err == nil || !strings.Contains(err.Error(), context.Canceled.Error()) {
+				t.Fatalf("expected a context canceled error, got: %v", err)
+			}
+		})
 	}
 }
