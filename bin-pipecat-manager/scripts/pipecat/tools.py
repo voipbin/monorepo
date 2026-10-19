@@ -149,6 +149,7 @@ async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_i
 
     should_run_llm = args.pop("run_llm", default_run_llm)
 
+    # total=20: longer than the Go tool_execute RPC (15 s), which is longer than one MCP call (10 s).
     http_url = f"{common.PIPECATCALL_HTTP_URL}/{pipecatcall_id}/tools"
     http_body = {
         "id": params.tool_call_id,
@@ -162,7 +163,7 @@ async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_i
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.post(http_url, json=http_body, timeout=aiohttp.ClientTimeout(total=10)) as response:
+            async with session.post(http_url, json=http_body, timeout=aiohttp.ClientTimeout(total=20)) as response:
                 status = response.status
                 content_type = response.headers.get("Content-Type", "")
                 text = await response.text()
@@ -197,7 +198,7 @@ async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_i
                 )
 
     except asyncio.TimeoutError:
-        logger.error(f"[{tool_name}] Request timed out after 10s")
+        logger.error(f"[{tool_name}] Request timed out after 20s")
         await params.result_callback({
             "status": "error",
             "error": "Request timed out",

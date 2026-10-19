@@ -267,7 +267,7 @@ func (r *requestHandler) AIV1AIcallToolExecute(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/aicalls/<aicall-id>/tool_execute", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/aicalls/<aicall-id>/tool_execute", requestTimeoutToolExecute, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

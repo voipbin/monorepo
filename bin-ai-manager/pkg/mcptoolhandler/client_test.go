@@ -2,6 +2,8 @@ package mcptoolhandler
 
 import (
 	"context"
+	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -152,12 +154,13 @@ func Test_ListTools_MethodStageFailures(t *testing.T) {
 		},
 		{
 			// The body is read through the size cap, so an oversized answer
-			// is cut and fails to parse instead of being buffered whole.
+			// is refused with ErrResponseTooLarge instead of being buffered
+			// whole or cut into something that fails to parse.
 			name: "body over the size cap",
 			configure: func(f *fakeMCPServer) {
 				f.methodRawBody = `{"jsonrpc":"2.0","id":2,"result":{"tools":[],"pad":"` + strings.Repeat("x", mcpserverhandler.McpHTTPResponseSizeCapBytes) + `"}}`
 			},
-			wantErr: "could not parse JSON-RPC response",
+			wantErr: ErrResponseTooLarge.Error(),
 		},
 	}
 
@@ -446,5 +449,156 @@ func assertGate(t *testing.T, err error, wantErr bool, wantErrText string, gotRe
 
 	if gotRequests != wantRequests {
 		t.Errorf("expected %d outbound request(s), got %d", wantRequests, gotRequests)
+	}
+}
+
+// sseEvent returns one SSE event answering request id 2 whose total length
+// (data line plus the blank line) is exactly total bytes.
+func sseEvent(total int) string {
+	head := "data: {\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"pad\":\""
+	tail := "\"}}\n\n"
+	return head + strings.Repeat("x", total-len(head)-len(tail)) + tail
+}
+
+// jsonBody returns a bare JSON-RPC answer to request id 2 of exactly total bytes.
+func jsonBody(total int) string {
+	head := "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"pad\":\""
+	tail := "\"}}"
+	return head + strings.Repeat("x", total-len(head)-len(tail)) + tail
+}
+
+func Test_cappedReader(t *testing.T) {
+	tests := []struct {
+		name string
+
+		limit int64
+		input int
+
+		expectN   int
+		expectErr error
+	}{
+		{name: "below the limit", limit: 10, input: 9, expectN: 9},
+		{name: "exactly the limit", limit: 10, input: 10, expectN: 10},
+		{name: "one byte over", limit: 10, input: 11, expectN: 10, expectErr: ErrResponseTooLarge},
+		{name: "far over", limit: 10, input: 1000, expectN: 10, expectErr: ErrResponseTooLarge},
+		{name: "empty", limit: 10, input: 0, expectN: 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := io.ReadAll(newCappedReader(strings.NewReader(strings.Repeat("a", tt.input)), tt.limit))
+			if !errors.Is(err, tt.expectErr) {
+				t.Errorf("Wrong error. expect: %v, got: %v", tt.expectErr, err)
+			}
+			// The byte past the limit is never handed to the caller as data.
+			if len(got) != tt.expectN {
+				t.Errorf("Wrong length. expect: %d, got: %d", tt.expectN, len(got))
+			}
+		})
+	}
+}
+
+// Test_readJSONRPCResponse_sizeCap pins how the size cap shows up on both
+// response framings: a response over the cap is refused with
+// ErrResponseTooLarge (it used to be cut and reported as a stream that ended
+// without an answer), one of exactly the cap is accepted, and an SSE answer
+// that completes before the cap is returned even when more bytes follow.
+func Test_readJSONRPCResponse_sizeCap(t *testing.T) {
+	const limit = 4096
+
+	tests := []struct {
+		name string
+
+		contentType string
+		body        string
+
+		expectErr error
+	}{
+		{name: "sse exactly the cap", contentType: "text/event-stream", body: sseEvent(limit)},
+		{name: "sse one byte over the cap", contentType: "text/event-stream", body: sseEvent(limit + 1), expectErr: ErrResponseTooLarge},
+		{name: "sse far over the cap", contentType: "text/event-stream", body: sseEvent(limit * 40), expectErr: ErrResponseTooLarge},
+		{name: "sse answer completes before the cap", contentType: "text/event-stream", body: sseEvent(200) + strings.Repeat("x", limit*2)},
+		{name: "json exactly the cap", contentType: "application/json", body: jsonBody(limit)},
+		{name: "json one byte over the cap", contentType: "application/json", body: jsonBody(limit + 1), expectErr: ErrResponseTooLarge},
+		{name: "json far over the cap", contentType: "application/json", body: jsonBody(limit * 40), expectErr: ErrResponseTooLarge},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := readJSONRPCResponse(tt.contentType, newCappedReader(strings.NewReader(tt.body), limit), 2)
+			if !errors.Is(err, tt.expectErr) {
+				t.Fatalf("Wrong error. expect: %v, got: %v", tt.expectErr, err)
+			}
+			if tt.expectErr == nil && (resp == nil || !matchesID(resp, 2)) {
+				t.Errorf("Wrong response. expect the answer to request 2, got: %+v", resp)
+			}
+		})
+	}
+}
+
+// Test_CallTool_resultSize replays the two shapes of the DeepWiki answers
+// behind VOIP-1632 through the real handler: a large answer under the cap is
+// returned whole, and one over the cap fails with ErrResponseTooLarge through
+// every wrapping layer.
+func Test_CallTool_resultSize(t *testing.T) {
+	tests := []struct {
+		name string
+
+		textBytes int
+
+		expectErr error
+	}{
+		{name: "241 KB answer is returned whole", textBytes: 241 * 1000},
+		{name: "answer over the 1 MiB cap is refused", textBytes: mcpserverhandler.McpHTTPResponseSizeCapBytes + 1000, expectErr: ErrResponseTooLarge},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			fake := newFakeMCPServer(t)
+			fake.callResult = `{"content":[{"type":"text","text":"` + strings.Repeat("x", tt.textBytes) + `"}]}`
+			srv := httptest.NewServer(fake)
+			defer srv.Close()
+
+			serverID := uuid.Must(uuid.NewV4())
+			mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+				URL:      srv.URL,
+				Status:   mcpserver.StatusActive,
+				AuthType: mcpserver.AuthTypeNone,
+			}, nil)
+
+			h := newTestHandler(t, mockDB)
+			h.timeout = 10 * time.Second
+
+			text, isError, err := h.CallTool(context.Background(), serverID, "echo", `{}`)
+			if !errors.Is(err, tt.expectErr) {
+				t.Fatalf("Wrong error. expect: %v, got: %v", tt.expectErr, err)
+			}
+			if tt.expectErr == nil && (isError || len(text) != tt.textBytes) {
+				t.Errorf("Wrong result. expect %d bytes and no error flag, got %d bytes, isError: %v", tt.textBytes, len(text), isError)
+			}
+		})
+	}
+}
+
+// Test_notify_ignoresOversizedAck pins that the cap error applies to request()
+// only: notify discards the acknowledgement body, so a chatty server must not
+// turn a successful notification into a failure.
+func Test_notify_ignoresOversizedAck(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		_, _ = w.Write([]byte(strings.Repeat("x", mcpserverhandler.McpHTTPResponseSizeCapBytes+1000)))
+	}))
+	defer srv.Close()
+
+	h := newTestHandler(t, nil)
+	s := &mcpSession{client: testClient(5 * time.Second), server: &mcpserver.McpServer{URL: srv.URL}}
+
+	if err := h.notify(context.Background(), s, "notifications/initialized"); err != nil {
+		t.Errorf("Wrong match. expect ok, got: %v", err)
 	}
 }

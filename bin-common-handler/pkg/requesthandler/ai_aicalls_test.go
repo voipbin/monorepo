@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"reflect"
 	"testing"
+	"time"
 
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
@@ -671,6 +672,73 @@ func Test_AIV1AIcallToolList(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+// Test_AIV1AIcallToolExecute_Timeout pins the RPC deadline of tool_execute. It
+// has to outlast bin-ai-manager's own MCP call bound (10 s by default), or the
+// caller gives up and tells the LLM the tool failed while ai-manager is still
+// running it and stores the result after the answer (VOIP-1632). Every other
+// ai RPC keeps the 3 s default.
+func Test_AIV1AIcallToolExecute_Timeout(t *testing.T) {
+	aicallID := uuid.FromStringOrNil("780281fa-bbec-11f0-a56b-fb82bf5a05ef")
+
+	tests := []struct {
+		name string
+
+		call func(r *requestHandler) error
+
+		minWait time.Duration
+		maxWait time.Duration
+	}{
+		{
+			name: "tool_execute outlasts the mcp call bound",
+			call: func(r *requestHandler) error {
+				_, err := r.AIV1AIcallToolExecute(context.Background(), aicallID, "tool-id", ammessage.ToolTypeFunction, &ammessage.FunctionCall{Name: "mcp_12345678_x", Arguments: "{}"}, uuid.Nil)
+				return err
+			},
+			minWait: 15*time.Second - 100*time.Millisecond,
+			maxWait: 15 * time.Second,
+		},
+		{
+			name: "other ai rpc keeps the default",
+			call: func(r *requestHandler) error {
+				_, err := r.AIV1AIcallGet(context.Background(), aicallID)
+				return err
+			},
+			minWait: 3*time.Second - 100*time.Millisecond,
+			maxWait: 3 * time.Second,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			var wait time.Duration
+			mockSock.EXPECT().RequestPublish(gomock.Any(), string(outline.QueueNameAIRequest), gomock.Any()).DoAndReturn(
+				func(ctx context.Context, _ string, _ *sock.Request) (*sock.Response, error) {
+					deadline, ok := ctx.Deadline()
+					if !ok {
+						t.Fatalf("expected a deadline on the rpc context")
+					}
+					wait = time.Until(deadline)
+					return &sock.Response{StatusCode: 200, DataType: ContentTypeJSON, Data: []byte(`{}`)}, nil
+				})
+
+			if err := tt.call(&reqHandler); err != nil {
+				t.Fatalf("Wrong match. expect ok, got: %v", err)
+			}
+			if wait < tt.minWait || wait > tt.maxWait {
+				t.Errorf("Wrong rpc deadline. expect between %v and %v, got: %v", tt.minWait, tt.maxWait, wait)
 			}
 		})
 	}
