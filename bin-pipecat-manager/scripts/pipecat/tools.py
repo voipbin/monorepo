@@ -145,9 +145,10 @@ async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_i
     # function name, so without this line a failure that never reaches this point
     # (i.e. never gets logged at all) is indistinguishable, from Loki alone, from
     # one whose tool_call_id we simply can't tie back to a specific tool_name.
-    logger.info(f"[{tool_name}] Executing. tool_call_id={params.tool_call_id}, args: {json.dumps(args, ensure_ascii=False)}")
-
+    # The arguments are caller content (message bodies, names), so only the keys and the length are logged.
     should_run_llm = args.pop("run_llm", default_run_llm)
+    arguments_json = json.dumps(args, ensure_ascii=False)
+    logger.info(f"[{tool_name}] Executing. tool_call_id={params.tool_call_id}, arg_keys={sorted(args)}, args_len={len(arguments_json)}")
 
     # total=20: longer than the Go tool_execute RPC (15 s), which is longer than one MCP call (10 s).
     http_url = f"{common.PIPECATCALL_HTTP_URL}/{pipecatcall_id}/tools"
@@ -156,10 +157,10 @@ async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_i
         "type": "function",
         "function": {
             "name": tool_name,
-            "arguments": json.dumps(args, ensure_ascii=False),
+            "arguments": arguments_json,
         },
     }
-    logger.debug(f"[{tool_name}] POST {http_url} with body: {json.dumps(http_body, ensure_ascii=False)}")
+    logger.debug(f"[{tool_name}] POST {http_url} args_len={len(arguments_json)}")
 
     try:
         async with aiohttp.ClientSession() as session:
@@ -177,7 +178,7 @@ async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_i
                     data = {"raw": text}
 
                 if status >= 400:
-                    logger.warning(f"[{tool_name}] HTTP {status} Error: {text[:500]}")
+                    logger.warning(f"[{tool_name}] HTTP {status} Error: body_len={len(text)}")
                     await params.result_callback({
                         "status": "error",
                         "error": f"HTTP {status}: {text}",

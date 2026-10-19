@@ -239,7 +239,7 @@ async def _notify_member_switched(
         async with session.post(http_url, json=http_body) as response:
             if response.status >= 400:
                 text = await response.text()
-                logger.warning(f"[team_flow][member-switched] HTTP {response.status}: {text[:500]}")
+                logger.warning(f"[team_flow][member-switched] HTTP {response.status}: body_len={len(text)}")
             else:
                 logger.debug(f"[team_flow][member-switched] Notification sent successfully")
     except Exception as e:
@@ -278,7 +278,7 @@ async def _call_go_tool_endpoint(tool_name: str, args: dict, pipecatcall_id: str
         async with session.post(http_url, json=http_body) as response:
             text = await response.text()
             if response.status >= 400:
-                logger.warning(f"[team_flow][{tool_name}] HTTP {response.status}: {text[:500]}")
+                logger.warning(f"[team_flow][{tool_name}] HTTP {response.status}: body_len={len(text)}")
                 return {"status": "error", "error": f"HTTP {response.status}: {text}"}
 
             content_type = response.headers.get("Content-Type", "")

@@ -152,17 +152,17 @@ class TestRunEndpoint:
         assert SECRET_URL not in logs and SECRET_KEY not in logs
 
 
-def test_main_log_sink_does_not_print_locals():
+def test_log_sink_does_not_print_locals():
     """loguru diagnose=True prints local variables (endpoint URL, key) in tracebacks."""
     import ast
 
-    tree = ast.parse(open(os.path.join(os.path.dirname(__file__), "main.py")).read())
+    tree = ast.parse(open(os.path.join(os.path.dirname(__file__), "log_config.py")).read())
     adds = [
         n for n in ast.walk(tree)
         if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == "add"
         and isinstance(n.func.value, ast.Name) and n.func.value.id == "logger"
     ]
-    assert adds, "main.py must configure the logger sink"
+    assert adds, "log_config.py must configure the logger sink"
     for call in adds:
         kw = {k.arg: k.value for k in call.keywords}
         assert isinstance(kw.get("diagnose"), ast.Constant) and kw["diagnose"].value is False

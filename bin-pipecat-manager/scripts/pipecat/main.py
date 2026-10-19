@@ -1,6 +1,5 @@
 import asyncio
 import json
-import sys
 from typing import Optional, List
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -8,6 +7,9 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from loguru import logger
 from dotenv import load_dotenv
+
+import log_config
+log_config.setup()  # before run is imported: its import time log lines follow the policy
 
 import custom_endpoint_net as ce_net
 from run import init_pipeline, execute_pipeline
@@ -225,14 +227,6 @@ async def stop_pipeline(id: str):
     logger.info(f"Pipeline task id='{id}' stopped successfully")
     return {"status": "stopped", "id": id}
 
-
-# --- logger setup ---
-logger.remove()
-logger.add(
-    sys.stdout,
-    serialize=True,
-    diagnose=False,  # tracebacks must not print local variables (keys, endpoint URLs)
-)
 
 # --- run server ---
 if __name__ == "__main__":
