@@ -185,6 +185,9 @@ func (h *handler) ConferencecallGetByReferenceID(ctx context.Context, referenceI
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. ConferencecallGetByReferenceID. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 

@@ -276,6 +276,9 @@ func (h *handler) ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID 
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. ConferenceGetByConfbridgeID. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -334,7 +337,7 @@ func (h *handler) ConferenceAddConferencecallID(ctx context.Context, id, confere
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, conferencecallID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	_, err := h.db.ExecContext(ctx, q, conferencecallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddConferencecallID. err: %v", err)
 	}
@@ -366,7 +369,7 @@ func (h *handler) ConferenceRemoveConferencecallID(ctx context.Context, id, conf
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, conferencecallID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	_, err := h.db.ExecContext(ctx, q, conferencecallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceRemoveConferencecallID. err: %v", err)
 	}
@@ -439,7 +442,7 @@ func (h *handler) ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordingID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	_, err := h.db.ExecContext(ctx, q, recordingID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddRecordingIDs. err: %v", err)
 	}
@@ -465,7 +468,7 @@ func (h *handler) ConferenceAddTranscribeIDs(ctx context.Context, id uuid.UUID, 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, transcribeID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	_, err := h.db.ExecContext(ctx, q, transcribeID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddTranscribeIDs. err: %v", err)
 	}
