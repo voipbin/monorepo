@@ -123,7 +123,7 @@ func (h *handler) outplanGetFromDB(ctx context.Context, id uuid.UUID) (*outplan.
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. outplanGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. outplanGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -230,7 +230,7 @@ func (h *handler) OutplanList(ctx context.Context, token string, size uint64, fi
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. OutplanList. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. OutplanList. err: %w", err)
 	}
 
 	return res, nil
@@ -269,7 +269,7 @@ func (h *handler) OutplanUpdate(ctx context.Context, id uuid.UUID, fields map[ou
 		return fmt.Errorf("OutplanUpdate: build SQL failed: %w", err)
 	}
 
-	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
 		return fmt.Errorf("OutplanUpdate: exec failed: %w", err)
 	}
 
