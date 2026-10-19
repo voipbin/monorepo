@@ -85,6 +85,9 @@ func (h *handler) mediaGetFromDB(ctx context.Context, id uuid.UUID) (*media.Medi
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("could not iterate rows. mediaGetFromDB. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 

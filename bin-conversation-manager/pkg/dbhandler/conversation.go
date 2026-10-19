@@ -87,6 +87,9 @@ func (h *handler) conversationGetFromDB(ctx context.Context, id uuid.UUID) (*con
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("could not iterate rows. conversationGetFromDB. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -177,6 +180,9 @@ func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commona
 	}()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("could not iterate rows. ConversationGetBySelfAndPeer. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -243,7 +249,7 @@ func (h *handler) ConversationList(ctx context.Context, size uint64, token strin
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. ConversationGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. ConversationGets. err: %w", err)
 	}
 
 	return res, nil
@@ -272,7 +278,7 @@ func (h *handler) ConversationUpdate(ctx context.Context, id uuid.UUID, fields m
 		return fmt.Errorf("ConversationUpdate: build SQL failed: %w", err)
 	}
 
-	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
 		return fmt.Errorf("ConversationUpdate: exec failed: %w", err)
 	}
 

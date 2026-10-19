@@ -85,7 +85,7 @@ func (h *handler) messageGetFromDB(ctx context.Context, id uuid.UUID) (*message.
 
 	if !rows.Next() {
 		if err := rows.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. messageGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. messageGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -194,7 +194,7 @@ func (h *handler) MessageList(ctx context.Context, token string, size uint64, fi
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. MessageGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. MessageGets. err: %w", err)
 	}
 
 	return res, nil
@@ -238,6 +238,9 @@ func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID 
 		}
 
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. MessageGetsByTransactionID. err: %w", err)
 	}
 
 	return res, nil

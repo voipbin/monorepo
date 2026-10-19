@@ -85,7 +85,7 @@ func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. accountGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. accountGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -194,7 +194,7 @@ func (h *handler) AccountList(ctx context.Context, size uint64, token string, fi
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. AccountGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. AccountGets. err: %w", err)
 	}
 
 	return res, nil
