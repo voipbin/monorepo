@@ -66,7 +66,7 @@ func (h *handler) AnalysisCreate(ctx context.Context, a *analysis.Analysis) erro
 }
 
 // analysisGetFromDB returns a row by id (no ownership check).
-func (h *handler) analysisGetFromDB(id uuid.UUID) (*analysis.Analysis, error) {
+func (h *handler) analysisGetFromDB(ctx context.Context, id uuid.UUID) (*analysis.Analysis, error) {
 	cols := commondatabasehandler.GetDBFields(analysis.Analysis{})
 
 	query, args, err := sq.Select(cols...).
@@ -77,13 +77,16 @@ func (h *handler) analysisGetFromDB(id uuid.UUID) (*analysis.Analysis, error) {
 		return nil, fmt.Errorf("analysisGetFromDB: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("analysisGetFromDB: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("analysisGetFromDB: could not iterate. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -97,7 +100,7 @@ func (h *handler) analysisGetFromDB(id uuid.UUID) (*analysis.Analysis, error) {
 
 // AnalysisGet returns an analysis by id, ownership-checked (masked not-found).
 func (h *handler) AnalysisGet(ctx context.Context, customerID, id uuid.UUID) (*analysis.Analysis, error) {
-	res, err := h.analysisGetFromDB(id)
+	res, err := h.analysisGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -123,13 +126,16 @@ func (h *handler) AnalysisGetByActiveflowID(ctx context.Context, customerID, act
 		return nil, fmt.Errorf("AnalysisGetByActiveflowID: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("AnalysisGetByActiveflowID: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("AnalysisGetByActiveflowID: could not iterate. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -167,7 +173,7 @@ func (h *handler) AnalysisList(ctx context.Context, customerID uuid.UUID, size u
 		return nil, fmt.Errorf("AnalysisList: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("AnalysisList: could not query. err: %v", err)
 	}
@@ -180,6 +186,9 @@ func (h *handler) AnalysisList(ctx context.Context, customerID uuid.UUID, size u
 			return nil, fmt.Errorf("AnalysisList: could not scan. err: %v", err)
 		}
 		res = append(res, a)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("AnalysisList: could not iterate. err: %w", err)
 	}
 
 	return res, nil
