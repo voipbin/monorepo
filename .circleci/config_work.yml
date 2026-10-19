@@ -2702,7 +2702,7 @@ jobs:
                 || git fetch --no-tags --deepen=1000 origin '+refs/heads/main:refs/remotes/origin/main'
             fi
       - run:
-          name: Lint error wrapping on new lines (bin-common-handler)
+          name: Lint new-line conventions (bin-common-handler)
           environment:
             GOGC: "50"
             GOMEMLIMIT: 1500MiB
@@ -2841,8 +2841,8 @@ commands:
                       || git fetch --no-tags --deepen=1000 origin '+refs/heads/main:refs/remotes/origin/main'
                   fi
             - run:
-                name: Lint error wrapping on new lines
-                # docs/conventions/error-handling.md 4.2 (%w). Separate config and run so
+                name: Lint new-line conventions
+                # error-handling.md 4.2 (%w), database.md 7.2a (noctx, rowserrcheck). Separate config and run so
                 # --new-from-merge-base does not weaken the full "Linting" step above.
                 # The config path is absolute because the command runs inside the service
                 # directory.
@@ -2936,8 +2936,8 @@ commands:
                       || git fetch --no-tags --deepen=1000 origin '+refs/heads/main:refs/remotes/origin/main'
                   fi
             - run:
-                name: Lint error wrapping on new lines
-                # docs/conventions/error-handling.md 4.2 (%w). Separate config and run so
+                name: Lint new-line conventions
+                # error-handling.md 4.2 (%w), database.md 7.2a (noctx, rowserrcheck). Separate config and run so
                 # --new-from-merge-base does not weaken the full "Linting" step above.
                 # The config path is absolute because the command runs inside the service
                 # directory.
@@ -3036,8 +3036,8 @@ commands:
                       || git fetch --no-tags --deepen=1000 origin '+refs/heads/main:refs/remotes/origin/main'
                   fi
             - run:
-                name: Lint error wrapping on new lines
-                # docs/conventions/error-handling.md 4.2 (%w). Separate config and run so
+                name: Lint new-line conventions
+                # error-handling.md 4.2 (%w), database.md 7.2a (noctx, rowserrcheck). Separate config and run so
                 # --new-from-merge-base does not weaken the full "Linting" step above.
                 # The config path is absolute because the command runs inside the service
                 # directory.

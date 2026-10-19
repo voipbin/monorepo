@@ -1,6 +1,12 @@
-# Second golangci-lint configuration, used ONLY by the "Lint error wrapping on
-# new lines" CI step together with --new-from-merge-base=origin/main.
-# docs/conventions/error-handling.md 4.2: fmt.Errorf must wrap an error with %w.
+# Second golangci-lint configuration, used ONLY by the "Lint new-line
+# conventions" CI step together with --new-from-merge-base=origin/main.
+# (The file keeps its original name because CI path filters and docs reference it.)
+# - errorlint: docs/conventions/error-handling.md 4.2, fmt.Errorf must wrap an
+#   error with %w.
+# - noctx: docs/conventions/database.md 7.2a, DB calls (and other I/O calls such
+#   as net/http requests) must carry a context.
+# - rowserrcheck: docs/conventions/database.md 7.2a, rows.Err() must be checked
+#   after iterating sql.Rows.
 #
 # It is separate from .golangci.yml on purpose: --new-from-merge-base is a
 # global option, so adding it to the standard run would also hide issues on
@@ -16,6 +22,8 @@ linters:
   default: none
   enable:
     - errorlint
+    - noctx
+    - rowserrcheck
   settings:
     errorlint:
       errorf: true
@@ -25,6 +33,13 @@ linters:
     generated: lax
     paths:
       - (^|/)vendor(/|$)
+    rules:
+      # Test code (sqlmock, in-memory fixtures) is not held to the context and
+      # rows.Err rules; errorlint still applies to tests.
+      - path: _test\.go
+        linters:
+          - noctx
+          - rowserrcheck
 
 issues:
   max-same-issues: 0
