@@ -57,7 +57,7 @@ func (h *handler) EmailCreate(ctx context.Context, e *email.Email) error {
 		return errors.Wrap(err, "could not build query. EmailCreate")
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return errors.Wrap(err, "could not execute. EmailCreate")
 	}
@@ -113,7 +113,7 @@ func (h *handler) emailGetFromDB(ctx context.Context, id uuid.UUID) (*email.Emai
 		return nil, errors.Wrap(err, "could not build query. emailGetFromDB")
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not query. emailGetFromDB")
 	}
@@ -122,6 +122,9 @@ func (h *handler) emailGetFromDB(ctx context.Context, id uuid.UUID) (*email.Emai
 	}()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("could not iterate the rows. emailGetFromDB. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -176,7 +179,7 @@ func (h *handler) EmailList(ctx context.Context, token string, size uint64, filt
 		return nil, errors.Wrap(err, "could not build query. EmailList")
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not query. EmailList")
 	}
@@ -192,6 +195,9 @@ func (h *handler) EmailList(ctx context.Context, token string, size uint64, filt
 		}
 
 		res = append(res, e)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("could not iterate the rows. EmailList. err: %w", err)
 	}
 
 	return res, nil
@@ -216,7 +222,7 @@ func (h *handler) EmailUpdate(ctx context.Context, id uuid.UUID, fields map[emai
 		return errors.Wrap(err, "could not build query. EmailUpdate")
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return errors.Wrap(err, "could not execute. EmailUpdate")
 	}
@@ -249,7 +255,7 @@ func (h *handler) EmailDelete(ctx context.Context, id uuid.UUID) error {
 		return errors.Wrap(err, "could not build query. EmailDelete")
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return errors.Wrap(err, "could not execute. EmailDelete")
 	}
