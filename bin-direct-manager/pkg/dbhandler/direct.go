@@ -43,7 +43,7 @@ func (h *handler) DirectCreate(ctx context.Context, d *direct.Direct) error {
 		return fmt.Errorf("could not build query. DirectCreate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. DirectCreate. err: %v", err)
 	}
@@ -64,7 +64,7 @@ func (h *handler) DirectGet(ctx context.Context, id uuid.UUID) (*direct.Direct, 
 		return nil, fmt.Errorf("could not build query. DirectGet. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. DirectGet. err: %v", err)
 	}
@@ -73,6 +73,11 @@ func (h *handler) DirectGet(ctx context.Context, id uuid.UUID) (*direct.Direct, 
 	}()
 
 	if !rows.Next() {
+		// the iteration may have stopped on an error (for example a cancelled
+		// context), which must not be reported as "not found".
+		if errRows := rows.Err(); errRows != nil {
+			return nil, fmt.Errorf("could not iterate the rows. DirectGet. err: %w", errRows)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -97,7 +102,7 @@ func (h *handler) DirectGetByHash(ctx context.Context, hash string) (*direct.Dir
 		return nil, fmt.Errorf("could not build query. DirectGetByHash. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. DirectGetByHash. err: %v", err)
 	}
@@ -106,6 +111,11 @@ func (h *handler) DirectGetByHash(ctx context.Context, hash string) (*direct.Dir
 	}()
 
 	if !rows.Next() {
+		// the iteration may have stopped on an error (for example a cancelled
+		// context), which must not be reported as "not found".
+		if errRows := rows.Err(); errRows != nil {
+			return nil, fmt.Errorf("could not iterate the rows. DirectGetByHash. err: %w", errRows)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -139,7 +149,7 @@ func (h *handler) DirectGets(ctx context.Context, size uint64, token string, fil
 		return nil, fmt.Errorf("could not build query. DirectGets. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. DirectGets. err: %v", err)
 	}
@@ -155,6 +165,9 @@ func (h *handler) DirectGets(ctx context.Context, size uint64, token string, fil
 		}
 
 		res = append(res, d)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("could not iterate the rows. DirectGets. err: %w", err)
 	}
 
 	return res, nil
@@ -179,7 +192,7 @@ func (h *handler) DirectUpdate(ctx context.Context, id uuid.UUID, fields map[dir
 		return fmt.Errorf("could not build query. DirectUpdate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. DirectUpdate. err: %v", err)
 	}
@@ -196,7 +209,7 @@ func (h *handler) DirectDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("could not build query. DirectDelete. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. DirectDelete. err: %v", err)
 	}
