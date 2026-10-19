@@ -272,7 +272,7 @@ func (h *handler) outdialTargetGetFromDB(ctx context.Context, id uuid.UUID) (*ou
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. outdialTargetGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. outdialTargetGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -426,7 +426,7 @@ func (h *handler) OutdialTargetUpdateProgressing(ctx context.Context, id uuid.UU
 		id = ?
 	`, destinationIndex, destinationIndex)
 
-	if _, err := h.db.Exec(q, outdialtarget.StatusProgressing, h.utilHandler.TimeNow(), id.Bytes()); err != nil {
+	if _, err := h.db.ExecContext(ctx, q, outdialtarget.StatusProgressing, h.utilHandler.TimeNow(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. OutdialTargetUpdateProgressing. err: %v", err)
 	}
 
@@ -474,6 +474,9 @@ func (h *handler) OutdialTargetGetAvailable(
 		}
 
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("could not iterate the rows. OutdialTargetGetAvailable. err: %w", err)
 	}
 
 	return res, nil
