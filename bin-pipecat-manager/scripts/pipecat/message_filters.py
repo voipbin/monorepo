@@ -1,9 +1,69 @@
 """Shared LLM message-list filtering for run.py and team_flow.py.
 
-Kept deliberately dependency-free (no pipecat, no loguru) so it can be
-imported and unit-tested in isolation. See VOIP-1460 design doc
-(docs/plans/2026-09-04-fix-orphaned-tool-messages-design.md).
+Kept deliberately free of pipecat (loguru only) so it can be imported and
+unit-tested in isolation. See VOIP-1460 design doc
+(docs/plans/2026-09-04-fix-orphaned-tool-messages-design.md) and the VOIP-1633
+design doc (docs/plans/2026-10-20-runner-silent-failures-design.md) for the
+id-less pair handling.
 """
+
+from loguru import logger
+
+
+def _is_idless_call(m: dict) -> bool:
+    return m.get("role") == "assistant" and bool(m.get("tool_calls")) and any(not tc.get("id") for tc in m["tool_calls"])
+
+
+def _is_idless_result(m: dict) -> bool:
+    return m.get("role") == "tool" and not m.get("tool_call_id")
+
+
+def _repair_idless_pairs(candidates: list[dict]) -> list[dict]:
+    """Handle tool calls and results that carry no id (VOIP-1633, design 2.3).
+
+    ai-manager writes the call row first and the result row after the tool ran, so one executed call
+    is a single-call assistant row directly followed by its tool row. Such a pair gets one generated
+    id (legacy_call_<n>) and is kept: dropping it would hide an executed call from the model, which
+    could then repeat a side effect tool. Walk the id-less rows in order, expecting [call, result]
+    pairs; one unpaired call at the end is dropped. Any other shape (orphan result, two calls in a row,
+    several calls in one row, rows that are not adjacent) cannot be paired without guessing, so every
+    id-less row is dropped. Rows with ids are never touched; the input is not mutated.
+    """
+    idless = [i for i, m in enumerate(candidates) if _is_idless_call(m) or _is_idless_result(m)]
+    if not idless:
+        return candidates
+
+    pairs = []
+    p = 0
+    while p < len(idless):
+        i = idless[p]
+        call = candidates[i]
+        if not _is_idless_call(call):
+            pairs = []
+            break
+        if p + 1 >= len(idless):
+            break
+        j = idless[p + 1]
+        if j != i + 1 or len(call["tool_calls"]) != 1 or not _is_idless_result(candidates[j]):
+            pairs = []
+            break
+        pairs.append((i, j))
+        p += 2
+
+    repaired = {}
+    for n, (i, j) in enumerate(pairs, start=1):
+        legacy_id = f"legacy_call_{n}"
+        repaired[i] = {**candidates[i], "tool_calls": [{**candidates[i]["tool_calls"][0], "id": legacy_id}]}
+        repaired[j] = {**candidates[j], "tool_call_id": legacy_id}
+
+    result = []
+    for i, m in enumerate(candidates):
+        if i in repaired:
+            result.append(repaired[i])
+        elif i not in idless:
+            result.append(m)
+    logger.warning(f"[tool_history] id-less tool rows. kept_pairs={len(pairs)} dropped_rows={len(idless) - 2 * len(pairs)}")
+    return result
 
 
 def filter_valid_messages(messages: list[dict]) -> list[dict]:
@@ -29,6 +89,7 @@ def filter_valid_messages(messages: list[dict]) -> list[dict]:
     drafts that broke by emitting output from more than one place).
     """
     candidates = [m for m in messages if m.get("role") and (m.get("content") or m.get("tool_calls"))]
+    candidates = _repair_idless_pairs(candidates)
     result_ids = {m.get("tool_call_id") for m in candidates if m.get("role") == "tool"}
 
     # Pass 1: compute-only, no emission. Which assistant tool_calls entries

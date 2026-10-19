@@ -56,6 +56,7 @@ from message_filters import filter_valid_messages
 from gemini_tool_filter import drop_gemini_invalid_tools
 from tools import tool_register, tool_unregister, convert_to_openai_format, get_tool_names, register_missing_tool_logging
 from task import task_manager
+from llm_guard import EmptyOutputObserver, normalize_tool_call_ids
 from routing_llm import RoutingLLMService
 from routing_tts import RoutingTTSService
 from routing_stt import RoutingSTTService
@@ -375,6 +376,9 @@ async def init_single_ai_pipeline(
             enable_metrics=True,
             enable_usage_metrics=True,
         ),
+        # VOIP-1633: reports an LLM response that ends with nothing usable. Inline list on purpose
+        # (pipecat appends its own RTVI observer to the list it is given). Never an RTVIObserver.
+        observers=[EmptyOutputObserver(id)],
     )
 
     await task_manager.add(id, task)
@@ -385,6 +389,8 @@ async def init_single_ai_pipeline(
         tool_register(llm_service, id, tool_names, tools_data=tools_data)
         # VOIP-1512: surface missing/unadvertised tool calls as a structured ERROR.
         register_missing_tool_logging(llm_service, id)
+        # VOIP-1633: an id-less tool call gets an id, a name-less one is dropped.
+        normalize_tool_call_ids(llm_service, id)
 
         async def handle_disconnect_or_error(name, transport, error=None):
             logger.error(f"{name} WebSocket disconnected or errored: {error}. pipeline id={id}")
@@ -1027,6 +1033,8 @@ async def init_team_pipeline(
     # missing-tool visibility.
     for _svc in llm_services.values():
         register_missing_tool_logging(_svc, id)
+        # VOIP-1633: same id normalization for every member service.
+        normalize_tool_call_ids(_svc, id)
 
     # --- Step 2: Create routing services ---
     routing_llm = RoutingLLMService(llm_services)
@@ -1090,6 +1098,9 @@ async def init_team_pipeline(
             enable_metrics=True,
             enable_usage_metrics=True,
         ),
+        # VOIP-1633: reports an LLM response that ends with nothing usable. Inline list on purpose
+        # (pipecat appends its own RTVI observer to the list it is given). Never an RTVIObserver.
+        observers=[EmptyOutputObserver(id)],
     )
 
     await task_manager.add(id, task)

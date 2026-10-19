@@ -60,6 +60,8 @@ func Test_classifyPipelineError(t *testing.T) {
 		{"deadline exceeded with space", "504 Deadline Exceeded", message.ErrorCategoryUnknown},
 		{"gemini model not found", "Unknown error occurred: 404 Not Found. {'message': 'models/gemini-9 is not found', 'status': 'NOT_FOUND'}", message.ErrorCategoryUnknown},
 		{"provider 500", "Unknown error occurred: 500 Internal Server Error.", message.ErrorCategoryUnknown},
+		{"runner empty output guard text", "LLM returned no usable output", message.ErrorCategoryUnknown},
+		{"runner unadvertised tool text", "LLM called an unadvertised tool", message.ErrorCategoryUnknown},
 		{"request id containing 401", "Unknown error occurred: upstream failure req-401-x", message.ErrorCategoryUnknown},
 		{"url containing unauthorized in a timeout body", "Unknown error occurred: connect timeout to https://example.com/unauthorized/path", message.ErrorCategoryUnknown},
 		{"id containing 14010", "Unknown error occurred: shard 14010 unavailable", message.ErrorCategoryUnknown},
