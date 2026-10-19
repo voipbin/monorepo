@@ -940,6 +940,8 @@ def test_is_custom_endpoint_type(t, expected):
         ("Error during completion: Request timed out.", "Error during completion: Request timed out."),
         ("Error during completion: Error code: 401 - {'error': 'Bearer sk-abc leaked'}", "Error during completion: Error code: 401"),
         ("Error during completion: Error code: 429 - body", "Error during completion: Error code: 429"),
+        ("Error during completion: Error code: 404 - {'error': 'model secret-name not found'}", "Error during completion: Error code: 404"),
+        ("Error during completion: Error code: 503 - upstream body", "Error during completion: Error code: 503"),
         ("Error during completion: Error code: 4011 - body", "Error during completion: error"),
         ("Error during completion: ", "Error during completion: error"),
         ("Error during completion: secret body text", "Error during completion: error"),

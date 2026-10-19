@@ -8,9 +8,13 @@ import "github.com/prometheus/client_golang/prometheus"
 //   - failed                 — persistence failed before send
 //   - send_failed            — persisted but ConversationV1MessageSend errored
 //   - skipped_seen           — assistant reply already exists (short-circuit)
-//   - skipped_voice          — AIcall reference is not a conversation
+//   - skipped_voice          : AIcall reference is neither a conversation nor a contact_case
 //   - skipped_terminated     — AIcall is already in terminated status
 //   - skipped_not_aicall     — pipecatcall reference is not an AICall
+//   - timeout_notice_created : contact_case turn ended unanswered; a timeout notice was recorded (VOIP-1633)
+//   - timeout_notice_failed  : the timeout notice could not be recorded
+//   - timeout_notice_skipped : contact_case terminated event with no notice due (answered, listen turn,
+//     explicit end, or a notice already exists)
 //
 // The counter lives in this package (not aicallhandler) because aicallhandler
 // imports messagehandler; placing it in aicallhandler would create a circular

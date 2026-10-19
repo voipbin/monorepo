@@ -37,6 +37,10 @@ var pipelineErrorNoticeText = map[pmmessage.ErrorCategory]string{
 	pmmessage.ErrorCategoryTimeout:        "The AI language model did not respond in time.",
 	pmmessage.ErrorCategoryUnknown:        "An AI service provider returned an error.",
 	pmmessage.ErrorCategoryConnection:     "The AI language model could not be reached. If this AI uses a custom base URL, verify that the address is correct and reachable over HTTPS.",
+
+	pmmessage.ErrorCategoryNotFound:          "The AI language model or its endpoint was not found. Verify that the model name is correct and that the model is available at the configured address or provider.",
+	pmmessage.ErrorCategoryServerError:       "The AI language model provider returned a server error. Try again later.",
+	pmmessage.ErrorCategoryStreamInterrupted: "The connection to the AI language model was interrupted before the response completed. Try again.",
 }
 
 // PipelineErrorNotice is the JSON content of a pipeline_error notification message.
@@ -69,13 +73,11 @@ func (h *messageHandler) EventPMPipelineError(ctx context.Context, evt *pmmessag
 	}
 
 	category := evt.Category
-	text, ok := pipelineErrorNoticeText[category]
-	if !ok {
+	if _, ok := pipelineErrorNoticeText[category]; !ok {
 		// function_call / internal are never published by pipecat-manager; anything else unknown
 		// to this version (including an empty category) is recorded as unknown, so the stored
 		// category always stays within the documented enum.
 		category = pmmessage.ErrorCategoryUnknown
-		text = pipelineErrorNoticeText[category]
 	}
 
 	activeAIID := uuid.Nil
@@ -95,28 +97,42 @@ func (h *messageHandler) EventPMPipelineError(ctx context.Context, evt *pmmessag
 		}
 	}
 
+	_ = h.createPipelineErrorNotice(ctx, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, evt.PipecatcallID, category, evt.Fatal, activeAIID)
+}
+
+// createPipelineErrorNotice stores the fixed-text pipeline_error notification row on the aicall.
+// Failures are logged and returned.
+func (h *messageHandler) createPipelineErrorNotice(ctx context.Context, customerID, aicallID, activeflowID, pipecatcallID uuid.UUID, category pmmessage.ErrorCategory, fatal bool, activeAIID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "createPipelineErrorNotice",
+		"pipecatcall_id": pipecatcallID,
+		"aicall_id":      aicallID,
+		"category":       category,
+	})
+
 	notice := PipelineErrorNotice{
 		Type:          NotificationTypePipelineError,
 		Category:      category,
-		Fatal:         evt.Fatal,
-		PipecatcallID: evt.PipecatcallID,
-		Message:       text,
+		Fatal:         fatal,
+		PipecatcallID: pipecatcallID,
+		Message:       pipelineErrorNoticeText[category],
 	}
 	content, err := json.Marshal(notice)
 	if err != nil {
 		log.Errorf("Could not marshal the pipeline error notice. err: %v", err)
-		return
+		return err
 	}
 
-	tmp, err := h.Create(ctx, uuid.Nil, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID,
+	tmp, err := h.Create(ctx, uuid.Nil, customerID, aicallID, activeflowID,
 		message.DirectionOutgoing, message.RoleNotification, string(content), nil, "",
-		WithPipecatcallID(evt.PipecatcallID),
+		WithPipecatcallID(pipecatcallID),
 		WithActiveAIID(activeAIID))
 	if err != nil {
 		log.Errorf("Could not create the pipeline error notice. err: %v", err)
-		return
+		return err
 	}
 	log.WithField("message", tmp).Debugf("Created the pipeline error notice.")
+	return nil
 }
 
 // confirmForeignPipecatcall re-reads the aicall bypassing the cache when the cached row says the

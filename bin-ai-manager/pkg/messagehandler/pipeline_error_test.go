@@ -135,6 +135,21 @@ func Test_EventPMPipelineError_currentPipecatcall(t *testing.T) {
 			expectContent: `{"type":"pipeline_error","category":"connection","fatal":false,"pipecatcall_id":"9c5c6e64-6289-4ac9-ad88-b20796a6bc96","message":"The AI language model could not be reached. If this AI uses a custom base URL, verify that the address is correct and reachable over HTTPS."}`,
 		},
 		{
+			name:          "not found",
+			category:      pmmessage.ErrorCategoryNotFound,
+			expectContent: `{"type":"pipeline_error","category":"not_found","fatal":false,"pipecatcall_id":"9c5c6e64-6289-4ac9-ad88-b20796a6bc96","message":"The AI language model or its endpoint was not found. Verify that the model name is correct and that the model is available at the configured address or provider."}`,
+		},
+		{
+			name:          "server error",
+			category:      pmmessage.ErrorCategoryServerError,
+			expectContent: `{"type":"pipeline_error","category":"server_error","fatal":false,"pipecatcall_id":"9c5c6e64-6289-4ac9-ad88-b20796a6bc96","message":"The AI language model provider returned a server error. Try again later."}`,
+		},
+		{
+			name:          "stream interrupted",
+			category:      pmmessage.ErrorCategoryStreamInterrupted,
+			expectContent: `{"type":"pipeline_error","category":"stream_interrupted","fatal":false,"pipecatcall_id":"9c5c6e64-6289-4ac9-ad88-b20796a6bc96","message":"The connection to the AI language model was interrupted before the response completed. Try again."}`,
+		},
+		{
 			name:          "unknown fatal",
 			category:      pmmessage.ErrorCategoryUnknown,
 			fatal:         true,
@@ -458,6 +473,9 @@ func Test_pipelineErrorNoticeText_coversNotifiedCategories(t *testing.T) {
 		pmmessage.ErrorCategoryRateLimited,
 		pmmessage.ErrorCategoryTimeout,
 		pmmessage.ErrorCategoryConnection,
+		pmmessage.ErrorCategoryNotFound,
+		pmmessage.ErrorCategoryServerError,
+		pmmessage.ErrorCategoryStreamInterrupted,
 		pmmessage.ErrorCategoryUnknown,
 	} {
 		if pipelineErrorNoticeText[c] == "" {

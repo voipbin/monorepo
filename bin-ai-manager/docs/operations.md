@@ -98,7 +98,7 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `aicall_tool_execute_total` | Counter | `tool_name` | Tool executions. For a built-in tool the label is its name; every MCP tool (`mcp_` prefix) is labeled the constant `mcp`, since the remote tool name is customer-controlled and unbounded |
 | `mcp_tool_advertised_total` | Counter | — | `ResolveMcpTools` resolutions that returned at least one MCP tool to pipecat |
 | `mcp_tool_call_outcome_total` | Counter | `outcome` | MCP tool dispatch outcomes: `success`, `error` (the remote server returned `isError: true`), `failed` (transport failure or a fail-closed gate refused the call) |
-| `aicall_backstop_reply_total` | Counter | — | Backstop/fallback replies |
+| `aicall_backstop_reply_total` | Counter | `result` | `pipecatcall_terminated` handling: conversation backstop replies (`sent`, `failed`, `send_failed`, `skipped_seen`, `skipped_terminated`), `skipped_voice` (neither a conversation nor a contact_case), `skipped_not_aicall`, and for contact_case turns that ended without an answer `timeout_notice_created`, `timeout_notice_failed`, `timeout_notice_skipped` (VOIP-1633; contact_case was counted under `skipped_voice` before) |
 | `aicall_idle_expired_total` | Counter | — | Sessions terminated due to idle timeout |
 | `aicall_insight_session_refresh_total` | Counter | `result` | Insight Case panel reopens evaluated for a session refresh, by outcome: `kept` (the denominator: still live, disabled, not an Insight AI, or not an AI assistance), `refreshed` (a new session started), `failed` (the previous session was kept because the prompt could not be resolved or the write failed) |
 | `aicall_interrupt_attempted_total` | Counter | — | Barge-in interruption attempts |
