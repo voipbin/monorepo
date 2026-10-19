@@ -57,7 +57,7 @@ func (h *handler) AstEndpointCreate(ctx context.Context, b *astendpoint.AstEndpo
 		)
 	`
 
-	_, err := h.db.Exec(q,
+	_, err := h.db.ExecContext(ctx, q,
 		b.ID,
 		b.Transport,
 		b.AORs,
@@ -82,7 +82,7 @@ func (h *handler) astEndpointGetFromDB(ctx context.Context, id string) (*astendp
 
 	q := fmt.Sprintf("%s where id = ?", astEndpointSelect)
 
-	row, err := h.db.Query(q, id)
+	row, err := h.db.QueryContext(ctx, q, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AstEndpointGetFromDB. err: %v", err)
 	}
@@ -91,6 +91,9 @@ func (h *handler) astEndpointGetFromDB(ctx context.Context, id string) (*astendp
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("could not read the row. AstEndpointGetFromDB. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -167,7 +170,7 @@ func (h *handler) AstEndpointDelete(ctx context.Context, id string) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, id)
+	_, err := h.db.ExecContext(ctx, q, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. AstEndpointDelete. err: %v", err)
 	}

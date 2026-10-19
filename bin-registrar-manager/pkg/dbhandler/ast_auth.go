@@ -81,7 +81,7 @@ func (h *handler) AstAuthCreate(ctx context.Context, b *astauth.AstAuth) error {
 		)
 	`
 
-	_, err := h.db.Exec(q,
+	_, err := h.db.ExecContext(ctx, q,
 		b.ID,
 		b.AuthType,
 
@@ -112,7 +112,7 @@ func (h *handler) astAuthGetFromDB(ctx context.Context, id string) (*astauth.Ast
 
 	q := fmt.Sprintf("%s where id = ?", astAuthSelect)
 
-	row, err := h.db.Query(q, id)
+	row, err := h.db.QueryContext(ctx, q, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AstAuthGetFromDB. err: %v", err)
 	}
@@ -121,6 +121,9 @@ func (h *handler) astAuthGetFromDB(ctx context.Context, id string) (*astauth.Ast
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("could not read the row. AstAuthGetFromDB. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -203,7 +206,7 @@ func (h *handler) AstAuthDelete(ctx context.Context, id string) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, id)
+	_, err := h.db.ExecContext(ctx, q, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. AstAuthCreate. err: %v", err)
 	}
@@ -225,7 +228,7 @@ func (h *handler) AstAuthUpdate(ctx context.Context, auth *astauth.AstAuth) erro
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, auth.Password, auth.ID)
+	_, err := h.db.ExecContext(ctx, q, auth.Password, auth.ID)
 	if err != nil {
 		return fmt.Errorf("could not execute. AstAuthUpdate. err: %v", err)
 	}

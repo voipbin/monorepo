@@ -110,7 +110,7 @@ func (h *handler) AstContactGetsByEndpoint(ctx context.Context, endpoint string)
 
 	q := fmt.Sprintf("%s where endpoint = ?", astContactSelect)
 
-	rows, err := h.db.Query(q, endpoint)
+	rows, err := h.db.QueryContext(ctx, q, endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AstContactGetsByEndpoint. err: %v", err)
 	}
@@ -125,6 +125,9 @@ func (h *handler) AstContactGetsByEndpoint(ctx context.Context, endpoint string)
 			return nil, fmt.Errorf("dbhandler: Could not scan the row. AstContactGetsByEndpoint. err: %v", err)
 		}
 		res = append(res, u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("could not read the rows. AstContactGetsByEndpoint. err: %w", err)
 	}
 
 	// update cache
