@@ -253,7 +253,7 @@ func (h *handler) flowUpdate(ctx context.Context, id uuid.UUID, fields map[flow.
 		return fmt.Errorf("FlowUpdate: build SQL failed: %w", err)
 	}
 
-	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
 		return fmt.Errorf("FlowUpdate: exec failed: %w", err)
 	}
 

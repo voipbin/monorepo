@@ -247,7 +247,7 @@ func (h *handler) ActiveflowUpdate(ctx context.Context, id uuid.UUID, fields map
 		return fmt.Errorf("ActiveflowUpdate: build SQL failed: %w", err)
 	}
 
-	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
 		return fmt.Errorf("ActiveflowUpdate: exec failed: %w", err)
 	}
 
