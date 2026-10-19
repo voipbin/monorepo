@@ -251,6 +251,9 @@ func (h *handler) ExtensionGetByEndpointID(ctx context.Context, endpointID strin
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("could not read the row. ExtensionGetByEndpointID. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -303,6 +306,9 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.U
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("could not read the row. ExtensionGetByExtension. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 

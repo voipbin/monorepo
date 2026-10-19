@@ -97,7 +97,7 @@ func (h *handler) AstAORCreate(ctx context.Context, b *astaor.AstAOR) error {
 		)
 	`
 
-	_, err := h.db.Exec(q,
+	_, err := h.db.ExecContext(ctx, q,
 		b.ID,
 
 		b.MaxContacts,
@@ -133,7 +133,7 @@ func (h *handler) astAORGetFromDB(ctx context.Context, id string) (*astaor.AstAO
 
 	q := fmt.Sprintf("%s where id = ?", astAorSelect)
 
-	row, err := h.db.Query(q, id)
+	row, err := h.db.QueryContext(ctx, q, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AstAORGetFromDB. err: %v", err)
 	}
@@ -142,6 +142,9 @@ func (h *handler) astAORGetFromDB(ctx context.Context, id string) (*astaor.AstAO
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("could not read the row. AstAORGetFromDB. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -218,7 +221,7 @@ func (h *handler) AstAORDelete(ctx context.Context, id string) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, id)
+	_, err := h.db.ExecContext(ctx, q, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. AstAORDelete. err: %v", err)
 	}
