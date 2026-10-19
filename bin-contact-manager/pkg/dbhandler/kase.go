@@ -27,8 +27,8 @@ const caseTable = "contact_cases"
 // Tx-scoped case operations must perform several of these operations
 // atomically within one transaction.
 type sqlExecutor interface {
-	Exec(query string, args ...interface{}) (sql.Result, error)
-	Query(query string, args ...interface{}) (*sql.Rows, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 }
 
 // BeginTx starts a new transaction for callers (casehandler's Continue,
@@ -69,7 +69,7 @@ func isMySQLDeadlock(err error) bool {
 }
 
 // caseInsertExec is the shared implementation for CaseInsert/CaseInsertTx.
-func caseInsertExec(exec sqlExecutor, c *kase.Case) error {
+func caseInsertExec(ctx context.Context, exec sqlExecutor, c *kase.Case) error {
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
 		return fmt.Errorf("could not prepare fields. CaseInsert. err: %v", err)
@@ -80,7 +80,7 @@ func caseInsertExec(exec sqlExecutor, c *kase.Case) error {
 		return fmt.Errorf("could not build query. CaseInsert. err: %v", err)
 	}
 
-	if _, err := exec.Exec(query, args...); err != nil {
+	if _, err := exec.ExecContext(ctx, query, args...); err != nil {
 		// Detect a unique-constraint violation on uq_case_open_peer
 		// specifically (open_peer_uk), same detection idiom as
 		// AddressCreate's ErrDuplicateTarget classification: MySQL names
@@ -111,18 +111,18 @@ func caseInsertExec(exec sqlExecutor, c *kase.Case) error {
 // if the insert violates uq_case_open_peer (an open case already exists
 // for this customer/peer/reference_type -- design §3.1/§4).
 func (h *handler) CaseInsert(ctx context.Context, c *kase.Case) error {
-	return caseInsertExec(h.db, c)
+	return caseInsertExec(ctx, h.db, c)
 }
 
 // CaseInsertTx is CaseInsert scoped to a caller-managed transaction
 // (Continue's insertWithRetry retry loop, run atomically with the rest of
 // the transaction).
 func (h *handler) CaseInsertTx(ctx context.Context, tx *sql.Tx, c *kase.Case) error {
-	return caseInsertExec(tx, c)
+	return caseInsertExec(ctx, tx, c)
 }
 
 // caseGetByIDExec is the shared implementation for CaseGetByID/CaseGetByIDTx.
-func caseGetByIDExec(exec sqlExecutor, id uuid.UUID) (*kase.Case, error) {
+func caseGetByIDExec(ctx context.Context, exec sqlExecutor, id uuid.UUID) (*kase.Case, error) {
 	columns := commondatabasehandler.GetDBFields(&kase.Case{})
 
 	query, args, err := sq.Select(columns...).
@@ -133,13 +133,16 @@ func caseGetByIDExec(exec sqlExecutor, id uuid.UUID) (*kase.Case, error) {
 		return nil, fmt.Errorf("could not build query. CaseGetByID. err: %v", err)
 	}
 
-	rows, err := exec.Query(query, args...)
+	rows, err := exec.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CaseGetByID. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("could not iterate rows. CaseGetByID. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -148,12 +151,12 @@ func caseGetByIDExec(exec sqlExecutor, id uuid.UUID) (*kase.Case, error) {
 
 // CaseGetByID returns a Case by id, unlocked (for read APIs).
 func (h *handler) CaseGetByID(ctx context.Context, id uuid.UUID) (*kase.Case, error) {
-	return caseGetByIDExec(h.db, id)
+	return caseGetByIDExec(ctx, h.db, id)
 }
 
 // CaseGetByIDTx is CaseGetByID scoped to a caller-managed transaction.
 func (h *handler) CaseGetByIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) (*kase.Case, error) {
-	return caseGetByIDExec(tx, id)
+	return caseGetByIDExec(ctx, tx, id)
 }
 
 // CaseGetOpenByPeer returns the currently-OPEN Case for a given
@@ -191,6 +194,12 @@ func (h *handler) CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID 
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			if isMySQLDeadlock(err) {
+				return nil, ErrDeadlock
+			}
+			return nil, fmt.Errorf("could not iterate rows. CaseGetOpenByPeer. err: %w", err)
+		}
 		return nil, nil
 	}
 
@@ -205,7 +214,7 @@ func (h *handler) CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID 
 // itself (not checked separately afterward) so a cross-tenant caller's
 // UPDATE can never match a row at all -- there is no window where the
 // mutation could commit before tenancy is verified.
-func caseUpdateStatusClosedExec(exec sqlExecutor, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
+func caseUpdateStatusClosedExec(ctx context.Context, exec sqlExecutor, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
 	setMap := sq.Eq{
 		"status":         string(kase.StatusClosed),
 		"closed_reason":  closedReason,
@@ -226,7 +235,7 @@ func caseUpdateStatusClosedExec(exec sqlExecutor, customerID, id uuid.UUID, clos
 		return false, fmt.Errorf("could not build query. CaseUpdateStatusClosed. err: %v", err)
 	}
 
-	result, err := exec.Exec(query, args...)
+	result, err := exec.ExecContext(ctx, query, args...)
 	if err != nil {
 		// A close UPDATE (e.g. an agent-initiated Close) can also be a
 		// deadlock victim under concurrent case mutations against the
@@ -256,7 +265,7 @@ func caseUpdateStatusClosedExec(exec sqlExecutor, customerID, id uuid.UUID, clos
 // discover the actually-persisted closed_reason/closed_by, not assume
 // their own call's arguments won.
 func (h *handler) CaseUpdateStatusClosed(ctx context.Context, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
-	return caseUpdateStatusClosedExec(h.db, customerID, id, closedReason, closedByType, closedByID, closedAt)
+	return caseUpdateStatusClosedExec(ctx, h.db, customerID, id, closedReason, closedByType, closedByID, closedAt)
 }
 
 // caseUpdateContactIDExec is the shared implementation for
@@ -267,7 +276,7 @@ func (h *handler) CaseUpdateStatusClosed(ctx context.Context, customerID, id uui
 // finding (multiple case-scoped handler methods accepted customerID
 // without using it) makes an unscoped mutation primitive itself a
 // latent risk for any future caller that forgets the upstream check.
-func caseUpdateContactIDExec(exec sqlExecutor, customerID, id, contactID uuid.UUID) error {
+func caseUpdateContactIDExec(ctx context.Context, exec sqlExecutor, customerID, id, contactID uuid.UUID) error {
 	query, args, err := sq.Update(caseTable).
 		Set("contact_id", contactID.Bytes()).
 		Where(sq.Eq{"id": id.Bytes()}).
@@ -277,7 +286,7 @@ func caseUpdateContactIDExec(exec sqlExecutor, customerID, id, contactID uuid.UU
 		return fmt.Errorf("could not build query. CaseUpdateContactID. err: %v", err)
 	}
 
-	if _, err := exec.Exec(query, args...); err != nil {
+	if _, err := exec.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute. CaseUpdateContactID. err: %v", err)
 	}
 
@@ -288,7 +297,7 @@ func caseUpdateContactIDExec(exec sqlExecutor, customerID, id, contactID uuid.UU
 // single source of truth is this column itself; every write goes
 // through casehandler.UpdateContact).
 func (h *handler) CaseUpdateContactID(ctx context.Context, customerID, id, contactID uuid.UUID) error {
-	return caseUpdateContactIDExec(h.db, customerID, id, contactID)
+	return caseUpdateContactIDExec(ctx, h.db, customerID, id, contactID)
 }
 
 // CaseUpdateOwner updates a Case's owner_type/owner_id (square-talk Cases
@@ -307,7 +316,7 @@ func (h *handler) CaseUpdateOwner(ctx context.Context, customerID, id uuid.UUID,
 		return fmt.Errorf("could not build query. CaseUpdateOwner. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(query, args...); err != nil {
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute. CaseUpdateOwner. err: %v", err)
 	}
 
@@ -325,7 +334,7 @@ func (h *handler) CaseUpdateOwner(ctx context.Context, customerID, id uuid.UUID,
 // (a map input auto-detects the []uuid.UUID slice and JSON-marshals it
 // before it reaches squirrel, with no db: tag needed since map inputs
 // skip tag-based filtering entirely).
-func caseUpdateTagIDsExec(exec sqlExecutor, customerID, id uuid.UUID, tagIDs []uuid.UUID) error {
+func caseUpdateTagIDsExec(ctx context.Context, exec sqlExecutor, customerID, id uuid.UUID, tagIDs []uuid.UUID) error {
 	fields, err := commondatabasehandler.PrepareFields(map[string]any{
 		"tag_ids": tagIDs,
 	})
@@ -342,7 +351,7 @@ func caseUpdateTagIDsExec(exec sqlExecutor, customerID, id uuid.UUID, tagIDs []u
 		return fmt.Errorf("could not build query. CaseUpdateTagIDs. err: %v", err)
 	}
 
-	if _, err := exec.Exec(query, args...); err != nil {
+	if _, err := exec.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute. CaseUpdateTagIDs. err: %v", err)
 	}
 
@@ -354,14 +363,14 @@ func caseUpdateTagIDsExec(exec sqlExecutor, customerID, id uuid.UUID, tagIDs []u
 // storage representation). Called by casehandler.CaseTagAdd/Remove after
 // computing the new slice in application code.
 func (h *handler) CaseUpdateTagIDs(ctx context.Context, customerID, id uuid.UUID, tagIDs []uuid.UUID) error {
-	return caseUpdateTagIDsExec(h.db, customerID, id, tagIDs)
+	return caseUpdateTagIDsExec(ctx, h.db, customerID, id, tagIDs)
 }
 
 // caseClearContactIDExec is the shared implementation for
 // CaseClearContactID/CaseClearContactIDTx: reverts Case.contact_id to
 // NULL. Scoped by customer_id as defense-in-depth (see
 // caseUpdateContactIDExec's comment).
-func caseClearContactIDExec(exec sqlExecutor, customerID, id uuid.UUID) error {
+func caseClearContactIDExec(ctx context.Context, exec sqlExecutor, customerID, id uuid.UUID) error {
 	query, args, err := sq.Update(caseTable).
 		Set("contact_id", nil).
 		Where(sq.Eq{"id": id.Bytes()}).
@@ -371,7 +380,7 @@ func caseClearContactIDExec(exec sqlExecutor, customerID, id uuid.UUID) error {
 		return fmt.Errorf("could not build query. CaseClearContactID. err: %v", err)
 	}
 
-	if _, err := exec.Exec(query, args...); err != nil {
+	if _, err := exec.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute. CaseClearContactID. err: %v", err)
 	}
 
@@ -383,7 +392,7 @@ func caseClearContactIDExec(exec sqlExecutor, customerID, id uuid.UUID) error {
 // path has no multi-statement derivation step requiring atomicity, so
 // no transaction wrapper is needed here -- see design §5.2).
 func (h *handler) CaseClearContactID(ctx context.Context, customerID, id uuid.UUID) error {
-	return caseClearContactIDExec(h.db, customerID, id)
+	return caseClearContactIDExec(ctx, h.db, customerID, id)
 }
 
 // CaseClearContactIDTx reverts a Case's contact_id to NULL (design
@@ -391,13 +400,13 @@ func (h *handler) CaseClearContactID(ctx context.Context, customerID, id uuid.UU
 // write goes through casehandler.UpdateContact), scoped to a
 // caller-managed transaction.
 func (h *handler) CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) error {
-	return caseClearContactIDExec(tx, customerID, id)
+	return caseClearContactIDExec(ctx, tx, customerID, id)
 }
 
 // CaseUpdateContactIDTx is CaseUpdateContactID scoped to a caller-managed
 // transaction (design §4 step 2's contact auto-match write).
 func (h *handler) CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id, contactID uuid.UUID) error {
-	return caseUpdateContactIDExec(tx, customerID, id, contactID)
+	return caseUpdateContactIDExec(ctx, tx, customerID, id, contactID)
 }
 
 // CaseListAll returns every Case across all tenants. CLI-only usage
@@ -413,7 +422,7 @@ func (h *handler) CaseListAll(ctx context.Context) ([]*kase.Case, error) {
 		return nil, fmt.Errorf("could not build query. CaseListAll. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CaseListAll. err: %v", err)
 	}
@@ -452,7 +461,7 @@ func (h *handler) CaseListUnresolved(ctx context.Context, customerID uuid.UUID) 
 		return nil, fmt.Errorf("could not build query. CaseListUnresolved. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CaseListUnresolved. err: %v", err)
 	}
@@ -488,7 +497,7 @@ func (h *handler) CaseListByOwner(ctx context.Context, customerID uuid.UUID, own
 		return nil, fmt.Errorf("could not build query. CaseListByOwner. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CaseListByOwner. err: %v", err)
 	}
@@ -561,7 +570,7 @@ func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, size uint6
 		return nil, fmt.Errorf("could not build query. CaseList. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CaseList. err: %v", err)
 	}

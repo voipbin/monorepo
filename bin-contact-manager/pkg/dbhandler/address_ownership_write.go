@@ -39,7 +39,7 @@ type addressRowTypeTargetContact struct {
 // contact_addresses row by id. Used both as the pre-lock read (outside
 // any tx) and the post-lock re-read (inside tx, via execer) that design
 // §4's stale-target compare-and-retry rule requires.
-func addressTypeTargetContactByID(execer sqlExecutor, id uuid.UUID) (*addressRowTypeTargetContact, error) {
+func addressTypeTargetContactByID(ctx context.Context, execer sqlExecutor, id uuid.UUID) (*addressRowTypeTargetContact, error) {
 	query, args, err := sq.Select("type", "target", "contact_id").
 		From(addressTable).
 		Where(sq.Eq{"id": id.Bytes()}).
@@ -47,13 +47,16 @@ func addressTypeTargetContactByID(execer sqlExecutor, id uuid.UUID) (*addressRow
 	if err != nil {
 		return nil, fmt.Errorf("could not build query. addressTypeTargetContactByID. err: %v", err)
 	}
-	rows, err := execer.Query(query, args...)
+	rows, err := execer.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. addressTypeTargetContactByID. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("could not iterate rows. addressTypeTargetContactByID. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 	var addrType, target string
@@ -363,6 +366,12 @@ func staleRowByTargetTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, a
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			if isMySQLDeadlock(err) {
+				return nil, ErrDeadlock
+			}
+			return nil, fmt.Errorf("could not iterate rows. staleRowByTargetTx. err: %w", err)
+		}
 		return nil, nil
 	}
 	var idBytes, contactIDBytes []byte
@@ -410,6 +419,12 @@ func contactTombstoneTx(ctx context.Context, tx *sql.Tx, contactID uuid.UUID) (*
 	}
 	defer func() { _ = rows.Close() }()
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			if isMySQLDeadlock(err) {
+				return nil, ErrDeadlock
+			}
+			return nil, fmt.Errorf("could not iterate rows. contactTombstoneTx. err: %w", err)
+		}
 		return nil, nil // Contact row gone entirely -- treat as live/unknown, no repair
 	}
 	var tmDelete sql.NullString
@@ -443,6 +458,12 @@ func latestOwnershipPeriodValidToTx(ctx context.Context, tx *sql.Tx, customerID 
 	}
 	defer func() { _ = rows.Close() }()
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			if isMySQLDeadlock(err) {
+				return nil, ErrDeadlock
+			}
+			return nil, fmt.Errorf("could not iterate rows. latestOwnershipPeriodValidToTx. err: %w", err)
+		}
 		return nil, nil
 	}
 	var validTo sql.NullString
