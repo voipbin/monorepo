@@ -17,6 +17,11 @@ import (
 
 const (
 	billingsTable = "billing_billings"
+
+	// postCommitTimeout bounds the reads after the transaction commit in
+	// BillingConsumeAndRecord. They run on a context detached from the request
+	// so that a cancellation does not turn an already committed charge into a failure.
+	postCommitTimeout = 5 * time.Second
 )
 
 // billingGetFromRow gets the billing from the row.
@@ -46,7 +51,7 @@ func (h *handler) BillingCreate(ctx context.Context, c *billing.Billing) error {
 		return fmt.Errorf("BillingCreate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		// handle duplicate key error gracefully (MySQL error 1062)
 		if isDuplicateKeyError(err) {
@@ -93,13 +98,16 @@ func (h *handler) billingGetFromDB(ctx context.Context, id uuid.UUID) (*billing.
 		return nil, fmt.Errorf("billingGetFromDB: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("billingGetFromDB: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("billingGetFromDB: row iteration error: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -123,13 +131,16 @@ func (h *handler) billingGetByReferenceIDFromDB(ctx context.Context, referenceID
 		return nil, fmt.Errorf("billingGetByReferenceIDFromDB: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("billingGetByReferenceIDFromDB: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("billingGetByReferenceIDFromDB: row iteration error: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -158,13 +169,16 @@ func (h *handler) billingGetByReferenceTypeAndIDFromDB(ctx context.Context, refe
 		return nil, fmt.Errorf("billingGetByReferenceTypeAndIDFromDB: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("billingGetByReferenceTypeAndIDFromDB: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("billingGetByReferenceTypeAndIDFromDB: row iteration error: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -271,7 +285,7 @@ func (h *handler) BillingList(ctx context.Context, size uint64, token string, fi
 		return nil, fmt.Errorf("BillingList: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("BillingList: could not query. err: %v", err)
 	}
@@ -284,6 +298,10 @@ func (h *handler) BillingList(ctx context.Context, size uint64, token string, fi
 			return nil, fmt.Errorf("BillingList: could not scan row. err: %v", err)
 		}
 		res = append(res, u)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("BillingList: row iteration error. err: %w", err)
 	}
 
 	return res, nil
@@ -310,7 +328,7 @@ func (h *handler) BillingUpdate(ctx context.Context, id uuid.UUID, fields map[bi
 		return fmt.Errorf("BillingUpdate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("BillingUpdate: could not execute. err: %v", err)
 	}
@@ -338,7 +356,7 @@ func (h *handler) BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billabl
 	WHERE
 		id = ?
 	`
-	_, err := h.db.Exec(q, billing.StatusEnd, billableUnits, usageDuration, amountToken, amountCredit, balanceTokenSnapshot, balanceCreditSnapshot, tmBillingEnd, h.utilHandler.TimeNow(), id.Bytes())
+	_, err := h.db.ExecContext(ctx, q, billing.StatusEnd, billableUnits, usageDuration, amountToken, amountCredit, balanceTokenSnapshot, balanceCreditSnapshot, tmBillingEnd, h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. BillingSetStatusEnd. err: %v", err)
 	}
@@ -463,12 +481,17 @@ func (h *handler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Bil
 		return nil, fmt.Errorf("BillingConsumeAndRecord: could not commit. err: %v", err)
 	}
 
+	// The charge is committed. Run the rest on a context that ignores the cancellation
+	// of the request, so a committed charge is not reported as a failure.
+	postCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), postCommitTimeout)
+	defer cancel()
+
 	// Update caches
-	_ = h.accountUpdateToCache(ctx, accountID)
-	_ = h.billingUpdateToCache(ctx, bill.ID)
+	_ = h.accountUpdateToCache(postCtx, accountID)
+	_ = h.billingUpdateToCache(postCtx, bill.ID)
 
 	// Return updated billing
-	updated, err := h.BillingGet(ctx, bill.ID)
+	updated, err := h.BillingGet(postCtx, bill.ID)
 	if err != nil {
 		return nil, fmt.Errorf("BillingConsumeAndRecord: could not re-read billing. err: %v", err)
 	}
@@ -500,7 +523,7 @@ func (h *handler) BillingDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("BillingDelete: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("BillingDelete: could not execute. err: %v", err)
 	}

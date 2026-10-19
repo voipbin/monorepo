@@ -44,7 +44,7 @@ func (h *handler) FailedEventCreate(ctx context.Context, c *failedevent.FailedEv
 		return fmt.Errorf("FailedEventCreate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("FailedEventCreate: could not execute query. err: %v", err)
 	}
@@ -65,7 +65,7 @@ func (h *handler) FailedEventListPendingRetry(ctx context.Context, now time.Time
 		return nil, fmt.Errorf("FailedEventListPendingRetry: could not build query. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("FailedEventListPendingRetry: could not query. err: %v", err)
 	}
@@ -108,7 +108,7 @@ func (h *handler) FailedEventUpdate(ctx context.Context, id uuid.UUID, fields ma
 		return fmt.Errorf("FailedEventUpdate: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("FailedEventUpdate: could not execute. err: %v", err)
 	}
@@ -125,7 +125,7 @@ func (h *handler) FailedEventDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("FailedEventDelete: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("FailedEventDelete: could not execute. err: %v", err)
 	}
