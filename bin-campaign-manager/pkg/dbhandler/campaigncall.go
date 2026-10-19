@@ -122,7 +122,7 @@ func (h *handler) campaigncallGetFromDB(ctx context.Context, id uuid.UUID) (*cam
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. campaigncallGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. campaigncallGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -176,7 +176,7 @@ func (h *handler) CampaigncallGetByReferenceID(ctx context.Context, referenceID 
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. CampaigncallGetByReferenceID. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. CampaigncallGetByReferenceID. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -212,7 +212,7 @@ func (h *handler) CampaigncallGetByActiveflowID(ctx context.Context, activeflowI
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. CampaigncallGetByActiveflowID. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. CampaigncallGetByActiveflowID. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -267,7 +267,7 @@ func (h *handler) CampaigncallList(ctx context.Context, token string, size uint6
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. CampaigncallGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. CampaigncallGets. err: %w", err)
 	}
 
 	return res, nil
@@ -343,7 +343,7 @@ func (h *handler) CampaigncallListOngoingByCampaignID(ctx context.Context, campa
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. CampaigncallGetsOngoingByCampaignID. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. CampaigncallGetsOngoingByCampaignID. err: %w", err)
 	}
 
 	return res, nil
@@ -372,7 +372,7 @@ func (h *handler) CampaigncallUpdate(ctx context.Context, id uuid.UUID, fields m
 		return fmt.Errorf("CampaigncallUpdate: build SQL failed: %w", err)
 	}
 
-	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
 		return fmt.Errorf("CampaigncallUpdate: exec failed: %w", err)
 	}
 

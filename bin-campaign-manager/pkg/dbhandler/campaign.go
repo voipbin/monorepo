@@ -125,7 +125,7 @@ func (h *handler) campaignGetFromDB(ctx context.Context, id uuid.UUID) (*campaig
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. campaignGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. campaignGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -245,7 +245,7 @@ func (h *handler) CampaignList(ctx context.Context, token string, size uint64, f
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. CampaignList. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. CampaignList. err: %w", err)
 	}
 
 	return res, nil
@@ -298,7 +298,7 @@ func (h *handler) CampaignListDeletedSince(ctx context.Context, since time.Time,
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. CampaignListDeletedSince. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. CampaignListDeletedSince. err: %w", err)
 	}
 
 	return res, nil
@@ -346,7 +346,7 @@ func (h *handler) CampaignUpdate(ctx context.Context, id uuid.UUID, fields map[c
 		return fmt.Errorf("CampaignUpdate: build SQL failed: %w", err)
 	}
 
-	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
 		return fmt.Errorf("CampaignUpdate: exec failed: %w", err)
 	}
 
