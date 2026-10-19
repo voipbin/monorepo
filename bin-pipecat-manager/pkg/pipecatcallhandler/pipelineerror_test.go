@@ -93,6 +93,33 @@ func Test_classifyPipelineError(t *testing.T) {
 		{"isolate tier3 insufficient credits", "Insufficient credits", message.ErrorCategoryRateLimited},
 		{"isolate tier3 more credits", "This request requires more credits, or fewer max_tokens", message.ErrorCategoryRateLimited},
 
+		// VOIP-1633: tier 4 classes of the OpenAI compatible LLM path (pipecat-ai 1.12.0, openai 2.15.0).
+		{"tier4 404", "Error during completion: Error code: 404 - {'error': {'message': 'model \"x\" not found', 'type': 'api_error'}}", message.ErrorCategoryNotFound},
+		{"tier4 404 without body", "Error during completion: Error code: 404", message.ErrorCategoryNotFound},
+		{"tier4 500", "Error during completion: Error code: 500 - {'error': 'boom'}", message.ErrorCategoryServerError},
+		{"tier4 503", "Error during completion: Error code: 503 - {'error': 'boom'}", message.ErrorCategoryServerError},
+		{"tier4 502 html body", "Error during completion: Error code: 502 - <html>Bad Gateway</html>", message.ErrorCategoryServerError},
+		{"tier4 504 html body is server_error", "Error during completion: Error code: 504 - <html>gateway time-out</html>", message.ErrorCategoryServerError},
+		{"tier4 504 reason phrase stays timeout", "Error during completion: Error code: 504 - 504 Gateway Timeout", message.ErrorCategoryTimeout},
+		{"tier4 stream reset", "Error during completion: ", message.ErrorCategoryStreamInterrupted},
+		{"tier4 stream reset trimmed and cased", "  ERROR DURING COMPLETION:  ", message.ErrorCategoryStreamInterrupted},
+		{"tier4 stream chunked incomplete", "Error during completion: peer closed connection without sending complete message body (incomplete chunked read)", message.ErrorCategoryStreamInterrupted},
+		{"tier4 stream content-length short", "Error during completion: peer closed connection without sending complete message body (received 10 bytes, expected 100)", message.ErrorCategoryStreamInterrupted},
+
+		// tier 4 sits behind tiers 1 to 3: existing classes win when the body carries their phrases.
+		{"tier4 500 with rate limit phrase stays rate_limited", "Error during completion: Error code: 500 - rate limit reached", message.ErrorCategoryRateLimited},
+		{"tier4 404 with 401 code in body stays authentication", "Error during completion: Error code: 404 - {'code': 401}", message.ErrorCategoryAuthentication},
+		{"tier4 429 stays rate_limited", "Error during completion: Error code: 429 - {}", message.ErrorCategoryRateLimited},
+		{"tier4 401 stays authentication", "Error during completion: Error code: 401 - {}", message.ErrorCategoryAuthentication},
+
+		// tier 4 negatives: anchored to the LLM path prefix, so STT and other texts stay unknown.
+		{"tier4 other 4xx stays unknown", "Error during completion: Error code: 400 - {}", message.ErrorCategoryUnknown},
+		{"tier4 status code needs a boundary", "Error during completion: Error code: 5000", message.ErrorCategoryUnknown},
+		{"tier4 404 needs a boundary", "Error during completion: Error code: 4041", message.ErrorCategoryUnknown},
+		{"tier4 stt text with 500 stays unknown", "Deepgram error: status 500", message.ErrorCategoryUnknown},
+		{"tier4 prefix not at the start stays unknown", "x Error during completion: Error code: 404", message.ErrorCategoryUnknown},
+		{"tier4 empty completion error with text stays unknown", "Error during completion: something else", message.ErrorCategoryUnknown},
+
 		// negatives: word boundary on the status/code regexes, prefix anchoring of tier 0 (VOIP-1543)
 		{"status regex needs a word boundary after 401/403", "{\"status\": 4031}", message.ErrorCategoryUnknown},
 		{"status regex needs a word boundary after 429", "{\"code\": 4290}", message.ErrorCategoryUnknown},
@@ -114,6 +141,10 @@ func Test_shouldNotifyPipelineError(t *testing.T) {
 		message.ErrorCategoryAuthentication,
 		message.ErrorCategoryRateLimited,
 		message.ErrorCategoryTimeout,
+		message.ErrorCategoryConnection,
+		message.ErrorCategoryNotFound,
+		message.ErrorCategoryServerError,
+		message.ErrorCategoryStreamInterrupted,
 		message.ErrorCategoryUnknown,
 		message.ErrorCategoryFunctionCall,
 		message.ErrorCategoryInternal,

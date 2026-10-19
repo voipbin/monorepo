@@ -417,9 +417,13 @@ func (h *messageHandler) EventPMTeamMemberSwitched(ctx context.Context, evt *pmm
 // always emits an assistant-side reply so the user does not see silence after
 // the pipecatcall ends.
 //
+// contact_case aicalls take a separate path (eventPMPipecatcallTerminatedContactCase, VOIP-1633):
+// no reply is delivered for them, but a turn that ended with the user message unanswered gets a
+// timeout notice (labels "timeout_notice_*").
+//
 // Flow (per design doc §5):
 //  1. Skip non-AICall pipecatcalls (label "skipped_not_aicall").
-//  2. Resolve the AIcall. Skip non-conversation references (label "skipped_voice")
+//  2. Resolve the AIcall. Skip other non-conversation references (label "skipped_voice")
 //     and AIcalls already terminated (label "skipped_terminated"). RPC errors
 //     return nil (logged) so the subscribe handler does not requeue forever.
 //  3. Sleep `backstopGraceDelay` to let any in-flight EventPMMessageBotLLM
@@ -450,6 +454,10 @@ func (h *messageHandler) EventPMPipecatcallTerminated(ctx context.Context, evt *
 		return nil
 	}
 
+	if ac.ReferenceType == aicall.ReferenceTypeContactCase {
+		// no reply is delivered for these; a turn that ended unanswered gets a timeout notice (VOIP-1633).
+		return h.eventPMPipecatcallTerminatedContactCase(ctx, evt, ac)
+	}
 	if ac.ReferenceType != aicall.ReferenceTypeConversation {
 		promBackstopReplyTotal.WithLabelValues("skipped_voice").Inc()
 		return nil

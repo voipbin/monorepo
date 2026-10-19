@@ -97,7 +97,7 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 | `call-manager.call.*.hangup` | Call hangup — terminates the AIcall |
 | `call-manager.dtmf.*.received` | DTMF input during an AIcall |
 | `pipecat-manager.message.*.user_transcription` / `.bot_llm` / `.bot_llm_intermediate` | Realtime conversation messages |
-| `pipecat-manager.pipecatcall.*.initialized` / `.terminated` | Pipecat session lifecycle |
+| `pipecat-manager.pipecatcall.*.initialized` / `.terminated` | Pipecat session lifecycle. `.terminated` is also the backstop (`messagehandler.EventPMPipecatcallTerminated`): a conversation turn without a delivered reply gets a fixed reply; a contact_case turn that ended with the user message unanswered gets a `timeout` pipeline_error notice (VOIP-1633) |
 | `pipecat-manager.team.*.member_switched` | AI team member switch |
 | `pipecat-manager.pipeline.*.error` | Pipeline error reported by the pipecat runner (VOIP-1542). Recorded as a `role=notification` message with `content.type=pipeline_error` on the owning aicall (`messagehandler.EventPMPipelineError`); excluded from the conversing AI's prompt context. Events from a foreign pipecatcall (Insight listen turns) are deduplicated per aicall and category within 10 minutes |
 | `conference-manager.conference.*.deleted` | Conference terminated — finalizes a conference-type AI summary |

@@ -106,19 +106,22 @@ A message with ``role`` ``notification`` records a session event rather than con
         "message": "An AI service provider rejected the credentials or denied access. If this AI uses a custom engine key, verify that the key is valid and permitted for the selected model."
     }
 
-For the ``connection`` category the ``message`` is: ``The AI language model could not be reached. If this AI uses a custom base URL, verify that the address is correct and reachable over HTTPS.``
+The ``message`` of the other categories is fixed text as well. For the ``connection`` category it is: ``The AI language model could not be reached. If this AI uses a custom base URL, verify that the address is correct and reachable over HTTPS.``
 
 * ``category`` (enum string): The failure class.
 
-  ================ ===========
-  Category         Description
-  ================ ===========
-  authentication   The provider rejected the credentials or denied access. If the AI has a custom ``engine_key``, check that it is valid and allowed to use the selected model.
-  rate_limited     The provider rejected the request because of a rate limit or quota.
-  timeout          The language model did not respond in time.
-  connection       The language model could not be reached: the connection was refused or broken, the address could not be resolved or is not allowed, or the server certificate is not valid. This category applies to every OpenAI-compatible language model provider, and it is the one to check first for an AI that uses a custom ``engine_base_url``.
-  unknown          Any other provider error. For voice calls, only errors that stop the AI session are reported with this category.
-  ================ ===========
+  ==================== ===========
+  Category             Description
+  ==================== ===========
+  authentication       The provider rejected the credentials or denied access. If the AI has a custom ``engine_key``, check that it is valid and allowed to use the selected model.
+  rate_limited         The provider rejected the request because of a rate limit or quota.
+  timeout              The language model did not respond in time. It is also recorded when an AI chat on a case (contact case) is stopped after its time limit while the last message is still unanswered; this timeout is recorded once per AI call within 10 minutes and not at all if an error notice already exists for the same turn.
+  connection           The language model could not be reached: the connection was refused or broken, the address could not be resolved or is not allowed, or the server certificate is not valid. This category applies to every OpenAI-compatible language model provider, and it is the one to check first for an AI that uses a custom ``engine_base_url``.
+  not_found            The language model or its endpoint was not found (the server answered 404). Check the model name, and the address and path of a custom ``engine_base_url``. Applies to OpenAI-compatible language model providers.
+  server_error         The language model provider answered with a server error (status 500 to 599). Try again later. Applies to OpenAI-compatible language model providers.
+  stream_interrupted   The connection to the language model was interrupted while the answer was being received. Try again. Applies to OpenAI-compatible language model providers.
+  unknown              Any other provider error. For voice calls, only errors that stop the AI session are reported with this category.
+  ==================== ===========
 
 * ``fatal`` (boolean): ``true`` if the error stopped the AI session.
 * ``pipecatcall_id`` (UUID): Internal identifier of the AI processing turn that failed. Useful when contacting support.

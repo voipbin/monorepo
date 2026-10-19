@@ -45,6 +45,14 @@ var (
 	// tier 3, after timeout: the openai SDK connection failure (refused, blocked address, name not
 	// resolved, certificate failure) as pipecat reports it for every OpenAI compatible provider.
 	pipelineErrorPhrasesConnection = []string{"error during completion: connection error"}
+
+	// tier 4, after everything above (VOIP-1633): HTTP status answers and a broken response stream of
+	// the same OpenAI SDK path. Anchored to the "Error during completion:" prefix so that speech
+	// service errors never match. 401, 403 and 429 are already taken by tiers 2 and 3.
+	pipelineErrorPrefixCompletion      = "error during completion:"
+	pipelineErrorRegexNotFound         = regexp.MustCompile(`^error during completion: error code: 404\b`)
+	pipelineErrorRegexServerError      = regexp.MustCompile(`^error during completion: error code: 5\d\d\b`)
+	pipelineErrorPrefixStreamTruncated = "error during completion: peer closed connection without sending complete message body"
 )
 
 // classifyPipelineError maps a raw RTVI error text to a category. Deterministic and pure.
@@ -89,6 +97,20 @@ func classifyPipelineError(raw string) message.ErrorCategory {
 		return message.ErrorCategoryConnection
 	}
 
+	// tier 4
+	trimmed := strings.TrimSpace(s)
+	if pipelineErrorRegexNotFound.MatchString(trimmed) {
+		return message.ErrorCategoryNotFound
+	}
+	if pipelineErrorRegexServerError.MatchString(trimmed) {
+		return message.ErrorCategoryServerError
+	}
+	// The stream broke off: a reset leaves the exception text empty, a server that closed early
+	// leaves the httpx incomplete body text.
+	if trimmed == pipelineErrorPrefixCompletion || strings.HasPrefix(trimmed, pipelineErrorPrefixStreamTruncated) {
+		return message.ErrorCategoryStreamInterrupted
+	}
+
 	return message.ErrorCategoryUnknown
 }
 
@@ -97,7 +119,7 @@ func classifyPipelineError(raw string) message.ErrorCategory {
 //  1. function_call / internal: never (platform-side bug, operator signal only).
 //  2. fatal: always (the pipeline is being cancelled). Future-proofing: no service VoIPBin wires
 //     today pushes fatal=true.
-//  3. authentication / rate_limited / timeout / connection: always (actionable, persistent or LLM-origin).
+//  3. authentication / rate_limited / timeout / connection / not_found / server_error / stream_interrupted: always (actionable, persistent or LLM-origin).
 //  4. unknown: only for sessions without STT. In text sessions every error is LLM-origin; in voice
 //     sessions a non-fatal unknown includes transient STT reconnects, which would be false alarms.
 func shouldNotifyPipelineError(category message.ErrorCategory, fatal bool, hasSTT bool) bool {
@@ -111,7 +133,8 @@ func shouldNotifyPipelineError(category message.ErrorCategory, fatal bool, hasST
 	}
 
 	switch category {
-	case message.ErrorCategoryAuthentication, message.ErrorCategoryRateLimited, message.ErrorCategoryTimeout, message.ErrorCategoryConnection:
+	case message.ErrorCategoryAuthentication, message.ErrorCategoryRateLimited, message.ErrorCategoryTimeout, message.ErrorCategoryConnection,
+		message.ErrorCategoryNotFound, message.ErrorCategoryServerError, message.ErrorCategoryStreamInterrupted:
 		return true
 	case message.ErrorCategoryUnknown:
 		return !hasSTT

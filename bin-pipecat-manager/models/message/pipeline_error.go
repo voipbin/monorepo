@@ -13,7 +13,8 @@ type ErrorCategory string
 // list of error categories.
 //
 // Only ErrorCategoryAuthentication, ErrorCategoryRateLimited, ErrorCategoryTimeout,
-// ErrorCategoryConnection and ErrorCategoryUnknown ever reach a PipelineErrorEvent payload. ErrorCategoryFunctionCall and
+// ErrorCategoryConnection, ErrorCategoryNotFound, ErrorCategoryServerError, ErrorCategoryStreamInterrupted and
+// ErrorCategoryUnknown ever reach a PipelineErrorEvent payload. ErrorCategoryFunctionCall and
 // ErrorCategoryInternal are platform-side failures (our own tool handler raised, or a malformed
 // RTVI envelope) and are only logged and counted.
 const (
@@ -22,6 +23,11 @@ const (
 	ErrorCategoryTimeout        ErrorCategory = "timeout"
 	ErrorCategoryConnection     ErrorCategory = "connection"
 	ErrorCategoryUnknown        ErrorCategory = "unknown"
+
+	// The language model answered 404, answered 5xx, or the response stream broke off (VOIP-1633).
+	ErrorCategoryNotFound          ErrorCategory = "not_found"
+	ErrorCategoryServerError       ErrorCategory = "server_error"
+	ErrorCategoryStreamInterrupted ErrorCategory = "stream_interrupted"
 
 	ErrorCategoryFunctionCall ErrorCategory = "function_call"
 	ErrorCategoryInternal     ErrorCategory = "internal"

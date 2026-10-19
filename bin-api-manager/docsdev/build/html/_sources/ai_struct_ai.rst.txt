@@ -231,7 +231,7 @@ To use any other model offered by OpenRouter, set ``engine_model`` to ``openrout
 
 * Calls use your key and are billed to your OpenRouter account. The platform key is never used.
 * Zero data retention (ZDR) routing is enforced on every request. If no ZDR provider supports the model, the call fails.
-* For voice calls, a model without a ZDR provider can make the call silent, because the LLM request fails and this failure is not reported with a dedicated message. Before you connect a custom model to a call, check the model page on OpenRouter for a ZDR provider, or try the model in a text chat first.
+* For voice calls, a model without a ZDR provider can make the call silent, because the LLM request fails. The failure is recorded on the AI call as a ``pipeline_error`` message, with a status category such as ``not_found`` or ``server_error`` (see :ref:`AI Message <ai-struct-message>`), and the caller does not hear it. Before you connect a custom model to a call, check the model page on OpenRouter for a ZDR provider, or try the model in a text chat first.
 
 **Validation**
 
@@ -277,7 +277,7 @@ A call that is already running keeps the key and URL it read when it started. A 
 
 **Failures**
 
-When the platform cannot reach your server (name does not resolve, connection refused, address not allowed, certificate not valid) a ``pipeline_error`` message with category ``connection`` is recorded. See :ref:`AI Message <ai-struct-message>`. Other errors that your server returns over HTTP, such as an unknown model or a server error, are not reported with this category. A 401 or 403 answer is reported as ``authentication``.
+When the platform cannot reach your server (name does not resolve, connection refused, address not allowed, certificate not valid) a ``pipeline_error`` message with category ``connection`` is recorded. See :ref:`AI Message <ai-struct-message>`. Other errors that your server returns over HTTP are not reported with this category: a 401 or 403 answer is reported as ``authentication``, a 404 answer (for example an unknown model) as ``not_found``, and a 5xx answer as ``server_error``. A connection that breaks while the answer is being received is reported as ``connection``.
 
 .. _ai-struct-ai-tts_type:
 
