@@ -20,7 +20,7 @@ func (h *callHandler) ChainedCallIDAdd(ctx context.Context, id uuid.UUID, chaine
 	log.Debug("Adding the chained call id.")
 
 	// transaction start
-	tx, c, err := h.db.CallTXStart(id)
+	tx, c, err := h.db.CallTXStart(ctx, id)
 	if err != nil {
 		log.Errorf("Could not start the transaction for chained call id add. err: %v", err)
 		return nil, err
@@ -35,7 +35,7 @@ func (h *callHandler) ChainedCallIDAdd(ctx context.Context, id uuid.UUID, chaine
 	}
 
 	// add the chained call id
-	if err := h.db.CallTXAddChainedCallID(tx, id, chainedCallID); err != nil {
+	if err := h.db.CallTXAddChainedCallID(ctx, tx, id, chainedCallID); err != nil {
 		log.Errorf("Could not add the chained call id. err: %v", err)
 		h.db.CallTXFinish(tx, false)
 		return nil, err
@@ -78,7 +78,7 @@ func (h *callHandler) ChainedCallIDRemove(ctx context.Context, id uuid.UUID, cha
 	log.Debug("Removing the chained call id.")
 
 	// transaction start
-	tx, c, err := h.db.CallTXStart(id)
+	tx, c, err := h.db.CallTXStart(ctx, id)
 	if err != nil {
 		log.Errorf("Could not start the transaction for chained call id add. err: %v", err)
 		return nil, err
@@ -93,7 +93,7 @@ func (h *callHandler) ChainedCallIDRemove(ctx context.Context, id uuid.UUID, cha
 	}
 
 	// remove the chained call id
-	if err := h.db.CallTXRemoveChainedCallID(tx, id, chainedCallID); err != nil {
+	if err := h.db.CallTXRemoveChainedCallID(ctx, tx, id, chainedCallID); err != nil {
 		log.Errorf("Could not add the chained call id. err: %v", err)
 		h.db.CallTXFinish(tx, false)
 		return nil, err

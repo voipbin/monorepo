@@ -8,6 +8,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	uuid "github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -557,10 +558,10 @@ func (h *handler) CallAddRecordingIDs(ctx context.Context, id uuid.UUID, recordI
 	return nil
 }
 
-func (h *handler) CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error) {
-	tx, err := h.db.Begin()
+func (h *handler) CallTXStart(ctx context.Context, id uuid.UUID) (*sql.Tx, *call.Call, error) {
+	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not get transaction. CallTXStart. err: %v", err)
+		return nil, nil, fmt.Errorf("could not get transaction. CallTXStart. err: %w", err)
 	}
 
 	fields := commondatabasehandler.GetDBFields(&call.Call{})
@@ -577,17 +578,22 @@ func (h *handler) CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error) {
 		return nil, nil, fmt.Errorf("could not build query. CallTXStart. err: %v", err)
 	}
 
-	row, err := tx.Query(query, args...)
+	row, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		_ = tx.Rollback()
-		return nil, nil, fmt.Errorf("could not query. CallTXStart. err: %v", err)
+		return nil, nil, fmt.Errorf("could not query. CallTXStart. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
 	}()
 
 	if !row.Next() {
+		// read the cause before the rollback closes the rows
+		iterErr := row.Err()
 		_ = tx.Rollback()
+		if iterErr != nil {
+			return nil, nil, fmt.Errorf("could not iterate the rows. CallTXStart. err: %w", iterErr)
+		}
 		return nil, nil, ErrNotFound
 	}
 
@@ -602,42 +608,44 @@ func (h *handler) CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error) {
 
 func (h *handler) CallTXFinish(tx *sql.Tx, commit bool) {
 	if commit {
-		_ = tx.Commit()
+		if err := tx.Commit(); err != nil {
+			logrus.WithField("func", "CallTXFinish").WithError(err).Error("Could not commit the transaction.")
+		}
 	} else {
 		_ = tx.Rollback()
 	}
 }
 
 // CallTXAddChainedCallID adds the call id to the given call's chained_call_ids in a transaction mode.
-func (h *handler) CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error {
+func (h *handler) CallTXAddChainedCallID(ctx context.Context, tx *sql.Tx, id, chainedCallID uuid.UUID) error {
 	q, args, err := buildCallAddChainedCallID(id, chainedCallID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
 		return fmt.Errorf("could not build query. CallTXAddChainedCallID. err: %v", err)
 	}
 
-	if _, err := tx.Exec(q, args...); err != nil {
-		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %v", err)
+	if _, err := tx.ExecContext(ctx, q, args...); err != nil {
+		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %w", err)
 	}
 
 	// update the cache
-	_ = h.callUpdateToCache(context.Background(), id)
+	_ = h.callUpdateToCache(ctx, id)
 
 	return nil
 }
 
 // CallTXRemoveChainedCallID removes the call id from the given call's chained_call_ids in a transaction mode.
-func (h *handler) CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error {
+func (h *handler) CallTXRemoveChainedCallID(ctx context.Context, tx *sql.Tx, id, chainedCallID uuid.UUID) error {
 	q, args, err := buildCallRemoveChainedCallID(id, chainedCallID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
 		return fmt.Errorf("could not build query. CallTXRemoveChainedCallID. err: %v", err)
 	}
 
-	if _, err := tx.Exec(q, args...); err != nil {
-		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %v", err)
+	if _, err := tx.ExecContext(ctx, q, args...); err != nil {
+		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %w", err)
 	}
 
 	// update the cache
-	_ = h.callUpdateToCache(context.Background(), id)
+	_ = h.callUpdateToCache(ctx, id)
 
 	return nil
 }

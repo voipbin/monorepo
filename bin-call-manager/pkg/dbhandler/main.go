@@ -68,10 +68,10 @@ type DBHandler interface {
 	CallSetStatusRinging(ctx context.Context, id uuid.UUID) error
 	CallSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
 	CallSetForRouteFailover(ctx context.Context, id uuid.UUID, channelID string, dialrouteID uuid.UUID) error
-	CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error
+	CallTXAddChainedCallID(ctx context.Context, tx *sql.Tx, id, chainedCallID uuid.UUID) error
 	CallTXFinish(tx *sql.Tx, commit bool)
-	CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error
-	CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error)
+	CallTXRemoveChainedCallID(ctx context.Context, tx *sql.Tx, id, chainedCallID uuid.UUID) error
+	CallTXStart(ctx context.Context, id uuid.UUID) (*sql.Tx, *call.Call, error)
 
 	// channels
 	ChannelCreate(ctx context.Context, channel *channel.Channel) error
