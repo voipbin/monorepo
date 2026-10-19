@@ -34,7 +34,9 @@ async def request_validation_handler(request: Request, exc: RequestValidationErr
 
 
 class ToolCall(BaseModel):
-    id: str
+    # Optional: history written by a model server that omits the tool call id has none (VOIP-1633);
+    # filter_valid_messages repairs or drops those rows before they reach a provider.
+    id: Optional[str] = None
     type: Optional[str] = "function"
     function: Optional[dict] = None
 

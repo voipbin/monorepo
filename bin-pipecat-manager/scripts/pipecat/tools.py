@@ -33,12 +33,19 @@ def register_missing_tool_logging(llm_service, pipecatcall_id: str):
 
     @llm_service.event_handler("on_function_calls_started")
     async def _on_function_calls_started(service, function_calls):
+        missing = False
         for fc in function_calls:
             if fc.function_name not in service._functions:
+                missing = True
                 logger.error(
                     f"[missing_tool] LLM called unadvertised tool. "
                     f"pipecatcall_id={pipecatcall_id} tool_name={fc.function_name}"
                 )
+        if missing:
+            # VOIP-1633: once per batch, so the customer sees a pipeline_error notice instead of
+            # silence. Fixed text without the tool name; it must not contain a token of Go
+            # classifyPipelineError (it has to stay "unknown").
+            await service.push_error(error_msg="LLM called an unadvertised tool")
 
 
 def convert_to_openai_format(tools_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

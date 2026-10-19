@@ -66,6 +66,11 @@ class _FakeService:
     def __init__(self, registered_names):
         self._functions = {name: object() for name in registered_names}
         self._handlers = {}
+        self.pushed_errors = []
+
+    async def push_error(self, error_msg, **kwargs):
+        # VOIP-1633: records what would become an ErrorFrame (and so a pipeline_error notice)
+        self.pushed_errors.append((error_msg, kwargs))
 
     def event_handler(self, event_name):
         def _decorator(fn):
@@ -94,6 +99,8 @@ async def test_logs_error_for_unadvertised_tool(caplog):
     assert "[missing_tool]" in logged[0]
     assert "pipecatcall_id=pcc-123" in logged[0]
     assert "tool_name=notify_agent" in logged[0]
+    # VOIP-1633: one fixed text error for the customer notice, without the tool name
+    assert svc.pushed_errors == [("LLM called an unadvertised tool", {})]
 
 
 @pytest.mark.asyncio
@@ -109,6 +116,7 @@ async def test_no_error_for_registered_tool():
     await handler(svc, [_FakeCall("notify_agent"), _FakeCall("get_contact_profile")])
 
     assert logged == []
+    assert svc.pushed_errors == []
 
 
 @pytest.mark.asyncio
@@ -131,6 +139,8 @@ async def test_mixed_calls_only_logs_missing():
     assert any("tool_name=notify_agent" in m for m in logged)
     assert any("tool_name=emit_info_card" in m for m in logged)
     assert all("tool_name=get_contact_profile" not in m for m in logged)
+    # VOIP-1633: two missing tools in one batch still push a single error, never fatal
+    assert svc.pushed_errors == [("LLM called an unadvertised tool", {})]
 
 
 def test_handler_registered_on_correct_event():

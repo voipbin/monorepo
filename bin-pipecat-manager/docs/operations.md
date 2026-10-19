@@ -63,6 +63,12 @@ Before a Gemini session starts, the runner validates the tool list with the inst
 
 The dropped tool's handler is still registered by name but is inert, since the LLM never sees the tool. Server-side (HTTP 400) provider rejections are not caught by this filter. MCP tool schemas are normalized to a provider-neutral subset by bin-ai-manager before they reach the runner, so a drop here usually means a schema construct that normalization does not cover. No metric; the log lines are the signal.
 
+### Runner `[empty_completion]`, `[tool_call]` and `[tool_history]` lines (VOIP-1633)
+
+- ERROR `[empty_completion] pipecatcall_id=...`: an LLM response ended with nothing usable. The runner pushed the error `LLM returned no usable output`, which the Go side counts in `pipecat_manager_pipeline_error_total{category="unknown"}` (so that counter can rise by the number of formerly silent failures). WARN `[empty_completion] after_tool=true ...` is the same situation right after a tool result and is log only, no error.
+- WARN `[tool_call] dropped calls without a name. ... count=<n>`: the model sent tool calls with an empty name; they were removed before pipecat recorded them. A tool call without an id is given a generated `call_<hex>` id silently.
+- WARN `[tool_history] id-less tool rows. kept_pairs=<k> dropped_rows=<d>`: history written without tool call ids was repaired (clean call/result pairs kept with a generated `legacy_call_<n>` id) or dropped. No message content is logged.
+
 ### WARN `Pipeline error. fatal: ...`
 
 The Go side handles every RTVI `error` message from the runner (pipecat's pipeline `ErrorFrame`, for example a provider request rejected before it is sent, such as a tool schema the provider refuses) in `runnerHandlePipelineError`. It classifies the text, counts it in `pipecat_manager_pipeline_error_total{category, fatal}`, and logs the first frame of each category per session at WARN with `pipecatcall_id` and `category` (repeats at DEBUG). The error text is capped at 2000 bytes; the runner's `pipecat.pipeline.worker` record (`A fatal error occurred` or `Something went wrong`) holds the full message; other library WARNING and above records are withheld (see `LOG_LEVEL`). The text can include fragments of customer tool schemas (internal logs only; the customer-facing `pipeline_error` event carries only the category). To join with bin-ai-manager logs, use `pipecatcall_id`. See docs/domain.md "Pipeline errors" for the notice policy.

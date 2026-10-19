@@ -567,17 +567,17 @@ class TestNoManualRTVISetup:
                         "Manually adding it causes duplicate bot-llm-text messages."
                     )
 
-    def test_pipeline_task_not_called_with_observers(self):
-        """PipelineTask must not receive an 'observers' argument with RTVIObserver.
+    def test_pipeline_task_observers_are_only_the_empty_output_observer(self):
+        """PipelineTask must not receive an RTVIObserver through 'observers'.
 
-        Scans the AST for PipelineTask(...) calls and verifies none pass
-        an 'observers' keyword argument, which would duplicate the auto-registered observer.
+        PipelineTask registers its own RTVIObserver when RTVI is enabled; a user supplied one duplicates
+        every RTVI message. The only 'observers' allowed is an inline list made of EmptyOutputObserver(...)
+        calls (VOIP-1633, llm_guard.py), which is not an RTVI observer.
         """
         tree = self._parse_run_py()
         for node in ast.walk(tree):
             if not isinstance(node, ast.Call):
                 continue
-            # Match PipelineTask(...) calls
             func = node.func
             is_pipeline_task = (
                 (isinstance(func, ast.Name) and func.id == "PipelineTask") or
@@ -586,11 +586,48 @@ class TestNoManualRTVISetup:
             if not is_pipeline_task:
                 continue
             for kw in node.keywords:
-                assert kw.arg != "observers", (
-                    "PipelineTask must not be called with 'observers' argument in run.py. "
-                    "PipelineTask automatically registers RTVIObserver when enable_rtvi=True (default). "
-                    "Passing observers=[RTVIObserver(...)] causes duplicate bot-llm-text messages."
+                if kw.arg != "observers":
+                    continue
+                assert isinstance(kw.value, ast.List) and kw.value.elts, (
+                    "PipelineTask 'observers' must be an inline non empty list of EmptyOutputObserver(...) calls. "
+                    "PipelineTask automatically registers RTVIObserver when enable_rtvi=True (default); "
+                    "passing observers=[RTVIObserver(...)] causes duplicate bot-llm-text messages."
                 )
+                for elt in kw.value.elts:
+                    assert (
+                        isinstance(elt, ast.Call)
+                        and isinstance(elt.func, ast.Name)
+                        and elt.func.id == "EmptyOutputObserver"
+                    ), "PipelineTask 'observers' may only contain EmptyOutputObserver(...) calls."
+
+    def test_every_pipeline_task_carries_the_empty_output_observer(self):
+        """VOIP-1633: both PipelineTask calls (single and team) are wired, so a dropped line fails a test."""
+        tree = self._parse_run_py()
+        calls = [
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name) and node.func.id == "PipelineTask"
+        ]
+        assert len(calls) == 2
+        for node in calls:
+            observers = [kw for kw in node.keywords if kw.arg == "observers"]
+            assert len(observers) == 1
+            assert [e.func.id for e in observers[0].value.elts] == ["EmptyOutputObserver"]
+
+    def test_tool_call_ids_are_normalized_on_both_paths(self):
+        """VOIP-1633: the single service and every team member service get normalize_tool_call_ids."""
+        tree = self._parse_run_py()
+        in_function = {}
+        for fn in ast.walk(tree):
+            if isinstance(fn, (ast.AsyncFunctionDef, ast.FunctionDef)):
+                for node in ast.walk(fn):
+                    if (
+                        isinstance(node, ast.Call)
+                        and isinstance(node.func, ast.Name)
+                        and node.func.id == "normalize_tool_call_ids"
+                    ):
+                        in_function.setdefault(fn.name, []).append(node)
+        assert set(in_function) == {"init_single_ai_pipeline", "init_team_pipeline"}
 
     def test_no_rtvi_processor_in_pipeline_stages(self):
         """Pipeline stages must not include an RTVIProcessor instance.

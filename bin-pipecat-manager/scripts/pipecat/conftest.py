@@ -124,6 +124,7 @@ _mocks = {
     "common": MagicMock(PIPECATCALL_WS_URL="ws://localhost", PIPECATCALL_HTTP_URL="http://localhost", PIPELINE_SESSION_TIMEOUT=300),
     "tools": _make_mock_module("tool_register", "tool_unregister", "convert_to_openai_format", "get_tool_names"),
     "task": _make_mock_module("task_manager"),
+    "llm_guard": _make_mock_module("EmptyOutputObserver", "normalize_tool_call_ids"),
     "routing_llm": _make_mock_module("RoutingLLMService"),
     "routing_tts": _make_mock_module("RoutingTTSService"),
     "routing_stt": _make_mock_module("RoutingSTTService"),
