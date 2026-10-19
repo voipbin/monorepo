@@ -220,7 +220,7 @@ func (h *handler) addressClaimAttempt(ctx context.Context, customerID, addressID
 	// Post-lock re-read: design §4's round-8/39 stale-target hazard --
 	// confirm the row is still unresolved and still has this target
 	// under this tx before writing the period.
-	current, err := addressTypeTargetContactByID(tx, addressID)
+	current, err := addressTypeTargetContactByID(ctx, tx, addressID)
 	if err != nil {
 		return err
 	}
@@ -282,13 +282,16 @@ func (h *handler) AddressGet(ctx context.Context, customerID, id uuid.UUID) (*co
 		return nil, fmt.Errorf("could not build query. AddressGet. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AddressGet. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("could not iterate rows. AddressGet. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -305,7 +308,7 @@ func (h *handler) AddressGet(ctx context.Context, customerID, id uuid.UUID) (*co
 // (string), "unresolved" (bool — when true, restricts to rows where
 // contact_id IS NULL and takes precedence over "contact_id" if both are
 // given).
-func (h *handler) AddressList(_ context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]contact.Address, error) {
+func (h *handler) AddressList(ctx context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]contact.Address, error) {
 	q := sq.Select(addressRowColumns()...).
 		From(addressTable).
 		Where(sq.Eq{"customer_id": customerID.Bytes()}).
@@ -352,7 +355,7 @@ func (h *handler) AddressList(_ context.Context, customerID uuid.UUID, filters m
 		return nil, fmt.Errorf("could not build query. AddressList. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AddressList. err: %v", err)
 	}
@@ -383,7 +386,7 @@ func (h *handler) AddressList(_ context.Context, customerID uuid.UUID, filters m
 // pkg/contacthandler/interaction_read.go's own comment at that call
 // site) -- it does not mean this function's own query may never change;
 // see docs/plans/2026-07-21-contact-address-reachable-type-filter-design.md.
-func (h *handler) AddressListByContactID(_ context.Context, contactID uuid.UUID) ([]contact.Address, error) {
+func (h *handler) AddressListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Address, error) {
 	reachable := make([]string, 0, len(contact.ReachableAddressTypes))
 	for _, t := range contact.ReachableAddressTypes {
 		reachable = append(reachable, string(t))
@@ -399,7 +402,7 @@ func (h *handler) AddressListByContactID(_ context.Context, contactID uuid.UUID)
 		return nil, fmt.Errorf("could not build query. AddressListByContactID. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AddressListByContactID. err: %v", err)
 	}
@@ -435,7 +438,7 @@ func (h *handler) AddressListByContactID(_ context.Context, contactID uuid.UUID)
 // fixed in the same change since it directly undermines this feature's
 // purpose (attributing a web_session address to a contact so its
 // interaction history becomes visible).
-func (h *handler) AddressListAllByContactID(_ context.Context, contactID uuid.UUID) ([]contact.Address, error) {
+func (h *handler) AddressListAllByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Address, error) {
 	query, args, err := sq.Select(addressRowColumns()...).
 		From(addressTable).
 		Where(sq.Eq{"contact_id": contactID.Bytes()}).
@@ -445,7 +448,7 @@ func (h *handler) AddressListAllByContactID(_ context.Context, contactID uuid.UU
 		return nil, fmt.Errorf("could not build query. AddressListAllByContactID. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AddressListAllByContactID. err: %v", err)
 	}
@@ -485,12 +488,12 @@ func (h *handler) AddressUpdate(ctx context.Context, id uuid.UUID, fields map[st
 		// round-45). Fetched OUTSIDE any tx, before BeginTx, so it
 		// never contends with the tx's own connection (the SQLite test
 		// harness caps the pool at 1 connection).
-		pre, err := addressTypeTargetContactByID(h.db, id)
+		pre, err := addressTypeTargetContactByID(ctx, h.db, id)
 		if err != nil {
 			return err // ErrNotFound propagates immediately, never retried
 		}
 		contactID = pre.ContactID
-		customerID, err := h.addressCustomerID(id)
+		customerID, err := h.addressCustomerID(ctx, id)
 		if err != nil {
 			return err
 		}
@@ -553,7 +556,7 @@ func (h *handler) addressUpdateAttempt(ctx context.Context, id, customerID, cont
 
 	// Post-lock re-read: confirm the row hasn't moved since the
 	// pre-lock read (design §4 round-39/53's stale-target hazard).
-	current, err := addressTypeTargetContactByID(tx, id)
+	current, err := addressTypeTargetContactByID(ctx, tx, id)
 	if err != nil {
 		return err
 	}
@@ -579,7 +582,7 @@ func (h *handler) addressUpdateAttempt(ctx context.Context, id, customerID, cont
 }
 
 // addressCustomerID returns the customer_id of an address row by id.
-func (h *handler) addressCustomerID(id uuid.UUID) (uuid.UUID, error) {
+func (h *handler) addressCustomerID(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	query, args, err := sq.Select("customer_id").
 		From(addressTable).
 		Where(sq.Eq{"id": id.Bytes()}).
@@ -587,12 +590,15 @@ func (h *handler) addressCustomerID(id uuid.UUID) (uuid.UUID, error) {
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("could not build query. addressCustomerID. err: %v", err)
 	}
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("could not query. addressCustomerID. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return uuid.Nil, fmt.Errorf("could not iterate rows. addressCustomerID. err: %w", err)
+		}
 		return uuid.Nil, ErrNotFound
 	}
 	var customerIDBytes []byte
@@ -614,12 +620,12 @@ func (h *handler) AddressDelete(ctx context.Context, id uuid.UUID) error {
 	var lastErr error
 	var contactID uuid.UUID
 	for attempt := 0; attempt < addressMaxDeadlockRetries; attempt++ {
-		pre, err := addressTypeTargetContactByID(h.db, id)
+		pre, err := addressTypeTargetContactByID(ctx, h.db, id)
 		if err != nil {
 			return err
 		}
 		contactID = pre.ContactID
-		customerID, err := h.addressCustomerID(id)
+		customerID, err := h.addressCustomerID(ctx, id)
 		if err != nil {
 			return err
 		}
@@ -657,7 +663,7 @@ func (h *handler) addressDeleteAttempt(ctx context.Context, id, customerID, cont
 		}
 	}()
 
-	current, err := addressTypeTargetContactByID(tx, id)
+	current, err := addressTypeTargetContactByID(ctx, tx, id)
 	if err != nil {
 		return err
 	}

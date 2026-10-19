@@ -514,7 +514,7 @@ func Test_ContactDeleteByCustomerID(t *testing.T) {
 			// affected contact from the cache so no tombstone is served.
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			for _, c := range tt.contacts {
-				mockCache.EXPECT().ContactDelete(ctx, c.ID).Return(nil)
+				mockCache.EXPECT().ContactDelete(gomock.Any(), c.ID).Return(nil)
 			}
 			if err := h.ContactDeleteByCustomerID(ctx, tt.customerID); err != nil {
 				t.Errorf("ContactDeleteByCustomerID() error = %v", err)

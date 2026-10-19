@@ -45,7 +45,7 @@ func (h *handler) ContactCreate(ctx context.Context, c *contact.Contact) error {
 		return fmt.Errorf("could not build query. ContactCreate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. ContactCreate. err: %v", err)
 	}
@@ -72,8 +72,14 @@ func (h *handler) contactUpdateToCache(ctx context.Context, id uuid.UUID) error 
 	}
 
 	// load related data
-	res.Addresses, _ = h.AddressListByContactID(ctx, id)
-	res.TagIDs, _ = h.TagAssignmentListByContactID(ctx, id)
+	res.Addresses, err = h.AddressListByContactID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("could not get the addresses. contactUpdateToCache. err: %w", err)
+	}
+	res.TagIDs, err = h.TagAssignmentListByContactID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("could not get the tag ids. contactUpdateToCache. err: %w", err)
+	}
 
 	if err := h.contactSetToCache(ctx, res); err != nil {
 		return err
@@ -114,7 +120,7 @@ func (h *handler) contactGetFromDB(ctx context.Context, id uuid.UUID) (*contact.
 		return nil, fmt.Errorf("could not build query. contactGetFromDB. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. contactGetFromDB. err: %v", err)
 	}
@@ -123,6 +129,9 @@ func (h *handler) contactGetFromDB(ctx context.Context, id uuid.UUID) (*contact.
 	}()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("could not iterate rows. contactGetFromDB. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -149,8 +158,14 @@ func (h *handler) ContactGet(ctx context.Context, id uuid.UUID) (*contact.Contac
 	}
 
 	// load related data
-	res.Addresses, _ = h.AddressListByContactID(ctx, id)
-	res.TagIDs, _ = h.TagAssignmentListByContactID(ctx, id)
+	res.Addresses, err = h.AddressListByContactID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not get the addresses. ContactGet. err: %w", err)
+	}
+	res.TagIDs, err = h.TagAssignmentListByContactID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not get the tag ids. ContactGet. err: %w", err)
+	}
 
 	// Set to cache only for active contacts. A soft-deleted contact is still
 	// returned here (the delete event payload depends on the by-id read), but
@@ -201,7 +216,7 @@ func (h *handler) ContactList(ctx context.Context, size uint64, token string, fi
 		return nil, fmt.Errorf("could not build query. ContactList. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ContactList. err: %v", err)
 	}
@@ -230,8 +245,14 @@ func (h *handler) ContactList(ctx context.Context, size uint64, token string, fi
 
 	// load related data for each contact
 	for _, c := range res {
-		c.Addresses, _ = h.AddressListByContactID(ctx, c.ID)
-		c.TagIDs, _ = h.TagAssignmentListByContactID(ctx, c.ID)
+		c.Addresses, err = h.AddressListByContactID(ctx, c.ID)
+		if err != nil {
+			return nil, fmt.Errorf("could not get the addresses. ContactList. err: %w", err)
+		}
+		c.TagIDs, err = h.TagAssignmentListByContactID(ctx, c.ID)
+		if err != nil {
+			return nil, fmt.Errorf("could not get the tag ids. ContactList. err: %w", err)
+		}
 	}
 
 	return res, nil
@@ -256,7 +277,7 @@ func (h *handler) ContactUpdate(ctx context.Context, id uuid.UUID, fields map[co
 		return fmt.Errorf("could not build query. ContactUpdate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. ContactUpdate. err: %v", err)
 	}
@@ -289,7 +310,7 @@ func (h *handler) ContactDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("could not build query. ContactDelete. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. ContactDelete. err: %v", err)
 	}
@@ -297,7 +318,9 @@ func (h *handler) ContactDelete(ctx context.Context, id uuid.UUID) error {
 	// Evict the cache instead of repopulating it. The contact is now
 	// soft-deleted; calling contactUpdateToCache here would re-cache the
 	// tombstone (TMDelete set) and keep serving it on subsequent reads.
-	_ = h.cache.ContactDelete(ctx, id)
+	// The delete is already committed, so the eviction must not depend on the
+	// request context being alive.
+	_ = h.cache.ContactDelete(context.WithoutCancel(ctx), id)
 
 	return nil
 }
@@ -327,13 +350,16 @@ func (h *handler) AddressLookupContactIDByTypeTarget(ctx context.Context, custom
 		return uuid.Nil, fmt.Errorf("could not build query. AddressLookupContactIDByTypeTarget. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("could not query. AddressLookupContactIDByTypeTarget. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return uuid.Nil, fmt.Errorf("could not iterate rows. AddressLookupContactIDByTypeTarget. err: %w", err)
+		}
 		return uuid.Nil, ErrNotFound
 	}
 
@@ -366,7 +392,7 @@ func (h *handler) ContactLookupByPhone(ctx context.Context, customerID uuid.UUID
 		return nil, fmt.Errorf("could not build query. ContactLookupByPhone. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ContactLookupByPhone. err: %v", err)
 	}
@@ -375,6 +401,9 @@ func (h *handler) ContactLookupByPhone(ctx context.Context, customerID uuid.UUID
 	}()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("could not iterate rows. ContactLookupByPhone. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -408,7 +437,7 @@ func (h *handler) ContactLookupByEmail(ctx context.Context, customerID uuid.UUID
 		return nil, fmt.Errorf("could not build query. ContactLookupByEmail. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ContactLookupByEmail. err: %v", err)
 	}
@@ -417,6 +446,9 @@ func (h *handler) ContactLookupByEmail(ctx context.Context, customerID uuid.UUID
 	}()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("could not iterate rows. ContactLookupByEmail. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -452,7 +484,7 @@ func (h *handler) ContactDeleteByCustomerID(ctx context.Context, customerID uuid
 		return fmt.Errorf("could not build select query. ContactDeleteByCustomerID. err: %v", err)
 	}
 
-	rows, err := h.db.Query(selectQuery, selectArgs...)
+	rows, err := h.db.QueryContext(ctx, selectQuery, selectArgs...)
 	if err != nil {
 		return fmt.Errorf("could not query contact ids. ContactDeleteByCustomerID. err: %v", err)
 	}
@@ -485,14 +517,14 @@ func (h *handler) ContactDeleteByCustomerID(ctx context.Context, customerID uuid
 		return fmt.Errorf("could not build query. ContactDeleteByCustomerID. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. ContactDeleteByCustomerID. err: %v", err)
 	}
 
 	// Evict each affected contact from the cache so no tombstone is served.
 	for _, id := range ids {
-		_ = h.cache.ContactDelete(ctx, id)
+		_ = h.cache.ContactDelete(context.WithoutCancel(ctx), id)
 	}
 
 	return nil

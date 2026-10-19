@@ -38,7 +38,7 @@ func (h *handler) CaseNoteCreate(ctx context.Context, n *casenote.CaseNote) erro
 		return fmt.Errorf("could not build query. CaseNoteCreate. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(query, args...); err != nil {
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not create case note. CaseNoteCreate. err: %v", err)
 	}
 
@@ -62,7 +62,7 @@ func (h *handler) CaseNoteDelete(ctx context.Context, customerID, caseID, id uui
 		return fmt.Errorf("could not build query. CaseNoteDelete. err: %v", err)
 	}
 
-	result, err := h.db.Exec(query, args...)
+	result, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. CaseNoteDelete. err: %v", err)
 	}
@@ -94,7 +94,7 @@ func (h *handler) CaseNoteListByCase(ctx context.Context, customerID, caseID uui
 		return nil, fmt.Errorf("could not build query. CaseNoteListByCase. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CaseNoteListByCase. err: %v", err)
 	}

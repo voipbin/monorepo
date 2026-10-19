@@ -331,6 +331,12 @@ func (h *handler) ownershipAgreementHoldsTx(ctx context.Context, tx *sql.Tx, cus
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			if isMySQLDeadlock(err) {
+				return false, ErrDeadlock
+			}
+			return false, fmt.Errorf("could not iterate rows. ownershipAgreementHoldsTx. err: %w", err)
+		}
 		return false, nil // row gone -- orphan
 	}
 	var contactIDBytes []byte

@@ -24,7 +24,7 @@ func (h *handler) TagAssignmentCreate(ctx context.Context, contactID, tagID uuid
 		return fmt.Errorf("could not build query. TagAssignmentCreate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. TagAssignmentCreate. err: %v", err)
 	}
@@ -47,7 +47,7 @@ func (h *handler) TagAssignmentDelete(ctx context.Context, contactID, tagID uuid
 		return fmt.Errorf("could not build query. TagAssignmentDelete. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. TagAssignmentDelete. err: %v", err)
 	}
@@ -69,7 +69,7 @@ func (h *handler) TagAssignmentListByContactID(ctx context.Context, contactID uu
 		return nil, fmt.Errorf("could not build query. TagAssignmentListByContactID. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. TagAssignmentListByContactID. err: %v", err)
 	}
@@ -90,6 +90,9 @@ func (h *handler) TagAssignmentListByContactID(ctx context.Context, contactID uu
 		}
 
 		res = append(res, tagID)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error. TagAssignmentListByContactID. err: %w", err)
 	}
 
 	return res, nil
