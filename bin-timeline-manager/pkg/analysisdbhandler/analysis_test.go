@@ -352,21 +352,56 @@ func Test_AnalysisList_rows_err(t *testing.T) {
 	}
 }
 
-func Test_AnalysisList_canceled_ctx(t *testing.T) {
-	h, _, mc := newTestHandler(t)
-	defer mc.Finish()
-	mockUtil := h.utilHandler.(*utilhandler.MockUtilHandler)
-	mockUtil.EXPECT().TimeGetCurTime().Return("2026-06-23T00:00:00.000000Z")
+func Test_canceled_ctx(t *testing.T) {
+	owner := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	id := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
 
-	// no ExpectQuery and no ExpectationsWereMet on purpose: a canceled context
-	// must stop database/sql before the driver is called. Registering an
-	// expectation here would blur that intent (and stay unconsumed).
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
+	tests := []struct {
+		name string
+		call func(ctx context.Context, h *handler) error
+	}{
+		{
+			name: "AnalysisGet",
+			call: func(ctx context.Context, h *handler) error {
+				_, err := h.AnalysisGet(ctx, owner, id)
+				return err
+			},
+		},
+		{
+			name: "AnalysisGetByActiveflowID",
+			call: func(ctx context.Context, h *handler) error {
+				_, err := h.AnalysisGetByActiveflowID(ctx, owner, id)
+				return err
+			},
+		},
+		{
+			name: "AnalysisList",
+			call: func(ctx context.Context, h *handler) error {
+				_, err := h.AnalysisList(ctx, owner, 10, "", nil)
+				return err
+			},
+		},
+	}
 
-	_, err := h.AnalysisList(ctx, uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"), 10, "", nil)
-	// the production error line wraps with %v, so match on the message.
-	if err == nil || !strings.Contains(err.Error(), context.Canceled.Error()) {
-		t.Fatalf("expected a context canceled error, got: %v", err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h, _, mc := newTestHandler(t)
+			defer mc.Finish()
+			mockUtil := h.utilHandler.(*utilhandler.MockUtilHandler)
+			mockUtil.EXPECT().TimeGetCurTime().Return("2026-06-23T00:00:00.000000Z").AnyTimes()
+
+			// no ExpectQuery and no ExpectationsWereMet on purpose: a canceled
+			// context must stop database/sql before the driver is called.
+			// Registering an expectation here would blur that intent (and stay
+			// unconsumed).
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+
+			err := tt.call(ctx, h)
+			// the production error lines wrap with %v, so match on the message.
+			if err == nil || !strings.Contains(err.Error(), context.Canceled.Error()) {
+				t.Fatalf("expected a context canceled error, got: %v", err)
+			}
+		})
 	}
 }
