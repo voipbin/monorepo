@@ -203,8 +203,8 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			if tt.masterCallID != uuid.Nil {
-				mockDB.EXPECT().CallTXStart(tt.masterCallID).Return(nil, &call.Call{}, nil)
-				mockDB.EXPECT().CallTXAddChainedCallID(gomock.Any(), tt.masterCallID, tt.expectCall.ID).Return(nil)
+				mockDB.EXPECT().CallTXStart(ctx, tt.masterCallID).Return(nil, &call.Call{}, nil)
+				mockDB.EXPECT().CallTXAddChainedCallID(ctx, gomock.Any(), tt.masterCallID, tt.expectCall.ID).Return(nil)
 				mockDB.EXPECT().CallSetMasterCallID(ctx, tt.expectCall.ID, tt.masterCallID).Return(nil)
 				mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
 
@@ -867,8 +867,8 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			if tt.masterCallID != uuid.Nil {
-				mockDB.EXPECT().CallTXStart(tt.masterCallID).Return(nil, &call.Call{}, nil)
-				mockDB.EXPECT().CallTXAddChainedCallID(gomock.Any(), tt.masterCallID, tt.expectCall.ID).Return(nil)
+				mockDB.EXPECT().CallTXStart(ctx, tt.masterCallID).Return(nil, &call.Call{}, nil)
+				mockDB.EXPECT().CallTXAddChainedCallID(ctx, gomock.Any(), tt.masterCallID, tt.expectCall.ID).Return(nil)
 				mockDB.EXPECT().CallSetMasterCallID(ctx, tt.expectCall.ID, tt.masterCallID).Return(nil)
 				mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
 
