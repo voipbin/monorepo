@@ -314,7 +314,7 @@ func (h *handler) QueueAddWaitQueueCallID(ctx context.Context, id, queueCallID u
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	_, err := h.db.ExecContext(ctx, q, queueCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueAddWaitQueueCallID. err: %v", err)
 	}
@@ -353,7 +353,7 @@ func (h *handler) QueueIncreaseTotalServicedCount(ctx context.Context, id, queue
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), queueCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	_, err := h.db.ExecContext(ctx, q, queueCallID.String(), queueCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueIncreaseTotalServicedCount. err: %v", err)
 	}
@@ -387,7 +387,7 @@ func (h *handler) QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queu
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	_, err := h.db.ExecContext(ctx, q, queueCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueIncreaseTotalAbandonedCount. err: %v", err)
 	}
@@ -420,7 +420,7 @@ func (h *handler) QueueRemoveServiceQueueCall(ctx context.Context, id, queueCall
 		and id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeNow(), queueCallID.String(), id.Bytes())
+	_, err := h.db.ExecContext(ctx, q, queueCallID.String(), h.utilHandler.TimeNow(), queueCallID.String(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueRemoveServiceQueueCall. err: %v", err)
 	}
@@ -453,7 +453,7 @@ func (h *handler) QueueRemoveWaitQueueCall(ctx context.Context, id, queueCallID 
 		and id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeNow(), queueCallID.String(), id.Bytes())
+	_, err := h.db.ExecContext(ctx, q, queueCallID.String(), h.utilHandler.TimeNow(), queueCallID.String(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueRemoveWaitQueueCall. err: %v", err)
 	}

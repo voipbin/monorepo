@@ -194,6 +194,9 @@ func (h *handler) QueuecallGetByReferenceID(ctx context.Context, referenceID uui
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. QueuecallGetByReferenceID. err: %w", err)
+		}
 		return nil, ErrNotFound
 	}
 
