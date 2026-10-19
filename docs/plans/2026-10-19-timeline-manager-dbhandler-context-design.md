@@ -12,7 +12,7 @@
 
 ## 취소 부작용 판단
 - 진입 ctx 는 listenhandler/main.go:150 Background, run.go:45/69/84 Background 파생 WithTimeout 이라 즉시 동작 변화는 거의 없습니다. 효과는 noctx 일관성과 향후 취소 도입 대비입니다.
-- 둔갑 제거 영향: start.go:58 은 ErrNotFound 면 신규 분석 경로(AnalysisCountProgressing, 생성, kickoff)로 갑니다. UNIQUE(activeflow_id)(migrations/mysql/000001_baseline.up.sql:17)가 이중 기동은 막지만 한도 판정 오염과 reanalyze 요청 무시 가능성이 있었습니다. get.go:19/31/52 는 ErrNotFound 를 404 로 매핑하므로 순회 에러가 404 대신 500 이 되는 것이 의도입니다.
+- 둔갑 제거 영향: start.go:58 은 ErrNotFound 면 신규 분석 경로(AnalysisCountProgressing, 생성, kickoff)로 갑니다. UNIQUE(activeflow_id)(migrations/mysql/000001_baseline.up.sql:17)가 이중 기동은 막지만 한도 판정 오염과 reanalyze 요청 무시 가능성이 있었습니다. get.go:19/31/52 는 ErrNotFound 를 404 로 매핑하므로 순회 에러가 404 대신 500 이 되는 것이 의도입니다. AnalysisDelete(analysis.go:259)는 AnalysisGet 을 경유하므로 같은 영향을 받고(순회 에러 시 DELETE 미실행), createProgressing(start.go:155)의 ErrDuplicate 뒤 재조회는 순회 에러를 일반 에러로 올려 이미 안전하게 에러 반환합니다.
 - 커밋 뒤 읽기: 해당 없음(BeginTx 와 트랜잭션 0건, WithoutCancel 분리 없음).
 - 쓰기 Exec 는 이미 ExecContext 입니다.
 
@@ -22,7 +22,7 @@
 
 ## 검증(verify)
 - noctx 와 rowserrcheck 만 켠 임시 설정(워크트리 밖 yml, default none, vendor 제외)으로 bin-timeline-manager 위반 0건. 단 rowserrcheck 는 이 패키지의 rows.Err 부재를 잡지 못하므로 rows.Err 는 테스트와 변이 시험으로 보장합니다. 저장소 표준 설정 0 issues, .golangci-errorlint.yml --new-from-merge-base=origin/main 통과.
-- 신규 테스트(수정 전 RED 확인): sqlmock RowError(AddRow(...).RowError(0, err) 로 첫 Next() 가 false)로 단건 getter 2곳 모두 errors.Is(err, 주입 에러) true 와 errors.Is(err, ErrNotFound) false, AnalysisList rows.Err 테스트, 취소된 ctx 에서 쿼리가 중단되는 음성 테스트(3곳 모두 또는 대표 경로).
-- 변이 시험: rows.Err 확인 제거, QueryContext 를 Query 로 되돌림 각각 테스트 실패.
+- 신규 테스트(수정 전 RED 확인): sqlmock RowError(AddRow(...).RowError(0, err) 로 첫 Next() 가 false)로 단건 getter 2곳 모두 errors.Is(err, 주입 에러) true 와 errors.Is(err, ErrNotFound) false, AnalysisList rows.Err 테스트, AnalysisDelete 조회 단계 RowError 시 DELETE Exec 미발생(ExpectExec 미등록), AnalysisList 는 첫 행 성공 뒤 RowError(1, err) 로 부분 결과 폐기와 에러 반환 단언, 취소된 ctx 에서 쿼리가 중단되는 음성 테스트 1건(AnalysisList 대표 경로, errors.Is(err, context.Canceled) 단언, database/sql 이 드라이버 호출 전 ctx.Done 을 검사하므로 지연 설정 불필요, ExpectationsWereMet 는 호출하지 않음).
+- 변이 시험: rows.Err 확인 제거, QueryContext 를 Query 로 되돌림, 단건 getter 에서 rows.Err 확인을 ErrNotFound 반환 뒤로 순서 변경 각각 테스트 실패.
 - 기존 ExpectQuery 정규식은 QueryContext 에도 매칭되는지 확인하고 최소 수정합니다.
 - go mod tidy, vendor, generate(diff 0, go.mod/go.sum/mock 변경 없음), test(GOMAXPROCS=2 -p 2), lint 5단계.
