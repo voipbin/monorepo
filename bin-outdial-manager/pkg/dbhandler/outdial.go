@@ -114,7 +114,7 @@ func (h *handler) outdialGetFromDB(ctx context.Context, id uuid.UUID) (*outdial.
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. outdialGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. outdialGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}

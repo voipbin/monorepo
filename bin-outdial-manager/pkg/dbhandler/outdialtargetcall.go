@@ -150,7 +150,7 @@ func (h *handler) outdialTargetCallGetFromDB(ctx context.Context, id uuid.UUID) 
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. outdialTargetCallGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. outdialTargetCallGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -211,7 +211,7 @@ func (h *handler) OutdialTargetCallGetByReferenceID(ctx context.Context, referen
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. OutdialTargetCallGetByReferenceID. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. OutdialTargetCallGetByReferenceID. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -256,7 +256,7 @@ func (h *handler) OutdialTargetCallGetByActiveflowID(ctx context.Context, active
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. OutdialTargetCallGetByActiveflowID. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. OutdialTargetCallGetByActiveflowID. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
