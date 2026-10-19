@@ -120,7 +120,7 @@ func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. accountGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. accountGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -192,7 +192,7 @@ func (h *handler) AccountList(ctx context.Context, token string, size uint64, fi
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. AccountGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. AccountGets. err: %w", err)
 	}
 
 	return res, nil
@@ -221,7 +221,7 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 		return fmt.Errorf("AccountUpdate: build SQL failed: %w", err)
 	}
 
-	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
 		return fmt.Errorf("AccountUpdate: exec failed: %w", err)
 	}
 
@@ -242,8 +242,8 @@ func (h *handler) AccountIncreaseFileInfo(ctx context.Context, id uuid.UUID, fil
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, filecount, filesize, h.util.TimeNow(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. AccountIncreaseFile. err: %v", err)
+	if _, err := h.db.ExecContext(ctx, q, filecount, filesize, h.util.TimeNow(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. AccountIncreaseFile. err: %w", err)
 	}
 
 	// set to the cache
@@ -263,8 +263,8 @@ func (h *handler) AccountDecreaseFileInfo(ctx context.Context, id uuid.UUID, fil
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, filecount, filesize, h.util.TimeNow(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. AccountDecreaseFileInfo. err: %v", err)
+	if _, err := h.db.ExecContext(ctx, q, filecount, filesize, h.util.TimeNow(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. AccountDecreaseFileInfo. err: %w", err)
 	}
 
 	// set to the cache
