@@ -358,8 +358,9 @@ func Test_AnalysisList_canceled_ctx(t *testing.T) {
 	mockUtil := h.utilHandler.(*utilhandler.MockUtilHandler)
 	mockUtil.EXPECT().TimeGetCurTime().Return("2026-06-23T00:00:00.000000Z")
 
-	// no ExpectQuery and no ExpectationsWereMet: a canceled context must stop
-	// database/sql before the driver is called.
+	// no ExpectQuery and no ExpectationsWereMet on purpose: a canceled context
+	// must stop database/sql before the driver is called. Registering an
+	// expectation here would blur that intent (and stay unconsumed).
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
