@@ -65,6 +65,7 @@ replace monorepo/bin-customer-manager => ../bin-customer-manager
 replace monorepo/bin-direct-manager => ../bin-direct-manager
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.9.3
