@@ -44,7 +44,7 @@ func (h *handler) TagCreate(ctx context.Context, t *tag.Tag) error {
 		return fmt.Errorf("could not build query. TagCreate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. TagCreate. err: %v", err)
 	}
@@ -101,7 +101,7 @@ func (h *handler) tagGetFromDB(ctx context.Context, id uuid.UUID) (*tag.Tag, err
 		return nil, fmt.Errorf("could not build query. tagGetFromDB. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. tagGetFromDB. err: %v", err)
 	}
@@ -110,6 +110,10 @@ func (h *handler) tagGetFromDB(ctx context.Context, id uuid.UUID) (*tag.Tag, err
 	}()
 
 	if !rows.Next() {
+		// an iteration error (canceled context, lost connection) is not "not found"
+		if errRows := rows.Err(); errRows != nil {
+			return nil, fmt.Errorf("could not iterate the rows. tagGetFromDB. err: %w", errRows)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -161,7 +165,7 @@ func (h *handler) TagList(ctx context.Context, size uint64, token string, filter
 		return nil, fmt.Errorf("could not build query. TagList. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. TagList. err: %v", err)
 	}
@@ -177,6 +181,9 @@ func (h *handler) TagList(ctx context.Context, size uint64, token string, filter
 		}
 
 		res = append(res, t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("could not iterate the rows. TagList. err: %w", err)
 	}
 
 	return res, nil
@@ -201,7 +208,7 @@ func (h *handler) TagUpdate(ctx context.Context, id uuid.UUID, fields map[tag.Fi
 		return fmt.Errorf("could not build query. TagUpdate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. TagUpdate. err: %v", err)
 	}
@@ -244,7 +251,7 @@ func (h *handler) TagDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("could not build query. TagDelete. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. TagDelete. err: %v", err)
 	}
