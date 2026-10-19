@@ -153,6 +153,16 @@ const requestTimeoutDefault int = 3000   // default request timeout(3 sec)
 const requestTimeoutLong int = 30000     // long request timeout(30 sec) for operations involving external fetches (e.g., GCS + merge)
 const requestTimeoutKamailio int = 10000 // kamailio RPC timeout(10 sec) — exceeds 5s SIP UDP read deadline
 
+// requestTimeoutToolExecute is the timeout of the ai-manager tool_execute RPC. It has to outlast
+// ai-manager's own bound on one tool call (mcp_tool_call_timeout_seconds, default 10 sec, plus the
+// session close and the message writes), or the caller reports a failure while ai-manager is still
+// running the tool and stores its result after the answer. The callers of the pipecat-manager
+// /tools endpoint in bin-pipecat-manager/scripts/pipecat (tools.py, team_flow.py) wait longer
+// still (20 sec). The 5 sec left over by a 10 sec MCP call covers the two message writes around
+// it, which are not bounded by the MCP timeout, so keep mcp_tool_call_timeout_seconds at 10 or
+// below, or raise all three limits together.
+const requestTimeoutToolExecute int = 15000 // ai-manager tool execution timeout(15 sec)
+
 // RequestTimeoutSummary is the timeout for AI summary generate/regenerate. The
 // request is synchronous and waits for transcript fetch + LLM summarization, so
 // it needs far more than the default. Exported so the create call site (in

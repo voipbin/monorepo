@@ -95,6 +95,8 @@ When the LLM emits a function call:
 3. AI Manager executes the tool and returns the result
 4. Go returns result to Python → injected into LLM context
 
+Timeouts on this path nest: one MCP call is bounded at 10 s in `bin-ai-manager` (`mcp_tool_call_timeout_seconds`), the Go RPC of step 2 at 15 s (`requestTimeoutToolExecute` in `bin-common-handler/pkg/requesthandler`), and the Python HTTP call of step 1 at 20 s (`tools.py` and `team_flow.py`). Each outer limit must outlast the inner one, otherwise the LLM is told the tool failed while `bin-ai-manager` is still running it and stores the result after the answer. pipecat's own function call timeout (`function_call_timeout_secs`, `timeout_secs` of `register_function`) is left at its default of none; do not set it below 15 s. The 5 s left over by a 10 s MCP call covers the two message writes around it, which the MCP timeout does not bound; raise all three limits together if `mcp_tool_call_timeout_seconds` is set above 10. Two side effects: in a voice call a tool that never answers now keeps the caller in silence for up to 15 s instead of 3 s, and the shared HTTP session in `team_flow.py` also carries the fire-and-forget member-switched notice, which may now stay pending up to 20 s instead of 10 s (its failures are only logged). Built-in tools are not under the 10 s bound; each is limited by the RPC calls it makes. Most use 3 s RPCs, but `search_knowledge` waits up to 30 s for the RAG query, so a query slower than 15 s still gets an error here and its result is stored after the answer, as before. That is unchanged here.
+
 ## Audio Sample Rate (CRITICAL)
 
 - Target sample rate: **16 kHz** end-to-end

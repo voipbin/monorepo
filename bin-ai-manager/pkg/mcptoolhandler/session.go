@@ -90,6 +90,43 @@ type initializeResult struct {
 	ProtocolVersion string `json:"protocolVersion"`
 }
 
+// ErrResponseTooLarge is returned when a response to a JSON-RPC request is
+// longer than mcpserverhandler.McpHTTPResponseSizeCapBytes. A cut response is
+// not parsed: before this error existed the cap silently truncated the body, and
+// an SSE stream that ended inside its only event was reported as "ended without
+// a response".
+var ErrResponseTooLarge = errors.New("mcp server response is larger than the size limit")
+
+// cappedReader hands at most limit bytes to its caller and returns
+// ErrResponseTooLarge on the read after that if the body has more, so exactly
+// limit bytes is accepted and limit+1 is refused. The extra byte is only probed
+// for and never returned as data.
+type cappedReader struct {
+	r    io.Reader
+	left int64
+}
+
+func newCappedReader(r io.Reader, limit int64) io.Reader {
+	return &cappedReader{r: r, left: limit}
+}
+
+func (c *cappedReader) Read(p []byte) (int, error) {
+	if c.left <= 0 {
+		var probe [1]byte
+		n, err := c.r.Read(probe[:])
+		if n > 0 {
+			return 0, ErrResponseTooLarge
+		}
+		return 0, err
+	}
+	if int64(len(p)) > c.left {
+		p = p[:c.left]
+	}
+	n, err := c.r.Read(p)
+	c.left -= int64(n)
+	return n, err
+}
+
 // httpStatusError is a non-2xx answer. Body is a bounded prefix of the
 // response, kept because the 406 and 400 a misconfigured client receives are
 // only diagnosable from it (requirement 10).
@@ -282,12 +319,11 @@ func (h *mcpToolHandler) request(ctx context.Context, s *mcpSession, method stri
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	body := io.LimitReader(resp.Body, mcpserverhandler.McpHTTPResponseSizeCapBytes)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, resp.Header, statusError(resp.StatusCode, body)
+		return nil, resp.Header, statusError(resp.StatusCode, io.LimitReader(resp.Body, mcpserverhandler.McpHTTPResponseSizeCapBytes))
 	}
 
-	rpcResp, err := readJSONRPCResponse(resp.Header.Get("Content-Type"), body, id)
+	rpcResp, err := readJSONRPCResponse(resp.Header.Get("Content-Type"), newCappedReader(resp.Body, mcpserverhandler.McpHTTPResponseSizeCapBytes), id)
 	if err != nil {
 		return nil, resp.Header, err
 	}

@@ -766,6 +766,29 @@ func Test_toolHandleMcpCall(t *testing.T) {
 			wantCallToolHit: true,
 		},
 		{
+			// VOIP-1632: an answer over the response cap used to read as a
+			// stream that ended; the LLM now learns the result was too large
+			// and can pick a narrower tool.
+			name:     "fail closed: an oversized remote answer gets its own message",
+			aicall:   baseAIcall(goValueToolMap),
+			toolName: namespacedName,
+			setupMock: func(aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				aiH.EXPECT().Get(gomock.Any(), aiID).Return(&ai.AI{
+					Identity:     commonidentityFor(aiID),
+					McpServerIDs: []uuid.UUID{serverID},
+				}, nil)
+				srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+					Identity: commonidentityFor(serverID),
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				tl.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).
+					Return("", false, fmt.Errorf("mcptoolhandler.CallTool: mcptoolhandler: tools/call failed: %w", fmt.Errorf("could not read event stream: %w", mcptoolhandler.ErrResponseTooLarge)))
+			},
+			wantResult:      "failed",
+			wantCallToolHit: true,
+			wantMessage:     "MCP tool result is too large",
+		},
+		{
 			name:     "fail closed: resolveAI failure produces a generic failure, not the raw AIHandler error",
 			aicall:   baseAIcall(goValueToolMap),
 			toolName: namespacedName,
@@ -1632,5 +1655,132 @@ func Test_sampleToolNames(t *testing.T) {
 	}
 	if len(got) > 3*(80+8) {
 		t.Errorf("log text not bounded: %d bytes", len(got))
+	}
+}
+
+// Test_toolHandleMcpCall_resultFitsTheMessageColumn pins that a successful MCP
+// answer, however large or however much it expands when JSON escaped, is cut so
+// the stored result message fits ai_messages.content (a text column of 65535
+// bytes). Before VOIP-1632 a 241 KB answer made MessageCreate fail with
+// "Data too long for column 'content'" and the LLM saw a tool error.
+func Test_toolHandleMcpCall_resultFitsTheMessageColumn(t *testing.T) {
+	aiID := uuid.Must(uuid.NewV4())
+	serverID := uuid.Must(uuid.NewV4())
+	name := message.FunctionCallName("mcp_" + mcpServerIDShort(serverID) + "_read_wiki_contents")
+
+	tests := []struct {
+		name string
+
+		toolCallID string
+		answer     string
+
+		expectCut bool
+	}{
+		{name: "small answer is unchanged", toolCallID: "tool-1", answer: strings.Repeat("a", 100)},
+		{name: "answer just under the cut is unchanged", toolCallID: "tool-1", answer: strings.Repeat("a", 32*1024)},
+		{name: "one byte over the 32 KiB cut", toolCallID: "tool-1", answer: strings.Repeat("a", 32*1024+1), expectCut: true},
+		{name: "241 KB answer", toolCallID: "tool-1", answer: strings.Repeat("a", 241*1000), expectCut: true},
+		{name: "html characters expand to six bytes each", toolCallID: "tool-1", answer: strings.Repeat("<", 40000), expectCut: true},
+		{name: "control characters expand to six bytes each", toolCallID: "tool-1", answer: strings.Repeat("\x01", 40000), expectCut: true},
+		{name: "line separators expand to six bytes each", toolCallID: "tool-1", answer: strings.Repeat("\u2028", 40000), expectCut: true},
+		{name: "invalid utf-8 expands to six bytes per byte", toolCallID: "tool-1", answer: strings.Repeat("\xff", 40000), expectCut: true},
+		{name: "multi-byte text is cut on a rune boundary", toolCallID: "tool-1", answer: strings.Repeat("\uac00", 20000), expectCut: true},
+		{name: "longest tool call id still fits", toolCallID: strings.Repeat("t", 255), answer: strings.Repeat("<", 40000), expectCut: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockSrv := mcpserverhandler.NewMockMcpServerHandler(mc)
+			mockTool := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+			mockAI.EXPECT().Get(gomock.Any(), aiID).Return(&ai.AI{
+				Identity:     commonidentityFor(aiID),
+				McpServerIDs: []uuid.UUID{serverID},
+			}, nil)
+			mockSrv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+				Identity: commonidentityFor(serverID),
+				Status:   mcpserver.StatusActive,
+			}, nil)
+			mockTool.EXPECT().CallTool(gomock.Any(), serverID, "read_wiki_contents", gomock.Any()).Return(tt.answer, false, nil)
+
+			h := &aicallHandler{aiHandler: mockAI, mcpServerHandler: mockSrv, mcptoolHandler: mockTool}
+			c := &aicall.AIcall{
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   aiID,
+				Metadata: map[string]any{
+					aicall.MetaKeyMcpToolMap: map[string]aicall.McpToolRef{string(name): {ServerID: serverID, ToolName: "read_wiki_contents"}},
+				},
+			}
+			tc := &message.ToolCall{ID: tt.toolCallID, Function: message.FunctionCall{Name: name, Arguments: `{}`}}
+
+			got := h.toolHandleMcpCall(context.Background(), c, tc)
+			if got.Result != "success" {
+				t.Fatalf("Wrong result. expect: success, got: %q (message: %q)", got.Result, got.Message)
+			}
+
+			// What toolCreateResultMessage stores.
+			stored, err := json.Marshal(got)
+			if err != nil {
+				t.Fatalf("could not marshal the result: %v", err)
+			}
+			if len(stored) > 60000 {
+				t.Errorf("The stored result does not fit the column. expect at most 60000 bytes, got: %d", len(stored))
+			}
+			if !utf8.ValidString(got.Message) && utf8.ValidString(tt.answer) {
+				t.Errorf("The cut split a multi-byte character")
+			}
+
+			cut := strings.HasSuffix(got.Message, mcpToolResultCutMarker)
+			if cut != tt.expectCut {
+				t.Errorf("Wrong cut. expect: %v, got: %v (message length: %d)", tt.expectCut, cut, len(got.Message))
+			}
+			// The text kept is at most 32 KiB plus the marker.
+			if len(got.Message) > mcpToolResultMaxBytes+len(mcpToolResultCutMarker) {
+				t.Errorf("The kept text is too long. expect at most %d bytes, got: %d", mcpToolResultMaxBytes+len(mcpToolResultCutMarker), len(got.Message))
+			}
+			if !tt.expectCut && got.Message != tt.answer {
+				t.Errorf("An answer that fits must be returned unchanged")
+			}
+		})
+	}
+}
+
+// Test_fitMcpToolResult pins the cut boundary with a size function that makes
+// the byte arithmetic exact: the fixed overhead is 28000, so the 60000 byte
+// limit leaves 32000 bytes of text, marker included.
+func Test_fitMcpToolResult(t *testing.T) {
+	size := func(s string) int { return 28000 + len(s) }
+
+	tests := []struct {
+		name string
+
+		msg string
+
+		expectLen int
+		expectCut bool
+	}{
+		{name: "exactly fits", msg: strings.Repeat("a", 32000), expectLen: 32000},
+		{name: "one byte over", msg: strings.Repeat("a", 32001), expectLen: 32000, expectCut: true},
+		{name: "cut lands inside a multi-byte character", msg: strings.Repeat("\uac00", 20000), expectLen: 31998, expectCut: true},
+		{name: "empty", msg: "", expectLen: 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := fitMcpToolResult(tt.msg, size)
+			if len(got) != tt.expectLen {
+				t.Errorf("Wrong length. expect: %d, got: %d", tt.expectLen, len(got))
+			}
+			if strings.HasSuffix(got, mcpToolResultCutMarker) != tt.expectCut {
+				t.Errorf("Wrong cut flag. expect: %v", tt.expectCut)
+			}
+			if !utf8.ValidString(got) {
+				t.Errorf("The result is not valid UTF-8")
+			}
+		})
 	}
 }

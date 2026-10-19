@@ -255,7 +255,8 @@ _http_session: aiohttp.ClientSession | None = None
 async def _get_http_session() -> aiohttp.ClientSession:
     global _http_session
     if _http_session is None or _http_session.closed:
-        _http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+        # 20 s: longer than the Go tool_execute RPC (15 s), which is longer than one MCP call (10 s).
+        _http_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20))
     return _http_session
 
 

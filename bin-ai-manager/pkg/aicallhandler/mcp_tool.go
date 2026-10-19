@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -654,7 +655,12 @@ func (h *aicallHandler) toolHandleMcpCall(ctx context.Context, c *aicall.AIcall,
 	msg, isError, err := h.mcptoolHandler.CallTool(ctx, ref.ServerID, ref.ToolName, tc.Function.Arguments)
 	if err != nil {
 		log.Errorf("Mcp tool call failed. mcp_server_id: %s, tool_name: %s, err: %v", ref.ServerID, ref.ToolName, capErrText(err.Error(), 200))
-		fillFailed(res, errMcpToolCallFailed("MCP tool call failed"))
+		failMessage := "MCP tool call failed"
+		if errors.Is(err, mcptoolhandler.ErrResponseTooLarge) {
+			// Tells the LLM it can try a narrower tool; the remote's own text is still never forwarded.
+			failMessage = "MCP tool result is too large"
+		}
+		fillFailed(res, errMcpToolCallFailed(failMessage))
 		promMcpToolCallOutcomeTotal.WithLabelValues(mcpToolCallOutcomeFailed).Inc()
 		return res
 	}
@@ -670,9 +676,76 @@ func (h *aicallHandler) toolHandleMcpCall(ctx context.Context, c *aicall.AIcall,
 		return res
 	}
 
-	fillSuccess(res, "mcp_tool", ref.ServerID.String(), msg)
+	// The result is stored in ai_messages.content (a text column of 65535 bytes) and fed back to
+	// the LLM, so an unbounded remote answer is cut to what fits.
+	text := fitMcpToolResult(msg, func(s string) int {
+		stored, errMarshal := json.Marshal(&messageContent{
+			ToolCallID:   res.ToolCallID,
+			Result:       "success",
+			Message:      s,
+			ResourceType: "mcp_tool",
+			ResourceID:   ref.ServerID.String(),
+		})
+		if errMarshal != nil {
+			return mcpToolResultMaxStoredBytes + 1
+		}
+		return len(stored)
+	})
+	if len(text) != len(msg) {
+		log.Warnf("Cut an oversized mcp tool result. mcp_server_id: %s, tool_name: %s, original_bytes: %d, kept_bytes: %d", ref.ServerID, ref.ToolName, len(msg), len(text))
+	}
+
+	fillSuccess(res, "mcp_tool", ref.ServerID.String(), text)
 	promMcpToolCallOutcomeTotal.WithLabelValues(mcpToolCallOutcomeSuccess).Inc()
 	return res
+}
+
+const (
+	// mcpToolResultMaxBytes is the most text of one MCP result that is kept.
+	mcpToolResultMaxBytes = 32 << 10
+
+	// mcpToolResultMaxStoredBytes bounds the whole JSON-marshalled result message, escaping and
+	// the other fields included. ai_messages.content is a text column (65535 bytes), so this
+	// leaves headroom under it.
+	mcpToolResultMaxStoredBytes = 60000
+
+	// mcpToolResultCutMarker ends a result that was cut. Its text is fixed, so its length is.
+	mcpToolResultCutMarker = "\n[truncated]"
+)
+
+// fitMcpToolResult returns msg unchanged when it is at most mcpToolResultMaxBytes long and its
+// marshalled result message is at most mcpToolResultMaxStoredBytes. Otherwise it returns the
+// longest prefix, cut on a rune boundary, that still fits once mcpToolResultCutMarker is added.
+// size reports the marshalled length of the result message for a given text; it is measured, not
+// estimated, because JSON escaping can grow a character up to six times. The marshalled length
+// never shrinks as the prefix grows, which is what makes the binary search valid.
+func fitMcpToolResult(msg string, size func(string) int) string {
+	if len(msg) <= mcpToolResultMaxBytes && size(msg) <= mcpToolResultMaxStoredBytes {
+		return msg
+	}
+
+	// Candidate cut points: rune steps as json.Marshal sees them (an invalid byte is one step).
+	offsets := []int{0}
+	for i := 0; i < len(msg); {
+		_, width := utf8.DecodeRuneInString(msg[i:])
+		if i+width > mcpToolResultMaxBytes {
+			break
+		}
+		i += width
+		offsets = append(offsets, i)
+	}
+
+	lo, hi := 0, len(offsets)-1
+	for lo < hi {
+		mid := (lo + hi + 1) / 2
+		if size(msg[:offsets[mid]]+mcpToolResultCutMarker) <= mcpToolResultMaxStoredBytes {
+			lo = mid
+		} else {
+			hi = mid - 1
+		}
+	}
+
+	return msg[:offsets[lo]] + mcpToolResultCutMarker
 }
 
 // lookupMcpToolRef resolves name against c.Metadata[aicall.MetaKeyMcpToolMap].
