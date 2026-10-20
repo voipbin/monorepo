@@ -12,13 +12,15 @@ import (
 // processV1MessagesPost handles /v1/messages POST request
 func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1MessagesPost",
-		"request": m,
+		"handler":  "processV1MessagesPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataMessagesPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. err: %v", err)
 		return simpleResponse(400), nil
 	}
 

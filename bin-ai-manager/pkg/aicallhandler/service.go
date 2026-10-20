@@ -56,7 +56,7 @@ func (h *aicallHandler) serviceStartReferenceTypeCall(
 		log.Errorf("Could not start aicall. err: %v", err)
 		return nil, fmt.Errorf("could not start aicall. err: %v", err)
 	}
-	log.WithField("aicall", cc).Debugf("Started aicall. aicall_id: %s", cc.ID)
+	log.WithField("aicall_id", cc.ID).Debugf("Started aicall. aicall_id: %s", cc.ID)
 
 	actions := []fmaction.Action{
 		{
@@ -98,7 +98,7 @@ func (h *aicallHandler) serviceStartReferenceTypeConversation(
 		log.Errorf("Could not start aicall. err: %v", err)
 		return nil, fmt.Errorf("could not start aicall. err: %v", err)
 	}
-	log.WithField("aicall", cc).Debugf("Started aicall. aicall_id: %s", cc.ID)
+	log.WithField("aicall_id", cc.ID).Debugf("Started aicall. aicall_id: %s", cc.ID)
 
 	res := &commonservice.Service{
 		ID:   cc.ID,
@@ -135,7 +135,7 @@ func (h *aicallHandler) ServiceStartTypeTask(
 		log.Errorf("Could not start aicall. err: %v", err)
 		return nil, fmt.Errorf("could not start aicall. err: %v", err)
 	}
-	log.WithField("aicall", cc).Debugf("Started aicall. aicall_id: %s", cc.ID)
+	log.WithField("aicall_id", cc.ID).Debugf("Started aicall. aicall_id: %s", cc.ID)
 
 	res := &commonservice.Service{
 		ID:   cc.ID,
@@ -165,7 +165,7 @@ func (h *aicallHandler) serviceStop(ctx context.Context, c *aicall.AIcall) error
 	if err != nil {
 		return fmt.Errorf("could not start terminating the aicall. err: %v", err)
 	}
-	log.WithField("aicall", tmp).Debugf("Stopped the aicall service successfully.")
+	log.WithField("aicall_id", tmp.ID).Debugf("Stopped the aicall service successfully.")
 
 	return nil
 }

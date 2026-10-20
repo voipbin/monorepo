@@ -71,6 +71,7 @@ aicall_listen_confbridge_ready_max_wait_seconds
 **Raising the max-wait value therefore cascades:** raise the other two to preserve the ordering.
 | `prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
+| `log_level` | `LOG_LEVEL` | Log level: `debug`, `info`, `warn` or `error` (case-insensitive). Debug lines are written only when this is `debug`. Debug lines carry ids and lengths, never conversation text, prompts or model answers (VOIP-1633). Applies to the Go service and its control CLI only | `info` |
 
 Engine-specific API keys (Dialogflow service account, Grok, Anthropic, etc.) follow the same env-var pattern.
 

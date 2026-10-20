@@ -195,8 +195,10 @@ func (h *listenHandler) Run(queue, queueVolatile, exchangeDelay string) error {
 // processRequest handles all of requests of the listen queue.
 func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processRequest",
-		"request": m,
+		"func":     "processRequest",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 	ctx := context.Background()
 
@@ -251,7 +253,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		log.WithFields(logrus.Fields{
 			"uri":    m.URI,
 			"method": m.Method,
-		}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
+		}).Errorf("Could not find corresponded message handler.")
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"
@@ -266,7 +268,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 			"uri":    m.URI,
 			"method": m.Method,
 			"error":  err,
-		}).Errorf("Could not process the request correctly. data: %s", m.Data)
+		}).Errorf("Could not process the request correctly.")
 		var ve *cerrors.VoipbinError
 		switch {
 		case stderrors.As(err, &ve):

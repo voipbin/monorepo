@@ -187,8 +187,10 @@ func (h *subscribeHandler) processEventRun(m *sock.Event) error {
 // processEvent processes received event
 func (h *subscribeHandler) processEvent(m *sock.Event) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEvent",
-		"event": m,
+		"func":      "processEvent",
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
 	})
 
 	ctx := context.Background()

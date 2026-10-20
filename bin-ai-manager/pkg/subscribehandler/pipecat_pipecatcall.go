@@ -12,8 +12,10 @@ import (
 
 func (h *subscribeHandler) processEventPMPipecatcallInitialized(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventPMPipecatcallInitialized",
-		"event": m,
+		"func":      "processEventPMPipecatcallInitialized",
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
 	})
 	log.Debugf("Received the pipecat-manager's pipecatcall_initialized event.")
 
@@ -34,8 +36,10 @@ func (h *subscribeHandler) processEventPMPipecatcallInitialized(ctx context.Cont
 // has terminated without an explicit terminate path completing first.
 func (h *subscribeHandler) processEventPMPipecatcallTerminated(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventPMPipecatcallTerminated",
-		"event": m,
+		"func":      "processEventPMPipecatcallTerminated",
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
 	})
 	log.Debugf("Received the pipecat-manager's pipecatcall_terminated event.")
 

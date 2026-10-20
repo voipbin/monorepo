@@ -25,7 +25,7 @@ func (h *teamHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*
 		log.Errorf("Could not get team. err: %v", err)
 		return nil, fmt.Errorf("could not get team: %w", err)
 	}
-	log.WithField("team", t).Debugf("Retrieved team info. team_id: %s", t.ID)
+	log.WithField("team_id", t.ID).Debugf("Retrieved team info. team_id: %s", t.ID)
 
 	// regenerate or create direct
 	var d *dmdirect.Direct

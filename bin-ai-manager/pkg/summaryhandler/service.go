@@ -46,7 +46,7 @@ func (h *summaryHandler) ServiceStart(
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not start the summary. activeflow_id: %s", activeflowID)
 	}
-	log.WithField("summary", sm).Debugf("Started the summary. summary_id: %s", sm.ID)
+	log.WithField("summary_id", sm.ID).Debugf("Started the summary. summary_id: %s", sm.ID)
 
 	res := &commonservice.Service{
 		ID:          sm.ID,

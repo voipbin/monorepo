@@ -75,7 +75,7 @@ func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name str
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get created team")
 	}
-	log.WithField("team", res).Debugf("Created team. team_id: %s", res.ID)
+	log.WithField("team_id", res.ID).Debugf("Created team. team_id: %s", res.ID)
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, team.EventTypeCreated, res)
 
 	return res, nil
@@ -98,7 +98,7 @@ func (h *teamHandler) Get(ctx context.Context, id uuid.UUID) (*team.Team, error)
 		}
 		return nil, errors.Wrapf(err, "could not get team")
 	}
-	log.WithField("team", res).Debugf("Retrieved team info. team_id: %s", res.ID)
+	log.WithField("team_id", res.ID).Debugf("Retrieved team info. team_id: %s", res.ID)
 
 	return res, nil
 }
@@ -129,7 +129,7 @@ func (h *teamHandler) Delete(ctx context.Context, id uuid.UUID) (*team.Team, err
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get team for delete")
 	}
-	log.WithField("team", t).Debugf("Retrieved team info. team_id: %s", t.ID)
+	log.WithField("team_id", t.ID).Debugf("Retrieved team info. team_id: %s", t.ID)
 
 	// delete direct hash via direct-manager (best-effort, don't block team deletion)
 	if t.DirectID != uuid.Nil {
@@ -146,7 +146,7 @@ func (h *teamHandler) Delete(ctx context.Context, id uuid.UUID) (*team.Team, err
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get deleted team")
 	}
-	log.WithField("team", res).Debugf("Deleted team. team_id: %s", res.ID)
+	log.WithField("team_id", res.ID).Debugf("Deleted team. team_id: %s", res.ID)
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, team.EventTypeDeleted, res)
 
 	return res, nil
@@ -216,7 +216,7 @@ func (h *teamHandler) Update(ctx context.Context, id uuid.UUID, name *string, de
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get updated team")
 	}
-	log.WithField("team", res).Debugf("Updated team. team_id: %s", res.ID)
+	log.WithField("team_id", res.ID).Debugf("Updated team. team_id: %s", res.ID)
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, team.EventTypeUpdated, res)
 
 	return res, nil

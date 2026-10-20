@@ -242,7 +242,7 @@ func (h *summaryHandler) startReferenceTypeTranscribe(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the request")
 	}
-	log.WithField("content", content).Debugf("Parsed summary content.")
+	log.WithField("content_len", len(content)).Debugf("Parsed summary content.")
 
 	res, err := h.Create(ctx, customerID, activeflowID, onEndFlowID, summary.ReferenceTypeTranscribe, referenceID, summary.StatusDone, language, content)
 	if err != nil {
@@ -284,7 +284,7 @@ func (h *summaryHandler) startReferenceTypeRecording(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the request")
 	}
-	log.WithField("content", content).Debugf("Parsed summary content.")
+	log.WithField("content_len", len(content)).Debugf("Parsed summary content.")
 
 	res, err := h.Create(ctx, customerID, activeflowID, onEndFlowID, summary.ReferenceTypeRecording, referenceID, summary.StatusDone, language, content)
 	if err != nil {
@@ -396,8 +396,8 @@ func (h *summaryHandler) getRecordingTranscripts(ctx context.Context, activeflow
 
 func (h *summaryHandler) startOnEndFlow(ctx context.Context, sm *summary.Summary) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "startOnEndFlow",
-		"summary": sm,
+		"func":       "startOnEndFlow",
+		"summary_id": sm.ID,
 	})
 
 	if sm.OnEndFlowID == uuid.Nil {
@@ -420,7 +420,7 @@ func (h *summaryHandler) startOnEndFlow(ctx context.Context, sm *summary.Summary
 	if err != nil {
 		return errors.Wrapf(err, "could not create the activeflow")
 	}
-	log.WithField("activeflow", af).Debugf("Created the activeflow")
+	log.WithField("activeflow_id", af.ID).Debugf("Created the activeflow")
 
 	if errSet := h.variableSet(ctx, af.ID, sm); errSet != nil {
 		// we could not set the variable, but we can continue the process

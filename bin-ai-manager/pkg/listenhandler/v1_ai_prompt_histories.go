@@ -16,8 +16,10 @@ import (
 // processV1AIsIDPromptHistoriesGet handles GET /v1/ais/<ai-id>/prompt_histories?...
 func (h *listenHandler) processV1AIsIDPromptHistoriesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1AIsIDPromptHistoriesGet",
-		"request": m,
+		"handler":  "processV1AIsIDPromptHistoriesGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	u, err := url.Parse(m.URI)
@@ -63,8 +65,10 @@ func (h *listenHandler) processV1AIsIDPromptHistoriesGet(ctx context.Context, m 
 // processV1AIsIDPromptHistoriesIDGet handles GET /v1/ais/<ai-id>/prompt_histories/<history-id>
 func (h *listenHandler) processV1AIsIDPromptHistoriesIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1AIsIDPromptHistoriesIDGet",
-		"request": m,
+		"handler":  "processV1AIsIDPromptHistoriesIDGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")

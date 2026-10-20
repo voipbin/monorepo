@@ -61,7 +61,7 @@ func (h *pipecatcallHandler) Start(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create pipecatcall")
 	}
-	log.WithField("pipecatcall", res).Info("Created pipecatcall. pipecatcall_id: ", res.ID)
+	log.WithFields(logrus.Fields{"pipecatcall_id": res.ID, "llm_message_count": len(res.LLMMessages)}).Info("Created pipecatcall.")
 
 	// start based on reference type
 	switch referenceType {
@@ -193,7 +193,7 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 	if err != nil {
 		return errors.Wrapf(err, "could not get ai call info")
 	}
-	log.WithField("ai_call", c).Info("Retrieved ai call info. ai_call_id: ", c.ID)
+	log.Info("Retrieved ai call info. ai_call_id: ", c.ID)
 
 	// Derive LLM key from the AIcall we already fetched (no extra AIV1AIcallGet RPC).
 	var llmKey string
@@ -435,7 +435,7 @@ func (h *pipecatcallHandler) terminateReferenceTypeAICall(ctx context.Context, p
 	if err != nil {
 		return errors.Wrapf(err, "could not get ai call info")
 	}
-	log.WithField("ai_call", ac).Info("Retrieved ai call info. ai_call_id: ", ac.ID)
+	log.Info("Retrieved ai call info. ai_call_id: ", ac.ID)
 
 	switch ac.ReferenceType {
 	case amaicall.ReferenceTypeCall:

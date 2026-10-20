@@ -53,7 +53,8 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		"aicall_id":      id,
 		"tool_id":        toolID,
 		"tool_type":      toolType,
-		"function":       function,
+		"function_name":  function.Name,
+		"arguments_len":  len(function.Arguments),
 		"pipecatcall_id": pipecatcallID,
 	})
 
@@ -61,7 +62,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get aicall %s", id)
 	}
-	log.WithField("aicall", c).Debugf("fetched aicall info.")
+	log.WithField("aicall_id", c.ID).Debugf("fetched aicall info.")
 
 	// Resolve, exactly once, whether this tool call arrived on a listen
 	// evaluation turn. Two consumers share this one answer -- the Origin tag
@@ -116,7 +117,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	if errCreate != nil {
 		return nil, errors.Wrapf(errCreate, "could not create the tool message")
 	}
-	log.WithField("message", tmp).Debugf("Created the tool message for the actions. message_id: %s", tmp.ID)
+	log.WithFields(logrus.Fields{"message_id": tmp.ID, "content_len": len(tmp.Content)}).Debugf("Created the tool message for the actions. message_id: %s", tmp.ID)
 
 	mapFunctions := map[message.FunctionCallName]func(context.Context, *aicall.AIcall, *message.ToolCall) *messageContent{
 		message.FunctionCallNameConnectCall:            h.toolHandleConnect,
@@ -201,7 +202,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the tool message")
 	}
-	log.WithField("message", msg).Debugf("Created the tool response message. message_id: %s", msg.ID)
+	log.WithFields(logrus.Fields{"message_id": msg.ID, "content_len": len(msg.Content)}).Debugf("Created the tool response message. message_id: %s", msg.ID)
 
 	// emit_info_card bypasses unmarshalToolResponse: the stored message content
 	// carries Blocks (the card's title/description/fields), which must never be
@@ -350,17 +351,17 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 		return res
 	}
 
-	log.WithField("activeflow", af).Debugf("Added actions to the activeflow. activeflow_id: %s", c.ActiveflowID)
+	log.WithField("activeflow_id", af.ID).Debugf("Added actions to the activeflow. activeflow_id: %s", c.ActiveflowID)
 	fillSuccess(res, "activeflow", af.ID.String(), "Added connect action successfully.")
 
 	go func() {
 		// this will connect the call right away
-		tmp, err := h.reqHandler.AIV1AIcallTerminate(context.Background(), c.ID)
+		_, err := h.reqHandler.AIV1AIcallTerminate(context.Background(), c.ID)
 		if err != nil {
 			log.Errorf("Could not terminate the aicall after sending the tool actions. err: %v", err)
 			return
 		}
-		log.WithField("aicall", tmp).Debugf("Terminating the aicall after sending the tool actions. aicall_id: %s", c.ID)
+		log.Debugf("Terminating the aicall after sending the tool actions. aicall_id: %s", c.ID)
 	}()
 
 	return res
@@ -460,16 +461,16 @@ func (h *aicallHandler) toolHandleJoinQueue(ctx context.Context, c *aicall.AIcal
 		return res
 	}
 
-	log.WithField("activeflow", af).Debugf("Added actions to the activeflow. activeflow_id: %s", c.ActiveflowID)
+	log.WithField("activeflow_id", af.ID).Debugf("Added actions to the activeflow. activeflow_id: %s", c.ActiveflowID)
 	fillSuccess(res, "activeflow", af.ID.String(), "Added queue_join action successfully.")
 
 	go func() {
-		tmp, errTerm := h.reqHandler.AIV1AIcallTerminate(context.Background(), c.ID)
+		_, errTerm := h.reqHandler.AIV1AIcallTerminate(context.Background(), c.ID)
 		if errTerm != nil {
 			log.Errorf("Could not terminate the aicall after sending the tool actions. err: %v", errTerm)
 			return
 		}
-		log.WithField("aicall", tmp).Debugf("Terminating the aicall after sending the tool actions. aicall_id: %s", c.ID)
+		log.Debugf("Terminating the aicall after sending the tool actions. aicall_id: %s", c.ID)
 	}()
 
 	return res
@@ -904,7 +905,7 @@ func (h *aicallHandler) toolHandleStop(ctx context.Context, c *aicall.AIcall, to
 		return res
 	}
 
-	log.WithField("activeflow", tmpActiveflow).Debugf("Stopped the activeflow. activeflow_id: %s", c.ActiveflowID)
+	log.WithField("activeflow_id", tmpActiveflow.ID).Debugf("Stopped the activeflow. activeflow_id: %s", c.ActiveflowID)
 	fillSuccess(res, "activeflow", tmpActiveflow.ID.String(), "Activeflow stopped successfully.")
 
 	return res

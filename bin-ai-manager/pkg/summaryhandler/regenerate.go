@@ -73,7 +73,7 @@ func (h *summaryHandler) Regenerate(ctx context.Context, summaryID uuid.UUID, la
 	if newContent == "" {
 		return nil, errors.Errorf("regenerated summary content is empty; keeping the existing summary")
 	}
-	log.WithField("content", newContent).Debugf("Regenerated the summary content.")
+	log.WithField("content_len", len(newContent)).Debugf("Regenerated the summary content.")
 
 	// only now overwrite the same record (content + language together, so a language
 	// swap stays on the same id).

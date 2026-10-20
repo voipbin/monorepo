@@ -36,7 +36,7 @@ func (h *engineOpenaiHandler) MessageSend(ctx context.Context, cc *aicall.AIcall
 		Model:    string(model),
 		Messages: tmpMessages,
 	}
-	log = log.WithField("request", req)
+	log = log.WithField("message_count", len(req.Messages))
 
 	// send the request
 	tmp, err := h.send(ctx, req)

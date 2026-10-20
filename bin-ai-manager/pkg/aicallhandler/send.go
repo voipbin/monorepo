@@ -66,7 +66,7 @@ func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIc
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the pipecatcall correctly")
 	}
-	log.WithField("pipecatcall", pc).Debugf("Found the pipecatcall.")
+	log.WithField("pipecatcall_id", pc.ID).Debugf("Found the pipecatcall.")
 
 	// Preflight ping before persisting the message so a dead-pod failure does not
 	// orphan a user-message row in the database. The remaining failure path
@@ -81,13 +81,13 @@ func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIc
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the message. aicall_id: %s", c.ID)
 	}
-	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", c.ID, res.ID)
+	log.WithFields(logrus.Fields{"message_id": res.ID, "content_len": len(res.Content)}).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", c.ID, res.ID)
 
-	tmp, err := h.reqHandler.PipecatV1MessageSend(ctx, pc.HostID, pc.ID, res.ID.String(), messageText, runImmediately, audioResponse)
+	_, err = h.reqHandler.PipecatV1MessageSend(ctx, pc.HostID, pc.ID, res.ID.String(), messageText, runImmediately, audioResponse)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the message to the pipecatcall correctly")
 	}
-	log.WithField("pipecat_message", tmp).Debugf("Sent the message to the pipecatcall.")
+	log.Debugf("Sent the message to the pipecatcall.")
 
 	return res, nil
 }
@@ -134,12 +134,12 @@ func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.A
 		}
 	}
 
-	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", aicallID, res.ID)
+	log.WithFields(logrus.Fields{"message_id": res.ID, "content_len": len(res.Content)}).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", aicallID, res.ID)
 	pc, errTerminate := h.startPipecatcall(ctx, c)
 	if errTerminate != nil {
 		return nil, errors.Wrapf(errTerminate, "could not start pipecatcall for aicall. aicall_id: %s", res.ID)
 	}
-	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
+	log.WithField("pipecatcall_id", pc.ID).Debugf("Started pipecatcall for aicall. aicall_id: %s", res.ID)
 
 	if errTerminate = h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout); errTerminate != nil {
 		return nil, errors.Wrapf(errTerminate, "could not send the pipecatcall terminate request correctly")
@@ -161,7 +161,7 @@ func (h *aicallHandler) resolveTeamMemberForSend(ctx context.Context, c *aicall.
 	if err != nil {
 		return errors.Wrapf(err, "could not get team info. team_id: %s", c.AssistanceID)
 	}
-	log.WithField("team", t).Debugf("Retrieved team info. team_id: %s", t.ID)
+	log.WithField("team_id", t.ID).Debugf("Retrieved team info. team_id: %s", t.ID)
 
 	a, resolvedMemberID, err := h.resolveTeamMemberAI(ctx, t, c.CurrentMemberID)
 	if err != nil {

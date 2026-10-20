@@ -15,8 +15,10 @@ import (
 // processV1ServicesTypeAIcallPost handles POST /v1/services/type/aicall request
 func (h *listenHandler) processV1ServicesTypeAIcallPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1ServicesTypeAIcallPost",
-		"request": m,
+		"handler":  "processV1ServicesTypeAIcallPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataServicesTypeAIcallPost
@@ -33,7 +35,7 @@ func (h *listenHandler) processV1ServicesTypeAIcallPost(ctx context.Context, m *
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -49,8 +51,10 @@ func (h *listenHandler) processV1ServicesTypeAIcallPost(ctx context.Context, m *
 // processV1ServicesTypeSummaryPost handles POST /v1/services/type/summary request
 func (h *listenHandler) processV1ServicesTypeSummaryPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1ServicesTypeSummaryPost",
-		"request": m,
+		"handler":  "processV1ServicesTypeSummaryPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataServicesTypeSummaryPost
@@ -75,7 +79,7 @@ func (h *listenHandler) processV1ServicesTypeSummaryPost(ctx context.Context, m 
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -95,8 +99,10 @@ func (h *listenHandler) processV1ServicesTypeSummaryPost(ctx context.Context, m 
 // response are the analysis domain types directly (pass-through internal contract).
 func (h *listenHandler) processV1ServicesTypeAnalysisPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1ServicesTypeAnalysisPost",
-		"request": m,
+		"handler":  "processV1ServicesTypeAnalysisPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req analysis.Request
@@ -113,7 +119,7 @@ func (h *listenHandler) processV1ServicesTypeAnalysisPost(ctx context.Context, m
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -129,8 +135,10 @@ func (h *listenHandler) processV1ServicesTypeAnalysisPost(ctx context.Context, m
 // processV1ServicesTypeTaskPost handles POST /v1/services/type/task request
 func (h *listenHandler) processV1ServicesTypeTaskPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1ServicesTypeTaskPost",
-		"request": m,
+		"handler":  "processV1ServicesTypeTaskPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataServicesTypeTaskPost
@@ -147,7 +155,7 @@ func (h *listenHandler) processV1ServicesTypeTaskPost(ctx context.Context, m *so
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

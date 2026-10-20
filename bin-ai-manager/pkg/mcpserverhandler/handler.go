@@ -94,7 +94,7 @@ func (h *mcpServerHandler) Create(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get created mcp server")
 	}
-	log.WithField("mcp_server", res).Debugf("Created mcp server. mcp_server_id: %s", res.ID)
+	log.WithField("mcp_server_id", res.ID).Debugf("Created mcp server. mcp_server_id: %s", res.ID)
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, mcpserver.EventTypeCreated, res)
 
 	return res, nil
@@ -327,7 +327,7 @@ func (h *mcpServerHandler) Update(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get updated mcp server")
 	}
-	log.WithField("mcp_server", res).Debugf("Updated mcp server. mcp_server_id: %s", res.ID)
+	log.WithField("mcp_server_id", res.ID).Debugf("Updated mcp server. mcp_server_id: %s", res.ID)
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, mcpserver.EventTypeUpdated, res)
 
 	return res, nil
@@ -363,7 +363,7 @@ func (h *mcpServerHandler) Delete(ctx context.Context, id uuid.UUID) (*mcpserver
 		}
 		return nil, errors.Wrapf(err, "could not get deleted mcp server")
 	}
-	log.WithField("mcp_server", res).Debugf("Deleted mcp server. mcp_server_id: %s", res.ID)
+	log.WithField("mcp_server_id", res.ID).Debugf("Deleted mcp server. mcp_server_id: %s", res.ID)
 	if !alreadyDeleted {
 		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, mcpserver.EventTypeDeleted, res)
 	}

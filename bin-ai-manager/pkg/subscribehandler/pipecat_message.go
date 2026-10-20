@@ -11,8 +11,10 @@ import (
 
 func (h *subscribeHandler) processEventPMMessageUserTranscription(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventPMMessageUserTranscription",
-		"event": m,
+		"func":      "processEventPMMessageUserTranscription",
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
 	})
 	log.Debugf("Received the pipecat-manager's message_user_transcription event.")
 
@@ -29,8 +31,10 @@ func (h *subscribeHandler) processEventPMMessageUserTranscription(ctx context.Co
 
 func (h *subscribeHandler) processEventPMMessageBotLLM(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventPMMessageBotLLM",
-		"event": m,
+		"func":      "processEventPMMessageBotLLM",
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
 	})
 	log.Debugf("Received the pipecat-manager's message_bot_llm event.")
 
@@ -47,8 +51,10 @@ func (h *subscribeHandler) processEventPMMessageBotLLM(ctx context.Context, m *s
 
 func (h *subscribeHandler) processEventPMMessageBotLLMIntermediate(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventPMMessageBotLLMIntermediate",
-		"event": m,
+		"func":      "processEventPMMessageBotLLMIntermediate",
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
 	})
 	log.Debugf("Received the pipecat-manager's message_bot_llm_intermediate event.")
 
@@ -65,8 +71,10 @@ func (h *subscribeHandler) processEventPMMessageBotLLMIntermediate(ctx context.C
 
 func (h *subscribeHandler) processEventPMTeamMemberSwitched(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventPMTeamMemberSwitched",
-		"event": m,
+		"func":      "processEventPMTeamMemberSwitched",
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
 	})
 	log.Debugf("Received the pipecat-manager's team_member_switched event.")
 
@@ -89,8 +97,10 @@ func (h *subscribeHandler) processEventPMTeamMemberSwitched(ctx context.Context,
 
 func (h *subscribeHandler) processEventPMPipelineError(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventPMPipelineError",
-		"event": m,
+		"func":      "processEventPMPipelineError",
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
 	})
 	log.Debugf("Received the pipecat-manager's pipeline_error event.")
 

@@ -131,7 +131,7 @@ func (h *messageHandler) createPipelineErrorNotice(ctx context.Context, customer
 		log.Errorf("Could not create the pipeline error notice. err: %v", err)
 		return err
 	}
-	log.WithField("message", tmp).Debugf("Created the pipeline error notice.")
+	log.WithFields(logrus.Fields{"message_id": tmp.ID, "content_len": len(tmp.Content)}).Debugf("Created the pipeline error notice.")
 	return nil
 }
 

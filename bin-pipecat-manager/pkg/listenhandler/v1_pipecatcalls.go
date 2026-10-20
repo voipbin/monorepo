@@ -15,13 +15,15 @@ import (
 // It creates a new pipecatcall.
 func (h *listenHandler) processV1PipecatcallsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1PipecatcallsPost",
-		"request": m,
+		"func":     "processV1PipecatcallsPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataPipecatcallsPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
@@ -47,7 +49,7 @@ func (h *listenHandler) processV1PipecatcallsPost(ctx context.Context, m *sock.R
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -63,8 +65,10 @@ func (h *listenHandler) processV1PipecatcallsPost(ctx context.Context, m *sock.R
 // processV1PipecatcallsIDGet handles GET /v1/pipecatcalls/<id> request
 func (h *listenHandler) processV1PipecatcallsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1PipecatcallsIDGet",
-		"request": m,
+		"func":     "processV1PipecatcallsIDGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -100,8 +104,10 @@ func (h *listenHandler) processV1PipecatcallsIDGet(ctx context.Context, m *sock.
 // processV1PipecatcallsIDStopPost handles /v1/pipecatcalls/<id>/stop POST request
 func (h *listenHandler) processV1PipecatcallsIDStopPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"handler": "processV1PipecatcallsIDStopPost",
-		"request": m,
+		"handler":  "processV1PipecatcallsIDStopPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")

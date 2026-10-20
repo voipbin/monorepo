@@ -22,7 +22,11 @@ func (h *listenHandler) processV1AIsIDDirectHashRegenerate(ctx context.Context, 
 		"func":  "processV1AIsIDDirectHashRegenerate",
 		"ai_id": id,
 	})
-	log.WithField("request", m).Debug("Received request.")
+	log.WithFields(logrus.Fields{
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
+	}).Debug("Received request.")
 
 	tmp, err := h.aiHandler.DirectHashRegenerate(ctx, id)
 	if err != nil {

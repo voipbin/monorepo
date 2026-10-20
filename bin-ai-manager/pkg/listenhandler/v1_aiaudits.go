@@ -19,8 +19,10 @@ import (
 // processV1AIAuditsPost handles POST /v1/aiaudits
 func (h *listenHandler) processV1AIAuditsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AIAuditsPost",
-		"request": m,
+		"func":     "processV1AIAuditsPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	var req request.V1DataAIAuditsPost
@@ -57,8 +59,10 @@ func (h *listenHandler) processV1AIAuditsPost(ctx context.Context, m *sock.Reque
 // processV1AIAuditsGet handles GET /v1/aiaudits
 func (h *listenHandler) processV1AIAuditsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AIAuditsGet",
-		"request": m,
+		"func":     "processV1AIAuditsGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	u, err := url.Parse(m.URI)
@@ -107,8 +111,10 @@ func (h *listenHandler) processV1AIAuditsGet(ctx context.Context, m *sock.Reques
 // processV1AIAuditsIDGet handles GET /v1/aiaudits/<id>
 func (h *listenHandler) processV1AIAuditsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AIAuditsIDGet",
-		"request": m,
+		"func":     "processV1AIAuditsIDGet",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -139,8 +145,10 @@ func (h *listenHandler) processV1AIAuditsIDGet(ctx context.Context, m *sock.Requ
 // processV1AIAuditsIDDelete handles DELETE /v1/aiaudits/<id>
 func (h *listenHandler) processV1AIAuditsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AIAuditsIDDelete",
-		"request": m,
+		"func":     "processV1AIAuditsIDDelete",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
