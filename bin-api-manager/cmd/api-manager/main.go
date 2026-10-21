@@ -305,7 +305,7 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 
 	// Public (unauthenticated) MCP server OAuth vendor callback relay.
 	// GET /mcpservers/oauth/callback is the redirect_uri registered with
-	// GitHub/Linear's OAuth apps -- the vendor's authorization server
+	// the vendors' OAuth apps -- the vendor's authorization server
 	// redirects the user's browser here, unauthenticated, after consent
 	// (design docs/plans/2026-09-12-mcp-server-oauth-support-design.md
 	// §7a Layer 1, §10). It is registered in its own rate-limit group,

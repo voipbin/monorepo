@@ -30,6 +30,7 @@ func newTestHandler(t *testing.T, db dbhandler.DBHandler) *mcpOAuthHandler {
 		"1:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=",
 		"github-client-id", "github-client-secret",
 		"linear-client-id", "linear-client-secret",
+		"asana-client-id", "asana-client-secret",
 	)
 	if err != nil {
 		t.Fatalf("could not build test mcpOAuthHandler: %v", err)

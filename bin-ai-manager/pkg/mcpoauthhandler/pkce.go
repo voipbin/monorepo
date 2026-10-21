@@ -20,7 +20,7 @@ func generateRandomToken(n int) (string, error) {
 
 // generatePKCE returns a PKCE code_verifier (43-128 chars, design §7b) and
 // its S256 code_challenge. S256 exclusively -- never "plain" -- per design
-// §7b: both GitHub and Linear accept S256, so no vendor branch is needed.
+// §7b: every catalog vendor accepts S256, so no vendor branch is needed.
 func generatePKCE() (verifier string, challenge string, err error) {
 	// 32 raw bytes -> 43 base64url chars, comfortably within the
 	// 43-128 char range the PKCE spec requires.

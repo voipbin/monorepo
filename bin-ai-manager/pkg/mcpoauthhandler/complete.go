@@ -22,7 +22,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 )
 
-// tokenResponse is the JSON shape returned by both vendors' token
+// tokenResponse is the JSON shape returned by the vendors' token
 // endpoints (subset of fields this handler needs). GitHub's classic OAuth
 // Apps token endpoint returns form-encoded by default; requesting it with
 // Accept: application/json (below) makes it return this same JSON shape.
@@ -203,6 +203,8 @@ func vendorDisplayName(vendor string) string {
 		return "GitHub"
 	case VendorLinear:
 		return "Linear"
+	case VendorAsana:
+		return "Asana"
 	default:
 		return vendor
 	}
@@ -246,7 +248,7 @@ func (h *mcpOAuthHandler) postTokenRequest(ctx context.Context, vc vendorConfig,
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	// GitHub's classic OAuth Apps token endpoint returns form-encoded by
-	// default; Accept: application/json makes both vendors return JSON.
+	// default; Accept: application/json makes the vendors return JSON.
 	req.Header.Set("Accept", "application/json")
 
 	resp, err := h.httpClient.Do(req)

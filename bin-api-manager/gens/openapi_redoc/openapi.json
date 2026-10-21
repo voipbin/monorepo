@@ -3465,7 +3465,7 @@
     "/mcpservers/oauth/start": {
       "post": {
         "summary": "Start the vendor OAuth flow for an MCP server connection.",
-        "description": "Starts a vendor-fixed OAuth 2.1 authorization-code + PKCE flow so the authenticated customer can connect a GitHub or Linear account to an MCP server without ever handling a client_id/client_secret. Returns the vendor's authorize_url to redirect the user's browser to, plus a link_token used to correlate the eventual POST /mcpservers/oauth/complete call back to this flow.\n",
+        "description": "Starts a vendor-fixed OAuth 2.1 authorization-code + PKCE flow so the authenticated customer can connect a GitHub, Linear or Asana account to an MCP server without ever handling a client_id/client_secret. Returns the vendor's authorize_url to redirect the user's browser to, plus a link_token used to correlate the eventual POST /mcpservers/oauth/complete call back to this flow.\n",
         "tags": [
           "AI"
         ],
@@ -3480,7 +3480,8 @@
                     "type": "string",
                     "enum": [
                       "github",
-                      "linear"
+                      "linear",
+                      "asana"
                     ],
                     "description": "The OAuth vendor to connect to.",
                     "example": "github"
@@ -3541,7 +3542,7 @@
     "/mcpservers/oauth/callback": {
       "get": {
         "summary": "Vendor OAuth callback relay (public, unauthenticated).",
-        "description": "The redirect_uri registered with the GitHub/Linear OAuth apps. Not called directly by API clients -- the vendor's authorization server redirects the user's browser here after consent. Relays the browser onward with the vendor's `code`/`state` query parameters preserved so the client application can complete the flow via POST /mcpservers/oauth/complete. Deliberately unauthenticated: the browser arriving here has not sent any VoIPbin credentials.\n",
+        "description": "The redirect_uri registered with the GitHub/Linear/Asana OAuth apps. Not called directly by API clients -- the vendor's authorization server redirects the user's browser here after consent. Relays the browser onward with the vendor's `code`/`state` query parameters preserved so the client application can complete the flow via POST /mcpservers/oauth/complete. Deliberately unauthenticated: the browser arriving here has not sent any VoIPbin credentials.\n",
         "tags": [
           "AI"
         ],
@@ -27752,7 +27753,8 @@
             "type": "string",
             "enum": [
               "github",
-              "linear"
+              "linear",
+              "asana"
             ],
             "description": "Which OAuth vendor this server is connected to. Only set when auth_type is \"oauth\"; it is cleared along with the stored tokens when a server is moved out of \"oauth\".",
             "example": "github"
