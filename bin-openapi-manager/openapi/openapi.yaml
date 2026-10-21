@@ -2192,7 +2192,7 @@ components:
         type:
           type: string
           enum: ["normal", "insight"]
-          description: "AI type. `normal` (default) is a general-purpose AI. `insight` restricts the AI to the Insight tool set and uses a dedicated system prompt for analyzing existing contact/conversation data."
+          description: "AI type. `normal` (default) is a general-purpose AI. `insight` limits the AI's built-in tools to the Insight tool set, adds the tools of the MCP servers in its own `mcp_server_ids`, and uses a dedicated system prompt for analyzing existing contact/conversation data."
           example: "normal"
         is_insight_active:
           type: boolean
@@ -2277,7 +2277,7 @@ components:
             reference an MCP server owned by the same customer, returned from the `id` field of
             the `POST /mcpservers` or `GET /mcpservers` response.
             **Tool use scope:** a whitelisted server's tools are presented to this AI's
-            Normal-type, single-AI sessions -- `type=insight` AIs and team-typed AI calls never
+            single-AI sessions, including those of `type=insight` AIs; team-typed AI calls never
             receive MCP tools regardless of this list, and realtime voice call sessions do not
             either. Sessions that do discover and advertise include chat, `ai_task` flow actions
             and API-created single-AI sessions, so expect `tools/list` (and, on a tool call,
@@ -2323,8 +2323,8 @@ components:
         Excludes the stored secret entirely; `has_secret` indicates whether
         one is configured. Whitelist a server for an AI via that AI's
         `mcp_server_ids` field. **Tool use scope:** a whitelisted server's
-        tools are presented to that AI's Normal-type, single-AI sessions;
-        `type=insight` AIs, team-typed AI calls, and realtime voice call
+        tools are presented to that AI's single-AI sessions, including those of
+        `type=insight` AIs; team-typed AI calls and realtime voice call
         sessions never receive MCP tools.
       properties:
         id:

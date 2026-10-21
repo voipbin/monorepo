@@ -2,6 +2,7 @@ package aicallhandler
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -86,42 +87,116 @@ func Test_ResolveMcpTools_Team(t *testing.T) {
 	}
 }
 
-// Test_ResolveMcpTools_Insight pins B10: an Insight AI returns (nil, nil)
-// without discovery being reached -- mcpServerHandler/mcptoolHandler have no
-// EXPECT() calls set, so gomock fails this test if discoverMcpTools is
-// entered.
+// Test_ResolveMcpTools_Insight pins that an Insight AI is handled like a
+// Normal AI: the tools of the servers in its own mcp_server_ids are
+// advertised and persisted, an empty list adds nothing, and a server of
+// another customer is looked up but never listed. The aicall references a
+// contact case with listen metadata, i.e. the shape a listen turn runs on.
 func Test_ResolveMcpTools_Insight(t *testing.T) {
-	enableMcpToolExposureForTest(t, true)
+	serverID := uuid.FromStringOrNil("aaaaaaaa-1111-4000-8000-000000000001")
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+	tests := []struct {
+		name string
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockAI := aihandler.NewMockAIHandler(mc)
-	mockSrv := mcpserverhandler.NewMockMcpServerHandler(mc)
-	mockTool := mcptoolhandler.NewMockMcpToolHandler(mc)
+		mcpServerIDs []uuid.UUID
+		serverOwner  commonidentity.Identity
 
-	aicallID := uuid.Must(uuid.NewV4())
-	assistanceID := uuid.Must(uuid.NewV4())
-	mockDB.EXPECT().AIcallGet(gomock.Any(), aicallID).Return(&aicall.AIcall{
-		Identity:       commonidentity.Identity{ID: aicallID},
-		AssistanceType: aicall.AssistanceTypeAI,
-		AssistanceID:   assistanceID,
-	}, nil)
-	mockAI.EXPECT().Get(gomock.Any(), assistanceID).Return(&ai.AI{
-		Identity:     commonidentity.Identity{ID: assistanceID},
-		Type:         ai.TypeInsight,
-		McpServerIDs: []uuid.UUID{uuid.Must(uuid.NewV4())},
-	}, nil)
-
-	h := &aicallHandler{db: mockDB, aiHandler: mockAI, mcpServerHandler: mockSrv, mcptoolHandler: mockTool}
-
-	got, err := h.ResolveMcpTools(context.Background(), aicallID)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		expectServerGet bool
+		expectListTools bool
+		expectTools     []string
+	}{
+		{
+			name:            "whitelisted server: its tools are advertised",
+			mcpServerIDs:    []uuid.UUID{serverID},
+			serverOwner:     commonidentityFor(serverID),
+			expectServerGet: true,
+			expectListTools: true,
+			expectTools:     []string{"mcp_aaaaaaaa_search_tickets"},
+		},
+		{
+			name:         "empty whitelist: nothing is advertised or looked up",
+			mcpServerIDs: []uuid.UUID{},
+			expectTools:  []string{},
+		},
+		{
+			name:            "server of another customer: skipped without listing",
+			mcpServerIDs:    []uuid.UUID{serverID},
+			serverOwner:     otherCustomerIdentityFor(serverID),
+			expectServerGet: true,
+			expectTools:     []string{},
+		},
 	}
-	if got != nil {
-		t.Errorf("expected nil tools for an insight AI, got: %v", got)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			enableMcpToolExposureForTest(t, true)
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockSrv := mcpserverhandler.NewMockMcpServerHandler(mc)
+			mockTool := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+			aicallID := uuid.Must(uuid.NewV4())
+			assistanceID := uuid.Must(uuid.NewV4())
+
+			c := &aicall.AIcall{
+				Identity:       commonidentity.Identity{ID: aicallID, CustomerID: testCustomerID},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   assistanceID,
+				ReferenceType:  aicall.ReferenceTypeContactCase,
+				ListenCallID:   uuid.Must(uuid.NewV4()),
+				Metadata:       map[string]any{},
+			}
+			// h.Get, then persistToolMap's own re-read.
+			mockDB.EXPECT().AIcallGet(gomock.Any(), aicallID).Return(c, nil).Times(2)
+			mockAI.EXPECT().Get(gomock.Any(), assistanceID).Return(&ai.AI{
+				Identity:     commonidentity.Identity{ID: assistanceID, CustomerID: testCustomerID},
+				Type:         ai.TypeInsight,
+				McpServerIDs: tt.mcpServerIDs,
+			}, nil)
+			if tt.expectServerGet {
+				mockSrv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+					Identity: tt.serverOwner,
+					Status:   mcpserver.StatusActive,
+				}, nil)
+			}
+			if tt.expectListTools {
+				mockTool.EXPECT().ListTools(gomock.Any(), serverID).Return([]mcptoolhandler.McpTool{
+					{Name: "search_tickets", Description: "search"},
+				}, nil)
+			}
+
+			var persistedMetadata map[string]any
+			mockDB.EXPECT().AIcallUpdateNoTouchTMUpdate(gomock.Any(), aicallID, gomock.Any()).DoAndReturn(
+				func(_ context.Context, _ uuid.UUID, fields map[aicall.Field]any) error {
+					persistedMetadata, _ = fields[aicall.FieldMetadata].(map[string]any)
+					return nil
+				},
+			)
+
+			h := &aicallHandler{db: mockDB, aiHandler: mockAI, mcpServerHandler: mockSrv, mcptoolHandler: mockTool}
+
+			got, err := h.ResolveMcpTools(context.Background(), aicallID)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			gotNames := []string{}
+			for _, gt := range got {
+				gotNames = append(gotNames, string(gt.Name))
+			}
+			if !reflect.DeepEqual(gotNames, tt.expectTools) {
+				t.Errorf("tool names mismatch. expected: %v, got: %v", tt.expectTools, gotNames)
+			}
+
+			toolMap, _ := persistedMetadata[aicall.MetaKeyMcpToolMap].(map[string]aicall.McpToolRef)
+			if len(toolMap) != len(tt.expectTools) {
+				t.Errorf("persisted tool map size mismatch. expected: %d, got: %d", len(tt.expectTools), len(toolMap))
+			}
+		})
 	}
 }
 

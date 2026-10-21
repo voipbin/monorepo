@@ -53,8 +53,8 @@ func Test_labelForToolExecuteMetric(t *testing.T) {
 
 // Test_ResolveMcpTools_AdvertisedMetric pins that a non-empty ResolveMcpTools
 // resolution increments promMcpToolAdvertisedTotal exactly once, and an
-// empty resolution (Insight AI, gated at B10) does not increment it at all
-// (B17/B18).
+// empty resolution (an AI with no usable whitelisted server) does not
+// increment it at all (B17/B18).
 func Test_ResolveMcpTools_AdvertisedMetric(t *testing.T) {
 	enableMcpToolExposureForTest(t, true)
 
