@@ -2278,9 +2278,9 @@ components:
             the `POST /mcpservers` or `GET /mcpservers` response.
             **Tool use scope:** a whitelisted server's tools are presented to this AI's
             single-AI sessions, including those of `type=insight` AIs; team-typed AI calls never
-            receive MCP tools regardless of this list, and realtime voice call sessions do not
-            either. Sessions that do discover and advertise include chat, `ai_task` flow actions
-            and API-created single-AI sessions, so expect `tools/list` (and, on a tool call,
+            receive MCP tools regardless of this list. Sessions that do discover and advertise
+            include chat, voice calls, `ai_task` flow actions and API-created
+            single-AI sessions, so expect `tools/list` (and, on a tool call,
             `tools/call`) requests authenticated per the server's `auth_type` in its logs. Of what
             is discovered, the tool names are stored on the AI session record and outlive the
             request, while the input schemas and descriptions are not stored. A usable server's
@@ -2324,8 +2324,7 @@ components:
         one is configured. Whitelist a server for an AI via that AI's
         `mcp_server_ids` field. **Tool use scope:** a whitelisted server's
         tools are presented to that AI's single-AI sessions, including those of
-        `type=insight` AIs; team-typed AI calls and realtime voice call
-        sessions never receive MCP tools.
+        `type=insight` AIs; team-typed AI calls never receive MCP tools.
       properties:
         id:
           type: string

@@ -694,7 +694,7 @@ Authenticate it with an access key from your account and set that key in the ``V
 
 .. note::
 
-   This is the reverse direction from :ref:`MCP Server <mcpserver-struct-mcpserver>` resources. Here an external AI client calls **into** VoIPBin. An MCP Server resource points **out** to a server you host, so that a VoIPBin AI can call your tools during a conversation, for an AI's single-AI session, including ``type=insight`` AIs (team-typed AI calls and realtime voice call sessions do not receive MCP tools). An AI's callable actions also always include its built-in ``tool_names`` set, and custom logic beyond either is reached from a :ref:`Flow <flow-overview>`.
+   This is the reverse direction from :ref:`MCP Server <mcpserver-struct-mcpserver>` resources. Here an external AI client calls **into** VoIPBin. An MCP Server resource points **out** to a server you host, so that a VoIPBin AI can call your tools during a conversation, for an AI's single-AI session, including ``type=insight`` AIs (team-typed AI calls do not receive MCP tools). An AI's callable actions also always include its built-in ``tool_names`` set, and custom logic beyond either is reached from a :ref:`Flow <flow-overview>`.
 
 
 Common Scenarios
