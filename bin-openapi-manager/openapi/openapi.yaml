@@ -2374,7 +2374,7 @@ components:
           example: "X-API-Key"
         oauth_vendor:
           type: string
-          enum: ["github", "linear", "asana"]
+          enum: ["github", "linear", "asana", "hubspot"]
           description: >-
             Which OAuth vendor this server is connected to. Only set
             when auth_type is "oauth"; it is cleared along with the

@@ -205,6 +205,8 @@ func vendorDisplayName(vendor string) string {
 		return "Linear"
 	case VendorAsana:
 		return "Asana"
+	case VendorHubSpot:
+		return "HubSpot"
 	default:
 		return vendor
 	}

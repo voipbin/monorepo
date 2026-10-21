@@ -14,14 +14,15 @@ type vendorConfig struct {
 // Vendor identifiers -- the exact strings stored in
 // McpServer.OAuthVendor / ai_mcp_oauth_states.vendor.
 const (
-	VendorGitHub = "github"
-	VendorLinear = "linear"
-	VendorAsana  = "asana"
+	VendorGitHub  = "github"
+	VendorLinear  = "linear"
+	VendorAsana   = "asana"
+	VendorHubSpot = "hubspot"
 )
 
 // newVendorCatalog builds the vendor map with client credentials injected
 // from config (design §6's MCP_OAUTH_<VENDOR>_CLIENT_ID/SECRET env vars).
-func newVendorCatalog(githubClientID, githubClientSecret, linearClientID, linearClientSecret, asanaClientID, asanaClientSecret string) map[string]vendorConfig {
+func newVendorCatalog(githubClientID, githubClientSecret, linearClientID, linearClientSecret, asanaClientID, asanaClientSecret, hubspotClientID, hubspotClientSecret string) map[string]vendorConfig {
 	return map[string]vendorConfig{
 		VendorGitHub: {
 			MCPServerURL: "https://api.githubcopilot.com/mcp/",
@@ -49,6 +50,16 @@ func newVendorCatalog(githubClientID, githubClientSecret, linearClientID, linear
 			// ("Invalid scope(s) requested"), so the scope parameter is omitted.
 			ClientID:     asanaClientID,
 			ClientSecret: asanaClientSecret,
+		},
+		// HubSpot's connector scope is fixed when the connector is installed
+		// and its metadata lists no scopes, so the authorize request carries
+		// none. The token endpoint accepts client_secret_post only.
+		VendorHubSpot: {
+			MCPServerURL: "https://mcp.hubspot.com",
+			AuthorizeURL: "https://mcp.hubspot.com/oauth/authorize/user",
+			TokenURL:     "https://mcp.hubspot.com/oauth/v3/token",
+			ClientID:     hubspotClientID,
+			ClientSecret: hubspotClientSecret,
 		},
 	}
 }

@@ -12,7 +12,7 @@ import (
 )
 
 func Test_newVendorCatalog_Credentials(t *testing.T) {
-	catalog := newVendorCatalog("gh-id", "gh-secret", "ln-id", "ln-secret", "as-id", "as-secret")
+	catalog := newVendorCatalog("gh-id", "gh-secret", "ln-id", "ln-secret", "as-id", "as-secret", "", "")
 
 	tests := []struct {
 		vendor     string
@@ -38,7 +38,7 @@ func Test_newVendorCatalog_Credentials(t *testing.T) {
 }
 
 func Test_newVendorCatalog_Asana(t *testing.T) {
-	vc := newVendorCatalog("", "", "", "", "as-id", "as-secret")[VendorAsana]
+	vc := newVendorCatalog("", "", "", "", "as-id", "as-secret", "", "")[VendorAsana]
 
 	if vc.MCPServerURL != "https://mcp.asana.com/v2/mcp" {
 		t.Errorf("MCPServerURL = %q", vc.MCPServerURL)
@@ -55,7 +55,7 @@ func Test_newVendorCatalog_Asana(t *testing.T) {
 }
 
 func Test_buildAuthorizeURL_Asana(t *testing.T) {
-	vc := newVendorCatalog("", "", "", "", "as-id", "as-secret")[VendorAsana]
+	vc := newVendorCatalog("", "", "", "", "as-id", "as-secret", "", "")[VendorAsana]
 
 	raw := buildAuthorizeURL(vc, "state-1", "challenge-1")
 	u, err := url.Parse(raw)

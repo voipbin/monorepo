@@ -1,5 +1,5 @@
 // Package mcpoauthhandler implements the vendor-fixed OAuth 2.1 flow used
-// to connect a customer-registered McpServer to a vendor (GitHub, Linear, Asana) without
+// to connect a customer-registered McpServer to a vendor (GitHub, Linear, Asana, HubSpot) without
 // the customer ever handling a client_id/client_secret. See
 // docs/plans/2026-09-12-mcp-server-oauth-support-design.md.
 package mcpoauthhandler
@@ -77,6 +77,8 @@ func NewMcpOAuthHandler(
 	linearClientSecret string,
 	asanaClientID string,
 	asanaClientSecret string,
+	hubspotClientID string,
+	hubspotClientSecret string,
 ) (McpOAuthHandler, error) {
 	crypto, err := mcpserverhandler.NewSecretCrypto(cryptoKeys)
 	if err != nil {
@@ -87,7 +89,7 @@ func NewMcpOAuthHandler(
 		utilHandler: utilhandler.NewUtilHandler(),
 		db:          db,
 		crypto:      crypto,
-		vendors:     newVendorCatalog(githubClientID, githubClientSecret, linearClientID, linearClientSecret, asanaClientID, asanaClientSecret),
+		vendors:     newVendorCatalog(githubClientID, githubClientSecret, linearClientID, linearClientSecret, asanaClientID, asanaClientSecret, hubspotClientID, hubspotClientSecret),
 		httpClient:  &http.Client{Timeout: 15 * time.Second},
 	}, nil
 }

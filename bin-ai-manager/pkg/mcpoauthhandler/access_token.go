@@ -222,11 +222,10 @@ func (h *mcpOAuthHandler) exchangeAndStore(ctx context.Context, m *mcpserver.Mcp
 		return "", nil, errors.Wrap(err, "could not encrypt refreshed access token")
 	}
 
-	// OAuth 2.1 refresh token rotation: GitHub and Linear issue a
-	// new refresh token on every refresh (design §8 step 3) and other vendors
-	// (e.g. Asana) may not -- persist
-	// a new one, or keep the existing one if the vendor didn't return a new one
-	// for this call.
+	// OAuth 2.1 refresh token rotation: GitHub and Linear issue a new refresh
+	// token on every refresh (design §8 step 3); other vendors (e.g. Asana) may
+	// not, and whether HubSpot does is unverified -- persist a new one, or keep
+	// the existing one if the vendor didn't return a new one for this call.
 	//
 	// Either way it is encrypted afresh, under the same key as the access
 	// token. The row has one key_version for both, so writing back the old

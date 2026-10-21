@@ -333,9 +333,10 @@ func (e AIManagerMcpServerAuthType) Valid() bool {
 
 // Defines values for AIManagerMcpServerOauthVendor.
 const (
-	AIManagerMcpServerOauthVendorAsana  AIManagerMcpServerOauthVendor = "asana"
-	AIManagerMcpServerOauthVendorGithub AIManagerMcpServerOauthVendor = "github"
-	AIManagerMcpServerOauthVendorLinear AIManagerMcpServerOauthVendor = "linear"
+	AIManagerMcpServerOauthVendorAsana   AIManagerMcpServerOauthVendor = "asana"
+	AIManagerMcpServerOauthVendorGithub  AIManagerMcpServerOauthVendor = "github"
+	AIManagerMcpServerOauthVendorHubspot AIManagerMcpServerOauthVendor = "hubspot"
+	AIManagerMcpServerOauthVendorLinear  AIManagerMcpServerOauthVendor = "linear"
 )
 
 // Valid indicates whether the value is a known member of the AIManagerMcpServerOauthVendor enum.
@@ -344,6 +345,8 @@ func (e AIManagerMcpServerOauthVendor) Valid() bool {
 	case AIManagerMcpServerOauthVendorAsana:
 		return true
 	case AIManagerMcpServerOauthVendorGithub:
+		return true
+	case AIManagerMcpServerOauthVendorHubspot:
 		return true
 	case AIManagerMcpServerOauthVendorLinear:
 		return true
@@ -3567,9 +3570,10 @@ func (e PostMcpserversJSONBodyAuthType) Valid() bool {
 
 // Defines values for PostMcpserversOauthStartJSONBodyVendor.
 const (
-	PostMcpserversOauthStartJSONBodyVendorAsana  PostMcpserversOauthStartJSONBodyVendor = "asana"
-	PostMcpserversOauthStartJSONBodyVendorGithub PostMcpserversOauthStartJSONBodyVendor = "github"
-	PostMcpserversOauthStartJSONBodyVendorLinear PostMcpserversOauthStartJSONBodyVendor = "linear"
+	PostMcpserversOauthStartJSONBodyVendorAsana   PostMcpserversOauthStartJSONBodyVendor = "asana"
+	PostMcpserversOauthStartJSONBodyVendorGithub  PostMcpserversOauthStartJSONBodyVendor = "github"
+	PostMcpserversOauthStartJSONBodyVendorHubspot PostMcpserversOauthStartJSONBodyVendor = "hubspot"
+	PostMcpserversOauthStartJSONBodyVendorLinear  PostMcpserversOauthStartJSONBodyVendor = "linear"
 )
 
 // Valid indicates whether the value is a known member of the PostMcpserversOauthStartJSONBodyVendor enum.
@@ -3578,6 +3582,8 @@ func (e PostMcpserversOauthStartJSONBodyVendor) Valid() bool {
 	case PostMcpserversOauthStartJSONBodyVendorAsana:
 		return true
 	case PostMcpserversOauthStartJSONBodyVendorGithub:
+		return true
+	case PostMcpserversOauthStartJSONBodyVendorHubspot:
 		return true
 	case PostMcpserversOauthStartJSONBodyVendorLinear:
 		return true
