@@ -175,6 +175,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		cfg.McpOAuthLinearClientSecret,
 		cfg.McpOAuthAsanaClientID,
 		cfg.McpOAuthAsanaClientSecret,
+		cfg.McpOAuthHubspotClientID,
+		cfg.McpOAuthHubspotClientSecret,
 	)
 	if err != nil {
 		log.Errorf("Could not create mcp oauth handler. err: %v", err)

@@ -50,7 +50,7 @@ MCP Server
 * ``status`` (enum string, Optional): The server's lifecycle state. See :ref:`Status <mcpserver-struct-mcpserver-status>`. Defaults to ``active``.
 * ``auth_type`` (enum string, Optional): How outbound MCP calls authenticate against this server. See :ref:`Auth Type <mcpserver-struct-mcpserver-auth_type>`. Defaults to no authentication. A server is moved **into** ``oauth`` only by completing ``POST /mcpservers/oauth/complete``; sending ``oauth`` on a server that is not already connected is rejected with ``INVALID_MCP_SERVER_AUTH_TYPE``. Re-sending the current ``oauth`` value on an already-connected server is accepted, so a client that submits the full object on every save is never rejected. Moving a connected server **out** of ``oauth`` is allowed and erases its stored OAuth tokens.
 * ``api_key_header`` (String, Optional): The HTTP header name used to send the secret when ``auth_type`` is ``api_key`` (e.g., ``"X-API-Key"``). Ignored for other auth types.
-* ``oauth_vendor`` (enum string): Which OAuth vendor this server is connected to (``github``, ``linear`` or ``asana``). Only set when ``auth_type`` is ``oauth``; empty otherwise.
+* ``oauth_vendor`` (enum string): Which OAuth vendor this server is connected to (``github``, ``linear``, ``asana`` or ``hubspot``). Only set when ``auth_type`` is ``oauth``; empty otherwise.
 * ``has_secret`` (Boolean): Whether a secret (bearer token, API key, or OAuth access token) is currently stored for this server. The secret/token value itself is never returned in any response.
 * ``tm_create`` (String, ISO 8601): Timestamp when the MCP server was registered.
 * ``tm_update`` (String, ISO 8601): Timestamp when the MCP server was last updated.
