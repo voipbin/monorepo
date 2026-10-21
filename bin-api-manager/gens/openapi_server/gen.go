@@ -3849,7 +3849,7 @@ type AIManagerAI struct {
 	// IsInsightActive Whether this is the customer's active Insight AI, i.e. the one the Case Insight Assistant panel auto-attaches to a case. Only meaningful when `type` is `insight`. A customer may hold any number of Insight AIs but at most one may be active. Newly created AIs are always inactive; use `POST /ais/{id}/activate_insight` to activate one. When no Insight AI is active, the most recently created one is used.
 	IsInsightActive bool `json:"is_insight_active"`
 
-	// McpServerIds List of customer-registered MCP server IDs whitelisted for this AI. Each ID must reference an MCP server owned by the same customer, returned from the `id` field of the `POST /mcpservers` or `GET /mcpservers` response. **Tool use scope:** a whitelisted server's tools are presented to this AI's Normal-type, single-AI sessions -- `type=insight` AIs and team-typed AI calls never receive MCP tools regardless of this list, and realtime voice call sessions do not either. Sessions that do discover and advertise include chat, `ai_task` flow actions and API-created single-AI sessions, so expect `tools/list` (and, on a tool call, `tools/call`) requests authenticated per the server's `auth_type` in its logs. Of what is discovered, the tool names are stored on the AI session record and outlive the request, while the input schemas and descriptions are not stored. A usable server's tools are namespaced `mcp_<server_id_prefix>_<tool_name>` when presented to the model, up to 256 tools per session across this AI's whitelisted servers.
+	// McpServerIds List of customer-registered MCP server IDs whitelisted for this AI. Each ID must reference an MCP server owned by the same customer, returned from the `id` field of the `POST /mcpservers` or `GET /mcpservers` response. **Tool use scope:** a whitelisted server's tools are presented to this AI's single-AI sessions, including those of `type=insight` AIs; team-typed AI calls never receive MCP tools regardless of this list, and realtime voice call sessions do not either. Sessions that do discover and advertise include chat, `ai_task` flow actions and API-created single-AI sessions, so expect `tools/list` (and, on a tool call, `tools/call`) requests authenticated per the server's `auth_type` in its logs. Of what is discovered, the tool names are stored on the AI session record and outlive the request, while the input schemas and descriptions are not stored. A usable server's tools are namespaced `mcp_<server_id_prefix>_<tool_name>` when presented to the model, up to 256 tools per session across this AI's whitelisted servers.
 	McpServerIds *[]string `json:"mcp_server_ids,omitempty"`
 
 	// Name Name of the AI.
@@ -3888,14 +3888,14 @@ type AIManagerAI struct {
 	// TtsVoiceId Text-to-speech voice identifier.
 	TtsVoiceId *string `json:"tts_voice_id,omitempty"`
 
-	// Type AI type. `normal` (default) is a general-purpose AI. `insight` restricts the AI to the Insight tool set and uses a dedicated system prompt for analyzing existing contact/conversation data.
+	// Type AI type. `normal` (default) is a general-purpose AI. `insight` limits the AI's built-in tools to the Insight tool set, adds the tools of the MCP servers in its own `mcp_server_ids`, and uses a dedicated system prompt for analyzing existing contact/conversation data.
 	Type *AIManagerAIType `json:"type,omitempty"`
 
 	// VadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
 	VadConfig *AIManagerVADConfig `json:"vad_config,omitempty"`
 }
 
-// AIManagerAIType AI type. `normal` (default) is a general-purpose AI. `insight` restricts the AI to the Insight tool set and uses a dedicated system prompt for analyzing existing contact/conversation data.
+// AIManagerAIType AI type. `normal` (default) is a general-purpose AI. `insight` limits the AI's built-in tools to the Insight tool set, adds the tools of the MCP servers in its own `mcp_server_ids`, and uses a dedicated system prompt for analyzing existing contact/conversation data.
 type AIManagerAIType string
 
 // AIManagerAIAudit defines model for AIManagerAIAudit.
@@ -4198,7 +4198,7 @@ type AIManagerAIcallReferenceType string
 // AIManagerAIcallStatus Status of the ai call.
 type AIManagerAIcallStatus string
 
-// AIManagerMcpServer A customer-registered remote MCP (Model Context Protocol) server. Excludes the stored secret entirely; `has_secret` indicates whether one is configured. Whitelist a server for an AI via that AI's `mcp_server_ids` field. **Tool use scope:** a whitelisted server's tools are presented to that AI's Normal-type, single-AI sessions; `type=insight` AIs, team-typed AI calls, and realtime voice call sessions never receive MCP tools.
+// AIManagerMcpServer A customer-registered remote MCP (Model Context Protocol) server. Excludes the stored secret entirely; `has_secret` indicates whether one is configured. Whitelist a server for an AI via that AI's `mcp_server_ids` field. **Tool use scope:** a whitelisted server's tools are presented to that AI's single-AI sessions, including those of `type=insight` AIs; team-typed AI calls and realtime voice call sessions never receive MCP tools.
 type AIManagerMcpServer struct {
 	// ApiKeyHeader Header name used when auth_type is api_key.
 	ApiKeyHeader *string `json:"api_key_header,omitempty"`
@@ -8447,7 +8447,7 @@ type PostAisJSONBody struct {
 	// TtsVoiceId Voice ID for the text-to-speech engine.
 	TtsVoiceId string `json:"tts_voice_id"`
 
-	// Type AI type. `normal` (default) is a general-purpose AI. `insight` restricts the AI to the Insight tool set and uses a dedicated system prompt.
+	// Type AI type. `normal` (default) is a general-purpose AI. `insight` limits the AI's built-in tools to the Insight tool set, adds the tools of the MCP servers in its own `mcp_server_ids`, and uses a dedicated system prompt.
 	Type *PostAisJSONBodyType `json:"type,omitempty"`
 
 	// VadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
@@ -8501,7 +8501,7 @@ type PutAisIdJSONBody struct {
 	// TtsVoiceId Voice ID for the text-to-speech engine.
 	TtsVoiceId string `json:"tts_voice_id"`
 
-	// Type AI type. `normal` (default) is a general-purpose AI. `insight` restricts the AI to the Insight tool set and uses a dedicated system prompt.
+	// Type AI type. `normal` (default) is a general-purpose AI. `insight` limits the AI's built-in tools to the Insight tool set, adds the tools of the MCP servers in its own `mcp_server_ids`, and uses a dedicated system prompt.
 	Type *PutAisIdJSONBodyType `json:"type,omitempty"`
 
 	// VadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).

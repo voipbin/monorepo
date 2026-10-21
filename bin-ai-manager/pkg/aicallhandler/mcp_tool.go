@@ -186,13 +186,6 @@ func (h *aicallHandler) ResolveMcpTools(ctx context.Context, aicallID uuid.UUID)
 		return nil, err
 	}
 
-	// B10: Insight AIs never get MCP tools. discoverMcpTools also gates on
-	// this internally (defense-in-depth, §2.4), so this branch is
-	// redundant belt-and-suspenders, not the only enforcement.
-	if a.Type == ai.TypeInsight {
-		return nil, nil
-	}
-
 	mcpTools, toolMap, err := h.resolveMcpOnly(ctx, a)
 	if err != nil {
 		return nil, err
@@ -406,18 +399,6 @@ func (h *aicallHandler) discoverMcpTools(ctx context.Context, a *ai.AI, keepCont
 
 	res := []discoveredMcpTool{}
 	if h.mcpServerHandler == nil || h.mcptoolHandler == nil {
-		return res
-	}
-
-	// B10 residual: Insight AIs never get MCP tools, discovery included, not
-	// only advertisement. PR B1 gated the SAVE path (a whitelist cannot be
-	// written onto an Insight AI going forward) but writeInsightSessionMetadata
-	// still called resolveMcpToolMap unconditionally, discovering (though not
-	// yet advertising, since nothing consumed the result) tools for any
-	// Insight AI holding a pre-B1 or exempted-identical whitelist. This is
-	// the single point every caller of discoverMcpTools passes through, so
-	// gating here closes that hole for all of them at once.
-	if a.Type == ai.TypeInsight {
 		return res
 	}
 

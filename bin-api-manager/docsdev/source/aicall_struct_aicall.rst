@@ -71,8 +71,8 @@ AIcall
   that resolution: ``{"servers": <int>, "tools": <int>}``, the distinct server count and total
   tool count. Server IDs, remote tool names, and input schemas are never included here -- see
   :ref:`MCP Server <mcpserver-struct-mcpserver-status>` for what tool discovery stores and
-  retains. The key is absent entirely when no MCP tools were resolved (Insight AIs, team AI
-  calls, or an AI with no usable whitelisted server).
+  retains. The key is absent entirely when no MCP tools were resolved (team AI calls, or an AI with no
+  usable whitelisted server).
 * ``tm_end`` (string, ISO 8601): Timestamp when the AI call ended.
 * ``tm_create`` (string, ISO 8601): Timestamp when this AI call was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to this AI call.

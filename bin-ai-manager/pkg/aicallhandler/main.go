@@ -361,9 +361,10 @@ Keep the message content empty.
 
 	// InsightSystemPrompt is the dedicated system prompt used for ai.TypeInsight
 	// AIs, in place of defaultCommonAIcallSystemPrompt / defaultCommonAItaskSystemPrompt.
-	// Insight AIs are restricted to the Insight tool set (see
-	// tool.AllInsightToolNames) and are used to analyze existing contact/
-	// conversation data rather than to drive a live call or task workflow.
+	// Insight AIs have the Insight built-in tool set (see
+	// tool.AllInsightToolNames) plus the tools of their own mcp_server_ids,
+	// and are used to analyze existing contact/conversation data rather than
+	// to drive a live call or task workflow.
 	InsightSystemPrompt = `You are an Insight AI for VoIPBin. Your role is to analyze existing contact and conversation
 data to answer questions and surface insights — you do not drive a live call or execute a task workflow.
 

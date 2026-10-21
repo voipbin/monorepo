@@ -204,6 +204,10 @@ func (h *aicallHandler) insightSessionLastActivity(ctx context.Context, c *aical
 // bumping TMUpdate here would make the next idle evaluation of any TMUpdate
 // based rule read this bookkeeping write as agent activity.
 func (h *aicallHandler) writeInsightSessionMetadata(ctx context.Context, existing *aicall.AIcall, a *ai.AI, boundary time.Time, initPrompt string) error {
+	// Discovery is a network call, so it runs before the re-read: the row is
+	// read as late as possible and a key written during discovery is kept.
+	mcpToolMap := h.resolveMcpToolMap(ctx, a)
+
 	cur, err := h.db.AIcallGet(ctx, existing.ID)
 	if err != nil {
 		return errors.Wrapf(err, "could not re-read the aicall before writing the insight session metadata. aicall_id: %s", existing.ID)
@@ -222,7 +226,7 @@ func (h *aicallHandler) writeInsightSessionMetadata(ctx context.Context, existin
 		},
 	}
 
-	metadata[aicall.MetaKeyMcpToolMap] = h.resolveMcpToolMap(ctx, a)
+	metadata[aicall.MetaKeyMcpToolMap] = mcpToolMap
 
 	if errUpdate := h.db.AIcallUpdateNoTouchTMUpdate(ctx, existing.ID, map[aicall.Field]any{
 		aicall.FieldMetadata: metadata,

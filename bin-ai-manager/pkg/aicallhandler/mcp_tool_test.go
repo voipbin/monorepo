@@ -1355,35 +1355,62 @@ func Test_resolveMcpOnly_SchemaLimits(t *testing.T) {
 	}
 }
 
-// Test_discoverMcpTools_SlotsBoundConcurrency pins that at most
-// cap(mcpDiscoverySlots) tools/list requests run at once in the process,
-// however many session starts resolve at the same time.
-// Test_discoverMcpTools_InsightGate pins B10's residual gate: discovery must
-// never even attempt to list a whitelisted server's tools for an Insight AI,
-// closing the last hole after PR B1's write-gate (a pre-B1 or exempted
-// Insight AI could otherwise still trigger live discovery, though not
-// advertisement, via writeInsightSessionMetadata's unconditional
-// resolveMcpToolMap call).
-func Test_discoverMcpTools_InsightGate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+// Test_discoverMcpTools_Insight pins that discovery treats an Insight AI like
+// a Normal AI: it lists the tools of a whitelisted server of its own
+// customer, and skips (after looking it up) a server of another customer.
+func Test_discoverMcpTools_Insight(t *testing.T) {
+	serverID := uuid.FromStringOrNil("aaaaaaaa-1111-4000-8000-000000000001")
 
-	// No EXPECT() calls set on either mock: if discoverMcpTools reaches
-	// mcpServerHandler.Get or mcptoolHandler.ListTools for an Insight AI,
-	// gomock fails this test on the unexpected call.
-	srv := mcpserverhandler.NewMockMcpServerHandler(mc)
-	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+	tests := []struct {
+		name string
 
-	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
-	a := &ai.AI{
-		Identity:     commonidentity.Identity{CustomerID: testCustomerID},
-		Type:         ai.TypeInsight,
-		McpServerIDs: []uuid.UUID{uuid.Must(uuid.NewV4())},
+		serverOwner     commonidentity.Identity
+		expectListTools bool
+		expectTools     int
+	}{
+		{
+			name:            "own server is listed",
+			serverOwner:     commonidentityFor(serverID),
+			expectListTools: true,
+			expectTools:     1,
+		},
+		{
+			name:        "server of another customer is skipped",
+			serverOwner: otherCustomerIdentityFor(serverID),
+			expectTools: 0,
+		},
 	}
 
-	got := h.discoverMcpTools(context.Background(), a, true)
-	if len(got) != 0 {
-		t.Errorf("expected no discovered tools for an insight AI, got: %v", got)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			srv := mcpserverhandler.NewMockMcpServerHandler(mc)
+			tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+			srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+				Identity: tt.serverOwner,
+				Status:   mcpserver.StatusActive,
+			}, nil)
+			if tt.expectListTools {
+				tl.EXPECT().ListTools(gomock.Any(), serverID).Return([]mcptoolhandler.McpTool{
+					{Name: "search_tickets", Description: "search"},
+				}, nil)
+			}
+
+			h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
+			a := &ai.AI{
+				Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+				Type:         ai.TypeInsight,
+				McpServerIDs: []uuid.UUID{serverID},
+			}
+
+			got := h.discoverMcpTools(context.Background(), a, true)
+			if len(got) != tt.expectTools {
+				t.Errorf("discovered tool count mismatch. expected: %d, got: %d", tt.expectTools, len(got))
+			}
+		})
 	}
 }
 
@@ -1452,6 +1479,9 @@ func Test_resolveMcpOnly_SessionStartBudget(t *testing.T) {
 	}
 }
 
+// Test_discoverMcpTools_SlotsBoundConcurrency pins that at most
+// cap(mcpDiscoverySlots) tools/list requests run at once in the process,
+// however many session starts resolve at the same time.
 func Test_discoverMcpTools_SlotsBoundConcurrency(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

@@ -3,11 +3,16 @@ package aicallhandler
 import (
 	"context"
 	"fmt"
+	"monorepo/bin-ai-manager/internal/config"
+	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
+	"monorepo/bin-ai-manager/pkg/mcptoolhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -1154,5 +1159,85 @@ func assertOriginOption(t *testing.T, expect message.Origin) func(
 			t.Errorf("Origin mismatch. expected: %q, got: %q", expect, got)
 		}
 		return &message.Message{Content: "{}"}, nil
+	}
+}
+
+// Test_ToolHandle_mcpToolOnListenTurn pins that an mcp_ tool call made by an
+// Insight AI on a listen turn is dispatched to the MCP server, like on any
+// other turn: the listen-turn decision only tags the stored rows.
+func Test_ToolHandle_mcpToolOnListenTurn(t *testing.T) {
+	prevTimeout := config.Get().McpToolCallTimeoutSeconds
+	config.Get().McpToolCallTimeoutSeconds = 10
+	defer func() { config.Get().McpToolCallTimeoutSeconds = prevTimeout }()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+	mockAI := aihandler.NewMockAIHandler(mc)
+	mockSrv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	mockTool := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+	aicallID := uuid.FromStringOrNil("0a1b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c5d")
+	turnPCID := uuid.FromStringOrNil("1b2c3d4e-5f6a-4b7c-8d9e-1f2a3b4c5d6e")
+	aiID := uuid.FromStringOrNil("3d4e5f6a-7b8c-4d9e-8f0a-3b4c5d6e7f80")
+	serverID := uuid.FromStringOrNil("aaaaaaaa-1111-4000-8000-000000000001")
+	toolName := message.FunctionCallName("mcp_" + mcpServerIDShort(serverID) + "_search_tickets")
+
+	c := &aicall.AIcall{
+		Identity:       commonidentity.Identity{ID: aicallID, CustomerID: testCustomerID},
+		AssistanceType: aicall.AssistanceTypeAI,
+		AssistanceID:   aiID,
+		ReferenceType:  aicall.ReferenceTypeContactCase,
+		Metadata: map[string]any{
+			aicall.MetaKeyMcpToolMap: map[string]aicall.McpToolRef{
+				string(toolName): {ServerID: serverID, ToolName: "search_tickets"},
+			},
+		},
+	}
+	ctx := context.Background()
+	mockDB.EXPECT().AIcallGet(ctx, aicallID).Return(c, nil)
+	mockCache.EXPECT().ListenTurnPipecatcallIDIsMember(ctx, aicallID, turnPCID).Return(true, nil)
+	mockAI.EXPECT().Get(gomock.Any(), aiID).Return(&ai.AI{
+		Identity:     commonidentity.Identity{ID: aiID, CustomerID: testCustomerID},
+		Type:         ai.TypeInsight,
+		McpServerIDs: []uuid.UUID{serverID},
+	}, nil)
+	mockSrv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+		Identity: commonidentityFor(serverID),
+		Status:   mcpserver.StatusActive,
+	}, nil)
+	mockTool.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).Return("3 tickets found", false, nil)
+
+	mockMessage.EXPECT().
+		Create(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			message.DirectionIncoming, message.RoleAssistant, "", gomock.Any(), "",
+			gomock.Any(), gomock.Any()).
+		DoAndReturn(assertOriginOption(t, message.OriginListenInternal))
+	mockMessage.EXPECT().
+		Create(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			message.DirectionOutgoing, message.RoleTool, gomock.Any(), nil, gomock.Any(),
+			gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, _, _, _, _ uuid.UUID,
+			_ message.Direction, _ message.Role, content string,
+			_ []message.ToolCall, _ string, _ ...messagehandler.CreateOption,
+		) (*message.Message, error) {
+			return &message.Message{Content: content}, nil
+		})
+
+	h := &aicallHandler{
+		db: mockDB, cache: mockCache, messageHandler: mockMessage,
+		aiHandler: mockAI, mcpServerHandler: mockSrv, mcptoolHandler: mockTool,
+	}
+
+	res, err := h.ToolHandle(ctx, aicallID, "tool-1", message.ToolTypeFunction,
+		message.FunctionCall{Name: toolName, Arguments: "{}"}, turnPCID)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if res["result"] != "success" {
+		t.Errorf("expected a successful mcp tool result, got: %v", res)
 	}
 }

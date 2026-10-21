@@ -50,8 +50,9 @@ type AI struct {
 	Detail string `json:"detail,omitempty" db:"detail"`
 
 	// Type distinguishes a Normal AI (default) from an Insight AI. Insight AIs
-	// use a dedicated system prompt and are restricted to the Insight tool set
-	// (see tool.AllInsightToolNames / toolhandler.AllInsightToolNames).
+	// use a dedicated system prompt and their built-in tools are restricted to
+	// the Insight tool set (see tool.AllInsightToolNames /
+	// toolhandler.AllInsightToolNames); MCP tools come from McpServerIDs.
 	Type Type `json:"type,omitempty" db:"type"`
 
 	// IsInsightActive marks the single type=insight AI a customer's Case

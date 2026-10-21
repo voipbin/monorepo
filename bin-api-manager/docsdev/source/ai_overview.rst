@@ -329,12 +329,13 @@ case_create               Create a CRM case for the current contact
 
 .. note:: **AI Implementation Hint**
 
-   ``type=insight`` AIs use a separate, smaller tool set instead of the tools
+   ``type=insight`` AIs use a separate, smaller set of built-in tools instead of the tools
    above: ``get_contact_interactions``, ``get_conversation_content``,
    ``get_related_cases``, ``get_case_notes``,
    ``get_contact_profile``, ``get_call_transcript``, ``emit_info_card``, and
    ``notify_agent``. See
-   :ref:`Insight Tools <ai-struct-tool-insight>`.
+   :ref:`Insight Tools <ai-struct-tool-insight>`. They can also use the tools of the MCP
+   servers listed in their own ``mcp_server_ids``.
 
 For detailed documentation on each tool, see :ref:`Tool Functions <ai-struct-tool>`.
 
@@ -693,7 +694,7 @@ Authenticate it with an access key from your account and set that key in the ``V
 
 .. note::
 
-   This is the reverse direction from :ref:`MCP Server <mcpserver-struct-mcpserver>` resources. Here an external AI client calls **into** VoIPBin. An MCP Server resource points **out** to a server you host, so that a VoIPBin AI can call your tools during a conversation, for a Normal-type AI's single-AI session (``type=insight`` AIs, team-typed AI calls, and realtime voice call sessions do not receive MCP tools). An AI's callable actions also always include its built-in ``tool_names`` set, and custom logic beyond either is reached from a :ref:`Flow <flow-overview>`.
+   This is the reverse direction from :ref:`MCP Server <mcpserver-struct-mcpserver>` resources. Here an external AI client calls **into** VoIPBin. An MCP Server resource points **out** to a server you host, so that a VoIPBin AI can call your tools during a conversation, for an AI's single-AI session, including ``type=insight`` AIs (team-typed AI calls and realtime voice call sessions do not receive MCP tools). An AI's callable actions also always include its built-in ``tool_names`` set, and custom logic beyond either is reached from a :ref:`Flow <flow-overview>`.
 
 
 Common Scenarios
