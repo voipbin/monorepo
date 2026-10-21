@@ -16,7 +16,7 @@ import (
 
 // oauthRedirectURI is the single fixed redirect_uri registered with both
 // vendor apps (design §3, §5): "https://api.voipbin.net/mcpservers/oauth/callback".
-// Not configurable per-request -- both GitHub and Linear OAuth apps are
+// Not configurable per-request -- every vendor OAuth app is
 // registered with exactly this URI, and using anything else would be
 // rejected by the vendor's own redirect_uri validation.
 const oauthRedirectURI = "https://api.voipbin.net/mcpservers/oauth/callback"

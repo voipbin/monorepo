@@ -97,8 +97,8 @@ func (h *mcpOAuthHandler) GetValidAccessToken(ctx context.Context, m *mcpserver.
 	}
 
 	// The refresh and the write that stores its result are one exchange that
-	// runs to completion on its own, detached from the caller. The vendor
-	// rotates the refresh token when it answers, invalidating the one we
+	// runs to completion on its own, detached from the caller. A vendor that
+	// rotates the refresh token does so when it answers, invalidating the one we
 	// hold, so an answer dropped mid-flight or a write abandoned after it
 	// would strand the server with a dead refresh token and force the
 	// customer to reconnect. The caller waits for the exchange only as long
@@ -107,7 +107,7 @@ func (h *mcpOAuthHandler) GetValidAccessToken(ctx context.Context, m *mcpserver.
 	// Concurrent callers holding the same refresh token share one exchange,
 	// and a caller arriving after it finished, still holding the refresh
 	// token it spent, is given its result. Presenting a spent refresh token
-	// again fails at every vendor, and a vendor that detects reuse revokes
+	// again fails at a rotating vendor, and a vendor that detects reuse revokes
 	// the whole grant.
 	ex, err := h.refreshExchange(ctx, m, vc, refreshToken, now)
 	if err != nil {
@@ -222,9 +222,10 @@ func (h *mcpOAuthHandler) exchangeAndStore(ctx context.Context, m *mcpserver.Mcp
 		return "", nil, errors.Wrap(err, "could not encrypt refreshed access token")
 	}
 
-	// OAuth 2.1 refresh token rotation: both GitHub and Linear issue a
-	// new refresh token on every refresh (design §8 step 3) -- persist
-	// it, or keep the existing one if the vendor didn't return a new one
+	// OAuth 2.1 refresh token rotation: GitHub and Linear issue a
+	// new refresh token on every refresh (design §8 step 3) and other vendors
+	// (e.g. Asana) may not -- persist
+	// a new one, or keep the existing one if the vendor didn't return a new one
 	// for this call.
 	//
 	// Either way it is encrypted afresh, under the same key as the access

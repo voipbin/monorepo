@@ -1,7 +1,7 @@
 get:
   summary: Vendor OAuth callback relay (public, unauthenticated).
   description: >
-    The redirect_uri registered with the GitHub/Linear OAuth apps. Not
+    The redirect_uri registered with the GitHub/Linear/Asana OAuth apps. Not
     called directly by API clients -- the vendor's authorization server
     redirects the user's browser here after consent. Relays the browser
     onward with the vendor's `code`/`state` query parameters preserved so
