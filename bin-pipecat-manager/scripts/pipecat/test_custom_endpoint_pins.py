@@ -13,7 +13,7 @@ from importlib import metadata
 import pytest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PINS = {"httpx": "0.28.1", "httpcore": "1.0.9", "h11": "0.16.0", "anyio": "4.12.1", "openai": "2.15.0"}
+PINS = {"httpx": "0.28.1", "httpcore": "1.0.9", "h11": "0.16.0", "anyio": "4.14.2", "openai": "2.15.0"}
 
 
 def _requirement_pins():

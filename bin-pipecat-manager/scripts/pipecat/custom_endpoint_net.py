@@ -5,7 +5,7 @@ This module does NOT import pipecat, so the unit tests can import it directly
 that uses it is custom_endpoint.py. Design: docs/plans/2026-10-16-custom-endpoint-layer2-design.md
 section 3.8.
 
-Pinned against httpx 0.28.1, httpcore 1.0.9, h11 0.16.0, anyio 4.12.1 and
+Pinned against httpx 0.28.1, httpcore 1.0.9, h11 0.16.0, anyio 4.14.2 and
 openai 2.15.0 (requirements.txt, pyproject.toml, uv.lock). The code relies on
 private attributes of httpx and httpcore (the pool of httpx.AsyncHTTPTransport,
 the pool's ssl context and network backend), so verify_openai_client() checks
