@@ -158,7 +158,7 @@ func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		for {
-			if errListen := http.ListenAndServe(listen, nil); errListen != nil {
+			if errListen := http.ListenAndServe(listen, nil); errListen != nil { //nolint:gosec // G114: internal Prometheus metrics listener, not exposed publicly
 				log.Errorf("Could not start prometheus listener. err: %v", errListen)
 				time.Sleep(time.Second * 1)
 				continue
@@ -188,7 +188,7 @@ func writeBase64(filename string, data string) error {
 
 	tmp, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
-		log.Fatalf("Error decoding Base64 string: %v", err)
+		log.Fatalf("Error decoding Base64 string: %v", err) //nolint:gocritic // exitAfterDefer: an undecodable SSL certificate or key is fatal at startup, the deferred file close is irrelevant when the process exits
 	}
 
 	// Write the string data to the file

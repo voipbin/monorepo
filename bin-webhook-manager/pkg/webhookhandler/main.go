@@ -74,7 +74,7 @@ func newSafeHTTPClient() *http.Client {
 			}
 
 			// Resolve DNS and check each IP against the block list (prevents DNS rebinding).
-			ips, err := net.LookupIP(host)
+			ips, err := net.DefaultResolver.LookupIP(ctx, "ip", host)
 			if err != nil {
 				return nil, fmt.Errorf("cannot resolve %s: %w", host, err)
 			}
@@ -103,7 +103,7 @@ func newSafeHTTPClient() *http.Client {
 			if len(via) >= 3 {
 				return fmt.Errorf("too many redirects (max 3)")
 			}
-			if err := validateWebhookURL(req.URL.String()); err != nil {
+			if err := validateWebhookURL(req.Context(), req.URL.String()); err != nil {
 				return fmt.Errorf("redirect target blocked: %w", err)
 			}
 			return nil

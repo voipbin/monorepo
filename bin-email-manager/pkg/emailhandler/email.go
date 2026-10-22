@@ -62,7 +62,7 @@ func (h *emailHandler) Create(
 	}
 
 	// send the email in go routine
-	go h.Send(context.Background(), res)
+	go h.Send(context.Background(), res) //nolint:contextcheck,gosec // G118: the send must outlive the request, so it runs on a detached context on purpose
 
 	return res, nil
 }

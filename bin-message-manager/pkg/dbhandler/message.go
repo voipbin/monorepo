@@ -24,7 +24,7 @@ const (
 func (h *handler) messageGetFromRow(rows *sql.Rows) (*message.Message, error) {
 	res := &message.Message{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. messageGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. messageGetFromRow. err: %w", err)
 	}
 
 	// Initialize nil pointers to empty values

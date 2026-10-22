@@ -68,6 +68,9 @@ func (h *dbHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, erro
 	}()
 
 	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, errRows
+		}
 		return nil, ErrNotFound
 	}
 
@@ -173,6 +176,9 @@ func (h *dbHandler) ChatList(ctx context.Context, filters map[chat.Field]any, to
 			return nil, err
 		}
 		talks = append(talks, &t)
+	}
+	if errRows := rows.Err(); errRows != nil {
+		return nil, errRows
 	}
 
 	return talks, nil
@@ -305,6 +311,9 @@ func (h *dbHandler) FindDirectChatByParticipants(ctx context.Context, customerID
 	}()
 
 	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, errRows
+		}
 		// No existing direct chat found
 		return nil, nil
 	}

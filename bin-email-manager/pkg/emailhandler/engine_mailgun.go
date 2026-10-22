@@ -106,7 +106,7 @@ func (h *engineMailgun) getAttachment(ctx context.Context, e *email.Attachment) 
 	var f *smbucketfile.BucketFile
 	var err error
 
-	filename := ""
+	var filename string
 	switch e.ReferenceType {
 	case email.AttachmentReferenceTypeRecording:
 		f, err = h.reqHandler.StorageV1RecordingGet(ctx, e.ReferenceID, 60000)

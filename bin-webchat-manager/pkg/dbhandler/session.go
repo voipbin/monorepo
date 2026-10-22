@@ -22,7 +22,7 @@ func (h *handler) sessionGetFromRow(row *sql.Rows) (*session.Session, error) {
 	res := &session.Session{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. sessionGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. sessionGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -41,7 +41,7 @@ func (h *handler) SessionCreate(ctx context.Context, s *session.Session) error {
 
 	fields, err := commondatabasehandler.PrepareFields(s)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. SessionCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. SessionCreate. err: %w", err)
 	}
 
 	sb := squirrel.
@@ -51,11 +51,11 @@ func (h *handler) SessionCreate(ctx context.Context, s *session.Session) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. SessionCreate. err: %v", err)
+		return fmt.Errorf("could not build query. SessionCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. SessionCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. SessionCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -107,12 +107,12 @@ func (h *handler) sessionGetFromDB(ctx context.Context, id uuid.UUID) (*session.
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. sessionGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. sessionGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. sessionGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. sessionGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -120,14 +120,14 @@ func (h *handler) sessionGetFromDB(ctx context.Context, id uuid.UUID) (*session.
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. sessionGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. sessionGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.sessionGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. sessionGetFromDB. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. sessionGetFromDB. id: %s, err: %w", id, err)
 	}
 
 	return res, nil
@@ -168,17 +168,17 @@ func (h *handler) SessionList(ctx context.Context, size uint64, token string, fi
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. SessionList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. SessionList. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. SessionList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. SessionList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. SessionList. err: %v", err)
+		return nil, fmt.Errorf("could not query. SessionList. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -188,12 +188,12 @@ func (h *handler) SessionList(ctx context.Context, size uint64, token string, fi
 	for rows.Next() {
 		u, err := h.sessionGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. SessionList, err: %v", err)
+			return nil, fmt.Errorf("could not get data. SessionList, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. SessionList. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. SessionList. err: %w", err)
 	}
 
 	return res, nil

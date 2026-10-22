@@ -84,6 +84,9 @@ func (h *dbHandler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Mess
 	}()
 
 	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, errRows
+		}
 		return nil, ErrNotFound
 	}
 
@@ -140,6 +143,9 @@ func (h *dbHandler) MessageList(ctx context.Context, filters map[message.Field]a
 			return nil, err
 		}
 		messages = append(messages, &m)
+	}
+	if errRows := rows.Err(); errRows != nil {
+		return nil, errRows
 	}
 
 	return messages, nil

@@ -105,7 +105,7 @@ func runSendEmail(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to get payload data")
 	}
 
-	req, _ := http.NewRequest("POST", "http://"+uri, bytes.NewReader(data))
+	req, _ := http.NewRequestWithContext(context.Background(), http.MethodPost, "http://"+uri, bytes.NewReader(data))
 	req.Host = uri
 	if err := handler.Email(context.Background(), req); err != nil {
 		return errors.Wrap(err, "failed to send email webhook")
@@ -152,7 +152,7 @@ func runSendMessage(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to get payload data")
 	}
 
-	req, _ := http.NewRequest("POST", "http://"+uri, bytes.NewReader(data))
+	req, _ := http.NewRequestWithContext(context.Background(), http.MethodPost, "http://"+uri, bytes.NewReader(data))
 	req.Host = uri
 	if err := handler.Message(context.Background(), req); err != nil {
 		return errors.Wrap(err, "failed to send message webhook")
@@ -199,7 +199,7 @@ func runSendConversation(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to get payload data")
 	}
 
-	req, _ := http.NewRequest("POST", "http://"+uri, bytes.NewReader(data))
+	req, _ := http.NewRequestWithContext(context.Background(), http.MethodPost, "http://"+uri, bytes.NewReader(data))
 	req.Host = uri
 	if _, err := handler.Conversation(context.Background(), req); err != nil {
 		return errors.Wrap(err, "failed to send conversation webhook")

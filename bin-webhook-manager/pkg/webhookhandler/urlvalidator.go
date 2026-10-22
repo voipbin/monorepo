@@ -1,6 +1,7 @@
 package webhookhandler
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/url"
@@ -35,7 +36,7 @@ var privateNetworks = []net.IPNet{
 }
 
 // validateWebhookURL checks that a URL is safe for outbound webhook delivery.
-func validateWebhookURL(rawURL string) error {
+func validateWebhookURL(ctx context.Context, rawURL string) error {
 	if rawURL == "" {
 		return fmt.Errorf("empty URL")
 	}
@@ -54,7 +55,7 @@ func validateWebhookURL(rawURL string) error {
 		return fmt.Errorf("empty hostname")
 	}
 
-	ips, err := net.LookupIP(host)
+	ips, err := net.DefaultResolver.LookupIP(ctx, "ip", host)
 	if err != nil {
 		return fmt.Errorf("cannot resolve hostname %s: %w", host, err)
 	}

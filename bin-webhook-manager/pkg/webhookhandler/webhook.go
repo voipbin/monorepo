@@ -42,13 +42,13 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 	m, err := h.accoutHandler.Get(ctx, customerID)
 	if err != nil {
 		log.Errorf("Could not get account. err: %v", err)
-		return fmt.Errorf("could not get account. err: %v", err)
+		return fmt.Errorf("could not get account. err: %w", err)
 	}
 
 	if m.WebhookURI != "" {
 		// send webhook message
 		go func() {
-			if err := h.sendMessage(m.WebhookURI, string(m.WebhookMethod), string(dataType), data, m.WebhookSecret); err != nil {
+			if err := h.sendMessage(context.WithoutCancel(ctx), m.WebhookURI, string(m.WebhookMethod), string(dataType), data, m.WebhookSecret); err != nil {
 				promDeliveryTotal.WithLabelValues("customer", "error").Inc()
 				log.Errorf("Could not send a request. err: %v", err)
 				return
@@ -105,7 +105,7 @@ func (h *webhookHandler) sendWebhookToActiveflow(ctx context.Context, dataType w
 
 	log.Debugf("Delivering webhook to the per-activeflow destination. uri: %s", dest.URI)
 	go func() {
-		if err := h.sendMessage(dest.URI, string(dest.Method), string(dataType), data, secret); err != nil {
+		if err := h.sendMessage(context.WithoutCancel(ctx), dest.URI, string(dest.Method), string(dataType), data, secret); err != nil {
 			promDeliveryTotal.WithLabelValues("activeflow", "error").Inc()
 			log.Errorf("Could not send a request to the activeflow destination. err: %v", err)
 			return
@@ -139,7 +139,7 @@ func (h *webhookHandler) SendWebhookToURI(ctx context.Context, customerID uuid.U
 
 	// send message
 	go func() {
-		if err := h.sendMessage(uri, string(method), string(dataType), data, secret); err != nil {
+		if err := h.sendMessage(context.WithoutCancel(ctx), uri, string(method), string(dataType), data, secret); err != nil {
 			log.Errorf("Could not send a request. err: %v", err)
 		}
 	}()

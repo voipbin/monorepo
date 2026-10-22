@@ -115,6 +115,9 @@ func (h *dbHandler) ParticipantGet(ctx context.Context, id uuid.UUID) (*particip
 	}()
 
 	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, errRows
+		}
 		return nil, ErrNotFound
 	}
 
@@ -165,6 +168,9 @@ func (h *dbHandler) ParticipantList(ctx context.Context, filters map[participant
 			return nil, err
 		}
 		participants = append(participants, &p)
+	}
+	if errRows := rows.Err(); errRows != nil {
+		return nil, errRows
 	}
 
 	return participants, nil
@@ -227,6 +233,9 @@ func (h *dbHandler) ParticipantListByChatIDs(ctx context.Context, chatIDs []uuid
 			return nil, err
 		}
 		participants = append(participants, &p)
+	}
+	if errRows := rows.Err(); errRows != nil {
+		return nil, errRows
 	}
 
 	return participants, nil

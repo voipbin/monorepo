@@ -119,8 +119,7 @@ func (h *engineSendgrid) getAttachment(ctx context.Context, e *email.Attachment)
 	var f *smbucketfile.BucketFile
 	var err error
 
-	fileType := ""
-	filename := ""
+	var fileType, filename string
 	switch e.ReferenceType {
 	case email.AttachmentReferenceTypeRecording:
 		f, err = h.reqHandler.StorageV1RecordingGet(ctx, e.ReferenceID, 60000)

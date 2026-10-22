@@ -22,7 +22,7 @@ func (h *handler) mediaGetFromRow(row *sql.Rows) (*media.Media, error) {
 	res := &media.Media{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. mediaGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. mediaGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -40,7 +40,7 @@ func (h *handler) MediaCreate(ctx context.Context, m *media.Media) error {
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(m)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. MediaCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. MediaCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -51,11 +51,11 @@ func (h *handler) MediaCreate(ctx context.Context, m *media.Media) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. MediaCreate. err: %v", err)
+		return fmt.Errorf("could not build query. MediaCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. MediaCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. MediaCreate. err: %w", err)
 	}
 
 	_ = h.mediaUpdateToCache(ctx, m.ID)
@@ -73,7 +73,7 @@ func (h *handler) mediaGetFromDB(ctx context.Context, id uuid.UUID) (*media.Medi
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. mediaGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. mediaGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
