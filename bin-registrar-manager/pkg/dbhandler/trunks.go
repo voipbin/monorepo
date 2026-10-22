@@ -23,7 +23,7 @@ func (h *handler) trunkGetFromRow(row *sql.Rows) (*trunk.Trunk, error) {
 	res := &trunk.Trunk{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. trunkGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. trunkGetFromRow. err: %w", err)
 	}
 
 	// initialize nil slices to empty slices
@@ -47,12 +47,12 @@ func (h *handler) TrunkCountByCustomerID(ctx context.Context, customerID uuid.UU
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("TrunkCountByCustomerID: could not build query. err: %v", err)
+		return 0, fmt.Errorf("TrunkCountByCustomerID: could not build query. err: %w", err)
 	}
 
 	var count int
 	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
-		return 0, fmt.Errorf("TrunkCountByCustomerID: could not query. err: %v", err)
+		return 0, fmt.Errorf("TrunkCountByCustomerID: could not query. err: %w", err)
 	}
 
 	return count, nil
@@ -70,7 +70,7 @@ func (h *handler) TrunkCreate(ctx context.Context, t *trunk.Trunk) error {
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(t)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. TrunkCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. TrunkCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -81,11 +81,11 @@ func (h *handler) TrunkCreate(ctx context.Context, t *trunk.Trunk) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. TrunkCreate. err: %v", err)
+		return fmt.Errorf("could not build query. TrunkCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. TrunkCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. TrunkCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -104,12 +104,12 @@ func (h *handler) trunkGetFromDB(ctx context.Context, id uuid.UUID) (*trunk.Trun
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. trunkGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. trunkGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. trunkGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. trunkGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -117,14 +117,14 @@ func (h *handler) trunkGetFromDB(ctx context.Context, id uuid.UUID) (*trunk.Trun
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. trunkGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. trunkGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.trunkGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. trunkGetFromDB. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. trunkGetFromDB. id: %s, err: %w", id, err)
 	}
 
 	return res, nil
@@ -251,7 +251,6 @@ func (h *handler) TrunkGetByDomainName(ctx context.Context, domainName string) (
 			return res, nil
 		}
 		// Cached trunk is deleted, treat as not found
-		res = nil
 	}
 
 	filters := map[trunk.Field]any{
@@ -293,17 +292,17 @@ func (h *handler) TrunkList(ctx context.Context, size uint64, token string, filt
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. TrunkGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. TrunkGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. TrunkGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. TrunkGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. TrunkGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. TrunkGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -313,12 +312,12 @@ func (h *handler) TrunkList(ctx context.Context, size uint64, token string, filt
 	for rows.Next() {
 		u, err := h.trunkGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. TrunkGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. TrunkGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. TrunkGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. TrunkGets. err: %w", err)
 	}
 
 	return res, nil

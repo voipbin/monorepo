@@ -50,7 +50,7 @@ func (h *handler) astContactGetFromRow(row *sql.Rows) (*astcontact.AstContact, e
 		&res.Endpoint,
 		&res.PruneOnBoot,
 	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. astContactGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. astContactGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -90,12 +90,12 @@ func (h *handler) AstContactDeleteByEndpoint(ctx context.Context, endpoint strin
 	q := "delete from ps_contacts where endpoint = ?"
 
 	if _, err := h.db.ExecContext(ctx, q, endpoint); err != nil {
-		return fmt.Errorf("could not execute query. AstContactDeleteByEndpoint. err: %v", err)
+		return fmt.Errorf("could not execute query. AstContactDeleteByEndpoint. err: %w", err)
 	}
 
 	// invalidate the contact cache
 	if err := h.cache.AstContactsDel(ctx, endpoint); err != nil {
-		return fmt.Errorf("could not delete the contact cache. AstContactDeleteByEndpoint. err: %v", err)
+		return fmt.Errorf("could not delete the contact cache. AstContactDeleteByEndpoint. err: %w", err)
 	}
 
 	return nil
@@ -112,7 +112,7 @@ func (h *handler) AstContactGetsByEndpoint(ctx context.Context, endpoint string)
 
 	rows, err := h.db.QueryContext(ctx, q, endpoint)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AstContactGetsByEndpoint. err: %v", err)
+		return nil, fmt.Errorf("could not query. AstContactGetsByEndpoint. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -122,7 +122,7 @@ func (h *handler) AstContactGetsByEndpoint(ctx context.Context, endpoint string)
 	for rows.Next() {
 		u, err := h.astContactGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. AstContactGetsByEndpoint. err: %v", err)
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. AstContactGetsByEndpoint. err: %w", err)
 		}
 		res = append(res, u)
 	}

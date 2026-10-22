@@ -49,7 +49,7 @@ func (h *handler) astAuthGetFromRow(row *sql.Rows) (*astauth.AstAuth, error) {
 
 		&res.RefreshToken,
 	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. astAuthGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. astAuthGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -98,7 +98,7 @@ func (h *handler) AstAuthCreate(ctx context.Context, b *astauth.AstAuth) error {
 		b.RefreshToken,
 	)
 	if err != nil {
-		return fmt.Errorf("could not execute. AstAuthCreate. err: %v", err)
+		return fmt.Errorf("could not execute. AstAuthCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -114,7 +114,7 @@ func (h *handler) astAuthGetFromDB(ctx context.Context, id string) (*astauth.Ast
 
 	row, err := h.db.QueryContext(ctx, q, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AstAuthGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. AstAuthGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -129,7 +129,7 @@ func (h *handler) astAuthGetFromDB(ctx context.Context, id string) (*astauth.Ast
 
 	res, err := h.astAuthGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. AstAuthGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. AstAuthGetFromDB. err: %w", err)
 	}
 
 	return res, nil
@@ -208,7 +208,7 @@ func (h *handler) AstAuthDelete(ctx context.Context, id string) error {
 
 	_, err := h.db.ExecContext(ctx, q, id)
 	if err != nil {
-		return fmt.Errorf("could not execute. AstAuthCreate. err: %v", err)
+		return fmt.Errorf("could not execute. AstAuthCreate. err: %w", err)
 	}
 
 	// delete from the cache
@@ -230,7 +230,7 @@ func (h *handler) AstAuthUpdate(ctx context.Context, auth *astauth.AstAuth) erro
 
 	_, err := h.db.ExecContext(ctx, q, auth.Password, auth.ID)
 	if err != nil {
-		return fmt.Errorf("could not execute. AstAuthUpdate. err: %v", err)
+		return fmt.Errorf("could not execute. AstAuthUpdate. err: %w", err)
 	}
 
 	// update to the cache

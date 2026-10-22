@@ -22,7 +22,7 @@ func (h *handler) sipauthGetFromRow(row *sql.Rows) (*sipauth.SIPAuth, error) {
 	res := &sipauth.SIPAuth{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. sipauthGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. sipauthGetFromRow. err: %w", err)
 	}
 
 	// initialize nil slices to empty slices
@@ -47,7 +47,7 @@ func (h *handler) SIPAuthCreate(ctx context.Context, t *sipauth.SIPAuth) error {
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(t)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. SIPAuthCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. SIPAuthCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -58,11 +58,11 @@ func (h *handler) SIPAuthCreate(ctx context.Context, t *sipauth.SIPAuth) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. SIPAuthCreate. err: %v", err)
+		return fmt.Errorf("could not build query. SIPAuthCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. SIPAuthCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. SIPAuthCreate. err: %w", err)
 	}
 
 	return nil
@@ -126,12 +126,12 @@ func (h *handler) SIPAuthGet(ctx context.Context, id uuid.UUID) (*sipauth.SIPAut
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. SIPAuthGet. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. SIPAuthGet. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. SIPAuthGet. err: %v", err)
+		return nil, fmt.Errorf("could not query. SIPAuthGet. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -139,14 +139,14 @@ func (h *handler) SIPAuthGet(ctx context.Context, id uuid.UUID) (*sipauth.SIPAut
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. SIPAuthGet. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. SIPAuthGet. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.sipauthGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. SIPAuthGet. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. SIPAuthGet. id: %s, err: %w", id, err)
 	}
 
 	return res, nil

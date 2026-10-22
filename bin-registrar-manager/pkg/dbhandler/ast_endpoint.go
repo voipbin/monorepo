@@ -34,7 +34,7 @@ func (h *handler) astEndpointGetFromRow(row *sql.Rows) (*astendpoint.AstEndpoint
 		&res.IdentifyBy,
 		&res.FromDomain,
 	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. bridgeGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. bridgeGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -68,7 +68,7 @@ func (h *handler) AstEndpointCreate(ctx context.Context, b *astendpoint.AstEndpo
 		b.FromDomain,
 	)
 	if err != nil {
-		return fmt.Errorf("could not execute. AstEndpointCreate. err: %v", err)
+		return fmt.Errorf("could not execute. AstEndpointCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -84,7 +84,7 @@ func (h *handler) astEndpointGetFromDB(ctx context.Context, id string) (*astendp
 
 	row, err := h.db.QueryContext(ctx, q, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AstEndpointGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. AstEndpointGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -99,7 +99,7 @@ func (h *handler) astEndpointGetFromDB(ctx context.Context, id string) (*astendp
 
 	res, err := h.astEndpointGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. AstEndpointGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. AstEndpointGetFromDB. err: %w", err)
 	}
 
 	return res, nil
@@ -172,7 +172,7 @@ func (h *handler) AstEndpointDelete(ctx context.Context, id string) error {
 
 	_, err := h.db.ExecContext(ctx, q, id)
 	if err != nil {
-		return fmt.Errorf("could not execute. AstEndpointDelete. err: %v", err)
+		return fmt.Errorf("could not execute. AstEndpointDelete. err: %w", err)
 	}
 
 	// delete from the cache

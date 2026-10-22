@@ -44,7 +44,7 @@ func (h *handler) customerDomainGetFromRow(row *sql.Rows) (*customerdomain.Custo
 	res := &customerdomain.CustomerDomain{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. customerDomainGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. customerDomainGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -80,7 +80,7 @@ func (h *handler) CustomerDomainCreate(ctx context.Context, cd *customerdomain.C
 
 	fields, err := commondatabasehandler.PrepareFields(cd)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. CustomerDomainCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. CustomerDomainCreate. err: %w", err)
 	}
 
 	sb := squirrel.
@@ -90,14 +90,14 @@ func (h *handler) CustomerDomainCreate(ctx context.Context, cd *customerdomain.C
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CustomerDomainCreate. err: %v", err)
+		return fmt.Errorf("could not build query. CustomerDomainCreate. err: %w", err)
 	}
 
 	if _, errExec := h.db.ExecContext(ctx, query, args...); errExec != nil {
 		if isDuplicateEntryErr(errExec) {
-			return fmt.Errorf("could not execute query. CustomerDomainCreate. err: %v: %w", errExec, ErrDuplicate)
+			return fmt.Errorf("could not execute query. CustomerDomainCreate. err: %w: %w", errExec, ErrDuplicate)
 		}
-		return fmt.Errorf("could not execute query. CustomerDomainCreate. err: %v", errExec)
+		return fmt.Errorf("could not execute query. CustomerDomainCreate. err: %w", errExec)
 	}
 
 	// update the cache
@@ -116,12 +116,12 @@ func (h *handler) customerDomainGetFromDB(ctx context.Context, customerID uuid.U
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. customerDomainGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. customerDomainGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. customerDomainGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. customerDomainGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -129,14 +129,14 @@ func (h *handler) customerDomainGetFromDB(ctx context.Context, customerID uuid.U
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. customerDomainGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. customerDomainGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.customerDomainGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. customerDomainGetFromDB. customer_id: %s, err: %v", customerID, err)
+		return nil, fmt.Errorf("could not get data from row. customerDomainGetFromDB. customer_id: %s, err: %w", customerID, err)
 	}
 
 	return res, nil
@@ -164,12 +164,12 @@ func (h *handler) CustomerDomainGetByRealm(ctx context.Context, realm string) (*
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. CustomerDomainGetByRealm. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. CustomerDomainGetByRealm. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CustomerDomainGetByRealm. err: %v", err)
+		return nil, fmt.Errorf("could not query. CustomerDomainGetByRealm. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -177,14 +177,14 @@ func (h *handler) CustomerDomainGetByRealm(ctx context.Context, realm string) (*
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. CustomerDomainGetByRealm. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. CustomerDomainGetByRealm. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err = h.customerDomainGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. CustomerDomainGetByRealm. realm: %s, err: %v", realm, err)
+		return nil, fmt.Errorf("could not get data from row. CustomerDomainGetByRealm. realm: %s, err: %w", realm, err)
 	}
 
 	// set to the cache
@@ -210,17 +210,17 @@ func (h *handler) CustomerDomainList(ctx context.Context, size uint64, token str
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. CustomerDomainList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. CustomerDomainList. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CustomerDomainList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CustomerDomainList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CustomerDomainList. err: %v", err)
+		return nil, fmt.Errorf("could not query. CustomerDomainList. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -230,12 +230,12 @@ func (h *handler) CustomerDomainList(ctx context.Context, size uint64, token str
 	for rows.Next() {
 		u, err := h.customerDomainGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. CustomerDomainList. err: %v", err)
+			return nil, fmt.Errorf("could not get data. CustomerDomainList. err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. CustomerDomainList. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. CustomerDomainList. err: %w", err)
 	}
 
 	return res, nil
@@ -276,7 +276,7 @@ func (h *handler) CustomerDomainUpdate(ctx context.Context, customerID uuid.UUID
 
 	if _, errExec := h.db.ExecContext(ctx, sqlStr, args...); errExec != nil {
 		if isDuplicateEntryErr(errExec) {
-			return fmt.Errorf("CustomerDomainUpdate: exec failed: %v: %w", errExec, ErrDuplicate)
+			return fmt.Errorf("CustomerDomainUpdate: exec failed: %w: %w", errExec, ErrDuplicate)
 		}
 		return fmt.Errorf("CustomerDomainUpdate: exec failed: %w", errExec)
 	}

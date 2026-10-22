@@ -57,7 +57,7 @@ func generateLabel() (string, error) {
 func generateLabelOnce() (string, error) {
 	buf := make([]byte, labelLength)
 	if _, err := rand.Read(buf); err != nil {
-		return "", fmt.Errorf("could not read random bytes. generateLabelOnce. err: %v", err)
+		return "", fmt.Errorf("could not read random bytes. generateLabelOnce. err: %w", err)
 	}
 
 	for i, b := range buf {
