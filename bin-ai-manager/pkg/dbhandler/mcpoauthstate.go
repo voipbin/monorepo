@@ -21,16 +21,16 @@ const (
 func (h *handler) McpOAuthStateCreate(ctx context.Context, s *mcpoauthstate.McpOAuthState) error {
 	fields, err := commondatabasehandler.PrepareFields(s)
 	if err != nil {
-		return fmt.Errorf("McpOAuthStateCreate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("McpOAuthStateCreate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(mcpoauthstateTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("McpOAuthStateCreate: could not build query. err: %v", err)
+		return fmt.Errorf("McpOAuthStateCreate: could not build query. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("McpOAuthStateCreate: could not execute query. err: %v", err)
+		return fmt.Errorf("McpOAuthStateCreate: could not execute query. err: %w", err)
 	}
 
 	return nil
@@ -48,22 +48,25 @@ func (h *handler) McpOAuthStateGet(ctx context.Context, state string) (*mcpoauth
 		Where(sq.Eq{"state": state}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("McpOAuthStateGet: could not build query. err: %v", err)
+		return nil, fmt.Errorf("McpOAuthStateGet: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("McpOAuthStateGet: could not query. err: %v", err)
+		return nil, fmt.Errorf("McpOAuthStateGet: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, fmt.Errorf("McpOAuthStateGet: could not iterate rows. err: %w", errRows)
+		}
 		return nil, ErrNotFound
 	}
 
 	res := &mcpoauthstate.McpOAuthState{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("McpOAuthStateGet: could not scan row. err: %v", err)
+		return nil, fmt.Errorf("McpOAuthStateGet: could not scan row. err: %w", err)
 	}
 
 	return res, nil
@@ -78,11 +81,11 @@ func (h *handler) McpOAuthStateDelete(ctx context.Context, state string) error {
 		Where(sq.Eq{"state": state}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("McpOAuthStateDelete: could not build query. err: %v", err)
+		return fmt.Errorf("McpOAuthStateDelete: could not build query. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("McpOAuthStateDelete: could not execute query. err: %v", err)
+		return fmt.Errorf("McpOAuthStateDelete: could not execute query. err: %w", err)
 	}
 
 	return nil
@@ -96,17 +99,17 @@ func (h *handler) McpOAuthStateDeleteExpired(ctx context.Context, now string) (i
 		Where(sq.Lt{"tm_expire": now}).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("McpOAuthStateDeleteExpired: could not build query. err: %v", err)
+		return 0, fmt.Errorf("McpOAuthStateDeleteExpired: could not build query. err: %w", err)
 	}
 
 	res, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return 0, fmt.Errorf("McpOAuthStateDeleteExpired: could not execute query. err: %v", err)
+		return 0, fmt.Errorf("McpOAuthStateDeleteExpired: could not execute query. err: %w", err)
 	}
 
 	n, err := res.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("McpOAuthStateDeleteExpired: could not get rows affected. err: %v", err)
+		return 0, fmt.Errorf("McpOAuthStateDeleteExpired: could not get rows affected. err: %w", err)
 	}
 
 	return n, nil

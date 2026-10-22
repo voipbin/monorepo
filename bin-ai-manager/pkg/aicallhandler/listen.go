@@ -782,7 +782,7 @@ func (h *aicallHandler) EventTMTranscriptCreated(ctx context.Context, evt *tmtra
 
 		// Detached: this handler must return promptly, and the turn's own
 		// lifetime is bounded by its pipecatcall terminate.
-		go func(id uuid.UUID) {
+		go func(id uuid.UUID) { //nolint:contextcheck,gosec // detached on purpose: the handler returns promptly and the turn bounds itself with a 2 minute timeout
 			turnCtx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
 

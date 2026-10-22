@@ -89,7 +89,7 @@ func RunAllWithMeta(ctx context.Context, builderSender, simSender builderhandler
 			}
 		}
 	}
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil { //nolint:gosec // developer eval report written for sharing, holds no secrets
 		return Output{}, err
 	}
 	meta.StartedAt = time.Now().UTC().Format(time.RFC3339)
@@ -189,7 +189,7 @@ func writeJSON(path string, v any) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, b, 0o644)
+	return os.WriteFile(path, b, 0o644) //nolint:gosec // developer eval report written for sharing, holds no secrets
 }
 
 func writeTranscript(dir, stem string, spec RunSpec, r RunResult) error {
@@ -233,7 +233,7 @@ func writeTranscript(dir, stem string, spec RunSpec, r RunResult) error {
 		b.WriteString("\n(no draft in this run)\n")
 	}
 	fmt.Fprintf(&b, "\nVerdict: add \"%s\": true or false to verdicts.json\n", r.RunID)
-	return os.WriteFile(filepath.Join(dir, stem+".md"), []byte(b.String()), 0o644)
+	return os.WriteFile(filepath.Join(dir, stem+".md"), []byte(b.String()), 0o644) //nolint:gosec // developer eval report written for sharing, holds no secrets
 }
 
 func writeSyntheticTranscript(dir string, i int, r RunResult) error {
@@ -257,7 +257,7 @@ func writeSyntheticTranscript(dir string, i int, r RunResult) error {
 		fmt.Fprintf(&b, "ENDED BY AN UNUSABLE ANSWER: %s\n", r.ParseFailed)
 	}
 	fmt.Fprintf(&b, "\nVerdict: add \"%s\": true or false to verdicts.json\n", r.RunID)
-	return os.WriteFile(filepath.Join(dir, fmt.Sprintf("s15-%d.md", i+1)), []byte(b.String()), 0o644)
+	return os.WriteFile(filepath.Join(dir, fmt.Sprintf("s15-%d.md", i+1)), []byte(b.String()), 0o644) //nolint:gosec // developer eval report written for sharing, holds no secrets
 }
 
 // WriteReport writes report.md. A report over fake engines says so in its first
@@ -338,7 +338,7 @@ func WriteReport(dir string, out Output, g GateReport, judge string) error {
 		fmt.Fprintf(&b, "**GATE: FAIL** (%d group(s) cannot reach their minimum, automatic ok: %t). Fix the prompt, re-run in a NEW directory, and report to the maintainer if three attempts fail.\n", g.Failed, g.AutoOK)
 	}
 	b.WriteString("\nScenario 15 (synthetic checkpoint cases, s15-1.md to s15-5.md) is judged by a person like the others and is part of the gate; its run ids are s15-1#1 to s15-5#1.\n")
-	return os.WriteFile(filepath.Join(dir, "report.md"), []byte(b.String()), 0o644)
+	return os.WriteFile(filepath.Join(dir, "report.md"), []byte(b.String()), 0o644) //nolint:gosec // developer eval report written for sharing, holds no secrets
 }
 
 // LoadOutput reads a results.json written by RunAll so a report can be

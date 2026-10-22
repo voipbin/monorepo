@@ -199,9 +199,9 @@ func (h *geminiAuditHandler) ParseEvaluationResponse(data []byte) (*EvaluationRe
 	const maxReason = 2000
 	const maxSummary = 5000
 
-	checkLen := func(name, val string, max int) error {
-		if len(val) > max {
-			return fmt.Errorf("%s exceeds max length %d", name, max)
+	checkLen := func(name, val string, maxLen int) error {
+		if len(val) > maxLen {
+			return fmt.Errorf("%s exceeds max length %d", name, maxLen)
 		}
 		return nil
 	}

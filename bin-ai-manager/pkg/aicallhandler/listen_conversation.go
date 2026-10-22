@@ -352,16 +352,16 @@ func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessag
 			promListenTurnTotal.WithLabelValues(string(listenKindConversation), "failed").Inc()
 			// The line is buffered but no turn was started, so arm the
 			// deferred flush rather than stranding it until the next message.
-			h.scheduleListenFlush(aicallID)
+			h.scheduleListenFlush(aicallID) //nolint:contextcheck // flush timer and listen turn run detached on purpose, each bounds itself with its own timeout
 			continue
 		}
 		if !acquired {
 			promListenTurnTotal.WithLabelValues(string(listenKindConversation), "skipped_locked").Inc()
-			h.scheduleListenFlush(aicallID)
+			h.scheduleListenFlush(aicallID) //nolint:contextcheck // flush timer and listen turn run detached on purpose, each bounds itself with its own timeout
 			continue
 		}
 
-		h.spawnListenTurn(aicallID)
+		h.spawnListenTurn(aicallID) //nolint:contextcheck // listen turn runs detached on purpose and bounds itself with a 2 minute timeout
 	}
 
 	if buffered {
@@ -405,7 +405,7 @@ func (h *aicallHandler) scheduleListenFlush(aicallID uuid.UUID) {
 
 	delay := time.Duration(config.Get().AIcallListenEvaluateIntervalSeconds) * time.Second
 	if jitter := config.Get().AIcallListenConversationFlushJitterMs; jitter > 0 {
-		delay += time.Duration(rand.IntN(jitter+1)) * time.Millisecond
+		delay += time.Duration(rand.IntN(jitter+1)) * time.Millisecond //nolint:gosec // timer jitter only, not a security use
 	}
 
 	after := h.afterFunc

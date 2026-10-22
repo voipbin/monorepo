@@ -30,7 +30,7 @@ func (h *subscribeHandler) processEventCMConferenceUpdated(ctx context.Context, 
 		return err
 	}
 
-	go h.summaryHandler.EventCMConferenceUpdated(context.Background(), &evt)
+	go h.summaryHandler.EventCMConferenceUpdated(context.Background(), &evt) //nolint:contextcheck,gosec // handler runs detached on purpose: the subscribe loop must not block on it and the work outlives the event
 
 	return nil
 }

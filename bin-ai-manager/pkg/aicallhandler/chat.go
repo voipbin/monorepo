@@ -49,9 +49,8 @@ func (h *aicallHandler) getInitPrompt(ctx context.Context, a *ai.AI, activeflowI
 		if err != nil {
 			log.Errorf("Could not substitute the init prompt. err: %v", err)
 			return res
-		} else {
-			res = tmp
 		}
+		res = tmp
 	}
 
 	return res

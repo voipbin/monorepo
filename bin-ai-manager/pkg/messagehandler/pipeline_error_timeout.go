@@ -76,7 +76,7 @@ func (h *messageHandler) eventPMPipecatcallTerminatedContactCase(ctx context.Con
 	activeAIID := h.resolveActiveAIIDFromAIcall(ctx, ac)
 	if errCreate := h.createPipelineErrorNotice(ctx, ac.CustomerID, ac.ID, ac.ActiveflowID, evt.ID, pmmessage.ErrorCategoryTimeout, true, activeAIID); errCreate != nil {
 		promBackstopReplyTotal.WithLabelValues("timeout_notice_failed").Inc()
-		return nil
+		return nil //nolint:nilerr // always returns nil so the event is not redelivered, see the function comment; the failure is logged by createPipelineErrorNotice
 	}
 	promBackstopReplyTotal.WithLabelValues("timeout_notice_created").Inc()
 	log.Infof("Recorded a timeout notice for a turn that ended without an answer.")

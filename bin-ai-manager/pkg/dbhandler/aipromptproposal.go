@@ -31,16 +31,16 @@ func (h *handler) AIPromptProposalCreate(ctx context.Context, p *aipromptproposa
 
 	fields, err := commondatabasehandler.PrepareFields(p)
 	if err != nil {
-		return fmt.Errorf("AIPromptProposalCreate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("AIPromptProposalCreate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(aipromptproposalTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("AIPromptProposalCreate: could not build query. err: %v", err)
+		return fmt.Errorf("AIPromptProposalCreate: could not build query. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("AIPromptProposalCreate: could not execute. err: %v", err)
+		return fmt.Errorf("AIPromptProposalCreate: could not execute. err: %w", err)
 	}
 	return nil
 }
@@ -54,12 +54,12 @@ func (h *handler) aipromptproposalGetFromDB(ctx context.Context, id uuid.UUID) (
 		Where(sq.And{sq.Eq{"id": id.Bytes()}, sq.Eq{"tm_delete": nil}}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("aipromptproposalGetFromDB: could not build query. err: %v", err)
+		return nil, fmt.Errorf("aipromptproposalGetFromDB: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("aipromptproposalGetFromDB: could not query. err: %v", err)
+		return nil, fmt.Errorf("aipromptproposalGetFromDB: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -72,7 +72,7 @@ func (h *handler) aipromptproposalGetFromDB(ctx context.Context, id uuid.UUID) (
 
 	res := &aipromptproposal.AIPromptProposal{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("aipromptproposalGetFromDB: could not scan. err: %v", err)
+		return nil, fmt.Errorf("aipromptproposalGetFromDB: could not scan. err: %w", err)
 	}
 	return res, nil
 }
@@ -98,17 +98,17 @@ func (h *handler) AIPromptProposalList(ctx context.Context, size uint64, token s
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("AIPromptProposalList: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("AIPromptProposalList: could not apply filters. err: %w", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("AIPromptProposalList: could not build query. err: %v", err)
+		return nil, fmt.Errorf("AIPromptProposalList: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("AIPromptProposalList: could not query. err: %v", err)
+		return nil, fmt.Errorf("AIPromptProposalList: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -116,7 +116,7 @@ func (h *handler) AIPromptProposalList(ctx context.Context, size uint64, token s
 	for rows.Next() {
 		p := &aipromptproposal.AIPromptProposal{}
 		if err := commondatabasehandler.ScanRow(rows, p); err != nil {
-			return nil, fmt.Errorf("AIPromptProposalList: could not scan. err: %v", err)
+			return nil, fmt.Errorf("AIPromptProposalList: could not scan. err: %w", err)
 		}
 		res = append(res, p)
 	}
@@ -146,7 +146,7 @@ func (h *handler) AIPromptProposalUpdateFinal(ctx context.Context, id uuid.UUID,
 		id.Bytes(),
 	)
 	if err != nil {
-		return 0, fmt.Errorf("AIPromptProposalUpdateFinal: could not execute. err: %v", err)
+		return 0, fmt.Errorf("AIPromptProposalUpdateFinal: could not execute. err: %w", err)
 	}
 	return result.RowsAffected()
 }
@@ -162,7 +162,7 @@ func (h *handler) AIPromptProposalUpdateExpired(ctx context.Context, id uuid.UUI
 
 	result, err := h.db.ExecContext(ctx, query, errStr, ts, id.Bytes())
 	if err != nil {
-		return 0, fmt.Errorf("AIPromptProposalUpdateExpired: could not execute. err: %v", err)
+		return 0, fmt.Errorf("AIPromptProposalUpdateExpired: could not execute. err: %w", err)
 	}
 	return result.RowsAffected()
 }
@@ -178,7 +178,7 @@ func (h *handler) AIPromptProposalUpdateRejected(ctx context.Context, id uuid.UU
 
 	result, err := h.db.ExecContext(ctx, query, ts, id.Bytes())
 	if err != nil {
-		return 0, fmt.Errorf("AIPromptProposalUpdateRejected: could not execute. err: %v", err)
+		return 0, fmt.Errorf("AIPromptProposalUpdateRejected: could not execute. err: %w", err)
 	}
 	return result.RowsAffected()
 }
@@ -192,16 +192,16 @@ func (h *handler) AIPromptProposalDelete(ctx context.Context, id uuid.UUID) erro
 		Where(sq.And{sq.Eq{"id": id.Bytes()}, sq.Eq{"tm_delete": nil}}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("AIPromptProposalDelete: could not build query. err: %v", err)
+		return fmt.Errorf("AIPromptProposalDelete: could not build query. err: %w", err)
 	}
 
 	result, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("AIPromptProposalDelete: could not execute. err: %v", err)
+		return fmt.Errorf("AIPromptProposalDelete: could not execute. err: %w", err)
 	}
 	n, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("AIPromptProposalDelete: rows affected. err: %v", err)
+		return fmt.Errorf("AIPromptProposalDelete: rows affected. err: %w", err)
 	}
 	if n == 0 {
 		return ErrNotFound
@@ -219,7 +219,7 @@ func (h *handler) AIPromptProposalCountProgressing(ctx context.Context, customer
 	row := h.db.QueryRowContext(ctx, query, customerID.Bytes())
 	var count int64
 	if err := row.Scan(&count); err != nil {
-		return 0, fmt.Errorf("AIPromptProposalCountProgressing: scan. err: %v", err)
+		return 0, fmt.Errorf("AIPromptProposalCountProgressing: scan. err: %w", err)
 	}
 	return count, nil
 }
@@ -235,7 +235,7 @@ func (h *handler) AIAcceptProposal(ctx context.Context, proposalID uuid.UUID, ne
 	if err != nil {
 		return fmt.Errorf("AIAcceptProposal: BeginTx: %w", err)
 	}
-	defer func() {
+	defer func() { //nolint:contextcheck // cache refresh after commit uses a fresh context so a cancelled request cannot skip it
 		if err != nil {
 			_ = tx.Rollback()
 		}

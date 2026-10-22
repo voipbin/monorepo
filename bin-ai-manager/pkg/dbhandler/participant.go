@@ -27,7 +27,7 @@ func (h *handler) ParticipantCreate(ctx context.Context, aicallID uuid.UUID, aiI
 		}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("ParticipantCreate: could not build query. err: %v", err)
+		return fmt.Errorf("ParticipantCreate: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
@@ -40,7 +40,7 @@ func (h *handler) ParticipantCreate(ctx context.Context, aicallID uuid.UUID, aiI
 	if strings.Contains(errStr, "Duplicate entry") || strings.Contains(errStr, "UNIQUE constraint failed") {
 		return nil
 	}
-	return fmt.Errorf("ParticipantCreate: could not execute. err: %v", err)
+	return fmt.Errorf("ParticipantCreate: could not execute. err: %w", err)
 }
 
 // ParticipantListByAIcallID returns all participant rows for the given aicall,
@@ -59,12 +59,12 @@ func (h *handler) ParticipantListByAIcallID(ctx context.Context, aicallID uuid.U
 		Limit(size).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("ParticipantListByAIcallID: could not build query. err: %v", err)
+		return nil, fmt.Errorf("ParticipantListByAIcallID: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("ParticipantListByAIcallID: could not query. err: %v", err)
+		return nil, fmt.Errorf("ParticipantListByAIcallID: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -72,9 +72,12 @@ func (h *handler) ParticipantListByAIcallID(ctx context.Context, aicallID uuid.U
 	for rows.Next() {
 		u := &participant.Participant{}
 		if err := commondatabasehandler.ScanRow(rows, u); err != nil {
-			return nil, fmt.Errorf("ParticipantListByAIcallID: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("ParticipantListByAIcallID: could not scan row. err: %w", err)
 		}
 		res = append(res, u)
+	}
+	if errRows := rows.Err(); errRows != nil {
+		return nil, fmt.Errorf("ParticipantListByAIcallID: could not iterate rows. err: %w", errRows)
 	}
 
 	return res, nil
@@ -96,12 +99,12 @@ func (h *handler) ParticipantListByAIID(ctx context.Context, aiID uuid.UUID, siz
 		Limit(size).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("ParticipantListByAIID: could not build query. err: %v", err)
+		return nil, fmt.Errorf("ParticipantListByAIID: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("ParticipantListByAIID: could not query. err: %v", err)
+		return nil, fmt.Errorf("ParticipantListByAIID: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -109,9 +112,12 @@ func (h *handler) ParticipantListByAIID(ctx context.Context, aiID uuid.UUID, siz
 	for rows.Next() {
 		u := &participant.Participant{}
 		if err := commondatabasehandler.ScanRow(rows, u); err != nil {
-			return nil, fmt.Errorf("ParticipantListByAIID: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("ParticipantListByAIID: could not scan row. err: %w", err)
 		}
 		res = append(res, u)
+	}
+	if errRows := rows.Err(); errRows != nil {
+		return nil, fmt.Errorf("ParticipantListByAIID: could not iterate rows. err: %w", errRows)
 	}
 
 	return res, nil

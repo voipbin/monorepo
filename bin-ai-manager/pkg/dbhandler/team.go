@@ -24,17 +24,17 @@ func (h *handler) TeamCreate(ctx context.Context, t *team.Team) error {
 
 	fields, err := commondatabasehandler.PrepareFields(t)
 	if err != nil {
-		return fmt.Errorf("TeamCreate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("TeamCreate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(teamTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("TeamCreate: could not build query. err: %v", err)
+		return fmt.Errorf("TeamCreate: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("TeamCreate: could not execute query. err: %v", err)
+		return fmt.Errorf("TeamCreate: could not execute query. err: %w", err)
 	}
 
 	// update the cache
@@ -62,12 +62,12 @@ func (h *handler) teamGetFromDB(ctx context.Context, id uuid.UUID) (*team.Team, 
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("teamGetFromDB: could not build query. err: %v", err)
+		return nil, fmt.Errorf("teamGetFromDB: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("teamGetFromDB: could not query. err: %v", err)
+		return nil, fmt.Errorf("teamGetFromDB: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -80,7 +80,7 @@ func (h *handler) teamGetFromDB(ctx context.Context, id uuid.UUID) (*team.Team, 
 
 	res := &team.Team{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("teamGetFromDB: could not scan row. err: %v", err)
+		return nil, fmt.Errorf("teamGetFromDB: could not scan row. err: %w", err)
 	}
 
 	return res, nil
@@ -139,12 +139,12 @@ func (h *handler) TeamDelete(ctx context.Context, id uuid.UUID) error {
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("TeamDelete: could not build query. err: %v", err)
+		return fmt.Errorf("TeamDelete: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("TeamDelete: could not execute. err: %v", err)
+		return fmt.Errorf("TeamDelete: could not execute. err: %w", err)
 	}
 
 	// update the cache
@@ -169,17 +169,17 @@ func (h *handler) TeamList(ctx context.Context, size uint64, token string, filte
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("TeamList: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("TeamList: could not apply filters. err: %w", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("TeamList: could not build query. err: %v", err)
+		return nil, fmt.Errorf("TeamList: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("TeamList: could not query. err: %v", err)
+		return nil, fmt.Errorf("TeamList: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -187,7 +187,7 @@ func (h *handler) TeamList(ctx context.Context, size uint64, token string, filte
 	for rows.Next() {
 		t := &team.Team{}
 		if err := commondatabasehandler.ScanRow(rows, t); err != nil {
-			return nil, fmt.Errorf("TeamList: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("TeamList: could not scan row. err: %w", err)
 		}
 		res = append(res, t)
 	}
@@ -209,7 +209,7 @@ func (h *handler) TeamUpdate(ctx context.Context, id uuid.UUID, fields map[team.
 
 	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {
-		return fmt.Errorf("TeamUpdate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("TeamUpdate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Update(teamTable).
@@ -217,12 +217,12 @@ func (h *handler) TeamUpdate(ctx context.Context, id uuid.UUID, fields map[team.
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("TeamUpdate: could not build query. err: %v", err)
+		return fmt.Errorf("TeamUpdate: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("TeamUpdate: could not execute. err: %v", err)
+		return fmt.Errorf("TeamUpdate: could not execute. err: %w", err)
 	}
 
 	// update the cache

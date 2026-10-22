@@ -34,17 +34,17 @@ func (h *handler) AICreate(ctx context.Context, c *ai.AI) error {
 
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("AICreate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("AICreate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(aiTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("AICreate: could not build query. err: %v", err)
+		return fmt.Errorf("AICreate: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("AICreate: could not execute query. err: %v", err)
+		return fmt.Errorf("AICreate: could not execute query. err: %w", err)
 	}
 
 	// update the cache
@@ -72,12 +72,12 @@ func (h *handler) aiGetFromDB(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("aiGetFromDB: could not build query. err: %v", err)
+		return nil, fmt.Errorf("aiGetFromDB: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("aiGetFromDB: could not query. err: %v", err)
+		return nil, fmt.Errorf("aiGetFromDB: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -90,7 +90,7 @@ func (h *handler) aiGetFromDB(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 
 	res := &ai.AI{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("aiGetFromDB: could not scan row. err: %v", err)
+		return nil, fmt.Errorf("aiGetFromDB: could not scan row. err: %w", err)
 	}
 
 	return res, nil
@@ -158,12 +158,12 @@ func (h *handler) AIDelete(ctx context.Context, id uuid.UUID) error {
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("AIDelete: could not build query. err: %v", err)
+		return fmt.Errorf("AIDelete: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("AIDelete: could not execute. err: %v", err)
+		return fmt.Errorf("AIDelete: could not execute. err: %w", err)
 	}
 
 	// update the cache
@@ -188,17 +188,17 @@ func (h *handler) AIList(ctx context.Context, size uint64, token string, filters
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("AIList: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("AIList: could not apply filters. err: %w", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("AIList: could not build query. err: %v", err)
+		return nil, fmt.Errorf("AIList: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("AIList: could not query. err: %v", err)
+		return nil, fmt.Errorf("AIList: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -206,7 +206,7 @@ func (h *handler) AIList(ctx context.Context, size uint64, token string, filters
 	for rows.Next() {
 		u := &ai.AI{}
 		if err := commondatabasehandler.ScanRow(rows, u); err != nil {
-			return nil, fmt.Errorf("AIList: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("AIList: could not scan row. err: %w", err)
 		}
 		res = append(res, u)
 	}
@@ -258,7 +258,7 @@ func (h *handler) AIActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, 
 	if err != nil {
 		return nil, nil, fmt.Errorf("AIActivateInsight: BeginTx: %w", err)
 	}
-	defer func() {
+	defer func() { //nolint:contextcheck // cache refresh after commit uses a fresh context so a cancelled request cannot skip it
 		if !committed {
 			_ = tx.Rollback()
 			return
@@ -388,7 +388,7 @@ func (h *handler) AIUpdate(ctx context.Context, id uuid.UUID, fields map[ai.Fiel
 
 	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {
-		return fmt.Errorf("AIUpdate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("AIUpdate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Update(aiTable).
@@ -396,12 +396,12 @@ func (h *handler) AIUpdate(ctx context.Context, id uuid.UUID, fields map[ai.Fiel
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("AIUpdate: could not build query. err: %v", err)
+		return fmt.Errorf("AIUpdate: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("AIUpdate: could not execute. err: %v", err)
+		return fmt.Errorf("AIUpdate: could not execute. err: %w", err)
 	}
 
 	// update the cache

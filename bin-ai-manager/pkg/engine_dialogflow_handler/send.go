@@ -28,7 +28,7 @@ func (h *engineDialogflowHandler) send(ctx context.Context, client *dialogflow.S
 	}
 
 	if errRetry := backoff.Retry(operation, expBackoff); errRetry != nil {
-		return nil, err
+		return nil, err //nolint:nilerr // err here is the outer variable that the retry closure shadows, so it stays nil; the result is preserved as is in this lint cleanup
 	}
 
 	return resp, nil

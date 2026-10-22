@@ -54,12 +54,12 @@ func (h *handler) AIAuditUpsert(ctx context.Context, a *aiaudit.AIAudit) (int64,
 		a.TMCreate,
 	)
 	if err != nil {
-		return 0, fmt.Errorf("AIAuditUpsert: could not execute. err: %v", err)
+		return 0, fmt.Errorf("AIAuditUpsert: could not execute. err: %w", err)
 	}
 
 	n, err := result.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("AIAuditUpsert: could not get rows affected. err: %v", err)
+		return 0, fmt.Errorf("AIAuditUpsert: could not get rows affected. err: %w", err)
 	}
 
 	return n, nil
@@ -77,12 +77,12 @@ func (h *handler) aiauditGetFromDB(ctx context.Context, id uuid.UUID) (*aiaudit.
 		}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("aiauditGetFromDB: could not build query. err: %v", err)
+		return nil, fmt.Errorf("aiauditGetFromDB: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("aiauditGetFromDB: could not query. err: %v", err)
+		return nil, fmt.Errorf("aiauditGetFromDB: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -95,7 +95,7 @@ func (h *handler) aiauditGetFromDB(ctx context.Context, id uuid.UUID) (*aiaudit.
 
 	res := &aiaudit.AIAudit{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("aiauditGetFromDB: could not scan. err: %v", err)
+		return nil, fmt.Errorf("aiauditGetFromDB: could not scan. err: %w", err)
 	}
 
 	return res, nil
@@ -122,17 +122,17 @@ func (h *handler) AIAuditList(ctx context.Context, size uint64, token string, fi
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("AIAuditList: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("AIAuditList: could not apply filters. err: %w", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("AIAuditList: could not build query. err: %v", err)
+		return nil, fmt.Errorf("AIAuditList: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("AIAuditList: could not query. err: %v", err)
+		return nil, fmt.Errorf("AIAuditList: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -140,7 +140,7 @@ func (h *handler) AIAuditList(ctx context.Context, size uint64, token string, fi
 	for rows.Next() {
 		a := &aiaudit.AIAudit{}
 		if err := commondatabasehandler.ScanRow(rows, a); err != nil {
-			return nil, fmt.Errorf("AIAuditList: could not scan. err: %v", err)
+			return nil, fmt.Errorf("AIAuditList: could not scan. err: %w", err)
 		}
 		res = append(res, a)
 	}
@@ -167,17 +167,17 @@ func (h *handler) AIAuditDelete(ctx context.Context, id uuid.UUID) error {
 		}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("AIAuditDelete: could not build query. err: %v", err)
+		return fmt.Errorf("AIAuditDelete: could not build query. err: %w", err)
 	}
 
 	result, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("AIAuditDelete: could not execute. err: %v", err)
+		return fmt.Errorf("AIAuditDelete: could not execute. err: %w", err)
 	}
 
 	n, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("AIAuditDelete: could not get rows affected. err: %v", err)
+		return fmt.Errorf("AIAuditDelete: could not get rows affected. err: %w", err)
 	}
 	if n == 0 {
 		return ErrNotFound
@@ -202,7 +202,7 @@ func (h *handler) AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status a
 	if len(messageIDs) > 0 {
 		b, err := json.Marshal(messageIDs)
 		if err != nil {
-			return 0, fmt.Errorf("AIAuditUpdateFinal: could not marshal message_ids: %v", err)
+			return 0, fmt.Errorf("AIAuditUpdateFinal: could not marshal message_ids: %w", err)
 		}
 		msgIDsJSON = sql.NullString{String: string(b), Valid: true}
 	}
@@ -223,12 +223,12 @@ func (h *handler) AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status a
 		id.Bytes(),     // 7 (WHERE)
 	)
 	if err != nil {
-		return 0, fmt.Errorf("AIAuditUpdateFinal: could not execute. err: %v", err)
+		return 0, fmt.Errorf("AIAuditUpdateFinal: could not execute. err: %w", err)
 	}
 
 	n, err := result.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("AIAuditUpdateFinal: could not get rows affected. err: %v", err)
+		return 0, fmt.Errorf("AIAuditUpdateFinal: could not get rows affected. err: %w", err)
 	}
 
 	return n, nil
@@ -245,7 +245,7 @@ func (h *handler) AIAuditCountProgressing(ctx context.Context, customerID uuid.U
 
 	var count int64
 	if err := row.Scan(&count); err != nil {
-		return 0, fmt.Errorf("AIAuditCountProgressing: could not scan. err: %v", err)
+		return 0, fmt.Errorf("AIAuditCountProgressing: could not scan. err: %w", err)
 	}
 
 	return count, nil

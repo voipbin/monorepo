@@ -22,17 +22,17 @@ func (h *handler) AIPromptHistoryCreate(ctx context.Context, p *aiprompthistory.
 
 	fields, err := commondatabasehandler.PrepareFields(p)
 	if err != nil {
-		return fmt.Errorf("AIPromptHistoryCreate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("AIPromptHistoryCreate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(promptHistoryTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("AIPromptHistoryCreate: could not build query. err: %v", err)
+		return fmt.Errorf("AIPromptHistoryCreate: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("AIPromptHistoryCreate: could not execute query. err: %v", err)
+		return fmt.Errorf("AIPromptHistoryCreate: could not execute query. err: %w", err)
 	}
 
 	return nil
@@ -47,12 +47,12 @@ func (h *handler) aiPromptHistoryGetFromDB(ctx context.Context, id uuid.UUID) (*
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("aiPromptHistoryGetFromDB: could not build query. err: %v", err)
+		return nil, fmt.Errorf("aiPromptHistoryGetFromDB: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("aiPromptHistoryGetFromDB: could not query. err: %v", err)
+		return nil, fmt.Errorf("aiPromptHistoryGetFromDB: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -65,7 +65,7 @@ func (h *handler) aiPromptHistoryGetFromDB(ctx context.Context, id uuid.UUID) (*
 
 	res := &aiprompthistory.AIPromptHistory{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("aiPromptHistoryGetFromDB: could not scan row. err: %v", err)
+		return nil, fmt.Errorf("aiPromptHistoryGetFromDB: could not scan row. err: %w", err)
 	}
 
 	return res, nil
@@ -95,12 +95,12 @@ func (h *handler) AIPromptHistoryGetsByAIID(ctx context.Context, aiID uuid.UUID,
 		Limit(size).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("AIPromptHistoryGetsByAIID: could not build query. err: %v", err)
+		return nil, fmt.Errorf("AIPromptHistoryGetsByAIID: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("AIPromptHistoryGetsByAIID: could not query. err: %v", err)
+		return nil, fmt.Errorf("AIPromptHistoryGetsByAIID: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -108,7 +108,7 @@ func (h *handler) AIPromptHistoryGetsByAIID(ctx context.Context, aiID uuid.UUID,
 	for rows.Next() {
 		u := &aiprompthistory.AIPromptHistory{}
 		if err := commondatabasehandler.ScanRow(rows, u); err != nil {
-			return nil, fmt.Errorf("AIPromptHistoryGetsByAIID: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("AIPromptHistoryGetsByAIID: could not scan row. err: %w", err)
 		}
 		res = append(res, u)
 	}

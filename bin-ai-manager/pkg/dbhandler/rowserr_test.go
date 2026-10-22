@@ -90,6 +90,9 @@ func Test_RowsErr_NotMisreported(t *testing.T) {
 		{"get message", func() error { _, err := h.messageGetFromDB(ctx, id); return err }},
 		{"get summary", func() error { _, err := h.summaryGetFromDB(ctx, id); return err }},
 		{"get team", func() error { _, err := h.teamGetFromDB(ctx, id); return err }},
+		{"get mcpserver", func() error { _, err := h.mcpserverGetFromDB(ctx, id); return err }},
+		{"get mcpoauthstate", func() error { _, err := h.McpOAuthStateGet(ctx, "state"); return err }},
+		{"assistant reply exists", func() error { _, err := h.MessageAssistantReplyExists(ctx, id); return err }},
 		{"list ai", func() error { _, err := h.AIList(ctx, 10, "", nil); return err }},
 		{"list aiaudit", func() error { _, err := h.AIAuditList(ctx, 10, "", nil); return err }},
 		{"list aicall", func() error { _, err := h.AIcallList(ctx, 10, "", nil); return err }},
@@ -98,6 +101,9 @@ func Test_RowsErr_NotMisreported(t *testing.T) {
 		{"list message", func() error { _, err := h.MessageList(ctx, 10, "", nil); return err }},
 		{"list summary", func() error { _, err := h.SummaryList(ctx, 10, "", nil); return err }},
 		{"list team", func() error { _, err := h.TeamList(ctx, 10, "", nil); return err }},
+		{"list mcpserver", func() error { _, err := h.McpServerList(ctx, 10, "", nil); return err }},
+		{"list participant by aicall", func() error { _, err := h.ParticipantListByAIcallID(ctx, id, 10, ""); return err }},
+		{"list participant by ai", func() error { _, err := h.ParticipantListByAIID(ctx, id, 10, ""); return err }},
 	}
 
 	for _, tt := range tests {
