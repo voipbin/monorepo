@@ -23,7 +23,7 @@ func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
 	res := &number.Number{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. numberGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. numberGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -47,7 +47,7 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(n)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. NumberCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. NumberCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -58,11 +58,11 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. NumberCreate. err: %v", err)
+		return fmt.Errorf("could not build query. NumberCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. NumberCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. NumberCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -126,12 +126,12 @@ func (h *handler) numberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Nu
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. numberGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. numberGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. numberGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. numberGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -139,7 +139,7 @@ func (h *handler) numberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Nu
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. numberGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. numberGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -187,17 +187,17 @@ func (h *handler) NumberList(ctx context.Context, size uint64, token string, fil
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. NumberList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. NumberList. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. NumberList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. NumberList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. NumberList. err: %v", err)
+		return nil, fmt.Errorf("could not query. NumberList. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -207,12 +207,12 @@ func (h *handler) NumberList(ctx context.Context, size uint64, token string, fil
 	for rows.Next() {
 		u, err := h.numberGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. NumberList, err: %v", err)
+			return nil, fmt.Errorf("could not get data. NumberList, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. NumberList. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. NumberList. err: %w", err)
 	}
 
 	return res, nil
@@ -312,12 +312,12 @@ func (h *handler) NumberGetExistingNumbers(ctx context.Context, numbers []string
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. NumberGetExistingNumbers. err: %v", err)
+		return nil, fmt.Errorf("could not build query. NumberGetExistingNumbers. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. NumberGetExistingNumbers. err: %v", err)
+		return nil, fmt.Errorf("could not query. NumberGetExistingNumbers. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -329,12 +329,12 @@ func (h *handler) NumberGetExistingNumbers(ctx context.Context, numbers []string
 	for rows.Next() {
 		var num string
 		if err := rows.Scan(&num); err != nil {
-			return nil, fmt.Errorf("could not scan row. NumberGetExistingNumbers. err: %v", err)
+			return nil, fmt.Errorf("could not scan row. NumberGetExistingNumbers. err: %w", err)
 		}
 		res = append(res, num)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. NumberGetExistingNumbers. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. NumberGetExistingNumbers. err: %w", err)
 	}
 
 	return res, nil
@@ -351,12 +351,12 @@ func (h *handler) NumberCountVirtualByCustomerID(ctx context.Context, customerID
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("could not build query. NumberCountVirtualByCustomerID. err: %v", err)
+		return 0, fmt.Errorf("could not build query. NumberCountVirtualByCustomerID. err: %w", err)
 	}
 
 	var count int
 	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
-		return 0, fmt.Errorf("could not query. NumberCountVirtualByCustomerID. err: %v", err)
+		return 0, fmt.Errorf("could not query. NumberCountVirtualByCustomerID. err: %w", err)
 	}
 
 	return count, nil
@@ -375,17 +375,17 @@ func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size 
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. NumberGetsByTMRenew. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. NumberGetsByTMRenew. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. NumberGetsByTMRenew. err: %v", err)
+		return nil, fmt.Errorf("could not build query. NumberGetsByTMRenew. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. NumberGetsByTMRenew. err: %v", err)
+		return nil, fmt.Errorf("could not query. NumberGetsByTMRenew. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -395,12 +395,12 @@ func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size 
 	for rows.Next() {
 		u, err := h.numberGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. NumberGetsByTMRenew, err: %v", err)
+			return nil, fmt.Errorf("could not get data. NumberGetsByTMRenew, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. NumberGetsByTMRenew. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. NumberGetsByTMRenew. err: %w", err)
 	}
 
 	return res, nil

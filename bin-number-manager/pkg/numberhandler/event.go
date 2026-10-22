@@ -64,7 +64,7 @@ func (h *numberHandler) EventFlowDeleted(ctx context.Context, f *fmflow.Flow) er
 			number.FieldDeleted:    false,
 		}
 		numbs, err := h.db.NumberList(ctx, 1000, ts, filters)
-		if err != nil || len(numbs) <= 0 {
+		if err != nil || len(numbs) == 0 {
 			break
 		}
 
@@ -92,7 +92,7 @@ func (h *numberHandler) EventFlowDeleted(ctx context.Context, f *fmflow.Flow) er
 			number.FieldDeleted:       false,
 		}
 		numbs, err := h.db.NumberList(ctx, 1000, ts, filters)
-		if err != nil || len(numbs) <= 0 {
+		if err != nil || len(numbs) == 0 {
 			break
 		}
 
@@ -112,5 +112,5 @@ func (h *numberHandler) EventFlowDeleted(ctx context.Context, f *fmflow.Flow) er
 		}
 	}
 
-	return nil
+	return nil //nolint:nilerr // existing behavior kept: a list failure only ends the loop and the handler returns nil
 }
