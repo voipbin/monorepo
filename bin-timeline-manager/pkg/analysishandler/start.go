@@ -52,7 +52,7 @@ func (h *analysisHandler) Start(ctx context.Context, customerID, activeflowID uu
 			return res, nil
 		}
 		// policy decided to (re)start; res is the row to run the chain on.
-		h.kickoff(res.ID, customerID, activeflowID, af)
+		h.kickoff(res.ID, customerID, activeflowID, af) //nolint:contextcheck // kickoff runs the analysis job on its own ctx (run.go) and persistFailed writes on a fresh ctx, so both outlive the request
 		return res, nil
 
 	case errors.Is(err, analysisdbhandler.ErrNotFound):
@@ -60,7 +60,7 @@ func (h *analysisHandler) Start(ctx context.Context, customerID, activeflowID uu
 		// concurrency cap BEFORE spending on a new chain (design F1).
 		count, cerr := h.dbHandler.AnalysisCountProgressing(ctx, customerID)
 		if cerr != nil {
-			return nil, fmt.Errorf("Start: could not count progressing analyses. err: %v", cerr)
+			return nil, fmt.Errorf("Start: could not count progressing analyses. err: %w", cerr)
 		}
 		if count >= analysisMaxProgressingPerCustomer {
 			return nil, ErrConcurrencyLimit
@@ -74,13 +74,13 @@ func (h *analysisHandler) Start(ctx context.Context, customerID, activeflowID uu
 		// only kick the chain when WE created the row (not when we returned a
 		// concurrent in-flight one).
 		if created.justCreated {
-			h.kickoff(created.row.ID, customerID, activeflowID, af)
+			h.kickoff(created.row.ID, customerID, activeflowID, af) //nolint:contextcheck // kickoff runs the analysis job on its own ctx (run.go) and persistFailed writes on a fresh ctx, so both outlive the request
 		}
 		return created.row, nil
 
 	default:
 		log.Errorf("could not look up existing analysis. err: %v", err)
-		return nil, fmt.Errorf("Start: could not look up existing analysis. err: %v", err)
+		return nil, fmt.Errorf("Start: could not look up existing analysis. err: %w", err)
 	}
 }
 
@@ -108,20 +108,20 @@ func (h *analysisHandler) applyExistingPolicy(ctx context.Context, existing *ana
 		// reset in place (CAS). 0 rows means another reanalyze already won.
 		n, err := h.dbHandler.AnalysisReset(ctx, existing.ID)
 		if err != nil {
-			return nil, true, fmt.Errorf("applyExistingPolicy: could not reset for reanalyze. err: %v", err)
+			return nil, true, fmt.Errorf("applyExistingPolicy: could not reset for reanalyze. err: %w", err)
 		}
 		if n == 0 {
 			// lost the race; return the in-flight row (no second goroutine).
 			inflight, gerr := h.dbHandler.AnalysisGet(ctx, existing.CustomerID, existing.ID)
 			if gerr != nil {
-				return nil, true, fmt.Errorf("applyExistingPolicy: could not re-read in-flight row. err: %v", gerr)
+				return nil, true, fmt.Errorf("applyExistingPolicy: could not re-read in-flight row. err: %w", gerr)
 			}
 			return inflight, true, nil
 		}
 		// we won the reset; re-read the now-progressing row and start the chain.
 		reset, gerr := h.dbHandler.AnalysisGet(ctx, existing.CustomerID, existing.ID)
 		if gerr != nil {
-			return nil, true, fmt.Errorf("applyExistingPolicy: could not re-read reset row. err: %v", gerr)
+			return nil, true, fmt.Errorf("applyExistingPolicy: could not re-read reset row. err: %w", gerr)
 		}
 		return reset, false, nil
 
@@ -154,11 +154,11 @@ func (h *analysisHandler) createProgressing(ctx context.Context, customerID, act
 	case errors.Is(err, analysisdbhandler.ErrDuplicate):
 		inflight, gerr := h.dbHandler.AnalysisGetByActiveflowID(ctx, customerID, activeflowID)
 		if gerr != nil {
-			return nil, fmt.Errorf("createProgressing: could not re-read in-flight row after dup. err: %v", gerr)
+			return nil, fmt.Errorf("createProgressing: could not re-read in-flight row after dup. err: %w", gerr)
 		}
 		return &createResult{row: inflight, justCreated: false}, nil
 
 	default:
-		return nil, fmt.Errorf("createProgressing: could not create progressing row. err: %v", err)
+		return nil, fmt.Errorf("createProgressing: could not create progressing row. err: %w", err)
 	}
 }

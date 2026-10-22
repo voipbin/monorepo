@@ -94,7 +94,7 @@ func (h *subscribeHandler) Run(ctx context.Context) (<-chan struct{}, error) {
 
 	// Create durable queue
 	if err := h.sockHandler.QueueCreate(subscribeQueue, "normal"); err != nil {
-		return nil, fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
+		return nil, fmt.Errorf("could not declare the queue for subscribeHandler. err: %w", err)
 	}
 
 	// The one retained fanout leg (VOIP-1407 design §3.2): asterisk.all.event is fed
@@ -102,7 +102,7 @@ func (h *subscribeHandler) Run(ctx context.Context) (<-chan struct{}, error) {
 	// entirely, so this subscription is not part of the topicPatterns migration below
 	// and stays bound permanently.
 	if err := h.sockHandler.QueueSubscribe(subscribeQueue, string(commonoutline.QueueNameAsteriskEventAll)); err != nil {
-		return nil, fmt.Errorf("could not subscribe to the asterisk fanout exchange. err: %v", err)
+		return nil, fmt.Errorf("could not subscribe to the asterisk fanout exchange. err: %w", err)
 	}
 
 	// Cut over from the old fanout QueueNameWebhookEvent exchange to the new
@@ -126,12 +126,12 @@ func (h *subscribeHandler) Run(ctx context.Context) (<-chan struct{}, error) {
 	// step have been removed, so there is no fallback left to degrade to. Any failure
 	// here is fatal.
 	if err := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic"); err != nil {
-		return nil, fmt.Errorf("could not declare the global topic exchange. err: %v", err)
+		return nil, fmt.Errorf("could not declare the global topic exchange. err: %w", err)
 	}
 
 	for _, pattern := range topicPatterns {
 		if err := h.sockHandler.QueueBind(subscribeQueue, pattern, string(commonoutline.QueueNameEvent), false, nil); err != nil {
-			return nil, fmt.Errorf("could not bind the topic pattern. pattern: %s, err: %v", pattern, err)
+			return nil, fmt.Errorf("could not bind the topic pattern. pattern: %s, err: %w", pattern, err)
 		}
 	}
 
@@ -198,7 +198,7 @@ func (h *subscribeHandler) flushWorker(ctx context.Context) {
 					buf = append(buf, eventEntry{event: m, receivedAt: time.Now()})
 				default:
 					if len(buf) > 0 {
-						h.flushBatch(buf)
+						h.flushBatch(buf) //nolint:contextcheck // the final flush on shutdown runs after ctx is cancelled, so flushBatch uses its own timeout ctx
 						log.Infof("Final flush completed. count: %d", len(buf))
 					}
 					log.Info("Flush worker stopped.")
@@ -214,14 +214,14 @@ func (h *subscribeHandler) flushWorker(ctx context.Context) {
 			// even at full drain rate.
 			promSubscribeEventChannelUsageRatio.Set(float64(len(h.eventCh)) / float64(cap(h.eventCh)))
 			if len(buf) >= batchSize {
-				h.flushBatch(buf)
+				h.flushBatch(buf) //nolint:contextcheck // flushBatch bounds its own ClickHouse writes with an internal timeout ctx and takes no ctx
 				buf = buf[:0]
 				ticker.Reset(flushInterval)
 			}
 
 		case <-ticker.C:
 			if len(buf) > 0 {
-				h.flushBatch(buf)
+				h.flushBatch(buf) //nolint:contextcheck // flushBatch bounds its own ClickHouse writes with an internal timeout ctx and takes no ctx
 				buf = buf[:0]
 			}
 		}

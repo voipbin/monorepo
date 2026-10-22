@@ -163,14 +163,14 @@ func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
-		if err := http.ListenAndServe(listen, nil); err != nil {
+		if err := http.ListenAndServe(listen, nil); err != nil { //nolint:gosec // G114: internal metrics listener, no server timeouts are configured
 			logrus.Errorf("Prometheus server error: %v", err)
 		}
 	}()
 }
 
 func runServices(ctx context.Context) (<-chan struct{}, error) {
-	db := dbhandler.NewHandler(config.Get().ClickHouseAddress, config.Get().ClickHouseDatabase)
+	db := dbhandler.NewHandler(config.Get().ClickHouseAddress, config.Get().ClickHouseDatabase) //nolint:contextcheck // connectionLoop is a process-lifetime goroutine started by the constructor, which takes no ctx
 
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
@@ -187,7 +187,7 @@ func runServices(ctx context.Context) (<-chan struct{}, error) {
 	var gcsReader siphandler.GCSReader
 	gcsBucket := config.Get().GCSBucketName
 	if gcsBucket != "" {
-		client, err := storage.NewClient(context.Background())
+		client, err := storage.NewClient(context.Background()) //nolint:contextcheck // the GCS client lives for the whole process and must not be tied to a request ctx
 		if err != nil {
 			logrus.Warnf("Could not create GCS client, RTP pcap merge disabled: %v", err)
 		} else {

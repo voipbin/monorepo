@@ -59,7 +59,7 @@ func (h *handler) AnalysisCreate(ctx context.Context, a *analysis.Analysis) erro
 		if errors.As(err, &me) && me.Number == mysqlErrDupEntry {
 			return ErrDuplicate
 		}
-		return fmt.Errorf("AnalysisCreate: could not execute. err: %v", err)
+		return fmt.Errorf("AnalysisCreate: could not execute. err: %w", err)
 	}
 
 	return nil
@@ -74,12 +74,12 @@ func (h *handler) analysisGetFromDB(ctx context.Context, id uuid.UUID) (*analysi
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("analysisGetFromDB: could not build query. err: %v", err)
+		return nil, fmt.Errorf("analysisGetFromDB: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("analysisGetFromDB: could not query. err: %v", err)
+		return nil, fmt.Errorf("analysisGetFromDB: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -92,7 +92,7 @@ func (h *handler) analysisGetFromDB(ctx context.Context, id uuid.UUID) (*analysi
 
 	res := &analysis.Analysis{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("analysisGetFromDB: could not scan. err: %v", err)
+		return nil, fmt.Errorf("analysisGetFromDB: could not scan. err: %w", err)
 	}
 
 	return res, nil
@@ -123,12 +123,12 @@ func (h *handler) AnalysisGetByActiveflowID(ctx context.Context, customerID, act
 		}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("AnalysisGetByActiveflowID: could not build query. err: %v", err)
+		return nil, fmt.Errorf("AnalysisGetByActiveflowID: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("AnalysisGetByActiveflowID: could not query. err: %v", err)
+		return nil, fmt.Errorf("AnalysisGetByActiveflowID: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -141,7 +141,7 @@ func (h *handler) AnalysisGetByActiveflowID(ctx context.Context, customerID, act
 
 	res := &analysis.Analysis{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("AnalysisGetByActiveflowID: could not scan. err: %v", err)
+		return nil, fmt.Errorf("AnalysisGetByActiveflowID: could not scan. err: %w", err)
 	}
 
 	return res, nil
@@ -165,17 +165,17 @@ func (h *handler) AnalysisList(ctx context.Context, customerID uuid.UUID, size u
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("AnalysisList: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("AnalysisList: could not apply filters. err: %w", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("AnalysisList: could not build query. err: %v", err)
+		return nil, fmt.Errorf("AnalysisList: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("AnalysisList: could not query. err: %v", err)
+		return nil, fmt.Errorf("AnalysisList: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -183,7 +183,7 @@ func (h *handler) AnalysisList(ctx context.Context, customerID uuid.UUID, size u
 	for rows.Next() {
 		a := &analysis.Analysis{}
 		if err := commondatabasehandler.ScanRow(rows, a); err != nil {
-			return nil, fmt.Errorf("AnalysisList: could not scan. err: %v", err)
+			return nil, fmt.Errorf("AnalysisList: could not scan. err: %w", err)
 		}
 		res = append(res, a)
 	}
@@ -210,12 +210,12 @@ func (h *handler) AnalysisReset(ctx context.Context, id uuid.UUID) (int64, error
 
 	result, err := h.db.ExecContext(ctx, updateQuery, ts, id.Bytes())
 	if err != nil {
-		return 0, fmt.Errorf("AnalysisReset: could not execute reset. err: %v", err)
+		return 0, fmt.Errorf("AnalysisReset: could not execute reset. err: %w", err)
 	}
 
 	n, err := result.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("AnalysisReset: could not get rows affected. err: %v", err)
+		return 0, fmt.Errorf("AnalysisReset: could not get rows affected. err: %w", err)
 	}
 
 	return n, nil
@@ -247,12 +247,12 @@ func (h *handler) AnalysisUpdateResult(ctx context.Context, id uuid.UUID, status
 		id.Bytes(),
 	)
 	if err != nil {
-		return 0, fmt.Errorf("AnalysisUpdateResult: could not execute. err: %v", err)
+		return 0, fmt.Errorf("AnalysisUpdateResult: could not execute. err: %w", err)
 	}
 
 	n, err := res.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("AnalysisUpdateResult: could not get rows affected. err: %v", err)
+		return 0, fmt.Errorf("AnalysisUpdateResult: could not get rows affected. err: %w", err)
 	}
 
 	return n, nil
@@ -277,11 +277,11 @@ func (h *handler) AnalysisDelete(ctx context.Context, customerID, id uuid.UUID) 
 
 	r, err := h.db.ExecContext(ctx, deleteQuery, id.Bytes(), customerID.Bytes())
 	if err != nil {
-		return nil, fmt.Errorf("AnalysisDelete: could not execute delete. err: %v", err)
+		return nil, fmt.Errorf("AnalysisDelete: could not execute delete. err: %w", err)
 	}
 	n, err := r.RowsAffected()
 	if err != nil {
-		return nil, fmt.Errorf("AnalysisDelete: could not get rows affected. err: %v", err)
+		return nil, fmt.Errorf("AnalysisDelete: could not get rows affected. err: %w", err)
 	}
 	if n == 0 {
 		// lost a concurrent delete race; masked not-found.
@@ -303,7 +303,7 @@ func (h *handler) AnalysisCountProgressing(ctx context.Context, customerID uuid.
 
 	var count int64
 	if err := row.Scan(&count); err != nil {
-		return 0, fmt.Errorf("AnalysisCountProgressing: could not scan. err: %v", err)
+		return 0, fmt.Errorf("AnalysisCountProgressing: could not scan. err: %w", err)
 	}
 
 	return count, nil
