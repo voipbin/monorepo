@@ -69,7 +69,7 @@ func (h *subscribeHandler) Run() error {
 	log.Info("Creating rabbitmq queue for subscribing.")
 
 	if err := h.sockHandler.QueueCreate(h.subscribeQueue, "normal"); err != nil {
-		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
+		return fmt.Errorf("could not declare the queue for listenHandler. err: %w", err)
 	}
 
 	// Cut over from the old fanout QueueNameWebhookEvent exchange to the new
@@ -107,12 +107,12 @@ func (h *subscribeHandler) Run() error {
 	// would otherwise silently intake zero events forever, which is strictly worse
 	// than a loud boot failure the orchestrator will restart-loop on.
 	if errDeclare := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic"); errDeclare != nil {
-		return fmt.Errorf("could not declare the global topic exchange. err: %v", errDeclare)
+		return fmt.Errorf("could not declare the global topic exchange. err: %w", errDeclare)
 	}
 
 	for _, pattern := range topicPatterns {
 		if errBind := h.sockHandler.QueueBind(h.subscribeQueue, pattern, string(commonoutline.QueueNameEvent), false, nil); errBind != nil {
-			return fmt.Errorf("could not bind the topic pattern. pattern: %s, err: %v", pattern, errBind)
+			return fmt.Errorf("could not bind the topic pattern. pattern: %s, err: %w", pattern, errBind)
 		}
 	}
 
@@ -148,10 +148,8 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	//// call-manager
 	case m.Publisher == string(commonoutline.ServiceNameCallManager):
-		switch m.Type {
-
 		// groupcall
-		case string(cmgroupcall.EventTypeGroupcallProgressing):
+		if m.Type == string(cmgroupcall.EventTypeGroupcallProgressing) {
 			err = h.processEventCMGroupcallProgressing(ctx, m)
 		}
 

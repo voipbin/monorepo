@@ -111,7 +111,7 @@ func (h *handler) PasswordResetTokenGet(ctx context.Context, token string) (uuid
 
 	id, err := uuid.FromString(val)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("could not parse agent id from token: %v", err)
+		return uuid.Nil, fmt.Errorf("could not parse agent id from token: %w", err)
 	}
 	return id, nil
 }
