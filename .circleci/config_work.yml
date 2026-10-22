@@ -2868,9 +2868,6 @@ commands:
             gotestsum --junitfile test-results.xml
       - store_test_results:
           path: << parameters.source-directory >>/test-results.xml
-      - store_artifacts:
-          path: << parameters.source-directory >>/cp.html
-          destination: coverage/<< parameters.source-directory >>/cp.html
 
   go-test-api-manager:
     description: "test and lint the go application"
@@ -2968,9 +2965,6 @@ commands:
 
       - store_test_results:
           path: << parameters.source-directory >>/test-results.xml
-      - store_artifacts:
-          path: << parameters.source-directory >>/cp.html
-          destination: coverage/<< parameters.source-directory >>/cp.html
 
   go-test-pipecat-manager:
     description: "test and lint the go application with libsoxr support"
@@ -3071,9 +3065,6 @@ commands:
             gotestsum --junitfile test-results.xml
       - store_test_results:
           path: << parameters.source-directory >>/test-results.xml
-      - store_artifacts:
-          path: << parameters.source-directory >>/cp.html
-          destination: coverage/<< parameters.source-directory >>/cp.html
 
   docker-build:
     description: "build the docker image"
