@@ -34,7 +34,7 @@ func (h *caseHandler) CaseNoteCreate(ctx context.Context, customerID, caseID uui
 	}
 
 	if err := h.db.CaseNoteCreate(ctx, n); err != nil {
-		return nil, fmt.Errorf("could not create case note. CaseNoteCreate. err: %v", err)
+		return nil, fmt.Errorf("could not create case note. CaseNoteCreate. err: %w", err)
 	}
 
 	h.notifyHandler.PublishEvent(ctx, casenote.EventTypeCaseNoteCreated, n)

@@ -71,7 +71,7 @@ func (h *caseHandler) Close(ctx context.Context, customerID, id uuid.UUID, close
 	byID := closedByID
 	ok, err := h.db.CaseUpdateStatusClosed(ctx, customerID, id, kase.ClosedReasonAgentClosed, byType, &byID, now)
 	if err != nil {
-		return nil, fmt.Errorf("could not close case. Close. err: %v", err)
+		return nil, fmt.Errorf("could not close case. Close. err: %w", err)
 	}
 
 	if ok {
@@ -146,7 +146,7 @@ func (h *caseHandler) Continue(ctx context.Context, customerID, id uuid.UUID, ca
 
 	tx, err := h.db.BeginTx(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("could not begin transaction. Continue. err: %v", err)
+		return nil, fmt.Errorf("could not begin transaction. Continue. err: %w", err)
 	}
 	committed := false
 	defer func() {
@@ -163,12 +163,12 @@ func (h *caseHandler) Continue(ctx context.Context, customerID, id uuid.UUID, ca
 
 	if source.ContactID != nil {
 		if err := h.db.CaseUpdateContactIDTx(ctx, tx, customerID, res.ID, *source.ContactID); err != nil {
-			return nil, fmt.Errorf("could not carry over contact_id. Continue. err: %v", err)
+			return nil, fmt.Errorf("could not carry over contact_id. Continue. err: %w", err)
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		return nil, fmt.Errorf("could not commit transaction. Continue. err: %v", err)
+		return nil, fmt.Errorf("could not commit transaction. Continue. err: %w", err)
 	}
 	committed = true
 

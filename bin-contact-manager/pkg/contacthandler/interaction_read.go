@@ -68,7 +68,7 @@ func (h *contactHandler) InteractionList(
 		// attribution feature's purpose.
 		allAddrs, err := h.db.AddressListAllByContactID(ctx, contactID)
 		if err != nil {
-			return nil, "", fmt.Errorf("could not list contact addresses. InteractionList. err: %v", err)
+			return nil, "", fmt.Errorf("could not list contact addresses. InteractionList. err: %w", err)
 		}
 		for _, a := range allAddrs {
 			addrs = append(addrs, a.Address)
@@ -96,7 +96,7 @@ func (h *contactHandler) InteractionList(
 					"The address was not found.",
 				)
 			}
-			return nil, "", fmt.Errorf("could not get address. InteractionList. err: %v", err)
+			return nil, "", fmt.Errorf("could not get address. InteractionList. err: %w", err)
 		}
 		addrs = []commonaddress.Address{ap.Address}
 
@@ -128,7 +128,7 @@ func (h *contactHandler) InteractionList(
 
 	res, err := h.reqHandler.TimelineV1PeerEventList(ctx, req)
 	if err != nil {
-		return nil, "", fmt.Errorf("could not list peer events. InteractionList. err: %v", err)
+		return nil, "", fmt.Errorf("could not list peer events. InteractionList. err: %v", err) //nolint:errorlint // keeps the legacy 500 mapping: wrapping would expose upstream typed errors
 	}
 
 	return res.Result, res.NextPageToken, nil

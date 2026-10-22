@@ -86,7 +86,7 @@ func (h *caseHandler) CaseTagAdd(ctx context.Context, customerID, caseID, tagID 
 
 	newTagIDs := append(append([]uuid.UUID{}, c.TagIDs...), tagID)
 	if err := h.db.CaseUpdateTagIDs(ctx, customerID, caseID, newTagIDs); err != nil {
-		return fmt.Errorf("could not update case tag_ids. CaseTagAdd. err: %v", err)
+		return fmt.Errorf("could not update case tag_ids. CaseTagAdd. err: %w", err)
 	}
 
 	h.notifyHandler.PublishEvent(ctx, kase.EventTypeCaseTagAdded, &kase.CaseTagEvent{
@@ -124,7 +124,7 @@ func (h *caseHandler) CaseTagRemove(ctx context.Context, customerID, caseID, tag
 	}
 
 	if err := h.db.CaseUpdateTagIDs(ctx, customerID, caseID, newTagIDs); err != nil {
-		return fmt.Errorf("could not update case tag_ids. CaseTagRemove. err: %v", err)
+		return fmt.Errorf("could not update case tag_ids. CaseTagRemove. err: %w", err)
 	}
 
 	h.notifyHandler.PublishEvent(ctx, kase.EventTypeCaseTagRemoved, &kase.CaseTagEvent{

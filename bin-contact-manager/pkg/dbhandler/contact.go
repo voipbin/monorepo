@@ -22,7 +22,7 @@ const (
 func (h *handler) contactGetFromRow(rows *sql.Rows) (*contact.Contact, error) {
 	res := &contact.Contact{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. contactGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. contactGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -37,17 +37,17 @@ func (h *handler) ContactCreate(ctx context.Context, c *contact.Contact) error {
 	// prepare fields for insert
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. ContactCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ContactCreate. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(contactTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ContactCreate. err: %v", err)
+		return fmt.Errorf("could not build query. ContactCreate. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. ContactCreate. err: %v", err)
+		return fmt.Errorf("could not execute. ContactCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -117,12 +117,12 @@ func (h *handler) contactGetFromDB(ctx context.Context, id uuid.UUID) (*contact.
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. contactGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build query. contactGetFromDB. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. contactGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. contactGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -137,7 +137,7 @@ func (h *handler) contactGetFromDB(ctx context.Context, id uuid.UUID) (*contact.
 
 	res, err := h.contactGetFromRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. contactGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. contactGetFromDB. err: %w", err)
 	}
 
 	return res, nil
@@ -208,17 +208,17 @@ func (h *handler) ContactList(ctx context.Context, size uint64, token string, fi
 	// apply filters
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. ContactList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. ContactList. err: %w", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ContactList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ContactList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ContactList. err: %v", err)
+		return nil, fmt.Errorf("could not query. ContactList. err: %w", err)
 	}
 
 	// Fully drain and close the result set BEFORE loading child data. Issuing
@@ -231,16 +231,16 @@ func (h *handler) ContactList(ctx context.Context, size uint64, token string, fi
 		c, scanErr := h.contactGetFromRow(rows)
 		if scanErr != nil {
 			_ = rows.Close()
-			return nil, fmt.Errorf("could not scan the row. ContactList. err: %v", scanErr)
+			return nil, fmt.Errorf("could not scan the row. ContactList. err: %w", scanErr)
 		}
 		res = append(res, c)
 	}
 	if err := rows.Err(); err != nil {
 		_ = rows.Close()
-		return nil, fmt.Errorf("row iteration error. ContactList. err: %v", err)
+		return nil, fmt.Errorf("row iteration error. ContactList. err: %w", err)
 	}
 	if closeErr := rows.Close(); closeErr != nil {
-		return nil, fmt.Errorf("could not close rows. ContactList. err: %v", closeErr)
+		return nil, fmt.Errorf("could not close rows. ContactList. err: %w", closeErr)
 	}
 
 	// load related data for each contact
@@ -266,7 +266,7 @@ func (h *handler) ContactUpdate(ctx context.Context, id uuid.UUID, fields map[co
 	// prepare fields for update
 	data, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. ContactUpdate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ContactUpdate. err: %w", err)
 	}
 
 	query, args, err := sq.Update(contactTable).
@@ -274,12 +274,12 @@ func (h *handler) ContactUpdate(ctx context.Context, id uuid.UUID, fields map[co
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ContactUpdate. err: %v", err)
+		return fmt.Errorf("could not build query. ContactUpdate. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. ContactUpdate. err: %v", err)
+		return fmt.Errorf("could not execute. ContactUpdate. err: %w", err)
 	}
 
 	// update the cache
@@ -299,7 +299,7 @@ func (h *handler) ContactDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare fields for update
 	data, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. ContactDelete. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ContactDelete. err: %w", err)
 	}
 
 	query, args, err := sq.Update(contactTable).
@@ -307,12 +307,12 @@ func (h *handler) ContactDelete(ctx context.Context, id uuid.UUID) error {
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ContactDelete. err: %v", err)
+		return fmt.Errorf("could not build query. ContactDelete. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. ContactDelete. err: %v", err)
+		return fmt.Errorf("could not execute. ContactDelete. err: %w", err)
 	}
 
 	// Evict the cache instead of repopulating it. The contact is now
@@ -347,12 +347,12 @@ func (h *handler) AddressLookupContactIDByTypeTarget(ctx context.Context, custom
 		Limit(1).
 		ToSql()
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("could not build query. AddressLookupContactIDByTypeTarget. err: %v", err)
+		return uuid.Nil, fmt.Errorf("could not build query. AddressLookupContactIDByTypeTarget. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("could not query. AddressLookupContactIDByTypeTarget. err: %v", err)
+		return uuid.Nil, fmt.Errorf("could not query. AddressLookupContactIDByTypeTarget. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -365,12 +365,12 @@ func (h *handler) AddressLookupContactIDByTypeTarget(ctx context.Context, custom
 
 	var contactIDBytes []byte
 	if err := rows.Scan(&contactIDBytes); err != nil {
-		return uuid.Nil, fmt.Errorf("could not scan contact_id. AddressLookupContactIDByTypeTarget. err: %v", err)
+		return uuid.Nil, fmt.Errorf("could not scan contact_id. AddressLookupContactIDByTypeTarget. err: %w", err)
 	}
 
 	contactID, err := uuid.FromBytes(contactIDBytes)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("could not parse contact_id. AddressLookupContactIDByTypeTarget. err: %v", err)
+		return uuid.Nil, fmt.Errorf("could not parse contact_id. AddressLookupContactIDByTypeTarget. err: %w", err)
 	}
 
 	return contactID, nil
@@ -389,12 +389,12 @@ func (h *handler) ContactLookupByPhone(ctx context.Context, customerID uuid.UUID
 		Limit(1).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ContactLookupByPhone. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ContactLookupByPhone. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ContactLookupByPhone. err: %v", err)
+		return nil, fmt.Errorf("could not query. ContactLookupByPhone. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -409,12 +409,12 @@ func (h *handler) ContactLookupByPhone(ctx context.Context, customerID uuid.UUID
 
 	var contactIDBytes []byte
 	if err := rows.Scan(&contactIDBytes); err != nil {
-		return nil, fmt.Errorf("could not scan contact_id. ContactLookupByPhone. err: %v", err)
+		return nil, fmt.Errorf("could not scan contact_id. ContactLookupByPhone. err: %w", err)
 	}
 
 	contactID, err := uuid.FromBytes(contactIDBytes)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse contact_id. ContactLookupByPhone. err: %v", err)
+		return nil, fmt.Errorf("could not parse contact_id. ContactLookupByPhone. err: %w", err)
 	}
 
 	// Now get the full contact
@@ -434,12 +434,12 @@ func (h *handler) ContactLookupByEmail(ctx context.Context, customerID uuid.UUID
 		Limit(1).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ContactLookupByEmail. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ContactLookupByEmail. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ContactLookupByEmail. err: %v", err)
+		return nil, fmt.Errorf("could not query. ContactLookupByEmail. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -454,12 +454,12 @@ func (h *handler) ContactLookupByEmail(ctx context.Context, customerID uuid.UUID
 
 	var contactIDBytes []byte
 	if err := rows.Scan(&contactIDBytes); err != nil {
-		return nil, fmt.Errorf("could not scan contact_id. ContactLookupByEmail. err: %v", err)
+		return nil, fmt.Errorf("could not scan contact_id. ContactLookupByEmail. err: %w", err)
 	}
 
 	contactID, err := uuid.FromBytes(contactIDBytes)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse contact_id. ContactLookupByEmail. err: %v", err)
+		return nil, fmt.Errorf("could not parse contact_id. ContactLookupByEmail. err: %w", err)
 	}
 
 	// Now get the full contact
@@ -481,30 +481,30 @@ func (h *handler) ContactDeleteByCustomerID(ctx context.Context, customerID uuid
 		Where(sq.Eq{"tm_delete": nil}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build select query. ContactDeleteByCustomerID. err: %v", err)
+		return fmt.Errorf("could not build select query. ContactDeleteByCustomerID. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, selectQuery, selectArgs...)
 	if err != nil {
-		return fmt.Errorf("could not query contact ids. ContactDeleteByCustomerID. err: %v", err)
+		return fmt.Errorf("could not query contact ids. ContactDeleteByCustomerID. err: %w", err)
 	}
 	var ids []uuid.UUID
 	for rows.Next() {
 		var idBytes []byte
 		if scanErr := rows.Scan(&idBytes); scanErr != nil {
 			_ = rows.Close()
-			return fmt.Errorf("could not scan contact id. ContactDeleteByCustomerID. err: %v", scanErr)
+			return fmt.Errorf("could not scan contact id. ContactDeleteByCustomerID. err: %w", scanErr)
 		}
 		id, parseErr := uuid.FromBytes(idBytes)
 		if parseErr != nil {
 			_ = rows.Close()
-			return fmt.Errorf("could not parse contact id. ContactDeleteByCustomerID. err: %v", parseErr)
+			return fmt.Errorf("could not parse contact id. ContactDeleteByCustomerID. err: %w", parseErr)
 		}
 		ids = append(ids, id)
 	}
 	if err := rows.Err(); err != nil {
 		_ = rows.Close()
-		return fmt.Errorf("row iteration error. ContactDeleteByCustomerID. err: %v", err)
+		return fmt.Errorf("row iteration error. ContactDeleteByCustomerID. err: %w", err)
 	}
 	_ = rows.Close()
 
@@ -514,12 +514,12 @@ func (h *handler) ContactDeleteByCustomerID(ctx context.Context, customerID uuid
 		Where(sq.Eq{"customer_id": customerID.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ContactDeleteByCustomerID. err: %v", err)
+		return fmt.Errorf("could not build query. ContactDeleteByCustomerID. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. ContactDeleteByCustomerID. err: %v", err)
+		return fmt.Errorf("could not execute. ContactDeleteByCustomerID. err: %w", err)
 	}
 
 	// Evict each affected contact from the cache so no tombstone is served.

@@ -45,11 +45,11 @@ func addressTypeTargetContactByID(ctx context.Context, execer sqlExecutor, id uu
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. addressTypeTargetContactByID. err: %v", err)
+		return nil, fmt.Errorf("could not build query. addressTypeTargetContactByID. err: %w", err)
 	}
 	rows, err := execer.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. addressTypeTargetContactByID. err: %v", err)
+		return nil, fmt.Errorf("could not query. addressTypeTargetContactByID. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -62,13 +62,13 @@ func addressTypeTargetContactByID(ctx context.Context, execer sqlExecutor, id uu
 	var addrType, target string
 	var contactIDBytes []byte
 	if err := rows.Scan(&addrType, &target, &contactIDBytes); err != nil {
-		return nil, fmt.Errorf("could not scan. addressTypeTargetContactByID. err: %v", err)
+		return nil, fmt.Errorf("could not scan. addressTypeTargetContactByID. err: %w", err)
 	}
 	var contactID uuid.UUID
 	if len(contactIDBytes) > 0 {
 		contactID, err = uuid.FromBytes(contactIDBytes)
 		if err != nil {
-			return nil, fmt.Errorf("could not parse contact_id. addressTypeTargetContactByID. err: %v", err)
+			return nil, fmt.Errorf("could not parse contact_id. addressTypeTargetContactByID. err: %w", err)
 		}
 	}
 	return &addressRowTypeTargetContact{Type: addrType, Target: target, ContactID: contactID}, nil
@@ -123,7 +123,7 @@ func (h *handler) addressInsertTx(ctx context.Context, tx *sql.Tx, a *contact.Ad
 		}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. addressInsertTx. err: %v", err)
+		return fmt.Errorf("could not build query. addressInsertTx. err: %w", err)
 	}
 
 	_, execErr := tx.ExecContext(ctx, query, args...)
@@ -147,7 +147,7 @@ func (h *handler) addressInsertTx(ctx context.Context, tx *sql.Tx, a *contact.Ad
 	if isDuplicateTargetErr(execErr) {
 		return ErrDuplicateTarget
 	}
-	return fmt.Errorf("could not execute. addressInsertTx. err: %v", execErr)
+	return fmt.Errorf("could not execute. addressInsertTx. err: %w", execErr)
 }
 
 // isDuplicateTargetErr classifies a contact_addresses INSERT/UPDATE
@@ -176,7 +176,7 @@ func isDuplicateTargetErr(execErr error) bool {
 func (h *handler) attemptStaleRowRepairNewTx(ctx context.Context, customerID uuid.UUID, addrType commonaddress.Type, target string, resetToNull bool) (bool, error) {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return false, fmt.Errorf("could not begin transaction. attemptStaleRowRepairNewTx. err: %v", err)
+		return false, fmt.Errorf("could not begin transaction. attemptStaleRowRepairNewTx. err: %w", err)
 	}
 	committed := false
 	defer func() {
@@ -197,7 +197,7 @@ func (h *handler) attemptStaleRowRepairNewTx(ctx context.Context, customerID uui
 		return false, nil
 	}
 	if err := tx.Commit(); err != nil {
-		return false, fmt.Errorf("could not commit transaction. attemptStaleRowRepairNewTx. err: %v", err)
+		return false, fmt.Errorf("could not commit transaction. attemptStaleRowRepairNewTx. err: %w", err)
 	}
 	committed = true
 	return true, nil
@@ -294,13 +294,13 @@ func (h *handler) staleRowRepairTx(ctx context.Context, tx *sql.Tx, customerID u
 			}).
 			ToSql()
 		if err != nil {
-			return false, fmt.Errorf("could not build query. staleRowRepairTx. err: %v", err)
+			return false, fmt.Errorf("could not build query. staleRowRepairTx. err: %w", err)
 		}
 		if _, err := tx.ExecContext(ctx, insQuery, insArgs...); err != nil {
 			if isMySQLDeadlock(err) {
 				return false, ErrDeadlock
 			}
-			return false, fmt.Errorf("could not execute. staleRowRepairTx. err: %v", err)
+			return false, fmt.Errorf("could not execute. staleRowRepairTx. err: %w", err)
 		}
 	}
 
@@ -311,26 +311,26 @@ func (h *handler) staleRowRepairTx(ctx context.Context, tx *sql.Tx, customerID u
 			Where(sq.Eq{"id": row.ID.Bytes()}).
 			ToSql()
 		if err != nil {
-			return false, fmt.Errorf("could not build reset query. staleRowRepairTx. err: %v", err)
+			return false, fmt.Errorf("could not build reset query. staleRowRepairTx. err: %w", err)
 		}
 		if _, err := tx.ExecContext(ctx, resetQuery, resetArgs...); err != nil {
 			if isMySQLDeadlock(err) {
 				return false, ErrDeadlock
 			}
-			return false, fmt.Errorf("could not execute reset. staleRowRepairTx. err: %v", err)
+			return false, fmt.Errorf("could not execute reset. staleRowRepairTx. err: %w", err)
 		}
 	} else {
 		delQuery, delArgs, err := sq.Delete(addressTable).
 			Where(sq.Eq{"id": row.ID.Bytes()}).
 			ToSql()
 		if err != nil {
-			return false, fmt.Errorf("could not build delete query. staleRowRepairTx. err: %v", err)
+			return false, fmt.Errorf("could not build delete query. staleRowRepairTx. err: %w", err)
 		}
 		if _, err := tx.ExecContext(ctx, delQuery, delArgs...); err != nil {
 			if isMySQLDeadlock(err) {
 				return false, ErrDeadlock
 			}
-			return false, fmt.Errorf("could not execute delete. staleRowRepairTx. err: %v", err)
+			return false, fmt.Errorf("could not execute delete. staleRowRepairTx. err: %w", err)
 		}
 	}
 	return true, nil
@@ -354,14 +354,14 @@ func staleRowByTargetTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, a
 		Where(sq.Eq{"target": target}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. staleRowByTargetTx. err: %v", err)
+		return nil, fmt.Errorf("could not build query. staleRowByTargetTx. err: %w", err)
 	}
 	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		if isMySQLDeadlock(err) {
 			return nil, ErrDeadlock
 		}
-		return nil, fmt.Errorf("could not query. staleRowByTargetTx. err: %v", err)
+		return nil, fmt.Errorf("could not query. staleRowByTargetTx. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -377,22 +377,22 @@ func staleRowByTargetTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, a
 	var idBytes, contactIDBytes []byte
 	var tmCreate sql.NullString
 	if err := rows.Scan(&idBytes, &contactIDBytes, &tmCreate); err != nil {
-		return nil, fmt.Errorf("could not scan. staleRowByTargetTx. err: %v", err)
+		return nil, fmt.Errorf("could not scan. staleRowByTargetTx. err: %w", err)
 	}
 	id, err := uuid.FromBytes(idBytes)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse id. staleRowByTargetTx. err: %v", err)
+		return nil, fmt.Errorf("could not parse id. staleRowByTargetTx. err: %w", err)
 	}
 	var contactID uuid.UUID
 	if len(contactIDBytes) > 0 {
 		contactID, err = uuid.FromBytes(contactIDBytes)
 		if err != nil {
-			return nil, fmt.Errorf("could not parse contact_id. staleRowByTargetTx. err: %v", err)
+			return nil, fmt.Errorf("could not parse contact_id. staleRowByTargetTx. err: %w", err)
 		}
 	}
 	tmCreatePtr, err := parseNullableDBTime(tmCreate)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse tm_create. staleRowByTargetTx. err: %v", err)
+		return nil, fmt.Errorf("could not parse tm_create. staleRowByTargetTx. err: %w", err)
 	}
 	return &staleRowByID{ID: id, ContactID: contactID, TMCreate: tmCreatePtr}, nil
 }
@@ -408,14 +408,14 @@ func contactTombstoneTx(ctx context.Context, tx *sql.Tx, contactID uuid.UUID) (*
 		Where(sq.Eq{"id": contactID.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. contactTombstoneTx. err: %v", err)
+		return nil, fmt.Errorf("could not build query. contactTombstoneTx. err: %w", err)
 	}
 	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		if isMySQLDeadlock(err) {
 			return nil, ErrDeadlock
 		}
-		return nil, fmt.Errorf("could not query. contactTombstoneTx. err: %v", err)
+		return nil, fmt.Errorf("could not query. contactTombstoneTx. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 	if !rows.Next() {
@@ -429,7 +429,7 @@ func contactTombstoneTx(ctx context.Context, tx *sql.Tx, contactID uuid.UUID) (*
 	}
 	var tmDelete sql.NullString
 	if err := rows.Scan(&tmDelete); err != nil {
-		return nil, fmt.Errorf("could not scan. contactTombstoneTx. err: %v", err)
+		return nil, fmt.Errorf("could not scan. contactTombstoneTx. err: %w", err)
 	}
 	return parseNullableDBTime(tmDelete)
 }
@@ -447,14 +447,14 @@ func latestOwnershipPeriodValidToTx(ctx context.Context, tx *sql.Tx, customerID 
 		Limit(1).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. latestOwnershipPeriodValidToTx. err: %v", err)
+		return nil, fmt.Errorf("could not build query. latestOwnershipPeriodValidToTx. err: %w", err)
 	}
 	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		if isMySQLDeadlock(err) {
 			return nil, ErrDeadlock
 		}
-		return nil, fmt.Errorf("could not query. latestOwnershipPeriodValidToTx. err: %v", err)
+		return nil, fmt.Errorf("could not query. latestOwnershipPeriodValidToTx. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 	if !rows.Next() {
@@ -468,7 +468,7 @@ func latestOwnershipPeriodValidToTx(ctx context.Context, tx *sql.Tx, customerID 
 	}
 	var validTo sql.NullString
 	if err := rows.Scan(&validTo); err != nil {
-		return nil, fmt.Errorf("could not scan. latestOwnershipPeriodValidToTx. err: %v", err)
+		return nil, fmt.Errorf("could not scan. latestOwnershipPeriodValidToTx. err: %w", err)
 	}
 	return parseNullableDBTime(validTo)
 }
@@ -535,7 +535,7 @@ func (h *handler) AddressUpdateTx(ctx context.Context, tx *sql.Tx, id, customerI
 
 	query, args, err := q.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. AddressUpdateTx. err: %v", err)
+		return fmt.Errorf("could not build query. AddressUpdateTx. err: %w", err)
 	}
 	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
@@ -554,7 +554,7 @@ func (h *handler) AddressUpdateTx(ctx context.Context, tx *sql.Tx, id, customerI
 			// iteration).
 			return ErrDuplicateTarget
 		}
-		return fmt.Errorf("could not execute. AddressUpdateTx. err: %v", err)
+		return fmt.Errorf("could not execute. AddressUpdateTx. err: %w", err)
 	}
 	// B5 fix: the post-lock re-read above (addressUpdateAttempt's
 	// addressTypeTargetContactByID) is a plain SELECT, not SELECT ...
@@ -568,7 +568,7 @@ func (h *handler) AddressUpdateTx(ctx context.Context, tx *sql.Tx, id, customerI
 	// already treats as retry-eligible -- the retry's fresh pre-lock
 	// read will correctly resolve to ErrNotFound this time.
 	if n, err := res.RowsAffected(); err != nil {
-		return fmt.Errorf("could not read rows affected. AddressUpdateTx. err: %v", err)
+		return fmt.Errorf("could not read rows affected. AddressUpdateTx. err: %w", err)
 	} else if n == 0 {
 		return ErrStaleTarget
 	}
@@ -600,14 +600,14 @@ func (h *handler) AddressDeleteTx(ctx context.Context, tx *sql.Tx, addressID, cu
 		Where(sq.Eq{"id": addressID.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build delete query. AddressDeleteTx. err: %v", err)
+		return fmt.Errorf("could not build delete query. AddressDeleteTx. err: %w", err)
 	}
 	res, err := tx.ExecContext(ctx, deleteQuery, deleteArgs...)
 	if err != nil {
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
-		return fmt.Errorf("could not execute delete. AddressDeleteTx. err: %v", err)
+		return fmt.Errorf("could not execute delete. AddressDeleteTx. err: %w", err)
 	}
 	// B5 fix: same TOCTOU class as AddressUpdateTx's guard above -- the
 	// post-lock re-read (addressDeleteAttempt's addressTypeTargetContactByID)
@@ -620,7 +620,7 @@ func (h *handler) AddressDeleteTx(ctx context.Context, tx *sql.Tx, addressID, cu
 	// Surfacing ErrStaleTarget lets the outer retry loop (address.go)
 	// re-read fresh and correctly resolve to ErrNotFound.
 	if n, err := res.RowsAffected(); err != nil {
-		return fmt.Errorf("could not read rows affected. AddressDeleteTx. err: %v", err)
+		return fmt.Errorf("could not read rows affected. AddressDeleteTx. err: %w", err)
 	} else if n == 0 {
 		return ErrStaleTarget
 	}
@@ -686,13 +686,13 @@ func (h *handler) AddressClaimTx(ctx context.Context, tx *sql.Tx, customerID, ad
 		Where(sq.Eq{"id": addressID.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. AddressClaimTx. err: %v", err)
+		return fmt.Errorf("could not build query. AddressClaimTx. err: %w", err)
 	}
 	if _, err := tx.ExecContext(ctx, query, args...); err != nil {
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
-		return fmt.Errorf("could not execute. AddressClaimTx. err: %v", err)
+		return fmt.Errorf("could not execute. AddressClaimTx. err: %w", err)
 	}
 	return nil
 }
@@ -707,13 +707,13 @@ func (h *handler) AddressResetPrimaryTx(ctx context.Context, tx *sql.Tx, contact
 		Where(sq.Eq{"contact_id": contactID.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. AddressResetPrimaryTx. err: %v", err)
+		return fmt.Errorf("could not build query. AddressResetPrimaryTx. err: %w", err)
 	}
 	if _, err := tx.ExecContext(ctx, query, args...); err != nil {
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
-		return fmt.Errorf("could not execute. AddressResetPrimaryTx. err: %v", err)
+		return fmt.Errorf("could not execute. AddressResetPrimaryTx. err: %w", err)
 	}
 	return nil
 }
@@ -742,13 +742,13 @@ func (h *handler) AddressDeleteCompensating(ctx context.Context, customerID, con
 		}
 		return err
 	}
-	return fmt.Errorf("could not compensate address delete: exhausted retries under sustained deadlock. err: %v", lastErr)
+	return fmt.Errorf("could not compensate address delete: exhausted retries under sustained deadlock. err: %w", lastErr)
 }
 
 func (h *handler) addressDeleteCompensatingAttempt(ctx context.Context, customerID, contactID uuid.UUID, addrType commonaddress.Type, target string) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("could not begin transaction. AddressDeleteCompensating. err: %v", err)
+		return fmt.Errorf("could not begin transaction. AddressDeleteCompensating. err: %w", err)
 	}
 	committed := false
 	defer func() {
@@ -782,13 +782,13 @@ func (h *handler) addressDeleteCompensatingAttempt(ctx context.Context, customer
 		Where(sq.Eq{"id": ownOpen.ID.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build period delete query. AddressDeleteCompensating. err: %v", err)
+		return fmt.Errorf("could not build period delete query. AddressDeleteCompensating. err: %w", err)
 	}
 	if _, err := tx.ExecContext(ctx, deletePeriodQuery, deletePeriodArgs...); err != nil {
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
-		return fmt.Errorf("could not delete period. AddressDeleteCompensating. err: %v", err)
+		return fmt.Errorf("could not delete period. AddressDeleteCompensating. err: %w", err)
 	}
 
 	deleteAddrQuery, deleteAddrArgs, err := sq.Delete(addressTable).
@@ -798,17 +798,17 @@ func (h *handler) addressDeleteCompensatingAttempt(ctx context.Context, customer
 		Where(sq.Eq{"contact_id": contactID.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build address delete query. AddressDeleteCompensating. err: %v", err)
+		return fmt.Errorf("could not build address delete query. AddressDeleteCompensating. err: %w", err)
 	}
 	if _, err := tx.ExecContext(ctx, deleteAddrQuery, deleteAddrArgs...); err != nil {
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
-		return fmt.Errorf("could not delete address row. AddressDeleteCompensating. err: %v", err)
+		return fmt.Errorf("could not delete address row. AddressDeleteCompensating. err: %w", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("could not commit transaction. AddressDeleteCompensating. err: %v", err)
+		return fmt.Errorf("could not commit transaction. AddressDeleteCompensating. err: %w", err)
 	}
 	committed = true
 	return nil
