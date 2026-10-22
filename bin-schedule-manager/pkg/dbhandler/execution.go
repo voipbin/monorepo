@@ -31,7 +31,7 @@ const (
 func (h *handler) executionGetFromRow(rows *sql.Rows) (*execution.Execution, error) {
 	res := &execution.Execution{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. executionGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. executionGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -60,7 +60,7 @@ func (h *handler) executionGetFromRow(rows *sql.Rows) (*execution.Execution, err
 func (h *handler) ScheduleClaimAndCreateExecution(ctx context.Context, s *schedule.Schedule, next time.Time, now time.Time, triggerType execution.TriggerType, tmScheduled time.Time) (*execution.Execution, error) {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("could not begin transaction. ScheduleClaimAndCreateExecution. err: %v", err)
+		return nil, fmt.Errorf("could not begin transaction. ScheduleClaimAndCreateExecution. err: %w", err)
 	}
 	defer func() {
 		_ = tx.Rollback()
@@ -87,7 +87,7 @@ func (h *handler) ScheduleClaimAndCreateExecution(ctx context.Context, s *schedu
 	}
 
 	if err := tx.Commit(); err != nil {
-		return nil, fmt.Errorf("could not commit transaction. ScheduleClaimAndCreateExecution. err: %v", err)
+		return nil, fmt.Errorf("could not commit transaction. ScheduleClaimAndCreateExecution. err: %w", err)
 	}
 
 	// refresh the schedule cache
@@ -107,7 +107,7 @@ func (h *handler) scheduleClaimSlot(ctx context.Context, tx *sql.Tx, id uuid.UUI
 
 	data, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return false, fmt.Errorf("could not prepare fields. scheduleClaimSlot. err: %v", err)
+		return false, fmt.Errorf("could not prepare fields. scheduleClaimSlot. err: %w", err)
 	}
 
 	query, args, err := sq.Update(scheduleSchedulesTable).
@@ -118,17 +118,17 @@ func (h *handler) scheduleClaimSlot(ctx context.Context, tx *sql.Tx, id uuid.UUI
 		Where(sq.Eq{string(schedule.FieldTMDelete): nil}).
 		ToSql()
 	if err != nil {
-		return false, fmt.Errorf("could not build query. scheduleClaimSlot. err: %v", err)
+		return false, fmt.Errorf("could not build query. scheduleClaimSlot. err: %w", err)
 	}
 
 	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
-		return false, fmt.Errorf("could not execute. scheduleClaimSlot. err: %v", err)
+		return false, fmt.Errorf("could not execute. scheduleClaimSlot. err: %w", err)
 	}
 
 	affected, err := res.RowsAffected()
 	if err != nil {
-		return false, fmt.Errorf("could not get affected rows. scheduleClaimSlot. err: %v", err)
+		return false, fmt.Errorf("could not get affected rows. scheduleClaimSlot. err: %w", err)
 	}
 
 	return affected == 1, nil
@@ -161,12 +161,12 @@ func (h *handler) executionInsertRunning(ctx context.Context, tx *sql.Tx, s *sch
 
 	fields, err := commondatabasehandler.PrepareFields(e)
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare fields. executionInsertRunning. err: %v", err)
+		return nil, fmt.Errorf("could not prepare fields. executionInsertRunning. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(scheduleExecutionsTable).SetMap(fields).ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. executionInsertRunning. err: %v", err)
+		return nil, fmt.Errorf("could not build query. executionInsertRunning. err: %w", err)
 	}
 
 	if _, err := tx.ExecContext(ctx, query, args...); err != nil {
@@ -186,12 +186,12 @@ func (h *handler) ExecutionGet(ctx context.Context, id uuid.UUID) (*execution.Ex
 		Where(sq.Eq{string(execution.FieldID): id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ExecutionGet. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ExecutionGet. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ExecutionGet. err: %v", err)
+		return nil, fmt.Errorf("could not query. ExecutionGet. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -203,7 +203,7 @@ func (h *handler) ExecutionGet(ctx context.Context, id uuid.UUID) (*execution.Ex
 
 	res, err := h.executionGetFromRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. ExecutionGet. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. ExecutionGet. err: %w", err)
 	}
 
 	return res, nil
@@ -218,12 +218,12 @@ func (h *handler) ExecutionHasRunning(ctx context.Context, scheduleID uuid.UUID)
 		Where(sq.Eq{string(execution.FieldStatus): string(execution.StatusRunning)}).
 		ToSql()
 	if err != nil {
-		return false, fmt.Errorf("could not build query. ExecutionHasRunning. err: %v", err)
+		return false, fmt.Errorf("could not build query. ExecutionHasRunning. err: %w", err)
 	}
 
 	var count int64
 	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
-		return false, fmt.Errorf("could not query. ExecutionHasRunning. err: %v", err)
+		return false, fmt.Errorf("could not query. ExecutionHasRunning. err: %w", err)
 	}
 
 	return count > 0, nil
@@ -247,7 +247,7 @@ func (h *handler) ExecutionComplete(ctx context.Context, id uuid.UUID, status ex
 
 	data, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return false, fmt.Errorf("could not prepare fields. ExecutionComplete. err: %v", err)
+		return false, fmt.Errorf("could not prepare fields. ExecutionComplete. err: %w", err)
 	}
 
 	query, args, err := sq.Update(scheduleExecutionsTable).
@@ -256,17 +256,17 @@ func (h *handler) ExecutionComplete(ctx context.Context, id uuid.UUID, status ex
 		Where(sq.Eq{string(execution.FieldStatus): string(execution.StatusRunning)}).
 		ToSql()
 	if err != nil {
-		return false, fmt.Errorf("could not build query. ExecutionComplete. err: %v", err)
+		return false, fmt.Errorf("could not build query. ExecutionComplete. err: %w", err)
 	}
 
 	res, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return false, fmt.Errorf("could not execute. ExecutionComplete. err: %v", err)
+		return false, fmt.Errorf("could not execute. ExecutionComplete. err: %w", err)
 	}
 
 	affected, err := res.RowsAffected()
 	if err != nil {
-		return false, fmt.Errorf("could not get affected rows. ExecutionComplete. err: %v", err)
+		return false, fmt.Errorf("could not get affected rows. ExecutionComplete. err: %w", err)
 	}
 
 	return affected == 1, nil
@@ -285,7 +285,7 @@ func (h *handler) ExecutionReapAbandoned(ctx context.Context, now time.Time) (in
 
 	data, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return 0, fmt.Errorf("could not prepare fields. ExecutionReapAbandoned. err: %v", err)
+		return 0, fmt.Errorf("could not prepare fields. ExecutionReapAbandoned. err: %w", err)
 	}
 
 	query, args, err := sq.Update(scheduleExecutionsTable).
@@ -294,17 +294,17 @@ func (h *handler) ExecutionReapAbandoned(ctx context.Context, now time.Time) (in
 		Where(sq.Lt{string(execution.FieldTMDeadline): now}).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("could not build query. ExecutionReapAbandoned. err: %v", err)
+		return 0, fmt.Errorf("could not build query. ExecutionReapAbandoned. err: %w", err)
 	}
 
 	res, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return 0, fmt.Errorf("could not execute. ExecutionReapAbandoned. err: %v", err)
+		return 0, fmt.Errorf("could not execute. ExecutionReapAbandoned. err: %w", err)
 	}
 
 	affected, err := res.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("could not get affected rows. ExecutionReapAbandoned. err: %v", err)
+		return 0, fmt.Errorf("could not get affected rows. ExecutionReapAbandoned. err: %w", err)
 	}
 
 	return affected, nil
@@ -324,17 +324,17 @@ func (h *handler) ExecutionList(ctx context.Context, size uint64, token string, 
 	// apply filters
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. ExecutionList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. ExecutionList. err: %w", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ExecutionList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ExecutionList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ExecutionList. err: %v", err)
+		return nil, fmt.Errorf("could not query. ExecutionList. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -344,7 +344,7 @@ func (h *handler) ExecutionList(ctx context.Context, size uint64, token string, 
 	for rows.Next() {
 		e, err := h.executionGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ExecutionList. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. ExecutionList. err: %w", err)
 		}
 
 		res = append(res, e)
@@ -369,17 +369,17 @@ func (h *handler) ExecutionPrune(ctx context.Context, cutoff time.Time, batch ui
 		Where(sq.Expr(subquery, cutoff, batch)).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("could not build query. ExecutionPrune. err: %v", err)
+		return 0, fmt.Errorf("could not build query. ExecutionPrune. err: %w", err)
 	}
 
 	res, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return 0, fmt.Errorf("could not execute. ExecutionPrune. err: %v", err)
+		return 0, fmt.Errorf("could not execute. ExecutionPrune. err: %w", err)
 	}
 
 	affected, err := res.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("could not get affected rows. ExecutionPrune. err: %v", err)
+		return 0, fmt.Errorf("could not get affected rows. ExecutionPrune. err: %w", err)
 	}
 
 	return affected, nil
@@ -392,12 +392,12 @@ func (h *handler) ExecutionCountAll(ctx context.Context) (int64, error) {
 		From(scheduleExecutionsTable).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("could not build query. ExecutionCountAll. err: %v", err)
+		return 0, fmt.Errorf("could not build query. ExecutionCountAll. err: %w", err)
 	}
 
 	var count int64
 	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
-		return 0, fmt.Errorf("could not query. ExecutionCountAll. err: %v", err)
+		return 0, fmt.Errorf("could not query. ExecutionCountAll. err: %w", err)
 	}
 
 	return count, nil
