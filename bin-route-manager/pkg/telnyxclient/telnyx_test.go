@@ -44,7 +44,7 @@ func TestCreateOutboundVoiceProfile_Success(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(`{"data":{"id":"profile-abc-123"}}`)) //nolint:errcheck
+		w.Write([]byte(`{"data":{"id":"profile-abc-123"}}`)) //nolint:errcheck // test handler write to httptest recorder
 	}))
 	defer srv.Close()
 
@@ -82,7 +82,7 @@ func TestCreateFQDNConnection_Success(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(`{"data":{"id":"conn-abc-123"}}`)) //nolint:errcheck
+		w.Write([]byte(`{"data":{"id":"conn-abc-123"}}`)) //nolint:errcheck // test handler write to httptest recorder
 	}))
 	defer srv.Close()
 
@@ -120,7 +120,7 @@ func TestRegisterFQDN_Success(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(`{"data":{"id":"fqdn-abc-123"}}`)) //nolint:errcheck
+		w.Write([]byte(`{"data":{"id":"fqdn-abc-123"}}`)) //nolint:errcheck // test handler write to httptest recorder
 	}))
 	defer srv.Close()
 

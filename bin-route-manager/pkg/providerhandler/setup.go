@@ -136,13 +136,13 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 	credPassword, err := generateCredentialSecret(32)
 	if err != nil {
 		log.Errorf("Could not generate Telnyx connection credential. err: %v", err)
-		h.telnyxCleanup(log, client, "", "", profileID)
+		h.telnyxCleanup(log, client, "", "", profileID) //nolint:contextcheck // cleanup deliberately uses its own 15s context so it still runs after the request context is canceled
 		return nil, fmt.Errorf("generate telnyx credential failed: %w", err)
 	}
 	connID, err := client.CreateFQDNConnection(ctx, name, profileID, credUser, credPassword)
 	if err != nil {
 		log.Errorf("Could not create Telnyx FQDN connection. err: %v", err)
-		h.telnyxCleanup(log, client, "", "", profileID)
+		h.telnyxCleanup(log, client, "", "", profileID) //nolint:contextcheck // cleanup deliberately uses its own 15s context so it still runs after the request context is canceled
 		return nil, fmt.Errorf("telnyx create fqdn connection failed: %w", err)
 	}
 	log.Debugf("Created Telnyx FQDN connection. conn_id: %s", connID)
@@ -151,20 +151,20 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 	_, portStr, parseErr := net.SplitHostPort(h.sipGatewayFQDNForPSTN)
 	if parseErr != nil {
 		log.Errorf("Invalid PSTN SIP gateway FQDN. fqdn: %s, err: %v", h.sipGatewayFQDNForPSTN, parseErr)
-		h.telnyxCleanup(log, client, "", connID, profileID)
+		h.telnyxCleanup(log, client, "", connID, profileID) //nolint:contextcheck // cleanup deliberately uses its own 15s context so it still runs after the request context is canceled
 		return nil, fmt.Errorf("invalid pstn sip gateway fqdn %q: %w", h.sipGatewayFQDNForPSTN, parseErr)
 	}
 	port, convErr := strconv.Atoi(portStr)
 	if convErr != nil {
 		log.Errorf("Invalid PSTN SIP gateway port. fqdn: %s, err: %v", h.sipGatewayFQDNForPSTN, convErr)
-		h.telnyxCleanup(log, client, "", connID, profileID)
+		h.telnyxCleanup(log, client, "", connID, profileID) //nolint:contextcheck // cleanup deliberately uses its own 15s context so it still runs after the request context is canceled
 		return nil, fmt.Errorf("invalid pstn sip gateway port in %q: %w", h.sipGatewayFQDNForPSTN, convErr)
 	}
 	fqdnHost, _, _ := net.SplitHostPort(h.sipGatewayFQDNForPSTN)
 	fqdnID, regErr := client.RegisterFQDN(ctx, connID, fqdnHost, port)
 	if regErr != nil {
 		log.Errorf("Could not register PSTN SIP gateway FQDN. fqdn: %s, err: %v", h.sipGatewayFQDNForPSTN, regErr)
-		h.telnyxCleanup(log, client, "", connID, profileID)
+		h.telnyxCleanup(log, client, "", connID, profileID) //nolint:contextcheck // cleanup deliberately uses its own 15s context so it still runs after the request context is canceled
 		return nil, fmt.Errorf("telnyx register fqdn %q failed: %w", h.sipGatewayFQDNForPSTN, regErr)
 	}
 	log.Debugf("Registered PSTN SIP gateway FQDN. fqdn: %s, fqdn_id: %s", h.sipGatewayFQDNForPSTN, fqdnID)
@@ -173,7 +173,7 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 	res, err := h.Create(ctx, provider.TypeSIP, telnyxSIPHostname, "", "", map[string]string{}, name, detail, "")
 	if err != nil {
 		log.Errorf("Could not create provider record. Attempting Telnyx cleanup. err: %v", err)
-		h.telnyxCleanup(log, client, fqdnID, connID, profileID)
+		h.telnyxCleanup(log, client, fqdnID, connID, profileID) //nolint:contextcheck // cleanup deliberately uses its own 15s context so it still runs after the request context is canceled
 		return nil, fmt.Errorf("provider create failed: %w", err)
 	}
 

@@ -180,12 +180,24 @@ func runRequestListen(sockHandler sockhandler.SockHandler, providerHandler provi
 	return nil
 }
 
+// promReadHeaderTimeout bounds how long the metrics server waits for request headers.
+const promReadHeaderTimeout = 10 * time.Second
+
+// newPromServer returns the metrics http server. It serves http.DefaultServeMux and
+// only limits the request header read time, so scrape responses are not affected.
+func newPromServer(listen string) *http.Server {
+	return &http.Server{
+		Addr:              listen,
+		ReadHeaderTimeout: promReadHeaderTimeout,
+	}
+}
+
 // initProm inits prometheus settings
 func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		for {
-			err := http.ListenAndServe(listen, nil)
+			err := newPromServer(listen).ListenAndServe()
 			if err != nil {
 				logrus.Errorf("Could not start prometheus listener")
 				time.Sleep(time.Second * 1)
