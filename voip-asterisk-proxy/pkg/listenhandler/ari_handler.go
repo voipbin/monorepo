@@ -2,6 +2,7 @@ package listenhandler
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -15,7 +16,7 @@ import (
 func (h *listenHandler) ariSendRequestToAsterisk(m *sock.Request) (int, []byte, error) {
 	url := fmt.Sprintf("http://%s%s", h.ariAddr, m.URI)
 
-	req, err := http.NewRequest(string(m.Method), url, bytes.NewReader(m.Data))
+	req, err := http.NewRequestWithContext(context.Background(), string(m.Method), url, bytes.NewReader(m.Data))
 	if err != nil {
 		return 0, nil, err
 	}

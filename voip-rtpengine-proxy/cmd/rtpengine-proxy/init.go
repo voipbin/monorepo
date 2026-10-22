@@ -103,7 +103,7 @@ func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		for {
-			if err := http.ListenAndServe(listen, nil); err != nil {
+			if err := http.ListenAndServe(listen, nil); err != nil { //nolint:gosec // G114: internal Prometheus metrics listener, server timeouts intentionally not set
 				logrus.WithError(err).Errorf("Could not start prometheus listener")
 				time.Sleep(time.Second)
 				continue

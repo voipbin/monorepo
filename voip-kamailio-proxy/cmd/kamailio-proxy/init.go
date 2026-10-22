@@ -48,61 +48,61 @@ func initVariable() {
 
 	pflag.Parse()
 
-	if errFlag := viper.BindPFlag("rabbitmq_address", pflag.Lookup("rabbitmq_address")); errFlag != nil { //nolint
+	if errFlag := viper.BindPFlag("rabbitmq_address", pflag.Lookup("rabbitmq_address")); errFlag != nil {
 		logrus.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
-	if errEnv := viper.BindEnv("rabbitmq_address", "RABBITMQ_ADDRESS"); errEnv != nil { //nolint
+	if errEnv := viper.BindEnv("rabbitmq_address", "RABBITMQ_ADDRESS"); errEnv != nil {
 		logrus.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
 	rabbitMQAddress = viper.GetString("rabbitmq_address")
 
-	if errFlag := viper.BindPFlag("rabbitmq_queue_listen", pflag.Lookup("rabbitmq_queue_listen")); errFlag != nil { //nolint
+	if errFlag := viper.BindPFlag("rabbitmq_queue_listen", pflag.Lookup("rabbitmq_queue_listen")); errFlag != nil {
 		logrus.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
-	if errEnv := viper.BindEnv("rabbitmq_queue_listen", "RABBITMQ_QUEUE_LISTEN"); errEnv != nil { //nolint
+	if errEnv := viper.BindEnv("rabbitmq_queue_listen", "RABBITMQ_QUEUE_LISTEN"); errEnv != nil {
 		logrus.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
 	rabbitMQQueueListen = viper.GetString("rabbitmq_queue_listen")
 
-	if errFlag := viper.BindPFlag("interface_name", pflag.Lookup("interface_name")); errFlag != nil { //nolint
+	if errFlag := viper.BindPFlag("interface_name", pflag.Lookup("interface_name")); errFlag != nil {
 		logrus.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
-	if errEnv := viper.BindEnv("interface_name", "INTERFACE_NAME"); errEnv != nil { //nolint
+	if errEnv := viper.BindEnv("interface_name", "INTERFACE_NAME"); errEnv != nil {
 		logrus.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
 	interfaceName = viper.GetString("interface_name")
 
-	if errFlag := viper.BindPFlag("prometheus_endpoint", pflag.Lookup("prometheus_endpoint")); errFlag != nil { //nolint
+	if errFlag := viper.BindPFlag("prometheus_endpoint", pflag.Lookup("prometheus_endpoint")); errFlag != nil {
 		logrus.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
-	if errEnv := viper.BindEnv("prometheus_endpoint", "PROMETHEUS_ENDPOINT"); errEnv != nil { //nolint
+	if errEnv := viper.BindEnv("prometheus_endpoint", "PROMETHEUS_ENDPOINT"); errEnv != nil {
 		logrus.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
 	prometheusEndpoint = viper.GetString("prometheus_endpoint")
 
-	if errFlag := viper.BindPFlag("prometheus_listen_address", pflag.Lookup("prometheus_listen_address")); errFlag != nil { //nolint
+	if errFlag := viper.BindPFlag("prometheus_listen_address", pflag.Lookup("prometheus_listen_address")); errFlag != nil {
 		logrus.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
-	if errEnv := viper.BindEnv("prometheus_listen_address", "PROMETHEUS_LISTEN_ADDRESS"); errEnv != nil { //nolint
+	if errEnv := viper.BindEnv("prometheus_listen_address", "PROMETHEUS_LISTEN_ADDRESS"); errEnv != nil {
 		logrus.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
 	prometheusListenAddress = viper.GetString("prometheus_listen_address")
 
-	if errFlag := viper.BindPFlag("sip_timeout", pflag.Lookup("sip_timeout")); errFlag != nil { //nolint
+	if errFlag := viper.BindPFlag("sip_timeout", pflag.Lookup("sip_timeout")); errFlag != nil {
 		logrus.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
-	if errEnv := viper.BindEnv("sip_timeout", "SIP_TIMEOUT"); errEnv != nil { //nolint
+	if errEnv := viper.BindEnv("sip_timeout", "SIP_TIMEOUT"); errEnv != nil {
 		logrus.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
@@ -127,7 +127,7 @@ func initSignal() {
 func initProm(endpoint, listenAddress string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
-		if err := http.ListenAndServe(listenAddress, nil); err != nil { //nolint
+		if err := http.ListenAndServe(listenAddress, nil); err != nil { //nolint:gosec // G114: internal Prometheus metrics listener, server timeouts intentionally not set
 			logrus.Errorf("Could not start prometheus server. err: %v", err)
 		}
 	}()

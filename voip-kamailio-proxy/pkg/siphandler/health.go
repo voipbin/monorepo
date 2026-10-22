@@ -42,7 +42,7 @@ func SendOptionsCheck(ctx context.Context, hostname string, timeout time.Duratio
 		log.Debugf("Could not dial UDP. hostname: %s, err: %v", hostname, err)
 		return &HealthCheckResult{Healthy: false, ResponseCode: "timeout"}, nil
 	}
-	defer conn.Close() //nolint:errcheck
+	defer conn.Close() //nolint:errcheck // best-effort close of the UDP socket
 
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 	localIP := localAddr.IP.String()
@@ -50,9 +50,9 @@ func SendOptionsCheck(ctx context.Context, hostname string, timeout time.Duratio
 
 	//nolint:gosec // non-crypto random is fine for SIP branch/call-id generation
 	callID := fmt.Sprintf("%x", rand.Int63())
-	//nolint:gosec
+	//nolint:gosec // non-crypto random is fine for the SIP tag
 	tag := fmt.Sprintf("%x", rand.Int31())
-	//nolint:gosec
+	//nolint:gosec // non-crypto random is fine for the SIP branch
 	branch := fmt.Sprintf("z9hG4bK%x", rand.Int31())
 
 	msg := fmt.Sprintf(
