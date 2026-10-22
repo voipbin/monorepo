@@ -82,7 +82,7 @@ func (h *dockerWatchHandler) runEventLoop(ctx context.Context) error {
 
 	for {
 		if ctx.Err() != nil {
-			return nil
+			return nil //nolint:nilerr // MonitoringBackend contract: Run returns nil only when ctx was cancelled
 		}
 
 		log.Infof("Opening the docker event stream. since: %s", since)
@@ -93,7 +93,7 @@ func (h *dockerWatchHandler) runEventLoop(ctx context.Context) error {
 		since = next
 
 		if ctx.Err() != nil {
-			return nil
+			return nil //nolint:nilerr // MonitoringBackend contract: Run returns nil only when ctx was cancelled
 		}
 
 		switch {

@@ -21,7 +21,7 @@ func (h *handler) outdialTargetCallGetFromRow(row *sql.Rows) (*outdialtargetcall
 	res := &outdialtargetcall.OutdialTargetCall{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. outdialTargetCallGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. outdialTargetCallGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -32,7 +32,7 @@ func (h *handler) OutdialTargetCallCreate(ctx context.Context, t *outdialtargetc
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(t)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. OutdialTargetCallCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. OutdialTargetCallCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -43,11 +43,11 @@ func (h *handler) OutdialTargetCallCreate(ctx context.Context, t *outdialtargetc
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. OutdialTargetCallCreate. err: %v", err)
+		return fmt.Errorf("could not build query. OutdialTargetCallCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. OutdialTargetCallCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. OutdialTargetCallCreate. err: %w", err)
 	}
 
 	_ = h.outdialTargetCallUpdateToCache(ctx, t.ID)
@@ -137,12 +137,12 @@ func (h *handler) outdialTargetCallGetFromDB(ctx context.Context, id uuid.UUID) 
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. outdialTargetCallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. outdialTargetCallGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. outdialTargetCallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. outdialTargetCallGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -157,7 +157,7 @@ func (h *handler) outdialTargetCallGetFromDB(ctx context.Context, id uuid.UUID) 
 
 	res, err := h.outdialTargetCallGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. outdialTargetCallGetFromDB. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. outdialTargetCallGetFromDB. id: %s, err: %w", id, err)
 	}
 
 	return res, nil
@@ -198,12 +198,12 @@ func (h *handler) OutdialTargetCallGetByReferenceID(ctx context.Context, referen
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. OutdialTargetCallGetByReferenceID. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. OutdialTargetCallGetByReferenceID. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. OutdialTargetCallGetByReferenceID. err: %v", err)
+		return nil, fmt.Errorf("could not query. OutdialTargetCallGetByReferenceID. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -243,12 +243,12 @@ func (h *handler) OutdialTargetCallGetByActiveflowID(ctx context.Context, active
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. OutdialTargetCallGetByActiveflowID. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. OutdialTargetCallGetByActiveflowID. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. OutdialTargetCallGetByActiveflowID. err: %v", err)
+		return nil, fmt.Errorf("could not query. OutdialTargetCallGetByActiveflowID. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -288,17 +288,17 @@ func (h *handler) OutdialTargetCallList(ctx context.Context, token string, size 
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. OutdialTargetCallList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. OutdialTargetCallList. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. OutdialTargetCallList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. OutdialTargetCallList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. OutdialTargetCallList. err: %v", err)
+		return nil, fmt.Errorf("could not query. OutdialTargetCallList. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -308,12 +308,12 @@ func (h *handler) OutdialTargetCallList(ctx context.Context, token string, size 
 	for rows.Next() {
 		u, err := h.outdialTargetCallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. OutdialTargetCallList, err: %v", err)
+			return nil, fmt.Errorf("could not get data. OutdialTargetCallList, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. OutdialTargetCallList. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. OutdialTargetCallList. err: %w", err)
 	}
 
 	return res, nil

@@ -27,7 +27,7 @@ func (h *subscribeHandler) processEventCMCallHungup(ctx context.Context, m *sock
 	cc, err := h.campaigncallHandler.GetByReferenceID(ctx, c.ID)
 	if err != nil {
 		// campaigncall does not exist.
-		return nil
+		return nil //nolint:nilerr // lookup failure is treated as "no campaigncall for this call" and the event is dropped (existing behavior)
 	}
 
 	// campaigncall handle

@@ -21,7 +21,7 @@ func (h *handler) outdialGetFromRow(row *sql.Rows) (*outdial.Outdial, error) {
 	res := &outdial.Outdial{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. outdialGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. outdialGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -32,7 +32,7 @@ func (h *handler) OutdialCreate(ctx context.Context, f *outdial.Outdial) error {
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(f)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. OutdialCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. OutdialCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -43,11 +43,11 @@ func (h *handler) OutdialCreate(ctx context.Context, f *outdial.Outdial) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. OutdialCreate. err: %v", err)
+		return fmt.Errorf("could not build query. OutdialCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. OutdialCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. OutdialCreate. err: %w", err)
 	}
 
 	_ = h.outdialUpdateToCache(ctx, f.ID)
@@ -101,12 +101,12 @@ func (h *handler) outdialGetFromDB(ctx context.Context, id uuid.UUID) (*outdial.
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. outdialGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. outdialGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. outdialGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. outdialGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -121,7 +121,7 @@ func (h *handler) outdialGetFromDB(ctx context.Context, id uuid.UUID) (*outdial.
 
 	res, err := h.outdialGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. outdialGetFromDB. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. outdialGetFromDB. id: %s, err: %w", id, err)
 	}
 
 	return res, nil
@@ -170,7 +170,7 @@ func (h *handler) OutdialDelete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
-		return fmt.Errorf("could not execute. OutdialDelete. err: %v", err)
+		return fmt.Errorf("could not execute. OutdialDelete. err: %w", err)
 	}
 
 	// update the cache
@@ -196,17 +196,17 @@ func (h *handler) OutdialList(ctx context.Context, token string, size uint64, fi
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. OutdialList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. OutdialList. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. OutdialList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. OutdialList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. OutdialList. err: %v", err)
+		return nil, fmt.Errorf("could not query. OutdialList. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -216,12 +216,12 @@ func (h *handler) OutdialList(ctx context.Context, token string, size uint64, fi
 	for rows.Next() {
 		u, err := h.outdialGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. OutdialList, err: %v", err)
+			return nil, fmt.Errorf("could not get data. OutdialList, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. OutdialList. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. OutdialList. err: %w", err)
 	}
 
 	return res, nil

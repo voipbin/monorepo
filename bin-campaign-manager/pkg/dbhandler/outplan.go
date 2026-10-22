@@ -23,7 +23,7 @@ func (h *handler) outplanGetFromRow(row *sql.Rows) (*outplan.Outplan, error) {
 	res := &outplan.Outplan{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. outplanGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. outplanGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -41,7 +41,7 @@ func (h *handler) OutplanCreate(ctx context.Context, o *outplan.Outplan) error {
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(o)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. OutplanCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. OutplanCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -52,11 +52,11 @@ func (h *handler) OutplanCreate(ctx context.Context, o *outplan.Outplan) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. OutplanCreate. err: %v", err)
+		return fmt.Errorf("could not build query. OutplanCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. OutplanCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. OutplanCreate. err: %w", err)
 	}
 
 	_ = h.outplanUpdateToCache(ctx, o.ID)
@@ -110,12 +110,12 @@ func (h *handler) outplanGetFromDB(ctx context.Context, id uuid.UUID) (*outplan.
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. outplanGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. outplanGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. outplanGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. outplanGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -205,17 +205,17 @@ func (h *handler) OutplanList(ctx context.Context, token string, size uint64, fi
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. OutplanList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. OutplanList. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. OutplanList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. OutplanList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. OutplanList. err: %v", err)
+		return nil, fmt.Errorf("could not query. OutplanList. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -225,7 +225,7 @@ func (h *handler) OutplanList(ctx context.Context, token string, size uint64, fi
 	for rows.Next() {
 		u, err := h.outplanGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. OutplanGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. OutplanGets, err: %w", err)
 		}
 		res = append(res, u)
 	}

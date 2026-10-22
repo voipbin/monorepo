@@ -108,7 +108,7 @@ func (h *campaignHandler) ReconcileOrphanedFlows(ctx context.Context, recentInte
 	since := passStart.Add(-window)
 	candidates, err := h.db.CampaignListDeletedSince(pctx, since, scanLimit)
 	if err != nil {
-		return result, fmt.Errorf("could not list deleted campaigns. ReconcileOrphanedFlows. err: %v", err)
+		return result, fmt.Errorf("could not list deleted campaigns. ReconcileOrphanedFlows. err: %w", err)
 	}
 
 	// Compute Saturated and RecentSaturated in a dedicated, RPC-free pass
