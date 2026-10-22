@@ -1,10 +1,12 @@
 package httphandler
 
 import (
+	"context"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-pipecat-manager/pkg/pipecatcallhandler"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -12,7 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type HttpHandler interface {
+type HTTPHandler interface {
 	Run() error
 }
 
@@ -25,10 +27,10 @@ type httpHandler struct {
 	pipecatcallHandler pipecatcallhandler.PipecatcallHandler
 }
 
-func NewHttpHandler(
+func NewHTTPHandler(
 	requestHandler requesthandler.RequestHandler,
 	pipecatcallHandler pipecatcallhandler.PipecatcallHandler,
-) HttpHandler {
+) HTTPHandler {
 	return &httpHandler{
 		requestHandler:     requestHandler,
 		pipecatcallHandler: pipecatcallHandler,
@@ -48,10 +50,12 @@ func (h *httpHandler) Run() error {
 	router.POST("/:id/member-switched", h.memberSwitchedHandle)
 
 	server := &http.Server{
-		Handler: router,
+		Handler:           router,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
-	listener, err := net.Listen("tcp", defaultListenAddress)
+	listenConfig := net.ListenConfig{}
+	listener, err := listenConfig.Listen(context.Background(), "tcp", defaultListenAddress)
 	if err != nil {
 		log.Errorf("Failed to listen on %s: %v", defaultListenAddress, err)
 		return errors.Wrapf(err, "failed to listen on %s", defaultListenAddress)

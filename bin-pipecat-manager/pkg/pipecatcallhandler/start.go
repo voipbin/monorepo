@@ -170,7 +170,7 @@ func (h *pipecatcallHandler) startReferenceTypeCall(ctx context.Context, pc *pip
 	}()
 
 	// Monitor lifecycle — when context or WebSocket dies, terminate
-	go func() {
+	go func() { //nolint:contextcheck,gosec // the lifecycle monitor must outlive the start request ctx
 		select {
 		case <-se.Ctx.Done():
 		case <-se.ConnAstDone:
@@ -301,7 +301,7 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		}()
 
 		// Monitor lifecycle — when context or WebSocket dies, terminate
-		go func() {
+		go func() { //nolint:contextcheck,gosec // the lifecycle monitor must outlive the start request ctx
 			select {
 			case <-se.Ctx.Done():
 			case <-se.ConnAstDone:
@@ -366,7 +366,7 @@ func (h *pipecatcallHandler) terminate(ctx context.Context, pc *pipecatcall.Pipe
 	// and we want the event to leave even when terminate is invoked from a
 	// goroutine whose ctx is already cancelled.
 	if h.markTerminatedOnce(pc.ID) {
-		h.notifyHandler.PublishEvent(
+		h.notifyHandler.PublishEvent( //nolint:contextcheck // intentionally detached: the event must leave even when the caller ctx is already cancelled
 			context.Background(),
 			pipecatcall.EventTypePipecatcallTerminated,
 			pc,
@@ -393,7 +393,7 @@ func (h *pipecatcallHandler) terminate(ctx context.Context, pc *pipecatcall.Pipe
 	}
 
 	log.Debugf("Reference type cleanup done. Stopping session. pipecatcall_id: %s", pc.ID)
-	h.SessionStop(pc.ID)
+	h.SessionStop(pc.ID) //nolint:contextcheck // the session teardown must not be bound to the caller ctx
 	log.Infof("Pipecatcall terminated. pipecatcall_id: %s", pc.ID)
 }
 

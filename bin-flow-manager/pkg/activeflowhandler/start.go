@@ -35,7 +35,7 @@ func (h *activeflowHandler) startOnCompleteFlow(ctx context.Context, af *activef
 	log.WithField("activeflow", res).Debugf("Created a new activeflow. activeflow_id: %s", res.ID)
 
 	// execute
-	go func() {
+	go func() { //nolint:contextcheck,gosec // fire-and-forget: the on-complete execution must outlive the caller ctx
 		if errExecute := h.reqHandler.FlowV1ActiveflowExecute(context.Background(), res.ID); errExecute != nil {
 			log.Errorf("could not execute the on complete activeflow. activeflow_id: %s, err: %v", res.ID, errExecute)
 			return

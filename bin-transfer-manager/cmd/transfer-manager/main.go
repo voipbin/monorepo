@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -76,7 +77,9 @@ func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
-		if err := http.ListenAndServe(listen, nil); err != nil {
+		// ReadHeaderTimeout bounds the header read (slowloris); the other timeouts stay unset so scrapes are unaffected.
+		srv := &http.Server{Addr: listen, ReadHeaderTimeout: 10 * time.Second}
+		if err := srv.ListenAndServe(); err != nil {
 			// Prometheus server error is logged but not treated as fatal to avoid unsafe exit from a goroutine.
 			logrus.Errorf("Prometheus server error: %v", err)
 		}

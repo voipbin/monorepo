@@ -23,7 +23,7 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 	res := &conference.Conference{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. conferenceGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. conferenceGetFromRow. err: %w", err)
 	}
 
 	// Initialize nil slices and maps to empty values
@@ -53,12 +53,12 @@ func (h *handler) ConferenceCountByCustomerID(ctx context.Context, customerID uu
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("ConferenceCountByCustomerID: could not build query. err: %v", err)
+		return 0, fmt.Errorf("ConferenceCountByCustomerID: could not build query. err: %w", err)
 	}
 
 	var count int
 	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
-		return 0, fmt.Errorf("ConferenceCountByCustomerID: could not query. err: %v", err)
+		return 0, fmt.Errorf("ConferenceCountByCustomerID: could not query. err: %w", err)
 	}
 
 	return count, nil
@@ -91,7 +91,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(cf)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. ConferenceCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ConferenceCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -102,11 +102,11 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ConferenceCreate. err: %v", err)
+		return fmt.Errorf("could not build query. ConferenceCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. ConferenceCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. ConferenceCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -137,12 +137,12 @@ func (h *handler) conferenceGetFromDB(ctx context.Context, id uuid.UUID) (*confe
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. conferenceGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. conferenceGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. conferenceGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. conferenceGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -150,7 +150,7 @@ func (h *handler) conferenceGetFromDB(ctx context.Context, id uuid.UUID) (*confe
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. conferenceGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. conferenceGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -223,17 +223,17 @@ func (h *handler) ConferenceList(ctx context.Context, size uint64, token string,
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. ConferenceGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. ConferenceGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ConferenceGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ConferenceGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ConferenceGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. ConferenceGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -243,12 +243,12 @@ func (h *handler) ConferenceList(ctx context.Context, size uint64, token string,
 	for rows.Next() {
 		u, err := h.conferenceGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. ConferenceGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. ConferenceGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. ConferenceGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. ConferenceGets. err: %w", err)
 	}
 
 	return res, nil
@@ -264,12 +264,12 @@ func (h *handler) ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID 
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. ConferenceGetByConfbridgeID. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. ConferenceGetByConfbridgeID. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ConferenceGetByConfbridgeID. err: %v", err)
+		return nil, fmt.Errorf("could not query. ConferenceGetByConfbridgeID. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -284,7 +284,7 @@ func (h *handler) ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID 
 
 	res, err := h.conferenceGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get call. ConferenceGetByConfbridgeID, err: %v", err)
+		return nil, fmt.Errorf("could not get call. ConferenceGetByConfbridgeID, err: %w", err)
 	}
 
 	return res, nil
@@ -339,7 +339,7 @@ func (h *handler) ConferenceAddConferencecallID(ctx context.Context, id, confere
 
 	_, err := h.db.ExecContext(ctx, q, conferencecallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceAddConferencecallID. err: %v", err)
+		return fmt.Errorf("could not execute. ConferenceAddConferencecallID. err: %w", err)
 	}
 
 	// update the cache
@@ -371,7 +371,7 @@ func (h *handler) ConferenceRemoveConferencecallID(ctx context.Context, id, conf
 
 	_, err := h.db.ExecContext(ctx, q, conferencecallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceRemoveConferencecallID. err: %v", err)
+		return fmt.Errorf("could not execute. ConferenceRemoveConferencecallID. err: %w", err)
 	}
 
 	// update the cache
@@ -444,7 +444,7 @@ func (h *handler) ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 
 	_, err := h.db.ExecContext(ctx, q, recordingID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceAddRecordingIDs. err: %v", err)
+		return fmt.Errorf("could not execute. ConferenceAddRecordingIDs. err: %w", err)
 	}
 
 	// update the cache
@@ -470,7 +470,7 @@ func (h *handler) ConferenceAddTranscribeIDs(ctx context.Context, id uuid.UUID, 
 
 	_, err := h.db.ExecContext(ctx, q, transcribeID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceAddTranscribeIDs. err: %v", err)
+		return fmt.Errorf("could not execute. ConferenceAddTranscribeIDs. err: %w", err)
 	}
 
 	// update the cache

@@ -22,7 +22,7 @@ func (h *handler) pipecatcallGetFromRow(row *sql.Rows) (*pipecatcall.Pipecatcall
 	res := &pipecatcall.Pipecatcall{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. pipecatcallGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. pipecatcallGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -39,7 +39,7 @@ func (h *handler) PipecatcallCreate(ctx context.Context, f *pipecatcall.Pipecatc
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(f)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. PipecatcallCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. PipecatcallCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -50,11 +50,11 @@ func (h *handler) PipecatcallCreate(ctx context.Context, f *pipecatcall.Pipecatc
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. PipecatcallCreate. err: %v", err)
+		return fmt.Errorf("could not build query. PipecatcallCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. PipecatcallCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. PipecatcallCreate. err: %w", err)
 	}
 
 	_ = h.pipecatcallUpdateToCache(ctx, f.ID)
@@ -104,12 +104,12 @@ func (h *handler) pipecatcallGetFromDB(ctx context.Context, id uuid.UUID) (*pipe
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. pipecatcallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. pipecatcallGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. pipecatcallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. pipecatcallGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -117,7 +117,7 @@ func (h *handler) pipecatcallGetFromDB(ctx context.Context, id uuid.UUID) (*pipe
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. pipecatcallGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. pipecatcallGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}

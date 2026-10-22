@@ -27,7 +27,7 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 	cc, err := h.conferencecallHandler.GetByReferenceID(ctx, evt.JoinedCallID)
 	if err != nil {
 		// conferencecall not found. Not a conferencecall.
-		return nil
+		return nil //nolint:nilerr // a lookup miss means the event is not for a conferencecall; ignoring it is intended
 	}
 
 	_, err = h.conferencecallHandler.Joined(ctx, cc)
@@ -56,7 +56,7 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m
 	cc, err := h.conferencecallHandler.GetByReferenceID(ctx, evt.LeavedCallID)
 	if err != nil {
 		// conferencecall not found. Not a conferencecall.
-		return nil
+		return nil //nolint:nilerr // a lookup miss means the event is not for a conferencecall; ignoring it is intended
 	}
 
 	_, err = h.conferencecallHandler.Terminated(ctx, cc)

@@ -89,7 +89,7 @@ func (h *listenHandler) processV1PipecatcallsIDGet(ctx context.Context, m *sock.
 
 	data, err := json.Marshal(c)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // the failure is reported to the caller as a 500 response
 	}
 
 	res := &sock.Response{
@@ -126,7 +126,7 @@ func (h *listenHandler) processV1PipecatcallsIDStopPost(ctx context.Context, m *
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // the failure is reported to the caller as a 500 response
 	}
 
 	res := &sock.Response{

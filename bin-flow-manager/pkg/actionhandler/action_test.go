@@ -1,6 +1,7 @@
 package actionhandler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -48,7 +49,7 @@ func Test_ActionFetchGet(t *testing.T) {
 
 			h := &actionHandler{}
 
-			_, err := h.ActionFetchGet(tt.act, tt.activeflowID, tt.callID)
+			_, err := h.ActionFetchGet(context.Background(), tt.act, tt.activeflowID, tt.callID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

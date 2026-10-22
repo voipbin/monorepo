@@ -2,6 +2,7 @@ package actionhandler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -71,7 +72,7 @@ func (h *actionHandler) ValidateActions(actions []action.Action) error {
 }
 
 // ActionFetchGet gets the action from the remote.
-func (h *actionHandler) ActionFetchGet(act *action.Action, activeflowID uuid.UUID, referenceID uuid.UUID) ([]action.Action, error) {
+func (h *actionHandler) ActionFetchGet(ctx context.Context, act *action.Action, activeflowID uuid.UUID, referenceID uuid.UUID) ([]action.Action, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ActionFetchGet",
 		"activeflow_id": activeflowID,
@@ -100,7 +101,7 @@ func (h *actionHandler) ActionFetchGet(act *action.Action, activeflowID uuid.UUI
 	}
 
 	// set the HTTP method, url, and request body
-	req, err := http.NewRequest(option.EventMethod, option.EventURL, bytes.NewBuffer(reqBody))
+	req, err := http.NewRequestWithContext(ctx, option.EventMethod, option.EventURL, bytes.NewBuffer(reqBody))
 	if err != nil {
 		log.Errorf("Could not create a request. err: %v", err)
 		return nil, err
@@ -118,7 +119,7 @@ func (h *actionHandler) ActionFetchGet(act *action.Action, activeflowID uuid.UUI
 		_ = resp.Body.Close()
 	}()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("wrong status return. stauts: %d", resp.StatusCode)
 	}
 

@@ -29,7 +29,7 @@ func (h *subscribeHandler) processEventCMGroupcallProgressing(ctx context.Contex
 	if err != nil {
 		// not a transfer's groupcall.
 		// nothing to do
-		return nil
+		return nil //nolint:nilerr // a lookup miss means the event is not for a transfer; ignoring it is intended
 	}
 
 	if errAnswer := h.transferHandler.TransfereeAnswer(ctx, tr, &evt); errAnswer != nil {
@@ -57,7 +57,7 @@ func (h *subscribeHandler) processEventCMGroupcallHangup(ctx context.Context, m 
 	if err != nil {
 		// not a transfer's groupcall.
 		// nothing to do
-		return nil
+		return nil //nolint:nilerr // a lookup miss means the event is not for a transfer; ignoring it is intended
 	}
 
 	if errAnswer := h.transferHandler.TransfereeHangup(ctx, tr, &evt); errAnswer != nil {
@@ -85,7 +85,7 @@ func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *sock
 	if err != nil {
 		// not a transferer call.
 		// nothing to do
-		return nil
+		return nil //nolint:nilerr // a lookup miss means the event is not for a transfer; ignoring it is intended
 	}
 
 	if errAnswer := h.transferHandler.TransfererHangup(ctx, c, &evt); errAnswer != nil {

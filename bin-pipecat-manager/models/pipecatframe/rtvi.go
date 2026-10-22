@@ -478,6 +478,7 @@ type RTVIServerMessageFrame struct {
 }
 
 // RTVIObserverParams defines parameters for configuring RTVI Observer behavior.
+//
 // Deprecated: Parameter `ErrorsEnabled` is deprecated. Error messages are always enabled.
 type RTVIObserverParams struct {
 	BotLLMEnabled            bool    `json:"bot_llm_enabled"`

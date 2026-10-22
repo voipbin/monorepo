@@ -86,7 +86,7 @@ func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflo
 	act := &af.CurrentAction
 
 	// patch the actions from the remote
-	fetchedActions, err := h.actionHandler.ActionFetchGet(act, af.ID, af.ReferenceID)
+	fetchedActions, err := h.actionHandler.ActionFetchGet(ctx, act, af.ID, af.ReferenceID)
 	if err != nil {
 		return errors.Wrapf(err, "could not fetch the actions from the remote.")
 	}
@@ -490,7 +490,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	var opt action.OptionConnect
 	if errMarshal := json.Unmarshal(tmpOption, &opt); errMarshal != nil {
 		log.Errorf("Could not unmarshal the connect option. err: %v", errMarshal)
-		return fmt.Errorf("could not unmarshal the connect option. err: %v", errMarshal)
+		return fmt.Errorf("could not unmarshal the connect option. err: %w", errMarshal)
 	}
 
 	// create a confbridge for connect
@@ -520,7 +520,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	f, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "tmp", "tmp flow for action connect", tmpActions, uuid.Nil, false)
 	if err != nil {
 		log.Errorf("Could not create a temporary flow for connect. err: %v", err)
-		return fmt.Errorf("could not create a call flow. err: %v", err)
+		return fmt.Errorf("could not create a call flow. err: %v", err) //nolint:errorlint // keep the error opaque: wrapping would let a typed upstream error change the RPC response from the legacy 400
 	}
 
 	// get call create options
@@ -582,7 +582,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 		optStringHangup, err := json.Marshal(optHangup)
 		if err != nil {
 			log.Errorf("Could not marshal the confbridge join option. err: %v", err)
-			return fmt.Errorf("could not marshal the confbridge join option. err: %v", err)
+			return fmt.Errorf("could not marshal the confbridge join option. err: %w", err)
 		}
 
 		actionHangupRelay := action.Action{
@@ -915,7 +915,7 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 	var opt action.OptionCall
 	if err := json.Unmarshal(tmpOption, &opt); err != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", err)
-		return fmt.Errorf("could not unmarshal the option. err: %v", err)
+		return fmt.Errorf("could not unmarshal the option. err: %w", err)
 	}
 
 	flowID := opt.FlowID
@@ -924,7 +924,7 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 		tmpFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "", "", opt.Actions, uuid.Nil, false)
 		if err != nil {
 			log.Errorf("Could not create a temporary flow for connect. err: %v", err)
-			return fmt.Errorf("could not create a call flow. err: %v", err)
+			return fmt.Errorf("could not create a call flow. err: %v", err) //nolint:errorlint // keep the error opaque: wrapping would let a typed upstream error change the RPC response from the legacy 400
 		}
 		log.WithField("flow", tmpFlow).Debugf("Created a temp flow. flow_id: %s", tmpFlow.ID)
 
@@ -967,14 +967,14 @@ func (h *activeflowHandler) actionHandleVariableSet(ctx context.Context, af *act
 	var opt action.OptionVariableSet
 	if errUnmarshal := json.Unmarshal(tmpOption, &opt); errUnmarshal != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", errUnmarshal)
-		return fmt.Errorf("could not unmarshal the option. err: %v", errUnmarshal)
+		return fmt.Errorf("could not unmarshal the option. err: %w", errUnmarshal)
 	}
 
 	variables := map[string]string{
 		opt.Key: opt.Value,
 	}
 	if errVariable := h.variableHandler.SetVariable(ctx, af.ID, variables); errVariable != nil {
-		return fmt.Errorf("could not set varialbe. err: %v", errVariable)
+		return fmt.Errorf("could not set varialbe. err: %w", errVariable)
 	}
 
 	return nil
@@ -998,7 +998,7 @@ func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *act
 	var opt action.OptionWebhookSend
 	if errUnmarshal := json.Unmarshal(tmpOption, &opt); errUnmarshal != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", errUnmarshal)
-		return fmt.Errorf("could not unmarshal the option. err: %v", errUnmarshal)
+		return fmt.Errorf("could not unmarshal the option. err: %w", errUnmarshal)
 	}
 	log.Debugf("Sending webhook message. message: %s", opt.Data)
 

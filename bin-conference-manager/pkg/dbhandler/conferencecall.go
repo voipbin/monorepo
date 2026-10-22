@@ -23,7 +23,7 @@ func (h *handler) conferencecallGetFromRow(row *sql.Rows) (*conferencecall.Confe
 	res := &conferencecall.Conferencecall{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. conferencecallGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. conferencecallGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -41,7 +41,7 @@ func (h *handler) ConferencecallCreate(ctx context.Context, cf *conferencecall.C
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(cf)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. ConferencecallCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ConferencecallCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -52,11 +52,11 @@ func (h *handler) ConferencecallCreate(ctx context.Context, cf *conferencecall.C
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ConferencecallCreate. err: %v", err)
+		return fmt.Errorf("could not build query. ConferencecallCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. ConferencecallCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. ConferencecallCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -87,12 +87,12 @@ func (h *handler) conferencecallGetFromDB(ctx context.Context, id uuid.UUID) (*c
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. conferencecallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. conferencecallGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. conferencecallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. conferencecallGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -100,7 +100,7 @@ func (h *handler) conferencecallGetFromDB(ctx context.Context, id uuid.UUID) (*c
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. conferencecallGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. conferencecallGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -173,12 +173,12 @@ func (h *handler) ConferencecallGetByReferenceID(ctx context.Context, referenceI
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. ConferencecallGetByReferenceID. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. ConferencecallGetByReferenceID. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ConferencecallGetByReferenceID. err: %v", err)
+		return nil, fmt.Errorf("could not query. ConferencecallGetByReferenceID. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -193,7 +193,7 @@ func (h *handler) ConferencecallGetByReferenceID(ctx context.Context, referenceI
 
 	res, err := h.conferencecallGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get call. ConferencecallGetByReferenceID, err: %v", err)
+		return nil, fmt.Errorf("could not get call. ConferencecallGetByReferenceID, err: %w", err)
 	}
 
 	_ = h.conferencecallSetToCache(ctx, res)
@@ -218,17 +218,17 @@ func (h *handler) ConferencecallList(ctx context.Context, size uint64, token str
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. ConferencecallGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. ConferencecallGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ConferencecallGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ConferencecallGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ConferencecallGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. ConferencecallGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -238,12 +238,12 @@ func (h *handler) ConferencecallList(ctx context.Context, size uint64, token str
 	for rows.Next() {
 		u, err := h.conferencecallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. ConferencecallGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. ConferencecallGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. ConferencecallGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. ConferencecallGets. err: %w", err)
 	}
 
 	return res, nil
