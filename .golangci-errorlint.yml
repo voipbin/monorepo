@@ -7,6 +7,10 @@
 #   as net/http requests) must carry a context.
 # - rowserrcheck: docs/conventions/database.md 7.2a, rows.Err() must be checked
 #   after iterating sql.Rows.
+# - bodyclose, nilerr, wastedassign, predeclared, copyloopvar, gocritic,
+#   contextcheck, gosec, forbidigo, gocyclo, nestif, revive, usestdlibvars,
+#   nolintlint: anti-pattern and bug detectors, docs/conventions/linting.md
+#   lists the rules, the thresholds and the nolint policy.
 #
 # It is separate from .golangci.yml on purpose: --new-from-merge-base is a
 # global option, so adding it to the standard run would also hide issues on
@@ -24,7 +28,47 @@ linters:
     - errorlint
     - noctx
     - rowserrcheck
+    # Anti-pattern and bug detectors (VOIP-1641).
+    - bodyclose
+    - nilerr
+    - wastedassign
+    - predeclared
+    - copyloopvar
+    - gocritic
+    - contextcheck
+    - gosec
+    - forbidigo
+    - gocyclo
+    - nestif
+    - revive
+    - usestdlibvars
+    - nolintlint
   settings:
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+      allow-unused: true
+    gocyclo:
+      min-complexity: 20
+    nestif:
+      min-complexity: 6
+    revive:
+      rules:
+        - name: error-naming
+        - name: error-return
+        - name: indent-error-flow
+        - name: superfluous-else
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: empty-block
+        - name: unreachable-code
+        - name: var-naming
+    gosec:
+      excludes:
+        - G101 # hard-coded credentials: matches field and constant names, not values
+        - G115 # integer conversion: too frequent on proto and DB numeric types
+        - G117 # secret-named fields marshaled by API client request structs
+        - G304 # file inclusion via variable: paths are service-controlled
     errorlint:
       errorf: true
       comparison: false
@@ -34,12 +78,31 @@ linters:
     paths:
       - (^|/)vendor(/|$)
     rules:
-      # Test code (sqlmock, in-memory fixtures) is not held to the context and
-      # rows.Err rules; errorlint still applies to tests.
+      # Operator CLIs print results to stdout on purpose: cmd/*-control and the
+      # shared migrate commands.
+      - path: (^|/)cmd/[^/]+-control/
+        linters:
+          - forbidigo
+      - path: pkg/migrationhandler/command\.go
+        linters:
+          - forbidigo
+      # Test code (sqlmock, in-memory fixtures, table-driven copies) is exempt
+      # from the linters below. errorlint, nilerr, wastedassign, predeclared
+      # and nolintlint still apply to tests.
       - path: _test\.go
         linters:
           - noctx
           - rowserrcheck
+          - gosec
+          - contextcheck
+          - forbidigo
+          - gocyclo
+          - nestif
+          - bodyclose
+          - copyloopvar
+          - gocritic
+          - usestdlibvars
+          - revive
 
 issues:
   max-same-issues: 0

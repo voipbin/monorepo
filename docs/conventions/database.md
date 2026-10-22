@@ -204,7 +204,7 @@ if err := rows.Err(); err != nil { ... }   // required
 
 When the caller's `ctx` may already be canceled but the work must still finish (for example a rollback, or a read after a commit that already succeeded), derive a separate context with `context.WithoutCancel(ctx)` instead of dropping the context.
 
-CI enforces both rules on added or changed lines only (`golangci-lint noctx` and `rowserrcheck`, config `.golangci-errorlint.yml`, `--new-from-merge-base=origin/main`). Existing violations are not reported until the line is touched, and `_test.go` files are excluded. `noctx` also reports other context-less I/O calls (`http.NewRequest`, `net.Dial`, `exec.Command`). A deliberate exception uses `//nolint:noctx // <reason>` or `//nolint:rowserrcheck // <reason>` on the line the linter reports (the call line); the reason is a convention, the lint configuration does not enforce it. golangci-lint reports one issue per line by default, so a line that breaks both rules shows the second one after the first is fixed.
+CI enforces both rules on added or changed lines only (`golangci-lint noctx` and `rowserrcheck`, config `.golangci-errorlint.yml`, `--new-from-merge-base=origin/main`). Existing violations are not reported until the line is touched, and `_test.go` files are excluded. `noctx` also reports other context-less I/O calls (`http.NewRequest`, `net.Dial`, `exec.Command`). A deliberate exception uses `//nolint:noctx // <reason>` or `//nolint:rowserrcheck // <reason>` on the line the linter reports (the call line); nolintlint rejects a missing reason (see [linting.md](linting.md)). golangci-lint reports one issue per line by default, so a line that breaks both rules shows the second one after the first is fixed.
 
 ## 7.3 Empty Slice Initialization
 

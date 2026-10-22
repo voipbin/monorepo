@@ -24,3 +24,4 @@ Recommended reading order for new engineers:
 14. [metrics.md](metrics.md) — Prometheus naming, no name collisions with shared library
 15. [security.md](security.md) — secrets, input validation, authorization
 16. [direct-resource-types.md](direct-resource-types.md) — no magic strings for direct resource types
+17. [linting.md](linting.md): CI lint gates, new-line enforcement, nolint policy

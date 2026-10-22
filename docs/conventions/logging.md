@@ -146,4 +146,8 @@ func (h *handler) Get(ctx context.Context, id uuid.UUID) {
 import log "github.com/sirupsen/logrus"  // Confusing: shadows log variable pattern
 ```
 
+### 5.7 No Direct Stdout Printing
+
+Service code must not call `fmt.Print`, `fmt.Printf`, `fmt.Println`, `print` or `println`. Use the function-scoped logrus logger (5.1). Operator CLIs under `cmd/*-control/` and the shared migrate commands in `bin-common-handler/pkg/migrationhandler/command.go` print results to stdout on purpose and are exempt. CI enforces this on added or changed lines (see [linting.md](linting.md)).
+
 ---
