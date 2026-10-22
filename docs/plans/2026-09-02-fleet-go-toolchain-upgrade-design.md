@@ -298,7 +298,7 @@ than a right-sized batched one specified up front.
    one-at-a-time, not all-at-once.
 4. After each `<svc>-deploy` job (any tier), confirm the container is healthy
    via Komodo container status + `GetContainerLog` (this fleet is bare-metal
-   Docker on bm-nyc-01 via Komodo, not Kubernetes — there is no `kubectl
+   Docker on <prod-host> via Komodo, not Kubernetes — there is no `kubectl
    rollout status` equivalent to reach for). On any failure, roll back via
    image-tag redeploy (the previous `$CIRCLE_SHA1` tag) rather than reverting
    the PR — the PR revert is for the *module graph*, not for a single bad

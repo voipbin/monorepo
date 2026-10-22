@@ -135,7 +135,7 @@ its `-deploy` job runs for the first time:
    services in `voipbin/install/docker-compose.yml.dist` pin
    `container_name: voipbin-<short>-mgr`, others leave it
    Compose-assigned.
-4. Comment out the removed service's block in bm-nyc-01's live
+4. Comment out the removed service's block in <prod-host>'s live
    `/opt/voipbin/install/docker-compose.yml` (SSH), preventing the
    install-managed compose project from recreating the old container.
 5. Confirm a single RabbitMQ consumer remains for the service's queues.

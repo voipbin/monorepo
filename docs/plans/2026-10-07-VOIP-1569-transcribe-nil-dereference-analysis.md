@@ -39,7 +39,7 @@
 
 ### 2.4 운영 증거
 
-- bm-nyc-01 api-manager 컨테이너 로그: `panic recovered` 스택이 `transcribe.go:228`, `transcribe.go:159`, `server/transcribes.go:73` 을 가리킨다. 2026-10-06 22:49 UTC 부터 약 20초 동안 레플리카당 약 25회(api-validator 실행 중).
+- <prod-host> api-manager 컨테이너 로그: `panic recovered` 스택이 `transcribe.go:228`, `transcribe.go:159`, `server/transcribes.go:73` 을 가리킨다. 2026-10-06 22:49 UTC 부터 약 20초 동안 레플리카당 약 25회(api-validator 실행 중).
 - 같은 컨테이너 로그에 `RECORDING_NOT_FOUND` 에러가 있다. 시각 대조는 하지 않았으므로 관련성은 추정이다.
 - 호출 주체: api-validator 로 보인다. `monorepo-monitoring/api-validator/tests/scenarios/stt/test_stt_api.py` 등 `stt/` 의 모듈 4개(`test_stt_accuracy.py`, `test_stt_api.py`, `test_stt_events.py`, `test_stt_languages.py`)는 파일 앞부분에 `pytestmark = pytest.mark.skip(...)` 가 있으나 같은 파일 아래에서 `pytestmark = [pytest.mark.stt, ...]` 로 다시 대입되어 skip 이 무효이고 실제로 실행된다. 실제로 skip 되는 것은 `generated/test_transcribes_generated.py` 하나뿐이다. 실행되는 테스트 중 존재하지 않는 recording id(무작위 uuid 또는 nil uuid)로 POST /transcribes 를 보내는 테스트가 이 패닉 경로를 탄다(5절의 목록). 22:49 UTC 의 패닉 시각이 검증기 실행과 부합하는 정황이나 시각 대조는 하지 않았다.
 

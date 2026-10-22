@@ -432,7 +432,7 @@ markdown headers, no test-plan section, no AI attribution.
 **Do not merge without explicit authorization** (repo-standard rule, applies here
 same as every other ticket). After merge, per the design doc's Risks section:
 `bin-sentinel-manager` redeploys automatically via CircleCI → Komodo — live-verify
-on bm-nyc-01 the same way VOIP-1250/VOIP-1447 did (container `running`, boot log
+on <prod-host> the same way VOIP-1250/VOIP-1447 did (container `running`, boot log
 shows the normal Docker-backend reconciliation sequence with no new errors), not
 just trust CI green. `voip-asterisk-proxy` has no `-deploy` job — its new image
 reaches production through whatever out-of-band mechanism already handles that,

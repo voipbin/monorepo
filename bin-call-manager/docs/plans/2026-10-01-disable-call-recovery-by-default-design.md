@@ -90,7 +90,7 @@ if !h.recoveryEnabled {
 
 After merge and CircleCI release approval (maintainer), the gate for starting Homer repair is:
 
-1. Every call-manager instance on bm-nyc-01 (Komodo Stack `bin-call-manager`, `deploy.replicas: 2`) runs the new image (Komodo `ListStackServices` image tag equals the merge commit), and no other container running a `voipbin/bin-call-manager` image exists on the host (Komodo `ListDockerContainers`; the legacy install-stack `voipbin-call-mgr` shares the subscribe queue and would process `container_died` without the guard). Checked 2026-10-01: only `bin-call-manager-call-manager-1` and `-2` run.
+1. Every call-manager instance on <prod-host> (Komodo Stack `bin-call-manager`, `deploy.replicas: 2`) runs the new image (Komodo `ListStackServices` image tag equals the merge commit), and no other container running a `voipbin/bin-call-manager` image exists on the host (Komodo `ListDockerContainers`; the legacy install-stack `voipbin-call-mgr` shares the subscribe queue and would process `container_died` without the guard). Checked 2026-10-01: only `bin-call-manager-call-manager-1` and `-2` run.
 2. The deployed environment has no `RECOVERY_ENABLED` set to a true value (Komodo `InspectDockerContainer` env).
 3. Loki query `{service_name=~"bin-call-manager-call-manager-.+"} |= "Call recovery is disabled. RECOVERY_ENABLED is not set to true."` from the rollout start returns lines from 2 distinct `service_name` values (the replica count), and `|= "Call recovery is enabled"` returns none. The full startup message is matched, so the per-call guard log (same prefix) cannot satisfy it. No manual trigger and no container death needed.
 

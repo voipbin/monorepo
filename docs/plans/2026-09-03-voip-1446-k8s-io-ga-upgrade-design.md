@@ -480,7 +480,7 @@ runtime-only risk category like VOIP-1447's GODEBUG concern.
 
 **Production deployment blast radius and rollback (this is a materially different
 question from "no K8s traffic to test against" below, and needs its own answer).**
-`bin-sentinel-manager`'s CircleCI pipeline is test → build → **deploy to bm-nyc-01
+`bin-sentinel-manager`'s CircleCI pipeline is test → build → **deploy to <prod-host>
 via Komodo**, same as every other in-fleet service — merging this ticket rebuilds
 and redeploys the actual production `bin-sentinel-manager` binary, with a new
 `k8s.io/*` dependency tree, even though the code path that tree serves (the K8s
@@ -491,7 +491,7 @@ the service that VoIPBin's stranded-call detection actually depends on (the Dock
 backend), regardless of whether the K8s code path is exercised. Post-deploy check
 (implementation plan should make this an explicit step, matching the VOIP-1250 and
 VOIP-1447 precedent of live-verifying via Komodo rather than trusting CI green):
-confirm the container is `running`/healthy on bm-nyc-01 and its boot log shows the
+confirm the container is `running`/healthy on <prod-host> and its boot log shows the
 normal Docker-backend reconciliation sequence (asterisk-id resolution, docker event
 stream opened) with no new errors. Rollback: revert this PR's merge commit and
 redeploy the prior image tag via Komodo, same mechanism as any other service on this
@@ -504,7 +504,7 @@ already manages that image (same situation VOIP-1447 documented for the three
 ticket's concern to trigger or verify.
 
 **No production K8s backend traffic to validate against.** `bin-sentinel-manager`'s
-K8s watch backend is not the one actually running in production on bm-nyc-01 (a
+K8s watch backend is not the one actually running in production on <prod-host> (a
 bare-metal Docker host) — the Docker backend is. This was already true before this
 ticket and is unrelated to it; the existing unit/fake-clientset test suite is the
 only verification surface available, same as it was for the original VOIP-1418

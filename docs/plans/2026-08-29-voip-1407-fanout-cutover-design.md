@@ -721,7 +721,7 @@ automatic remediation path left (issue analysis §2b's finding: VOIP-1406's
 management-API remediation documented in `docs/reference/rabbitmq-queues-
 reference.md:301-312` still works, it just needs a human to run it -- **corrected per R2
 finding 5**: an earlier version of this bullet said `rabbitmqadmin`, which is not the
-tool that doc or §5's runbook actually uses on bm-nyc-01).
+tool that doc or §5's runbook actually uses on <prod-host>).
 
 ## 4. Per-call-site disposition (issue analysis §3's 62 sites, resolved individually)
 
@@ -764,7 +764,7 @@ rebuilt/redeployed with that code removed, with a CONFIRMED restart-survival che
 service (§3.4), before this runbook runs.
 
 **Mechanism**: a documented one-time management-API cleanup via `curl` against the
-broker's HTTP API (port 80, not 15672 on bm-nyc-01), matching the existing runbook
+broker's HTTP API (port 80, not 15672 on <prod-host>), matching the existing runbook
 pattern already in `docs/reference/rabbitmq-queues-reference.md:301-312` (NOT
 `rabbitmqadmin`, which that doc does not use). Exact commands (per exchange:
 `curl -u "$RABBITMQ_USER:$RABBITMQ_PASS" -X DELETE

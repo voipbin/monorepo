@@ -84,7 +84,7 @@ instead of the older SSH + `versions.lock` (`ssh-deploy.sh`) path.
   (`GOOGLE_APPLICATION_CREDENTIALS` points there). tts-manager was missed
   in the original GCP-credential-file rollout — on GKE this worked
   implicitly via workload-identity ADC, so the gap only surfaced on
-  bm-nyc-01 (see NOJIRA-Fix-tts-manager-gcp-credentials).
+  <prod-host> (see NOJIRA-Fix-tts-manager-gcp-credentials).
 - **Batch-TTS media delivery:** the stack runs two containers sharing a
   named `shared-data` volume — the Go service writes wav files to
   `/shared-data`, and the `tts-manager-http` sidecar
@@ -93,7 +93,7 @@ instead of the older SSH + `versions.lock` (`ssh-deploy.sh`) path.
   sidecar's Compose service name so the media URL host resolves via Docker DNS
   on the `production` network (Asterisk fetches the wav from that URL).
   All three pieces (volume, sidecar, `POD_IP`) were dropped in the
-  original Komodo migration, so batch TTS was silent on bm-nyc-01 even
+  original Komodo migration, so batch TTS was silent on <prod-host> even
   with working credentials (same NOJIRA-Fix-tts-manager-gcp-credentials
   incident).
 - **Full design and cutover procedure:**

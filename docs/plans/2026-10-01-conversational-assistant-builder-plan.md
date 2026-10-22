@@ -145,7 +145,7 @@
 - **하네스 검증:** dry-run은 태그가 없으므로 일반 `go test ./...`에 포함된다. 태그가 붙은 CLI는 `go vet -tags builder_eval ./pkg/builderhandler/eval/...`로 컴파일만 확인한다.
 - 변경 모듈(`bin-ai-manager`, `bin-common-handler`, `bin-api-manager`, `bin-openapi-manager`)에서 루트 `CLAUDE.md`의 verification workflow를 그대로 실행한다(`go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`). **`bin-common-handler`를 바꿨으므로 영향받는 서비스 전체에서 최소한 `go build ./...`와 `go vet ./...`를 돌린다.** 돌리지 못한 것은 PR 본문에 쓴다.
 - 새 문서와 코드 주석과 프롬프트(영어 본문 포함)에 em dash(U+2014)와 en dash(U+2013)가 없는지 `grep -P '\x{2014}|\x{2013}'`로 확인한다(결과 0건).
-- 커밋 작성자: `git log -1 --format=%ae`가 `pchero21@gmail.com`.
+- 커밋 작성자: `git log -1 --format=%ae`가 `<author-email>`.
 - PR 전 `git fetch origin main`, 충돌 확인(`git merge-tree`), `HEAD..origin/main` 검토. 실제 PR 본문에는 수기 코드 파일 목록과 생성물 목록을 분리해 쓰고 평가 미실행과 활성화 전 필수 조건을 맨 위에 둔다.
 
 ---

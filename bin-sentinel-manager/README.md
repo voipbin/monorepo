@@ -10,7 +10,7 @@ Two peer backends, selected by `SENTINEL_BACKEND`:
 
 | Value | Watches | Used by |
 |---|---|---|
-| `docker` | Docker Events API, through a read-only socket proxy | bm-nyc-01 (`komodo/docker-compose.yml`) |
+| `docker` | Docker Events API, through a read-only socket proxy | <prod-host> (`komodo/docker-compose.yml`) |
 | `kubernetes` | Kubernetes pod informers | self-hosted Kubernetes (self-hoster's own manifests) |
 
 There is no default and no auto-detection: an unset or unknown value fails

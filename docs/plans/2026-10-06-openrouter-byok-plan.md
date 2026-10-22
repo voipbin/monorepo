@@ -54,7 +54,7 @@
 
 ## 1. 공통 규칙
 
-**모든 태스크 공통:** 워크트리에서만 작업한다. 테스트는 구현과 같은 태스크에서 먼저(실패 확인 후) 작성한다. 전역 플래그, 환경변수, 설정 추가 금지. 키, 모델 ID 원문(Custom 입력), `*ai.AI`, 요청 본문을 로깅하지 않는다(신규 로그 줄은 식별자만). 코드에 키 형태 문자열을 넣지 않는다. 커밋 메시지는 monorepo 형식(요약 72자 이하 + `- project-name: 변경` 불릿, AI 표기 금지), 작성자 `Sungtae Kim <pchero21@gmail.com>`. **이 계획서를 쓰는 작업은 커밋하지 않지만, 구현 단계의 커밋은 아래 "커밋 단위"를 따른다.**
+**모든 태스크 공통:** 워크트리에서만 작업한다. 테스트는 구현과 같은 태스크에서 먼저(실패 확인 후) 작성한다. 전역 플래그, 환경변수, 설정 추가 금지. 키, 모델 ID 원문(Custom 입력), `*ai.AI`, 요청 본문을 로깅하지 않는다(신규 로그 줄은 식별자만). 코드에 키 형태 문자열을 넣지 않는다. 커밋 메시지는 monorepo 형식(요약 72자 이하 + `- project-name: 변경` 불릿, AI 표기 금지), 작성자 `Sungtae Kim <<author-email>>`. **이 계획서를 쓰는 작업은 커밋하지 않지만, 구현 단계의 커밋은 아래 "커밋 단위"를 따른다.**
 
 **Go 서비스 검증(해당 서비스 코드나 vendored `bin-ai-manager`/`bin-common-handler` 사본이 바뀐 모든 서비스):**
 ```
@@ -214,7 +214,7 @@ T0(착수 점검)
 ### Phase 0: 착수
 
 #### T0. 착수 점검 (코드 변경 없음)
-- 두 워크트리에서 `git fetch origin main`, `git log --oneline HEAD..origin/main`이 비어 있음(이번 확인 시 비어 있음), `git status --short` 깨끗함(monorepo는 plan 문서만 untracked), `git log -1 --format=%ae`가 `pchero21@gmail.com`.
+- 두 워크트리에서 `git fetch origin main`, `git log --oneline HEAD..origin/main`이 비어 있음(이번 확인 시 비어 있음), `git status --short` 깨끗함(monorepo는 plan 문서만 untracked), `git log -1 --format=%ae`가 `<author-email>`.
 - Go 기준선: `cd bin-ai-manager && go test ./models/ai/ ./pkg/aihandler/... ./pkg/listenhandler/... ./cmd/ai-control/... -count=1` 통과. Python 기준선(1절, 250 passed / 4 failed 기존 / 2 skipped).
 - **UI 기준선(실제 실행 결과, 구현 착수 전에 한 번 더 같은 명령으로 재측정해 PR 본문의 "Known pre-existing failures"에 기록):** `cd square-admin && npm ci`(약 11초) 후
   - `npm test -- --watchAll=false --forceExit 2>&1 | grep "Tests:"` -> `Tests: 2 failed, 1 skipped, 3027 passed, 3030 total`, Test Suites `1 failed, 267 passed, 268 total`. 실패: `src/views/mcpservers/__tests__/mcpServerCatalog.test.js`(`every entry has the required fields`, `has no duplicate urls`).
@@ -671,7 +671,7 @@ git diff origin/main -U0 -- . ':(exclude)docs/plans' | LC_ALL=C.UTF-8 grep -nP "
 LC_ALL=C.UTF-8 grep -nP "[\x{2014}\x{2013}]" docs/plans/2026-10-06-openrouter-byok-plan.md                                     # 결과가 비어 있어야 함
 grep -rn "dummy-" --include=*.go --include=*.py --include=*.js . | grep -v "_test.go\|test_.*\.py\|\.test\.js\|\.fixture\.js\|node_modules\|/vendor/"   # 비어 있어야 함(테스트와 픽스처에만 존재)
 ```
-7. **전달 전 점검(CLAUDE.md):** `git fetch origin main`, `git merge-tree $(git merge-base HEAD origin/main) HEAD origin/main | grep -E "^(CONFLICT|changed in both)"`가 비어 있음, `git log HEAD..origin/main --oneline` 확인, `git log origin/main..HEAD --format=%ae | sort -u`가 `pchero21@gmail.com`뿐. 충돌이 있으면 rebase 후 위 1~6을 다시 실행.
+7. **전달 전 점검(CLAUDE.md):** `git fetch origin main`, `git merge-tree $(git merge-base HEAD origin/main) HEAD origin/main | grep -E "^(CONFLICT|changed in both)"`가 비어 있음, `git log HEAD..origin/main --oneline` 확인, `git log origin/main..HEAD --format=%ae | sort -u`가 `<author-email>`뿐. 충돌이 있으면 rebase 후 위 1~6을 다시 실행.
 8. **monorepo-javascript(`CLAUDE.md:25-45`의 PR 테스트 게이트):** T22의 1~3(전체 테스트를 `git stash` 기준선과 `Tests:` 줄로 비교, **신규 실패 없음과 기존 실패 1 suite(`mcpServerCatalog.test.js` 2건)를 PR 본문에 명시**, 변경 파일 `npx eslint` 전후 비교에서 증가 없음, `CI=true` 없는 `npm run build` exit 0)를 모두 통과하고 결과를 PR 본문에 적는다. 같은 fetch와 충돌/작성자 점검(`git merge-tree ... | grep -E "^(CONFLICT|changed in both)"`, `git log origin/main..HEAD --format=%ae | sort -u`).
 **Depends:** S1~S4 완료.
 

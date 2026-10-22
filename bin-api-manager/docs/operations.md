@@ -296,7 +296,7 @@ compose file below therefore:
    The downtime window is exactly the gap between those two steps, not
    the whole migration.
 3. Comment out (not delete) the `api-manager` block in the live
-   `install/docker-compose.yml` on bm-nyc-01, same as every other
+   `install/docker-compose.yml` on <prod-host>, same as every other
    migrated service, to prevent a `container_name`/host-port collision on
    a future host rebuild.
 

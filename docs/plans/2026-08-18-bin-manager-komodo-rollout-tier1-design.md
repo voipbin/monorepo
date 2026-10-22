@@ -50,7 +50,7 @@ once and not re-derived.
 - **These 16 services had no deploy job at all before this PR** (only
   `-test`/`-build`) — the old SSH `ssh-deploy.sh` wiring was removed for all
   non-call-manager services in a prior cleanup
-  (`817c24db6 NOJIRA-Remove-ssh-deploy-bm-nyc-01 (#1189)`, immediately after
+  (`817c24db6 NOJIRA-Remove-ssh-deploy-<prod-host> (#1189)`, immediately after
   the bin-call-manager cutover). This PR adds new `-deploy` jobs; it does
   not replace or conflict with anything currently running.
 - **Komodo Variables (`[[BIN_MANAGER__*]]`):** resolved by Komodo itself from
@@ -64,7 +64,7 @@ corrected to the shared `production` network later (VOIP-1343, filed
 alongside VOIP-1342) once that Komodo-managed backbone network existed. All
 16 Tier 1 compose files here are written directly against `production` from
 the start — there is no interim `install_default` step to migrate away from.
-Precondition (same as bin-call-manager, already satisfied on bm-nyc-01):
+Precondition (same as bin-call-manager, already satisfied on <prod-host>):
 db/redis/rabbitmq must be reachable from `production`, which
 `monorepo-etc/infra-komodo/komodo/backfill-install-default.sh --apply` has
 already bridged.
@@ -96,7 +96,7 @@ time:
    scoped to the install project's working directory). For those two, do
    not guess the name — run `docker compose -f
    /opt/voipbin/install/docker-compose.yml ps <short>-manager` (or `docker
-   ps | grep <short>`) on bm-nyc-01 first to find the actual old container
+   ps | grep <short>`) on <prod-host> first to find the actual old container
    before removing it.
 2. **Verify at the application log level, not just container running-state.**
    VOIP-1342's false-positive lesson: the CI job's 3-consecutive-running
@@ -109,7 +109,7 @@ time:
    - the absence of `CRITICAL`/`Error`-level lines from the boot path.
 3. **Remove the old container** once the new one is confirmed healthy at the
    log level.
-4. **Comment out the removed service's block** in bm-nyc-01's live
+4. **Comment out the removed service's block** in <prod-host>'s live
    `/opt/voipbin/install/docker-compose.yml` (SSH), matching VOIP-1342's
    step 6 — prevents the install-managed compose project from recreating the
    old container on its next `docker compose up`.

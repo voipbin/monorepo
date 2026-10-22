@@ -4,7 +4,7 @@ Service class: **A2** (event-driven worker, no inbound RPC).
 
 ## Component Overview
 
-`bin-sentinel-manager` is an Asterisk container lifecycle monitor with **two peer backends**. It watches either the Docker Engine's event stream (bm-nyc-01) or the Kubernetes API (self-hosted clusters) for the Asterisk workloads (call, conference, registrar) and publishes state-change events to RabbitMQ so downstream services can react to restarts, crashes, or removals.
+`bin-sentinel-manager` is an Asterisk container lifecycle monitor with **two peer backends**. It watches either the Docker Engine's event stream (<prod-host>) or the Kubernetes API (self-hosted clusters) for the Asterisk workloads (call, conference, registrar) and publishes state-change events to RabbitMQ so downstream services can react to restarts, crashes, or removals.
 
 `SENTINEL_BACKEND` picks the backend at startup — `docker` or `kubernetes`, no default, no auto-detection. Exactly one runs per process. VoIPBin is a self-hostable opensource CPaaS, so both deployment shapes are first-class; neither backend is a fallback for the other.
 

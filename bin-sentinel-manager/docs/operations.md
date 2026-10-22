@@ -1,6 +1,6 @@
 # bin-sentinel-manager — Operations
 
-Most of this page is backend-specific. `SENTINEL_BACKEND` decides which half applies: `docker` (bm-nyc-01) or `kubernetes` (self-hosted clusters). A row's applicability is called out where it is not obvious.
+Most of this page is backend-specific. `SENTINEL_BACKEND` decides which half applies: `docker` (<prod-host>) or `kubernetes` (self-hosted clusters). A row's applicability is called out where it is not obvious.
 
 ## Common Failure Modes
 
@@ -8,7 +8,7 @@ Most of this page is backend-specific. `SENTINEL_BACKEND` decides which half app
 
 | Symptom | Likely cause | Resolution |
 |---------|-------------|------------|
-| Service exits immediately at startup with a config error naming `sentinel_backend` | `SENTINEL_BACKEND` unset or not one of `docker`/`kubernetes` | Intentional: there is no default and no auto-detection. Set it in the deployment descriptor — `komodo/docker-compose.yml` sets `docker` for bm-nyc-01; a self-hosted Kubernetes deployment must set `kubernetes` on its own manifest (this repo does not ship one) |
+| Service exits immediately at startup with a config error naming `sentinel_backend` | `SENTINEL_BACKEND` unset or not one of `docker`/`kubernetes` | Intentional: there is no default and no auto-detection. Set it in the deployment descriptor — `komodo/docker-compose.yml` sets `docker` for <prod-host>; a self-hosted Kubernetes deployment must set `kubernetes` on its own manifest (this repo does not ship one) |
 | Service exits at startup complaining a Docker-only field is missing, on a Kubernetes deployment | `SENTINEL_BACKEND=docker` on a cluster deployment | Validation is backend-conditional; the Docker fields are only required for the Docker backend. Check which value the descriptor actually sets |
 | `sentinel-control` fails where the service runs fine, or vice versa | `InitConfig` (used by `cmd/sentinel-manager`) delegates to `LoadGlobalConfig` (also used directly by `cmd/sentinel-control`), so validation itself cannot diverge between the two binaries — a divergence can only come from flag/env *binding*: `Bootstrap` and `InitConfig` each register and bind their own flags independently, and `cmd/sentinel-manager`'s `init()` hardcodes its own default literals separately from `internal/config`'s unexported default constants | Check whether `Bootstrap` and `InitConfig` actually bind the same flag/env keys and defaults for the field in question — that is the only place the two binaries can still disagree |
 
@@ -146,7 +146,7 @@ The Kubernetes backend needs no configuration beyond `SENTINEL_BACKEND=kubernete
 
 (An earlier revision of this ticket shipped a reference `k8s/*.yml` under this directory; it was removed as out of scope for this repository — see git history around VOIP-1418 if a starting point is useful, understanding it will not be kept in sync with the code going forward.)
 
-### Docker (bm-nyc-01)
+### Docker (<prod-host>)
 
 `komodo/docker-compose.yml` sets `SENTINEL_BACKEND=docker` as a hardcoded literal (not a Komodo `[[VAR]]` — the value never varies per deployment, and a literal avoids pre-registering a variable in `infra-secret`). It defines two containers:
 
@@ -155,7 +155,7 @@ The Kubernetes backend needs no configuration beyond `SENTINEL_BACKEND=kubernete
 | `sentinel-manager` | `production` + `docker-socket` | The watcher. Single replica |
 | `sentinel-docker-socket-proxy` | `docker-socket` only | Read-only Docker API proxy, digest-pinned `tecnativa/docker-socket-proxy:v0.5.0` |
 
-`docker-socket` is `internal: true` and joined by nothing else, which is what bounds the blast radius of `CONTAINERS=1`. That permission is path-prefix based rather than per-endpoint, so it exposes far more than the single inspect call sentinel makes: for *any* container on the host, a client that reaches the proxy can read `/containers/{id}/json` (config plus every env-var secret), `/containers/{id}/archive` (arbitrary files from the container filesystem), `/containers/{id}/export`, `/containers/{id}/logs`, and `/containers/{id}/attach/ws` — effectively read access to all container data on bm-nyc-01. It is read-only (no mutating family is granted), but network scope is the whole mitigation. This mirrors the sidecar shape monorepo-etc's `infra-prometheus` and `infra-loki` already use; do not move the proxy onto `production`.
+`docker-socket` is `internal: true` and joined by nothing else, which is what bounds the blast radius of `CONTAINERS=1`. That permission is path-prefix based rather than per-endpoint, so it exposes far more than the single inspect call sentinel makes: for *any* container on the host, a client that reaches the proxy can read `/containers/{id}/json` (config plus every env-var secret), `/containers/{id}/archive` (arbitrary files from the container filesystem), `/containers/{id}/export`, `/containers/{id}/logs`, and `/containers/{id}/attach/ws` — effectively read access to all container data on <prod-host>. It is read-only (no mutating family is granted), but network scope is the whole mitigation. This mirrors the sidecar shape monorepo-etc's `infra-prometheus` and `infra-loki` already use; do not move the proxy onto `production`.
 
 CI deploys via the `bin-sentinel-manager-deploy` job in `.circleci/config_work.yml`, which renders the image tag and pushes the compose file through `komodo-api-deploy.sh`.
 

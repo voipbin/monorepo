@@ -150,7 +150,7 @@ Three deviations from the Tier 1/2 template, all intentional:
   in the runtime stage instead of purging it, and the Komodo compose
   healthcheck uses `curl -fsS` against `/metrics` instead of `wget`.
 - **Bind-mounted backup volume**: `SCHEDULE_BACKUP_DIR=/backups` is mounted from
-  the host path `/opt/voipbin/install/backups/scheduled-db` on bm-nyc-01
+  the host path `/opt/voipbin/install/backups/scheduled-db` on <prod-host>
   (confirmed via `docker inspect` against the pre-cutover container), so
   existing backup history is preserved across the cutover rather than starting
   a new directory under Komodo's stack working dir.

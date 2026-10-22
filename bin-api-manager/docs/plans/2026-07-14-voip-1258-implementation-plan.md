@@ -215,7 +215,7 @@ call site (confirmed additive per design doc §6/§4).
 
 ```bash
 git add bin-common-handler/pkg/notifyhandler/
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Add PublishEventWithRoutingKey to NotifyHandler
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Add PublishEventWithRoutingKey to NotifyHandler
 
 - bin-common-handler: Add additive PublishEventWithRoutingKey method for topic-exchange scoped publishing (VOIP-1258), zero changes to existing PublishEvent/PublishWebhookEvent call sites"
 ```
@@ -383,7 +383,7 @@ Expected: PASS
 
 ```bash
 git add bin-common-handler/pkg/sockhandler/ bin-common-handler/pkg/rabbitmqhandler/
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Add QueueBind/QueueUnbind to SockHandler interface
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Add QueueBind/QueueUnbind to SockHandler interface
 
 - bin-common-handler: Expose QueueBind (already existed on rabbit) and new QueueUnbind on the SockHandler interface, needed for VOIP-1258 Phase 4 dynamic bind/unbind"
 ```
@@ -454,7 +454,7 @@ Expected: all pass, zero regressions.
 
 ```bash
 git add bin-common-handler/pkg/rabbitmqhandler/topic.go bin-common-handler/pkg/rabbitmqhandler/topic_test.go bin-common-handler/pkg/sockhandler/mock_sockhandler.go
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Add TopicCreateWithKind for declaring non-fanout exchanges
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Add TopicCreateWithKind for declaring non-fanout exchanges
 
 - bin-common-handler: Add TopicCreateWithKind alongside existing TopicCreate (fanout-only), needed for VOIP-1258's new topic-kind exchange"
 ```
@@ -554,7 +554,7 @@ cd bin-common-handler && go build ./... && go test ./...
 
 ```bash
 git add bin-common-handler/pkg/notifyhandler/
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Add NewNotifyHandlerForExistingExchange, additive constructor variant
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Add NewNotifyHandlerForExistingExchange, additive constructor variant
 
 - bin-common-handler: Add NewNotifyHandlerForExistingExchange, skips the internal TopicCreate declare so a NotifyHandler can be bound to an already-declared non-fanout exchange, resolves VOIP-1258 Task 3.1's fanout/topic declare conflict without touching NewNotifyHandler's existing ~116 call sites"
 ```
@@ -669,7 +669,7 @@ mock `reqHandler`).
 
 ```bash
 git add bin-webhook-manager/
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Add reqHandler dependency to webhookHandler
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Add reqHandler dependency to webhookHandler
 
 - bin-webhook-manager: Add requesthandler.RequestHandler DI to webhookHandler, needed for chat-participant RPC relocation (VOIP-1258 §6 harder part 2)"
 ```
@@ -750,7 +750,7 @@ Expected: PASS
 
 ```bash
 git add bin-webhook-manager/pkg/webhookhandler/routingkey.go bin-webhook-manager/pkg/webhookhandler/routingkey_test.go
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Port webhook owner-data envelope parsing into webhook-manager
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Port webhook owner-data envelope parsing into webhook-manager
 
 - bin-webhook-manager: Add parseWebhookOwnerData, ported from bin-api-manager's commonWebhookData (VOIP-1258 §6 harder part 1)"
 ```
@@ -827,7 +827,7 @@ Expected: PASS
 
 ```bash
 git add bin-webhook-manager/pkg/webhookhandler/routingkey.go bin-webhook-manager/pkg/webhookhandler/routingkey_test.go
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Implement createRoutingKeys for non-chat resource types
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Implement createRoutingKeys for non-chat resource types
 
 - bin-webhook-manager: Add scope-first routing key generation (customer_id/agent_id), agent_id wire prefix unchanged (rename to owner_id was considered and reverted)"
 ```
@@ -944,7 +944,7 @@ Expected: PASS
 
 ```bash
 git add bin-webhook-manager/pkg/webhookhandler/routingkey.go bin-webhook-manager/pkg/webhookhandler/routingkey_test.go
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Implement chat-participant fan-out routing keys at publish time
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Implement chat-participant fan-out routing keys at publish time
 
 - bin-webhook-manager: Move TalkV1ParticipantList RPC from api-manager's createTopics() to publish-time, per VOIP-1258 Open Question 4/§6"
 ```
@@ -1075,7 +1075,7 @@ Expected: all pass, including new dual-publish test.
 
 ```bash
 git add bin-webhook-manager/pkg/webhookhandler/webhook.go bin-webhook-manager/pkg/webhookhandler/routingkey.go bin-webhook-manager/pkg/webhookhandler/webhook_test.go
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Dual-publish routing-keyed events from SendWebhookToCustomer/SendWebhookToURI
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Dual-publish routing-keyed events from SendWebhookToCustomer/SendWebhookToURI
 
 - bin-webhook-manager: Wire routing-key computation into both webhook entry points, dual-publish to new topic exchange alongside existing fanout publish (VOIP-1258 §6/§8 transition window)"
 ```
@@ -1176,7 +1176,7 @@ cd bin-webhook-manager && go build ./... && go test ./...
 
 ```bash
 git add bin-common-handler/models/outline/queuename.go bin-webhook-manager/
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Declare new topic exchange, wire second NotifyHandler instance
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Declare new topic exchange, wire second NotifyHandler instance
 
 - bin-common-handler: Add QueueNameWebhookEventTopic constant
 - bin-webhook-manager: Declare new topic/durable exchange at startup, add topicNotifyHandler to webhookHandler for routing-keyed publishes"
@@ -1217,7 +1217,7 @@ cd bin-agent-manager && go build ./...
 
 ```bash
 git add bin-agent-manager/cmd/agent-manager/main.go
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Bind agent-manager to new topic exchange with # wildcard
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Bind agent-manager to new topic exchange with # wildcard
 
 - bin-agent-manager: Add # wildcard binding to QueueNameWebhookEventTopic alongside existing fanout subscription, transition window per VOIP-1258 §8"
 ```
@@ -1233,7 +1233,7 @@ git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Bin
 **Commit:**
 ```bash
 git add bin-timeline-manager/pkg/subscribehandler/main.go
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Bind timeline-manager to new topic exchange with # wildcard
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Bind timeline-manager to new topic exchange with # wildcard
 
 - bin-timeline-manager: Add # wildcard binding to QueueNameWebhookEventTopic alongside existing fanout subscription, transition window per VOIP-1258 §8"
 ```
@@ -1346,7 +1346,7 @@ verification, this time checking no double-processing).
 
 ```bash
 git add bin-agent-manager/cmd/agent-manager/main.go bin-timeline-manager/pkg/subscribehandler/main.go
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Cut over agent-manager/timeline-manager to topic exchange directly
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Cut over agent-manager/timeline-manager to topic exchange directly
 
 - bin-agent-manager, bin-timeline-manager: Replace fanout QueueNameWebhookEvent subscription with single # wildcard binding on QueueNameWebhookEventTopic, avoiding double-processing during webhook-manager's dual-publish window (VOIP-1258 Task 3.4 finding)"
 ```
@@ -1498,7 +1498,7 @@ Expected: PASS
 
 ```bash
 git add bin-api-manager/pkg/websockhandler/scoperefcount.go bin-api-manager/pkg/websockhandler/scoperefcount_test.go
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Add per-pod scope refcount component for dynamic AMQP bind/unbind
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Add per-pod scope refcount component for dynamic AMQP bind/unbind
 
 - bin-api-manager: Add scopeRefCount tracking active local subscribers per AMQP binding pattern, binds on 0->1 and unbinds on 1->0 transitions (VOIP-1258 §9)"
 ```
@@ -1571,7 +1571,7 @@ Expected: PASS
 
 ```bash
 git add bin-api-manager/pkg/websockhandler/bindpattern.go bin-api-manager/pkg/websockhandler/bindpattern_test.go
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Add topic-string-to-AMQP-binding-pattern conversion
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Add topic-string-to-AMQP-binding-pattern conversion
 
 - bin-api-manager: Add topicToBindPattern, converts client colon-delimited topic strings to dot-delimited AMQP binding patterns (VOIP-1258 §5)"
 ```
@@ -1747,7 +1747,7 @@ Expected: all pass.
 
 ```bash
 git add bin-api-manager/pkg/websockhandler/
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Wire dynamic AMQP bind/unbind into subscribe/unsubscribe and disconnect paths
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Wire dynamic AMQP bind/unbind into subscribe/unsubscribe and disconnect paths
 
 - bin-api-manager: Call scopeRefCount.Acquire/Release on explicit subscribe/unsubscribe, ReleaseAll on abrupt disconnect via subscriptionRun's existing teardown path (VOIP-1258 §9)"
 ```
@@ -1827,7 +1827,7 @@ cd bin-api-manager && go build ./...
 
 ```bash
 git add bin-api-manager/cmd/api-manager/main.go
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Remove dead QueueNameAgentEvent/QueueNameTalkEvent subscriptions
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Remove dead QueueNameAgentEvent/QueueNameTalkEvent subscriptions
 
 - bin-api-manager: Remove subscriptions never acted on by processEvent's single-case switch (VOIP-1258 §7), reduces per-pod RabbitMQ consumption cost"
 ```
@@ -1871,7 +1871,7 @@ cd bin-api-manager && go build ./... && go test ./...
 
 ```bash
 git add bin-webhook-manager/ bin-api-manager/cmd/api-manager/main.go
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Cut over to topic exchange exclusively, remove dual-publish
+git -c user.name="Sungtae Kim" -c user.email="<author-email>" commit -m "Cut over to topic exchange exclusively, remove dual-publish
 
 - bin-webhook-manager: Remove old fanout exchange dual-publish, topic exchange is now the sole delivery path
 - bin-api-manager: Switch baseline subscription to the new topic exchange"

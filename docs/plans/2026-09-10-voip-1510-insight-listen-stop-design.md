@@ -35,7 +35,7 @@ signal — see §4.
 ## 2. Confirmed failure point (from live Loki/Prometheus evidence — NOT the root cause yet, see §3)
 
 Reconstructed minute-by-minute from `bin-ai-manager`, `bin-pipecat-manager`
-container logs (Loki, via Grafana proxy on bm-nyc-01) for AIcall
+container logs (Loki, via Grafana proxy on <prod-host>) for AIcall
 `2d4d3412-...` and its three listen-turn pipecatcalls:
 
 | turn | pipecatcall_id | result |
@@ -205,7 +205,7 @@ PR.
    repository (`monorepo-etc/infra-loki`, an Alloy/Loki discovery config
    change) than this ticket's code (`monorepo/bin-pipecat-manager`), and
    pinpointing the exact relabel-rule fix needs a live `docker inspect` on
-   bm-nyc-01 that this investigation session could not perform (Grafana HTTP
+   <prod-host> that this investigation session could not perform (Grafana HTTP
    proxy access only, no direct SSH/docker exec in this environment). Filed
    as a separate ticket, ETC-8, rather than blocking VOIP-1510 on it — this
    PR proceeds with step 1's logging additions (which land regardless of
