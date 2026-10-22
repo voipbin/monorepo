@@ -86,10 +86,10 @@ func (h *handler) LockSchedule(ctx context.Context, scheduleID uuid.UUID, ttl ti
 		if isLockBusyError(errLock) {
 			return nil, ErrLockBusy
 		}
-		return nil, fmt.Errorf("could not acquire schedule lock. LockSchedule. err: %v", errLock)
+		return nil, fmt.Errorf("could not acquire schedule lock. LockSchedule. err: %w", errLock)
 	}
 
-	unlock := func() {
+	unlock := func() { //nolint:contextcheck // release must outlive a canceled ctx, so it deliberately uses a fresh background context
 		if _, errUnlock := mutex.UnlockContext(context.Background()); errUnlock != nil {
 			logrus.Debugf("Could not unlock the schedule lock. scheduleID: %s, err: %v", scheduleID, errUnlock)
 		}

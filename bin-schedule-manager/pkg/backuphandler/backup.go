@@ -246,7 +246,7 @@ func truncateStderr(s string) string {
 type execCommandRunner struct{}
 
 func (r *execCommandRunner) Run(ctx context.Context, stdout io.Writer, name string, args ...string) (string, error) {
-	cmd := exec.CommandContext(ctx, name, args...)
+	cmd := exec.CommandContext(ctx, name, args...) //nolint:gosec // name is the fixed "mariadb-dump" literal passed by runDump, never user input
 	cmd.Stdout = stdout
 
 	stderr := &boundedBuffer{limit: stderrLimitBytes}

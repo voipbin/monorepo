@@ -22,7 +22,7 @@ const (
 func (h *handler) scheduleGetFromRow(rows *sql.Rows) (*schedule.Schedule, error) {
 	res := &schedule.Schedule{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. scheduleGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. scheduleGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -38,17 +38,17 @@ func (h *handler) ScheduleCreate(ctx context.Context, s *schedule.Schedule) erro
 	// prepare fields for insert
 	fields, err := commondatabasehandler.PrepareFields(s)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. ScheduleCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ScheduleCreate. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(scheduleSchedulesTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ScheduleCreate. err: %v", err)
+		return fmt.Errorf("could not build query. ScheduleCreate. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. ScheduleCreate. err: %v", err)
+		return fmt.Errorf("could not execute. ScheduleCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -100,12 +100,12 @@ func (h *handler) scheduleGetFromDB(ctx context.Context, id uuid.UUID) (*schedul
 		Where(sq.Eq{string(schedule.FieldID): id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. scheduleGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build query. scheduleGetFromDB. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. scheduleGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. scheduleGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -117,7 +117,7 @@ func (h *handler) scheduleGetFromDB(ctx context.Context, id uuid.UUID) (*schedul
 
 	res, err := h.scheduleGetFromRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. scheduleGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. scheduleGetFromDB. err: %w", err)
 	}
 
 	return res, nil
@@ -155,17 +155,17 @@ func (h *handler) ScheduleList(ctx context.Context, size uint64, token string, f
 	// apply filters
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. ScheduleList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. ScheduleList. err: %w", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ScheduleList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ScheduleList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ScheduleList. err: %v", err)
+		return nil, fmt.Errorf("could not query. ScheduleList. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -175,7 +175,7 @@ func (h *handler) ScheduleList(ctx context.Context, size uint64, token string, f
 	for rows.Next() {
 		s, err := h.scheduleGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ScheduleList. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. ScheduleList. err: %w", err)
 		}
 
 		res = append(res, s)
@@ -192,7 +192,7 @@ func (h *handler) ScheduleUpdate(ctx context.Context, id uuid.UUID, fields map[s
 	// prepare fields for update
 	data, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. ScheduleUpdate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ScheduleUpdate. err: %w", err)
 	}
 
 	query, args, err := sq.Update(scheduleSchedulesTable).
@@ -200,12 +200,12 @@ func (h *handler) ScheduleUpdate(ctx context.Context, id uuid.UUID, fields map[s
 		Where(sq.Eq{string(schedule.FieldID): id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ScheduleUpdate. err: %v", err)
+		return fmt.Errorf("could not build query. ScheduleUpdate. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. ScheduleUpdate. err: %v", err)
+		return fmt.Errorf("could not execute. ScheduleUpdate. err: %w", err)
 	}
 
 	// update the cache
@@ -225,7 +225,7 @@ func (h *handler) ScheduleDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare fields for update
 	data, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. ScheduleDelete. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ScheduleDelete. err: %w", err)
 	}
 
 	query, args, err := sq.Update(scheduleSchedulesTable).
@@ -233,12 +233,12 @@ func (h *handler) ScheduleDelete(ctx context.Context, id uuid.UUID) error {
 		Where(sq.Eq{string(schedule.FieldID): id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ScheduleDelete. err: %v", err)
+		return fmt.Errorf("could not build query. ScheduleDelete. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. ScheduleDelete. err: %v", err)
+		return fmt.Errorf("could not execute. ScheduleDelete. err: %w", err)
 	}
 
 	// delete from the cache
@@ -260,12 +260,12 @@ func (h *handler) ScheduleGetByCustomerIDName(ctx context.Context, customerID uu
 		Where(sq.Eq{string(schedule.FieldTMDelete): nil}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ScheduleGetByCustomerIDName. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ScheduleGetByCustomerIDName. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ScheduleGetByCustomerIDName. err: %v", err)
+		return nil, fmt.Errorf("could not query. ScheduleGetByCustomerIDName. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -277,7 +277,7 @@ func (h *handler) ScheduleGetByCustomerIDName(ctx context.Context, customerID uu
 
 	res, err := h.scheduleGetFromRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. ScheduleGetByCustomerIDName. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. ScheduleGetByCustomerIDName. err: %w", err)
 	}
 
 	return res, nil
@@ -299,12 +299,12 @@ func (h *handler) ScheduleListDue(ctx context.Context, now time.Time, limit uint
 		Limit(limit).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ScheduleListDue. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ScheduleListDue. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ScheduleListDue. err: %v", err)
+		return nil, fmt.Errorf("could not query. ScheduleListDue. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -314,7 +314,7 @@ func (h *handler) ScheduleListDue(ctx context.Context, now time.Time, limit uint
 	for rows.Next() {
 		s, err := h.scheduleGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ScheduleListDue. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. ScheduleListDue. err: %w", err)
 		}
 
 		res = append(res, s)
@@ -337,12 +337,12 @@ func (h *handler) ScheduleListUninitialized(ctx context.Context, limit uint64) (
 		Limit(limit).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ScheduleListUninitialized. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ScheduleListUninitialized. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ScheduleListUninitialized. err: %v", err)
+		return nil, fmt.Errorf("could not query. ScheduleListUninitialized. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -352,7 +352,7 @@ func (h *handler) ScheduleListUninitialized(ctx context.Context, limit uint64) (
 	for rows.Next() {
 		s, err := h.scheduleGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ScheduleListUninitialized. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. ScheduleListUninitialized. err: %w", err)
 		}
 
 		res = append(res, s)
@@ -373,7 +373,7 @@ func (h *handler) ScheduleInitNextRun(ctx context.Context, id uuid.UUID, next ti
 
 	data, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return false, fmt.Errorf("could not prepare fields. ScheduleInitNextRun. err: %v", err)
+		return false, fmt.Errorf("could not prepare fields. ScheduleInitNextRun. err: %w", err)
 	}
 
 	query, args, err := sq.Update(scheduleSchedulesTable).
@@ -384,17 +384,17 @@ func (h *handler) ScheduleInitNextRun(ctx context.Context, id uuid.UUID, next ti
 		Where(sq.Eq{string(schedule.FieldTMDelete): nil}).
 		ToSql()
 	if err != nil {
-		return false, fmt.Errorf("could not build query. ScheduleInitNextRun. err: %v", err)
+		return false, fmt.Errorf("could not build query. ScheduleInitNextRun. err: %w", err)
 	}
 
 	res, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return false, fmt.Errorf("could not execute. ScheduleInitNextRun. err: %v", err)
+		return false, fmt.Errorf("could not execute. ScheduleInitNextRun. err: %w", err)
 	}
 
 	affected, err := res.RowsAffected()
 	if err != nil {
-		return false, fmt.Errorf("could not get affected rows. ScheduleInitNextRun. err: %v", err)
+		return false, fmt.Errorf("could not get affected rows. ScheduleInitNextRun. err: %w", err)
 	}
 
 	if affected != 1 {
