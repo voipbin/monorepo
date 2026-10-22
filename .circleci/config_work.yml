@@ -2860,6 +2860,7 @@ commands:
             go test -coverprofile cp.out -v $(go list ./...)
             go tool cover -html=cp.out -o cp.html
             go tool cover -func=cp.out
+            echo "COVERAGE-TOTAL << parameters.source-directory >> $(go tool cover -func=cp.out | awk '/^total:/ {print $3}')"
       - run:
           name: Run gotestsum
           command: |
@@ -2955,6 +2956,7 @@ commands:
             go test -coverprofile cp.out -v $(go list ./...)
             go tool cover -html=cp.out -o cp.html
             go tool cover -func=cp.out
+            echo "COVERAGE-TOTAL << parameters.source-directory >> $(go tool cover -func=cp.out | awk '/^total:/ {print $3}')"
       - run:
           name: Run gotestsum
           command: |
@@ -3055,6 +3057,7 @@ commands:
             go test -coverprofile cp.out -v $(go list ./...)
             go tool cover -html=cp.out -o cp.html
             go tool cover -func=cp.out
+            echo "COVERAGE-TOTAL << parameters.source-directory >> $(go tool cover -func=cp.out | awk '/^total:/ {print $3}')"
       - run:
           name: Run gotestsum
           command: |
