@@ -1,6 +1,7 @@
 package databasehandler
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -19,7 +20,7 @@ func Connect(dsn string) (*sql.DB, error) {
 		return nil, errors.Wrap(err, "database open error")
 	}
 
-	if err := res.Ping(); err != nil {
+	if err := res.PingContext(context.Background()); err != nil {
 		return nil, errors.Wrap(err, "database ping error")
 	}
 
@@ -95,13 +96,14 @@ func ApplyFields[K ~string](sb squirrel.SelectBuilder, fields map[K]any) (squirr
 			sb = sb.Where(squirrel.Eq{key: val})
 
 		case bool:
-			if key == "deleted" && !val {
+			switch {
+			case key == "deleted" && !val:
 				// Filter for non-deleted records: tm_delete IS NULL
 				sb = sb.Where(squirrel.Eq{"tm_delete": nil})
-			} else if key == "deleted" && val {
+			case key == "deleted" && val:
 				// Filter for deleted records: tm_delete IS NOT NULL
 				sb = sb.Where(squirrel.NotEq{"tm_delete": nil})
-			} else {
+			default:
 				sb = sb.Where(squirrel.Eq{key: val})
 			}
 

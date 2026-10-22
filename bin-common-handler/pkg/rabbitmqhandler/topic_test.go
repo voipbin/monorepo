@@ -102,3 +102,24 @@ func TestRabbit_TopicCreateWithKind(t *testing.T) {
 		t.Error("Expected error when the connection cannot provide a channel")
 	}
 }
+
+// Test_TopicCreate_WrapsCause verifies the returned error wraps the underlying cause so that
+// errors.Is can reach it (VOIP-1642: %v -> %w).
+func Test_TopicCreate_WrapsCause(t *testing.T) {
+	cause := errors.New("channel unavailable")
+	mockConn := newMockConnection()
+	mockConn.channelErr = cause
+
+	r := &rabbit{
+		connection: mockConn,
+		exchanges:  make(map[string]*exchange),
+	}
+
+	err := r.TopicCreate("some-exchange")
+	if err == nil {
+		t.Fatal("Expected an error, got nil")
+	}
+	if !errors.Is(err, cause) {
+		t.Errorf("Expected the error to wrap the cause, got %v", err)
+	}
+}

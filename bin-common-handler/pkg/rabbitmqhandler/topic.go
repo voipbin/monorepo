@@ -5,7 +5,7 @@ import "fmt"
 func (h *rabbit) TopicCreate(name string) error {
 
 	if errDeclare := h.ExchangeDeclare(name, "fanout", true, false, false, false, nil); errDeclare != nil {
-		return fmt.Errorf("could not declare the queue for event. err: %v", errDeclare)
+		return fmt.Errorf("could not declare the queue for event. err: %w", errDeclare)
 	}
 
 	return nil
@@ -16,7 +16,7 @@ func (h *rabbit) TopicCreate(name string) error {
 // support topic-kind exchanges without touching TopicCreate's existing fanout-only behavior.
 func (h *rabbit) TopicCreateWithKind(name string, kind string) error {
 	if errDeclare := h.ExchangeDeclare(name, kind, true, false, false, false, nil); errDeclare != nil {
-		return fmt.Errorf("could not declare the exchange with kind %s. err: %v", kind, errDeclare)
+		return fmt.Errorf("could not declare the exchange with kind %s. err: %w", kind, errDeclare)
 	}
 	return nil
 }

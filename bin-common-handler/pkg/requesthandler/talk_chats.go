@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"monorepo/bin-common-handler/models/sock"
 	tkchat "monorepo/bin-talk-manager/models/chat"
@@ -22,7 +23,7 @@ func (r *requestHandler) TalkV1ChatGet(ctx context.Context, chatID uuid.UUID) (*
 		return nil, err
 	}
 
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to get chat: status %d", res.StatusCode)
 	}
 
@@ -69,7 +70,7 @@ func (r *requestHandler) TalkV1ChatCreate(ctx context.Context, customerID uuid.U
 		return nil, err
 	}
 
-	if res.StatusCode != 201 && res.StatusCode != 200 {
+	if res.StatusCode != http.StatusCreated && res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to create chat: status %d", res.StatusCode)
 	}
 
@@ -90,7 +91,7 @@ func (r *requestHandler) TalkV1ChatDelete(ctx context.Context, chatID uuid.UUID)
 		return nil, err
 	}
 
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to delete chat: status %d", res.StatusCode)
 	}
 
@@ -124,7 +125,7 @@ func (r *requestHandler) TalkV1ChatUpdate(ctx context.Context, chatID uuid.UUID,
 		return nil, err
 	}
 
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to update chat: status %d", res.StatusCode)
 	}
 
@@ -158,7 +159,7 @@ func (r *requestHandler) TalkV1ChatList(ctx context.Context, filters map[string]
 		return nil, err
 	}
 
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to list chats: status %d", res.StatusCode)
 	}
 

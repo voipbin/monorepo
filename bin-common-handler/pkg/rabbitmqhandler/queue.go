@@ -57,11 +57,11 @@ func (h *rabbit) queueCreateNormal(name string) error {
 
 	// declare the queue
 	if errDeclare := h.QueueDeclare(name, true, false, false, false, nil); errDeclare != nil {
-		return fmt.Errorf("could not declare the queue for normal. err: %v", errDeclare)
+		return fmt.Errorf("could not declare the queue for normal. err: %w", errDeclare)
 	}
 
 	if errConfig := h.queueConfig(name); errConfig != nil {
-		return fmt.Errorf("could not config the queue. err: %v", errConfig)
+		return fmt.Errorf("could not config the queue. err: %w", errConfig)
 	}
 
 	return nil
@@ -74,11 +74,11 @@ func (h *rabbit) queueCreateVolatile(name string) error {
 	if errDeclare := h.QueueDeclare(name, false, true, false, false, amqp.Table{
 		"x-expires": int32(1800000),
 	}); errDeclare != nil {
-		return fmt.Errorf("could not declare the queue for volatile. err: %v", errDeclare)
+		return fmt.Errorf("could not declare the queue for volatile. err: %w", errDeclare)
 	}
 
 	if errConfig := h.queueConfig(name); errConfig != nil {
-		return fmt.Errorf("could not config the queue. err: %v", errConfig)
+		return fmt.Errorf("could not config the queue. err: %w", errConfig)
 	}
 
 	return nil
@@ -93,12 +93,12 @@ func (h *rabbit) queueConfig(name string) error {
 
 	// declare the exchange for deplayed message
 	if errDeclare := h.ExchangeDeclareForDelay(string(commonoutline.QueueNameDelay), true, false, false, false); errDeclare != nil {
-		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", errDeclare)
+		return fmt.Errorf("could not declare the exchange for dealyed message. err: %w", errDeclare)
 	}
 
 	// bind the delay exchange to the queue
 	if errSubscribe := h.QueueBind(name, name, string(commonoutline.QueueNameDelay), false, nil); errSubscribe != nil {
-		return fmt.Errorf("could not bind the queue and exchange. err: %v", errSubscribe)
+		return fmt.Errorf("could not bind the queue and exchange. err: %w", errSubscribe)
 	}
 
 	return nil
@@ -161,7 +161,7 @@ func (r *rabbit) QueueQoS(name string, prefetchCount, prefetchSize int) error {
 	}
 
 	if err := q.channel.Qos(prefetchCount, prefetchSize, false); err != nil {
-		return fmt.Errorf("could not set channel qos. queue: %s, cnt: %d, size: %d, err: %v", name, prefetchCount, prefetchSize, err)
+		return fmt.Errorf("could not set channel qos. queue: %s, cnt: %d, size: %d, err: %w", name, prefetchCount, prefetchSize, err)
 	}
 
 	return nil

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"monorepo/bin-common-handler/models/sock"
 	talkmessage "monorepo/bin-talk-manager/models/message"
@@ -22,7 +23,7 @@ func (r *requestHandler) TalkV1MessageGet(ctx context.Context, messageID uuid.UU
 		return nil, err
 	}
 
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to get message: status %d", res.StatusCode)
 	}
 
@@ -71,7 +72,7 @@ func (r *requestHandler) TalkV1MessageCreate(
 		return nil, err
 	}
 
-	if res.StatusCode != 201 && res.StatusCode != 200 {
+	if res.StatusCode != http.StatusCreated && res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to create message: status %d", res.StatusCode)
 	}
 
@@ -92,7 +93,7 @@ func (r *requestHandler) TalkV1MessageDelete(ctx context.Context, messageID uuid
 		return nil, err
 	}
 
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to delete message: status %d", res.StatusCode)
 	}
 
@@ -113,7 +114,7 @@ func (r *requestHandler) TalkV1MessageList(ctx context.Context, pageToken string
 		return nil, err
 	}
 
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to list messages: status %d", res.StatusCode)
 	}
 
@@ -140,7 +141,7 @@ func (r *requestHandler) TalkV1MessageListWithFilters(ctx context.Context, filte
 		return nil, err
 	}
 
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to list messages: status %d", res.StatusCode)
 	}
 
@@ -178,7 +179,7 @@ func (r *requestHandler) TalkV1MessageReactionCreate(
 		return nil, err
 	}
 
-	if res.StatusCode != 201 && res.StatusCode != 200 {
+	if res.StatusCode != http.StatusCreated && res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to create reaction: status %d", res.StatusCode)
 	}
 
