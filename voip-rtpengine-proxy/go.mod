@@ -12,6 +12,7 @@ require (
 	cloud.google.com/go/storage v1.56.0
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/google/uuid v1.6.0
 	github.com/joonix/log v0.0.0-20251205082533-cd78070927ea
 	github.com/prometheus/client_golang v1.23.2
 	github.com/sirupsen/logrus v1.9.4
@@ -19,6 +20,7 @@ require (
 	github.com/spf13/viper v1.21.0
 	github.com/zeebo/bencode v1.0.0
 	go.uber.org/mock v0.6.0
+	google.golang.org/api v0.264.0
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )
 
@@ -46,7 +48,6 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.11 // indirect
 	github.com/googleapis/gax-go/v2 v2.17.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
@@ -79,7 +80,6 @@ require (
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	google.golang.org/api v0.264.0 // indirect
 	google.golang.org/genproto v0.0.0-20260128011058-8636f8732409 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
