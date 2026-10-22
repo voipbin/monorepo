@@ -50,7 +50,7 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 	tmp, err := h.numberHandlerTelnyx.NumberPurchase(num)
 	if err != nil {
 		log.Errorf("Could not create a number from the telnyx. err: %v", err)
-		return nil, fmt.Errorf("could not create a number from the telnyx. err: %v", err)
+		return nil, fmt.Errorf("could not create a number from the telnyx. err: %w", err)
 	}
 
 	res, err := h.Register(

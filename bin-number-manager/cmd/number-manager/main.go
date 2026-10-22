@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -79,11 +80,22 @@ func initSignal() {
 	}()
 }
 
+// promReadHeaderTimeout bounds how long the metrics server waits for request headers.
+const promReadHeaderTimeout = 10 * time.Second
+
+// newPromServer returns the metrics http server. Handler is nil, so it serves http.DefaultServeMux.
+func newPromServer(listen string) *http.Server {
+	return &http.Server{
+		Addr:              listen,
+		ReadHeaderTimeout: promReadHeaderTimeout,
+	}
+}
+
 func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
-		if err := http.ListenAndServe(listen, nil); err != nil {
+		if err := newPromServer(listen).ListenAndServe(); err != nil {
 			// Prometheus server error is logged but not treated as fatal to avoid unsafe exit from a goroutine.
 			logrus.Errorf("Prometheus server error: %v", err)
 		}
