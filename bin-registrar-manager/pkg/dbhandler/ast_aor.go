@@ -59,7 +59,7 @@ func (h *handler) astAORGetFromRow(row *sql.Rows) (*astaor.AstAOR, error) {
 		&res.Mailboxes,
 		&res.VoicemailExtension,
 	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. astAORGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. astAORGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -119,7 +119,7 @@ func (h *handler) AstAORCreate(ctx context.Context, b *astaor.AstAOR) error {
 		b.VoicemailExtension,
 	)
 	if err != nil {
-		return fmt.Errorf("could not execute. AstAORCreate. err: %v", err)
+		return fmt.Errorf("could not execute. AstAORCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -135,7 +135,7 @@ func (h *handler) astAORGetFromDB(ctx context.Context, id string) (*astaor.AstAO
 
 	row, err := h.db.QueryContext(ctx, q, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AstAORGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. AstAORGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -150,7 +150,7 @@ func (h *handler) astAORGetFromDB(ctx context.Context, id string) (*astaor.AstAO
 
 	res, err := h.astAORGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. AstAORGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. AstAORGetFromDB. err: %w", err)
 	}
 
 	return res, nil
@@ -223,7 +223,7 @@ func (h *handler) AstAORDelete(ctx context.Context, id string) error {
 
 	_, err := h.db.ExecContext(ctx, q, id)
 	if err != nil {
-		return fmt.Errorf("could not execute. AstAORDelete. err: %v", err)
+		return fmt.Errorf("could not execute. AstAORDelete. err: %w", err)
 	}
 
 	// delete from the cache

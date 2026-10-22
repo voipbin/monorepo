@@ -22,7 +22,7 @@ func (h *handler) extensionGetFromRow(row *sql.Rows) (*extension.Extension, erro
 	res := &extension.Extension{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. extensionGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. extensionGetFromRow. err: %w", err)
 	}
 
 	extensionNormalizeDomainName(res)
@@ -52,12 +52,12 @@ func (h *handler) ExtensionCountByCustomerID(ctx context.Context, customerID uui
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("ExtensionCountByCustomerID: could not build query. err: %v", err)
+		return 0, fmt.Errorf("ExtensionCountByCustomerID: could not build query. err: %w", err)
 	}
 
 	var count int
 	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
-		return 0, fmt.Errorf("ExtensionCountByCustomerID: could not query. err: %v", err)
+		return 0, fmt.Errorf("ExtensionCountByCustomerID: could not query. err: %w", err)
 	}
 
 	return count, nil
@@ -75,7 +75,7 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(b)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. ExtensionCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ExtensionCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -86,11 +86,11 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ExtensionCreate. err: %v", err)
+		return fmt.Errorf("could not build query. ExtensionCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. ExtensionCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. ExtensionCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -109,12 +109,12 @@ func (h *handler) extensionGetFromDB(ctx context.Context, id uuid.UUID) (*extens
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. extensionGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. extensionGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. extensionGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. extensionGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -122,14 +122,14 @@ func (h *handler) extensionGetFromDB(ctx context.Context, id uuid.UUID) (*extens
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. extensionGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. extensionGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.extensionGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. extensionGetFromDB. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. extensionGetFromDB. id: %s, err: %w", id, err)
 	}
 
 	return res, nil
@@ -224,7 +224,6 @@ func (h *handler) ExtensionGetByEndpointID(ctx context.Context, endpointID strin
 			return res, nil
 		}
 		// Cached extension is deleted, treat as not found
-		res = nil
 	}
 
 	fields := commondatabasehandler.GetDBFields(&extension.Extension{})
@@ -239,12 +238,12 @@ func (h *handler) ExtensionGetByEndpointID(ctx context.Context, endpointID strin
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. ExtensionGetByEndpointID. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. ExtensionGetByEndpointID. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ExtensionGetByEndpointID. err: %v", err)
+		return nil, fmt.Errorf("could not query. ExtensionGetByEndpointID. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -259,7 +258,7 @@ func (h *handler) ExtensionGetByEndpointID(ctx context.Context, endpointID strin
 
 	res, err = h.extensionGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. ExtensionGetByEndpointID. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. ExtensionGetByEndpointID. err: %w", err)
 	}
 
 	// set to the cache
@@ -278,7 +277,6 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.U
 			return res, nil
 		}
 		// Cached extension is deleted, treat as not found
-		res = nil
 	}
 
 	fields := commondatabasehandler.GetDBFields(&extension.Extension{})
@@ -294,12 +292,12 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.U
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. ExtensionGetByExtension. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. ExtensionGetByExtension. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ExtensionGetByExtension. err: %v", err)
+		return nil, fmt.Errorf("could not query. ExtensionGetByExtension. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -314,7 +312,7 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.U
 
 	res, err = h.extensionGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. ExtensionGetByExtension. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. ExtensionGetByExtension. err: %w", err)
 	}
 
 	// set to the cache
@@ -407,17 +405,17 @@ func (h *handler) ExtensionList(ctx context.Context, size uint64, token string, 
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. ExtensionGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. ExtensionGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ExtensionGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ExtensionGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ExtensionGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. ExtensionGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -427,12 +425,12 @@ func (h *handler) ExtensionList(ctx context.Context, size uint64, token string, 
 	for rows.Next() {
 		u, err := h.extensionGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. ExtensionGets. err: %v", err)
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. ExtensionGets. err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. ExtensionGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. ExtensionGets. err: %w", err)
 	}
 
 	return res, nil
