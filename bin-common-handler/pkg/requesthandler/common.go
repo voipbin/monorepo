@@ -60,9 +60,9 @@ var (
 	ErrNetworkAuthenticationRequired = errors.New(http.StatusText(http.StatusNetworkAuthenticationRequired)) // 511 Network Authentication Required
 )
 
-// HttpStatusErrorMap maps HTTP status codes to their corresponding sentinel error.
+// HTTPStatusErrorMap maps HTTP status codes to their corresponding sentinel error.
 // If a status code doesn't have a specific sentinel error, it might not be in this map.
-var HttpStatusErrorMap = map[int]error{
+var HTTPStatusErrorMap = map[int]error{
 	http.StatusBadRequest:                   ErrBadRequest,
 	http.StatusUnauthorized:                 ErrUnauthorized,
 	http.StatusPaymentRequired:              ErrPaymentRequired,
@@ -110,7 +110,7 @@ func getResponseStatusCodeError(statusCode int) error {
 		return nil
 	}
 
-	err, ok := HttpStatusErrorMap[statusCode]
+	err, ok := HTTPStatusErrorMap[statusCode]
 	if ok {
 		return err
 	}
@@ -131,7 +131,7 @@ func parseResponse(resp *sock.Response, out any) error {
 	// error so it can flow up through fmt.Errorf("%w") wraps and be
 	// recovered by errors.As at the api-manager edge. Non-migrated
 	// managers don't set DataType, FromResponse returns nil, and the
-	// legacy HttpStatusErrorMap path below fires unchanged.
+	// legacy HTTPStatusErrorMap path below fires unchanged.
 	if ve := cerrors.FromResponse(resp); ve != nil {
 		return ve
 	}

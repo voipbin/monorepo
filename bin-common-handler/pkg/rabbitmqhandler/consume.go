@@ -42,7 +42,7 @@ func (r *rabbit) startConsumers(reg *consumerRegistration) error {
 	// call at queue-creation time alone does not, since redeclareAll opens a
 	// fresh channel with no Qos re-application.
 	if err := queue.channel.Qos(reg.numWorkers, 0, false); err != nil {
-		return fmt.Errorf("could not set qos for queue '%s': %v", reg.queueName, err)
+		return fmt.Errorf("could not set qos for queue '%s': %w", reg.queueName, err)
 	}
 
 	messages, err := queue.channel.Consume(
@@ -55,7 +55,7 @@ func (r *rabbit) startConsumers(reg *consumerRegistration) error {
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("could not start consuming from queue '%s': %v", reg.queueName, err)
+		return fmt.Errorf("could not start consuming from queue '%s': %w", reg.queueName, err)
 	}
 
 	for i := 0; i < reg.numWorkers; i++ {
@@ -89,7 +89,7 @@ func (r *rabbit) ConsumeMessage(ctx context.Context, queueName string, consumerN
 		return err
 	}
 
-	if err := r.startConsumers(reg); err != nil {
+	if err := r.startConsumers(reg); err != nil { //nolint:contextcheck // consumer workers live as long as the connection, not as long as the Consume call ctx
 		return err
 	}
 
@@ -218,11 +218,11 @@ func (r *rabbit) executeConsumeMessage(message amqp.Delivery, messageConsume soc
 	var event sock.Event
 
 	if err := json.Unmarshal(message.Body, &event); err != nil {
-		return fmt.Errorf("could out unmarshal the message. err: %v", err)
+		return fmt.Errorf("could out unmarshal the message. err: %w", err)
 	}
 
 	if err := messageConsume(&event); err != nil {
-		return fmt.Errorf("message consumer returns error. err: %v", err)
+		return fmt.Errorf("message consumer returns error. err: %w", err)
 	}
 
 	return nil
@@ -245,7 +245,7 @@ func (r *rabbit) ConsumeRPC(ctx context.Context, queueName string, consumerName 
 		return err
 	}
 
-	if err := r.startConsumers(reg); err != nil {
+	if err := r.startConsumers(reg); err != nil { //nolint:contextcheck // consumer workers live as long as the connection, not as long as the Consume call ctx
 		return err
 	}
 
@@ -296,7 +296,7 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume sock.CbMsgRP
 		if message.ReplyTo != "" {
 			r.publishRPCErrorResponse(message)
 		}
-		return fmt.Errorf("message consumer returns error. err: %v", err)
+		return fmt.Errorf("message consumer returns error. err: %w", err)
 	} else if res == nil {
 		// nothing to return
 		return nil
@@ -310,7 +310,7 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume sock.CbMsgRP
 
 	channel, err := r.connection.Channel()
 	if err != nil {
-		return fmt.Errorf("could not create a channel. err: %v", err)
+		return fmt.Errorf("could not create a channel. err: %w", err)
 	}
 	defer func() {
 		_ = channel.Close()
@@ -337,7 +337,7 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume sock.CbMsgRP
 		}); err != nil {
 		// res stays out of the text, for the same reason as above. err comes
 		// from the broker client, not from the body.
-		return fmt.Errorf("could not reply the message. err: %v", err)
+		return fmt.Errorf("could not reply the message. err: %w", err)
 	}
 
 	return nil

@@ -65,7 +65,7 @@ func (h *notifyHandler) PublishEventRaw(ctx context.Context, eventType string, d
 		"data_type":  dataType,
 	})
 
-	if err := h.publishEvent(eventType, dataType, data, requestTimeoutDefault, 0, ""); err != nil {
+	if err := h.publishEvent(eventType, dataType, data, requestTimeoutDefault, 0, ""); err != nil { //nolint:contextcheck // fire-and-forget: the publish must outlive the caller ctx, publishEvent owns its timeout ctx
 		log.Errorf("Could not publish the call event. err: %v", err)
 		return
 	}
@@ -99,7 +99,7 @@ func (h *notifyHandler) PublishEvent(ctx context.Context, eventType string, data
 		subscriptionID = resolveSubscriptionID(data)
 	}
 
-	if err := h.publishEvent(string(eventType), string(wmwebhook.DataTypeJSON), m, requestTimeoutDefault, 0, subscriptionID); err != nil {
+	if err := h.publishEvent(string(eventType), string(wmwebhook.DataTypeJSON), m, requestTimeoutDefault, 0, subscriptionID); err != nil { //nolint:contextcheck // fire-and-forget: the publish must outlive the caller ctx, publishEvent owns its timeout ctx
 		log.Errorf("Could not publish the call event. err: %v", err)
 		return
 	}
@@ -154,7 +154,7 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 		// send scheduled message.
 		// we don't expect the response message here.
 		if err := h.publishDelayedEvent(ctx, delay, evt); err != nil {
-			return fmt.Errorf("could not publish the delayed event. err: %v", err)
+			return fmt.Errorf("could not publish the delayed event. err: %w", err)
 		}
 		return nil
 
@@ -170,7 +170,7 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 	default:
 		// Fanout-only path, unchanged: voip-asterisk-proxy and confirmed-dead sites.
 		if err := h.publishDirectEvent(ctx, evt); err != nil {
-			return fmt.Errorf("could not publish the event. err: %v", err)
+			return fmt.Errorf("could not publish the event. err: %w", err)
 		}
 	}
 	promNotifyTotal.WithLabelValues(evt.Type).Inc()
@@ -206,7 +206,7 @@ func (h *notifyHandler) publishTopicEventOrErr(ctx context.Context, evt *sock.Ev
 	key := eventtopic.RoutingKey(string(h.publisher), evt.Type, subscriptionID)
 	if err := h.sockHandler.EventPublish(string(commonoutline.QueueNameEvent), key, evt); err != nil {
 		promTopicPublishTotal.WithLabelValues(evt.Type, topicPublishResultError).Inc()
-		return fmt.Errorf("could not publish the event to the global topic exchange. routing_key: %s, err: %v", key, err)
+		return fmt.Errorf("could not publish the event to the global topic exchange. routing_key: %s, err: %w", key, err)
 	}
 	promTopicPublishTotal.WithLabelValues(evt.Type, topicPublishResultOK).Inc()
 	return nil
@@ -242,7 +242,7 @@ func (h *notifyHandler) PublishEventWithRoutingKey(ctx context.Context, eventTyp
 	pubCtx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(requestTimeoutDefault))
 	defer cancel()
 
-	if err := h.publishDirectEventWithKey(pubCtx, routingKey, evt); err != nil {
+	if err := h.publishDirectEventWithKey(pubCtx, routingKey, evt); err != nil { //nolint:contextcheck // fire-and-forget: the publish must outlive the caller ctx, see the note above
 		log.Errorf("Could not publish the event with routing key. err: %v", err)
 		return
 	}

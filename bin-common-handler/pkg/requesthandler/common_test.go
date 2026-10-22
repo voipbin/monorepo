@@ -133,7 +133,7 @@ func Test_parseResponse_typedVoipbinError(t *testing.T) {
 func Test_parseResponse_typedFallsThroughOnMalformedJSON(t *testing.T) {
 	// DataType claims VoipbinError but Data is malformed — FromResponse
 	// returns nil and parseResponse must fall through to the legacy
-	// HttpStatusErrorMap path so callers still get a usable sentinel.
+	// HTTPStatusErrorMap path so callers still get a usable sentinel.
 	resp := &sock.Response{
 		StatusCode: http.StatusNotFound,
 		DataType:   cerrors.DataTypeVoipbinError,

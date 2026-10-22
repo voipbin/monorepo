@@ -25,7 +25,7 @@ func FromResponse(resp *sock.Response) *VoipbinError {
 	}
 	out := &VoipbinError{}
 	if err := json.Unmarshal(resp.Data, out); err != nil {
-		return nil
+		return nil //nolint:nilerr // documented contract: any failure to decode a typed error yields nil, callers fall back
 	}
 	return out
 }

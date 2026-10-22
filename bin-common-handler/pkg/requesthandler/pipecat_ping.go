@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	outline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -42,7 +43,7 @@ func (r *requestHandler) PipecatV1Ping(ctx context.Context, hostID string) error
 	// Best-effort host_id echo verification. Note: Calico POD_IP recycle gives
 	// a matching IP, so this check does NOT cover that case (see design §4.6).
 	// For old pods the body is empty (404 simpleResponse) → skip the check.
-	if res != nil && res.StatusCode == 200 && len(res.Data) > 0 {
+	if res != nil && res.StatusCode == http.StatusOK && len(res.Data) > 0 {
 		var pr pmpipecatcall.PingResult
 		if errParse := json.Unmarshal(res.Data, &pr); errParse == nil {
 			if pr.HostID != "" && pr.HostID != hostID {

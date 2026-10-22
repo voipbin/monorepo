@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -21,7 +22,7 @@ func (r *requestHandler) TalkV1ParticipantList(ctx context.Context, chatID uuid.
 		return nil, err
 	}
 
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to list participants: status %d", res.StatusCode)
 	}
 
@@ -52,7 +53,7 @@ func (r *requestHandler) TalkV1ParticipantCreate(ctx context.Context, chatID uui
 		return nil, err
 	}
 
-	if res.StatusCode != 201 && res.StatusCode != 200 {
+	if res.StatusCode != http.StatusCreated && res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to create participant: status %d", res.StatusCode)
 	}
 
@@ -74,12 +75,12 @@ func (r *requestHandler) TalkV1ParticipantDelete(ctx context.Context, chatID, pa
 	}
 
 	// Accept both 200 OK (with body) and 204 No Content (without body)
-	if res.StatusCode != 200 && res.StatusCode != 204 {
+	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNoContent {
 		return nil, fmt.Errorf("failed to delete participant: status %d", res.StatusCode)
 	}
 
 	// 204 No Content returns no body
-	if res.StatusCode == 204 {
+	if res.StatusCode == http.StatusNoContent {
 		return nil, nil
 	}
 
@@ -107,7 +108,7 @@ func (r *requestHandler) TalkV1ParticipantListWithFilters(ctx context.Context, f
 		return nil, err
 	}
 
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to list participants: status %d", res.StatusCode)
 	}
 

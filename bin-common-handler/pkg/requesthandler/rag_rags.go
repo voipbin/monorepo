@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 
 	"github.com/gofrs/uuid"
@@ -196,7 +197,7 @@ func (r *requestHandler) RagV1RagDelete(ctx context.Context, id uuid.UUID) error
 		return err
 	}
 
-	if tmp.StatusCode != 200 {
+	if tmp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to delete rag: status %d", tmp.StatusCode)
 	}
 

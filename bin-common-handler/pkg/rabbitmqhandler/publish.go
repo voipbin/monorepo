@@ -15,7 +15,7 @@ func (r *rabbit) publishExchange(exchange, key string, message []byte, headers a
 
 	channel, err := r.connection.Channel()
 	if err != nil {
-		return fmt.Errorf("could not create a channel for PublishMessage. err: %v", err)
+		return fmt.Errorf("could not create a channel for PublishMessage. err: %w", err)
 	}
 	defer func() {
 		_ = channel.Close()
@@ -37,7 +37,7 @@ func (r *rabbit) publishExchange(exchange, key string, message []byte, headers a
 			DeliveryMode: deliveryMode,
 		})
 	if err != nil {
-		return fmt.Errorf("could not send a message. err: %v", err)
+		return fmt.Errorf("could not send a message. err: %w", err)
 	}
 
 	return nil
@@ -48,13 +48,13 @@ func (r *rabbit) RequestPublish(ctx context.Context, queueName string, req *sock
 
 	reqMsg, err := json.Marshal(req)
 	if err != nil {
-		return nil, fmt.Errorf("could not marshal the message. err: %v", err)
+		return nil, fmt.Errorf("could not marshal the message. err: %w", err)
 	}
 
 	// create a channel
 	channel, err := r.connection.Channel()
 	if err != nil {
-		return nil, fmt.Errorf("could not create a channel for PublishRPC. err: %v", err)
+		return nil, fmt.Errorf("could not create a channel for PublishRPC. err: %w", err)
 	}
 	defer func() {
 		_ = channel.Close()
@@ -70,7 +70,7 @@ func (r *rabbit) RequestPublish(ctx context.Context, queueName string, req *sock
 		nil,   // arguments
 	)
 	if err != nil {
-		return nil, fmt.Errorf("could not declare the queue. err: %v", err)
+		return nil, fmt.Errorf("could not declare the queue. err: %w", err)
 	}
 
 	// consuming the message from the tmpQueue
@@ -84,14 +84,14 @@ func (r *rabbit) RequestPublish(ctx context.Context, queueName string, req *sock
 		nil,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("could not consume the message. err: %v", err)
+		return nil, fmt.Errorf("could not consume the message. err: %w", err)
 	}
 
 	// publish the message
 	// Note: Using context.Background() for publish. The passed ctx is used for the response
 	// wait (select case below), not for the publish operation itself. RabbitMQ publish is
 	// synchronous and completes immediately.
-	err = channel.PublishWithContext(
+	err = channel.PublishWithContext( //nolint:contextcheck // publish intentionally ignores ctx, ctx only bounds the response wait (see note above)
 		context.Background(),
 		"",
 		queueName,
@@ -104,7 +104,7 @@ func (r *rabbit) RequestPublish(ctx context.Context, queueName string, req *sock
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("could not send a message. err: %v", err)
+		return nil, fmt.Errorf("could not send a message. err: %w", err)
 	}
 
 	select {
