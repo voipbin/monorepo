@@ -171,7 +171,7 @@ func (h *aiauditHandler) Create(ctx context.Context, customerID uuid.UUID, aical
 		results = append(results, record)
 
 		log.Infof("spawning audit goroutine for record_id=%s ai_id=%s", record.ID, aiID)
-		go h.runAuditJob(context.Background(), record.ID, ac, aiID, lang)
+		go h.runAuditJob(context.Background(), record.ID, ac, aiID, lang) //nolint:contextcheck,gosec // audit job runs detached on purpose: it outlives the RPC and bounds itself with geminiTimeoutSeconds
 	}
 
 	return results, nil
@@ -201,7 +201,7 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 	finalErr := ""
 	var finalMsgIDs []uuid.UUID // nil unless audit completes successfully
 
-	defer func() {
+	defer func() { //nolint:contextcheck // final result write uses a fresh context so a cancelled job context cannot skip it
 		defer func() { <-h.semaphore }() // released after all cleanup
 		if r := recover(); r != nil {
 			log.Errorf("panic in runAuditJob: %v\n%s", r, debug.Stack())
@@ -212,11 +212,12 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 		writeCtx, writeCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer writeCancel()
 		n, dbErr := h.db.AIAuditUpdateFinal(writeCtx, recordID, finalStatus, finalScore, finalEvalJSON, finalErr, finalMsgIDs)
-		if dbErr != nil {
+		switch {
+		case dbErr != nil:
 			log.WithError(dbErr).Error("could not write final audit result")
-		} else if n == 0 {
+		case n == 0:
 			log.Warnf("final audit result not written: record %s was deleted or swept before goroutine finished (intended status=%s)", recordID, finalStatus)
-		} else {
+		default:
 			log.Debugf("final audit result written: status=%s", finalStatus)
 		}
 	}()

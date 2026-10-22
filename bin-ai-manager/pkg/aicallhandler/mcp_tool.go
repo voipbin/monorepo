@@ -835,11 +835,11 @@ func mcpServerIDIsWhitelisted(ids []uuid.UUID, serverID uuid.UUID) bool {
 // log line -- a misbehaving customer server should not be able to inject
 // unbounded content there either. It cuts on a rune boundary so a multi-byte
 // character is never split into invalid UTF-8.
-func capErrText(s string, max int) string {
-	if len(s) <= max {
+func capErrText(s string, maxLen int) string {
+	if len(s) <= maxLen {
 		return s
 	}
-	cut := max
+	cut := maxLen
 	for cut > 0 && !utf8.RuneStart(s[cut]) {
 		cut--
 	}

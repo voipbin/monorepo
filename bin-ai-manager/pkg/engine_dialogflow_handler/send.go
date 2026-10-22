@@ -17,7 +17,6 @@ func (h *engineDialogflowHandler) send(ctx context.Context, client *dialogflow.S
 	expBackoff.MaxElapsedTime = 1 * time.Minute
 
 	var resp *dialogflowpb.DetectIntentResponse
-	var err error
 	operation := func() error {
 		var err error
 		resp, err = client.DetectIntent(ctx, req)
@@ -28,7 +27,7 @@ func (h *engineDialogflowHandler) send(ctx context.Context, client *dialogflow.S
 	}
 
 	if errRetry := backoff.Retry(operation, expBackoff); errRetry != nil {
-		return nil, err
+		return nil, errRetry
 	}
 
 	return resp, nil

@@ -291,10 +291,10 @@ func Test_clearListenState_ConversationKind(t *testing.T) {
 	c := listeningConversationAIcall()
 
 	rem := m.cache.EXPECT().ListenConversationAIcallIDRemove(ctx, lcConversationID, ltAIcallID).Return(nil)
-	clear := m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+	clearState := m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
 	reread := m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
 	update := m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
-	gomock.InOrder(rem, clear, reread, update)
+	gomock.InOrder(rem, clearState, reread, update)
 	m.cache.EXPECT().ListenAIcallIDRemove(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 	m.req.EXPECT().TranscribeV1TranscribeGet(gomock.Any(), gomock.Any()).Times(0)
 

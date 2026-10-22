@@ -930,7 +930,7 @@ func Test_stopListening_NeverTerminatesTheAIcall(t *testing.T) {
 	}, nil)
 	stop := m.req.EXPECT().TranscribeV1TranscribeStop(ctx, hostID, transcribeID).Return(nil, nil)
 	rem := m.cache.EXPECT().ListenAIcallIDRemove(ctx, transcribeID, ltAIcallID).Return(nil)
-	clear := m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+	clearState := m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
 	reread := m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
 
 	var wroteFields map[aicall.Field]any
@@ -939,7 +939,7 @@ func Test_stopListening_NeverTerminatesTheAIcall(t *testing.T) {
 			wroteFields = fields
 			return nil
 		})
-	gomock.InOrder(get, stop, rem, clear, reread, update)
+	gomock.InOrder(get, stop, rem, clearState, reread, update)
 
 	m.h.stopListening(ctx, c)
 
@@ -1011,10 +1011,10 @@ func Test_clearListenState_StepOrder(t *testing.T) {
 	c.Metadata = map[string]any{aicall.MetaKeyListenTranscribeID: transcribeID.String()}
 
 	rem := m.cache.EXPECT().ListenAIcallIDRemove(ctx, transcribeID, ltAIcallID).Return(nil)
-	clear := m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+	clearState := m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
 	reread := m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
 	update := m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
-	gomock.InOrder(rem, clear, reread, update)
+	gomock.InOrder(rem, clearState, reread, update)
 
 	m.h.clearListenState(ctx, c)
 }

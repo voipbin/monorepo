@@ -29,17 +29,17 @@ func (h *handler) McpServerCreate(ctx context.Context, m *mcpserver.McpServer) e
 
 	fields, err := commondatabasehandler.PrepareFields(m)
 	if err != nil {
-		return fmt.Errorf("McpServerCreate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("McpServerCreate: could not prepare fields. err: %w", err)
 	}
 	delete(fields, "has_secret")
 
 	query, args, err := sq.Insert(mcpserverTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("McpServerCreate: could not build query. err: %v", err)
+		return fmt.Errorf("McpServerCreate: could not build query. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("McpServerCreate: could not execute query. err: %v", err)
+		return fmt.Errorf("McpServerCreate: could not execute query. err: %w", err)
 	}
 
 	return nil
@@ -58,22 +58,25 @@ func (h *handler) mcpserverGetFromDB(ctx context.Context, id uuid.UUID) (*mcpser
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("mcpserverGetFromDB: could not build query. err: %v", err)
+		return nil, fmt.Errorf("mcpserverGetFromDB: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("mcpserverGetFromDB: could not query. err: %v", err)
+		return nil, fmt.Errorf("mcpserverGetFromDB: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, fmt.Errorf("mcpserverGetFromDB: could not iterate rows. err: %w", errRows)
+		}
 		return nil, ErrNotFound
 	}
 
 	res := &mcpserver.McpServer{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("mcpserverGetFromDB: could not scan row. err: %v", err)
+		return nil, fmt.Errorf("mcpserverGetFromDB: could not scan row. err: %w", err)
 	}
 	res.HasSecret = len(res.SecretCiphertext) > 0 || len(res.AccessTokenCiphertext) > 0
 
@@ -103,17 +106,17 @@ func (h *handler) McpServerList(ctx context.Context, size uint64, token string, 
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("McpServerList: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("McpServerList: could not apply filters. err: %w", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("McpServerList: could not build query. err: %v", err)
+		return nil, fmt.Errorf("McpServerList: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("McpServerList: could not query. err: %v", err)
+		return nil, fmt.Errorf("McpServerList: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -121,10 +124,13 @@ func (h *handler) McpServerList(ctx context.Context, size uint64, token string, 
 	for rows.Next() {
 		m := &mcpserver.McpServer{}
 		if err := commondatabasehandler.ScanRow(rows, m); err != nil {
-			return nil, fmt.Errorf("McpServerList: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("McpServerList: could not scan row. err: %w", err)
 		}
 		m.HasSecret = len(m.SecretCiphertext) > 0 || len(m.AccessTokenCiphertext) > 0
 		res = append(res, m)
+	}
+	if errRows := rows.Err(); errRows != nil {
+		return nil, fmt.Errorf("McpServerList: could not iterate rows. err: %w", errRows)
 	}
 
 	return res, nil
@@ -153,7 +159,7 @@ func (h *handler) McpServerUpdateOAuthTokensIfCurrent(ctx context.Context, id uu
 
 	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {
-		return fmt.Errorf("McpServerUpdateOAuthTokensIfCurrent: could not prepare fields. err: %v", err)
+		return fmt.Errorf("McpServerUpdateOAuthTokensIfCurrent: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Update(mcpserverTable).
@@ -164,17 +170,17 @@ func (h *handler) McpServerUpdateOAuthTokensIfCurrent(ctx context.Context, id uu
 		Where(sq.Eq{"refresh_token_ciphertext": spentRefreshTokenCiphertext}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("McpServerUpdateOAuthTokensIfCurrent: could not build query. err: %v", err)
+		return fmt.Errorf("McpServerUpdateOAuthTokensIfCurrent: could not build query. err: %w", err)
 	}
 
 	result, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("McpServerUpdateOAuthTokensIfCurrent: could not execute. err: %v", err)
+		return fmt.Errorf("McpServerUpdateOAuthTokensIfCurrent: could not execute. err: %w", err)
 	}
 
 	n, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("McpServerUpdateOAuthTokensIfCurrent: could not get rows affected. err: %v", err)
+		return fmt.Errorf("McpServerUpdateOAuthTokensIfCurrent: could not get rows affected. err: %w", err)
 	}
 	if n == 0 {
 		return ErrNotFound
@@ -193,7 +199,7 @@ func (h *handler) McpServerUpdate(ctx context.Context, id uuid.UUID, fields map[
 
 	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {
-		return fmt.Errorf("McpServerUpdate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("McpServerUpdate: could not prepare fields. err: %w", err)
 	}
 
 	// A soft-deleted server must not be mutable: without this predicate a
@@ -204,12 +210,12 @@ func (h *handler) McpServerUpdate(ctx context.Context, id uuid.UUID, fields map[
 		Where("tm_delete IS NULL").
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("McpServerUpdate: could not build query. err: %v", err)
+		return fmt.Errorf("McpServerUpdate: could not build query. err: %w", err)
 	}
 
 	result, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("McpServerUpdate: could not execute. err: %v", err)
+		return fmt.Errorf("McpServerUpdate: could not execute. err: %w", err)
 	}
 
 	// The predicate alone is not enough. Discarding RowsAffected turns a
@@ -217,7 +223,7 @@ func (h *handler) McpServerUpdate(ctx context.Context, id uuid.UUID, fields map[
 	// publishes an update event for a change that never happened.
 	n, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("McpServerUpdate: could not get rows affected. err: %v", err)
+		return fmt.Errorf("McpServerUpdate: could not get rows affected. err: %w", err)
 	}
 	if n == 0 {
 		return ErrNotFound
@@ -261,17 +267,17 @@ func (h *handler) McpServerDelete(ctx context.Context, id uuid.UUID) error {
 		Where("tm_delete IS NULL").
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("McpServerDelete: could not build query. err: %v", err)
+		return fmt.Errorf("McpServerDelete: could not build query. err: %w", err)
 	}
 
 	result, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("McpServerDelete: could not execute. err: %v", err)
+		return fmt.Errorf("McpServerDelete: could not execute. err: %w", err)
 	}
 
 	n, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("McpServerDelete: could not get rows affected. err: %v", err)
+		return fmt.Errorf("McpServerDelete: could not get rows affected. err: %w", err)
 	}
 	if n == 0 {
 		return ErrNotFound

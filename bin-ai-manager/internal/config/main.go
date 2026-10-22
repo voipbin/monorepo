@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	joonix "github.com/joonix/log"
 	"github.com/pkg/errors"
@@ -568,7 +569,9 @@ func InitPrometheus() {
 	http.Handle(cfg.PrometheusEndpoint, promhttp.Handler())
 	go func() {
 		logrus.Infof("Prometheus metrics server starting on %s%s", cfg.PrometheusListenAddress, cfg.PrometheusEndpoint)
-		if err := http.ListenAndServe(cfg.PrometheusListenAddress, nil); err != nil {
+		// A header timeout bounds slow clients; the handler is the default mux, as before.
+		srv := &http.Server{Addr: cfg.PrometheusListenAddress, ReadHeaderTimeout: 10 * time.Second}
+		if err := srv.ListenAndServe(); err != nil {
 			logrus.Errorf("Prometheus server error: %v", err)
 		}
 	}()

@@ -20,7 +20,7 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 		return errors.Wrapf(err, "Could not unmarshal the data")
 	}
 
-	go h.aicallHandler.EventCMConfbridgeJoined(context.Background(), &evt)
+	go h.aicallHandler.EventCMConfbridgeJoined(context.Background(), &evt) //nolint:contextcheck,gosec // handler runs detached on purpose: the subscribe loop must not block on it and the work outlives the event
 
 	return nil
 }
@@ -32,7 +32,7 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m
 		return errors.Wrapf(err, "Could not unmarshal the data")
 	}
 
-	go h.aicallHandler.EventCMConfbridgeLeaved(context.Background(), &evt)
+	go h.aicallHandler.EventCMConfbridgeLeaved(context.Background(), &evt) //nolint:contextcheck,gosec // handler runs detached on purpose: the subscribe loop must not block on it and the work outlives the event
 
 	return nil
 }
@@ -44,8 +44,8 @@ func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *sock
 		return errors.Wrapf(err, "Could not unmarshal the data")
 	}
 
-	go h.aicallHandler.EventCMCallHangup(context.Background(), &evt)
-	go h.summaryHandler.EventCMCallHangup(context.Background(), &evt)
+	go h.aicallHandler.EventCMCallHangup(context.Background(), &evt)  //nolint:contextcheck,gosec // handler runs detached on purpose: the subscribe loop must not block on it and the work outlives the event
+	go h.summaryHandler.EventCMCallHangup(context.Background(), &evt) //nolint:contextcheck,gosec // handler runs detached on purpose: the subscribe loop must not block on it and the work outlives the event
 
 	return nil
 }
@@ -56,7 +56,7 @@ func (h *subscribeHandler) processEventCMDTMFReceived(ctx context.Context, m *so
 		return errors.Wrapf(err, "Could not unmarshal the data")
 	}
 
-	go h.aicallHandler.EventCMDTMFReceived(context.Background(), &evt)
+	go h.aicallHandler.EventCMDTMFReceived(context.Background(), &evt) //nolint:contextcheck,gosec // handler runs detached on purpose: the subscribe loop must not block on it and the work outlives the event
 
 	return nil
 }

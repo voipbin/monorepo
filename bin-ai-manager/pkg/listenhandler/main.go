@@ -262,7 +262,7 @@ func (h *listenHandler) Run() error {
 	log.Info("Run the listenhandler.")
 
 	if err := h.sockHandler.QueueCreate(h.queueListen, "normal"); err != nil {
-		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
+		return fmt.Errorf("could not declare the queue for listenHandler. err: %w", err)
 	}
 
 	// process requests

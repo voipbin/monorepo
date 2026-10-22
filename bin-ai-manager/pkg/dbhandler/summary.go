@@ -24,17 +24,17 @@ func (h *handler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
 
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("SummaryCreate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("SummaryCreate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(summaryTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("SummaryCreate: could not build query. err: %v", err)
+		return fmt.Errorf("SummaryCreate: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("SummaryCreate: could not execute query. err: %v", err)
+		return fmt.Errorf("SummaryCreate: could not execute query. err: %w", err)
 	}
 
 	// update the cache
@@ -62,12 +62,12 @@ func (h *handler) summaryGetFromDB(ctx context.Context, id uuid.UUID) (*summary.
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("summaryGetFromDB: could not build query. err: %v", err)
+		return nil, fmt.Errorf("summaryGetFromDB: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("summaryGetFromDB: could not query. err: %v", err)
+		return nil, fmt.Errorf("summaryGetFromDB: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -80,7 +80,7 @@ func (h *handler) summaryGetFromDB(ctx context.Context, id uuid.UUID) (*summary.
 
 	res := &summary.Summary{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("summaryGetFromDB: could not scan row. err: %v", err)
+		return nil, fmt.Errorf("summaryGetFromDB: could not scan row. err: %w", err)
 	}
 
 	return res, nil
@@ -139,12 +139,12 @@ func (h *handler) SummaryDelete(ctx context.Context, id uuid.UUID) error {
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("SummaryDelete: could not build query. err: %v", err)
+		return fmt.Errorf("SummaryDelete: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("SummaryDelete: could not execute. err: %v", err)
+		return fmt.Errorf("SummaryDelete: could not execute. err: %w", err)
 	}
 
 	// update the cache
@@ -169,17 +169,17 @@ func (h *handler) SummaryList(ctx context.Context, size uint64, token string, fi
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("SummaryList: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("SummaryList: could not apply filters. err: %w", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("SummaryList: could not build query. err: %v", err)
+		return nil, fmt.Errorf("SummaryList: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("SummaryList: could not query. err: %v", err)
+		return nil, fmt.Errorf("SummaryList: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -187,7 +187,7 @@ func (h *handler) SummaryList(ctx context.Context, size uint64, token string, fi
 	for rows.Next() {
 		u := &summary.Summary{}
 		if err := commondatabasehandler.ScanRow(rows, u); err != nil {
-			return nil, fmt.Errorf("SummaryList: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("SummaryList: could not scan row. err: %w", err)
 		}
 		res = append(res, u)
 	}
@@ -216,7 +216,7 @@ func (h *handler) SummaryUpdate(ctx context.Context, id uuid.UUID, fields map[su
 
 	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {
-		return fmt.Errorf("SummaryUpdate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("SummaryUpdate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Update(summaryTable).
@@ -224,12 +224,12 @@ func (h *handler) SummaryUpdate(ctx context.Context, id uuid.UUID, fields map[su
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("SummaryUpdate: could not build query. err: %v", err)
+		return fmt.Errorf("SummaryUpdate: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("SummaryUpdate: could not execute. err: %v", err)
+		return fmt.Errorf("SummaryUpdate: could not execute. err: %w", err)
 	}
 
 	// update the cache
@@ -257,7 +257,7 @@ func (h *handler) SummaryUpdateStatusDoneIfNotDone(ctx context.Context, id uuid.
 
 	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {
-		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not prepare fields. err: %v", err)
+		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Update(summaryTable).
@@ -266,17 +266,17 @@ func (h *handler) SummaryUpdateStatusDoneIfNotDone(ctx context.Context, id uuid.
 		Where(sq.NotEq{"status": string(summary.StatusDone)}).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not build query. err: %v", err)
+		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not build query. err: %w", err)
 	}
 
 	res, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not execute. err: %v", err)
+		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not execute. err: %w", err)
 	}
 
 	n, err := res.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not get rows affected. err: %v", err)
+		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not get rows affected. err: %w", err)
 	}
 
 	if n > 0 {

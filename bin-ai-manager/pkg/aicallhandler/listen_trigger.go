@@ -67,7 +67,7 @@ func (h *aicallHandler) ProcessListen(ctx context.Context, id uuid.UUID) (*aical
 		return nil, err
 	}
 	if proceed {
-		go func() {
+		go func() { //nolint:contextcheck,gosec // listen start runs detached on purpose: ProcessListen must return without waiting, the stage bounds itself with a timeout
 			timeout := time.Duration(config.Get().AIcallListenEnsureGoroutineTimeoutSeconds) * time.Second
 			ctx, cancel := context.WithTimeout(context.Background(), timeout)
 			defer cancel()

@@ -86,7 +86,7 @@ func (h *aicallHandler) resolveAI(ctx context.Context, assistanceType aicall.Ass
 // resolveAIForTeam fetches all team members' AI configs, keyed by member UUID.
 // Partial-failure: if individual member AI fetches fail, logs a warning and returns the partial map.
 // Only a teamHandler.Get failure is fatal.
-func (h *aicallHandler) resolveAIForTeam(ctx context.Context, teamID uuid.UUID) (map[uuid.UUID]*ai.AI, error) {
+func (h *aicallHandler) resolveAIForTeam(ctx context.Context, teamID uuid.UUID) (map[uuid.UUID]*ai.AI, error) { //nolint:contextcheck // member AI fetches are decoupled from the caller's deadline on purpose, see the comment in the body
 	t, err := h.teamHandler.Get(ctx, teamID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get team for resolveAIForTeam. team_id: %s", teamID)

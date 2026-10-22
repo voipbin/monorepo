@@ -145,7 +145,7 @@ func (h *aipromptproposalHandler) Create(ctx context.Context, customerID uuid.UU
 		return nil, fmt.Errorf("could not reload proposal: %w", err)
 	}
 
-	go h.runProposalJob(context.Background(), proposalID, basis.Prompt, auditIDs, language)
+	go h.runProposalJob(context.Background(), proposalID, basis.Prompt, auditIDs, language) //nolint:contextcheck,gosec // proposal job runs detached on purpose: it outlives the RPC and bounds itself with geminiTimeoutSeconds
 
 	return reloaded, nil
 }
@@ -167,7 +167,7 @@ func (h *aipromptproposalHandler) runProposalJob(parent context.Context, proposa
 	finalRationale := ""
 	finalErr := ""
 
-	defer func() {
+	defer func() { //nolint:contextcheck // final result write uses a fresh context so a cancelled job context cannot skip it
 		defer func() { <-h.semaphore }()
 		if r := recover(); r != nil {
 			log.Errorf("panic in runProposalJob: %v\n%s", r, debug.Stack())
@@ -179,11 +179,12 @@ func (h *aipromptproposalHandler) runProposalJob(parent context.Context, proposa
 		writeCtx, writeCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer writeCancel()
 		n, dbErr := h.db.AIPromptProposalUpdateFinal(writeCtx, proposalID, finalStatus, finalProposed, finalRationale, finalErr)
-		if dbErr != nil {
+		switch {
+		case dbErr != nil:
 			log.WithError(dbErr).Error("could not write final proposal result")
-		} else if n == 0 {
+		case n == 0:
 			log.Warnf("final proposal result not written: row was deleted or swept (intended status=%s)", finalStatus)
-		} else {
+		default:
 			log.Debugf("final proposal result written: status=%s", finalStatus)
 		}
 	}()

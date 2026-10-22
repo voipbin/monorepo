@@ -231,12 +231,12 @@ func filterTools(names []string, warnings *[]string) []string {
 	return kept
 }
 
-func truncateRunes(s string, max int) (string, bool) {
-	if utf8.RuneCountInString(s) <= max {
+func truncateRunes(s string, maxLen int) (string, bool) {
+	if utf8.RuneCountInString(s) <= maxLen {
 		return s, false
 	}
 	r := []rune(s)
-	return string(r[:max]), true
+	return string(r[:maxLen]), true
 }
 
 // headerRE allows up to three leading spaces, as CommonMark does.

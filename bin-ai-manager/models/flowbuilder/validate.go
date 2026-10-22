@@ -85,21 +85,21 @@ func ValidateRequest(req *ChatRequest) error {
 func depth(v any) int {
 	switch x := v.(type) {
 	case map[string]any:
-		max := 0
+		maxDepth := 0
 		for _, c := range x {
-			if d := depth(c); d > max {
-				max = d
+			if d := depth(c); d > maxDepth {
+				maxDepth = d
 			}
 		}
-		return max + 1
+		return maxDepth + 1
 	case []any:
-		max := 0
+		maxDepth := 0
 		for _, c := range x {
-			if d := depth(c); d > max {
-				max = d
+			if d := depth(c); d > maxDepth {
+				maxDepth = d
 			}
 		}
-		return max + 1
+		return maxDepth + 1
 	default:
 		return 0
 	}

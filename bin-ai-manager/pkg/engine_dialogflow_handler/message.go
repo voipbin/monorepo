@@ -55,11 +55,12 @@ func (h *engineDialogflowHandler) MessageSend(ctx context.Context, cc *aicall.AI
 	log.Debugf("Received the dialogflow response.")
 
 	content := ""
-	if resp.GetQueryResult() == nil {
+	switch {
+	case resp.GetQueryResult() == nil:
 		content = ""
-	} else if resp.GetQueryResult().GetFulfillmentText() != "" { // Check if FulfillmentText is present
+	case resp.GetQueryResult().GetFulfillmentText() != "": // Check if FulfillmentText is present
 		content = resp.GetQueryResult().GetFulfillmentText()
-	} else if len(resp.GetQueryResult().GetFulfillmentMessages()) > 0 { // Check for Fulfillment Messages
+	case len(resp.GetQueryResult().GetFulfillmentMessages()) > 0: // Check for Fulfillment Messages
 		for _, message := range resp.GetQueryResult().GetFulfillmentMessages() {
 			if text := message.GetText(); text != nil && len(text.GetText()) > 0 {
 				content = text.GetText()[0]

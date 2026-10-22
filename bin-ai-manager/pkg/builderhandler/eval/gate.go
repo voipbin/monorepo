@@ -139,9 +139,9 @@ const (
 // Verdict is the one statement about the gate that may be shown or acted on.
 // A run against fake engines is never PASS or FAIL, and verdicts with no
 // recorded judge are never PASS.
-func (g GateReport) Verdict(real bool, judge string) string {
+func (g GateReport) Verdict(isReal bool, judge string) string {
 	switch {
-	case !real:
+	case !isReal:
 		return GateNotApplicable
 	case g.AllGood && strings.TrimSpace(judge) == "":
 		return GateNotDecided

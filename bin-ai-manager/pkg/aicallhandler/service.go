@@ -54,7 +54,7 @@ func (h *aicallHandler) serviceStartReferenceTypeCall(
 	cc, err := h.Start(ctx, uuid.Nil, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeCall, referenceID)
 	if err != nil {
 		log.Errorf("Could not start aicall. err: %v", err)
-		return nil, fmt.Errorf("could not start aicall. err: %v", err)
+		return nil, fmt.Errorf("could not start aicall. err: %v", err) //nolint:errorlint // opaque on purpose: %w would turn the 500 from listenhandler.errorResponse into a typed 404
 	}
 	log.WithField("aicall_id", cc.ID).Debugf("Started aicall. aicall_id: %s", cc.ID)
 
@@ -96,7 +96,7 @@ func (h *aicallHandler) serviceStartReferenceTypeConversation(
 	cc, err := h.Start(ctx, uuid.Nil, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeConversation, referenceID)
 	if err != nil {
 		log.Errorf("Could not start aicall. err: %v", err)
-		return nil, fmt.Errorf("could not start aicall. err: %v", err)
+		return nil, fmt.Errorf("could not start aicall. err: %v", err) //nolint:errorlint // opaque on purpose: %w would turn the 500 from listenhandler.errorResponse into a typed 404
 	}
 	log.WithField("aicall_id", cc.ID).Debugf("Started aicall. aicall_id: %s", cc.ID)
 
@@ -133,7 +133,7 @@ func (h *aicallHandler) ServiceStartTypeTask(
 	cc, err := h.StartTask(ctx, assistanceType, assistanceID, activeflowID)
 	if err != nil {
 		log.Errorf("Could not start aicall. err: %v", err)
-		return nil, fmt.Errorf("could not start aicall. err: %v", err)
+		return nil, fmt.Errorf("could not start aicall. err: %v", err) //nolint:errorlint // opaque on purpose: %w would turn the 500 from listenhandler.errorResponse into a typed 404
 	}
 	log.WithField("aicall_id", cc.ID).Debugf("Started aicall. aicall_id: %s", cc.ID)
 
@@ -163,7 +163,7 @@ func (h *aicallHandler) serviceStop(ctx context.Context, c *aicall.AIcall) error
 
 	tmp, err := h.ProcessTerminate(ctx, c.ID)
 	if err != nil {
-		return fmt.Errorf("could not start terminating the aicall. err: %v", err)
+		return fmt.Errorf("could not start terminating the aicall. err: %w", err)
 	}
 	log.WithField("aicall_id", tmp.ID).Debugf("Stopped the aicall service successfully.")
 

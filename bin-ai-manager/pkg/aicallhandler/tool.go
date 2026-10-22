@@ -354,7 +354,7 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 	log.WithField("activeflow_id", af.ID).Debugf("Added actions to the activeflow. activeflow_id: %s", c.ActiveflowID)
 	fillSuccess(res, "activeflow", af.ID.String(), "Added connect action successfully.")
 
-	go func() {
+	go func() { //nolint:contextcheck,gosec // terminate runs detached on purpose so the tool response is not delayed and a cancelled request cannot skip it
 		// this will connect the call right away
 		_, err := h.reqHandler.AIV1AIcallTerminate(context.Background(), c.ID)
 		if err != nil {
@@ -464,7 +464,7 @@ func (h *aicallHandler) toolHandleJoinQueue(ctx context.Context, c *aicall.AIcal
 	log.WithField("activeflow_id", af.ID).Debugf("Added actions to the activeflow. activeflow_id: %s", c.ActiveflowID)
 	fillSuccess(res, "activeflow", af.ID.String(), "Added queue_join action successfully.")
 
-	go func() {
+	go func() { //nolint:contextcheck,gosec // terminate runs detached on purpose so the tool response is not delayed and a cancelled request cannot skip it
 		_, errTerm := h.reqHandler.AIV1AIcallTerminate(context.Background(), c.ID)
 		if errTerm != nil {
 			log.Errorf("Could not terminate the aicall after sending the tool actions. err: %v", errTerm)

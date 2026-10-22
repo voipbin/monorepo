@@ -241,7 +241,7 @@ func (h *mcpToolHandler) ListTools(ctx context.Context, serverID uuid.UUID) ([]M
 // a body of empty objects inside the 1 MiB cap is several hundred thousand
 // elements, each allocated before the cap could apply. Members other than
 // tools are skipped without being decoded into values.
-func decodeToolsList(result json.RawMessage, max int) ([]McpTool, bool, error) {
+func decodeToolsList(result json.RawMessage, maxTools int) ([]McpTool, bool, error) {
 	dec := json.NewDecoder(bytes.NewReader(result))
 
 	if err := expectDelim(dec, '{'); err != nil {
@@ -271,7 +271,7 @@ func decodeToolsList(result json.RawMessage, max int) ([]McpTool, bool, error) {
 			return nil, false, fmt.Errorf("tools: %w", err)
 		}
 		for dec.More() {
-			if len(tools) >= max {
+			if len(tools) >= maxTools {
 				truncated = true
 				// Stop reading. The rest of the body is not needed and
 				// reading it would cost what the cap exists to avoid.
