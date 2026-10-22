@@ -24,7 +24,7 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 	res := &queuecall.Queuecall{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. queuecallGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. queuecallGetFromRow. err: %w", err)
 	}
 
 	// Ensure Source is not nil
@@ -54,7 +54,7 @@ func (h *handler) QueuecallCreate(ctx context.Context, qc *queuecall.Queuecall) 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(qc)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. QueuecallCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. QueuecallCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -65,11 +65,11 @@ func (h *handler) QueuecallCreate(ctx context.Context, qc *queuecall.Queuecall) 
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. QueuecallCreate. err: %v", err)
+		return fmt.Errorf("could not build query. QueuecallCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. QueuecallCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. QueuecallCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -122,12 +122,12 @@ func (h *handler) queuecallGetFromDB(ctx context.Context, id uuid.UUID) (*queuec
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. queuecallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. queuecallGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. queuecallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. queuecallGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -135,14 +135,14 @@ func (h *handler) queuecallGetFromDB(ctx context.Context, id uuid.UUID) (*queuec
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. queuecallGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. queuecallGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.queuecallGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. queuecallGetFromDB. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. queuecallGetFromDB. id: %s, err: %w", id, err)
 	}
 
 	return res, nil
@@ -182,12 +182,12 @@ func (h *handler) QueuecallGetByReferenceID(ctx context.Context, referenceID uui
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. QueuecallGetByReferenceID. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. QueuecallGetByReferenceID. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. QueuecallGetByReferenceID. err: %v", err)
+		return nil, fmt.Errorf("could not query. QueuecallGetByReferenceID. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -202,7 +202,7 @@ func (h *handler) QueuecallGetByReferenceID(ctx context.Context, referenceID uui
 
 	res, err := h.queuecallGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get queuecall. QueuecallGetByReferenceID, err: %v", err)
+		return nil, fmt.Errorf("could not get queuecall. QueuecallGetByReferenceID, err: %w", err)
 	}
 
 	_ = h.queuecallSetToCache(ctx, res)
@@ -227,17 +227,17 @@ func (h *handler) QueuecallList(ctx context.Context, size uint64, token string, 
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. QueuecallGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. QueuecallGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. QueuecallGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. QueuecallGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. QueuecallGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. QueuecallGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -247,12 +247,12 @@ func (h *handler) QueuecallList(ctx context.Context, size uint64, token string, 
 	for rows.Next() {
 		u, err := h.queuecallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. QueuecallGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. QueuecallGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. QueuecallGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. QueuecallGets. err: %w", err)
 	}
 
 	return res, nil
@@ -278,12 +278,12 @@ func (h *handler) QueuecallListOldestWaiting(ctx context.Context, queueID uuid.U
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. QueuecallListOldestWaiting. err: %v", err)
+		return nil, fmt.Errorf("could not build query. QueuecallListOldestWaiting. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. QueuecallListOldestWaiting. err: %v", err)
+		return nil, fmt.Errorf("could not query. QueuecallListOldestWaiting. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -293,12 +293,12 @@ func (h *handler) QueuecallListOldestWaiting(ctx context.Context, queueID uuid.U
 	for rows.Next() {
 		u, err := h.queuecallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. QueuecallListOldestWaiting, err: %v", err)
+			return nil, fmt.Errorf("could not get data. QueuecallListOldestWaiting, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. QueuecallListOldestWaiting. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. QueuecallListOldestWaiting. err: %w", err)
 	}
 
 	return res, nil
@@ -325,12 +325,12 @@ func (h *handler) QueuecallListConnectingStale(ctx context.Context, before time.
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. QueuecallListConnectingStale. err: %v", err)
+		return nil, fmt.Errorf("could not build query. QueuecallListConnectingStale. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. QueuecallListConnectingStale. err: %v", err)
+		return nil, fmt.Errorf("could not query. QueuecallListConnectingStale. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -340,12 +340,12 @@ func (h *handler) QueuecallListConnectingStale(ctx context.Context, before time.
 	for rows.Next() {
 		u, err := h.queuecallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. QueuecallListConnectingStale, err: %v", err)
+			return nil, fmt.Errorf("could not get data. QueuecallListConnectingStale, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. QueuecallListConnectingStale. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. QueuecallListConnectingStale. err: %w", err)
 	}
 
 	return res, nil
@@ -370,12 +370,12 @@ func (h *handler) QueuecallListWaitingOldest(ctx context.Context, limit uint64) 
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. QueuecallListWaitingOldest. err: %v", err)
+		return nil, fmt.Errorf("could not build query. QueuecallListWaitingOldest. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. QueuecallListWaitingOldest. err: %v", err)
+		return nil, fmt.Errorf("could not query. QueuecallListWaitingOldest. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -385,12 +385,12 @@ func (h *handler) QueuecallListWaitingOldest(ctx context.Context, limit uint64) 
 	for rows.Next() {
 		u, err := h.queuecallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. QueuecallListWaitingOldest, err: %v", err)
+			return nil, fmt.Errorf("could not get data. QueuecallListWaitingOldest, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. QueuecallListWaitingOldest. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. QueuecallListWaitingOldest. err: %w", err)
 	}
 
 	return res, nil
@@ -476,7 +476,7 @@ func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID
 		queuecall.FieldTMUpdate:       h.utilHandler.TimeNow(),
 	})
 	if err != nil {
-		return 0, fmt.Errorf("could not prepare fields. QueuecallSetStatusConnecting. err: %v", err)
+		return 0, fmt.Errorf("could not prepare fields. QueuecallSetStatusConnecting. err: %w", err)
 	}
 
 	sqlStr, args, err := squirrel.
@@ -487,17 +487,17 @@ func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("could not build query. QueuecallSetStatusConnecting. err: %v", err)
+		return 0, fmt.Errorf("could not build query. QueuecallSetStatusConnecting. err: %w", err)
 	}
 
 	res, err := h.db.ExecContext(ctx, sqlStr, args...)
 	if err != nil {
-		return 0, fmt.Errorf("could not execute query. QueuecallSetStatusConnecting. err: %v", err)
+		return 0, fmt.Errorf("could not execute query. QueuecallSetStatusConnecting. err: %w", err)
 	}
 
 	affected, err := res.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("could not get rows affected. QueuecallSetStatusConnecting. err: %v", err)
+		return 0, fmt.Errorf("could not get rows affected. QueuecallSetStatusConnecting. err: %w", err)
 	}
 
 	// update the cache
@@ -656,7 +656,7 @@ func (h *handler) QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) e
 	}
 
 	if err := h.QueuecallUpdate(ctx, id, fields); err != nil {
-		return fmt.Errorf("could not execute. QueuecallSetStatusKicking. err: %v", err)
+		return fmt.Errorf("could not execute. QueuecallSetStatusKicking. err: %w", err)
 	}
 
 	return nil
@@ -700,7 +700,7 @@ func (h *handler) QueuecallSetStatusWaitingIfConnecting(ctx context.Context, id 
 		queuecall.FieldTMUpdate:       h.utilHandler.TimeNow(),
 	})
 	if err != nil {
-		return 0, fmt.Errorf("could not prepare fields. QueuecallSetStatusWaitingIfConnecting. err: %v", err)
+		return 0, fmt.Errorf("could not prepare fields. QueuecallSetStatusWaitingIfConnecting. err: %w", err)
 	}
 
 	sqlStr, args, err := squirrel.
@@ -711,17 +711,17 @@ func (h *handler) QueuecallSetStatusWaitingIfConnecting(ctx context.Context, id 
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("could not build query. QueuecallSetStatusWaitingIfConnecting. err: %v", err)
+		return 0, fmt.Errorf("could not build query. QueuecallSetStatusWaitingIfConnecting. err: %w", err)
 	}
 
 	res, err := h.db.ExecContext(ctx, sqlStr, args...)
 	if err != nil {
-		return 0, fmt.Errorf("could not execute query. QueuecallSetStatusWaitingIfConnecting. err: %v", err)
+		return 0, fmt.Errorf("could not execute query. QueuecallSetStatusWaitingIfConnecting. err: %w", err)
 	}
 
 	affected, err := res.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("could not get affected rows. QueuecallSetStatusWaitingIfConnecting. err: %v", err)
+		return 0, fmt.Errorf("could not get affected rows. QueuecallSetStatusWaitingIfConnecting. err: %w", err)
 	}
 
 	if affected > 0 {
@@ -739,7 +739,7 @@ func (h *handler) queuecallSetStatusWaitingIf(ctx context.Context, id uuid.UUID,
 		queuecall.FieldTMUpdate: h.utilHandler.TimeNow(),
 	})
 	if err != nil {
-		return 0, fmt.Errorf("could not prepare fields. queuecallSetStatusWaitingIf. err: %v", err)
+		return 0, fmt.Errorf("could not prepare fields. queuecallSetStatusWaitingIf. err: %w", err)
 	}
 
 	sqlStr, args, err := squirrel.
@@ -750,17 +750,17 @@ func (h *handler) queuecallSetStatusWaitingIf(ctx context.Context, id uuid.UUID,
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("could not build query. queuecallSetStatusWaitingIf. err: %v", err)
+		return 0, fmt.Errorf("could not build query. queuecallSetStatusWaitingIf. err: %w", err)
 	}
 
 	res, err := h.db.ExecContext(ctx, sqlStr, args...)
 	if err != nil {
-		return 0, fmt.Errorf("could not execute query. queuecallSetStatusWaitingIf. err: %v", err)
+		return 0, fmt.Errorf("could not execute query. queuecallSetStatusWaitingIf. err: %w", err)
 	}
 
 	affected, err := res.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("could not get rows affected. queuecallSetStatusWaitingIf. err: %v", err)
+		return 0, fmt.Errorf("could not get rows affected. queuecallSetStatusWaitingIf. err: %w", err)
 	}
 
 	// update the cache

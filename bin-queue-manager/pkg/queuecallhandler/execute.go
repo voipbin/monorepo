@@ -174,7 +174,7 @@ func (h *queuecallHandler) matchWaitingQueuecall(ctx context.Context, qc *queuec
 
 	target := agents[0]
 	if q, errGet := h.queueHandler.Get(ctx, qc.QueueID); errGet == nil && q.RoutingMethod == queue.RoutingMethodRandom {
-		target = agents[rand.Intn(len(agents))]
+		target = agents[rand.Intn(len(agents))] //nolint:gosec // G404: random agent pick for load spreading, not a security decision
 	}
 
 	if _, errExec := h.Execute(ctx, qc.ID, target.ID); errExec != nil {
