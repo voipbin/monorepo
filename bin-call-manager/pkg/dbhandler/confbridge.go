@@ -23,7 +23,7 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 	res := &confbridge.Confbridge{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. confbridgeGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. confbridgeGetFromRow. err: %w", err)
 	}
 
 	// Initialize nil slices/maps to empty
@@ -69,7 +69,7 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(cb)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. ConfbridgeCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ConfbridgeCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -80,11 +80,11 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ConfbridgeCreate. err: %v", err)
+		return fmt.Errorf("could not build query. ConfbridgeCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeCreate. err: %v", err)
+		return fmt.Errorf("could not execute. ConfbridgeCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -112,12 +112,12 @@ func (h *handler) confbridgeGetFromDB(ctx context.Context, id uuid.UUID) (*confb
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. confbridgeGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. confbridgeGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ConfbridgeGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. ConfbridgeGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -125,14 +125,14 @@ func (h *handler) confbridgeGetFromDB(ctx context.Context, id uuid.UUID) (*confb
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. confbridgeGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. confbridgeGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.confbridgeGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get confbridge. ConfbridgeGetFromDB, err: %v", err)
+		return nil, fmt.Errorf("could not get confbridge. ConfbridgeGetFromDB, err: %w", err)
 	}
 
 	return res, nil
@@ -190,12 +190,12 @@ func (h *handler) ConfbridgeGetByBridgeID(ctx context.Context, bridgeID string) 
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. ConfbridgeGetByBridgeID. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. ConfbridgeGetByBridgeID. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ConfbridgeGetByBridgeID. err: %v", err)
+		return nil, fmt.Errorf("could not query. ConfbridgeGetByBridgeID. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -203,14 +203,14 @@ func (h *handler) ConfbridgeGetByBridgeID(ctx context.Context, bridgeID string) 
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. ConfbridgeGetByBridgeID. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. ConfbridgeGetByBridgeID. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.confbridgeGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get call. ConfbridgeGetByBridgeID, err: %v", err)
+		return nil, fmt.Errorf("could not get call. ConfbridgeGetByBridgeID, err: %w", err)
 	}
 
 	return res, nil
@@ -233,17 +233,17 @@ func (h *handler) ConfbridgeList(ctx context.Context, size uint64, token string,
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. ConfbridgeGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. ConfbridgeGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ConfbridgeGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ConfbridgeGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ConfbridgeGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. ConfbridgeGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -253,12 +253,12 @@ func (h *handler) ConfbridgeList(ctx context.Context, size uint64, token string,
 	for rows.Next() {
 		u, err := h.confbridgeGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. confbridgeGetFromRow, err: %v", err)
+			return nil, fmt.Errorf("could not get data. confbridgeGetFromRow, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. ConfbridgeGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. ConfbridgeGets. err: %w", err)
 	}
 
 	return res, nil
@@ -337,11 +337,11 @@ func buildConfbridgeAddRecordingIDs(id, recordingID uuid.UUID, tmUpdate any) squ
 func (h *handler) ConfbridgeAddRecordingIDs(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
 	q, args, err := buildConfbridgeAddRecordingIDs(id, recordingID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ConfbridgeAddRecordingIDs. err: %v", err)
+		return fmt.Errorf("could not build query. ConfbridgeAddRecordingIDs. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeAddRecordingIDs. err: %v", err)
+		return fmt.Errorf("could not execute. ConfbridgeAddRecordingIDs. err: %w", err)
 	}
 
 	_ = h.confbridgeUpdateToCache(ctx, id)
@@ -365,11 +365,11 @@ func buildConfbridgeAddExternalMediaID(id, externalMediaID uuid.UUID, tmUpdate a
 func (h *handler) ConfbridgeAddExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
 	q, args, err := buildConfbridgeAddExternalMediaID(id, externalMediaID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ConfbridgeAddExternalMediaID. err: %v", err)
+		return fmt.Errorf("could not build query. ConfbridgeAddExternalMediaID. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeAddExternalMediaID. err: %v", err)
+		return fmt.Errorf("could not execute. ConfbridgeAddExternalMediaID. err: %w", err)
 	}
 
 	_ = h.confbridgeUpdateToCache(ctx, id)
@@ -394,11 +394,11 @@ func buildConfbridgeRemoveExternalMediaID(id, externalMediaID uuid.UUID, tmUpdat
 func (h *handler) ConfbridgeRemoveExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
 	q, args, err := buildConfbridgeRemoveExternalMediaID(id, externalMediaID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ConfbridgeRemoveExternalMediaID. err: %v", err)
+		return fmt.Errorf("could not build query. ConfbridgeRemoveExternalMediaID. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeRemoveExternalMediaID. err: %v", err)
+		return fmt.Errorf("could not execute. ConfbridgeRemoveExternalMediaID. err: %w", err)
 	}
 
 	_ = h.confbridgeUpdateToCache(ctx, id)
@@ -428,11 +428,11 @@ func buildConfbridgeAddChannelCallID(id uuid.UUID, channelID string, callID uuid
 func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, channelID string, callID uuid.UUID) error {
 	q, args, err := buildConfbridgeAddChannelCallID(id, channelID, callID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ConfbridgeAddChannelCallID. err: %v", err)
+		return fmt.Errorf("could not build query. ConfbridgeAddChannelCallID. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeAddChannelCallID. err: %v", err)
+		return fmt.Errorf("could not execute. ConfbridgeAddChannelCallID. err: %w", err)
 	}
 
 	_ = h.confbridgeUpdateToCache(ctx, id)
@@ -461,11 +461,11 @@ func buildConfbridgeRemoveChannelCallID(id uuid.UUID, channelID string, tmUpdate
 func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) error {
 	q, args, err := buildConfbridgeRemoveChannelCallID(id, channelID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ConfbridgeRemoveChannelCallID. err: %v", err)
+		return fmt.Errorf("could not build query. ConfbridgeRemoveChannelCallID. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeRemoveChannelCallID. err: %v", err)
+		return fmt.Errorf("could not execute. ConfbridgeRemoveChannelCallID. err: %w", err)
 	}
 
 	_ = h.confbridgeUpdateToCache(ctx, id)

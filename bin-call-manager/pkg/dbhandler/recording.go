@@ -22,7 +22,7 @@ func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, erro
 	res := &recording.Recording{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. recordingGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. recordingGetFromRow. err: %w", err)
 	}
 
 	// Initialize nil slices to empty
@@ -56,7 +56,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. RecordingCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. RecordingCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -67,11 +67,11 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. RecordingCreate. err: %v", err)
+		return fmt.Errorf("could not build query. RecordingCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. RecordingCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. RecordingCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -99,12 +99,12 @@ func (h *handler) recordingGetFromDB(ctx context.Context, id uuid.UUID) (*record
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. recordingGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. recordingGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. recordingGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. recordingGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -112,14 +112,14 @@ func (h *handler) recordingGetFromDB(ctx context.Context, id uuid.UUID) (*record
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. recordingGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. recordingGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.recordingGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data. recordingGetFromDB, err: %v", err)
+		return nil, fmt.Errorf("could not get data. recordingGetFromDB, err: %w", err)
 	}
 
 	return res, nil
@@ -175,12 +175,12 @@ func (h *handler) RecordingGetByRecordingName(ctx context.Context, recordingName
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. RecordingGetByRecordingName. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. RecordingGetByRecordingName. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. RecordingGetByRecordingName. err: %v", err)
+		return nil, fmt.Errorf("could not query. RecordingGetByRecordingName. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -188,14 +188,14 @@ func (h *handler) RecordingGetByRecordingName(ctx context.Context, recordingName
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. RecordingGetByRecordingName. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. RecordingGetByRecordingName. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.recordingGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data. RecordingGetByRecordingName, err: %v", err)
+		return nil, fmt.Errorf("could not get data. RecordingGetByRecordingName, err: %w", err)
 	}
 
 	return res, nil
@@ -218,17 +218,17 @@ func (h *handler) RecordingList(ctx context.Context, size uint64, token string, 
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. RecordingGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. RecordingGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. RecordingGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. RecordingGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. RecordingGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. RecordingGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -238,12 +238,12 @@ func (h *handler) RecordingList(ctx context.Context, size uint64, token string, 
 	for rows.Next() {
 		u, err := h.recordingGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. RecordingGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. RecordingGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. RecordingGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. RecordingGets. err: %w", err)
 	}
 
 	return res, nil

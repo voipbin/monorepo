@@ -107,7 +107,7 @@ func (h *externalMediaHandler) List(ctx context.Context, size uint64, token stri
 		tmp, err := h.db.ExternalMediaGetByReferenceID(ctx, referenceID)
 		if err != nil {
 			// not found
-			return res, nil
+			return res, nil //nolint:nilerr // a missing external media is reported as an empty list
 		}
 
 		res = append(res, tmp)

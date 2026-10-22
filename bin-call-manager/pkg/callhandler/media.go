@@ -33,7 +33,7 @@ func (h *callHandler) Talk(ctx context.Context, callID uuid.UUID, runNext bool, 
 	if c.Status != call.StatusProgressing {
 		if errAnswer := h.channelHandler.Answer(ctx, c.ChannelID); errAnswer != nil {
 			log.Errorf("Could not answer the call. err: %v", errAnswer)
-			return fmt.Errorf("could not answer the call. err: %v", errAnswer)
+			return fmt.Errorf("could not answer the call. err: %v", errAnswer) //nolint:errorlint // keep %v: wrapping with %w would let errorResponse errors.As match an upstream *VoipbinError and change the RPC response status from 500 to the upstream typed status
 		}
 	}
 
@@ -41,7 +41,7 @@ func (h *callHandler) Talk(ctx context.Context, callID uuid.UUID, runNext bool, 
 	tts, err := h.reqHandler.TTSV1SpeecheCreate(ctx, c.ID, text, language, tmtts.Provider(provider), voiceID, 10000)
 	if err != nil {
 		log.Errorf("Could not create speech file. err: %v", err)
-		return fmt.Errorf("could not create tts wav. err: %v", err)
+		return fmt.Errorf("could not create tts wav. err: %v", err) //nolint:errorlint // keep %v: wrapping with %w would let errorResponse errors.As match an upstream *VoipbinError and change the RPC response status from 500 to the upstream typed status
 	}
 	log.WithField("tts", tts).Debugf("Received tts speech result. medial_filepath: %s", tts.MediaFilepath)
 

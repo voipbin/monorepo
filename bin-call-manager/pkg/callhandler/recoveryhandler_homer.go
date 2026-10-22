@@ -98,7 +98,7 @@ func (h *recoveryHandler) getSIPMessages(ctx context.Context, callID string) ([]
 		return nil, errors.Wrapf(err, "error marshalling payload for call ID %s", callID)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", homerAPIEndpoint, bytes.NewBuffer(payloadBytes))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, homerAPIEndpoint, bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating request for call ID %s", callID)
 	}

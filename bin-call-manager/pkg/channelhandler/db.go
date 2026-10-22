@@ -439,7 +439,7 @@ func (h *channelHandler) getWithTimeout(ctx context.Context, id string, timeout 
 	case res := <-chanRes:
 		return res, nil
 	case <-cctx.Done():
-		return nil, fmt.Errorf("could not get a channel within timeout. GetUntilTimeout. err: %v", cctx.Err())
+		return nil, fmt.Errorf("could not get a channel within timeout. GetUntilTimeout. err: %w", cctx.Err())
 	}
 }
 

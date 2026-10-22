@@ -24,7 +24,7 @@ func (h *recordingHandler) Create(
 	referenceType recording.ReferenceType,
 	referenceID uuid.UUID,
 	format recording.Format,
-	OnEndFlowID uuid.UUID,
+	onEndFlowID uuid.UUID,
 	recordingName string,
 	filenames []string,
 	asteriskID string,
@@ -58,7 +58,7 @@ func (h *recordingHandler) Create(
 		RecordingName: recordingName,
 		Filenames:     filenames,
 
-		OnEndFlowID: OnEndFlowID,
+		OnEndFlowID: onEndFlowID,
 
 		AsteriskID: asteriskID,
 		ChannelIDs: channelIDs,
@@ -162,7 +162,7 @@ func (h *recordingHandler) Delete(ctx context.Context, id uuid.UUID) (*recording
 	}
 
 	// delete storage recording files
-	go h.deleteRecordingFiles(res)
+	go h.deleteRecordingFiles(res) //nolint:contextcheck,gosec // G118: file cleanup outlives the request, so it must not inherit the request context
 
 	return res, nil
 }

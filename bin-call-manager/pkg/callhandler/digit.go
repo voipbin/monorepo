@@ -29,7 +29,7 @@ func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, d
 	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
 	if err != nil {
 		log.Infof("The channel is not call type.")
-		return nil
+		return nil //nolint:nilerr // any lookup failure, not only not-found, is logged and the DTMF event is ignored
 	}
 	log.WithField("call", c).Debug("Found call info.")
 
@@ -49,7 +49,7 @@ func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, d
 		}
 		if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveflowID, variables); errSet != nil {
 			log.Errorf("Could not set DTMF. err: %v", err)
-			return nil
+			return nil //nolint:nilerr // the failure is logged and the DTMF event is dropped, not retried
 		}
 
 		var option fmaction.OptionDigitsReceive

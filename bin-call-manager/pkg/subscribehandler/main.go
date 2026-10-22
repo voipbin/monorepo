@@ -133,7 +133,7 @@ func (h *subscribeHandler) Run() error {
 
 	// declare the queue for subscribe
 	if err := h.sockHandler.QueueCreate(string(h.subscribeQueue), "normal"); err != nil {
-		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
+		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %w", err)
 	}
 
 	// The asterisk fanout leg is permanently retained (VOIP-1407 design §3.2):
@@ -141,7 +141,7 @@ func (h *subscribeHandler) Run() error {
 	// fanout QueueSubscribe that survives the fanout-cutover, subscribed as a standalone
 	// statement rather than through the (now-deleted) generic fanout target loop.
 	if errSubscribe := h.sockHandler.QueueSubscribe(string(h.subscribeQueue), string(commonoutline.QueueNameAsteriskEventAll)); errSubscribe != nil {
-		return fmt.Errorf("could not subscribe to the asterisk fanout exchange. err: %v", errSubscribe)
+		return fmt.Errorf("could not subscribe to the asterisk fanout exchange. err: %w", errSubscribe)
 	}
 
 	// Bind this service's inter-service event intake to the global topic exchange
@@ -155,12 +155,12 @@ func (h *subscribeHandler) Run() error {
 	// channel; racing them makes the broker close the channel with a 503 (reproduced in
 	// production, VOIP-1258, 2026-07-14).
 	if errDeclare := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic"); errDeclare != nil {
-		return fmt.Errorf("could not declare the global topic exchange. err: %v", errDeclare)
+		return fmt.Errorf("could not declare the global topic exchange. err: %w", errDeclare)
 	}
 
 	for _, pattern := range topicPatterns {
 		if errBind := h.sockHandler.QueueBind(string(h.subscribeQueue), pattern, string(commonoutline.QueueNameEvent), false, nil); errBind != nil {
-			return fmt.Errorf("could not bind the topic pattern. pattern: %s, err: %v", pattern, errBind)
+			return fmt.Errorf("could not bind the topic pattern. pattern: %s, err: %w", pattern, errBind)
 		}
 	}
 
@@ -229,7 +229,7 @@ func (h *subscribeHandler) processEvent(m *sock.Event) error {
 
 	if err != nil {
 		log.Errorf("Could not handle the subscribed event correctly. err: %v", err)
-		return fmt.Errorf("could not process the ari event correctly. err: %v", err)
+		return fmt.Errorf("could not process the ari event correctly. err: %w", err)
 	}
 
 	return nil

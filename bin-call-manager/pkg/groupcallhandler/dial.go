@@ -3,6 +3,7 @@ package groupcallhandler
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -80,7 +81,7 @@ func (h *groupcallHandler) dialNextDestinationGroupcall(ctx context.Context, gc 
 
 	// update chained groupcall info
 	id := h.utilHandler.UUIDCreate()
-	groupcallIDs := append(gc.GroupcallIDs, id)
+	groupcallIDs := append(slices.Clone(gc.GroupcallIDs), id)
 	res, err := h.UpdateGroupcallIDsAndGroupcallCountAndDialIndex(ctx, gc.ID, groupcallIDs, gc.GroupcallCount+1, gc.DialIndex+1)
 	if err != nil {
 		log.Errorf("Could not update the groupcall info. err: %v", err)
@@ -114,7 +115,7 @@ func (h *groupcallHandler) dialNextDestinationCall(ctx context.Context, gc *grou
 
 	// update chained groupcall info
 	id := h.utilHandler.UUIDCreate()
-	callIDs := append(gc.CallIDs, id)
+	callIDs := append(slices.Clone(gc.CallIDs), id)
 	res, err := h.UpdateCallIDsAndCallCountAndDialIndex(ctx, gc.ID, callIDs, gc.GroupcallCount+1, gc.DialIndex+1)
 	if err != nil {
 		log.Errorf("Could not update the groupcall info. err: %v", err)

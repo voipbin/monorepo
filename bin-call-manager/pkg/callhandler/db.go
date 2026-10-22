@@ -222,7 +222,7 @@ func (h *callHandler) updateActionNextHold(ctx context.Context, id uuid.UUID, ho
 
 	// set hold
 	if err := h.db.CallSetActionNextHold(ctx, id, hold); err != nil {
-		return fmt.Errorf("could not set action next hold. call_id: %s, err: %v", id, err)
+		return fmt.Errorf("could not set action next hold. call_id: %s, err: %w", id, err)
 	}
 
 	return nil
@@ -238,7 +238,7 @@ func (h *callHandler) updateActionAndActionNextHold(ctx context.Context, id uuid
 
 	// set action
 	if err := h.db.CallSetActionAndActionNextHold(ctx, id, a, false); err != nil {
-		return nil, fmt.Errorf("could not set the action for call. call_id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not set the action for call. call_id: %s, err: %w", id, err)
 	}
 
 	// get updated call

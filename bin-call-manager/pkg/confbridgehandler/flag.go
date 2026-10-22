@@ -2,6 +2,7 @@ package confbridgehandler
 
 import (
 	"context"
+	"slices"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -40,7 +41,7 @@ func (h *confbridgeHandler) FlagAdd(ctx context.Context, id uuid.UUID, flag conf
 		return cb, nil
 	}
 
-	tmp := append(cb.Flags, flag)
+	tmp := append(slices.Clone(cb.Flags), flag)
 
 	// update
 	res, err := h.UpdateFlags(ctx, id, tmp)
@@ -80,7 +81,7 @@ func (h *confbridgeHandler) FlagRemove(ctx context.Context, id uuid.UUID, flag c
 		return cb, nil
 	}
 
-	tmp := append(cb.Flags[:idx], cb.Flags[idx+1:]...)
+	tmp := append(slices.Clone(cb.Flags[:idx]), cb.Flags[idx+1:]...)
 
 	// update
 	res, err := h.UpdateFlags(ctx, id, tmp)

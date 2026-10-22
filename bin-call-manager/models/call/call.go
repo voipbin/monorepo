@@ -333,10 +333,7 @@ func calculateHangupReasonDirectionOutgoing(lastStatus Status, cause ari.Channel
 		}
 
 	case StatusHangup:
-		switch cause {
-		default:
-			return HangupReasonNormal
-		}
+		return HangupReasonNormal
 
 	case StatusCanceling:
 		return HangupReasonCanceled
