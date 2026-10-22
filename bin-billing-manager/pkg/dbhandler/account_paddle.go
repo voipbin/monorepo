@@ -48,7 +48,7 @@ func (h *handler) AccountGetByPaddleSubscriptionID(ctx context.Context, paddleSu
 func (h *handler) AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUID, amountMicros int64, customerID uuid.UUID, idempotencyKey uuid.UUID) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("AccountPaddleAddCredit: could not begin transaction. err: %v", err)
+		return fmt.Errorf("AccountPaddleAddCredit: could not begin transaction. err: %w", err)
 	}
 	defer func() { _ = tx.Rollback() }()
 
@@ -62,7 +62,7 @@ func (h *handler) AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUI
 		if err == sql.ErrNoRows {
 			return ErrNotFound
 		}
-		return fmt.Errorf("AccountPaddleAddCredit: could not read account. err: %v", err)
+		return fmt.Errorf("AccountPaddleAddCredit: could not read account. err: %w", err)
 	}
 
 	now := h.utilHandler.TimeNow()
@@ -73,7 +73,7 @@ func (h *handler) AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUI
 		"UPDATE billing_accounts SET balance_credit = ?, tm_update = ? WHERE id = ?",
 		newBalance, now, accountID.Bytes())
 	if err != nil {
-		return fmt.Errorf("AccountPaddleAddCredit: could not update balance. err: %v", err)
+		return fmt.Errorf("AccountPaddleAddCredit: could not update balance. err: %w", err)
 	}
 
 	bill := &billing.Billing{}
@@ -96,11 +96,11 @@ func (h *handler) AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUI
 
 	fields, err := commondatabasehandler.PrepareFields(bill)
 	if err != nil {
-		return fmt.Errorf("AccountPaddleAddCredit: could not prepare billing fields. err: %v", err)
+		return fmt.Errorf("AccountPaddleAddCredit: could not prepare billing fields. err: %w", err)
 	}
 	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("AccountPaddleAddCredit: could not build insert query. err: %v", err)
+		return fmt.Errorf("AccountPaddleAddCredit: could not build insert query. err: %w", err)
 	}
 	if _, err = tx.ExecContext(ctx, query, args...); err != nil {
 		if isDuplicateKeyError(err) {
@@ -108,11 +108,11 @@ func (h *handler) AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUI
 			// Rollback the balance change (deferred Rollback handles this) and return success.
 			return nil
 		}
-		return fmt.Errorf("AccountPaddleAddCredit: could not insert billing record. err: %v", err)
+		return fmt.Errorf("AccountPaddleAddCredit: could not insert billing record. err: %w", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("AccountPaddleAddCredit: could not commit. err: %v", err)
+		return fmt.Errorf("AccountPaddleAddCredit: could not commit. err: %w", err)
 	}
 
 	_ = h.accountUpdateToCache(ctx, accountID)
@@ -124,7 +124,7 @@ func (h *handler) AccountPaddleAddCredit(ctx context.Context, accountID uuid.UUI
 func (h *handler) AccountPaddleSubtractCredit(ctx context.Context, accountID uuid.UUID, amountMicros int64, customerID uuid.UUID, idempotencyKey uuid.UUID) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("AccountPaddleSubtractCredit: could not begin transaction. err: %v", err)
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not begin transaction. err: %w", err)
 	}
 	defer func() { _ = tx.Rollback() }()
 
@@ -138,7 +138,7 @@ func (h *handler) AccountPaddleSubtractCredit(ctx context.Context, accountID uui
 		if err == sql.ErrNoRows {
 			return ErrNotFound
 		}
-		return fmt.Errorf("AccountPaddleSubtractCredit: could not read account. err: %v", err)
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not read account. err: %w", err)
 	}
 
 	now := h.utilHandler.TimeNow()
@@ -149,7 +149,7 @@ func (h *handler) AccountPaddleSubtractCredit(ctx context.Context, accountID uui
 		"UPDATE billing_accounts SET balance_credit = ?, tm_update = ? WHERE id = ?",
 		newBalance, now, accountID.Bytes())
 	if err != nil {
-		return fmt.Errorf("AccountPaddleSubtractCredit: could not update balance. err: %v", err)
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not update balance. err: %w", err)
 	}
 
 	bill := &billing.Billing{}
@@ -172,11 +172,11 @@ func (h *handler) AccountPaddleSubtractCredit(ctx context.Context, accountID uui
 
 	fields, err := commondatabasehandler.PrepareFields(bill)
 	if err != nil {
-		return fmt.Errorf("AccountPaddleSubtractCredit: could not prepare billing fields. err: %v", err)
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not prepare billing fields. err: %w", err)
 	}
 	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("AccountPaddleSubtractCredit: could not build insert query. err: %v", err)
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not build insert query. err: %w", err)
 	}
 	if _, err = tx.ExecContext(ctx, query, args...); err != nil {
 		if isDuplicateKeyError(err) {
@@ -184,11 +184,11 @@ func (h *handler) AccountPaddleSubtractCredit(ctx context.Context, accountID uui
 			// Rollback the balance change (deferred Rollback handles this) and return success.
 			return nil
 		}
-		return fmt.Errorf("AccountPaddleSubtractCredit: could not insert billing record. err: %v", err)
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not insert billing record. err: %w", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("AccountPaddleSubtractCredit: could not commit. err: %v", err)
+		return fmt.Errorf("AccountPaddleSubtractCredit: could not commit. err: %w", err)
 	}
 
 	_ = h.accountUpdateToCache(ctx, accountID)
@@ -200,7 +200,7 @@ func (h *handler) AccountPaddleSubtractCredit(ctx context.Context, accountID uui
 func (h *handler) AccountPaddleTopUpTokens(ctx context.Context, accountID uuid.UUID, customerID uuid.UUID, tokenAmount int64, planType string, txnType billing.TransactionType, idempotencyKey uuid.UUID) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("AccountPaddleTopUpTokens: could not begin transaction. err: %v", err)
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not begin transaction. err: %w", err)
 	}
 	defer func() { _ = tx.Rollback() }()
 
@@ -214,7 +214,7 @@ func (h *handler) AccountPaddleTopUpTokens(ctx context.Context, accountID uuid.U
 		if err == sql.ErrNoRows {
 			return ErrNotFound
 		}
-		return fmt.Errorf("AccountPaddleTopUpTokens: could not read account. err: %v", err)
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not read account. err: %w", err)
 	}
 
 	now := h.utilHandler.TimeNow()
@@ -231,7 +231,7 @@ func (h *handler) AccountPaddleTopUpTokens(ctx context.Context, accountID uuid.U
 		WHERE id = ?`,
 		tokenAmount, now, nextMonth, now, accountID.Bytes())
 	if err != nil {
-		return fmt.Errorf("AccountPaddleTopUpTokens: could not update account. err: %v", err)
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not update account. err: %w", err)
 	}
 
 	bill := &billing.Billing{}
@@ -254,11 +254,11 @@ func (h *handler) AccountPaddleTopUpTokens(ctx context.Context, accountID uuid.U
 
 	fields, err := commondatabasehandler.PrepareFields(bill)
 	if err != nil {
-		return fmt.Errorf("AccountPaddleTopUpTokens: could not prepare billing fields. err: %v", err)
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not prepare billing fields. err: %w", err)
 	}
 	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("AccountPaddleTopUpTokens: could not build insert query. err: %v", err)
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not build insert query. err: %w", err)
 	}
 	if _, err = tx.ExecContext(ctx, query, args...); err != nil {
 		if isDuplicateKeyError(err) {
@@ -266,11 +266,11 @@ func (h *handler) AccountPaddleTopUpTokens(ctx context.Context, accountID uuid.U
 			// Rollback the balance change (deferred Rollback handles this) and return success.
 			return nil
 		}
-		return fmt.Errorf("AccountPaddleTopUpTokens: could not insert billing record. err: %v", err)
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not insert billing record. err: %w", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("AccountPaddleTopUpTokens: could not commit. err: %v", err)
+		return fmt.Errorf("AccountPaddleTopUpTokens: could not commit. err: %w", err)
 	}
 
 	_ = h.accountUpdateToCache(ctx, accountID)

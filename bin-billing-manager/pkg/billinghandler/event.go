@@ -87,7 +87,7 @@ func (h *billingHandler) EventCMCallHangup(ctx context.Context, c *cmcall.Call) 
 	b, err := h.GetByReferenceID(ctx, c.ID)
 	if err != nil {
 		// could not get billing. nothing to do.
-		return nil
+		return nil //nolint:nilerr // existing behavior kept in this lint-only change: any lookup error, including a transient DB error, is swallowed and the event is acknowledged without retry
 	}
 
 	if c.TMHangup == nil {

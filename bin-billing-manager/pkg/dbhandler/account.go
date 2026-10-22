@@ -23,7 +23,7 @@ func (h *handler) accountGetFromRow(row *sql.Rows) (*account.Account, error) {
 	res := &account.Account{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. accountGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. accountGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -37,17 +37,17 @@ func (h *handler) AccountCreate(ctx context.Context, c *account.Account) error {
 
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("AccountCreate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("AccountCreate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(accountsTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("AccountCreate: could not build query. err: %v", err)
+		return fmt.Errorf("AccountCreate: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("AccountCreate: could not execute query. err: %v", err)
+		return fmt.Errorf("AccountCreate: could not execute query. err: %w", err)
 	}
 
 	// update the cache
@@ -75,12 +75,12 @@ func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("accountGetFromDB: could not build query. err: %v", err)
+		return nil, fmt.Errorf("accountGetFromDB: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("accountGetFromDB: could not query. err: %v", err)
+		return nil, fmt.Errorf("accountGetFromDB: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -93,7 +93,7 @@ func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.
 
 	res, err := h.accountGetFromRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("accountGetFromDB: could not scan row. err: %v", err)
+		return nil, fmt.Errorf("accountGetFromDB: could not scan row. err: %w", err)
 	}
 
 	return res, nil
@@ -156,17 +156,17 @@ func (h *handler) AccountList(ctx context.Context, size uint64, token string, fi
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("AccountList: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("AccountList: could not apply filters. err: %w", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("AccountList: could not build query. err: %v", err)
+		return nil, fmt.Errorf("AccountList: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("AccountList: could not query. err: %v", err)
+		return nil, fmt.Errorf("AccountList: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -174,7 +174,7 @@ func (h *handler) AccountList(ctx context.Context, size uint64, token string, fi
 	for rows.Next() {
 		u, err := h.accountGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("AccountList: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("AccountList: could not scan row. err: %w", err)
 		}
 		res = append(res, u)
 	}
@@ -206,7 +206,7 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 
 	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {
-		return fmt.Errorf("AccountUpdate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("AccountUpdate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Update(accountsTable).
@@ -214,12 +214,12 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("AccountUpdate: could not build query. err: %v", err)
+		return fmt.Errorf("AccountUpdate: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("AccountUpdate: could not execute. err: %v", err)
+		return fmt.Errorf("AccountUpdate: could not execute. err: %w", err)
 	}
 
 	// update the cache
@@ -234,7 +234,7 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 func (h *handler) accountAdjustCreditWithLedger(ctx context.Context, accountID uuid.UUID, signedAmount int64, checkBalance bool) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("accountAdjustCreditWithLedger: could not begin transaction. err: %v", err)
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not begin transaction. err: %w", err)
 	}
 	defer func() { _ = tx.Rollback() }()
 
@@ -248,7 +248,7 @@ func (h *handler) accountAdjustCreditWithLedger(ctx context.Context, accountID u
 		if err == sql.ErrNoRows {
 			return ErrNotFound
 		}
-		return fmt.Errorf("accountAdjustCreditWithLedger: could not read account. err: %v", err)
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not read account. err: %w", err)
 	}
 
 	// Balance check for subtract-with-check
@@ -264,13 +264,13 @@ func (h *handler) accountAdjustCreditWithLedger(ctx context.Context, accountID u
 		"UPDATE billing_accounts SET balance_credit = ?, tm_update = ? WHERE id = ?",
 		newBalance, now, accountID.Bytes())
 	if err != nil {
-		return fmt.Errorf("accountAdjustCreditWithLedger: could not update balance. err: %v", err)
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not update balance. err: %w", err)
 	}
 
 	// Parse customer_id from raw bytes
 	parsedCustomerID, err := uuid.FromBytes(customerID)
 	if err != nil {
-		return fmt.Errorf("accountAdjustCreditWithLedger: could not parse customer_id. err: %v", err)
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not parse customer_id. err: %w", err)
 	}
 
 	// Insert ledger entry
@@ -292,21 +292,21 @@ func (h *handler) accountAdjustCreditWithLedger(ctx context.Context, accountID u
 
 	fields, err := commondatabasehandler.PrepareFields(ledgerEntry)
 	if err != nil {
-		return fmt.Errorf("accountAdjustCreditWithLedger: could not prepare billing fields. err: %v", err)
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not prepare billing fields. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("accountAdjustCreditWithLedger: could not build billing insert query. err: %v", err)
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not build billing insert query. err: %w", err)
 	}
 
 	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("accountAdjustCreditWithLedger: could not insert billing record. err: %v", err)
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not insert billing record. err: %w", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("accountAdjustCreditWithLedger: could not commit. err: %v", err)
+		return fmt.Errorf("accountAdjustCreditWithLedger: could not commit. err: %w", err)
 	}
 
 	_ = h.accountUpdateToCache(ctx, accountID)
@@ -335,7 +335,7 @@ func (h *handler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUI
 func (h *handler) accountAdjustTokenWithLedger(ctx context.Context, accountID uuid.UUID, signedAmount int64, checkBalance bool) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("accountAdjustTokenWithLedger: could not begin transaction. err: %v", err)
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not begin transaction. err: %w", err)
 	}
 	defer func() { _ = tx.Rollback() }()
 
@@ -349,7 +349,7 @@ func (h *handler) accountAdjustTokenWithLedger(ctx context.Context, accountID uu
 		if err == sql.ErrNoRows {
 			return ErrNotFound
 		}
-		return fmt.Errorf("accountAdjustTokenWithLedger: could not read account. err: %v", err)
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not read account. err: %w", err)
 	}
 
 	// Balance check for subtract-with-check
@@ -365,13 +365,13 @@ func (h *handler) accountAdjustTokenWithLedger(ctx context.Context, accountID uu
 		"UPDATE billing_accounts SET balance_token = ?, tm_update = ? WHERE id = ?",
 		newBalance, now, accountID.Bytes())
 	if err != nil {
-		return fmt.Errorf("accountAdjustTokenWithLedger: could not update balance. err: %v", err)
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not update balance. err: %w", err)
 	}
 
 	// Parse customer_id from raw bytes
 	parsedCustomerID, err := uuid.FromBytes(customerID)
 	if err != nil {
-		return fmt.Errorf("accountAdjustTokenWithLedger: could not parse customer_id. err: %v", err)
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not parse customer_id. err: %w", err)
 	}
 
 	// Insert ledger entry
@@ -393,21 +393,21 @@ func (h *handler) accountAdjustTokenWithLedger(ctx context.Context, accountID uu
 
 	fields, err := commondatabasehandler.PrepareFields(ledgerEntry)
 	if err != nil {
-		return fmt.Errorf("accountAdjustTokenWithLedger: could not prepare billing fields. err: %v", err)
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not prepare billing fields. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("accountAdjustTokenWithLedger: could not build billing insert query. err: %v", err)
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not build billing insert query. err: %w", err)
 	}
 
 	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("accountAdjustTokenWithLedger: could not insert billing record. err: %v", err)
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not insert billing record. err: %w", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("accountAdjustTokenWithLedger: could not commit. err: %v", err)
+		return fmt.Errorf("accountAdjustTokenWithLedger: could not commit. err: %w", err)
 	}
 
 	_ = h.accountUpdateToCache(ctx, accountID)
@@ -443,12 +443,12 @@ func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("AccountDelete: could not build query. err: %v", err)
+		return fmt.Errorf("AccountDelete: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("AccountDelete: could not execute. err: %v", err)
+		return fmt.Errorf("AccountDelete: could not execute. err: %w", err)
 	}
 
 	// update the cache
@@ -469,12 +469,12 @@ func (h *handler) AccountSetStatus(ctx context.Context, id uuid.UUID, status acc
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("AccountSetStatus: could not build query. err: %v", err)
+		return fmt.Errorf("AccountSetStatus: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("AccountSetStatus: could not execute. err: %v", err)
+		return fmt.Errorf("AccountSetStatus: could not execute. err: %w", err)
 	}
 
 	// update the cache
