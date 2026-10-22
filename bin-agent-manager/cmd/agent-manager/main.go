@@ -134,7 +134,7 @@ func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
-		if err := http.ListenAndServe(listen, nil); err != nil {
+		if err := http.ListenAndServe(listen, nil); err != nil { //nolint:gosec // internal metrics port, monorepo-wide http.ListenAndServe handling is tracked separately
 			// Prometheus server error is logged but not treated as fatal to avoid unsafe exit from a goroutine.
 			logrus.Errorf("Prometheus server error: %v", err)
 		}

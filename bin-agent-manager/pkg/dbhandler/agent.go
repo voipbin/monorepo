@@ -26,7 +26,7 @@ func (h *handler) agentGetFromRow(row *sql.Rows) (*agent.Agent, error) {
 	res := &agent.Agent{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. agentGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. agentGetFromRow. err: %w", err)
 	}
 
 	// Initialize nil slices to empty slices
@@ -63,13 +63,13 @@ func (h *handler) AgentCountByCustomerID(ctx context.Context, customerID uuid.UU
 		ToSql()
 	if err != nil {
 		dbErr = err
-		return 0, fmt.Errorf("AgentCountByCustomerID: could not build query. err: %v", err)
+		return 0, fmt.Errorf("AgentCountByCustomerID: could not build query. err: %w", err)
 	}
 
 	var count int
 	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
 		dbErr = err
-		return 0, fmt.Errorf("AgentCountByCustomerID: could not query. err: %v", err)
+		return 0, fmt.Errorf("AgentCountByCustomerID: could not query. err: %w", err)
 	}
 
 	return count, nil
@@ -100,7 +100,7 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 	fields, err := commondatabasehandler.PrepareFields(a)
 	if err != nil {
 		dbErr = err
-		return fmt.Errorf("could not prepare fields. AgentCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. AgentCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -112,13 +112,13 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 	query, args, err := sb.ToSql()
 	if err != nil {
 		dbErr = err
-		return fmt.Errorf("could not build query. AgentCreate. err: %v", err)
+		return fmt.Errorf("could not build query. AgentCreate. err: %w", err)
 	}
 
 	// insert the agent row and its address rows in a single transaction
 	if err := h.withTx(ctx, func(tx *sql.Tx) error {
 		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
-			return fmt.Errorf("could not execute query. AgentCreate. err: %v", err)
+			return fmt.Errorf("could not execute query. AgentCreate. err: %w", err)
 		}
 
 		if err := h.agentAddressInsert(ctx, tx, a.ID, a.CustomerID, a.Addresses); err != nil {
@@ -197,13 +197,13 @@ func (h *handler) agentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agen
 		ToSql()
 	if err != nil {
 		dbErr = err
-		return nil, fmt.Errorf("could not build sql. agentGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. agentGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		dbErr = err
-		return nil, fmt.Errorf("could not query. agentGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. agentGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -212,7 +212,7 @@ func (h *handler) agentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agen
 	if !row.Next() {
 		if err := row.Err(); err != nil {
 			dbErr = err
-			return nil, fmt.Errorf("row iteration error. agentGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. agentGetFromDB. err: %w", err)
 		}
 		dbErr = ErrNotFound
 		return nil, ErrNotFound
@@ -231,14 +231,14 @@ func (h *handler) agentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agen
 	// safe and idempotent.
 	if err := row.Close(); err != nil {
 		dbErr = err
-		return nil, fmt.Errorf("could not close agent row. agentGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not close agent row. agentGetFromDB. err: %w", err)
 	}
 
 	// hydrate addresses from the child table
 	addresses, err := h.agentAddressListByAgentID(ctx, h.db, res.ID)
 	if err != nil {
 		dbErr = err
-		return nil, fmt.Errorf("could not hydrate addresses. agentGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not hydrate addresses. agentGetFromDB. err: %w", err)
 	}
 	res.Addresses = addresses
 
@@ -313,7 +313,7 @@ func (h *handler) AgentList(ctx context.Context, size uint64, token string, filt
 	sb, err := commondatabasehandler.ApplyFields(sb, remaining)
 	if err != nil {
 		dbErr = err
-		return nil, fmt.Errorf("could not apply filters. AgentList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. AgentList. err: %w", err)
 	}
 
 	// hasTagIDs but tagIDsRaw == "" is treated as "no filter" here, NOT an
@@ -327,7 +327,7 @@ func (h *handler) AgentList(ctx context.Context, size uint64, token string, filt
 		ids, errParse := agent.ParseTagIDsFilter(tagIDsRaw)
 		if errParse != nil {
 			dbErr = errParse
-			return nil, fmt.Errorf("invalid tag_ids filter. AgentList. err: %v", errParse)
+			return nil, fmt.Errorf("invalid tag_ids filter. AgentList. err: %w", errParse)
 		}
 		sb = applyTagIDsFilter(sb, ids)
 	}
@@ -335,13 +335,13 @@ func (h *handler) AgentList(ctx context.Context, size uint64, token string, filt
 	query, args, err := sb.ToSql()
 	if err != nil {
 		dbErr = err
-		return nil, fmt.Errorf("could not build query. AgentList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. AgentList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		dbErr = err
-		return nil, fmt.Errorf("could not query. AgentList. err: %v", err)
+		return nil, fmt.Errorf("could not query. AgentList. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -352,13 +352,13 @@ func (h *handler) AgentList(ctx context.Context, size uint64, token string, filt
 		u, err := h.agentGetFromRow(rows)
 		if err != nil {
 			dbErr = err
-			return nil, fmt.Errorf("could not get data. AgentList. err: %v", err)
+			return nil, fmt.Errorf("could not get data. AgentList. err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
 		dbErr = err
-		return nil, fmt.Errorf("rows iteration error. AgentList. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. AgentList. err: %w", err)
 	}
 
 	// batch-hydrate addresses for all agents in a single query (avoid N+1)
@@ -371,7 +371,7 @@ func (h *handler) AgentList(ctx context.Context, size uint64, token string, filt
 		addrMap, err := h.agentAddressListByAgentIDs(ctx, h.db, agentIDs)
 		if err != nil {
 			dbErr = err
-			return nil, fmt.Errorf("could not hydrate addresses. AgentList. err: %v", err)
+			return nil, fmt.Errorf("could not hydrate addresses. AgentList. err: %w", err)
 		}
 
 		for _, u := range res {
@@ -409,7 +409,7 @@ func (h *handler) AgentGetByCustomerIDAndAddress(ctx context.Context, customerID
 		if err == ErrNotFound {
 			return nil, ErrNotFound
 		}
-		return nil, fmt.Errorf("could not lookup owner. AgentGetByCustomerIDAndAddress. err: %v", err)
+		return nil, fmt.Errorf("could not lookup owner. AgentGetByCustomerIDAndAddress. err: %w", err)
 	}
 
 	// load the agent by id (cache-first)
@@ -464,7 +464,7 @@ func (h *handler) AgentDelete(ctx context.Context, id uuid.UUID) error {
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
 		dbErr = err
-		return fmt.Errorf("could not prepare fields. AgentDelete. err: %v", err)
+		return fmt.Errorf("could not prepare fields. AgentDelete. err: %w", err)
 	}
 
 	sqlStr, args, err := squirrel.
@@ -475,13 +475,13 @@ func (h *handler) AgentDelete(ctx context.Context, id uuid.UUID) error {
 		ToSql()
 	if err != nil {
 		dbErr = err
-		return fmt.Errorf("could not build query. AgentDelete. err: %v", err)
+		return fmt.Errorf("could not build query. AgentDelete. err: %w", err)
 	}
 
 	// soft-delete the agent row and hard-delete its address rows in one tx
 	if err := h.withTx(ctx, func(tx *sql.Tx) error {
 		if _, err := tx.ExecContext(ctx, sqlStr, args...); err != nil {
-			return fmt.Errorf("could not execute update. AgentDelete. err: %v", err)
+			return fmt.Errorf("could not execute update. AgentDelete. err: %w", err)
 		}
 
 		if err := h.agentAddressDeleteByAgentID(ctx, tx, id); err != nil {
@@ -623,7 +623,7 @@ func (h *handler) AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses
 	})
 	if err != nil {
 		dbErr = err
-		return fmt.Errorf("could not prepare fields. AgentSetAddresses. err: %v", err)
+		return fmt.Errorf("could not prepare fields. AgentSetAddresses. err: %w", err)
 	}
 
 	sqlStr, args, err := squirrel.
@@ -634,7 +634,7 @@ func (h *handler) AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses
 		ToSql()
 	if err != nil {
 		dbErr = err
-		return fmt.Errorf("could not build query. AgentSetAddresses. err: %v", err)
+		return fmt.Errorf("could not build query. AgentSetAddresses. err: %w", err)
 	}
 
 	// replace the address rows and bump tm_update in one tx.
@@ -657,11 +657,11 @@ func (h *handler) AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses
 			if errScan == sql.ErrNoRows {
 				return ErrNotFound
 			}
-			return fmt.Errorf("could not lock agent row. AgentSetAddresses. err: %v", errScan)
+			return fmt.Errorf("could not lock agent row. AgentSetAddresses. err: %w", errScan)
 		}
 		customerID, errParse := uuid.FromBytes(customerIDRaw)
 		if errParse != nil {
-			return fmt.Errorf("could not parse customer_id. AgentSetAddresses. err: %v", errParse)
+			return fmt.Errorf("could not parse customer_id. AgentSetAddresses. err: %w", errParse)
 		}
 
 		if err := h.agentAddressDeleteByAgentID(ctx, tx, id); err != nil {
@@ -673,7 +673,7 @@ func (h *handler) AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses
 		}
 
 		if _, err := tx.ExecContext(ctx, sqlStr, args...); err != nil {
-			return fmt.Errorf("could not execute update. AgentSetAddresses. err: %v", err)
+			return fmt.Errorf("could not execute update. AgentSetAddresses. err: %w", err)
 		}
 
 		return nil

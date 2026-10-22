@@ -60,7 +60,7 @@ func (h *handler) agentAddressInsert(ctx context.Context, db dbExecQuerier, agen
 	for i, addr := range addresses {
 		id, err := uuid.NewV4()
 		if err != nil {
-			return fmt.Errorf("could not generate uuid. agentAddressInsert. err: %v", err)
+			return fmt.Errorf("could not generate uuid. agentAddressInsert. err: %w", err)
 		}
 
 		query, args, err := squirrel.
@@ -81,14 +81,14 @@ func (h *handler) agentAddressInsert(ctx context.Context, db dbExecQuerier, agen
 			PlaceholderFormat(squirrel.Question).
 			ToSql()
 		if err != nil {
-			return fmt.Errorf("could not build query. agentAddressInsert. err: %v", err)
+			return fmt.Errorf("could not build query. agentAddressInsert. err: %w", err)
 		}
 
 		if _, err := db.ExecContext(ctx, query, args...); err != nil {
 			if isDuplicateKeyErr(err) {
 				return ErrAlreadyExists
 			}
-			return fmt.Errorf("could not execute query. agentAddressInsert. err: %v", err)
+			return fmt.Errorf("could not execute query. agentAddressInsert. err: %w", err)
 		}
 	}
 
@@ -103,11 +103,11 @@ func (h *handler) agentAddressDeleteByAgentID(ctx context.Context, db dbExecQuer
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. agentAddressDeleteByAgentID. err: %v", err)
+		return fmt.Errorf("could not build query. agentAddressDeleteByAgentID. err: %w", err)
 	}
 
 	if _, err := db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. agentAddressDeleteByAgentID. err: %v", err)
+		return fmt.Errorf("could not execute query. agentAddressDeleteByAgentID. err: %w", err)
 	}
 
 	return nil
@@ -123,12 +123,12 @@ func (h *handler) agentAddressListByAgentID(ctx context.Context, db dbExecQuerie
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. agentAddressListByAgentID. err: %v", err)
+		return nil, fmt.Errorf("could not build query. agentAddressListByAgentID. err: %w", err)
 	}
 
 	rows, err := db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. agentAddressListByAgentID. err: %v", err)
+		return nil, fmt.Errorf("could not query. agentAddressListByAgentID. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -138,7 +138,7 @@ func (h *handler) agentAddressListByAgentID(ctx context.Context, db dbExecQuerie
 	for rows.Next() {
 		var addrType, target, targetName, name, detail string
 		if err := rows.Scan(&addrType, &target, &targetName, &name, &detail); err != nil {
-			return nil, fmt.Errorf("could not scan row. agentAddressListByAgentID. err: %v", err)
+			return nil, fmt.Errorf("could not scan row. agentAddressListByAgentID. err: %w", err)
 		}
 		res = append(res, commonaddress.Address{
 			Type:       commonaddress.Type(addrType),
@@ -149,7 +149,7 @@ func (h *handler) agentAddressListByAgentID(ctx context.Context, db dbExecQuerie
 		})
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. agentAddressListByAgentID. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. agentAddressListByAgentID. err: %w", err)
 	}
 
 	return res, nil
@@ -184,12 +184,12 @@ func (h *handler) agentAddressListByAgentIDs(ctx context.Context, db dbExecQueri
 			PlaceholderFormat(squirrel.Question).
 			ToSql()
 		if err != nil {
-			return nil, fmt.Errorf("could not build query. agentAddressListByAgentIDs. err: %v", err)
+			return nil, fmt.Errorf("could not build query. agentAddressListByAgentIDs. err: %w", err)
 		}
 
 		rows, err := db.QueryContext(ctx, query, args...)
 		if err != nil {
-			return nil, fmt.Errorf("could not query. agentAddressListByAgentIDs. err: %v", err)
+			return nil, fmt.Errorf("could not query. agentAddressListByAgentIDs. err: %w", err)
 		}
 
 		err = func() error {
@@ -201,12 +201,12 @@ func (h *handler) agentAddressListByAgentIDs(ctx context.Context, db dbExecQueri
 				var agentIDRaw []byte
 				var addrType, target, targetName, name, detail string
 				if err := rows.Scan(&agentIDRaw, &addrType, &target, &targetName, &name, &detail); err != nil {
-					return fmt.Errorf("could not scan row. agentAddressListByAgentIDs. err: %v", err)
+					return fmt.Errorf("could not scan row. agentAddressListByAgentIDs. err: %w", err)
 				}
 
 				aID, err := uuid.FromBytes(agentIDRaw)
 				if err != nil {
-					return fmt.Errorf("could not parse agent_id. agentAddressListByAgentIDs. err: %v", err)
+					return fmt.Errorf("could not parse agent_id. agentAddressListByAgentIDs. err: %w", err)
 				}
 
 				res[aID] = append(res[aID], commonaddress.Address{
@@ -240,12 +240,12 @@ func (h *handler) agentAddressLookupOwnerAgentID(ctx context.Context, db dbExecQ
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("could not build query. agentAddressLookupOwnerAgentID. err: %v", err)
+		return uuid.Nil, fmt.Errorf("could not build query. agentAddressLookupOwnerAgentID. err: %w", err)
 	}
 
 	rows, err := db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("could not query. agentAddressLookupOwnerAgentID. err: %v", err)
+		return uuid.Nil, fmt.Errorf("could not query. agentAddressLookupOwnerAgentID. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -253,19 +253,19 @@ func (h *handler) agentAddressLookupOwnerAgentID(ctx context.Context, db dbExecQ
 
 	if !rows.Next() {
 		if err := rows.Err(); err != nil {
-			return uuid.Nil, fmt.Errorf("rows iteration error. agentAddressLookupOwnerAgentID. err: %v", err)
+			return uuid.Nil, fmt.Errorf("rows iteration error. agentAddressLookupOwnerAgentID. err: %w", err)
 		}
 		return uuid.Nil, ErrNotFound
 	}
 
 	var agentIDRaw []byte
 	if err := rows.Scan(&agentIDRaw); err != nil {
-		return uuid.Nil, fmt.Errorf("could not scan row. agentAddressLookupOwnerAgentID. err: %v", err)
+		return uuid.Nil, fmt.Errorf("could not scan row. agentAddressLookupOwnerAgentID. err: %w", err)
 	}
 
 	agentID, err := uuid.FromBytes(agentIDRaw)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("could not parse agent_id. agentAddressLookupOwnerAgentID. err: %v", err)
+		return uuid.Nil, fmt.Errorf("could not parse agent_id. agentAddressLookupOwnerAgentID. err: %w", err)
 	}
 
 	return agentID, nil

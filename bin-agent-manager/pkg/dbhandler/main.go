@@ -64,7 +64,7 @@ type dbExecQuerier interface {
 func (h *handler) withTx(ctx context.Context, fn func(tx *sql.Tx) error) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("could not begin transaction. err: %v", err)
+		return fmt.Errorf("could not begin transaction. err: %w", err)
 	}
 
 	defer func() {
@@ -80,7 +80,7 @@ func (h *handler) withTx(ctx context.Context, fn func(tx *sql.Tx) error) error {
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("could not commit transaction. err: %v", err)
+		return fmt.Errorf("could not commit transaction. err: %w", err)
 	}
 
 	return nil

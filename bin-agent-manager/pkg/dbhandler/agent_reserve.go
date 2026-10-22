@@ -44,7 +44,7 @@ func (h *handler) AgentReserve(ctx context.Context, agentID uuid.UUID, refType s
 	})
 	if err != nil {
 		dbErr = err
-		return false, fmt.Errorf("could not prepare fields. AgentReserve. err: %v", err)
+		return false, fmt.Errorf("could not prepare fields. AgentReserve. err: %w", err)
 	}
 
 	sqlStr, args, err := squirrel.
@@ -57,19 +57,19 @@ func (h *handler) AgentReserve(ctx context.Context, agentID uuid.UUID, refType s
 		ToSql()
 	if err != nil {
 		dbErr = err
-		return false, fmt.Errorf("could not build query. AgentReserve. err: %v", err)
+		return false, fmt.Errorf("could not build query. AgentReserve. err: %w", err)
 	}
 
 	res, err := h.db.ExecContext(ctx, sqlStr, args...)
 	if err != nil {
 		dbErr = err
-		return false, fmt.Errorf("could not execute query. AgentReserve. err: %v", err)
+		return false, fmt.Errorf("could not execute query. AgentReserve. err: %w", err)
 	}
 
 	affected, err := res.RowsAffected()
 	if err != nil {
 		dbErr = err
-		return false, fmt.Errorf("could not get rows affected. AgentReserve. err: %v", err)
+		return false, fmt.Errorf("could not get rows affected. AgentReserve. err: %w", err)
 	}
 
 	// refresh the cache so a cache-first read reflects the new reserve state
@@ -105,7 +105,7 @@ func (h *handler) AgentReserveRelease(ctx context.Context, agentID uuid.UUID, re
 	})
 	if err != nil {
 		dbErr = err
-		return fmt.Errorf("could not prepare fields. AgentReserveRelease. err: %v", err)
+		return fmt.Errorf("could not prepare fields. AgentReserveRelease. err: %w", err)
 	}
 
 	sqlStr, args, err := squirrel.
@@ -117,12 +117,12 @@ func (h *handler) AgentReserveRelease(ctx context.Context, agentID uuid.UUID, re
 		ToSql()
 	if err != nil {
 		dbErr = err
-		return fmt.Errorf("could not build query. AgentReserveRelease. err: %v", err)
+		return fmt.Errorf("could not build query. AgentReserveRelease. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
 		dbErr = err
-		return fmt.Errorf("could not execute query. AgentReserveRelease. err: %v", err)
+		return fmt.Errorf("could not execute query. AgentReserveRelease. err: %w", err)
 	}
 
 	// refresh the cache so a cache-first read reflects the cleared reserve state
@@ -161,13 +161,13 @@ func (h *handler) AgentReserveSweep(ctx context.Context, before time.Time) (int,
 		ToSql()
 	if err != nil {
 		dbErr = err
-		return 0, fmt.Errorf("could not build select query. AgentReserveSweep. err: %v", err)
+		return 0, fmt.Errorf("could not build select query. AgentReserveSweep. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, selectSQL, selectArgs...)
 	if err != nil {
 		dbErr = err
-		return 0, fmt.Errorf("could not query. AgentReserveSweep. err: %v", err)
+		return 0, fmt.Errorf("could not query. AgentReserveSweep. err: %w", err)
 	}
 
 	ids := []uuid.UUID{}
@@ -176,20 +176,20 @@ func (h *handler) AgentReserveSweep(ctx context.Context, before time.Time) (int,
 		if errScan := rows.Scan(&raw); errScan != nil {
 			_ = rows.Close()
 			dbErr = errScan
-			return 0, fmt.Errorf("could not scan row. AgentReserveSweep. err: %v", errScan)
+			return 0, fmt.Errorf("could not scan row. AgentReserveSweep. err: %w", errScan)
 		}
 		id, errParse := uuid.FromBytes(raw)
 		if errParse != nil {
 			_ = rows.Close()
 			dbErr = errParse
-			return 0, fmt.Errorf("could not parse id. AgentReserveSweep. err: %v", errParse)
+			return 0, fmt.Errorf("could not parse id. AgentReserveSweep. err: %w", errParse)
 		}
 		ids = append(ids, id)
 	}
 	if errRows := rows.Err(); errRows != nil {
 		_ = rows.Close()
 		dbErr = errRows
-		return 0, fmt.Errorf("rows iteration error. AgentReserveSweep. err: %v", errRows)
+		return 0, fmt.Errorf("rows iteration error. AgentReserveSweep. err: %w", errRows)
 	}
 	_ = rows.Close()
 
@@ -206,7 +206,7 @@ func (h *handler) AgentReserveSweep(ctx context.Context, before time.Time) (int,
 	})
 	if err != nil {
 		dbErr = err
-		return 0, fmt.Errorf("could not prepare fields. AgentReserveSweep. err: %v", err)
+		return 0, fmt.Errorf("could not prepare fields. AgentReserveSweep. err: %w", err)
 	}
 
 	updateSQL, updateArgs, err := squirrel.
@@ -218,12 +218,12 @@ func (h *handler) AgentReserveSweep(ctx context.Context, before time.Time) (int,
 		ToSql()
 	if err != nil {
 		dbErr = err
-		return 0, fmt.Errorf("could not build update query. AgentReserveSweep. err: %v", err)
+		return 0, fmt.Errorf("could not build update query. AgentReserveSweep. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, updateSQL, updateArgs...); err != nil {
 		dbErr = err
-		return 0, fmt.Errorf("could not execute update. AgentReserveSweep. err: %v", err)
+		return 0, fmt.Errorf("could not execute update. AgentReserveSweep. err: %w", err)
 	}
 
 	// refresh caches for every reclaimed agent
