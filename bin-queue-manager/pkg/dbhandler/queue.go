@@ -22,7 +22,7 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 	res := &queue.Queue{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. queueGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. queueGetFromRow. err: %w", err)
 	}
 
 	// Ensure slices are not nil
@@ -49,12 +49,12 @@ func (h *handler) QueueCountByCustomerID(ctx context.Context, customerID uuid.UU
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("QueueCountByCustomerID: could not build query. err: %v", err)
+		return 0, fmt.Errorf("QueueCountByCustomerID: could not build query. err: %w", err)
 	}
 
 	var count int
 	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
-		return 0, fmt.Errorf("QueueCountByCustomerID: could not query. err: %v", err)
+		return 0, fmt.Errorf("QueueCountByCustomerID: could not query. err: %w", err)
 	}
 
 	return count, nil
@@ -72,7 +72,7 @@ func (h *handler) QueueCreate(ctx context.Context, q *queue.Queue) error {
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(q)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. QueueCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. QueueCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -83,11 +83,11 @@ func (h *handler) QueueCreate(ctx context.Context, q *queue.Queue) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. QueueCreate. err: %v", err)
+		return fmt.Errorf("could not build query. QueueCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. QueueCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. QueueCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -140,12 +140,12 @@ func (h *handler) queueGetFromDB(ctx context.Context, id uuid.UUID) (*queue.Queu
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. queueGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. queueGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. queueGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. queueGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -153,14 +153,14 @@ func (h *handler) queueGetFromDB(ctx context.Context, id uuid.UUID) (*queue.Queu
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. queueGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. queueGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.queueGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. queueGetFromDB. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. queueGetFromDB. id: %s, err: %w", id, err)
 	}
 
 	return res, nil
@@ -201,17 +201,17 @@ func (h *handler) QueueList(ctx context.Context, size uint64, token string, filt
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. QueueGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. QueueGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. QueueGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. QueueGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. QueueGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. QueueGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -221,12 +221,12 @@ func (h *handler) QueueList(ctx context.Context, size uint64, token string, filt
 	for rows.Next() {
 		u, err := h.queueGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. QueueGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. QueueGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. QueueGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. QueueGets. err: %w", err)
 	}
 
 	return res, nil
@@ -316,7 +316,7 @@ func (h *handler) QueueAddWaitQueueCallID(ctx context.Context, id, queueCallID u
 
 	_, err := h.db.ExecContext(ctx, q, queueCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. QueueAddWaitQueueCallID. err: %v", err)
+		return fmt.Errorf("could not execute. QueueAddWaitQueueCallID. err: %w", err)
 	}
 
 	// update the cache
@@ -355,7 +355,7 @@ func (h *handler) QueueIncreaseTotalServicedCount(ctx context.Context, id, queue
 
 	_, err := h.db.ExecContext(ctx, q, queueCallID.String(), queueCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. QueueIncreaseTotalServicedCount. err: %v", err)
+		return fmt.Errorf("could not execute. QueueIncreaseTotalServicedCount. err: %w", err)
 	}
 
 	// update the cache
@@ -389,7 +389,7 @@ func (h *handler) QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queu
 
 	_, err := h.db.ExecContext(ctx, q, queueCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. QueueIncreaseTotalAbandonedCount. err: %v", err)
+		return fmt.Errorf("could not execute. QueueIncreaseTotalAbandonedCount. err: %w", err)
 	}
 
 	// update the cache
@@ -422,7 +422,7 @@ func (h *handler) QueueRemoveServiceQueueCall(ctx context.Context, id, queueCall
 
 	_, err := h.db.ExecContext(ctx, q, queueCallID.String(), h.utilHandler.TimeNow(), queueCallID.String(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. QueueRemoveServiceQueueCall. err: %v", err)
+		return fmt.Errorf("could not execute. QueueRemoveServiceQueueCall. err: %w", err)
 	}
 
 	// update the cache
@@ -455,7 +455,7 @@ func (h *handler) QueueRemoveWaitQueueCall(ctx context.Context, id, queueCallID 
 
 	_, err := h.db.ExecContext(ctx, q, queueCallID.String(), h.utilHandler.TimeNow(), queueCallID.String(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. QueueRemoveWaitQueueCall. err: %v", err)
+		return fmt.Errorf("could not execute. QueueRemoveWaitQueueCall. err: %w", err)
 	}
 
 	// update the cache
