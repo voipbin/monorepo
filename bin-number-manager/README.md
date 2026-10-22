@@ -7,7 +7,7 @@ Number-manager for telephone numbers management.
 * +821100000003: test transcribe
 
 # telnyx
-account: sungtae@voipbin.net
+account: <provider-account>
 * +15734531118
 * +14703298699
 
@@ -17,6 +17,6 @@ account: sungtae@voipbin.net
 
 `bin-number-manager-build` pushes the image, and a single `build-approval` gate covers
 the test -> build pipeline. The CircleCI `bin-number-manager-deploy` job (direct SSH
-deploy to bm-nyc-01) has been removed. Deploys to bm-nyc-01 are manual until
+deploy to <prod-host>) has been removed. Deploys to <prod-host> are manual until
 this service migrates to the Komodo-managed deploy path (see bin-call-manager
 for the pattern).

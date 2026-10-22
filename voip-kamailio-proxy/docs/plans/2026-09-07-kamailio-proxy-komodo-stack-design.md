@@ -12,9 +12,9 @@ Repos touched: `voipbin/monorepo` (this), `voipbin/monorepo-etc` (`infra-prometh
 `voip.kamailio.request` for every active provider. **Nothing consumes that queue.**
 `voip-kamailio-proxy` ran on the GCP VM fleet via Ansible
 (`monorepo-voip/voip-kamailio-ansible/…/docker-compose.yml:84-102`, PRs #78/#79/#80) but was
-never ported to Komodo when that fleet was cut over to bm-nyc-01 on 2026-08-13.
+never ported to Komodo when that fleet was cut over to <prod-host> on 2026-08-13.
 
-Live on bm-nyc-01 (2026-09-07): no proxy container, no `voip.kamailio.request` queue, both
+Live on <prod-host> (2026-09-07): no proxy container, no `voip.kamailio.request` queue, both
 route-manager replicas logging `circuit breaker … half-open -> open` and
 `context deadline exceeded` every 30 s, and `route_providers.health_checked_at` frozen at
 2026-08-12 for both active providers (26 days). Calls are unaffected —
@@ -31,15 +31,15 @@ every constraint below.
 sidecar on the Kamailio stack.
 
 The sidecar model existed for one reason: the SIP OPTIONS probe's source IP should match the
-SIP proxy's so carrier ACLs would not drop it. Measured on bm-nyc-01, that premise fails twice:
+SIP proxy's so carrier ACLs would not drop it. Measured on <prod-host>, that premise fails twice:
 
 1. **Host networking would not deliver it anyway.** Kamailio's SIP public IP is
-   `199.127.61.42` (the `kamailio-ext` veth); the host's default egress is `104.243.38.39`
+   `<kamailio-public-ip>` (the `kamailio-ext` veth); the host's default egress is `<egress-public-ip>`
    (`enp7s0`). `SendOptionsCheck` dials with a nil local address
    (`pkg/siphandler/health.go:40`), so the kernel picks the route's source — never Kamailio's.
-2. **The carrier does not filter on it.** Probing `sip.telnyx.com` bound to `104.243.38.39`,
-   `199.127.61.42`, `172.24.0.246`, and from **inside a `production`-network container**
-   (`172.24.128.85`) all returned `SIP/2.0 200 Keepalive P20` in ~40 ms. Our Telnyx
+2. **The carrier does not filter on it.** Probing `sip.telnyx.com` bound to `<egress-public-ip>`,
+   `<kamailio-public-ip>`, `<internal-ip-1>`, and from **inside a `production`-network container**
+   (`<internal-ip-2>`) all returned `SIP/2.0 200 Keepalive P20` in ~40 ms. Our Telnyx
    integration authenticates by FQDN connection with credentials, not source IP
    (`bin-route-manager/pkg/telnyxclient/main.go:31-46`).
 
@@ -55,7 +55,7 @@ Dropping host networking removes the constraints that made a sidecar expensive:
 | Metrics | Docker SD cannot compute an address for a host-network container | Standard dns_sd path |
 
 The cost accepted: the probe's source IP is now a container address SNAT'd to
-`104.243.38.39`, permanently different from Kamailio's `199.127.61.42`. With the only active
+`<egress-public-ip>`, permanently different from Kamailio's `<kamailio-public-ip>`. With the only active
 real carrier authenticating by FQDN this is free today; see "Known limitation".
 
 ## Change 1 — `monorepo/voip-kamailio-proxy` (this repo)
@@ -353,7 +353,7 @@ Neither rule above can catch the failure mode that produced this ticket: `initPr
 silently and no consumer exists (`pkg/listenhandler/main.go:58-68`). The signal that
 distinguishes "running" from "actually consuming" is already scraped: the `rabbitmq` job
 (`prometheus.yml:96-98`, kbudde exporter with `RABBIT_EXPORTERS=exchange,node,queue`, no
-`metric_relabel_configs`) exposes `rabbitmq_queue_consumers` — 91 series live on bm-nyc-01
+`metric_relabel_configs`) exposes `rabbitmq_queue_consumers` — 91 series live on <prod-host>
 today, e.g. `asterisk.call.request = 2`.
 
 ```yaml
@@ -471,7 +471,7 @@ carrier authenticates by FQDN, so this costs nothing. If a source-IP-ACL carrier
 added, calls would work while its health check reported `unhealthy`. Routing does not consult
 `health_status`, so this is a reporting defect, not an outage. Record it in
 `komodo/README.md`; the fix would be an egress rule or a carrier-side ACL entry for
-`104.243.38.39`.
+`<egress-public-ip>`.
 
 ## Rollout
 
@@ -487,7 +487,7 @@ No SIP interruption: the Kamailio stack is not touched.
    judged not worth carrying, the alternative is to drop the route-manager doc fix from this PR
    and land it separately; the design keeps it here so the on-call doc stops describing a
    topology in which this outage is impossible.)
-2. Verify on bm-nyc-01 — **not by whether the container is running**. `listenhandler.Run()`
+2. Verify on <prod-host> — **not by whether the container is running**. `listenhandler.Run()`
    spawns a goroutine and returns `nil` unconditionally (`pkg/listenhandler/main.go:58-68`),
    so a failed `QueueCreate`/`ConsumeRPC` leaves the container `Up` with no consumer, which
    looks exactly like today's outage. Also note the CI gate cannot prove 2-of-2:

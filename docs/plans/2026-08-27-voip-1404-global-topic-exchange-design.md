@@ -211,7 +211,7 @@ The highest-frequency pilot event is `transcribe_speech_interim` (published per 
 - Routing itself is near-no-op while no bindings exist.
 - Mitigations in this ticket: (1) measure before/after — current per-type publish rate is available from `transcribe_manager_notify_total{type}` in Prometheus (metric namespace = service name with `-`→`_` via `commonoutline.GetMetricNameSpace`; the bare name is `notify_total`); capture a baseline during design sign-off and compare post-deploy channel churn via RabbitMQ `channel_created` stats; (2) rollback is a single-line option removal per cmd; (3) channel reuse in `publishExchange` is the structural fix and stays a tracked library follow-up (Non-Goals) — if post-deploy churn is problematic, that follow-up is the remedy, not schema changes.
 - Lock-hold interaction: `streaminghandler`'s Create/Delete call `PublishEvent` synchronously while holding the handler mutex, so dual publish doubles the channel open/close performed under that lock. Accepted: these are per-streaming-leg lifecycle events (low frequency, unlike the per-interim-result stream above), and the added hold time is one channel round-trip. Observation needs no separate instrument — it is already covered by the channel-churn comparison above.
-- Scale context: single-broker bm-nyc-01, transcribe traffic is bounded by concurrent transcribing calls; expected absolute rates are well within RabbitMQ channel-churn capacity. The measurement exists to verify, not to gate.
+- Scale context: single-broker <prod-host>, transcribe traffic is bounded by concurrent transcribing calls; expected absolute rates are well within RabbitMQ channel-churn capacity. The measurement exists to verify, not to gate.
 
 ## 6. Constants
 

@@ -89,7 +89,7 @@
   - 브랜치 형식: 이 저장소의 로컬 브랜치는 모두 대시 형식이고(`ETC-11-conversation-account-400-tolerance`, `NOJIRA-Add-contact-addresses-cases-test-coverage` 등), 원격 브랜치는 대시가 다수이며 밑줄 형식(`VOIP-1400_Fix_sip_watchdog_stale_domain` 등)이 일부 남아 있다. 최근 관례와 전역 지침이 대시이므로 대시 형식을 쓴다: `VOIP-1569-Allow-404-in-transcribe-validator-tests`.
   - 브랜치 생성 전 확인: 담당자의 전역 지침은 "브랜치 확인을 묻지 않고 즉시 생성"이다. 이 저장소의 CLAUDE.md 가 반대로 확인을 요구하므로, 이번 작업은 담당자가 워크플로우를 지시하신 것으로 보고 즉시 생성하되 PR 보고에 이 충돌과 처리 방식을 한 줄 적는다.
   - worktree: 저장소 루트의 `.worktrees` 디렉터리가 이미 있고 비어 있다. `git worktree add .worktrees/VOIP-1569-Allow-404-in-transcribe-validator-tests -b VOIP-1569-Allow-404-in-transcribe-validator-tests origin/main` 형태로 만든다. 기본 저장소는 main 에 둔다.
-  - PR 제목은 브랜치명과 같게, 본문은 서술 한 문단과 `api-validator:` 접두 불릿(마크다운 헤더, Test plan, AI 속성 없음), 커밋 작성자는 pchero21@gmail.com 으로 한다. main 에 직접 푸시하지 않는다.
+  - PR 제목은 브랜치명과 같게, 본문은 서술 한 문단과 `api-validator:` 접두 불릿(마크다운 헤더, Test plan, AI 속성 없음), 커밋 작성자는 <author-email> 으로 한다. main 에 직접 푸시하지 않는다.
 
 ### D4. OpenAPI 와 문서
 
@@ -100,7 +100,7 @@
 
 - 모노레포 PR 은 api-manager 한 서비스의 동작 변경이다. API 계약, 이벤트, DB 변경이 없다.
 - 동작 변화: 존재하지 않는 recording, conference id 와 삭제된 recording 으로의 POST /transcribes 가 500(패닉)에서 조회 에러에 대응하는 상태코드로 바뀐다. `translateToVoipbinError` 기준으로 typed 에러는 자신의 상태코드(예: RECORDING_NOT_FOUND 는 404), `ErrNotFound` 는 404, `ErrServiceUnavailable` 과 context 취소, 타임아웃은 503, sentinel 이 없는 일반 에러는 `INTERNAL`(500)이다.
-- 배포 순서의 영향: 검증기 저장소(monorepo-monitoring)는 README "Deploy path" 와 `.circleci/config.yml` 에 따라 main 머지마다 이미지 빌드와 Komodo 스택 `monitoring-validator`(bm-nyc-01) 배포가 승인 게이트 없이 자동으로 일어난다. 즉 검증기 PR 머지가 곧 배포이며, 컨테이너가 재생성되면 루프가 곧바로 스위트를 먼저 실행하므로 재배포 직후 첫 실행부터 새 허용 목록이 적용되고, 이후 약 6시간 주기로 반복된다. 반면 모노레포는 CircleCI 승인 게이트가 있어 담당자가 승인으로 통제한다. 서버 수정이 검증기 배포보다 먼저 운영에 나가면 다음 검증기 실행에서 5개 테스트가 404 를 받아 적색이 되고 Discord 알림이 나간다. 따라서 순서는 (1) 검증기 PR 머지(자동 배포), (2) 검증기 배포 성공 확인, (3) 모노레포 PR 머지와 승인 순으로 한다.
+- 배포 순서의 영향: 검증기 저장소(monorepo-monitoring)는 README "Deploy path" 와 `.circleci/config.yml` 에 따라 main 머지마다 이미지 빌드와 Komodo 스택 `monitoring-validator`(<prod-host>) 배포가 승인 게이트 없이 자동으로 일어난다. 즉 검증기 PR 머지가 곧 배포이며, 컨테이너가 재생성되면 루프가 곧바로 스위트를 먼저 실행하므로 재배포 직후 첫 실행부터 새 허용 목록이 적용되고, 이후 약 6시간 주기로 반복된다. 반면 모노레포는 CircleCI 승인 게이트가 있어 담당자가 승인으로 통제한다. 서버 수정이 검증기 배포보다 먼저 운영에 나가면 다음 검증기 실행에서 5개 테스트가 404 를 받아 적색이 되고 Discord 알림이 나간다. 따라서 순서는 (1) 검증기 PR 머지(자동 배포), (2) 검증기 배포 성공 확인, (3) 모노레포 PR 머지와 승인 순으로 한다.
 - 롤백: 서버 수정을 되돌려도 허용 목록에 500 이 남아 있어 검증기가 영향을 받지 않는다.
 - PR 연결: 검증기 PR 을 먼저 만들어 번호를 확보한 뒤 모노레포 PR 을 만든다. 모노레포 PR 본문에는 `api-validator: <검증기 PR URL>, merge before this PR` 형태의 불릿으로 연결과 머지 순서를 적는다(헤더와 Test plan 은 쓰지 않는다). 머지는 담당자가 각각 지시한다.
 

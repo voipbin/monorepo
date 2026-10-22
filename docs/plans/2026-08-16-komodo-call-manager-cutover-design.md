@@ -26,7 +26,7 @@ explicit verification step for this.
 ## Goal
 
 Replace `ssh-deploy.sh` with a Komodo-API-based deploy path for
-bin-call-manager on bm-nyc-01 — the first production service to move off
+bin-call-manager on <prod-host> — the first production service to move off
 `voipbin/voipbin`'s `install/` (`versions.lock`/dist-live compose)
 mechanism entirely. `install/` stays as-is for external self-hosting users;
 this change does not touch it except to comment out one service block (see
@@ -44,7 +44,7 @@ follow-up ticket rolls the pattern out.
 - bin-call-manager's CircleCI job (`monorepo/.circleci/config_work.yml`)
   builds+pushes `voipbin/bin-call-manager:$CIRCLE_SHA1`, then runs
   `.circleci/scripts/ssh-deploy.sh voipbin/bin-call-manager call-manager`,
-  which SSHes to bm-nyc-01, bumps a digest pin in the live
+  which SSHes to <prod-host>, bumps a digest pin in the live
   `versions.lock`/`docker-compose.yml` under `/opt/voipbin/install`, and
   runs `docker compose pull/up`.
 - The container runs as `voipbin-call-mgr`, currently attached to a
@@ -65,7 +65,7 @@ follow-up ticket rolls the pattern out.
   **This design does not copy that healthcheck into the new file** — see
   §1.
 - `komodo-api-deploy.sh` (VOIP-1341, merged, PR #1187) exists today and
-  talks to Komodo over an SSH tunnel (`ssh` to bm-nyc-01, then
+  talks to Komodo over an SSH tunnel (`ssh` to <prod-host>, then
   `curl 127.0.0.1:9120` inside that session). **This design keeps it,
   unmodified, as the break-glass fallback** (§2) rather than deleting it —
   see "No break-glass path" finding below for why.
@@ -111,10 +111,10 @@ follow-up ticket rolls the pattern out.
   string as one variable, not a reassembly (unlike the discarded draft's
   `DATABASE_DSN=root:${MYSQL_ROOT_PASSWORD}@tcp(...)` construction, which
   assumed a different, incorrect key shape for this namespace).
-- **`https://komodo.voipbin.net` has two independent, routine failure
+- **`https://<komodo-domain>` has two independent, routine failure
   modes**, both already documented from operating the same endpoint for
   secrets sync (`infra-secret-sync-komodo.sh`):
-  1. The Caddy route is deleted by any `setup-host.sh` rerun on bm-nyc-01
+  1. The Caddy route is deleted by any `setup-host.sh` rerun on <prod-host>
      (normal host-fix operation, not exceptional) — **symptom: HTTP 404**.
   2. `docker network connect komodo_default voipbin-web-proxy` is a
      non-persistent, manual attachment, undone whenever `voipbin-web-proxy`
@@ -134,7 +134,7 @@ destroyed after), confirm — do not assume:
 1. A compose `environment` entry referencing `[[BIN_MANAGER__SOME_KEY]]`
    actually resolves to that Variable's real value in the deployed
    container (`docker inspect --format '{{json .Config.Env}}'` on
-   bm-nyc-01, read not printed if secret-shaped).
+   <prod-host>, read not printed if secret-shaped).
 2. What happens if a `[[VAR]]` reference does **not** resolve (typo a
    nonexistent variable name) — empty string, the literal `[[VAR]]` text,
    or a hard deploy failure. Whichever it is, the rewritten script (§2)
@@ -163,7 +163,7 @@ secrets path can fail silently into a running-but-broken container.
 **Status (code review round 1, post-implementation): NOT YET PERFORMED.**
 The scripts/compose fragment/CI wiring in this PR were implemented and
 reviewed against Komodo's published API docs/source rather than against a
-disposable Stack on the live bm-nyc-01 instance (no access to that
+disposable Stack on the live <prod-host> instance (no access to that
 instance from this session). This is safe to merge as code because: (a)
 `bin-call-manager-deploy`'s CI wiring only affects *routine* deploys that
 happen after the real cutover, which is itself a manual, watched operation
@@ -249,11 +249,11 @@ deleted.** It's renamed to `komodo-api-deploy-ssh-fallback.sh` (code
 review round 2 also fixed one latent log-leakage gap in it — see §"Log
 leakage guard" below, otherwise functionally unchanged), and documented as
 the break-glass path for a production incident where
-`https://komodo.voipbin.net` itself is down (round 1 "no break-glass path"
+`https://<komodo-domain>` itself is down (round 1 "no break-glass path"
 finding — this service no longer has `ssh-deploy.sh` available at all
 after cutover, so *something* manual must still work).
 
-New `komodo-api-deploy.sh` — direct HTTPS to `https://komodo.voipbin.net`,
+New `komodo-api-deploy.sh` — direct HTTPS to `https://<komodo-domain>`,
 authenticated via `X-Api-Key`/`X-Api-Secret` headers from
 `CC_KOMODO_API_KEY`/`CC_KOMODO_API_SECRET`. Same argv-avoidance discipline
 as today's script and `infra-secret-sync-komodo.sh` (`curl -K -`, secrets
@@ -287,11 +287,11 @@ Interface: `komodo-api-deploy.sh <stack-name> <compose-file>`
      read-restricted, so this is unlikely in practice — but it's untested.
      Confirm before rolling this pattern out past this one pilot service.
    - `CreateStack` uses `server_id` = `$KOMODO_SERVER_NAME` (default
-     `bm-nyc-01`, overridable via `CC_KOMODO_SERVER_NAME` per job) — safe
+     `<prod-host>`, overridable via `CC_KOMODO_SERVER_NAME` per job) — safe
      to pass the plain server **name**, not an internal id: Komodo's own
      `validate_config` resolves `server_id` by name if it doesn't look
      like an id ("in case it comes in as name", per its source), so no
-     separate `ListServers` lookup is needed to resolve bm-nyc-01's actual
+     separate `ListServers` lookup is needed to resolve <prod-host>'s actual
      Server resource id first. **Not yet confirmed against the live
      instance** (code-review round 5 finding) — this specific behavior is
      read from Komodo's source, not observed; §7 step 7 (the first real
@@ -343,8 +343,8 @@ Interface: `komodo-api-deploy.sh <stack-name> <compose-file>`
    channel), not CI's own (broadly readable) log.
 8. **Secrets-at-rest surface, stated explicitly (round 2 M6):** after
    interpolation, real production DSN/AMQP credentials exist in Komodo's
-   Mongo and on bm-nyc-01's Periphery-managed stack directory, readable by
-   anyone authenticated to `komodo.voipbin.net` — which per
+   Mongo and on <prod-host>'s Periphery-managed stack directory, readable by
+   anyone authenticated to `<komodo-domain>` — which per
    `infra-komodo/README.md` is internet-exposed behind a single password,
    no MFA. Not a new regression (PR #90 already put these values in
    Komodo Variables; the old path had them in `install/.env` on the same
@@ -397,7 +397,7 @@ container state, per its published API docs/source) for 3 consecutive
 already uses, read via Komodo's API instead of SSH `docker inspect`.
 **Implemented in `komodo-api-deploy.sh` (code review round 1), but NOT YET
 empirically verified against the live Komodo instance** — confirm
-`ListStackServices`'s actual response shape on bm-nyc-01 matches what the
+`ListStackServices`'s actual response shape on <prod-host> matches what the
 script assumes; if it doesn't, this gate will consistently report
 not-running and every deploy will fail it (fail-closed, not fail-open, but
 still worth confirming before relying on it unattended). If it turns out
@@ -440,7 +440,7 @@ exit** (DB/Redis connect failure surfaces as a returned error from
 `initHandler`) or a **timeout** (RabbitMQ unreachable) are both fail.
 **Open item to verify empirically before relying on this in production:**
 confirm `call list`'s exact exit code and output shape on an empty result
-against a real bm-nyc-01 Komodo-deployed container — this reasoning is
+against a real <prod-host> Komodo-deployed container — this reasoning is
 derived from reading `pkg/callhandler/db.go`/`cmd/call-control/main.go`,
 not yet observed live.
 Either check failing is a hard abort trigger, not a judgment call. Both
@@ -463,7 +463,7 @@ filled in with `install_default` in that file. `$LIVE_PROJECT` in §7/
 rollback below is `install` — matches what was already written there, now
 confirmed rather than assumed.
 
-Before touching anything, on bm-nyc-01, capture both the network/project
+Before touching anything, on <prod-host>, capture both the network/project
 identity and the full live env in one pass:
 ```bash
 docker inspect voipbin-call-mgr --format \
@@ -538,7 +538,7 @@ exists to protect against.
      -f bin-call-manager/Dockerfile .
    docker push voipbin/bin-call-manager:<manual-tag>
    ```
-4. **Pre-pull that exact tag** on bm-nyc-01:
+4. **Pre-pull that exact tag** on <prod-host>:
    `docker pull voipbin/bin-call-manager:<manual-tag>` — moves the cold
    pull outside the outage window that opens at step 5.
 5. **Remove the old instance:**
@@ -639,7 +639,7 @@ Steps 2-3 below still apply.
 #    action against it, UI click or otherwise, recreates the
 #    voipbin-call-manager container step 3 below removes):
 #    DestroyStack(bin-call-manager) via the Komodo API/UI.
-# 3. On bm-nyc-01, remove the NEW (Komodo-managed) container - note the
+# 3. On <prod-host>, remove the NEW (Komodo-managed) container - note the
 #    name difference from the old one (naming decision, the maintainer, 2026-08-16):
 docker rm -f voipbin-call-manager 2>/dev/null || true
 # Un-comment call-manager's block in install/docker-compose.yml, which
@@ -655,7 +655,7 @@ standing constraint, not a one-time migration note (same place as the
 `.dist` landmine note above).
 
 **Auditability (round 1 MEDIUM finding):** dropping `versions.lock` means
-git no longer records what's running on bm-nyc-01 for this service. State
+git no longer records what's running on <prod-host> for this service. State
 plainly: that answer now lives in Komodo's stored `file_contents` for the
 `bin-call-manager` Stack (queryable via `GetStack`), and the stale
 `bin-call-manager` entry left behind in the live `versions.lock` after
@@ -676,7 +676,7 @@ cutover is intentional rollback ballast, not drift to be cleaned up.
   log-redaction-on-failure behavior) and for `render-image-tag.sh`.
 - Step 0's empirical spike (above) — required, not optional, before any of
   the above is trusted in production.
-- Manual/watched verification of the actual cutover on bm-nyc-01 per §7 —
+- Manual/watched verification of the actual cutover on <prod-host> per §7 —
   a production step, not something CI verifies unattended the first time.
 
 ## Explicitly out of scope
@@ -824,7 +824,7 @@ compose project nor any Komodo Stack, was built out in a separate session
 (`NOJIRA-Add-production-network-komodo-stack`, monorepo-etc PR #92) — this
 is the same "network genuinely owned by neither compose project"
 follow-up this document already flagged (see the `install_default`
-shared-network note above). **Verified live on bm-nyc-01 (2026-08-16): the
+shared-network note above). **Verified live on <prod-host> (2026-08-16): the
 `production` network exists, but `db`/`redis`/`rabbitmq` are not attached
 to it yet** — `backfill-install-default.sh` (in that PR) needs to run
 first. Once that's done, `bin-call-manager/komodo/docker-compose.yml`'s

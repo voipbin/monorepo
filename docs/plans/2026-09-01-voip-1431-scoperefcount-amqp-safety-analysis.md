@@ -123,7 +123,7 @@ progress), there is no race.
 
 ## 5. Production evidence check
 
-Queried `bin-api-manager`'s live container (`voipbin-api-manager` on bm-nyc-01, up 2 days) via
+Queried `bin-api-manager`'s live container (`voipbin-api-manager` on <prod-host>, up 2 days) via
 Komodo's `GetContainerLog` (5000-line / ~1.3MB tail, covering roughly 2026-09-01 02:45–04:20
 UTC):
 

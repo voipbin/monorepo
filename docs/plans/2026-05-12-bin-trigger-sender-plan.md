@@ -357,7 +357,7 @@ git commit -m "NOJIRA-Add-bin-trigger-sender
 # build
 FROM public.ecr.aws/docker/library/golang:1.25-alpine AS build
 
-LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
+LABEL maintainer="Sungtae Kim <author-email>"
 
 WORKDIR /app
 COPY ./ .

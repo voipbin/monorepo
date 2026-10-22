@@ -29,7 +29,7 @@ chars). This string appears 5 times in an authenticated INVITE (R-URI, From, To,
 digest realm, digest uri), contributing ~290 bytes. A live incident proved that
 an authenticated INVITE at 1,556 bytes (wire) exceeds MTU 1,500, gets
 IP-fragmented, and the fragments are dropped before reaching our server
-(verified: no fragment arrives at bm-nyc-01's NIC; single-packet 1,320B messages
+(verified: no fragment arrives at <prod-host>'s NIC; single-packet 1,320B messages
 pass). Result: digest auth over UDP fails for affected clients.
 
 Goal (maintainer directive): keep supporting UDP. Shrink our contribution to the

@@ -13,7 +13,7 @@ Same shape as the Komodo rollout plans that preceded it:
 
 ## Context
 
-Every `bin-*-manager` runs as a single container on bm-nyc-01. The goal
+Every `bin-*-manager` runs as a single container on <prod-host>. The goal
 is 2 replicas per service, for throughput/load-sharing and faster
 recovery after a container restart.
 
@@ -77,7 +77,7 @@ canary).
 **2026-09-10 Komodo-API sweep:** all 25 services still tagged "deploy
 verification pending" below (P11's 21 + P12's flow/hook + P18's
 transcribe + P19a's tts) were re-checked via `ListStacks` on
-`https://komodo.voipbin.net` (no VPN/SSH needed — the API is
+`https://<komodo-domain>` (no VPN/SSH needed — the API is
 internet-reachable behind Cloudflare, same credential CI's
 `komodo-api-deploy.sh` uses). Every one reports `status: running(2)`
 with both `<service>-1`/`<service>-2` containers on the same image
@@ -86,7 +86,7 @@ digest (tts additionally shows its `tts-manager-http` sidecar at
 confirms the container-level half of the pending checklist (item 1 of
 the workflow doc's post-deploy verification). Prometheus dns_sd target
 count and `ReplicaDegraded` alert state (items 2-3) were not re-checked
-in this sweep — Prometheus/Grafana are loopback-only on bm-nyc-01 and
+in this sweep — Prometheus/Grafana are loopback-only on <prod-host> and
 need VPN/SSH, which this sweep deliberately did not open just for this
 check (no incident signal, no reason to believe dns_sd disagrees with
 Komodo's own view of the same containers). Rows below are updated to

@@ -12,7 +12,7 @@ no sixth gap, but left a duplicated paragraph and an overstated claim), round 6 
 overstatement's self-contradiction, corrected), rounds 7-8 (verification passes, 3 cosmetic
 nits plus a pre-existing §3.2/production-network cross-reference, all folded in). Ready for
 implementation planning. VoIPBin is a self-hostable opensource CPaaS, and a self-hosted deployment on
-Kubernetes needs sentinel-manager's stranded-call detection just as much as bm-nyc-01's
+Kubernetes needs sentinel-manager's stranded-call detection just as much as <prod-host>'s
 Docker-Compose deployment does. §1-§7's "replace K8s with Docker" framing should have been
 "add Docker alongside K8s" — this was a real gap in the original design's trade-off
 analysis, not a deliberate scope decision; VOIP-1335's original ask was dual-backend
@@ -35,7 +35,7 @@ work replaced).
 - **Corrected topology finding** (this design's own investigation superseded an earlier,
   wrong "single instance" conclusion reached from a `ListStacks` API read that turned out to
   be unreliable in this Komodo deployment): `voip-asterisk-{call,conference,registrar}-docker`
-  each run as **2 live healthy instances** on bm-nyc-01 (`-1`/`-2` container-name suffix,
+  each run as **2 live healthy instances** on <prod-host> (`-1`/`-2` container-name suffix,
   fixed IPs on the `production` Docker network), confirmed via direct
   `InspectDockerContainer` reads, not the Stack-summary API. `voip-rtpengine-docker-1`/`-2`
   likewise. This landed via VOIP-1402 (merged 2026-08-26, live since 2026-08-29).
@@ -65,7 +65,7 @@ work replaced).
 
 ## 2. Goal
 
-Give sentinel-manager a Docker-native event-detection backend so it can run on bm-nyc-01
+Give sentinel-manager a Docker-native event-detection backend so it can run on <prod-host>
 (no Kubernetes anywhere in this stack), and restore its CI/CD deploy path, while preserving
 the existing recovery contract on the call-manager side as closely as possible.
 
@@ -405,12 +405,12 @@ not by anything about the watched containers' own behavior.
 
 ### 8.1 Why this wasn't caught in §1-§7
 
-§1's "Confirmed current state" correctly established that bm-nyc-01 has no Kubernetes and
+§1's "Confirmed current state" correctly established that <prod-host> has no Kubernetes and
 needed a working deploy path *now*. That framing then silently generalized into "sentinel
 only needs to run where we currently deploy it" — never stated as an explicit assumption,
 never surfaced as a trade-off for review. VoIPBin is built and marketed as a self-hostable
 opensource CPaaS (see product positioning materials); a self-hoster running Kubernetes has
-exactly the same need for stranded-call detection as bm-nyc-01 does, and the Docker-only PR
+exactly the same need for stranded-call detection as <prod-host> does, and the Docker-only PR
 would have silently regressed that capability to zero for that deployment shape while
 fixing it for this one. Five design-review rounds and four plan-review rounds on §1-§7 did
 not catch this because none of the reviewers were asked to check "does this design serve
@@ -734,9 +734,9 @@ mirroring the equivalent Docker-side test shapes already in the codebase for con
 **Reversed after this addendum shipped** — see §8.4's correction note. A K8s deployment of
 sentinel-manager needs a `Deployment` setting `SENTINEL_BACKEND=kubernetes` and does **not**
 need the Docker-socket-proxy sidecar or Redis dependency §4's `komodo/docker-compose.yml`
-wires up — those are Docker-backend-only. A Docker-Compose deployment (bm-nyc-01) needs the
+wires up — those are Docker-backend-only. A Docker-Compose deployment (<prod-host>) needs the
 reverse. This is packaging, not code — the binary is identical either way, config picks the
-path. This repo provides the Docker path (§4's `komodo/docker-compose.yml`, which bm-nyc-01
+path. This repo provides the Docker path (§4's `komodo/docker-compose.yml`, which <prod-host>
 actually runs); a self-hoster choosing the Kubernetes path supplies their own manifest for
 their own cluster — this repo does not ship or maintain one.
 

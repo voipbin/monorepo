@@ -211,7 +211,7 @@ the commit message ("fix oapi-codegen tool directive"). Not blocking.
 ## 11. Commit hygiene
 
 - No AI attribution/co-authorship lines in any of the 8 Go commits or the 1 JS commit (`git show -s --format='%b'` checked for all).
-- All 8 Go commits + the JS commit authored by `Sungtae Kim <pchero21@gmail.com>`.
+- All 8 Go commits + the JS commit authored by `Sungtae Kim <author-email>`.
 - Commit titles match branch name (`NOJIRA-webchat-session-referrer-peer-local`) for the Go commits; the JS commit title (`Add webchat session referrer capture and display`) does not literally match the JS branch name string but the JS repo's CLAUDE.md format requires only a descriptive title + `project-name:` bullets, which this commit follows correctly (`square-admin:` prefix on all three bullets).
 
 ## 12. Code quality

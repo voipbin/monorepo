@@ -118,10 +118,10 @@ followed with 16 more services on the same pattern; the remaining
 - **CI path:** `.circleci/scripts/render-image-tag.sh` substitutes the
   built image tag, then `.circleci/scripts/komodo-api-deploy.sh` pushes
   the file's content to Komodo (`UpdateStack`) and triggers a deploy
-  (`DeployStack`) over `https://komodo.voipbin.net`, gated by the
+  (`DeployStack`) over `https://<komodo-domain>`, gated by the
   `bin-call-manager-deploy` job's poll/running checks.
 - **Break-glass fallback:** `.circleci/scripts/komodo-api-deploy-ssh-fallback.sh`
-  (SSH tunnel to bm-nyc-01, unchanged from VOIP-1341) for use if the public
+  (SSH tunnel to <prod-host>, unchanged from VOIP-1341) for use if the public
   HTTPS endpoint itself is unreachable.
 - **Full design, cutover sequencing, and rollback procedure:**
   [docs/plans/2026-08-16-komodo-call-manager-cutover-design.md](../docs/plans/2026-08-16-komodo-call-manager-cutover-design.md)

@@ -22,7 +22,7 @@ Speech-to-text service.
         -rabbit_queue_call "bin-manager.call-manager.request" \
         -rabbit_queue_webhook "bin-manager.webhook-manager.request" \
         -rabbit_queue_storage "bin-manager.storage-manager.request" \
-        -redis_addr 10.164.15.220:6379 \
+        -redis_addr <redis-host>:6379 \
         -redis_db 1
 ```
 
@@ -32,6 +32,6 @@ Speech-to-text service.
 
 `bin-transcribe-manager-build` pushes the image, and a single `build-approval` gate covers
 the test -> build pipeline. The CircleCI `bin-transcribe-manager-deploy` job (direct SSH
-deploy to bm-nyc-01) has been removed. Deploys to bm-nyc-01 are manual until
+deploy to <prod-host>) has been removed. Deploys to <prod-host> are manual until
 this service migrates to the Komodo-managed deploy path (see bin-call-manager
 for the pattern).

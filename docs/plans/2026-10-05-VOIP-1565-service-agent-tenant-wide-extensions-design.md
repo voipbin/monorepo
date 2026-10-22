@@ -143,7 +143,7 @@ func maskExtensionForAgent(ws *rmextension.WebhookMessage, owned bool) *rmextens
 6. 문서(RST, routing) 갱신.
 7. 검증 계획 7절 전체 실행.
 7-b. 문서 빌드 산출물 갱신(5.3, CLAUDE.md 규칙): sphinx 재빌드 후 `git add -f bin-api-manager/docsdev/build/`.
-8. 커밋(제목=브랜치명, 본문 narrative + `bin-api-manager:`/`bin-openapi-manager:` 불릿, AI 표기 없음, author 확인 `pchero21@gmail.com`), 푸시, `origin/main` 충돌 확인, PR 생성.
+8. 커밋(제목=브랜치명, 본문 narrative + `bin-api-manager:`/`bin-openapi-manager:` 불릿, AI 표기 없음, author 확인 `<author-email>`), 푸시, `origin/main` 충돌 확인, PR 생성.
 9. PR 코드 리뷰 루프(최소 3회, 연속 2회 승인).
 10. 후속 보고: `PUT /me/addresses` 미할당 extension 자기 등록(분석 5.4), `extensionGet` Debug 로그(분석 6.3).
 
