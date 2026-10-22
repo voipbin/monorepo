@@ -112,7 +112,7 @@ func (h *handler) EmailVerifyTokenGet(ctx context.Context, token string) (uuid.U
 
 	id, err := uuid.FromString(val)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("could not parse customer id from token: %v", err)
+		return uuid.Nil, fmt.Errorf("could not parse customer id from token: %w", err)
 	}
 	return id, nil
 }

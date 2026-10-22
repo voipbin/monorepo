@@ -408,7 +408,7 @@ func (h *server) PostServiceAgentsContactsIdAddresses(c *gin.Context, id openapi
 	c.JSON(200, res)
 }
 
-func (h *server) PutServiceAgentsContactsIdAddressesAddressId(c *gin.Context, id openapi_types.UUID, addressId openapi_types.UUID) {
+func (h *server) PutServiceAgentsContactsIdAddressesAddressId(c *gin.Context, id openapi_types.UUID, addressID openapi_types.UUID) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PutServiceAgentsContactsIdAddressesAddressId",
 		"request_address": c.ClientIP,
@@ -425,7 +425,7 @@ func (h *server) PutServiceAgentsContactsIdAddressesAddressId(c *gin.Context, id
 	})
 
 	contactID := uuid.UUID(id)
-	addrID := uuid.UUID(addressId)
+	addrID := uuid.UUID(addressID)
 
 	var req openapi_server.PutServiceAgentsContactsIdAddressesAddressIdJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -458,7 +458,7 @@ func (h *server) PutServiceAgentsContactsIdAddressesAddressId(c *gin.Context, id
 	c.JSON(200, res)
 }
 
-func (h *server) DeleteServiceAgentsContactsIdAddressesAddressId(c *gin.Context, id openapi_types.UUID, addressId openapi_types.UUID) {
+func (h *server) DeleteServiceAgentsContactsIdAddressesAddressId(c *gin.Context, id openapi_types.UUID, addressID openapi_types.UUID) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteServiceAgentsContactsIdAddressesAddressId",
 		"request_address": c.ClientIP,
@@ -475,7 +475,7 @@ func (h *server) DeleteServiceAgentsContactsIdAddressesAddressId(c *gin.Context,
 	})
 
 	contactID := uuid.UUID(id)
-	addrID := uuid.UUID(addressId)
+	addrID := uuid.UUID(addressID)
 
 	res, err := h.serviceHandler.ServiceAgentContactAddressDelete(c.Request.Context(), a, contactID, addrID)
 	if err != nil {
@@ -534,7 +534,7 @@ func (h *server) PostServiceAgentsContactsIdTags(c *gin.Context, id string) {
 	c.JSON(201, res)
 }
 
-func (h *server) DeleteServiceAgentsContactsIdTagsTagId(c *gin.Context, id string, tagId string) {
+func (h *server) DeleteServiceAgentsContactsIdTagsTagId(c *gin.Context, id string, tagID string) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteServiceAgentsContactsIdTagsTagId",
 		"request_address": c.ClientIP,
@@ -557,7 +557,7 @@ func (h *server) DeleteServiceAgentsContactsIdTagsTagId(c *gin.Context, id strin
 		return
 	}
 
-	tID := uuid.FromStringOrNil(tagId)
+	tID := uuid.FromStringOrNil(tagID)
 	if tID == uuid.Nil {
 		log.Error("Could not parse the tag id.")
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided tag_id is not a valid UUID."))

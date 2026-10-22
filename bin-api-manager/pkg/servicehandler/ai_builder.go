@@ -177,7 +177,7 @@ func (h *serviceHandler) builderStatusCached(ctx context.Context) *builder.Statu
 	// context, not the first caller's: if the first caller gave up, the others
 	// waiting on the same call would otherwise inherit its cancellation, and the
 	// outage would be cached for the failure window.
-	ch := c.group.DoChan("status", func() (any, error) {
+	ch := c.group.DoChan("status", func() (any, error) { //nolint:contextcheck // intentionally detached from the caller ctx, see the comment above
 		rpcCtx, cancel := context.WithTimeout(context.Background(), builderStatusRPCDeadline)
 		defer cancel()
 

@@ -402,7 +402,7 @@ func (h *server) PostServiceAgentsTalkChatsIdParticipants(c *gin.Context, id str
 }
 
 // DeleteServiceAgentsTalkChatsIdParticipantsParticipantId handles DELETE /service_agents/talk_chats/{id}/participants/{participant_id}
-func (h *server) DeleteServiceAgentsTalkChatsIdParticipantsParticipantId(c *gin.Context, id string, participantId string) {
+func (h *server) DeleteServiceAgentsTalkChatsIdParticipantsParticipantId(c *gin.Context, id string, participantIDParam string) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteServiceAgentsTalkChatsIdParticipantsParticipantId",
 		"request_address": c.ClientIP(),
@@ -425,7 +425,7 @@ func (h *server) DeleteServiceAgentsTalkChatsIdParticipantsParticipantId(c *gin.
 		return
 	}
 
-	participantID := uuid.FromStringOrNil(participantId)
+	participantID := uuid.FromStringOrNil(participantIDParam)
 	if participantID == uuid.Nil {
 		log.Error("Could not parse participant id.")
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided participant_id is not a valid UUID."))

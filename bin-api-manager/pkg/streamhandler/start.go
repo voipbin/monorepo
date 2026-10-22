@@ -31,7 +31,7 @@ func (h *streamHandler) Start(
 	tmp, err := h.Create(ctx, id, ws, encapsulation)
 	if err != nil {
 		log.Errorf("Could not create stream. err: %v", err)
-		return nil, fmt.Errorf("could not create stream. err: %v", err)
+		return nil, fmt.Errorf("could not create stream. err: %w", err)
 	}
 
 	em, err := h.reqHandler.CallV1ExternalMediaStart(
@@ -50,14 +50,14 @@ func (h *streamHandler) Start(
 	)
 	if err != nil {
 		log.Errorf("Could not start the external media. err: %v", err)
-		return nil, fmt.Errorf("could not start the external media. err: %v", err)
+		return nil, fmt.Errorf("could not start the external media. err: %w", err)
 	}
 	log.WithField("external_media", em).Debugf("Created external media. external_media_id: %s", em.ID)
 
 	res, err := h.SetExternalMedia(tmp.ID, em)
 	if err != nil {
 		log.Errorf("Could not set external media. err: %v", err)
-		return nil, fmt.Errorf("could not set external media. err: %v", err)
+		return nil, fmt.Errorf("could not set external media. err: %w", err)
 	}
 
 	go h.handleStreamFromWebsocket(ctx, res)

@@ -94,7 +94,7 @@ func (h *serviceHandler) MessageSend(ctx context.Context, a *auth.AuthIdentity, 
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
-	if len(destinations) <= 0 {
+	if len(destinations) == 0 {
 		log.Errorf("The destination is empty. destinations: %d", len(destinations))
 		return nil, fmt.Errorf("%w: destination is empty", serviceerrors.ErrInvalidArgument)
 	}

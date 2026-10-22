@@ -59,7 +59,7 @@ func (h *server) GetBillings(c *gin.Context, params openapi_server.GetBillingsPa
 	c.JSON(200, res)
 }
 
-func (h *server) GetBillingsBillingId(c *gin.Context, billingId openapi_types.UUID) {
+func (h *server) GetBillingsBillingId(c *gin.Context, billingIDParam openapi_types.UUID) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetBillingsBillingId",
 		"request_address": c.ClientIP(),
@@ -76,7 +76,7 @@ func (h *server) GetBillingsBillingId(c *gin.Context, billingId openapi_types.UU
 	})
 
 	// Convert openapi_types.UUID to uuid.UUID
-	billingID, err := uuid.FromString(billingId.String())
+	billingID, err := uuid.FromString(billingIDParam.String())
 	if err != nil {
 		log.Errorf("Invalid billing ID format. err: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))

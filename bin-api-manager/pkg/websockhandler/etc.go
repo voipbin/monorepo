@@ -35,7 +35,8 @@ func (h *websockHandler) validateTopics(ctx context.Context, a *auth.AuthIdentit
 
 		switch tmps[0] {
 		case "customer_id":
-			if len(tmps) == 4 {
+			switch {
+			case len(tmps) == 4:
 				// 4-part: "customer_id:<uuid>:<resource_type>:<resource_id>"
 				//
 				// tmps[3] is the child resource (an aicall, a session), not the
@@ -79,13 +80,11 @@ func (h *websockHandler) validateTopics(ctx context.Context, a *auth.AuthIdentit
 					if parsed != a.DirectScope.AllowedResourceID {
 						return false
 					}
-				} else {
+				} else if !a.HasPermission(amagent.PermissionCustomerAdmin | amagent.PermissionCustomerManager) {
 					// Agent/accesskey: same permission check as 2-part
-					if !a.HasPermission(amagent.PermissionCustomerAdmin | amagent.PermissionCustomerManager) {
-						return false
-					}
+					return false
 				}
-			} else if len(tmps) >= 2 {
+			case len(tmps) >= 2:
 				// 2-part or 3-part: "customer_id:<uuid>" or "customer_id:<uuid>:<suffix>"
 				if a.IsDirect() {
 					// Direct tokens cannot subscribe to broad customer topics
@@ -97,7 +96,7 @@ func (h *websockHandler) validateTopics(ctx context.Context, a *auth.AuthIdentit
 				if tmpID != a.CustomerID {
 					return false
 				}
-			} else {
+			default:
 				return false
 			}
 

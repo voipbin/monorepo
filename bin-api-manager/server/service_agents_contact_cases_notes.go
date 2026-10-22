@@ -88,7 +88,7 @@ func (h *server) PostServiceAgentsContactCasesIdNotes(c *gin.Context, id openapi
 }
 
 // DeleteServiceAgentsContactCasesIdNotesNoteId handles DELETE /service_agents/contact_cases/{id}/notes/{note_id}
-func (h *server) DeleteServiceAgentsContactCasesIdNotesNoteId(c *gin.Context, id openapi_types.UUID, noteId openapi_types.UUID) {
+func (h *server) DeleteServiceAgentsContactCasesIdNotesNoteId(c *gin.Context, id openapi_types.UUID, noteIDParam openapi_types.UUID) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteServiceAgentsContactCasesIdNotesNoteId",
 		"request_address": c.ClientIP,
@@ -111,7 +111,7 @@ func (h *server) DeleteServiceAgentsContactCasesIdNotesNoteId(c *gin.Context, id
 		return
 	}
 
-	noteID, err := uuid.FromString(noteId.String())
+	noteID, err := uuid.FromString(noteIDParam.String())
 	if err != nil {
 		log.Errorf("Invalid note ID format. err: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided note_id is not a valid UUID.").Wrap(err))

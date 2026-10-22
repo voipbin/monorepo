@@ -84,7 +84,7 @@ func (h *subscribeHandler) Run() error {
 	// declare the queue for subscribe(pod)
 	log.Debugf("Declaring the queue for subscribe(pod). queue_name: %s", h.subscribeQueueNamePod)
 	if err := h.sockHandler.QueueCreate(h.subscribeQueueNamePod, "volatile"); err != nil {
-		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
+		return fmt.Errorf("could not declare the queue for listenHandler. err: %w", err)
 	}
 
 	// NOTE (VOIP-1296 final cutover, VOIP-1425 cleanup): the unconditional "#" wildcard baseline

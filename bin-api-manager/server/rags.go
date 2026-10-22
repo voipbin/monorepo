@@ -254,12 +254,12 @@ func (h *server) PostRagsIdSources(c *gin.Context, id openapi_types.UUID) {
 	c.JSON(200, res)
 }
 
-func (h *server) DeleteRagsIdSourcesSourceId(c *gin.Context, id openapi_types.UUID, sourceId openapi_types.UUID) {
+func (h *server) DeleteRagsIdSourcesSourceId(c *gin.Context, id openapi_types.UUID, sourceIDParam openapi_types.UUID) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteRagsIdSourcesSourceId",
 		"request_address": c.ClientIP(),
 		"rag_id":          id,
-		"source_id":       sourceId,
+		"source_id":       sourceIDParam,
 	})
 
 	a, ok := getAuthIdentity(c)
@@ -277,7 +277,7 @@ func (h *server) DeleteRagsIdSourcesSourceId(c *gin.Context, id openapi_types.UU
 		return
 	}
 
-	sourceID, err := uuid.FromString(sourceId.String())
+	sourceID, err := uuid.FromString(sourceIDParam.String())
 	if err != nil {
 		log.Errorf("Invalid source ID format. err: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))

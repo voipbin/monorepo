@@ -21,7 +21,7 @@ const (
 func (h *handler) directGetFromRow(rows *sql.Rows) (*direct.Direct, error) {
 	res := &direct.Direct{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. directGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. directGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -35,17 +35,17 @@ func (h *handler) DirectCreate(ctx context.Context, d *direct.Direct) error {
 	// prepare fields for insert
 	fields, err := commondatabasehandler.PrepareFields(d)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. DirectCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. DirectCreate. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(directTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. DirectCreate. err: %v", err)
+		return fmt.Errorf("could not build query. DirectCreate. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. DirectCreate. err: %v", err)
+		return fmt.Errorf("could not execute. DirectCreate. err: %w", err)
 	}
 
 	return nil
@@ -61,12 +61,12 @@ func (h *handler) DirectGet(ctx context.Context, id uuid.UUID) (*direct.Direct, 
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. DirectGet. err: %v", err)
+		return nil, fmt.Errorf("could not build query. DirectGet. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. DirectGet. err: %v", err)
+		return nil, fmt.Errorf("could not query. DirectGet. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -83,7 +83,7 @@ func (h *handler) DirectGet(ctx context.Context, id uuid.UUID) (*direct.Direct, 
 
 	res, err := h.directGetFromRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. DirectGet. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. DirectGet. err: %w", err)
 	}
 
 	return res, nil
@@ -99,12 +99,12 @@ func (h *handler) DirectGetByHash(ctx context.Context, hash string) (*direct.Dir
 		Where(sq.Eq{"hash": hash}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. DirectGetByHash. err: %v", err)
+		return nil, fmt.Errorf("could not build query. DirectGetByHash. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. DirectGetByHash. err: %v", err)
+		return nil, fmt.Errorf("could not query. DirectGetByHash. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -121,7 +121,7 @@ func (h *handler) DirectGetByHash(ctx context.Context, hash string) (*direct.Dir
 
 	res, err := h.directGetFromRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. DirectGetByHash. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. DirectGetByHash. err: %w", err)
 	}
 
 	return res, nil
@@ -141,17 +141,17 @@ func (h *handler) DirectGets(ctx context.Context, size uint64, token string, fil
 	// apply filters
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. DirectGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. DirectGets. err: %w", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. DirectGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. DirectGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. DirectGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. DirectGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -161,7 +161,7 @@ func (h *handler) DirectGets(ctx context.Context, size uint64, token string, fil
 	for rows.Next() {
 		d, err := h.directGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. DirectGets. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. DirectGets. err: %w", err)
 		}
 
 		res = append(res, d)
@@ -181,7 +181,7 @@ func (h *handler) DirectUpdate(ctx context.Context, id uuid.UUID, fields map[dir
 	// prepare fields for update
 	data, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. DirectUpdate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. DirectUpdate. err: %w", err)
 	}
 
 	query, args, err := sq.Update(directTable).
@@ -189,12 +189,12 @@ func (h *handler) DirectUpdate(ctx context.Context, id uuid.UUID, fields map[dir
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. DirectUpdate. err: %v", err)
+		return fmt.Errorf("could not build query. DirectUpdate. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. DirectUpdate. err: %v", err)
+		return fmt.Errorf("could not execute. DirectUpdate. err: %w", err)
 	}
 
 	return nil
@@ -206,12 +206,12 @@ func (h *handler) DirectDelete(ctx context.Context, id uuid.UUID) error {
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. DirectDelete. err: %v", err)
+		return fmt.Errorf("could not build query. DirectDelete. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. DirectDelete. err: %v", err)
+		return fmt.Errorf("could not execute. DirectDelete. err: %w", err)
 	}
 
 	return nil

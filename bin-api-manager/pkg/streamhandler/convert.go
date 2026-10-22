@@ -84,7 +84,7 @@ func (h *streamHandler) convertAudiosocketToRTP(m []byte, sequence uint16, times
 
 	resData, err := tmp.Marshal()
 	if err != nil {
-		return nil, 0, 0, fmt.Errorf("could not marshal the RTP data. err: %v", err)
+		return nil, 0, 0, fmt.Errorf("could not marshal the RTP data. err: %w", err)
 	}
 
 	return resData, resSequence, resTimestamp, nil
@@ -105,7 +105,7 @@ func (h *streamHandler) convertRTPToAudiosocket(m []byte) ([]byte, error) {
 	// Unmarshal the RTP packet
 	tmp := &rtp.Packet{}
 	if err := tmp.Unmarshal(m); err != nil {
-		return nil, fmt.Errorf("could not unmarshal RTP data: %v", err)
+		return nil, fmt.Errorf("could not unmarshal RTP data: %w", err)
 	}
 
 	// Ensure the payload type is supported

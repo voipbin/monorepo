@@ -263,7 +263,7 @@ func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		for {
-			if errListen := http.ListenAndServe(listen, nil); errListen != nil {
+			if errListen := http.ListenAndServe(listen, nil); errListen != nil { //nolint:gosec // G114: Prometheus metrics endpoint serving only the metrics handler; adding server timeouts would change behavior and is out of scope for lint cleanup
 				log.Errorf("Could not start prometheus listener. err: %v", errListen)
 				time.Sleep(time.Second * 1)
 				continue

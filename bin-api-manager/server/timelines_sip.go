@@ -13,11 +13,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *server) GetTimelinesCallsCallIdSipAnalysis(c *gin.Context, callId openapi_types.UUID) {
+func (h *server) GetTimelinesCallsCallIdSipAnalysis(c *gin.Context, callID openapi_types.UUID) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetTimelinesCallsCallIdSipAnalysis",
 		"request_address": c.ClientIP(),
-		"call_id":         callId,
+		"call_id":         callID,
 	})
 	log.Info("Handler called - SIP analysis request received")
 
@@ -31,7 +31,7 @@ func (h *server) GetTimelinesCallsCallIdSipAnalysis(c *gin.Context, callId opena
 	log = log.WithField("customer_id", a.CustomerID)
 
 	// Convert openapi_types.UUID to uuid.UUID
-	callUUID, err := uuid.FromString(callId.String())
+	callUUID, err := uuid.FromString(callID.String())
 	if err != nil {
 		log.Infof("Invalid call id: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_CALL_ID", "The provided call_id is not a valid UUID.").Wrap(err))
@@ -48,11 +48,11 @@ func (h *server) GetTimelinesCallsCallIdSipAnalysis(c *gin.Context, callId opena
 	c.JSON(http.StatusOK, res)
 }
 
-func (h *server) GetTimelinesCallsCallIdPcap(c *gin.Context, callId openapi_types.UUID) {
+func (h *server) GetTimelinesCallsCallIdPcap(c *gin.Context, callID openapi_types.UUID) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetTimelinesCallsCallIdPcap",
 		"request_address": c.ClientIP(),
-		"call_id":         callId,
+		"call_id":         callID,
 	})
 	log.Info("Handler called - PCAP request received")
 
@@ -66,7 +66,7 @@ func (h *server) GetTimelinesCallsCallIdPcap(c *gin.Context, callId openapi_type
 	log = log.WithField("customer_id", a.CustomerID)
 
 	// Convert openapi_types.UUID to uuid.UUID
-	callUUID, err := uuid.FromString(callId.String())
+	callUUID, err := uuid.FromString(callID.String())
 	if err != nil {
 		log.Infof("Invalid call id: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_CALL_ID", "The provided call_id is not a valid UUID.").Wrap(err))
@@ -80,7 +80,7 @@ func (h *server) GetTimelinesCallsCallIdPcap(c *gin.Context, callId openapi_type
 		return
 	}
 
-	filename := fmt.Sprintf("call-%s.pcap", callId.String())
+	filename := fmt.Sprintf("call-%s.pcap", callID.String())
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
 	c.Data(http.StatusOK, "application/vnd.tcpdump.pcap", pcapData)
 }

@@ -21,7 +21,7 @@ const (
 func (h *handler) tagGetFromRow(rows *sql.Rows) (*tag.Tag, error) {
 	res := &tag.Tag{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. tagGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. tagGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -36,17 +36,17 @@ func (h *handler) TagCreate(ctx context.Context, t *tag.Tag) error {
 	// prepare fields for insert
 	fields, err := commondatabasehandler.PrepareFields(t)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. TagCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. TagCreate. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(tagTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. TagCreate. err: %v", err)
+		return fmt.Errorf("could not build query. TagCreate. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. TagCreate. err: %v", err)
+		return fmt.Errorf("could not execute. TagCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -98,12 +98,12 @@ func (h *handler) tagGetFromDB(ctx context.Context, id uuid.UUID) (*tag.Tag, err
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. tagGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build query. tagGetFromDB. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. tagGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. tagGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -119,7 +119,7 @@ func (h *handler) tagGetFromDB(ctx context.Context, id uuid.UUID) (*tag.Tag, err
 
 	res, err := h.tagGetFromRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. tagGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. tagGetFromDB. err: %w", err)
 	}
 
 	return res, nil
@@ -157,17 +157,17 @@ func (h *handler) TagList(ctx context.Context, size uint64, token string, filter
 	// apply filters
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. TagList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. TagList. err: %w", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. TagList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. TagList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. TagList. err: %v", err)
+		return nil, fmt.Errorf("could not query. TagList. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -177,7 +177,7 @@ func (h *handler) TagList(ctx context.Context, size uint64, token string, filter
 	for rows.Next() {
 		t, err := h.tagGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. TagList. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. TagList. err: %w", err)
 		}
 
 		res = append(res, t)
@@ -197,7 +197,7 @@ func (h *handler) TagUpdate(ctx context.Context, id uuid.UUID, fields map[tag.Fi
 	// prepare fields for update
 	data, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. TagUpdate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. TagUpdate. err: %w", err)
 	}
 
 	query, args, err := sq.Update(tagTable).
@@ -205,12 +205,12 @@ func (h *handler) TagUpdate(ctx context.Context, id uuid.UUID, fields map[tag.Fi
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. TagUpdate. err: %v", err)
+		return fmt.Errorf("could not build query. TagUpdate. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. TagUpdate. err: %v", err)
+		return fmt.Errorf("could not execute. TagUpdate. err: %w", err)
 	}
 
 	// update the cache
@@ -240,7 +240,7 @@ func (h *handler) TagDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare fields for update
 	data, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. TagDelete. err: %v", err)
+		return fmt.Errorf("could not prepare fields. TagDelete. err: %w", err)
 	}
 
 	query, args, err := sq.Update(tagTable).
@@ -248,12 +248,12 @@ func (h *handler) TagDelete(ctx context.Context, id uuid.UUID) error {
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. TagDelete. err: %v", err)
+		return fmt.Errorf("could not build query. TagDelete. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. TagDelete. err: %v", err)
+		return fmt.Errorf("could not execute. TagDelete. err: %w", err)
 	}
 
 	// update the cache

@@ -24,7 +24,7 @@ func (h *handler) accesskeyGetFromRow(row *sql.Rows) (*accesskey.Accesskey, erro
 	res := &accesskey.Accesskey{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. accesskeyGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. accesskeyGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -49,7 +49,7 @@ func (h *handler) AccesskeyCreate(ctx context.Context, c *accesskey.Accesskey) e
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. AccesskeyCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. AccesskeyCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -60,11 +60,11 @@ func (h *handler) AccesskeyCreate(ctx context.Context, c *accesskey.Accesskey) e
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. AccesskeyCreate. err: %v", err)
+		return fmt.Errorf("could not build query. AccesskeyCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. AccesskeyCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. AccesskeyCreate. err: %w", err)
 	}
 
 	status = "success"
@@ -121,12 +121,12 @@ func (h *handler) accesskeyGetFromDB(ctx context.Context, id uuid.UUID) (*access
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. accesskeyGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. accesskeyGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. accesskeyGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. accesskeyGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -134,14 +134,14 @@ func (h *handler) accesskeyGetFromDB(ctx context.Context, id uuid.UUID) (*access
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. accesskeyGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. accesskeyGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.accesskeyGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. accesskeyGetFromDB. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. accesskeyGetFromDB. id: %s, err: %w", id, err)
 	}
 
 	return res, nil
@@ -200,17 +200,17 @@ func (h *handler) AccesskeyList(ctx context.Context, size uint64, token string, 
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. AccesskeyGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. AccesskeyGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. AccesskeyGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. AccesskeyGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AccesskeyGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. AccesskeyGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -220,12 +220,12 @@ func (h *handler) AccesskeyList(ctx context.Context, size uint64, token string, 
 	for rows.Next() {
 		u, err := h.accesskeyGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. AccesskeyGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. AccesskeyGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. AccesskeyGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. AccesskeyGets. err: %w", err)
 	}
 
 	status = "success"

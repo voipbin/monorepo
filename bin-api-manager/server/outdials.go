@@ -372,12 +372,12 @@ func (h *server) PostOutdialsIdTargets(c *gin.Context, id string) {
 	c.JSON(200, res)
 }
 
-func (h *server) GetOutdialsIdTargetsTargetId(c *gin.Context, id string, targetId string) {
+func (h *server) GetOutdialsIdTargetsTargetId(c *gin.Context, id string, targetIDParam string) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetOutdialsIdTargetsTargetId",
 		"request_address": c.ClientIP,
 		"outdial_id":      id,
-		"target_id":       targetId,
+		"target_id":       targetIDParam,
 	})
 
 	a, ok := getAuthIdentity(c)
@@ -395,7 +395,7 @@ func (h *server) GetOutdialsIdTargetsTargetId(c *gin.Context, id string, targetI
 		return
 	}
 
-	targetID := uuid.FromStringOrNil(targetId)
+	targetID := uuid.FromStringOrNil(targetIDParam)
 	if targetID == uuid.Nil {
 		log.Error("Could not parse the target_id.")
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided target_id is not a valid UUID."))
@@ -412,12 +412,12 @@ func (h *server) GetOutdialsIdTargetsTargetId(c *gin.Context, id string, targetI
 	c.JSON(200, res)
 }
 
-func (h *server) DeleteOutdialsIdTargetsTargetId(c *gin.Context, id string, targetId string) {
+func (h *server) DeleteOutdialsIdTargetsTargetId(c *gin.Context, id string, targetIDParam string) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteOutdialsIdTargetsTargetId",
 		"request_address": c.ClientIP,
 		"outdial_id":      id,
-		"target_id":       targetId,
+		"target_id":       targetIDParam,
 	})
 
 	a, ok := getAuthIdentity(c)
@@ -435,7 +435,7 @@ func (h *server) DeleteOutdialsIdTargetsTargetId(c *gin.Context, id string, targ
 		return
 	}
 
-	targetID := uuid.FromStringOrNil(targetId)
+	targetID := uuid.FromStringOrNil(targetIDParam)
 	if targetID == uuid.Nil {
 		log.Error("Could not parse the target_id.")
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided target_id is not a valid UUID."))
