@@ -1,6 +1,8 @@
 package webhookhandler
 
 import (
+	"context"
+	"errors"
 	"net"
 	"testing"
 )
@@ -39,11 +41,25 @@ func Test_validateWebhookURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := validateWebhookURL(tt.rawURL)
+			err := validateWebhookURL(context.Background(), tt.rawURL)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("validateWebhookURL(%q) error = %v, wantErr %v", tt.rawURL, err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func Test_validateWebhookURL_canceledContext(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	// a hostname has to be resolved, so the canceled context must abort the lookup
+	err := validateWebhookURL(ctx, "http://webhook-host.invalid/hook")
+	if err == nil {
+		t.Fatalf("validateWebhookURL() with a canceled context must fail")
+	}
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("validateWebhookURL() error = %v, want it to wrap context.Canceled", err)
 	}
 }
 

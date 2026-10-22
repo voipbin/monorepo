@@ -49,7 +49,7 @@ func (h *conversationHandler) setVariablesConversation(ctx context.Context, acti
 	}
 
 	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, activeflowID, variables); errSet != nil {
-		return fmt.Errorf("could not set the conversation variable. variables: %s, err: %v", variables, errSet)
+		return fmt.Errorf("could not set the conversation variable. variables: %s, err: %w", variables, errSet)
 	}
 
 	return nil
@@ -65,7 +65,7 @@ func (h *conversationHandler) setVariablesMessage(ctx context.Context, activeflo
 	}
 
 	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, activeflowID, variables); errSet != nil {
-		return fmt.Errorf("could not set the message variable. variables: %s, err: %v", variables, errSet)
+		return fmt.Errorf("could not set the message variable. variables: %s, err: %w", variables, errSet)
 	}
 
 	return nil

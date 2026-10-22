@@ -2,6 +2,7 @@ package webhookhandler
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
@@ -30,7 +31,7 @@ func computeSignature(secret string, body []byte) string {
 // sendMessage sends the message to the given uri with the given method and data.
 // When secret is non-empty, the request is signed and delivered with an
 // X-VoIPBIN-Signature header so the receiver can verify authenticity.
-func (h *webhookHandler) sendMessage(uri string, method string, dataType string, data []byte, secret string) error {
+func (h *webhookHandler) sendMessage(ctx context.Context, uri string, method string, dataType string, data []byte, secret string) error {
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -42,7 +43,7 @@ func (h *webhookHandler) sendMessage(uri string, method string, dataType string,
 	log.Debugf("Sending a message.")
 
 	// Validate the webhook URL before attempting delivery.
-	if err := validateWebhookURL(uri); err != nil {
+	if err := validateWebhookURL(ctx, uri); err != nil {
 		log.Errorf("Webhook URL validation failed. err: %v", err)
 		return fmt.Errorf("webhook URL validation failed: %w", err)
 	}
@@ -56,7 +57,7 @@ func (h *webhookHandler) sendMessage(uri string, method string, dataType string,
 
 	var lastErr error
 	for i := 0; i < 3; i++ {
-		req, err := http.NewRequest(method, uri, bytes.NewBuffer(data))
+		req, err := http.NewRequestWithContext(ctx, method, uri, bytes.NewBuffer(data))
 		if err != nil {
 			log.Errorf("Could not create request. err: %v", err)
 			return err

@@ -25,7 +25,7 @@ func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversat
 	res := &conversation.Conversation{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. conversationGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. conversationGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -42,7 +42,7 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(cv)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. ConversationCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ConversationCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -53,11 +53,11 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ConversationCreate. err: %v", err)
+		return fmt.Errorf("could not build query. ConversationCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. ConversationCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. ConversationCreate. err: %w", err)
 	}
 
 	_ = h.conversationUpdateToCache(ctx, cv.ID)
@@ -75,7 +75,7 @@ func (h *handler) conversationGetFromDB(ctx context.Context, id uuid.UUID) (*con
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. conversationGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. conversationGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
@@ -168,12 +168,12 @@ func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commona
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ConversationGetBySelfAndPeer. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ConversationGetBySelfAndPeer. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ConversationGetBySelfAndPeer. err: %v", err)
+		return nil, fmt.Errorf("could not query. ConversationGetBySelfAndPeer. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -188,7 +188,7 @@ func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commona
 
 	res, err := h.conversationGetFromRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not get conversation. ConversationGetBySelfAndPeer. err: %v", err)
+		return nil, fmt.Errorf("could not get conversation. ConversationGetBySelfAndPeer. err: %w", err)
 	}
 
 	return res, nil
@@ -219,12 +219,12 @@ func (h *handler) ConversationList(ctx context.Context, size uint64, token strin
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
 		log.Errorf("Failed to apply filters. err: %v", err)
-		return nil, fmt.Errorf("could not apply filters. ConversationGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. ConversationGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ConversationGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ConversationGets. err: %w", err)
 	}
 
 	log.WithFields(logrus.Fields{
@@ -234,7 +234,7 @@ func (h *handler) ConversationList(ctx context.Context, size uint64, token strin
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ConversationGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. ConversationGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -244,7 +244,7 @@ func (h *handler) ConversationList(ctx context.Context, size uint64, token strin
 	for rows.Next() {
 		u, err := h.conversationGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. ConversationGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. ConversationGets, err: %w", err)
 		}
 		res = append(res, u)
 	}

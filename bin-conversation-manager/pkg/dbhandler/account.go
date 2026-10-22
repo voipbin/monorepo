@@ -22,7 +22,7 @@ func (h *handler) accountGetFromRow(row *sql.Rows) (*account.Account, error) {
 	res := &account.Account{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. accountGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. accountGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -40,7 +40,7 @@ func (h *handler) AccountCreate(ctx context.Context, ac *account.Account) error 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(ac)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. AccountCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. AccountCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -51,11 +51,11 @@ func (h *handler) AccountCreate(ctx context.Context, ac *account.Account) error 
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. AccountCreate. err: %v", err)
+		return fmt.Errorf("could not build query. AccountCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. AccountCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. AccountCreate. err: %w", err)
 	}
 
 	_ = h.accountUpdateToCache(ctx, ac.ID)
@@ -72,12 +72,12 @@ func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. accountGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. accountGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. accountGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. accountGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -169,17 +169,17 @@ func (h *handler) AccountList(ctx context.Context, size uint64, token string, fi
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. AccountGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. AccountGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. AccountGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. AccountGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AccountGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. AccountGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -189,7 +189,7 @@ func (h *handler) AccountList(ctx context.Context, size uint64, token string, fi
 	for rows.Next() {
 		u, err := h.accountGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. AccountGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. AccountGets, err: %w", err)
 		}
 		res = append(res, u)
 	}

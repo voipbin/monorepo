@@ -4,8 +4,8 @@ type SendGridEvent struct {
 	Email       string      `json:"email"`
 	Timestamp   int64       `json:"timestamp"`
 	Event       string      `json:"event"`
-	SgMessageId string      `json:"sg_message_id"`
-	SgEventId   string      `json:"sg_event_id"`
+	SgMessageID string      `json:"sg_message_id"`
+	SgEventID   string      `json:"sg_event_id"`
 	URL         string      `json:"url,omitempty"`
 	Status      string      `json:"status,omitempty"`
 	Category    interface{} `json:"category,omitempty"` // Can be string or []string

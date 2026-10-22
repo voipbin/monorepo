@@ -104,7 +104,7 @@ func (h *subscribeHandler) Run() error {
 
 	// declare the queue for subscribe
 	if err := h.sockHandler.QueueCreate(h.subscribeQueue, "normal"); err != nil {
-		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
+		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %w", err)
 	}
 
 	// VOIP-1407: topicPatterns/QueueBind is the sole intake mechanism -- the fanout
@@ -115,12 +115,12 @@ func (h *subscribeHandler) Run() error {
 	// given queue, and racing them closes the channel with an "unexpected command received"
 	// 503 (reproduced in production, VOIP-1258, 2026-07-14).
 	if err := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic"); err != nil {
-		return fmt.Errorf("could not declare the global topic exchange. err: %v", err)
+		return fmt.Errorf("could not declare the global topic exchange. err: %w", err)
 	}
 
 	for _, pattern := range topicPatterns {
 		if err := h.sockHandler.QueueBind(h.subscribeQueue, pattern, string(commonoutline.QueueNameEvent), false, nil); err != nil {
-			return fmt.Errorf("could not bind the topic pattern. pattern: %s, err: %v", pattern, err)
+			return fmt.Errorf("could not bind the topic pattern. pattern: %s, err: %w", pattern, err)
 		}
 	}
 

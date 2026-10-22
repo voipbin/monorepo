@@ -128,7 +128,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	}).Info("Creating rabbitmq queue for listen.")
 
 	if err := h.sockHandler.QueueCreate(queue, "normal"); err != nil {
-		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
+		return fmt.Errorf("could not declare the queue for listenHandler. err: %w", err)
 	}
 
 	// receive requests

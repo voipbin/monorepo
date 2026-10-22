@@ -17,7 +17,7 @@ const (
 )
 
 func download(ctx context.Context, downloadURI string) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", downloadURI, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURI, nil)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create request")
 	}

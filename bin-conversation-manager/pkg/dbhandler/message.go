@@ -22,7 +22,7 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 	res := &message.Message{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. messageGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. messageGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -40,7 +40,7 @@ func (h *handler) MessageCreate(ctx context.Context, msg *message.Message) error
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(msg)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. MessageCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. MessageCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -51,11 +51,11 @@ func (h *handler) MessageCreate(ctx context.Context, msg *message.Message) error
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. MessageCreate. err: %v", err)
+		return fmt.Errorf("could not build query. MessageCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. MessageCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. MessageCreate. err: %w", err)
 	}
 
 	_ = h.messageUpdateToCache(ctx, msg.ID)
@@ -72,7 +72,7 @@ func (h *handler) messageGetFromDB(ctx context.Context, id uuid.UUID) (*message.
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. messageGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. messageGetFromDB. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
@@ -169,17 +169,17 @@ func (h *handler) MessageList(ctx context.Context, token string, size uint64, fi
 	var err error
 	sb, err = commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. MessageGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. MessageGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. MessageGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. MessageGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. MessageGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. MessageGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -189,7 +189,7 @@ func (h *handler) MessageList(ctx context.Context, token string, size uint64, fi
 	for rows.Next() {
 		u, err := h.messageGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. MessageGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. MessageGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
@@ -219,12 +219,12 @@ func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID 
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. MessageGetsByTransactionID. err: %v", err)
+		return nil, fmt.Errorf("could not build query. MessageGetsByTransactionID. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. MessageGetsByTransactionID. err: %v", err)
+		return nil, fmt.Errorf("could not query. MessageGetsByTransactionID. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -234,7 +234,7 @@ func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID 
 	for rows.Next() {
 		u, err := h.messageGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. MessageGetsByTransactionID. err: %v", err)
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. MessageGetsByTransactionID. err: %w", err)
 		}
 
 		res = append(res, u)

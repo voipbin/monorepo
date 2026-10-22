@@ -22,7 +22,7 @@ func (h *handler) widgetGetFromRow(row *sql.Rows) (*widget.Widget, error) {
 	res := &widget.Widget{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. widgetGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. widgetGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -39,7 +39,7 @@ func (h *handler) WidgetCreate(ctx context.Context, w *widget.Widget) error {
 
 	fields, err := commondatabasehandler.PrepareFields(w)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. WidgetCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. WidgetCreate. err: %w", err)
 	}
 
 	sb := squirrel.
@@ -49,11 +49,11 @@ func (h *handler) WidgetCreate(ctx context.Context, w *widget.Widget) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. WidgetCreate. err: %v", err)
+		return fmt.Errorf("could not build query. WidgetCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. WidgetCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. WidgetCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -105,12 +105,12 @@ func (h *handler) widgetGetFromDB(ctx context.Context, id uuid.UUID) (*widget.Wi
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. widgetGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. widgetGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. widgetGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. widgetGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -118,14 +118,14 @@ func (h *handler) widgetGetFromDB(ctx context.Context, id uuid.UUID) (*widget.Wi
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. widgetGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. widgetGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.widgetGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. widgetGetFromDB. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. widgetGetFromDB. id: %s, err: %w", id, err)
 	}
 
 	return res, nil
@@ -166,17 +166,17 @@ func (h *handler) WidgetList(ctx context.Context, size uint64, token string, fil
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. WidgetList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. WidgetList. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. WidgetList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. WidgetList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. WidgetList. err: %v", err)
+		return nil, fmt.Errorf("could not query. WidgetList. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -186,12 +186,12 @@ func (h *handler) WidgetList(ctx context.Context, size uint64, token string, fil
 	for rows.Next() {
 		u, err := h.widgetGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. WidgetList, err: %v", err)
+			return nil, fmt.Errorf("could not get data. WidgetList, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. WidgetList. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. WidgetList. err: %w", err)
 	}
 
 	return res, nil

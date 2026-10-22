@@ -47,7 +47,7 @@ func (h *requestExternal) MessagebirdSendMessage(ctx context.Context, sender str
 	client := &http.Client{
 		Transport: t,
 	}
-	r, err := http.NewRequest("POST", uri, strings.NewReader(data.Encode())) // URL-encoded payload
+	r, err := http.NewRequestWithContext(ctx, http.MethodPost, uri, strings.NewReader(data.Encode())) // URL-encoded payload
 	if err != nil {
 		log.Errorf("Could not create a request. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create a request.")

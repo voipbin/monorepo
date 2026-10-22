@@ -96,7 +96,7 @@ func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
-		if err := http.ListenAndServe(listen, nil); err != nil {
+		if err := http.ListenAndServe(listen, nil); err != nil { //nolint:gosec // G114: internal Prometheus metrics listener, not exposed publicly
 			logrus.Errorf("Prometheus server error: %v", err)
 		}
 	}()

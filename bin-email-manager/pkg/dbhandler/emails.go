@@ -23,7 +23,7 @@ const (
 func (h *handler) emailGetFromRow(rows *sql.Rows) (*email.Email, error) {
 	res := &email.Email{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. emailGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. emailGetFromRow. err: %w", err)
 	}
 
 	// Initialize nil pointers to empty values

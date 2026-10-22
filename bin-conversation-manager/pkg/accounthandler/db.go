@@ -82,7 +82,7 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, accou
 
 	// create a account
 	if errCreate := h.db.AccountCreate(ctx, ac); errCreate != nil {
-		return nil, fmt.Errorf("could not create a conference. err: %v", errCreate)
+		return nil, fmt.Errorf("could not create a conference. err: %w", errCreate)
 	}
 	promAccountCreateTotal.WithLabelValues(string(accountType)).Inc()
 
