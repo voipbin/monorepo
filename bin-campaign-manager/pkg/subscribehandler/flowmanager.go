@@ -29,7 +29,7 @@ func (h *subscribeHandler) processEventFMActiveflowDeleted(ctx context.Context, 
 	cc, err := h.campaigncallHandler.GetByActiveflowID(ctx, c.ID)
 	if err != nil {
 		// campaigncall does not exist.
-		return nil
+		return nil //nolint:nilerr // lookup failure is treated as "no campaigncall for this activeflow" and the event is dropped (existing behavior)
 	}
 
 	if cc.Status == campaigncall.StatusDone {

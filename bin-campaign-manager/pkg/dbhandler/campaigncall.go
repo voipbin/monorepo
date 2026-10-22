@@ -22,7 +22,7 @@ func (h *handler) campaigncallGetFromRow(row *sql.Rows) (*campaigncall.Campaignc
 	res := &campaigncall.Campaigncall{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. campaigncallGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. campaigncallGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -40,7 +40,7 @@ func (h *handler) CampaigncallCreate(ctx context.Context, c *campaigncall.Campai
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. CampaigncallCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. CampaigncallCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -51,11 +51,11 @@ func (h *handler) CampaigncallCreate(ctx context.Context, c *campaigncall.Campai
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CampaigncallCreate. err: %v", err)
+		return fmt.Errorf("could not build query. CampaigncallCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. CampaigncallCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. CampaigncallCreate. err: %w", err)
 	}
 
 	_ = h.campaigncallUpdateToCache(ctx, c.ID)
@@ -109,12 +109,12 @@ func (h *handler) campaigncallGetFromDB(ctx context.Context, id uuid.UUID) (*cam
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. campaigncallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. campaigncallGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. campaigncallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. campaigncallGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -163,12 +163,12 @@ func (h *handler) CampaigncallGetByReferenceID(ctx context.Context, referenceID 
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. CampaigncallGetByReferenceID. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. CampaigncallGetByReferenceID. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CampaigncallGetByReferenceID. err: %v", err)
+		return nil, fmt.Errorf("could not query. CampaigncallGetByReferenceID. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -199,12 +199,12 @@ func (h *handler) CampaigncallGetByActiveflowID(ctx context.Context, activeflowI
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. CampaigncallGetByActiveflowID. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. CampaigncallGetByActiveflowID. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CampaigncallGetByActiveflowID. err: %v", err)
+		return nil, fmt.Errorf("could not query. CampaigncallGetByActiveflowID. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -242,17 +242,17 @@ func (h *handler) CampaigncallList(ctx context.Context, token string, size uint6
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. CampaigncallGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. CampaigncallGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CampaigncallGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CampaigncallGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CampaigncallGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. CampaigncallGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -262,7 +262,7 @@ func (h *handler) CampaigncallList(ctx context.Context, token string, size uint6
 	for rows.Next() {
 		u, err := h.campaigncallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. CampaigncallGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. CampaigncallGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
@@ -323,12 +323,12 @@ func (h *handler) CampaigncallListOngoingByCampaignID(ctx context.Context, campa
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CampaigncallGetsOngoingByCampaignID. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CampaigncallGetsOngoingByCampaignID. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CampaigncallGetsOngoingByCampaignID. err: %v", err)
+		return nil, fmt.Errorf("could not query. CampaigncallGetsOngoingByCampaignID. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -338,7 +338,7 @@ func (h *handler) CampaigncallListOngoingByCampaignID(ctx context.Context, campa
 	for rows.Next() {
 		u, err := h.campaigncallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. CampaigncallGetsOngoingByCampaignID, err: %v", err)
+			return nil, fmt.Errorf("could not get data. CampaigncallGetsOngoingByCampaignID, err: %w", err)
 		}
 		res = append(res, u)
 	}

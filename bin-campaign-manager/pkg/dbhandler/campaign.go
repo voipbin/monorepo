@@ -25,7 +25,7 @@ func (h *handler) campaignGetFromRow(row *sql.Rows) (*campaign.Campaign, error) 
 	res := &campaign.Campaign{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. campaignGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. campaignGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -43,7 +43,7 @@ func (h *handler) CampaignCreate(ctx context.Context, c *campaign.Campaign) erro
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. CampaignCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. CampaignCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -54,11 +54,11 @@ func (h *handler) CampaignCreate(ctx context.Context, c *campaign.Campaign) erro
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CampaignCreate. err: %v", err)
+		return fmt.Errorf("could not build query. CampaignCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. CampaignCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. CampaignCreate. err: %w", err)
 	}
 
 	_ = h.campaignUpdateToCache(ctx, c.ID)
@@ -112,12 +112,12 @@ func (h *handler) campaignGetFromDB(ctx context.Context, id uuid.UUID) (*campaig
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. campaignGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. campaignGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. campaignGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. campaignGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -215,12 +215,12 @@ func (h *handler) CampaignList(ctx context.Context, token string, size uint64, f
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. CampaignList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. CampaignList. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CampaignList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CampaignList. err: %w", err)
 	}
 
 	log.WithFields(logrus.Fields{
@@ -230,7 +230,7 @@ func (h *handler) CampaignList(ctx context.Context, token string, size uint64, f
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CampaignList. err: %v", err)
+		return nil, fmt.Errorf("could not query. CampaignList. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -240,7 +240,7 @@ func (h *handler) CampaignList(ctx context.Context, token string, size uint64, f
 	for rows.Next() {
 		u, err := h.campaignGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. CampaignGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. CampaignGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
@@ -278,12 +278,12 @@ func (h *handler) CampaignListDeletedSince(ctx context.Context, since time.Time,
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CampaignListDeletedSince. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CampaignListDeletedSince. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CampaignListDeletedSince. err: %v", err)
+		return nil, fmt.Errorf("could not query. CampaignListDeletedSince. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -293,7 +293,7 @@ func (h *handler) CampaignListDeletedSince(ctx context.Context, since time.Time,
 	for rows.Next() {
 		u, err := h.campaignGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. CampaignListDeletedSince, err: %v", err)
+			return nil, fmt.Errorf("could not get data. CampaignListDeletedSince, err: %w", err)
 		}
 		res = append(res, u)
 	}

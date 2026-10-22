@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -68,8 +67,6 @@ func main() {
 }
 
 func runService(cmd *cobra.Command, args []string) error {
-	fmt.Printf("Hello world!\n")
-
 	// Load configuration
 	cfg := config.Load()
 
@@ -109,7 +106,7 @@ func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		for {
-			err := http.ListenAndServe(listen, nil)
+			err := http.ListenAndServe(listen, nil) //nolint:gosec // G114: serves only the internal Prometheus metrics endpoint; a timeout-less listener is the existing behavior
 			if err != nil {
 				logrus.Errorf("Could not start prometheus listener")
 				time.Sleep(time.Second * 1)
