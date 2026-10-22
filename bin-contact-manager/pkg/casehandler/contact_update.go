@@ -41,7 +41,7 @@ func (h *caseHandler) UpdateContact(ctx context.Context, customerID, caseID, con
 					"The contact was not found.",
 				).Wrap(err)
 			}
-			return nil, fmt.Errorf("could not get contact. UpdateContact. err: %v", err)
+			return nil, fmt.Errorf("could not get contact. UpdateContact. err: %w", err)
 		}
 		if ct.CustomerID != customerID {
 			return nil, cerrors.NotFound(
@@ -52,18 +52,18 @@ func (h *caseHandler) UpdateContact(ctx context.Context, customerID, caseID, con
 		}
 
 		if err := h.db.CaseUpdateContactID(ctx, customerID, caseID, contactID); err != nil {
-			return nil, fmt.Errorf("could not update case contact_id. UpdateContact. err: %v", err)
+			return nil, fmt.Errorf("could not update case contact_id. UpdateContact. err: %w", err)
 		}
 		eventType = kase.EventTypeCaseContactAttributed
 	} else {
 		if err := h.db.CaseClearContactID(ctx, customerID, caseID); err != nil {
-			return nil, fmt.Errorf("could not clear case contact_id. UpdateContact. err: %v", err)
+			return nil, fmt.Errorf("could not clear case contact_id. UpdateContact. err: %w", err)
 		}
 	}
 
 	c, err := h.db.CaseGetByID(ctx, caseID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get updated case. UpdateContact. err: %v", err)
+		return nil, fmt.Errorf("could not get updated case. UpdateContact. err: %v", err) //nolint:errorlint // keeps the legacy 500 mapping: wrapping would expose ErrNotFound as a 404
 	}
 
 	// Audit trail (replaces VOIP-1252's Resolution row): who/when

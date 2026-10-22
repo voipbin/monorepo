@@ -47,7 +47,7 @@ func (h *listenHandler) processV1CasesGet(ctx context.Context, req *sock.Request
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
-		return simpleResponse(400), nil
+		return simpleResponse(400), nil //nolint:nilerr // malformed request is reported as a 400 response
 	}
 	q := u.Query()
 
@@ -84,7 +84,7 @@ func (h *listenHandler) processV1CasesGet(ctx context.Context, req *sock.Request
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // failure is reported as a 500 response
 	}
 
 	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
@@ -114,7 +114,7 @@ func (h *listenHandler) processV1CasesPost(ctx context.Context, req *sock.Reques
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // failure is reported as a 500 response
 	}
 
 	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
@@ -142,7 +142,7 @@ func (h *listenHandler) processV1CasesUnresolvedGet(ctx context.Context, req *so
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // failure is reported as a 500 response
 	}
 
 	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
@@ -175,7 +175,7 @@ func (h *listenHandler) processV1CasesIDGet(ctx context.Context, req *sock.Reque
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // failure is reported as a 500 response
 	}
 
 	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
@@ -208,7 +208,7 @@ func (h *listenHandler) processV1CasesIDClosePost(ctx context.Context, req *sock
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // failure is reported as a 500 response
 	}
 
 	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
@@ -241,7 +241,7 @@ func (h *listenHandler) processV1CasesIDAssignPost(ctx context.Context, req *soc
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // failure is reported as a 500 response
 	}
 
 	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
@@ -275,7 +275,7 @@ func (h *listenHandler) processV1CasesIDContinuePost(ctx context.Context, req *s
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // failure is reported as a 500 response
 	}
 
 	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
@@ -308,7 +308,7 @@ func (h *listenHandler) processV1CasesIDNotesGet(ctx context.Context, req *sock.
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // failure is reported as a 500 response
 	}
 
 	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
@@ -341,7 +341,7 @@ func (h *listenHandler) processV1CasesIDNotesPost(ctx context.Context, req *sock
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // failure is reported as a 500 response
 	}
 
 	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
@@ -406,7 +406,7 @@ func (h *listenHandler) processV1CasesIDTagsGet(ctx context.Context, req *sock.R
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // failure is reported as a 500 response
 	}
 
 	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil

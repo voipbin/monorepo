@@ -31,7 +31,7 @@ func (h *caseHandler) Assign(ctx context.Context, customerID, id uuid.UUID, owne
 	}
 
 	if err := h.db.CaseUpdateOwner(ctx, customerID, id, ownerType, ownerID); err != nil {
-		return nil, fmt.Errorf("could not update owner. Assign. err: %v", err)
+		return nil, fmt.Errorf("could not update owner. Assign. err: %w", err)
 	}
 
 	res, err := h.db.CaseGetByID(ctx, id)

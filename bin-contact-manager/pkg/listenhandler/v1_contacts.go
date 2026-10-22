@@ -306,11 +306,12 @@ func (h *listenHandler) processV1ContactsLookupGet(ctx context.Context, req *soc
 	}
 
 	var tmp *contact.Contact
-	if phoneE164 != "" {
+	switch {
+	case phoneE164 != "":
 		tmp, err = h.contactHandler.LookupByPhone(ctx, customerID, phoneE164)
-	} else if email != "" {
+	case email != "":
 		tmp, err = h.contactHandler.LookupByEmail(ctx, customerID, email)
-	} else {
+	default:
 		log.Errorf("Either phone_e164 or email must be provided")
 		return simpleResponse(400), nil
 	}

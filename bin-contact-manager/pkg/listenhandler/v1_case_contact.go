@@ -21,7 +21,7 @@ func (h *listenHandler) processV1CasesIDPut(ctx context.Context, req *sock.Reque
 
 	var body request.V1DataCasesIDPut
 	if err := json.Unmarshal(req.Data, &body); err != nil {
-		return simpleResponse(400), nil
+		return simpleResponse(400), nil //nolint:nilerr // malformed request is reported as a 400 response
 	}
 	if body.CustomerID == uuid.Nil {
 		return simpleResponse(400), nil
@@ -34,7 +34,7 @@ func (h *listenHandler) processV1CasesIDPut(ctx context.Context, req *sock.Reque
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // failure is reported as a 500 response
 	}
 	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
 }

@@ -89,23 +89,23 @@ func scanOwnershipPeriodRow(rows *sql.Rows, customerID uuid.UUID, addrType commo
 	var idBytes, contactIDBytes []byte
 	var validFrom, validTo sql.NullString
 	if err := rows.Scan(&idBytes, &contactIDBytes, &validFrom, &validTo); err != nil {
-		return nil, fmt.Errorf("could not scan the row. scanOwnershipPeriodRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. scanOwnershipPeriodRow. err: %w", err)
 	}
 	id, err := uuid.FromBytes(idBytes)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse id. scanOwnershipPeriodRow. err: %v", err)
+		return nil, fmt.Errorf("could not parse id. scanOwnershipPeriodRow. err: %w", err)
 	}
 	contactID, err := uuid.FromBytes(contactIDBytes)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse contact_id. scanOwnershipPeriodRow. err: %v", err)
+		return nil, fmt.Errorf("could not parse contact_id. scanOwnershipPeriodRow. err: %w", err)
 	}
 	validFromPtr, err := parseNullableDBTime(validFrom)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse valid_from. scanOwnershipPeriodRow. err: %v", err)
+		return nil, fmt.Errorf("could not parse valid_from. scanOwnershipPeriodRow. err: %w", err)
 	}
 	validToPtr, err := parseNullableDBTime(validTo)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse valid_to. scanOwnershipPeriodRow. err: %v", err)
+		return nil, fmt.Errorf("could not parse valid_to. scanOwnershipPeriodRow. err: %w", err)
 	}
 	return &OwnershipPeriod{
 		ID:         id,
@@ -145,7 +145,7 @@ func parseNullableDBTime(ns sql.NullString) (*time.Time, error) {
 			return &parsed, nil
 		}
 	}
-	return nil, fmt.Errorf("could not parse time %q: %v", ns.String, err)
+	return nil, fmt.Errorf("could not parse time %q: %w", ns.String, err)
 }
 
 // sqOwnershipPeriodSelectAll builds a plain (non-locking) SELECT for all
@@ -190,7 +190,7 @@ func (h *handler) OwnershipPeriodsLockAndResolveTx(ctx context.Context, tx *sql.
 	}
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return 0, nil, fmt.Errorf("could not build query. OwnershipPeriodsLockAndResolveTx. err: %v", err)
+		return 0, nil, fmt.Errorf("could not build query. OwnershipPeriodsLockAndResolveTx. err: %w", err)
 	}
 
 	rows, err := tx.QueryContext(ctx, query, args...)
@@ -198,7 +198,7 @@ func (h *handler) OwnershipPeriodsLockAndResolveTx(ctx context.Context, tx *sql.
 		if isMySQLDeadlock(err) {
 			return 0, nil, ErrDeadlock
 		}
-		return 0, nil, fmt.Errorf("could not query. OwnershipPeriodsLockAndResolveTx. err: %v", err)
+		return 0, nil, fmt.Errorf("could not query. OwnershipPeriodsLockAndResolveTx. err: %w", err)
 	}
 
 	var lockedRows []OwnershipPeriod
@@ -213,7 +213,7 @@ func (h *handler) OwnershipPeriodsLockAndResolveTx(ctx context.Context, tx *sql.
 	rowsErr := rows.Err()
 	_ = rows.Close()
 	if rowsErr != nil {
-		return 0, nil, fmt.Errorf("row iteration error. OwnershipPeriodsLockAndResolveTx. err: %v", rowsErr)
+		return 0, nil, fmt.Errorf("row iteration error. OwnershipPeriodsLockAndResolveTx. err: %w", rowsErr)
 	}
 
 	// Step 1: is there an open row for a DIFFERENT contact_id?
@@ -318,7 +318,7 @@ func (h *handler) ownershipAgreementHoldsTx(ctx context.Context, tx *sql.Tx, cus
 		Where(sq.Eq{"a.target": target}).
 		ToSql()
 	if err != nil {
-		return false, fmt.Errorf("could not build query. ownershipAgreementHoldsTx. err: %v", err)
+		return false, fmt.Errorf("could not build query. ownershipAgreementHoldsTx. err: %w", err)
 	}
 
 	rows, err := tx.QueryContext(ctx, query, args...)
@@ -326,7 +326,7 @@ func (h *handler) ownershipAgreementHoldsTx(ctx context.Context, tx *sql.Tx, cus
 		if isMySQLDeadlock(err) {
 			return false, ErrDeadlock
 		}
-		return false, fmt.Errorf("could not query. ownershipAgreementHoldsTx. err: %v", err)
+		return false, fmt.Errorf("could not query. ownershipAgreementHoldsTx. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -342,11 +342,11 @@ func (h *handler) ownershipAgreementHoldsTx(ctx context.Context, tx *sql.Tx, cus
 	var contactIDBytes []byte
 	var tmDelete sql.NullString
 	if err := rows.Scan(&contactIDBytes, &tmDelete); err != nil {
-		return false, fmt.Errorf("could not scan. ownershipAgreementHoldsTx. err: %v", err)
+		return false, fmt.Errorf("could not scan. ownershipAgreementHoldsTx. err: %w", err)
 	}
 	rowContactID, err := uuid.FromBytes(contactIDBytes)
 	if err != nil {
-		return false, fmt.Errorf("could not parse contact_id. ownershipAgreementHoldsTx. err: %v", err)
+		return false, fmt.Errorf("could not parse contact_id. ownershipAgreementHoldsTx. err: %w", err)
 	}
 	if rowContactID != blockingContactID {
 		return false, nil // owned by someone else -- orphan
@@ -367,13 +367,13 @@ func (h *handler) ownershipPeriodCloseByIDTx(ctx context.Context, tx *sql.Tx, id
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ownershipPeriodCloseByIDTx. err: %v", err)
+		return fmt.Errorf("could not build query. ownershipPeriodCloseByIDTx. err: %w", err)
 	}
 	if _, err := tx.ExecContext(ctx, query, args...); err != nil {
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
-		return fmt.Errorf("could not execute. ownershipPeriodCloseByIDTx. err: %v", err)
+		return fmt.Errorf("could not execute. ownershipPeriodCloseByIDTx. err: %w", err)
 	}
 	return nil
 }
@@ -389,13 +389,13 @@ func (h *handler) ownershipPeriodReopenByIDTx(ctx context.Context, tx *sql.Tx, i
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ownershipPeriodReopenByIDTx. err: %v", err)
+		return fmt.Errorf("could not build query. ownershipPeriodReopenByIDTx. err: %w", err)
 	}
 	if _, err := tx.ExecContext(ctx, query, args...); err != nil {
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
-		return fmt.Errorf("could not execute. ownershipPeriodReopenByIDTx. err: %v", err)
+		return fmt.Errorf("could not execute. ownershipPeriodReopenByIDTx. err: %w", err)
 	}
 	return nil
 }
@@ -418,13 +418,13 @@ func (h *handler) ownershipPeriodInsertTx(ctx context.Context, tx *sql.Tx, custo
 		}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ownershipPeriodInsertTx. err: %v", err)
+		return fmt.Errorf("could not build query. ownershipPeriodInsertTx. err: %w", err)
 	}
 	if _, err := tx.ExecContext(ctx, query, args...); err != nil {
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
-		return fmt.Errorf("could not execute. ownershipPeriodInsertTx. err: %v", err)
+		return fmt.Errorf("could not execute. ownershipPeriodInsertTx. err: %w", err)
 	}
 	return nil
 }

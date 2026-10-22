@@ -19,7 +19,7 @@ const caseNoteTable = "contact_case_notes"
 func caseNoteGetFromRow(rows *sql.Rows) (*casenote.CaseNote, error) {
 	res := &casenote.CaseNote{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. caseNoteGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. caseNoteGetFromRow. err: %w", err)
 	}
 	return res, nil
 }
@@ -30,16 +30,16 @@ func caseNoteGetFromRow(rows *sql.Rows) (*casenote.CaseNote, error) {
 func (h *handler) CaseNoteCreate(ctx context.Context, n *casenote.CaseNote) error {
 	fields, err := commondatabasehandler.PrepareFields(n)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. CaseNoteCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. CaseNoteCreate. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(caseNoteTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CaseNoteCreate. err: %v", err)
+		return fmt.Errorf("could not build query. CaseNoteCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not create case note. CaseNoteCreate. err: %v", err)
+		return fmt.Errorf("could not create case note. CaseNoteCreate. err: %w", err)
 	}
 
 	return nil
@@ -59,17 +59,17 @@ func (h *handler) CaseNoteDelete(ctx context.Context, customerID, caseID, id uui
 		Where(sq.Eq{"tm_delete": nil}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CaseNoteDelete. err: %v", err)
+		return fmt.Errorf("could not build query. CaseNoteDelete. err: %w", err)
 	}
 
 	result, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. CaseNoteDelete. err: %v", err)
+		return fmt.Errorf("could not execute. CaseNoteDelete. err: %w", err)
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("could not get rows affected. CaseNoteDelete. err: %v", err)
+		return fmt.Errorf("could not get rows affected. CaseNoteDelete. err: %w", err)
 	}
 	if rows == 0 {
 		return ErrNotFound
@@ -91,12 +91,12 @@ func (h *handler) CaseNoteListByCase(ctx context.Context, customerID, caseID uui
 		OrderBy("tm_create asc").
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CaseNoteListByCase. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CaseNoteListByCase. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CaseNoteListByCase. err: %v", err)
+		return nil, fmt.Errorf("could not query. CaseNoteListByCase. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -104,12 +104,12 @@ func (h *handler) CaseNoteListByCase(ctx context.Context, customerID, caseID uui
 	for rows.Next() {
 		item, scanErr := caseNoteGetFromRow(rows)
 		if scanErr != nil {
-			return nil, fmt.Errorf("could not scan the row. CaseNoteListByCase. err: %v", scanErr)
+			return nil, fmt.Errorf("could not scan the row. CaseNoteListByCase. err: %w", scanErr)
 		}
 		res = append(res, item)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("row iteration error. CaseNoteListByCase. err: %v", err)
+		return nil, fmt.Errorf("row iteration error. CaseNoteListByCase. err: %w", err)
 	}
 
 	return res, nil

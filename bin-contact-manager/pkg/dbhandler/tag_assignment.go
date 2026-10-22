@@ -21,12 +21,12 @@ func (h *handler) TagAssignmentCreate(ctx context.Context, contactID, tagID uuid
 		Values(contactID.Bytes(), tagID.Bytes(), tmCreate).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. TagAssignmentCreate. err: %v", err)
+		return fmt.Errorf("could not build query. TagAssignmentCreate. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. TagAssignmentCreate. err: %v", err)
+		return fmt.Errorf("could not execute. TagAssignmentCreate. err: %w", err)
 	}
 
 	// update the contact cache
@@ -44,12 +44,12 @@ func (h *handler) TagAssignmentDelete(ctx context.Context, contactID, tagID uuid
 		}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. TagAssignmentDelete. err: %v", err)
+		return fmt.Errorf("could not build query. TagAssignmentDelete. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. TagAssignmentDelete. err: %v", err)
+		return fmt.Errorf("could not execute. TagAssignmentDelete. err: %w", err)
 	}
 
 	// update the contact cache
@@ -66,12 +66,12 @@ func (h *handler) TagAssignmentListByContactID(ctx context.Context, contactID uu
 		OrderBy("tm_create asc").
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. TagAssignmentListByContactID. err: %v", err)
+		return nil, fmt.Errorf("could not build query. TagAssignmentListByContactID. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. TagAssignmentListByContactID. err: %v", err)
+		return nil, fmt.Errorf("could not query. TagAssignmentListByContactID. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -81,12 +81,12 @@ func (h *handler) TagAssignmentListByContactID(ctx context.Context, contactID uu
 	for rows.Next() {
 		var tagIDBytes []byte
 		if err := rows.Scan(&tagIDBytes); err != nil {
-			return nil, fmt.Errorf("could not scan tag_id. TagAssignmentListByContactID. err: %v", err)
+			return nil, fmt.Errorf("could not scan tag_id. TagAssignmentListByContactID. err: %w", err)
 		}
 
 		tagID, err := uuid.FromBytes(tagIDBytes)
 		if err != nil {
-			return nil, fmt.Errorf("could not parse tag_id. TagAssignmentListByContactID. err: %v", err)
+			return nil, fmt.Errorf("could not parse tag_id. TagAssignmentListByContactID. err: %w", err)
 		}
 
 		res = append(res, tagID)

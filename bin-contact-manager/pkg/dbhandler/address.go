@@ -45,7 +45,7 @@ func addressRowColumns() []string {
 func scanFullAddressRow(rows *sql.Rows) (*contact.Address, error) {
 	r := &addressRow{}
 	if err := commondatabasehandler.ScanRow(rows, r); err != nil {
-		return nil, fmt.Errorf("could not scan the row. scanFullAddressRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. scanFullAddressRow. err: %w", err)
 	}
 	return &contact.Address{
 		Address: commonaddress.Address{
@@ -121,7 +121,7 @@ func (h *handler) AddressCreate(ctx context.Context, a *contact.Address) error {
 		return err
 	}
 	if lastErr != nil {
-		return fmt.Errorf("could not create address: exhausted retries under sustained deadlock. err: %v", lastErr)
+		return fmt.Errorf("could not create address: exhausted retries under sustained deadlock. err: %w", lastErr)
 	}
 
 	// update the contact cache (skip for unresolved addresses -- there is
@@ -135,7 +135,7 @@ func (h *handler) AddressCreate(ctx context.Context, a *contact.Address) error {
 func (h *handler) addressCreateAttempt(ctx context.Context, a *contact.Address) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("could not begin transaction. AddressCreate. err: %v", err)
+		return fmt.Errorf("could not begin transaction. AddressCreate. err: %w", err)
 	}
 	committed := false
 	defer func() {
@@ -149,7 +149,7 @@ func (h *handler) addressCreateAttempt(ctx context.Context, a *contact.Address) 
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("could not commit transaction. AddressCreate. err: %v", err)
+		return fmt.Errorf("could not commit transaction. AddressCreate. err: %w", err)
 	}
 	committed = true
 	return nil
@@ -197,7 +197,7 @@ func (h *handler) AddressClaim(ctx context.Context, customerID, addressID, conta
 		return err
 	}
 	if lastErr != nil {
-		return fmt.Errorf("could not claim address: exhausted retries under sustained deadlock. err: %v", lastErr)
+		return fmt.Errorf("could not claim address: exhausted retries under sustained deadlock. err: %w", lastErr)
 	}
 
 	// Refresh the contact-body cache, mirroring AddressUpdate/AddressDelete.
@@ -208,7 +208,7 @@ func (h *handler) AddressClaim(ctx context.Context, customerID, addressID, conta
 func (h *handler) addressClaimAttempt(ctx context.Context, customerID, addressID, contactID uuid.UUID, addrType commonaddress.Type, target string, force bool) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("could not begin transaction. AddressClaim. err: %v", err)
+		return fmt.Errorf("could not begin transaction. AddressClaim. err: %w", err)
 	}
 	committed := false
 	defer func() {
@@ -263,7 +263,7 @@ func (h *handler) addressClaimAttempt(ctx context.Context, customerID, addressID
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("could not commit transaction. AddressClaim. err: %v", err)
+		return fmt.Errorf("could not commit transaction. AddressClaim. err: %w", err)
 	}
 	committed = true
 	return nil
@@ -279,12 +279,12 @@ func (h *handler) AddressGet(ctx context.Context, customerID, id uuid.UUID) (*co
 		Limit(1).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. AddressGet. err: %v", err)
+		return nil, fmt.Errorf("could not build query. AddressGet. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AddressGet. err: %v", err)
+		return nil, fmt.Errorf("could not query. AddressGet. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -297,7 +297,7 @@ func (h *handler) AddressGet(ctx context.Context, customerID, id uuid.UUID) (*co
 
 	a, err := scanFullAddressRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan. AddressGet. err: %v", err)
+		return nil, fmt.Errorf("could not scan. AddressGet. err: %w", err)
 	}
 
 	return a, nil
@@ -352,12 +352,12 @@ func (h *handler) AddressList(ctx context.Context, customerID uuid.UUID, filters
 
 	query, args, err := q.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. AddressList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. AddressList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AddressList. err: %v", err)
+		return nil, fmt.Errorf("could not query. AddressList. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -365,12 +365,12 @@ func (h *handler) AddressList(ctx context.Context, customerID uuid.UUID, filters
 	for rows.Next() {
 		a, err := scanFullAddressRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. AddressList. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. AddressList. err: %w", err)
 		}
 		res = append(res, *a)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("row iteration error. AddressList. err: %v", err)
+		return nil, fmt.Errorf("row iteration error. AddressList. err: %w", err)
 	}
 
 	return res, nil
@@ -399,12 +399,12 @@ func (h *handler) AddressListByContactID(ctx context.Context, contactID uuid.UUI
 		OrderBy("is_primary desc", "tm_create asc").
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. AddressListByContactID. err: %v", err)
+		return nil, fmt.Errorf("could not build query. AddressListByContactID. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AddressListByContactID. err: %v", err)
+		return nil, fmt.Errorf("could not query. AddressListByContactID. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -412,12 +412,12 @@ func (h *handler) AddressListByContactID(ctx context.Context, contactID uuid.UUI
 	for rows.Next() {
 		a, err := scanFullAddressRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. AddressListByContactID. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. AddressListByContactID. err: %w", err)
 		}
 		res = append(res, *a)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("row iteration error. AddressListByContactID. err: %v", err)
+		return nil, fmt.Errorf("row iteration error. AddressListByContactID. err: %w", err)
 	}
 
 	return res, nil
@@ -445,12 +445,12 @@ func (h *handler) AddressListAllByContactID(ctx context.Context, contactID uuid.
 		OrderBy("is_primary desc", "tm_create asc").
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. AddressListAllByContactID. err: %v", err)
+		return nil, fmt.Errorf("could not build query. AddressListAllByContactID. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AddressListAllByContactID. err: %v", err)
+		return nil, fmt.Errorf("could not query. AddressListAllByContactID. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -458,12 +458,12 @@ func (h *handler) AddressListAllByContactID(ctx context.Context, contactID uuid.
 	for rows.Next() {
 		a, err := scanFullAddressRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. AddressListAllByContactID. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. AddressListAllByContactID. err: %w", err)
 		}
 		res = append(res, *a)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("row iteration error. AddressListAllByContactID. err: %v", err)
+		return nil, fmt.Errorf("row iteration error. AddressListAllByContactID. err: %w", err)
 	}
 
 	return res, nil
@@ -533,7 +533,7 @@ func (h *handler) AddressUpdate(ctx context.Context, id uuid.UUID, fields map[st
 		return err
 	}
 	if lastErr != nil {
-		return fmt.Errorf("could not update address: exhausted retries under sustained deadlock. err: %v", lastErr)
+		return fmt.Errorf("could not update address: exhausted retries under sustained deadlock. err: %w", lastErr)
 	}
 
 	if contactID != uuid.Nil {
@@ -545,7 +545,7 @@ func (h *handler) AddressUpdate(ctx context.Context, id uuid.UUID, fields map[st
 func (h *handler) addressUpdateAttempt(ctx context.Context, id, customerID, contactID uuid.UUID, oldType commonaddress.Type, oldTarget string, fields map[string]any) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("could not begin transaction. AddressUpdate. err: %v", err)
+		return fmt.Errorf("could not begin transaction. AddressUpdate. err: %w", err)
 	}
 	committed := false
 	defer func() {
@@ -575,7 +575,7 @@ func (h *handler) addressUpdateAttempt(ctx context.Context, id, customerID, cont
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("could not commit transaction. AddressUpdate. err: %v", err)
+		return fmt.Errorf("could not commit transaction. AddressUpdate. err: %w", err)
 	}
 	committed = true
 	return nil
@@ -588,11 +588,11 @@ func (h *handler) addressCustomerID(ctx context.Context, id uuid.UUID) (uuid.UUI
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("could not build query. addressCustomerID. err: %v", err)
+		return uuid.Nil, fmt.Errorf("could not build query. addressCustomerID. err: %w", err)
 	}
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("could not query. addressCustomerID. err: %v", err)
+		return uuid.Nil, fmt.Errorf("could not query. addressCustomerID. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 	if !rows.Next() {
@@ -603,11 +603,11 @@ func (h *handler) addressCustomerID(ctx context.Context, id uuid.UUID) (uuid.UUI
 	}
 	var customerIDBytes []byte
 	if err := rows.Scan(&customerIDBytes); err != nil {
-		return uuid.Nil, fmt.Errorf("could not scan customer_id. addressCustomerID. err: %v", err)
+		return uuid.Nil, fmt.Errorf("could not scan customer_id. addressCustomerID. err: %w", err)
 	}
 	customerID, err := uuid.FromBytes(customerIDBytes)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("could not parse customer_id. addressCustomerID. err: %v", err)
+		return uuid.Nil, fmt.Errorf("could not parse customer_id. addressCustomerID. err: %w", err)
 	}
 	return customerID, nil
 }
@@ -642,7 +642,7 @@ func (h *handler) AddressDelete(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 	if lastErr != nil {
-		return fmt.Errorf("could not delete address: exhausted retries under sustained deadlock. err: %v", lastErr)
+		return fmt.Errorf("could not delete address: exhausted retries under sustained deadlock. err: %w", lastErr)
 	}
 
 	if contactID != uuid.Nil {
@@ -654,7 +654,7 @@ func (h *handler) AddressDelete(ctx context.Context, id uuid.UUID) error {
 func (h *handler) addressDeleteAttempt(ctx context.Context, id, customerID, contactID uuid.UUID, addrType commonaddress.Type, target string) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("could not begin transaction. AddressDelete. err: %v", err)
+		return fmt.Errorf("could not begin transaction. AddressDelete. err: %w", err)
 	}
 	committed := false
 	defer func() {
@@ -676,7 +676,7 @@ func (h *handler) addressDeleteAttempt(ctx context.Context, id, customerID, cont
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("could not commit transaction. AddressDelete. err: %v", err)
+		return fmt.Errorf("could not commit transaction. AddressDelete. err: %w", err)
 	}
 	committed = true
 	return nil
@@ -687,7 +687,7 @@ func (h *handler) addressDeleteAttempt(ctx context.Context, id, customerID, cont
 func (h *handler) AddressResetPrimary(ctx context.Context, contactID uuid.UUID) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("could not begin transaction. AddressResetPrimary. err: %v", err)
+		return fmt.Errorf("could not begin transaction. AddressResetPrimary. err: %w", err)
 	}
 	committed := false
 	defer func() {
@@ -701,7 +701,7 @@ func (h *handler) AddressResetPrimary(ctx context.Context, contactID uuid.UUID) 
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("could not commit transaction. AddressResetPrimary. err: %v", err)
+		return fmt.Errorf("could not commit transaction. AddressResetPrimary. err: %w", err)
 	}
 	committed = true
 

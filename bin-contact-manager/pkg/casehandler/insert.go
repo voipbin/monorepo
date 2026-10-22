@@ -68,7 +68,7 @@ func (h *caseHandler) insertWithRetry(
 			return nil, false, dbhandler.ErrDeadlock
 		}
 		if err != dbhandler.ErrDuplicate {
-			return nil, false, fmt.Errorf("could not insert case. insertWithRetry. err: %v", err)
+			return nil, false, fmt.Errorf("could not insert case. insertWithRetry. err: %w", err)
 		}
 
 		// Conflict: another transaction won. Re-select the winner, locked.
@@ -77,7 +77,7 @@ func (h *caseHandler) insertWithRetry(
 			if selErr == dbhandler.ErrDeadlock {
 				return nil, false, dbhandler.ErrDeadlock
 			}
-			return nil, false, fmt.Errorf("could not re-select after insert conflict. insertWithRetry. err: %v", selErr)
+			return nil, false, fmt.Errorf("could not re-select after insert conflict. insertWithRetry. err: %w", selErr)
 		}
 		if winner != nil {
 			return winner, false, nil

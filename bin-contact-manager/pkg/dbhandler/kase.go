@@ -37,7 +37,7 @@ type sqlExecutor interface {
 func (h *handler) BeginTx(ctx context.Context) (*sql.Tx, error) {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("could not begin transaction. BeginTx. err: %v", err)
+		return nil, fmt.Errorf("could not begin transaction. BeginTx. err: %w", err)
 	}
 	return tx, nil
 }
@@ -46,7 +46,7 @@ func (h *handler) BeginTx(ctx context.Context) (*sql.Tx, error) {
 func caseGetFromRow(rows *sql.Rows) (*kase.Case, error) {
 	res := &kase.Case{}
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. caseGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. caseGetFromRow. err: %w", err)
 	}
 	return res, nil
 }
@@ -72,12 +72,12 @@ func isMySQLDeadlock(err error) bool {
 func caseInsertExec(ctx context.Context, exec sqlExecutor, c *kase.Case) error {
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. CaseInsert. err: %v", err)
+		return fmt.Errorf("could not prepare fields. CaseInsert. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(caseTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CaseInsert. err: %v", err)
+		return fmt.Errorf("could not build query. CaseInsert. err: %w", err)
 	}
 
 	if _, err := exec.ExecContext(ctx, query, args...); err != nil {
@@ -89,7 +89,7 @@ func caseInsertExec(ctx context.Context, exec sqlExecutor, c *kase.Case) error {
 			if strings.Contains(me.Message, "uq_case_open_peer") {
 				return ErrDuplicate
 			}
-			return fmt.Errorf("could not execute. CaseInsert. err: %v", err)
+			return fmt.Errorf("could not execute. CaseInsert. err: %w", err)
 		}
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") &&
 			strings.Contains(err.Error(), "open_peer_uk") {
@@ -101,7 +101,7 @@ func caseInsertExec(ctx context.Context, exec sqlExecutor, c *kase.Case) error {
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
-		return fmt.Errorf("could not execute. CaseInsert. err: %v", err)
+		return fmt.Errorf("could not execute. CaseInsert. err: %w", err)
 	}
 
 	return nil
@@ -130,12 +130,12 @@ func caseGetByIDExec(ctx context.Context, exec sqlExecutor, id uuid.UUID) (*kase
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CaseGetByID. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CaseGetByID. err: %w", err)
 	}
 
 	rows, err := exec.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CaseGetByID. err: %v", err)
+		return nil, fmt.Errorf("could not query. CaseGetByID. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -179,7 +179,7 @@ func (h *handler) CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID 
 	}
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CaseGetOpenByPeer. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CaseGetOpenByPeer. err: %w", err)
 	}
 
 	rows, err := tx.QueryContext(ctx, query, args...)
@@ -189,7 +189,7 @@ func (h *handler) CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID 
 		if isMySQLDeadlock(err) {
 			return nil, ErrDeadlock
 		}
-		return nil, fmt.Errorf("could not query. CaseGetOpenByPeer. err: %v", err)
+		return nil, fmt.Errorf("could not query. CaseGetOpenByPeer. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -232,7 +232,7 @@ func caseUpdateStatusClosedExec(ctx context.Context, exec sqlExecutor, customerI
 		Where(sq.Eq{"status": string(kase.StatusOpen)}).
 		ToSql()
 	if err != nil {
-		return false, fmt.Errorf("could not build query. CaseUpdateStatusClosed. err: %v", err)
+		return false, fmt.Errorf("could not build query. CaseUpdateStatusClosed. err: %w", err)
 	}
 
 	result, err := exec.ExecContext(ctx, query, args...)
@@ -243,12 +243,12 @@ func caseUpdateStatusClosedExec(ctx context.Context, exec sqlExecutor, customerI
 		if isMySQLDeadlock(err) {
 			return false, ErrDeadlock
 		}
-		return false, fmt.Errorf("could not execute. CaseUpdateStatusClosed. err: %v", err)
+		return false, fmt.Errorf("could not execute. CaseUpdateStatusClosed. err: %w", err)
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		return false, fmt.Errorf("could not get rows affected. CaseUpdateStatusClosed. err: %v", err)
+		return false, fmt.Errorf("could not get rows affected. CaseUpdateStatusClosed. err: %w", err)
 	}
 
 	return rows > 0, nil
@@ -283,11 +283,11 @@ func caseUpdateContactIDExec(ctx context.Context, exec sqlExecutor, customerID, 
 		Where(sq.Eq{"customer_id": customerID.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CaseUpdateContactID. err: %v", err)
+		return fmt.Errorf("could not build query. CaseUpdateContactID. err: %w", err)
 	}
 
 	if _, err := exec.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute. CaseUpdateContactID. err: %v", err)
+		return fmt.Errorf("could not execute. CaseUpdateContactID. err: %w", err)
 	}
 
 	return nil
@@ -313,11 +313,11 @@ func (h *handler) CaseUpdateOwner(ctx context.Context, customerID, id uuid.UUID,
 		Where(sq.Eq{"customer_id": customerID.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CaseUpdateOwner. err: %v", err)
+		return fmt.Errorf("could not build query. CaseUpdateOwner. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute. CaseUpdateOwner. err: %v", err)
+		return fmt.Errorf("could not execute. CaseUpdateOwner. err: %w", err)
 	}
 
 	return nil
@@ -339,7 +339,7 @@ func caseUpdateTagIDsExec(ctx context.Context, exec sqlExecutor, customerID, id 
 		"tag_ids": tagIDs,
 	})
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. CaseUpdateTagIDs. err: %v", err)
+		return fmt.Errorf("could not prepare fields. CaseUpdateTagIDs. err: %w", err)
 	}
 
 	query, args, err := sq.Update(caseTable).
@@ -348,11 +348,11 @@ func caseUpdateTagIDsExec(ctx context.Context, exec sqlExecutor, customerID, id 
 		Where(sq.Eq{"customer_id": customerID.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CaseUpdateTagIDs. err: %v", err)
+		return fmt.Errorf("could not build query. CaseUpdateTagIDs. err: %w", err)
 	}
 
 	if _, err := exec.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute. CaseUpdateTagIDs. err: %v", err)
+		return fmt.Errorf("could not execute. CaseUpdateTagIDs. err: %w", err)
 	}
 
 	return nil
@@ -377,11 +377,11 @@ func caseClearContactIDExec(ctx context.Context, exec sqlExecutor, customerID, i
 		Where(sq.Eq{"customer_id": customerID.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CaseClearContactID. err: %v", err)
+		return fmt.Errorf("could not build query. CaseClearContactID. err: %w", err)
 	}
 
 	if _, err := exec.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute. CaseClearContactID. err: %v", err)
+		return fmt.Errorf("could not execute. CaseClearContactID. err: %w", err)
 	}
 
 	return nil
@@ -419,12 +419,12 @@ func (h *handler) CaseListAll(ctx context.Context) ([]*kase.Case, error) {
 		From(caseTable).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CaseListAll. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CaseListAll. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CaseListAll. err: %v", err)
+		return nil, fmt.Errorf("could not query. CaseListAll. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -432,12 +432,12 @@ func (h *handler) CaseListAll(ctx context.Context) ([]*kase.Case, error) {
 	for rows.Next() {
 		item, scanErr := caseGetFromRow(rows)
 		if scanErr != nil {
-			return nil, fmt.Errorf("could not scan the row. CaseListAll. err: %v", scanErr)
+			return nil, fmt.Errorf("could not scan the row. CaseListAll. err: %w", scanErr)
 		}
 		res = append(res, item)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("row iteration error. CaseListAll. err: %v", err)
+		return nil, fmt.Errorf("row iteration error. CaseListAll. err: %w", err)
 	}
 
 	return res, nil
@@ -458,12 +458,12 @@ func (h *handler) CaseListUnresolved(ctx context.Context, customerID uuid.UUID) 
 		Where(sq.Eq{"contact_id": nil}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CaseListUnresolved. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CaseListUnresolved. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CaseListUnresolved. err: %v", err)
+		return nil, fmt.Errorf("could not query. CaseListUnresolved. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -471,12 +471,12 @@ func (h *handler) CaseListUnresolved(ctx context.Context, customerID uuid.UUID) 
 	for rows.Next() {
 		item, scanErr := caseGetFromRow(rows)
 		if scanErr != nil {
-			return nil, fmt.Errorf("could not scan the row. CaseListUnresolved. err: %v", scanErr)
+			return nil, fmt.Errorf("could not scan the row. CaseListUnresolved. err: %w", scanErr)
 		}
 		res = append(res, item)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("row iteration error. CaseListUnresolved. err: %v", err)
+		return nil, fmt.Errorf("row iteration error. CaseListUnresolved. err: %w", err)
 	}
 
 	return res, nil
@@ -494,12 +494,12 @@ func (h *handler) CaseListByOwner(ctx context.Context, customerID uuid.UUID, own
 		Where(sq.Eq{"owner_id": ownerID.Bytes()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CaseListByOwner. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CaseListByOwner. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CaseListByOwner. err: %v", err)
+		return nil, fmt.Errorf("could not query. CaseListByOwner. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -507,12 +507,12 @@ func (h *handler) CaseListByOwner(ctx context.Context, customerID uuid.UUID, own
 	for rows.Next() {
 		item, scanErr := caseGetFromRow(rows)
 		if scanErr != nil {
-			return nil, fmt.Errorf("could not scan the row. CaseListByOwner. err: %v", scanErr)
+			return nil, fmt.Errorf("could not scan the row. CaseListByOwner. err: %w", scanErr)
 		}
 		res = append(res, item)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("row iteration error. CaseListByOwner. err: %v", err)
+		return nil, fmt.Errorf("row iteration error. CaseListByOwner. err: %w", err)
 	}
 
 	return res, nil
@@ -556,7 +556,7 @@ func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, size uint6
 			cursorTime, err = time.Parse(time.RFC3339Nano, token)
 		}
 		if err != nil {
-			return nil, fmt.Errorf("could not parse page token. CaseList. err: %v", err)
+			return nil, fmt.Errorf("could not parse page token. CaseList. err: %w", err)
 		}
 		builder = builder.Where(sq.Lt{"tm_create": cursorTime.UTC()})
 	}
@@ -567,12 +567,12 @@ func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, size uint6
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CaseList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CaseList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CaseList. err: %v", err)
+		return nil, fmt.Errorf("could not query. CaseList. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -580,12 +580,12 @@ func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, size uint6
 	for rows.Next() {
 		item, scanErr := caseGetFromRow(rows)
 		if scanErr != nil {
-			return nil, fmt.Errorf("could not scan the row. CaseList. err: %v", scanErr)
+			return nil, fmt.Errorf("could not scan the row. CaseList. err: %w", scanErr)
 		}
 		res = append(res, item)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("row iteration error. CaseList. err: %v", err)
+		return nil, fmt.Errorf("row iteration error. CaseList. err: %w", err)
 	}
 
 	return res, nil

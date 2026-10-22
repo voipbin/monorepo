@@ -160,7 +160,7 @@ func (h *listenHandler) processV1ContactAddressesPost(ctx context.Context, m *so
 func (h *listenHandler) processV1ContactAddressesIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return simpleResponse(400), nil
+		return simpleResponse(400), nil //nolint:nilerr // malformed request is reported as a 400 response
 	}
 
 	uriItems := strings.Split(u.Path, "/")
@@ -206,7 +206,7 @@ func (h *listenHandler) processV1ContactAddressesIDGet(ctx context.Context, m *s
 func (h *listenHandler) processV1ContactAddressesIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return simpleResponse(400), nil
+		return simpleResponse(400), nil //nolint:nilerr // malformed request is reported as a 400 response
 	}
 
 	uriItems := strings.Split(u.Path, "/")
@@ -264,7 +264,7 @@ func (h *listenHandler) processV1ContactAddressesIDPut(ctx context.Context, m *s
 		customerID := uuid.FromStringOrNil(u2.Query().Get("customer_id"))
 		updated, err = h.addressHandler.GetAddress(ctx, customerID, id)
 		if err != nil {
-			return simpleResponse(500), nil
+			return simpleResponse(500), nil //nolint:nilerr // failure is reported as a 500 response
 		}
 	}
 
@@ -344,7 +344,7 @@ func (h *listenHandler) processV1ContactAddressesIDClaim(ctx context.Context, m 
 func (h *listenHandler) processV1ContactAddressesIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return simpleResponse(400), nil
+		return simpleResponse(400), nil //nolint:nilerr // malformed request is reported as a 400 response
 	}
 
 	uriItems := strings.Split(u.Path, "/")
