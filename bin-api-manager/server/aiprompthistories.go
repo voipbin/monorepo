@@ -68,12 +68,12 @@ func (h *server) GetAisIdPromptHistories(c *gin.Context, id string, params opena
 }
 
 // GetAisIdPromptHistoriesHistoryId handles GET /ais/{id}/prompt_histories/{history_id}
-func (h *server) GetAisIdPromptHistoriesHistoryId(c *gin.Context, id string, historyId string) {
+func (h *server) GetAisIdPromptHistoriesHistoryId(c *gin.Context, id string, historyIDParam string) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetAisIdPromptHistoriesHistoryId",
 		"request_address": c.ClientIP,
 		"ai_id":           id,
-		"history_id":      historyId,
+		"history_id":      historyIDParam,
 	})
 
 	a, ok := getAuthIdentity(c)
@@ -93,7 +93,7 @@ func (h *server) GetAisIdPromptHistoriesHistoryId(c *gin.Context, id string, his
 		return
 	}
 
-	historyID := uuid.FromStringOrNil(historyId)
+	historyID := uuid.FromStringOrNil(historyIDParam)
 	if historyID == uuid.Nil {
 		log.Error("Could not parse the history id.")
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_HISTORY_ID", "The provided history id is not a valid UUID."))

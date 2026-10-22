@@ -38,11 +38,11 @@ func (h *server) PostFlows(c *gin.Context) {
 		actions = append(actions, ConvertFlowManagerAction(v))
 	}
 
-	onCompleteFlowId := uuid.Nil
+	onCompleteFlowID := uuid.Nil
 	if req.OnCompleteFlowId != nil {
-		onCompleteFlowId = uuid.FromStringOrNil(*req.OnCompleteFlowId)
+		onCompleteFlowID = uuid.FromStringOrNil(*req.OnCompleteFlowId)
 	}
-	res, err := h.serviceHandler.FlowCreate(c.Request.Context(), a, req.Name, req.Detail, actions, onCompleteFlowId, true)
+	res, err := h.serviceHandler.FlowCreate(c.Request.Context(), a, req.Name, req.Detail, actions, onCompleteFlowID, true)
 	if err != nil {
 		log.Errorf("Could not create data. err: %v", err)
 		abortWithServiceError(c, err)

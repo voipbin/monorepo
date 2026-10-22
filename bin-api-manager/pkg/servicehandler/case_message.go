@@ -117,10 +117,8 @@ func (h *serviceHandler) CaseMessageSend(
 		if !matched {
 			return nil, serviceerrors.ErrCaseDestinationNotAssociated
 		}
-	} else {
-		if destination != c.Peer.Target {
-			return nil, serviceerrors.ErrCaseDestinationNotAssociated
-		}
+	} else if destination != c.Peer.Target {
+		return nil, serviceerrors.ErrCaseDestinationNotAssociated
 	}
 
 	// Step 3: source-ownership validation (round-17 correction). Queries

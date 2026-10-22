@@ -183,13 +183,13 @@ func run(
 	queueNamePod := fmt.Sprintf("%s-%s", commonoutline.QueueNameAPISubscribe, uuid.Must(uuid.NewV4()))
 
 	websockHandler := websockhandler.NewWebsockHandler(requestHandler, streamHandler, sockHandler, pubsubBroker, queueNamePod)
-	serviceHandler, err := servicehandler.NewServiceHandler(requestHandler, db, cache, websockHandler, cfg.GCPProjectID, cfg.GCPBucketName, cfg.JWTKey, cfg.PublicBaseURL)
+	serviceHandler, err := servicehandler.NewServiceHandler(ctx, requestHandler, db, cache, websockHandler, cfg.GCPProjectID, cfg.GCPBucketName, cfg.JWTKey, cfg.PublicBaseURL)
 	if err != nil {
 		log.Fatalf("Could not create service handler. err: %v", err)
 	}
 
 	go runSubscribe(sockHandler, requestHandler, pubsubBroker, queueNamePod)
-	go runListenHTTP(serviceHandler, rateLimiter)
+	go runListenHTTP(serviceHandler, rateLimiter) //nolint:contextcheck // request contexts come from the gin request; this goroutine has no lifecycle ctx
 	go runListenStreamsock(ctx, streamHandler)
 
 }

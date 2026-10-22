@@ -24,7 +24,7 @@ func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) 
 	res := &customer.Customer{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. customerGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. customerGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -49,7 +49,7 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. CustomerCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. CustomerCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -60,11 +60,11 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CustomerCreate. err: %v", err)
+		return fmt.Errorf("could not build query. CustomerCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. CustomerCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. CustomerCreate. err: %w", err)
 	}
 
 	status = "success"
@@ -121,12 +121,12 @@ func (h *handler) customerGetFromDB(ctx context.Context, id uuid.UUID) (*custome
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. customerGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. customerGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. customerGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. customerGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -134,14 +134,14 @@ func (h *handler) customerGetFromDB(ctx context.Context, id uuid.UUID) (*custome
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. customerGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. customerGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.customerGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. customerGetFromDB. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. customerGetFromDB. id: %s, err: %w", id, err)
 	}
 
 	return res, nil
@@ -200,17 +200,17 @@ func (h *handler) CustomerList(ctx context.Context, size uint64, token string, f
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. CustomerGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. CustomerGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CustomerGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CustomerGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CustomerGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. CustomerGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -220,12 +220,12 @@ func (h *handler) CustomerList(ctx context.Context, size uint64, token string, f
 	for rows.Next() {
 		u, err := h.customerGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. CustomerGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. CustomerGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. CustomerGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. CustomerGets. err: %w", err)
 	}
 
 	status = "success"
@@ -398,12 +398,12 @@ func (h *handler) CustomerListFrozenExpired(ctx context.Context, expiredBefore t
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CustomerListFrozenExpired. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CustomerListFrozenExpired. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CustomerListFrozenExpired. err: %v", err)
+		return nil, fmt.Errorf("could not query. CustomerListFrozenExpired. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -413,12 +413,12 @@ func (h *handler) CustomerListFrozenExpired(ctx context.Context, expiredBefore t
 	for rows.Next() {
 		u, err := h.customerGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. CustomerListFrozenExpired. err: %v", err)
+			return nil, fmt.Errorf("could not get data. CustomerListFrozenExpired. err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. CustomerListFrozenExpired. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. CustomerListFrozenExpired. err: %w", err)
 	}
 
 	status = "success"

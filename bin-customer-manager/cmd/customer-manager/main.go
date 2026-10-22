@@ -127,7 +127,7 @@ func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
-		if err := http.ListenAndServe(listen, nil); err != nil {
+		if err := http.ListenAndServe(listen, nil); err != nil { //nolint:gosec // G114: Prometheus metrics endpoint serving only the metrics handler; adding server timeouts would change behavior and is out of scope for lint cleanup
 			logrus.Errorf("Prometheus server error: %v", err)
 		}
 	}()

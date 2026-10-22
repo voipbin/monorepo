@@ -13,12 +13,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *server) GetTimelinesResourceTypeResourceIdEvents(c *gin.Context, resourceType openapi_server.GetTimelinesResourceTypeResourceIdEventsParamsResourceType, resourceId openapi_types.UUID, params openapi_server.GetTimelinesResourceTypeResourceIdEventsParams) {
+func (h *server) GetTimelinesResourceTypeResourceIdEvents(c *gin.Context, resourceType openapi_server.GetTimelinesResourceTypeResourceIdEventsParamsResourceType, resourceID openapi_types.UUID, params openapi_server.GetTimelinesResourceTypeResourceIdEventsParams) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetTimelinesResourceTypeResourceIdEvents",
 		"request_address": c.ClientIP(),
 		"resource_type":   resourceType,
-		"resource_id":     resourceId,
+		"resource_id":     resourceID,
 	})
 
 	// Get agent from context
@@ -44,7 +44,7 @@ func (h *server) GetTimelinesResourceTypeResourceIdEvents(c *gin.Context, resour
 	}
 
 	// Convert openapi_types.UUID to uuid.UUID
-	resourceUUID, err := uuid.FromString(resourceId.String())
+	resourceUUID, err := uuid.FromString(resourceID.String())
 	if err != nil {
 		log.Infof("Invalid resource id: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))

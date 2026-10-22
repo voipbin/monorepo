@@ -52,7 +52,7 @@ func (h *websockHandler) RunExternalMedia(ctx context.Context, w http.ResponseWr
 
 	// // we are creating a new context and cancel using the http request.
 	// // we are expecting when the websocket closed, everything is closed too.
-	newCtx, newCancel := context.WithCancel(r.Context())
+	newCtx, newCancel := context.WithCancel(ctx)
 
 	go h.runWebsockExternalMedia(newCtx, newCancel, ws, &externalMedia)
 	<-newCtx.Done()
@@ -112,7 +112,7 @@ func (h *websockHandler) sendDataToExternalMediaSock(ctx context.Context, data [
 		}
 
 		// send the data in a udp packet
-		conn, err := net.Dial("udp", targetAddress)
+		conn, err := (&net.Dialer{}).DialContext(ctx, "udp", targetAddress)
 		if err != nil {
 			log.Errorf("Could not connect to the asterisk. err: %v", err)
 			return errors.Wrapf(err, "could not connect to asterisk. err: %v", err)

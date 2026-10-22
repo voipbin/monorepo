@@ -192,7 +192,7 @@ func (h *accesskeyHandler) Delete(ctx context.Context, id uuid.UUID) (*accesskey
 	res, err := h.db.AccesskeyGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get deleted accesskey. err: %v", err)
-		return nil, fmt.Errorf("could not get deleted accesskey. err: %v", err)
+		return nil, fmt.Errorf("could not get deleted accesskey. err: %v", err) //nolint:errorlint // keep opaque: wrapping would turn ErrNotFound on a physical-delete race into a 404 instead of a 500
 	}
 
 	// notify

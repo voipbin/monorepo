@@ -82,12 +82,12 @@ func (h *server) PostContactCasesIdNotes(c *gin.Context, id openapi_types.UUID) 
 }
 
 // DeleteContactCasesIdNotesNoteId handles DELETE /contact_cases/{id}/notes/{note_id}
-func (h *server) DeleteContactCasesIdNotesNoteId(c *gin.Context, id openapi_types.UUID, noteId openapi_types.UUID) {
+func (h *server) DeleteContactCasesIdNotesNoteId(c *gin.Context, id openapi_types.UUID, noteIDParam openapi_types.UUID) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteContactCasesIdNotesNoteId",
 		"request_address": c.ClientIP(),
 		"id":              id,
-		"note_id":         noteId,
+		"note_id":         noteIDParam,
 	})
 
 	a, ok := getAuthIdentity(c)
@@ -99,7 +99,7 @@ func (h *server) DeleteContactCasesIdNotesNoteId(c *gin.Context, id openapi_type
 	log = log.WithField("customer_id", a.CustomerID)
 
 	caseID := uuid.UUID(id)
-	noteID := uuid.UUID(noteId)
+	noteID := uuid.UUID(noteIDParam)
 
 	if err := h.serviceHandler.CaseNoteDelete(c.Request.Context(), a, caseID, noteID); err != nil {
 		log.Errorf("Could not delete case note. err: %v", err)

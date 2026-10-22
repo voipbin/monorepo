@@ -24,7 +24,7 @@ import (
 func generateHash() (string, error) {
 	b := make([]byte, 6)
 	if _, err := rand.Read(b); err != nil {
-		return "", fmt.Errorf("could not generate random bytes: %v", err)
+		return "", fmt.Errorf("could not generate random bytes: %w", err)
 	}
 	return direct.DirectPrefix + hex.EncodeToString(b), nil
 }

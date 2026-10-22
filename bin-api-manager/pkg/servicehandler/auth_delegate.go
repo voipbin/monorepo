@@ -68,7 +68,7 @@ func (h *serviceHandler) AuthDelegate(ctx context.Context, a *auth.AuthIdentity,
 			"sub":           agentID,
 			"denial_reason": "invalid_input",
 		}).Warn("Delegate token request denied")
-		return nil, fmt.Errorf("%w: %v", serviceerrors.ErrInvalidArgument, err)
+		return nil, fmt.Errorf("%w: %w", serviceerrors.ErrInvalidArgument, err)
 	}
 
 	// Verify target customer exists and is not deleted

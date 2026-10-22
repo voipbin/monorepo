@@ -1294,6 +1294,7 @@ type serviceHandler struct {
 
 // NewServiceHandler return ServiceHandler interface
 func NewServiceHandler(
+	ctx context.Context,
 	reqHandler requesthandler.RequestHandler,
 	dbHandler dbhandler.DBHandler,
 	cacheHandler cachehandler.CacheHandler,
@@ -1308,7 +1309,7 @@ func NewServiceHandler(
 	log := logrus.WithField("func", "NewServiceHandler")
 
 	// Create storage client using the decoded credentials
-	storageClient, err := storage.NewClient(context.Background())
+	storageClient, err := storage.NewClient(ctx)
 	if err != nil {
 		log.Errorf("Could not create a new storage client. Please ensure the environment is configured for Application Default Credentials (ADC) (for example via GOOGLE_APPLICATION_CREDENTIALS, workload identity, or in-cluster metadata). error: %v", err)
 		return nil, fmt.Errorf("could not create a new storage client: %w", err)

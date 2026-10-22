@@ -415,7 +415,7 @@ func (h *server) PostContactsIdAddresses(c *gin.Context, id openapi_types.UUID) 
 	c.JSON(201, res)
 }
 
-func (h *server) PutContactsIdAddressesAddressId(c *gin.Context, id openapi_types.UUID, addressId openapi_types.UUID) {
+func (h *server) PutContactsIdAddressesAddressId(c *gin.Context, id openapi_types.UUID, addressID openapi_types.UUID) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PutContactsIdAddressesAddressId",
 		"request_address": c.ClientIP,
@@ -438,7 +438,7 @@ func (h *server) PutContactsIdAddressesAddressId(c *gin.Context, id openapi_type
 		return
 	}
 
-	addrID := uuid.UUID(addressId)
+	addrID := uuid.UUID(addressID)
 	if addrID == uuid.Nil {
 		log.Error("Could not parse the address id.")
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided address_id is not a valid UUID."))
@@ -477,7 +477,7 @@ func (h *server) PutContactsIdAddressesAddressId(c *gin.Context, id openapi_type
 	c.JSON(200, res)
 }
 
-func (h *server) DeleteContactsIdAddressesAddressId(c *gin.Context, id openapi_types.UUID, addressId openapi_types.UUID) {
+func (h *server) DeleteContactsIdAddressesAddressId(c *gin.Context, id openapi_types.UUID, addressID openapi_types.UUID) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteContactsIdAddressesAddressId",
 		"request_address": c.ClientIP,
@@ -500,7 +500,7 @@ func (h *server) DeleteContactsIdAddressesAddressId(c *gin.Context, id openapi_t
 		return
 	}
 
-	addrID := uuid.UUID(addressId)
+	addrID := uuid.UUID(addressID)
 	if addrID == uuid.Nil {
 		log.Error("Could not parse the address id.")
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided address_id is not a valid UUID."))
@@ -564,7 +564,7 @@ func (h *server) PostContactsIdTags(c *gin.Context, id string) {
 	c.JSON(201, res)
 }
 
-func (h *server) DeleteContactsIdTagsTagId(c *gin.Context, id string, tagId string) {
+func (h *server) DeleteContactsIdTagsTagId(c *gin.Context, id string, tagID string) { //nolint:revive // method name must match the generated ServerInterface
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteContactsIdTagsTagId",
 		"request_address": c.ClientIP,
@@ -587,7 +587,7 @@ func (h *server) DeleteContactsIdTagsTagId(c *gin.Context, id string, tagId stri
 		return
 	}
 
-	tID := uuid.FromStringOrNil(tagId)
+	tID := uuid.FromStringOrNil(tagID)
 	if tID == uuid.Nil {
 		log.Error("Could not parse the tag id.")
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided tag_id is not a valid UUID."))
