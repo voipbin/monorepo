@@ -91,7 +91,7 @@ func (h *listenHandler) Run() (<-chan error, error) {
 
 	permQueues, volQueues, err := h.buildListenQueues()
 	if err != nil {
-		return nil, fmt.Errorf("could not build the listen queue list. err: %v", err)
+		return nil, fmt.Errorf("could not build the listen queue list. err: %w", err)
 	}
 
 	// queue declare for permanent
@@ -99,7 +99,7 @@ func (h *listenHandler) Run() (<-chan error, error) {
 		log.Debugf("Declaring permanent request queue. queue: %s", queue)
 
 		if errCreate := h.sockHandler.QueueCreate(queue, "normal"); errCreate != nil {
-			return nil, fmt.Errorf("could not declare the permanent queue for listenHandler. queue: %s, err: %v", queue, errCreate)
+			return nil, fmt.Errorf("could not declare the permanent queue for listenHandler. queue: %s, err: %w", queue, errCreate)
 		}
 	}
 
@@ -108,7 +108,7 @@ func (h *listenHandler) Run() (<-chan error, error) {
 		log.Debugf("Declaring volatile request queue. queue: %s", queue)
 
 		if errCreate := h.sockHandler.QueueCreate(queue, "volatile"); errCreate != nil {
-			return nil, fmt.Errorf("could not declare the volatile queue for listenHandler. queue: %s, err: %v", queue, errCreate)
+			return nil, fmt.Errorf("could not declare the volatile queue for listenHandler. queue: %s, err: %w", queue, errCreate)
 		}
 	}
 

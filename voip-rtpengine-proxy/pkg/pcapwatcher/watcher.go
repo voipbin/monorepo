@@ -32,13 +32,13 @@ func New(recordingDir string, uploader gcsuploader.Uploader) Watcher {
 func (w *watcher) Run(ctx context.Context) error {
 	metadataDir := filepath.Join(w.recordingDir, "metadata")
 
-	if err := os.MkdirAll(metadataDir, 0777); err != nil {
+	if err := os.MkdirAll(metadataDir, 0777); err != nil { //nolint:gosec // G301: RTPEngine (uid 901) needs write access to move metadata files
 		return fmt.Errorf("could not create metadata dir: %w", err)
 	}
 	// Explicitly chmod because MkdirAll is affected by umask (0022 → 0755),
 	// and won't change permissions on an existing directory.
 	// RTPEngine (uid 901) needs write access to move metadata files from tmp/.
-	if err := os.Chmod(metadataDir, 0777); err != nil {
+	if err := os.Chmod(metadataDir, 0777); err != nil { //nolint:gosec // G302: RTPEngine (uid 901) needs write access to move metadata files
 		return fmt.Errorf("could not chmod metadata dir: %w", err)
 	}
 
@@ -151,7 +151,7 @@ func (w *watcher) processProcessingFile(processingPath string) error {
 		return fmt.Errorf("could not upload pcap: %w", err)
 	}
 
-	if err := os.Remove(pcapPath); err != nil && !os.IsNotExist(err) {
+	if err := os.Remove(pcapPath); err != nil && !os.IsNotExist(err) { //nolint:gosec // G703: pcapPath comes from a metadata file written by the local RTPEngine daemon into the service-owned recording dir
 		log.WithError(err).WithField("file", pcapPath).Warn("could not delete pcap file")
 	}
 

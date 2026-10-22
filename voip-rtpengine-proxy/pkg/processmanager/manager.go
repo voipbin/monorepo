@@ -91,7 +91,7 @@ func (m *manager) Exec(id, command string, parameters []string) error {
 
 	log.WithFields(logrus.Fields{"args": args, "parameters": parameters}).Debugf("Constructed tcpdump args")
 
-	cmd := exec.Command(command, args...)
+	cmd := exec.Command(command, args...) //nolint:gosec,noctx // G204: command is validated against the allowlist by validateCommand; noctx: the capture must outlive the Exec request and ends only by Kill or the safety timeout
 	cmd.Stdout = nil
 	cmd.Stderr = nil
 

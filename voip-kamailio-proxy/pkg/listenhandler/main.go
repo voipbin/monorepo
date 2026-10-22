@@ -73,12 +73,12 @@ func (h *listenHandler) listenRun() error {
 
 	// create permanent (durable) queue
 	if err := h.sockHandler.QueueCreate(h.rabbitQueueListenPermanent, "normal"); err != nil {
-		return fmt.Errorf("could not declare permanent queue for listenHandler. err: %v", err)
+		return fmt.Errorf("could not declare permanent queue for listenHandler. err: %w", err)
 	}
 
 	// create volatile (auto-delete) queue
 	if err := h.sockHandler.QueueCreate(h.rabbitQueueListenVolatile, "volatile"); err != nil {
-		return fmt.Errorf("could not declare volatile queue for listenHandler. err: %v", err)
+		return fmt.Errorf("could not declare volatile queue for listenHandler. err: %w", err)
 	}
 
 	listenQueues := []string{h.rabbitQueueListenPermanent, h.rabbitQueueListenVolatile}

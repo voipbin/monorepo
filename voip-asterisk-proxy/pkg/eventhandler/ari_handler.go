@@ -56,7 +56,7 @@ func (h *eventHandler) eventARIConnect() error {
 
 	// connect
 	var err error
-	h.ariSock, _, err = websocket.DefaultDialer.Dial(u.String(), nil)
+	h.ariSock, _, err = websocket.DefaultDialer.Dial(u.String(), nil) //nolint:bodyclose // gorilla/websocket: on a successful handshake the connection is hijacked and the response body must not be closed; on failure the body is already read
 	if err != nil {
 		return err
 	}

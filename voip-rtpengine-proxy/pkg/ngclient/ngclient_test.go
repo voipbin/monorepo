@@ -109,7 +109,7 @@ func TestSend_WireFormat(t *testing.T) {
 	defer c.Close()
 
 	cmd := map[string]interface{}{"command": "ping"}
-	c.Send(cmd) //nolint:errcheck
+	c.Send(cmd) //nolint:errcheck // best-effort ping, the wire format is asserted from the captured request
 	<-captured  // wait for handler to finish writing received
 
 	// cookie must be the prefix before the first space
