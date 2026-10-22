@@ -966,3 +966,37 @@ func Test_AddActions(t *testing.T) {
 		})
 	}
 }
+
+// Test_AddActions_spareCapacity pins that injecting actions in the middle of a
+// stack whose slice has spare capacity keeps the trailing actions intact.
+func Test_AddActions_spareCapacity(t *testing.T) {
+	idA := uuid.FromStringOrNil("11111111-03c1-11f0-92f2-dbc4d50c50de")
+	idB := uuid.FromStringOrNil("22222222-03c1-11f0-92f2-dbc4d50c50de")
+	idC := uuid.FromStringOrNil("33333333-03c1-11f0-92f2-dbc4d50c50de")
+	idX := uuid.FromStringOrNil("44444444-03c1-11f0-92f2-dbc4d50c50de")
+	idY := uuid.FromStringOrNil("55555555-03c1-11f0-92f2-dbc4d50c50de")
+
+	// len 3, cap 8: the append result would alias the original backing array.
+	stored := make([]action.Action, 3, 8)
+	stored[0] = action.Action{ID: idA}
+	stored[1] = action.Action{ID: idB}
+	stored[2] = action.Action{ID: idC}
+
+	stackMap := map[uuid.UUID]*stack.Stack{
+		stack.IDMain: {ID: stack.IDMain, Actions: stored},
+	}
+
+	h := &stackHandler{}
+	if errAdd := h.AddActions(stackMap, stack.IDMain, idA, []action.Action{{ID: idX}, {ID: idY}}); errAdd != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", errAdd)
+	}
+
+	got := []uuid.UUID{}
+	for _, a := range stackMap[stack.IDMain].Actions {
+		got = append(got, a.ID)
+	}
+	expect := []uuid.UUID{idA, idX, idY, idB, idC}
+	if !reflect.DeepEqual(expect, got) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", expect, got)
+	}
+}

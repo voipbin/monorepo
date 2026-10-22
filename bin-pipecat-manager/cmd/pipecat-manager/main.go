@@ -97,7 +97,9 @@ func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
-		if err := http.ListenAndServe(listen, nil); err != nil {
+		// ReadHeaderTimeout bounds the header read (slowloris); the other timeouts stay unset so scrapes are unaffected.
+		srv := &http.Server{Addr: listen, ReadHeaderTimeout: 10 * time.Second}
+		if err := srv.ListenAndServe(); err != nil {
 			logrus.Errorf("Prometheus server error: %v", err)
 		}
 	}()
@@ -146,7 +148,7 @@ func run() error {
 	}()
 
 	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(requestHandler, notifyHandler, dbHandler, toolHandler, listenIP)
-	httpHandler := httphandler.NewHttpHandler(requestHandler, pipecatcallHandler)
+	httpHandler := httphandler.NewHTTPHandler(requestHandler, pipecatcallHandler)
 
 	// run listen
 	if errListen := runListen(sockHandler, listenIP, pipecatcallHandler); errListen != nil {
@@ -155,9 +157,9 @@ func run() error {
 	}
 
 	// run http
-	if errHttp := runHttp(httpHandler); errHttp != nil {
-		log.Errorf("Could not start runHttp. err: %v", errHttp)
-		return errors.Wrapf(errHttp, "could not start runHttp")
+	if errHTTP := runHTTP(httpHandler); errHTTP != nil {
+		log.Errorf("Could not start runHttp. err: %v", errHTTP)
+		return errors.Wrapf(errHTTP, "could not start runHttp")
 	}
 
 	return nil
@@ -180,7 +182,7 @@ func runListen(
 	return nil
 }
 
-func runHttp(httpHandler httphandler.HttpHandler) error {
+func runHTTP(httpHandler httphandler.HTTPHandler) error {
 	go func() {
 		if errRun := httpHandler.Run(); errRun != nil {
 			logrus.Errorf("Could not run the http handler correctly. err: %v", errRun)

@@ -395,11 +395,12 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 	for {
 		msgType, message, err := h.websocketHandler.ReadMessage(ws)
 		if err != nil {
-			if websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
+			switch {
+			case websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure):
 				log.Debugf("Client disconnected gracefully.")
-			} else if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+			case websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure):
 				log.Errorf("Client disconnected unexpectedly: %v", err)
-			} else {
+			default:
 				log.Errorf("Error reading message from client: %v", err)
 			}
 			break

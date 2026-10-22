@@ -99,7 +99,7 @@ func (h *stackHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, curren
 		// get stack
 		s, err := h.GetStack(stackMap, tmpStackID)
 		if err != nil {
-			//stack not found
+			// stack not found
 			log.Infof("Could not find stack. err: %v", err)
 			return stack.IDEmpty, &action.ActionFinish
 		}
@@ -114,7 +114,7 @@ func (h *stackHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, curren
 
 		idx, a := h.findAction(s.Actions, tmpActionID)
 		if a == nil {
-			//action not found
+			// action not found
 			log.Infof("Could not find action in the stack.")
 			return stack.IDEmpty, &action.ActionFinish
 		}
@@ -123,7 +123,7 @@ func (h *stackHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, curren
 		if a.NextID != action.IDEmpty {
 			resStackID, resAction, err := h.GetAction(stackMap, tmpStackID, a.NextID, true)
 			if err != nil {
-				//action not found
+				// action not found
 				log.Infof("Could not get action for next_id. next_id: %s, err: %v", a.NextID, err)
 				return stack.IDEmpty, &action.ActionFinish
 			}
@@ -136,7 +136,7 @@ func (h *stackHandler) GetNextAction(stackMap map[uuid.UUID]*stack.Stack, curren
 			tmpAction := s.Actions[idx+1]
 			resStackID, resAction, err := h.GetAction(stackMap, tmpStackID, tmpAction.ID, true)
 			if err != nil {
-				//action not found
+				// action not found
 				return stack.IDEmpty, &action.ActionFinish
 			}
 
@@ -177,8 +177,12 @@ func (h *stackHandler) AddActions(stackMap map[uuid.UUID]*stack.Stack, targetSta
 	}
 
 	// inject actions
-	tmp := append(s.Actions[:idx+1], actions...)
-	s.Actions = append(tmp, s.Actions[idx+1:]...)
+	// build a new slice: appending to s.Actions[:idx+1] in place would overwrite
+	// the trailing actions when the backing array has spare capacity.
+	injected := make([]action.Action, 0, len(s.Actions)+len(actions))
+	injected = append(injected, s.Actions[:idx+1]...)
+	injected = append(injected, actions...)
+	s.Actions = append(injected, s.Actions[idx+1:]...)
 
 	return nil
 }

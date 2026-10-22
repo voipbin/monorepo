@@ -211,7 +211,9 @@ func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		for {
-			err := http.ListenAndServe(listen, nil)
+			// ReadHeaderTimeout bounds the header read (slowloris); the other timeouts stay unset so scrapes are unaffected.
+			srv := &http.Server{Addr: listen, ReadHeaderTimeout: 10 * time.Second}
+			err := srv.ListenAndServe()
 			if err != nil {
 				logrus.Errorf("Could not start prometheus listener")
 				time.Sleep(time.Second * 1)

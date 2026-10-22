@@ -251,7 +251,7 @@ func (h *listenHandler) v1ActiveflowsIDExecutePost(ctx context.Context, m *sock.
 	tmpVals := strings.Split(m.URI, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
 
-	go func() {
+	go func() { //nolint:contextcheck,gosec // fire-and-forget: the execution must outlive the RPC request ctx
 		defer func() {
 			if r := recover(); r != nil {
 				log.Errorf("Recovered from panic during activeflow execution. activeflow_id: %s, panic: %v, stack: %s", id, r, string(debug.Stack()))
@@ -429,7 +429,7 @@ func (h *listenHandler) v1ActiveflowsIDContinuePost(ctx context.Context, m *sock
 		return nil, errUnmarshal
 	}
 
-	go func() {
+	go func() { //nolint:contextcheck,gosec // fire-and-forget: the execution must outlive the RPC request ctx
 		defer func() {
 			if r := recover(); r != nil {
 				log.Errorf("Recovered from panic during activeflow continue. activeflow_id: %s, panic: %v, stack: %s", id, r, string(debug.Stack()))

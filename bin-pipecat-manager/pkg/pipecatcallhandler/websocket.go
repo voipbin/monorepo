@@ -58,7 +58,7 @@ func (h *websocketHandler) DialContext(ctx context.Context, urlStr string, reque
 // websocketAsteriskConnect dials the Asterisk chan_websocket endpoint and waits
 // for the MEDIA_START text message that signals the channel is ready.
 func (h *pipecatcallHandler) websocketAsteriskConnect(ctx context.Context, mediaURI string) (*websocket.Conn, error) {
-	conn, _, err := h.websocketHandler.DialContext(ctx, mediaURI, nil)
+	conn, _, err := h.websocketHandler.DialContext(ctx, mediaURI, nil) //nolint:bodyclose // gorilla/websocket replaces the handshake response body with a no-op closer
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not dial WebSocket. media_uri: %s", mediaURI)
 	}

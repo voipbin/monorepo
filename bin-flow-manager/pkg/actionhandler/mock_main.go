@@ -43,18 +43,18 @@ func (m *MockActionHandler) EXPECT() *MockActionHandlerMockRecorder {
 }
 
 // ActionFetchGet mocks base method.
-func (m *MockActionHandler) ActionFetchGet(act *action.Action, activeflowID, referenceID uuid.UUID) ([]action.Action, error) {
+func (m *MockActionHandler) ActionFetchGet(ctx context.Context, act *action.Action, activeflowID, referenceID uuid.UUID) ([]action.Action, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActionFetchGet", act, activeflowID, referenceID)
+	ret := m.ctrl.Call(m, "ActionFetchGet", ctx, act, activeflowID, referenceID)
 	ret0, _ := ret[0].([]action.Action)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ActionFetchGet indicates an expected call of ActionFetchGet.
-func (mr *MockActionHandlerMockRecorder) ActionFetchGet(act, activeflowID, referenceID any) *gomock.Call {
+func (mr *MockActionHandlerMockRecorder) ActionFetchGet(ctx, act, activeflowID, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionFetchGet", reflect.TypeOf((*MockActionHandler)(nil).ActionFetchGet), act, activeflowID, referenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionFetchGet", reflect.TypeOf((*MockActionHandler)(nil).ActionFetchGet), ctx, act, activeflowID, referenceID)
 }
 
 // GenerateFlowActions mocks base method.

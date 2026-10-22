@@ -31,7 +31,7 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // the failure is reported to the caller as a 500 response
 	}
 
 	res := &sock.Response{

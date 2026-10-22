@@ -129,7 +129,7 @@ func (h *pythonRunner) Start(
 	}
 
 	url := defaultPipecatRunnerListenAddress + "/run"
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return errors.Wrapf(err, "could not create request for python runner")
 	}
@@ -177,7 +177,7 @@ func (h *pythonRunner) Stop(ctx context.Context, pipecatcallID uuid.UUID) error 
 	})
 
 	url := defaultPipecatRunnerListenAddress + "/stop?id=" + pipecatcallID.String()
-	req, err := http.NewRequestWithContext(ctx, "POST", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
 	if err != nil {
 		return errors.Wrapf(err, "could not create stop request for python runner")
 	}

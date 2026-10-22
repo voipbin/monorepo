@@ -24,7 +24,7 @@ func (h *handler) activeflowGetFromRow(row *sql.Rows) (*activeflow.Activeflow, e
 	res := &activeflow.Activeflow{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. activeflowGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. activeflowGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -41,7 +41,7 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(f)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. ActiveflowCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ActiveflowCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -52,11 +52,11 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ActiveflowCreate. err: %v", err)
+		return fmt.Errorf("could not build query. ActiveflowCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. ActiveflowCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. ActiveflowCreate. err: %w", err)
 	}
 
 	_ = h.activeflowUpdateToCache(ctx, f.ID)
@@ -73,12 +73,12 @@ func (h *handler) activeflowGetFromDB(ctx context.Context, id uuid.UUID) (*activ
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. activeflowGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. activeflowGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. activeflowGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. activeflowGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -86,7 +86,7 @@ func (h *handler) activeflowGetFromDB(ctx context.Context, id uuid.UUID) (*activ
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. activeflowGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. activeflowGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -195,17 +195,17 @@ func (h *handler) ActiveflowList(ctx context.Context, token string, size uint64,
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. ActiveflowGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. ActiveflowGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ActiveflowGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ActiveflowGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ActiveflowGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. ActiveflowGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -215,12 +215,12 @@ func (h *handler) ActiveflowList(ctx context.Context, token string, size uint64,
 	for rows.Next() {
 		u, err := h.activeflowGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. ActiveflowGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. ActiveflowGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. ActiveflowGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. ActiveflowGets. err: %w", err)
 	}
 
 	return res, nil

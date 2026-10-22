@@ -10,6 +10,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // Substitute substitutes the given data string with variables
@@ -91,7 +92,7 @@ func (h *variableHandler) SubstituteOption(ctx context.Context, data map[string]
 			data[k] = h.resolveValue(ctx, *v, vars)
 		default:
 			// For unsupported types, print a message and continue
-			fmt.Printf("unsupported type %T for key: %s\n", v, k)
+			logrus.Warnf("unsupported type %T for key: %s", v, k)
 			continue
 		}
 	}

@@ -32,13 +32,9 @@ func (h *conferenceHandler) RemoveConferencecallID(ctx context.Context, cfID uui
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conference.EventTypeConferenceUpdated, res)
 
 	go func() {
-		switch res.Type {
-
-		default:
-			log.Debugf("Executing default conference leave handle. conference_type: %s", res.Type)
-			if errLeaved := h.removeConferencecallIDTypeConference(ctx, res); errLeaved != nil {
-				log.Errorf("Could not complete the process. err: %v", errLeaved)
-			}
+		log.Debugf("Executing default conference leave handle. conference_type: %s", res.Type)
+		if errLeaved := h.removeConferencecallIDTypeConference(ctx, res); errLeaved != nil {
+			log.Errorf("Could not complete the process. err: %v", errLeaved)
 		}
 	}()
 

@@ -23,7 +23,7 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 
 	// Change: dbutil.ScanRow → commondatabasehandler.ScanRow
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. flowGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. flowGetFromRow. err: %w", err)
 	}
 
 	res.Persist = true
@@ -40,12 +40,12 @@ func (h *handler) FlowCountByCustomerID(ctx context.Context, customerID uuid.UUI
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("FlowCountByCustomerID: could not build query. err: %v", err)
+		return 0, fmt.Errorf("FlowCountByCustomerID: could not build query. err: %w", err)
 	}
 
 	var count int
 	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
-		return 0, fmt.Errorf("FlowCountByCustomerID: could not query. err: %v", err)
+		return 0, fmt.Errorf("FlowCountByCustomerID: could not query. err: %w", err)
 	}
 
 	return count, nil
@@ -62,7 +62,7 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(f)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. FlowCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. FlowCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -73,11 +73,11 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. FlowCreate. err: %v", err)
+		return fmt.Errorf("could not build query. FlowCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. FlowCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. FlowCreate. err: %w", err)
 	}
 
 	_ = h.flowUpdateToCache(ctx, f.ID)
@@ -131,12 +131,12 @@ func (h *handler) flowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, 
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. flowGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. flowGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. flowGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. flowGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -144,7 +144,7 @@ func (h *handler) flowGetFromDB(ctx context.Context, id uuid.UUID) (*flow.Flow, 
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. flowGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. flowGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -193,17 +193,17 @@ func (h *handler) FlowList(ctx context.Context, token string, size uint64, filte
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. FlowGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. FlowGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. FlowGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. FlowGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. FlowGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. FlowGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -213,12 +213,12 @@ func (h *handler) FlowList(ctx context.Context, token string, size uint64, filte
 	for rows.Next() {
 		u, err := h.flowGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. FlowGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. FlowGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. FlowGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. FlowGets. err: %w", err)
 	}
 
 	return res, nil
@@ -271,7 +271,7 @@ func (h *handler) FlowDelete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	if errUpdate := h.flowUpdate(ctx, id, fields); errUpdate != nil {
-		return fmt.Errorf("could not update flow for delete. FlowDelete. err: %v", errUpdate)
+		return fmt.Errorf("could not update flow for delete. FlowDelete. err: %w", errUpdate)
 	}
 
 	return nil
