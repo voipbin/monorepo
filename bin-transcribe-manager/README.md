@@ -22,7 +22,7 @@ Speech-to-text service.
         -rabbit_queue_call "bin-manager.call-manager.request" \
         -rabbit_queue_webhook "bin-manager.webhook-manager.request" \
         -rabbit_queue_storage "bin-manager.storage-manager.request" \
-        -redis_addr 10.164.15.220:6379 \
+        -redis_addr <redis-host>:6379 \
         -redis_db 1
 ```
 

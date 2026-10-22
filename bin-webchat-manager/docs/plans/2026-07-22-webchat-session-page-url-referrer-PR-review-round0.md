@@ -18,7 +18,7 @@ All six were opened via `git show <hash>` and read diff-by-diff; findings below 
 
 ## 1. Commit metadata / hygiene
 
-- `git log --format='%an <%ae>'` on all 6 commits: **all authored by `Sungtae Kim <<author-email>>`**. ✅
+- `git log --format='%an <%ae>'` on all 6 commits: **all authored by `Sungtae Kim <author-email>`**. ✅
 - No `Co-Authored-By` or AI attribution lines in any commit body. ✅
 - Go commit titles: 3 of 5 use the generic `NOJIRA-webchat-session-referrer-page-url` title matching the branch name (per CLAUDE.md convention); 2 (`0def6eaa6`, `80b24dd5a`, `246376749`) use a more descriptive first line instead of the exact branch-name title. This is a **minor** deviation from the "Commit title MUST match the branch name exactly" rule in root CLAUDE.md, but since these are intermediate commits on a feature branch destined for **squash merge**, the squashed commit title is what actually matters and can be set correctly at merge time. Not a blocker, but flagging for the eventual squash-merge title.
 - Every commit body lists affected project(s) with `bin-<service>:`/`project:` prefix bullets per convention. ✅

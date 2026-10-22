@@ -7,7 +7,7 @@ Number-manager for telephone numbers management.
 * +821100000003: test transcribe
 
 # telnyx
-account: sungtae@voipbin.net
+account: <provider-account>
 * +15734531118
 * +14703298699
 

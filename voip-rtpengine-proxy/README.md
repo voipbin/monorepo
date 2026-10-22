@@ -6,7 +6,7 @@ native NG protocol (bencode/UDP).
 ## Queues
 
 - Permanent: `rtpengine.proxy.request`
-- Volatile: `rtpengine.<proxyID>.request` (proxyID = VM internal IP, e.g. `10.164.0.12`)
+- Volatile: `rtpengine.<proxyID>.request` (proxyID = VM internal IP, e.g. `10.0.0.12`)
 
 ## Command format
 
