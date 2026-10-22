@@ -43,8 +43,6 @@ type StreamingHandler interface {
 }
 
 // list of default external media channel options.
-//
-//nolint:deadcode,varcheck
 const (
 	defaultEncapsulation  = string(cmexternalmedia.EncapsulationNone)
 	defaultTransport      = string(cmexternalmedia.TransportWebsocket)

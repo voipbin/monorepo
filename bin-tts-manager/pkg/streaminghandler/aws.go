@@ -145,7 +145,7 @@ func (h *awsHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 		"streaming_id": st.ID,
 	})
 
-	client, err := h.createClient()
+	client, err := h.createClient(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create AWS Polly client")
 	}
@@ -173,13 +173,13 @@ func (h *awsHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 		mu:      sync.Mutex{},
 	}
 
-	h.notifyHandler.PublishEvent(cfCtx, message.EventTypeInitiated, res.Message)
+	h.notifyHandler.PublishEvent(cfCtx, message.EventTypeInitiated, res.Message) //nolint:contextcheck // the session context outlives the request by design and is cancelled on session teardown
 
 	return res, nil
 }
 
-func (h *awsHandler) createClient() (*polly.Client, error) {
-	cfg, err := config.LoadDefaultConfig(context.Background(),
+func (h *awsHandler) createClient(ctx context.Context) (*polly.Client, error) {
+	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(defaultAWSStreamingRegion),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
 			h.accessKey,
@@ -188,7 +188,7 @@ func (h *awsHandler) createClient() (*polly.Client, error) {
 		)),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create AWS config: %v", err)
+		return nil, fmt.Errorf("failed to create AWS config: %w", err)
 	}
 
 	return polly.NewFromConfig(cfg), nil

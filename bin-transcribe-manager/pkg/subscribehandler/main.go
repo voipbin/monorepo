@@ -114,7 +114,7 @@ func (h *subscribeHandler) Run() error {
 
 	// declare the queue for subscribe
 	if err := h.sockHandler.QueueCreate(string(h.subscribeQueue), "normal"); err != nil {
-		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
+		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %w", err)
 	}
 
 	// VOIP-1406: bind the subscribe queue to the global topic exchange `bin-manager.event`
@@ -124,12 +124,12 @@ func (h *subscribeHandler) Run() error {
 	// given queue, and racing them makes the broker close the channel with a 503 (production
 	// incident 2026-07-14, VOIP-1258).
 	if err := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic"); err != nil {
-		return fmt.Errorf("could not declare the global topic exchange. err: %v", err)
+		return fmt.Errorf("could not declare the global topic exchange. err: %w", err)
 	}
 
 	for _, pattern := range topicPatterns {
 		if err := h.sockHandler.QueueBind(string(h.subscribeQueue), pattern, string(commonoutline.QueueNameEvent), false, nil); err != nil {
-			return fmt.Errorf("could not bind the topic pattern. pattern: %s, err: %v", pattern, err)
+			return fmt.Errorf("could not bind the topic pattern. pattern: %s, err: %w", pattern, err)
 		}
 	}
 
@@ -193,7 +193,7 @@ func (h *subscribeHandler) processEvent(m *sock.Event) error {
 
 	if err != nil {
 		log.Errorf("Could not handle the subscribed event correctly. err: %v", err)
-		return fmt.Errorf("could not process the ari event correctly. err: %v", err)
+		return fmt.Errorf("could not process the ari event correctly. err: %w", err)
 	}
 
 	return nil

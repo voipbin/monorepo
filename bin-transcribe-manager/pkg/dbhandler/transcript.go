@@ -22,7 +22,7 @@ func (h *handler) transcriptGetFromRow(row *sql.Rows) (*transcript.Transcript, e
 	res := &transcript.Transcript{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. transcriptGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. transcriptGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -39,7 +39,7 @@ func (h *handler) TranscriptCreate(ctx context.Context, t *transcript.Transcript
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(t)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. TranscriptCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. TranscriptCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -50,11 +50,11 @@ func (h *handler) TranscriptCreate(ctx context.Context, t *transcript.Transcript
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. TranscriptCreate. err: %v", err)
+		return fmt.Errorf("could not build query. TranscriptCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. TranscriptCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. TranscriptCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -124,12 +124,12 @@ func (h *handler) transcriptGetFromDB(ctx context.Context, id uuid.UUID) (*trans
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. transcriptGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. transcriptGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. transcriptGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. transcriptGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -137,14 +137,14 @@ func (h *handler) transcriptGetFromDB(ctx context.Context, id uuid.UUID) (*trans
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. transcriptGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. transcriptGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.transcriptGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get record. transcriptGetFromDB, err: %v", err)
+		return nil, fmt.Errorf("could not get record. transcriptGetFromDB, err: %w", err)
 	}
 
 	return res, nil
@@ -167,17 +167,17 @@ func (h *handler) TranscriptList(ctx context.Context, size uint64, token string,
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. TranscriptGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. TranscriptGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. TranscriptGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. TranscriptGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. TranscriptGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. TranscriptGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -187,12 +187,12 @@ func (h *handler) TranscriptList(ctx context.Context, size uint64, token string,
 	for rows.Next() {
 		u, err := h.transcriptGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. TranscriptGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. TranscriptGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. TranscriptGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. TranscriptGets. err: %w", err)
 	}
 
 	return res, nil

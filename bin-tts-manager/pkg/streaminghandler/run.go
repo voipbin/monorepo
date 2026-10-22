@@ -31,7 +31,7 @@ func (h *streamingHandler) runStreamer(ctx context.Context, st *streaming.Stream
 	tmp, errInit := handler.Init(ctx, st)
 	if errInit != nil {
 		log.Errorf("Handler initialization failed for provider %s: %v", st.Provider, errInit)
-		return fmt.Errorf("could not initialize %s handler: %v", st.Provider, errInit)
+		return fmt.Errorf("could not initialize %s handler: %w", st.Provider, errInit)
 	}
 
 	h.SetVendorInfo(st, vendorName, tmp)

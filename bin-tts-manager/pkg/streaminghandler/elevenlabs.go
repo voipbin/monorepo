@@ -194,7 +194,7 @@ func (h *elevenlabsHandler) Init(ctx context.Context, st *streaming.Streaming) (
 		muConnWebsock: sync.Mutex{},
 	}
 
-	h.notifyHandler.PublishEvent(ctx, message.EventTypeInitiated, res.Message)
+	h.notifyHandler.PublishEvent(ctx, message.EventTypeInitiated, res.Message) //nolint:contextcheck // the session context outlives the request by design and is cancelled on session teardown
 
 	return res, nil
 }
@@ -377,7 +377,7 @@ func (h *elevenlabsHandler) connect(ctx context.Context, st *streaming.Streaming
 	header["xi-api-key"] = []string{h.apiKey}
 
 	// Establish the WebSocket connection.
-	res, _, err := websocket.DefaultDialer.DialContext(ctx, u.String(), header)
+	res, _, err := websocket.DefaultDialer.DialContext(ctx, u.String(), header) //nolint:bodyclose // gorilla/websocket documents that the handshake response body does not need to be closed by the caller
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to connect to ElevenLabs WebSocket at %s", u.String())
 	}

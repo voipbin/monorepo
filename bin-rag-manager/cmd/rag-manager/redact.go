@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -29,7 +30,7 @@ func openPostgres(dsn string) (*sql.DB, error) {
 		return nil, fmt.Errorf("could not connect to PostgreSQL: %w", redactDSNError(err))
 	}
 
-	if err := db.Ping(); err != nil {
+	if err := db.PingContext(context.Background()); err != nil {
 		_ = db.Close()
 		return nil, fmt.Errorf("could not ping PostgreSQL: %w", redactDSNError(err))
 	}

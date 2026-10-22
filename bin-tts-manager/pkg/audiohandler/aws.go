@@ -22,9 +22,9 @@ const (
 	defaultAWSRegion = "eu-central-1"
 )
 
-func awsGetClient(accessKey string, secretKey string) (*polly.Client, error) {
+func awsGetClient(ctx context.Context, accessKey string, secretKey string) (*polly.Client, error) {
 	// Create AWS config
-	cfg, err := config.LoadDefaultConfig(context.Background(),
+	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(defaultAWSRegion),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
 			accessKey,
@@ -34,7 +34,7 @@ func awsGetClient(accessKey string, secretKey string) (*polly.Client, error) {
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to create AWS session: %v", err)
+		return nil, fmt.Errorf("failed to create AWS session: %w", err)
 	}
 
 	// Initialize Polly client

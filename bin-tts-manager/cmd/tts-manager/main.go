@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -71,6 +72,9 @@ func initSignal() {
 	}()
 }
 
+// promReadHeaderTimeout bounds how long the metrics server waits for request headers.
+const promReadHeaderTimeout = 10 * time.Second
+
 func initProm(endpoint, listen string) {
 	// Skip Prometheus initialization if endpoint or listen address is not configured
 	if endpoint == "" || listen == "" {
@@ -81,7 +85,11 @@ func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
-		if err := http.ListenAndServe(listen, nil); err != nil {
+		srv := &http.Server{
+			Addr:              listen,
+			ReadHeaderTimeout: promReadHeaderTimeout,
+		}
+		if err := srv.ListenAndServe(); err != nil {
 			// Prometheus server error is logged but not treated as fatal to avoid unsafe exit from a goroutine.
 			logrus.Errorf("Prometheus server error: %v", err)
 		}

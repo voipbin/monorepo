@@ -147,7 +147,7 @@ func (h *listenHandler) runListenQueue(queue string) error {
 
 	// declare the queue
 	if err := h.sockHandler.QueueCreate(queue, "normal"); err != nil {
-		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
+		return fmt.Errorf("could not declare the queue for listenHandler. err: %w", err)
 	}
 
 	// receive requests
@@ -168,7 +168,7 @@ func (h *listenHandler) runListenQueueVolatile(queue string) error {
 
 	// declare the queue
 	if err := h.sockHandler.QueueCreate(queue, "volatile"); err != nil {
-		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
+		return fmt.Errorf("could not declare the queue for listenHandler. err: %w", err)
 	}
 
 	// receive requests

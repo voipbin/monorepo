@@ -174,7 +174,7 @@ func (h *ragHandler) RagDelete(ctx context.Context, id uuid.UUID) error {
 	log.Debugf("Deleted rag. rag_id: %s", id)
 
 	// Background hard-delete of chunks to reclaim storage
-	go h.chunkHardDeleteByRagID(id)
+	go h.chunkHardDeleteByRagID(id) //nolint:contextcheck,gosec // detached background job by design: the request context is cancelled once the response is sent
 
 	return nil
 }
@@ -232,7 +232,7 @@ func (h *ragHandler) RagRemoveSource(ctx context.Context, ragID, sourceID uuid.U
 	log.Debugf("Deleted source. source_id: %s", sourceID)
 
 	// Background hard-delete of chunks to reclaim storage
-	go h.chunkHardDeleteByDocumentID(sourceID)
+	go h.chunkHardDeleteByDocumentID(sourceID) //nolint:contextcheck,gosec // detached background job by design: the request context is cancelled once the response is sent
 
 	return h.RagGet(ctx, ragID)
 }
@@ -321,7 +321,7 @@ func (h *ragHandler) createDocumentsForSources(ctx context.Context, customerID, 
 			log.Errorf("Could not create document for file_id %s: %v", fileID, err)
 			continue
 		}
-		go h.documentIngest(doc)
+		go h.documentIngest(doc) //nolint:contextcheck,gosec // detached background job by design: the request context is cancelled once the response is sent
 	}
 
 	for _, u := range sourceURLs {
@@ -330,7 +330,7 @@ func (h *ragHandler) createDocumentsForSources(ctx context.Context, customerID, 
 			log.Errorf("Could not create document for url %s: %v", u, err)
 			continue
 		}
-		go h.documentIngest(doc)
+		go h.documentIngest(doc) //nolint:contextcheck,gosec // detached background job by design: the request context is cancelled once the response is sent
 	}
 
 	return nil

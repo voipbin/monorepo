@@ -27,7 +27,7 @@ func websocketConnect(ctx context.Context, mediaURI string) (*websocket.Conn, er
 		Subprotocols: []string{websocketSubprotocol},
 	}
 
-	conn, _, err := dialer.DialContext(ctx, mediaURI, nil)
+	conn, _, err := dialer.DialContext(ctx, mediaURI, nil) //nolint:bodyclose // gorilla/websocket documents that the handshake response body does not need to be closed by the caller
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not dial WebSocket. media_uri: %s", mediaURI)
 	}

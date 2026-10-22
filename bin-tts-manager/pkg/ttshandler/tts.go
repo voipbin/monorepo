@@ -2,7 +2,7 @@ package ttshandler
 
 import (
 	"context"
-	"crypto/sha1"
+	"crypto/sha1" //nolint:gosec // sha1 only derives a deterministic file name, not a security primitive
 	"encoding/xml"
 	"fmt"
 	"strings"
@@ -137,7 +137,7 @@ func (h *ttsHandler) filenameHashGenerator(text string, lang string, provider tt
 	s := fmt.Sprintf("%s%s%s%s", text, lang, provider, voiceID)
 	start := time.Now()
 
-	sh1 := sha1.New()
+	sh1 := sha1.New() //nolint:gosec // sha1 only derives a deterministic file name, not a security primitive
 	sh1.Write([]byte(s))
 	bs := sh1.Sum(nil)
 

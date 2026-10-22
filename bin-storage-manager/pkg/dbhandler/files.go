@@ -22,7 +22,7 @@ func (h *handler) fileGetFromRow(row *sql.Rows) (*file.File, error) {
 	res := &file.File{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. fileGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. fileGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -40,7 +40,7 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(f)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. FileCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. FileCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -51,11 +51,11 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. FileCreate. err: %v", err)
+		return fmt.Errorf("could not build query. FileCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. FileCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. FileCreate. err: %w", err)
 	}
 
 	_ = h.fileUpdateToCache(ctx, f.ID)
@@ -118,12 +118,12 @@ func (h *handler) fileGetFromDB(ctx context.Context, id uuid.UUID) (*file.File, 
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. fileGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. fileGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. fileGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. fileGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -138,7 +138,7 @@ func (h *handler) fileGetFromDB(ctx context.Context, id uuid.UUID) (*file.File, 
 
 	res, err := h.fileGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. fileGetFromDB. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. fileGetFromDB. id: %s, err: %w", id, err)
 	}
 
 	return res, nil
@@ -178,17 +178,17 @@ func (h *handler) FileList(ctx context.Context, token string, size uint64, filte
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. FileGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. FileGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. FileGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. FileGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. FileGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. FileGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -198,7 +198,7 @@ func (h *handler) FileList(ctx context.Context, token string, size uint64, filte
 	for rows.Next() {
 		u, err := h.fileGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. FileGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. FileGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
@@ -273,7 +273,7 @@ func (h *handler) FileDelete(ctx context.Context, id uuid.UUID) error {
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("could not get rows affected: %v", err)
+		return fmt.Errorf("could not get rows affected: %w", err)
 	} else if rowsAffected == 0 {
 		return ErrNotFound
 	}
