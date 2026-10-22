@@ -19,7 +19,7 @@ func (h *analysisHandler) Get(ctx context.Context, customerID, id uuid.UUID) (*a
 		if errors.Is(err, analysisdbhandler.ErrNotFound) {
 			return nil, ErrNotFound
 		}
-		return nil, fmt.Errorf("Get: could not get analysis. err: %v", err)
+		return nil, fmt.Errorf("Get: could not get analysis. err: %w", err)
 	}
 	return res, nil
 }
@@ -31,7 +31,7 @@ func (h *analysisHandler) GetByActiveflowID(ctx context.Context, customerID, act
 		if errors.Is(err, analysisdbhandler.ErrNotFound) {
 			return nil, ErrNotFound
 		}
-		return nil, fmt.Errorf("GetByActiveflowID: could not get analysis. err: %v", err)
+		return nil, fmt.Errorf("GetByActiveflowID: could not get analysis. err: %w", err)
 	}
 	return res, nil
 }
@@ -40,7 +40,7 @@ func (h *analysisHandler) GetByActiveflowID(ctx context.Context, customerID, act
 func (h *analysisHandler) List(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[analysis.Field]any) ([]*analysis.Analysis, error) {
 	res, err := h.dbHandler.AnalysisList(ctx, customerID, pageSize, pageToken, filters)
 	if err != nil {
-		return nil, fmt.Errorf("List: could not list analyses. err: %v", err)
+		return nil, fmt.Errorf("List: could not list analyses. err: %w", err)
 	}
 	return res, nil
 }
@@ -52,7 +52,7 @@ func (h *analysisHandler) Delete(ctx context.Context, customerID, id uuid.UUID) 
 		if errors.Is(err, analysisdbhandler.ErrNotFound) {
 			return nil, ErrNotFound
 		}
-		return nil, fmt.Errorf("Delete: could not delete analysis. err: %v", err)
+		return nil, fmt.Errorf("Delete: could not delete analysis. err: %w", err)
 	}
 	return res, nil
 }

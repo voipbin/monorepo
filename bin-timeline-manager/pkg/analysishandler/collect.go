@@ -60,7 +60,7 @@ func (h *analysisHandler) collectInput(ctx context.Context, customerID, activefl
 	// (1) collect all aggregated events, paginated and bounded.
 	raw, reducedByCap, err := h.collectEvents(ctx, activeflowID)
 	if err != nil {
-		return nil, fmt.Errorf("collectInput: could not collect events. err: %v", err)
+		return nil, fmt.Errorf("collectInput: could not collect events. err: %w", err)
 	}
 
 	// (2) reduce: drop low-signal repetitive non-error events if over target.
@@ -108,7 +108,7 @@ func (h *analysisHandler) collectEvents(ctx context.Context, activeflowID uuid.U
 	for page := 0; page < analysisMaxPages; page++ {
 		resp, err := h.eventHandler.AggregatedList(ctx, activeflowID, pageToken, analysisEventPageSize)
 		if err != nil {
-			return nil, false, fmt.Errorf("collectEvents: could not list events. err: %v", err)
+			return nil, false, fmt.Errorf("collectEvents: could not list events. err: %w", err)
 		}
 		if resp == nil || len(resp.Result) == 0 {
 			break

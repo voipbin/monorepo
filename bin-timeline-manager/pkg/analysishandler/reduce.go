@@ -101,12 +101,12 @@ func resourceIDOf(e *event.Event) string {
 	return ""
 }
 
-func truncateRunes(s string, max int) string {
+func truncateRunes(s string, limit int) string {
 	r := []rune(s)
-	if len(r) <= max {
+	if len(r) <= limit {
 		return s
 	}
-	return string(r[:max]) + "..."
+	return string(r[:limit]) + "..."
 }
 
 // collectTranscripts fetches transcript text for the activeflow's transcribe

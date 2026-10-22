@@ -502,7 +502,7 @@ func filterInternalPackets(pcapData []byte) ([]byte, error) {
 		}
 	}
 
-	return buf.Bytes(), nil
+	return buf.Bytes(), nil //nolint:nilerr // a read error (EOF included) ends the loop and the packets written so far are returned by design
 }
 
 // sdpMediaEndpoint represents a media endpoint extracted from SDP negotiation.
@@ -622,7 +622,7 @@ func rewriteRTPPacketIPs(pcapData []byte, endpoints []sdpMediaEndpoint) ([]byte,
 		}
 	}
 
-	return buf.Bytes(), nil
+	return buf.Bytes(), nil //nolint:nilerr // a read error (EOF included) ends the loop and the packets written so far are returned by design
 }
 
 // rewritePacketIPs rewrites IP addresses in a single packet based on port-to-IP mapping.

@@ -22,7 +22,7 @@ func (h *analysisHandler) runChain(ctx context.Context, customerID, activeflowID
 	// (1)-(4) input collection, reduction, freeze+index, pre-extraction.
 	input, err := h.collectInput(ctx, customerID, activeflowID)
 	if err != nil {
-		return nil, "", fmt.Errorf("runChain: could not collect input. err: %v", err)
+		return nil, "", fmt.Errorf("runChain: could not collect input. err: %w", err)
 	}
 
 	// (4b) Phase A enrichment: compute the Go-authoritative context/outcome/
@@ -47,7 +47,7 @@ func (h *analysisHandler) runChain(ctx context.Context, customerID, activeflowID
 	// (6) raw-output validation (enum / evidence / index-range) on the LLM JSON.
 	raw, err := verdict.ValidateRaw(rawVerdict, len(input.events))
 	if err != nil {
-		return nil, "", fmt.Errorf("runChain: raw verdict validation failed. err: %v", err)
+		return nil, "", fmt.Errorf("runChain: raw verdict validation failed. err: %w", err)
 	}
 
 	// (7) resolution + (c) deterministic overwrite of resources_used.
@@ -63,7 +63,7 @@ func (h *analysisHandler) runChain(ctx context.Context, customerID, activeflowID
 
 	out, err := json.Marshal(final)
 	if err != nil {
-		return nil, "", fmt.Errorf("runChain: could not marshal final verdict. err: %v", err)
+		return nil, "", fmt.Errorf("runChain: could not marshal final verdict. err: %w", err)
 	}
 	return out, modelUsed, nil
 }
@@ -88,7 +88,7 @@ func (h *analysisHandler) runCombined(ctx context.Context, input *collectedInput
 
 	resp, err := h.callGateway(ctx, prompt, data, verdictSchema, "timeline_verdict", h.models.Stage3)
 	if err != nil {
-		return nil, "", fmt.Errorf("runCombined: %v", err)
+		return nil, "", fmt.Errorf("runCombined: %w", err)
 	}
 	return resp.Result, resp.Model, nil
 }
@@ -102,14 +102,14 @@ func (h *analysisHandler) runStaged(ctx context.Context, input *collectedInput, 
 	stage1Data := h.buildStage1Data(input, enrichment)
 	resp1, err := h.callGateway(ctx, stage1Prompt, stage1Data, stage1Schema, "timeline_stage1", h.models.Stage1)
 	if err != nil {
-		return nil, "", nil, fmt.Errorf("runStaged: stage1: %v", err)
+		return nil, "", nil, fmt.Errorf("runStaged: stage1: %w", err)
 	}
 
 	// Stage 2 — Content.
 	stage2Data := h.buildStage2Data(resp1.Result, input)
 	resp2, err := h.callGateway(ctx, stage2Prompt, stage2Data, stage2Schema, "timeline_stage2", h.models.Stage2)
 	if err != nil {
-		return nil, "", nil, fmt.Errorf("runStaged: stage2: %v", err)
+		return nil, "", nil, fmt.Errorf("runStaged: stage2: %w", err)
 	}
 
 	// Parse the Stage 2 content. Its schema is the OBJECT
@@ -118,14 +118,14 @@ func (h *analysisHandler) runStaged(ctx context.Context, input *collectedInput, 
 	// is consumed by the Stage 3 prompt, not persisted here.
 	var s2 stage2Result
 	if err := json.Unmarshal(resp2.Result, &s2); err != nil {
-		return nil, "", nil, fmt.Errorf("runStaged: could not parse stage2 content. err: %v", err)
+		return nil, "", nil, fmt.Errorf("runStaged: could not parse stage2 content. err: %w", err)
 	}
 
 	// Stage 3 — Diagnosis (produces the final verdict, WITHOUT interactions).
 	stage3Data := h.buildStage3Data(resp1.Result, resp2.Result, input, enrichment)
 	resp3, err := h.callGateway(ctx, stage3Prompt, stage3Data, stage3VerdictSchema, "timeline_verdict", h.models.Stage3)
 	if err != nil {
-		return nil, "", nil, fmt.Errorf("runStaged: stage3: %v", err)
+		return nil, "", nil, fmt.Errorf("runStaged: stage3: %w", err)
 	}
 
 	return resp3.Result, resp3.Model, s2.Interactions, nil
@@ -152,7 +152,7 @@ func (h *analysisHandler) callGateway(ctx context.Context, prompt string, data, 
 
 	resp, err := h.reqHandler.AIV1ServiceTypeAnalysisRun(ctx, req, analysisGatewayTimeoutMS)
 	if err != nil {
-		return nil, fmt.Errorf("gateway call failed. err: %v", err)
+		return nil, fmt.Errorf("gateway call failed. err: %w", err)
 	}
 	if resp == nil {
 		return nil, fmt.Errorf("gateway returned nil response")
