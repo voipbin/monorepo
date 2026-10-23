@@ -45,7 +45,7 @@ func (h *speakingHandler) Create(
 	existing, err := h.db.SpeakingGets(ctx, "", 100, filters)
 	if err != nil {
 		log.Errorf("Could not check existing sessions. err: %v", err)
-		return nil, fmt.Errorf("could not check existing sessions: %v", err)
+		return nil, fmt.Errorf("could not check existing sessions: %w", err)
 	}
 	for _, s := range existing {
 		if s.Status == speaking.StatusActive || s.Status == speaking.StatusInitiating {
@@ -74,7 +74,7 @@ func (h *speakingHandler) Create(
 
 	if errCreate := h.db.SpeakingCreate(ctx, spk); errCreate != nil {
 		log.Errorf("Could not create speaking record. err: %v", errCreate)
-		return nil, fmt.Errorf("could not create speaking record: %v", errCreate)
+		return nil, fmt.Errorf("could not create speaking record: %w", errCreate)
 	}
 	log.WithField("speaking", spk).Debugf("Created speaking record. speaking_id: %s", id)
 
@@ -115,7 +115,7 @@ func (h *speakingHandler) Create(
 		_ = h.db.SpeakingUpdate(ctx, id, map[speaking.Field]any{
 			speaking.FieldStatus: speaking.StatusStopped,
 		})
-		return nil, fmt.Errorf("could not start streaming session: %v", errStart)
+		return nil, fmt.Errorf("could not start streaming session: %w", errStart)
 	}
 
 	if errUpdate := h.db.SpeakingUpdate(ctx, id, map[speaking.Field]any{
@@ -191,7 +191,7 @@ func (h *speakingHandler) Say(ctx context.Context, id uuid.UUID, text string) (*
 	spk, err := h.db.SpeakingGet(ctx, id)
 	if err != nil {
 		log.Infof("Could not get speaking. err: %v", err)
-		return nil, fmt.Errorf("speaking not found: %v", err)
+		return nil, fmt.Errorf("speaking not found: %w", err)
 	}
 	log.WithField("speaking", spk).Debugf("Retrieved speaking. speaking_id: %s", id)
 
@@ -205,12 +205,12 @@ func (h *speakingHandler) Say(ctx context.Context, id uuid.UUID, text string) (*
 	// the race where Say() is called before the AudioSocket connects.
 	if _, errInit := h.streamingHandler.SayInit(ctx, id, uuid.Nil); errInit != nil {
 		log.Errorf("Could not initialize streaming vendor. err: %v", errInit)
-		return nil, fmt.Errorf("could not initialize streaming vendor: %v", errInit)
+		return nil, fmt.Errorf("could not initialize streaming vendor: %w", errInit)
 	}
 
 	if errSay := h.streamingHandler.SayAdd(ctx, id, uuid.Nil, text); errSay != nil {
 		log.Errorf("Could not add text. err: %v", errSay)
-		return nil, fmt.Errorf("could not add text: %v", errSay)
+		return nil, fmt.Errorf("could not add text: %w", errSay)
 	}
 
 	return spk, nil
@@ -226,7 +226,7 @@ func (h *speakingHandler) Flush(ctx context.Context, id uuid.UUID) (*speaking.Sp
 	spk, err := h.db.SpeakingGet(ctx, id)
 	if err != nil {
 		log.Infof("Could not get speaking. err: %v", err)
-		return nil, fmt.Errorf("speaking not found: %v", err)
+		return nil, fmt.Errorf("speaking not found: %w", err)
 	}
 	log.WithField("speaking", spk).Debugf("Retrieved speaking. speaking_id: %s", id)
 
@@ -236,7 +236,7 @@ func (h *speakingHandler) Flush(ctx context.Context, id uuid.UUID) (*speaking.Sp
 
 	if errFlush := h.streamingHandler.SayFlush(ctx, id); errFlush != nil {
 		log.Errorf("Could not flush. err: %v", errFlush)
-		return nil, fmt.Errorf("could not flush: %v", errFlush)
+		return nil, fmt.Errorf("could not flush: %w", errFlush)
 	}
 
 	return spk, nil
@@ -252,7 +252,7 @@ func (h *speakingHandler) Stop(ctx context.Context, id uuid.UUID) (*speaking.Spe
 	spk, err := h.db.SpeakingGet(ctx, id)
 	if err != nil {
 		log.Infof("Could not get speaking. err: %v", err)
-		return nil, fmt.Errorf("speaking not found: %v", err)
+		return nil, fmt.Errorf("speaking not found: %w", err)
 	}
 	log.WithField("speaking", spk).Debugf("Retrieved speaking. speaking_id: %s", id)
 
@@ -268,7 +268,7 @@ func (h *speakingHandler) Stop(ctx context.Context, id uuid.UUID) (*speaking.Spe
 		speaking.FieldStatus: speaking.StatusStopped,
 	}); errUpdate != nil {
 		log.Errorf("Could not update speaking status. err: %v", errUpdate)
-		return nil, fmt.Errorf("could not update speaking status: %v", errUpdate)
+		return nil, fmt.Errorf("could not update speaking status: %w", errUpdate)
 	}
 
 	res, errGet := h.db.SpeakingGet(ctx, id)
@@ -294,13 +294,13 @@ func (h *speakingHandler) Delete(ctx context.Context, id uuid.UUID) (*speaking.S
 	spk, err := h.db.SpeakingGet(ctx, id)
 	if err != nil {
 		log.Infof("Could not get speaking. err: %v", err)
-		return nil, fmt.Errorf("speaking not found: %v", err)
+		return nil, fmt.Errorf("speaking not found: %w", err)
 	}
 	log.WithField("speaking", spk).Debugf("Retrieved speaking. speaking_id: %s", id)
 
 	if errDelete := h.db.SpeakingDelete(ctx, id); errDelete != nil {
 		log.Errorf("Could not delete speaking. err: %v", errDelete)
-		return nil, fmt.Errorf("could not delete speaking: %v", errDelete)
+		return nil, fmt.Errorf("could not delete speaking: %w", errDelete)
 	}
 
 	res, errGet := h.db.SpeakingGet(ctx, id)

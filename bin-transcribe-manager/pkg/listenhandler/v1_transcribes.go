@@ -131,7 +131,7 @@ func (h *listenHandler) processV1TranscribesIDGet(ctx context.Context, m *sock.R
 
 	data, err := json.Marshal(c)
 	if err != nil {
-		return simpleResponse(500), nil
+		return simpleResponse(500), nil //nolint:nilerr // RPC convention: a marshal failure is reported as a 500 response, not as a transport error
 	}
 
 	res := &sock.Response{

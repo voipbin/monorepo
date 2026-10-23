@@ -17,7 +17,7 @@ const speakingTable = "tts_manager_speaking"
 func (h *dbHandler) speakingGetFromRow(row *sql.Rows) (*speaking.Speaking, error) {
 	res := &speaking.Speaking{}
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. speakingGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. speakingGetFromRow. err: %w", err)
 	}
 	return res, nil
 }
@@ -27,7 +27,7 @@ func (h *dbHandler) SpeakingCreate(ctx context.Context, s *speaking.Speaking) er
 
 	fields, err := commondatabasehandler.PrepareFields(s)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. SpeakingCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. SpeakingCreate. err: %w", err)
 	}
 
 	query, args, err := squirrel.
@@ -36,11 +36,11 @@ func (h *dbHandler) SpeakingCreate(ctx context.Context, s *speaking.Speaking) er
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. SpeakingCreate. err: %v", err)
+		return fmt.Errorf("could not build query. SpeakingCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. SpeakingCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. SpeakingCreate. err: %w", err)
 	}
 
 	return nil
@@ -56,12 +56,12 @@ func (h *dbHandler) SpeakingGet(ctx context.Context, id uuid.UUID) (*speaking.Sp
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. SpeakingGet. err: %v", err)
+		return nil, fmt.Errorf("could not build query. SpeakingGet. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. SpeakingGet. err: %v", err)
+		return nil, fmt.Errorf("could not query. SpeakingGet. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -69,7 +69,7 @@ func (h *dbHandler) SpeakingGet(ctx context.Context, id uuid.UUID) (*speaking.Sp
 
 	if !rows.Next() {
 		if err := rows.Err(); err != nil {
-			return nil, fmt.Errorf("row error. SpeakingGet. err: %v", err)
+			return nil, fmt.Errorf("row error. SpeakingGet. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -94,17 +94,17 @@ func (h *dbHandler) SpeakingGets(ctx context.Context, token string, size uint64,
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. SpeakingGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. SpeakingGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. SpeakingGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. SpeakingGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. SpeakingGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. SpeakingGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -114,12 +114,12 @@ func (h *dbHandler) SpeakingGets(ctx context.Context, token string, size uint64,
 	for rows.Next() {
 		s, err := h.speakingGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan row. SpeakingGets. err: %v", err)
+			return nil, fmt.Errorf("could not scan row. SpeakingGets. err: %w", err)
 		}
 		res = append(res, s)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows error. SpeakingGets. err: %v", err)
+		return nil, fmt.Errorf("rows error. SpeakingGets. err: %w", err)
 	}
 
 	return res, nil
@@ -134,7 +134,7 @@ func (h *dbHandler) SpeakingUpdate(ctx context.Context, id uuid.UUID, fields map
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. SpeakingUpdate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. SpeakingUpdate. err: %w", err)
 	}
 
 	query, args, err := squirrel.
@@ -144,11 +144,11 @@ func (h *dbHandler) SpeakingUpdate(ctx context.Context, id uuid.UUID, fields map
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. SpeakingUpdate. err: %v", err)
+		return fmt.Errorf("could not build query. SpeakingUpdate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. SpeakingUpdate. err: %v", err)
+		return fmt.Errorf("could not execute query. SpeakingUpdate. err: %w", err)
 	}
 
 	return nil

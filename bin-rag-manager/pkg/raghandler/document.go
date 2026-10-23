@@ -406,7 +406,7 @@ func (h *ragHandler) DocumentIngestPendingAll(ctx context.Context) {
 
 	log.Infof("Startup sweep: found %d pending documents to process", len(docs))
 	for _, doc := range docs {
-		go h.documentIngest(doc)
+		go h.documentIngest(doc) //nolint:contextcheck,gosec // detached background job by design: no request context exists here and documentIngest builds its own context
 	}
 }
 
@@ -445,6 +445,6 @@ func (h *ragHandler) ingestionTickerRun(ctx context.Context, threshold time.Dura
 		log.Infof("Ticker: found %d pending documents to process", len(docs))
 	}
 	for _, doc := range docs {
-		go h.documentIngest(doc)
+		go h.documentIngest(doc) //nolint:contextcheck,gosec // detached background job by design: no request context exists here and documentIngest builds its own context
 	}
 }

@@ -123,7 +123,7 @@ func (h *listenHandler) v1SpeakingsIDGet(ctx context.Context, m *sock.Request) (
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return simpleResponse(400), nil
+		return simpleResponse(400), nil //nolint:nilerr // RPC convention: a malformed URI is reported as a 400 response, not as a transport error
 	}
 
 	// "/v1/speakings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
@@ -159,7 +159,7 @@ func (h *listenHandler) v1SpeakingsIDSayPost(ctx context.Context, m *sock.Reques
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return simpleResponse(400), nil
+		return simpleResponse(400), nil //nolint:nilerr // RPC convention: a malformed URI is reported as a 400 response, not as a transport error
 	}
 
 	// "/v1/speakings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/say"
@@ -202,7 +202,7 @@ func (h *listenHandler) v1SpeakingsIDFlushPost(ctx context.Context, m *sock.Requ
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return simpleResponse(400), nil
+		return simpleResponse(400), nil //nolint:nilerr // RPC convention: a malformed URI is reported as a 400 response, not as a transport error
 	}
 
 	// "/v1/speakings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/flush"
@@ -238,7 +238,7 @@ func (h *listenHandler) v1SpeakingsIDStopPost(ctx context.Context, m *sock.Reque
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return simpleResponse(400), nil
+		return simpleResponse(400), nil //nolint:nilerr // RPC convention: a malformed URI is reported as a 400 response, not as a transport error
 	}
 
 	// "/v1/speakings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/stop"
@@ -274,7 +274,7 @@ func (h *listenHandler) v1SpeakingsIDDelete(ctx context.Context, m *sock.Request
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
-		return simpleResponse(400), nil
+		return simpleResponse(400), nil //nolint:nilerr // RPC convention: a malformed URI is reported as a 400 response, not as a transport error
 	}
 
 	// "/v1/speakings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"

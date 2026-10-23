@@ -51,7 +51,7 @@ func gcpGetClient(ctx context.Context, endpoint string) (*texttospeech.Client, e
 
 	// We know staticcheck flags this, but the texttospeech client library
 	// has not yet been updated to use the new context package.
-	//nolint:staticcheck
+	//nolint:staticcheck // library limitation described in the comment above
 	res, err := texttospeech.NewClient(
 		ctx,
 		option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepAliveParams)),

@@ -23,7 +23,7 @@ func (h *listenHandler) v1RecordingsIDGet(ctx context.Context, req *sock.Request
 
 	tmpRecordingID, err := url.QueryUnescape(uriItems[3])
 	if err != nil {
-		return nil, fmt.Errorf("could not unescape the recording id. err: %v", err)
+		return nil, fmt.Errorf("could not unescape the recording id. err: %w", err)
 	}
 	recordingID := uuid.FromStringOrNil(tmpRecordingID)
 
@@ -59,7 +59,7 @@ func (h *listenHandler) v1RecordingsIDPeaksGet(ctx context.Context, req *sock.Re
 
 	tmpRecordingID, err := url.QueryUnescape(uriItems[3])
 	if err != nil {
-		return nil, fmt.Errorf("could not unescape the recording id. err: %v", err)
+		return nil, fmt.Errorf("could not unescape the recording id. err: %w", err)
 	}
 	recordingID := uuid.FromStringOrNil(tmpRecordingID)
 
@@ -97,7 +97,7 @@ func (h *listenHandler) v1RecordingsIDDelete(ctx context.Context, req *sock.Requ
 
 	tmpRecordingID, err := url.QueryUnescape(uriItems[3])
 	if err != nil {
-		return nil, fmt.Errorf("could not unescape the recording id. err: %v", err)
+		return nil, fmt.Errorf("could not unescape the recording id. err: %w", err)
 	}
 	recordingID := uuid.FromStringOrNil(tmpRecordingID)
 

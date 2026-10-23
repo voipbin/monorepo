@@ -29,7 +29,7 @@ func awsNewClient(accessKey string, secretKey string) (*transcribestreaming.Clie
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load AWS SDK v2 config: %v", err)
+		return nil, fmt.Errorf("failed to load AWS SDK v2 config: %w", err)
 	}
 
 	res := transcribestreaming.NewFromConfig(cfg)

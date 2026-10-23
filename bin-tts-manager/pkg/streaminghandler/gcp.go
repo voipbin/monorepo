@@ -187,7 +187,7 @@ func (h *gcpHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 		muStream:     sync.Mutex{},
 	}
 
-	h.notifyHandler.PublishEvent(cfCtx, message.EventTypeInitiated, res.Message)
+	h.notifyHandler.PublishEvent(cfCtx, message.EventTypeInitiated, res.Message) //nolint:contextcheck // the session context outlives the request by design and is cancelled on session teardown
 
 	return res, nil
 }
@@ -199,7 +199,7 @@ func (h *gcpHandler) connect(ctx context.Context, voiceID string, langCode strin
 		PermitWithoutStream: true,
 	}
 
-	//nolint:staticcheck
+	//nolint:staticcheck // same texttospeech library limitation as audiohandler/gcp.go
 	client, err := texttospeech.NewClient(
 		ctx,
 		option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepAliveParams)),

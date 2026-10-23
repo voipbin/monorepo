@@ -4,7 +4,7 @@ package filehandler
 
 import (
 	"context"
-	"crypto/sha1"
+	"crypto/sha1" //nolint:gosec // sha1 only derives a deterministic file name, not a security primitive
 	"fmt"
 	"os"
 	"sort"
@@ -112,7 +112,7 @@ func NewFileHandler(
 	} else {
 		log.Infof("Found GOOGLE_APPLICATION_CREDENTIALS at: %s", envCredPath)
 
-		jsonContent, err := os.ReadFile(envCredPath)
+		jsonContent, err := os.ReadFile(envCredPath) //nolint:gosec // the path comes from the operator-provided GOOGLE_APPLICATION_CREDENTIALS, not from request input
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to read credential file")
 		}
@@ -217,7 +217,7 @@ func createZipFilepathHash(filenames []string) string {
 
 	tmpJoin := strings.Join(filenames, "")
 
-	sh1 := sha1.New()
+	sh1 := sha1.New() //nolint:gosec // sha1 only derives a deterministic file name, not a security primitive
 	sh1.Write([]byte(tmpJoin))
 	tmp := sh1.Sum(nil)
 
