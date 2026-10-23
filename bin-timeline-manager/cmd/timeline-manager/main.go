@@ -204,7 +204,7 @@ func runServices(ctx context.Context) (<-chan struct{}, error) {
 	var analysisH analysishandler.AnalysisHandler
 	cfg := config.Get()
 	if cfg.DatabaseDSN != "" {
-		sqlDB, err := commondatabasehandler.Connect(cfg.DatabaseDSN)
+		sqlDB, err := commondatabasehandler.Connect(cfg.DatabaseDSN) //nolint:contextcheck // one-shot boot-time connect; Connect pings with context.Background() by design and takes no ctx
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not connect to analysis MySQL store")
 		}
