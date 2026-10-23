@@ -48,7 +48,7 @@ func (c *telnyxClient) ValidateKey(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("whoami request failed: %w", err)
 	}
-	defer resp.Body.Close() //nolint:errcheck
+	defer resp.Body.Close() //nolint:errcheck // response body close error is not actionable
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 		return ErrInvalidKey
@@ -127,7 +127,7 @@ func (c *telnyxClient) tryCreateOutboundVoiceProfile(ctx context.Context, name s
 	if err != nil {
 		return "", nil, fmt.Errorf("create voice profile request failed: %w", err)
 	}
-	defer resp.Body.Close() //nolint:errcheck
+	defer resp.Body.Close() //nolint:errcheck // response body close error is not actionable
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 		return "", nil, ErrInvalidKey
@@ -185,7 +185,7 @@ func (c *telnyxClient) DeleteOutboundVoiceProfile(ctx context.Context, profileID
 	if err != nil {
 		return fmt.Errorf("delete voice profile request failed: %w", err)
 	}
-	defer resp.Body.Close() //nolint:errcheck
+	defer resp.Body.Close() //nolint:errcheck // response body close error is not actionable
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("telnyx delete voice profile returned unexpected status %d", resp.StatusCode)
@@ -233,7 +233,7 @@ func (c *telnyxClient) CreateFQDNConnection(ctx context.Context, name, profileID
 	if err != nil {
 		return "", fmt.Errorf("create fqdn connection request failed: %w", err)
 	}
-	defer resp.Body.Close() //nolint:errcheck
+	defer resp.Body.Close() //nolint:errcheck // response body close error is not actionable
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 		return "", ErrInvalidKey
@@ -262,7 +262,7 @@ func (c *telnyxClient) DeleteFQDNConnection(ctx context.Context, connID string) 
 	if err != nil {
 		return fmt.Errorf("delete fqdn connection request failed: %w", err)
 	}
-	defer resp.Body.Close() //nolint:errcheck
+	defer resp.Body.Close() //nolint:errcheck // response body close error is not actionable
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("telnyx delete fqdn connection returned unexpected status %d", resp.StatusCode)
@@ -293,7 +293,7 @@ func (c *telnyxClient) RegisterFQDN(ctx context.Context, connID string, fqdn str
 	if err != nil {
 		return "", fmt.Errorf("register fqdn request failed: %w", err)
 	}
-	defer resp.Body.Close() //nolint:errcheck
+	defer resp.Body.Close() //nolint:errcheck // response body close error is not actionable
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 		return "", ErrInvalidKey
@@ -322,7 +322,7 @@ func (c *telnyxClient) DeleteFQDN(ctx context.Context, fqdnID string) error {
 	if err != nil {
 		return fmt.Errorf("delete fqdn request failed: %w", err)
 	}
-	defer resp.Body.Close() //nolint:errcheck
+	defer resp.Body.Close() //nolint:errcheck // response body close error is not actionable
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("telnyx delete fqdn returned unexpected status %d", resp.StatusCode)

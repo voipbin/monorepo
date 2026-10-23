@@ -23,7 +23,7 @@ func (h *handler) providerCallGetFromRow(row *sql.Rows) (*providercall.ProviderC
 	res := &providercall.ProviderCall{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. providerCallGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. providerCallGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -50,7 +50,7 @@ func (h *handler) ProviderCallCreate(ctx context.Context, p *providercall.Provid
 
 	fields, err := commondatabasehandler.PrepareFields(p)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. ProviderCallCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ProviderCallCreate. err: %w", err)
 	}
 
 	sb := squirrel.
@@ -60,11 +60,11 @@ func (h *handler) ProviderCallCreate(ctx context.Context, p *providercall.Provid
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ProviderCallCreate. err: %v", err)
+		return fmt.Errorf("could not build query. ProviderCallCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. ProviderCallCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. ProviderCallCreate. err: %w", err)
 	}
 
 	return nil
@@ -80,12 +80,12 @@ func (h *handler) providerCallGetFromDB(ctx context.Context, id uuid.UUID) (*pro
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. providerCallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. providerCallGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. providerCallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. providerCallGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -93,14 +93,14 @@ func (h *handler) providerCallGetFromDB(ctx context.Context, id uuid.UUID) (*pro
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. providerCallGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. providerCallGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.providerCallGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. providerCallGetFromDB. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. providerCallGetFromDB. id: %s, err: %w", id, err)
 	}
 
 	return res, nil
@@ -131,17 +131,17 @@ func (h *handler) ProviderCallList(ctx context.Context, token string, limit uint
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. ProviderCallList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. ProviderCallList. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ProviderCallList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ProviderCallList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ProviderCallList. err: %v", err)
+		return nil, fmt.Errorf("could not query. ProviderCallList. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -151,12 +151,12 @@ func (h *handler) ProviderCallList(ctx context.Context, token string, limit uint
 	for rows.Next() {
 		u, err := h.providerCallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. ProviderCallList. err: %v", err)
+			return nil, fmt.Errorf("could not get data. ProviderCallList. err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. ProviderCallList. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. ProviderCallList. err: %w", err)
 	}
 
 	return res, nil
@@ -193,7 +193,7 @@ func (h *handler) ProviderCallDelete(ctx context.Context, id uuid.UUID) error {
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("could not get rows affected: %v", err)
+		return fmt.Errorf("could not get rows affected: %w", err)
 	} else if rowsAffected == 0 {
 		return ErrNotFound
 	}

@@ -39,6 +39,7 @@ const (
 )
 
 // CustomerIDBasicRoute is the customer ID for system-wide default routes.
+//
 // Deprecated: Use cmcustomer.IDBasicRoute from bin-customer-manager/models/customer instead.
 // Kept as an alias for backward compatibility.
 var CustomerIDBasicRoute = cmcustomer.IDBasicRoute

@@ -22,7 +22,7 @@ func (h *handler) routeGetFromRow(row *sql.Rows) (*route.Route, error) {
 	res := &route.Route{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. routeGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. routeGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -40,7 +40,7 @@ func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(r)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. RouteCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. RouteCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -51,11 +51,11 @@ func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. RouteCreate. err: %v", err)
+		return fmt.Errorf("could not build query. RouteCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. RouteCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. RouteCreate. err: %w", err)
 	}
 
 	_ = h.routeUpdateToCache(ctx, r.ID)
@@ -107,12 +107,12 @@ func (h *handler) routeGetFromDB(ctx context.Context, id uuid.UUID) (*route.Rout
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. routeGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. routeGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. routeGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. routeGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -120,14 +120,14 @@ func (h *handler) routeGetFromDB(ctx context.Context, id uuid.UUID) (*route.Rout
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. routeGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. routeGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.routeGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data from row. routeGetFromDB. id: %s, err: %v", id, err)
+		return nil, fmt.Errorf("could not get data from row. routeGetFromDB. id: %s, err: %w", id, err)
 	}
 
 	return res, nil
@@ -168,17 +168,17 @@ func (h *handler) RouteList(ctx context.Context, token string, limit uint64, fil
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. RouteGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. RouteGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. RouteGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. RouteGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. RouteGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. RouteGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -188,12 +188,12 @@ func (h *handler) RouteList(ctx context.Context, token string, limit uint64, fil
 	for rows.Next() {
 		u, err := h.routeGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. RouteGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. RouteGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. RouteGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. RouteGets. err: %w", err)
 	}
 
 	return res, nil
@@ -230,7 +230,7 @@ func (h *handler) RouteDelete(ctx context.Context, id uuid.UUID) error {
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("could not get rows affected: %v", err)
+		return fmt.Errorf("could not get rows affected: %w", err)
 	} else if rowsAffected == 0 {
 		return ErrNotFound
 	}
