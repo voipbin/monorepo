@@ -258,6 +258,20 @@ This rule applies to every service in the monorepo, and covers both directions o
 
 **Why:** Keeps the transport contract owned by one layer. Handler *logic* stays free of wire-format concerns — json tags on a domain model are declarative metadata, not logic, so style (A) does not drag wire handling into the business code. Request/response shapes can still evolve, and each wire DTO has exactly one place to audit. Style (A) is the default for a single resource or simple collection because a separate DTO would be duplicated boilerplate that can silently drift from the domain; reach for style (B) only when the wire shape genuinely cannot be any single domain type (composition, reshape, or a narrowed subset).
 
+## CRITICAL: Public repository hygiene
+
+**CRITICAL: This repository is public. Never put the following in any file, PR title or body, review comment, issue, commit message, branch name, code comment, test fixture, screenshot, or pasted log or command output:**
+
+- Personal data of customers or people: names, email addresses, phone numbers, customer or account IDs, account balance or status.
+- Credentials: passwords, API keys, tokens, private keys, connection strings with credentials, and `.env` or configuration files that contain them. Use obviously fake values in tests and examples.
+- Real infrastructure details: IP addresses, host names, database addresses, and ports of real environments.
+- Authentication and access-control configuration details, and unfixed weaknesses.
+- Internal process notes: who approved or decided what, internal tooling, and URLs of internal systems or tickets.
+
+Use neutral placeholders (`customer A`, `10.0.0.x`, `203.0.113.x`, `<db-host>`). Check your diff and your PR text for these classes before you push. If a credential was pushed, treat it as compromised and revoke or rotate it immediately. If you find any exposure, report it privately to support@voipbin.net and do not describe it in a PR, issue, or commit message.
+
+→ Detail: [docs/workflows/public-repo-hygiene.md](docs/workflows/public-repo-hygiene.md)
+
 ## Where to find things (index)
 
 - **Architecture** → [docs/architecture/](docs/architecture/) — service boundaries, inter-service communication, deployment topology, dependency graph
