@@ -23,7 +23,7 @@ func (h *handler) failedEventGetFromRow(row *sql.Rows) (*failedevent.FailedEvent
 	res := &failedevent.FailedEvent{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. failedEventGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. failedEventGetFromRow. err: %w", err)
 	}
 
 	return res, nil
@@ -36,17 +36,17 @@ func (h *handler) FailedEventCreate(ctx context.Context, c *failedevent.FailedEv
 
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("FailedEventCreate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("FailedEventCreate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Insert(failedEventsTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("FailedEventCreate: could not build query. err: %v", err)
+		return fmt.Errorf("FailedEventCreate: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("FailedEventCreate: could not execute query. err: %v", err)
+		return fmt.Errorf("FailedEventCreate: could not execute query. err: %w", err)
 	}
 
 	return nil
@@ -62,12 +62,12 @@ func (h *handler) FailedEventListPendingRetry(ctx context.Context, now time.Time
 		Where(sq.LtOrEq{"next_retry_at": now}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("FailedEventListPendingRetry: could not build query. err: %v", err)
+		return nil, fmt.Errorf("FailedEventListPendingRetry: could not build query. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("FailedEventListPendingRetry: could not query. err: %v", err)
+		return nil, fmt.Errorf("FailedEventListPendingRetry: could not query. err: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -75,13 +75,13 @@ func (h *handler) FailedEventListPendingRetry(ctx context.Context, now time.Time
 	for rows.Next() {
 		fe, err := h.failedEventGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("FailedEventListPendingRetry: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("FailedEventListPendingRetry: could not scan row. err: %w", err)
 		}
 		res = append(res, fe)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("FailedEventListPendingRetry: row iteration error. err: %v", err)
+		return nil, fmt.Errorf("FailedEventListPendingRetry: row iteration error. err: %w", err)
 	}
 
 	return res, nil
@@ -97,7 +97,7 @@ func (h *handler) FailedEventUpdate(ctx context.Context, id uuid.UUID, fields ma
 
 	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {
-		return fmt.Errorf("FailedEventUpdate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("FailedEventUpdate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := sq.Update(failedEventsTable).
@@ -105,12 +105,12 @@ func (h *handler) FailedEventUpdate(ctx context.Context, id uuid.UUID, fields ma
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("FailedEventUpdate: could not build query. err: %v", err)
+		return fmt.Errorf("FailedEventUpdate: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("FailedEventUpdate: could not execute. err: %v", err)
+		return fmt.Errorf("FailedEventUpdate: could not execute. err: %w", err)
 	}
 
 	return nil
@@ -122,12 +122,12 @@ func (h *handler) FailedEventDelete(ctx context.Context, id uuid.UUID) error {
 		Where(sq.Eq{"id": id.Bytes()}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("FailedEventDelete: could not build query. err: %v", err)
+		return fmt.Errorf("FailedEventDelete: could not build query. err: %w", err)
 	}
 
 	_, err = h.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("FailedEventDelete: could not execute. err: %v", err)
+		return fmt.Errorf("FailedEventDelete: could not execute. err: %w", err)
 	}
 
 	return nil

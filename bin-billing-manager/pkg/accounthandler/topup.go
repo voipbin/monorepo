@@ -32,7 +32,7 @@ func (h *accountHandler) TopUpDue(ctx context.Context) (int, int, error) {
 	for {
 		accounts, err := h.db.AccountList(ctx, 500, pageToken, filters)
 		if err != nil {
-			return processed, failed, fmt.Errorf("TopUpDue: could not list accounts. err: %v", err)
+			return processed, failed, fmt.Errorf("TopUpDue: could not list accounts. err: %w", err)
 		}
 		if len(accounts) == 0 {
 			break

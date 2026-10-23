@@ -96,7 +96,7 @@ func (h *failedEventHandler) Save(ctx context.Context, event *sock.Event, proces
 
 	eventData, err := json.Marshal(event)
 	if err != nil {
-		return fmt.Errorf("could not marshal event. err: %v", err)
+		return fmt.Errorf("could not marshal event. err: %w", err)
 	}
 
 	id := h.utilHandler.UUIDCreate()
@@ -117,7 +117,7 @@ func (h *failedEventHandler) Save(ctx context.Context, event *sock.Event, proces
 
 	if err := h.db.FailedEventCreate(ctx, fe); err != nil {
 		log.Errorf("Could not save failed event. err: %v", err)
-		return fmt.Errorf("could not save failed event. err: %v", err)
+		return fmt.Errorf("could not save failed event. err: %w", err)
 	}
 
 	promFailedEventSaveTotal.WithLabelValues(string(event.Type), event.Publisher).Inc()
@@ -137,7 +137,7 @@ func (h *failedEventHandler) RetryPending(ctx context.Context) (int, int, int, e
 
 	events, err := h.db.FailedEventListPendingRetry(ctx, now)
 	if err != nil {
-		return 0, 0, 0, fmt.Errorf("could not query failed events. err: %v", err)
+		return 0, 0, 0, fmt.Errorf("could not query failed events. err: %w", err)
 	}
 
 	retried := 0

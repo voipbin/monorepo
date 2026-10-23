@@ -134,7 +134,7 @@ func (h *billingHandler) BillingEnd(
 		// Just mark as end with zero costs
 		if err := h.db.BillingSetStatusEnd(ctx, bill.ID, 0, 0, 0, 0, 0, 0, tmBillingEnd); err != nil {
 			log.Errorf("Could not set status to end for free call. err: %v", err)
-			return fmt.Errorf("could not end free billing. err: %v", err)
+			return fmt.Errorf("could not end free billing. err: %w", err)
 		}
 
 		res, err := h.db.BillingGet(ctx, bill.ID)
@@ -180,7 +180,7 @@ func (h *billingHandler) BillingEnd(
 	res, err := h.db.BillingConsumeAndRecord(ctx, bill, bill.AccountID, billableUnits, usageDuration, costInfo, tmBillingEnd)
 	if err != nil {
 		log.Errorf("Could not consume and record billing. err: %v", err)
-		return fmt.Errorf("could not consume and record billing. err: %v", err)
+		return fmt.Errorf("could not consume and record billing. err: %w", err)
 	}
 	log.WithField("billing", res).Debugf("Billing consumed and recorded. billing_id: %s", res.ID)
 

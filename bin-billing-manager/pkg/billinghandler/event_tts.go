@@ -48,7 +48,7 @@ func (h *billingHandler) EventTTSSpeakingStopped(ctx context.Context, s *tmspeak
 	b, err := h.GetByReferenceID(ctx, s.ID)
 	if err != nil {
 		// could not get billing. nothing to do.
-		return nil
+		return nil //nolint:nilerr // existing behavior kept in this lint-only change: any lookup error, including a transient DB error, is swallowed and the event is acknowledged without retry
 	}
 
 	if s.TMUpdate == nil {
