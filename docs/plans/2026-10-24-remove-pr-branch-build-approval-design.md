@@ -27,7 +27,8 @@ Follows `2026-10-13-main-auto-deploy-design.md`, `2026-10-14-main-auto-deploy-ph
    - Change the expected message of the extra-job case in the auto-run group, and rewrite the three cases that referenced the removed job.
    - Keep every approval-kept case; they pass unchanged.
    - Add cases: approval job restored in an auto-deploy workflow, an approval job under another name, `type: approval` on `<svc>-test`, a `requires` and `requires: []` on `<svc>-test`, approval restored in an auto-run workflow, `type: approval` on the verify job, a `requires` and `requires: []` on the verify job, a duplicated verify job.
-4. Not changed: the 5 workflows without a gate, the 4 approval-kept workflows, `deploy_filters`, `<svc>-test-auto`, the Komodo deploy scripts, `config.yml` path filtering.
+4. Documentation: the 16 `bin-*` READMEs that describe the `build-approval` gate (all of them auto-deploy services) are updated in the same PR to say that test and build run without an approval step and that deploy runs on main only. Only the sentence about the gate is changed; other statements in those READMEs are not touched. `voip-kamailio-proxy/komodo/README.md` belongs to an approval-kept service and stays correct.
+5. Not changed: the 5 workflows without a gate, the 4 approval-kept workflows, `deploy_filters`, `<svc>-test-auto`, the Komodo deploy scripts, `config.yml` path filtering.
 
 Why keep the `test` / `test-auto` split instead of one unfiltered `test`: the review tooling distinguishes an auto-deploy service from an approval-kept one by the presence of `<svc>-test-auto`, the checker and bats already pin it, it works on `main` today, and the diff stays a pure deletion of one job and one `requires` line per workflow. One unfiltered `test` would also change what runs on `main`.
 
@@ -35,6 +36,7 @@ Why keep the `test` / `test-auto` split instead of one unfiltered `test`: the re
 
 - Every push to a branch that touches a mapped path now runs the full workflow where it used to wait for a click. The load grows with pushes times mapped services. It cannot be derived from past data (workflows that waited and were never approved are not recorded), so it is measured after the merge by comparing the 30 days after with the 30 days before.
 - One `:$CIRCLE_SHA1` image per service per push is pushed for non-main branches.
+- This PR touches files under 16 service directories (the READMEs), which arms those 16 service workflows. On the PR branch their test and build run once without a click (about 16 times a typical test and build run). On the merge to `main`, the 16 services run `test-auto`, `build` and `deploy`, so all 16 are redeployed with unchanged code (containers are recreated). The merge is scheduled for a low-traffic window and each service's deploy is verified afterwards.
 - A CircleCI project setting that cancels superseded workflows of the same branch is recommended before or together with the merge. It is a project setting, not a repository change.
 - A branch is pushed once, after local tests, the checker run, `circleci config validate`/`process`, the structural diff, the mutation sweep and the reviews are done. Repeated pushes become the main cost driver after this change.
 
@@ -47,14 +49,14 @@ Why keep the `test` / `test-auto` split instead of one unfiltered `test`: the re
 ## Out of scope
 
 - The 4 approval-kept workflows and the 5 workflows without a gate.
-- Rewriting `build-approval` mentions in service READMEs (17 files mention it: 16 `bin-*` READMEs become outdated, and `voip-kamailio-proxy/komodo/README.md` belongs to an approval-kept service and stays correct). Touching `bin-*/` files arms that service's workflow, which would run test and build on this very PR; the statements are fixed whenever each README is next edited.
+- Other outdated statements inside the touched READMEs (for example about a removed deploy job); only the gate sentence is changed.
 - The `CLAUDE.md` Merge responsibility sentence about PR-branch approvals: it becomes partly outdated and is changed separately, not in this PR.
 - Review and approval rules kept outside this repository.
 
-## Verification plan (all before the single push)
+## Verification plan (local steps before the single push)
 
 1. `bats .circleci/tests/*.bats docs/reference/tests/*.bats` passes on the host and in the CI image (`cimg/base:2024.02` with the same `apt-get install bats mawk ruby` step as the `shell-tests` job: bats 1.2.1, ruby 3.0); results are recorded separately. The checker passes on the real config.
 2. Mutation sweep with `checker-rule-mutation.py` (host bats): one entry per new or changed checker rule, no unprobed rule. The case that runs the checker against the real tree fails in the scratch copy of the sweep for every entry and is not counted as a probe.
 3. `circleci config validate` and `circleci config process --pipeline-parameters` (docker `circleci/circleci-cli`) on the edited config for one auto-deploy and one auto-run workflow.
 4. Structural diff script (parsed old from `origin/main` versus new YAML), output kept in the PR description: exactly the 35 target workflows differ, each only by the removed `build-approval` job and the removed `requires` entry whose value was exactly `build-approval`; the other 9 workflows, anchors, `jobs:`, `commands:`, parameters and every other top-level key are identical.
-5. After the push this change touches only `.circleci/` and `docs/`, so the pipeline arms `shell-tests` and `lint-config-check` only (plus the convention checks that run on every pipeline); no service workflow runs. After the merge, the first merge that touches a service shows `test-auto`, `build`, `deploy` running by themselves (unchanged mechanism) and the first non-main push that touches a service shows `test` and `build` running without a click.
+5. After the push the PR arms `shell-tests`, `lint-config-check`, the convention checks that run on every pipeline and the 16 service workflows of the touched READMEs (test and build without a click, no deploy on a branch). After the merge, the first merge that touches a service shows `test-auto`, `build`, `deploy` running by themselves (unchanged mechanism) and the first non-main push that touches a service shows `test` and `build` running without a click.

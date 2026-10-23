@@ -9,7 +9,7 @@ poetry export -f requirements.txt --output requirements.txt --without-hashes
 Komodo-managed (VOIP-1350), same as the other `bin-*-manager` services. CI runs
 `bin-pipecat-manager-build` (pushes the image) then `bin-pipecat-manager-deploy`
 (renders the image tag into `komodo/docker-compose.yml` and deploys via the
-Komodo API), gated behind a single `build-approval` step. No manual deploy
+Komodo API), with no approval step (the deploy job runs on main only). No manual deploy
 step. See [docs/operations.md](docs/operations.md#deployment-komodo) for
 details, including three intentional deviations from the standard Tier 1/2
 template.

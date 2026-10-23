@@ -58,8 +58,8 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 
 # Deploy
 
-`bin-customer-manager-build` pushes the image, and a single `build-approval` gate covers
-the test -> build pipeline. The CircleCI `bin-customer-manager-deploy` job (direct SSH
+`bin-customer-manager-build` pushes the image, and the test -> build pipeline runs on every branch push
+without an approval step. The CircleCI `bin-customer-manager-deploy` job (direct SSH
 deploy to <prod-host>) has been removed. Deploys to <prod-host> are manual until
 this service migrates to the Komodo-managed deploy path (see bin-call-manager
 for the pattern).
