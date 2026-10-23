@@ -507,6 +507,12 @@ expect_fail() {
     expect_fail "bin-openapi-manager-validate must not have requires"
 }
 
+@test "an auto-run workflow with a duplicated verify job fails" {
+    mutate "$CFG" $'      - bin-openapi-manager-validate:\n          <<: *non_main_filters\n' $'      - bin-openapi-manager-validate:\n          <<: *non_main_filters\n      - bin-openapi-manager-validate:\n          <<: *non_main_filters\n'
+    run_checker
+    expect_fail "workflow bin-openapi-manager: jobs must be exactly one verify job and its -auto copy"
+}
+
 @test "an auto-run auto job with requires fails" {
     mutate "$CFG" $'          name: bin-openapi-manager-validate-auto\n          <<: *deploy_filters' $'          name: bin-openapi-manager-validate-auto\n          <<: *deploy_filters\n          requires:\n            - bin-openapi-manager-validate'
     run_checker

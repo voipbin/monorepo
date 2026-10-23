@@ -279,7 +279,7 @@ def check_autorun_workflow(svc, js, jobs, errors, commands = {})
   # always reported with its own message.
   errors << "#{where}: build-approval must not exist in an auto-run workflow" if by_id.key?('build-approval')
   js.each { |j| errors << "#{where}: job #{j[:id]} must not have a type" if j[:attrs].key?('type') }
-  unless ids.size == 2 && autos.size == 1 && bases.size == 1
+  unless autos.size == 1 && bases.size == 1
     errors << "#{where}: jobs must be exactly one verify job and its -auto copy (got #{ids.join(', ')})"
     return
   end
