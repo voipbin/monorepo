@@ -2812,6 +2812,16 @@ commands:
                   golangci-lint version | grep -q "${GCL_VERSION}"
             - run:
                 name: Linting
+                # Before the convention linters were promoted into .golangci.yml (VOIP-1642)
+                # this pass took 405-509 s on bin-api-manager (the largest service) on this
+                # resource class, which left at most about 90 s below the 10 minute default.
+                # After the promotion two observed runs were 523.6 s and a run that hit the
+                # 10 minute limit (so 600 s or more). The CircleCI no-output limit is raised
+                # to 20 minutes and the golangci-lint --timeout to 18 minutes, so the linter
+                # reports its own deadline before CircleCI kills the step. Peak memory with
+                # the promoted linters was about 1.57 GB in a local measurement (the 1.08 GB
+                # figure below is the pre-promotion measurement with a cold cache).
+                no_output_timeout: 20m
                 # govet runs as part of linters.default: standard, so a
                 # separate `go vet` pass would only repeat the same analyzers.
                 #
@@ -2827,7 +2837,7 @@ commands:
                   GOMAXPROCS: "1"
                 command: |
                   cd << parameters.source-directory >>
-                  golangci-lint run --timeout 10m
+                  golangci-lint run --timeout 18m
             - run:
                 name: Fetch base branch
                 # Same procedure as check-test-conventions: checkout only fetches the
@@ -2908,6 +2918,16 @@ commands:
                   golangci-lint version | grep -q "${GCL_VERSION}"
             - run:
                 name: Linting
+                # Before the convention linters were promoted into .golangci.yml (VOIP-1642)
+                # this pass took 405-509 s on bin-api-manager (the largest service) on this
+                # resource class, which left at most about 90 s below the 10 minute default.
+                # After the promotion two observed runs were 523.6 s and a run that hit the
+                # 10 minute limit (so 600 s or more). The CircleCI no-output limit is raised
+                # to 20 minutes and the golangci-lint --timeout to 18 minutes, so the linter
+                # reports its own deadline before CircleCI kills the step. Peak memory with
+                # the promoted linters was about 1.57 GB in a local measurement (the 1.08 GB
+                # figure below is the pre-promotion measurement with a cold cache).
+                no_output_timeout: 20m
                 # govet runs as part of linters.default: standard, so a
                 # separate `go vet` pass would only repeat the same analyzers.
                 #
@@ -2923,7 +2943,7 @@ commands:
                   GOMAXPROCS: "1"
                 command: |
                   cd << parameters.source-directory >>
-                  golangci-lint run --timeout 10m
+                  golangci-lint run --timeout 18m
             - run:
                 name: Fetch base branch
                 # Same procedure as check-test-conventions: checkout only fetches the
@@ -3009,6 +3029,16 @@ commands:
                   golangci-lint version | grep -q "${GCL_VERSION}"
             - run:
                 name: Linting
+                # Before the convention linters were promoted into .golangci.yml (VOIP-1642)
+                # this pass took 405-509 s on bin-api-manager (the largest service) on this
+                # resource class, which left at most about 90 s below the 10 minute default.
+                # After the promotion two observed runs were 523.6 s and a run that hit the
+                # 10 minute limit (so 600 s or more). The CircleCI no-output limit is raised
+                # to 20 minutes and the golangci-lint --timeout to 18 minutes, so the linter
+                # reports its own deadline before CircleCI kills the step. Peak memory with
+                # the promoted linters was about 1.57 GB in a local measurement (the 1.08 GB
+                # figure below is the pre-promotion measurement with a cold cache).
+                no_output_timeout: 20m
                 # govet runs as part of linters.default: standard, so a
                 # separate `go vet` pass would only repeat the same analyzers.
                 #
@@ -3024,7 +3054,7 @@ commands:
                   GOMAXPROCS: "1"
                 command: |
                   cd << parameters.source-directory >>
-                  golangci-lint run --timeout 10m
+                  golangci-lint run --timeout 18m
             - run:
                 name: Fetch base branch
                 # Same procedure as check-test-conventions: checkout only fetches the

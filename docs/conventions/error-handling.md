@@ -41,7 +41,7 @@ return nil, fmt.Errorf("resource limit exceeded")
 return nil, err  // No context about where or why it failed
 ```
 
-When `fmt.Errorf` receives an error, use `%w`, not `%v` or `%s`, so the cause chain survives. CI enforces this on added or changed lines only (`golangci-lint errorlint`, config `.golangci-errorlint.yml`); a deliberate break of the chain needs `//nolint:errorlint // <reason>` (see [linting.md](linting.md)).
+When `fmt.Errorf` receives an error, use `%w`, not `%v` or `%s`, so the cause chain survives. CI enforces this on all code (`golangci-lint errorlint`, config `.golangci.yml`); a deliberate break of the chain needs `//nolint:errorlint // <reason>` (see [linting.md](linting.md)).
 
 ## 4.3 Checking Sentinel Errors
 

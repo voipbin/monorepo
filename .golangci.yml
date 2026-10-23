@@ -5,6 +5,51 @@ run:
 
 linters:
   default: standard
+  enable:
+    # Anti-pattern and bug detectors, promoted from the new-line gate once the
+    # existing violations were cleaned up (VOIP-1642). They now apply to all
+    # code. docs/conventions/linting.md lists the rules and the nolint policy.
+    - errorlint
+    - noctx
+    - rowserrcheck
+    - bodyclose
+    - nilerr
+    - wastedassign
+    - predeclared
+    - copyloopvar
+    - gocritic
+    - contextcheck
+    - gosec
+    - forbidigo
+    - revive
+    - usestdlibvars
+    - nolintlint
+  settings:
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+      allow-unused: true
+    revive:
+      rules:
+        - name: error-naming
+        - name: error-return
+        - name: indent-error-flow
+        - name: superfluous-else
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: empty-block
+        - name: unreachable-code
+        - name: var-naming
+    gosec:
+      excludes:
+        - G101 # hard-coded credentials: matches field and constant names, not values
+        - G115 # integer conversion: too frequent on proto and DB numeric types
+        - G117 # secret-named fields marshaled by API client request structs
+        - G304 # file inclusion via variable: paths are service-controlled
+    errorlint:
+      errorf: true
+      comparison: false
+      asserts: false
   exclusions:
     generated: lax
     paths:
@@ -13,6 +58,43 @@ linters:
       - path: _test\.go
         linters:
           - errcheck
+      # Operator CLIs print results to stdout on purpose: cmd/*-control and the
+      # shared migrate commands.
+      - path: (^|/)cmd/[^/]+-control/
+        linters:
+          - forbidigo
+      - path: pkg/migrationhandler/command\.go
+        linters:
+          - forbidigo
+      # Test code (sqlmock, in-memory fixtures, table-driven copies) is exempt
+      # from the linters below. errorlint, nilerr, wastedassign, predeclared
+      # and nolintlint still apply to tests.
+      - path: _test\.go
+        linters:
+          - noctx
+          - rowserrcheck
+          - gosec
+          - contextcheck
+          - forbidigo
+          - bodyclose
+          - copyloopvar
+          - gocritic
+          - usestdlibvars
+          - revive
+      # bin-api-manager/server implements the generated ServerInterface
+      # (gens/openapi_server/gen.go). Its method names must match the
+      # generated names (for example GetAccesskeysId), so revive var-naming
+      # cannot be applied to them. Only the method-name message is excluded;
+      # parameter and local variable names in the same files are still checked.
+      # The path is relative to this file (the repository root), which is where
+      # the per-service CI step finds it when it runs from a service directory.
+      - path: ^bin-api-manager/server/
+        linters:
+          - revive
+        text: '^var-naming: method [A-Za-z0-9_]+ should be '
+
+issues:
+  max-same-issues: 0
 
 # Only gofmt is enabled. goimports is intentionally NOT enabled here: it flags
 # 13 files beyond gofmt's 313, all of them cases where a third-party import is
