@@ -1,6 +1,6 @@
 # Verify-only workflows that run on main without an approval click. VOIP-1597.
 # One workflow name per line. Each must have the auto-run shape in config_work.yml
-# (build-approval, one verify job, and its -auto copy that runs only on main) and
+# (one verify job and its -auto copy that runs only on main, no approval job) and
 # must never contain a deploy, a build that pushes, or a production context;
 # check-auto-deploy-config.rb (run by shell-tests) fails otherwise. A workflow
 # here cannot also be in auto-deploy-services.txt or in the checker deny list.

@@ -180,22 +180,19 @@ end
 # (a) the exact auto-deploy shape.
 def check_auto_workflow(svc, js, jobs, errors, paths)
   where = "workflow #{svc}"
-  expected = ['build-approval', "#{svc}-test", "#{svc}-test-auto", "#{svc}-build", "#{svc}-deploy"]
+  expected = ["#{svc}-test", "#{svc}-test-auto", "#{svc}-build", "#{svc}-deploy"]
   ids = js.map { |j| j[:id] }
-  errors << "#{where}: jobs must be exactly #{expected.join(', ')} (got #{ids.join(', ')})" unless ids.sort == expected.sort
-
   by_id = js.to_h { |j| [j[:id], j] }
-  approval = by_id['build-approval']
-  if approval
-    a = approval[:attrs]
-    errors << "#{where}: build-approval must be type: approval" unless a['type'] == 'approval'
-    errors << "#{where}: build-approval filters must be exactly ignore: main" unless a['filters'] == IGNORE_MAIN['filters']
-  end
+  # VOIP-1645: no approval job in an auto-deploy workflow, on any branch. Reported
+  # on its own so a restored approval is not only a size mismatch.
+  errors << "#{where}: build-approval must not exist in an auto-deploy workflow" if by_id.key?('build-approval')
+  errors << "#{where}: jobs must be exactly #{expected.join(', ')} (got #{ids.join(', ')})" unless ids.sort == expected.sort
+  js.each { |j| errors << "#{where}: job #{j[:id]} must not have a type" if j[:attrs].key?('type') }
 
   test = by_id["#{svc}-test"]
   if test
     errors << "#{where}: #{svc}-test filters must be exactly ignore: main" unless test[:attrs]['filters'] == IGNORE_MAIN['filters']
-    errors << "#{where}: #{svc}-test must require exactly build-approval" unless requires_of(test) == ['build-approval']
+    errors << "#{where}: #{svc}-test must not have requires" if test[:attrs].key?('requires')
   end
 
   auto = by_id["#{svc}-test-auto"]
@@ -276,9 +273,14 @@ def check_autorun_workflow(svc, js, jobs, errors, commands = {})
   ids = js.map { |j| j[:id] }
   by_id = js.to_h { |j| [j[:id], j] }
   autos = ids.select { |i| i.end_with?('-auto') }
-  bases = ids - ['build-approval'] - autos
-  unless ids.size == 3 && by_id['build-approval'] && autos.size == 1 && bases.size == 1
-    errors << "#{where}: jobs must be exactly build-approval, one verify job and its -auto copy (got #{ids.join(', ')})"
+  bases = ids - autos
+  # VOIP-1645: no approval job and no job type, evaluated before the size check
+  # returns, so a restored approval or a type: approval on the verify job is
+  # always reported with its own message.
+  errors << "#{where}: build-approval must not exist in an auto-run workflow" if by_id.key?('build-approval')
+  js.each { |j| errors << "#{where}: job #{j[:id]} must not have a type" if j[:attrs].key?('type') }
+  unless ids.size == 2 && autos.size == 1 && bases.size == 1
+    errors << "#{where}: jobs must be exactly one verify job and its -auto copy (got #{ids.join(', ')})"
     return
   end
 
@@ -291,14 +293,10 @@ def check_autorun_workflow(svc, js, jobs, errors, commands = {})
   base = bases.first
   errors << "#{where}: verify job #{base} must be named #{svc}-test or #{svc}-validate" unless ["#{svc}-test", "#{svc}-validate"].include?(base)
 
-  a = by_id['build-approval'][:attrs]
-  errors << "#{where}: build-approval must be type: approval" unless a['type'] == 'approval'
-  errors << "#{where}: build-approval filters must be exactly ignore: main" unless a['filters'] == IGNORE_MAIN['filters']
-
   b = by_id[base]
   errors << "#{where}: #{base} key must be #{base}" unless b[:key] == base
   errors << "#{where}: #{base} filters must be exactly ignore: main" unless b[:attrs]['filters'] == IGNORE_MAIN['filters']
-  errors << "#{where}: #{base} must require exactly build-approval" unless requires_of(b) == ['build-approval']
+  errors << "#{where}: #{base} must not have requires" if b[:attrs].key?('requires')
 
   auto = by_id["#{base}-auto"]
   if auto.nil?
