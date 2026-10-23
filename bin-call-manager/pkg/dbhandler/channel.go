@@ -24,7 +24,7 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 	res := &channel.Channel{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("channelGetFromRow: Could not scan the row. err: %v", err)
+		return nil, fmt.Errorf("channelGetFromRow: Could not scan the row. err: %w", err)
 	}
 
 	// Initialize nil maps to empty, per the R-A read table in normalization.go.
@@ -102,7 +102,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 	// literal "null" here exactly as the pre-migration json.Marshal did.
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("ChannelCreate: could not prepare fields. err: %v", err)
+		return fmt.Errorf("ChannelCreate: could not prepare fields. err: %w", err)
 	}
 
 	query, args, err := squirrel.
@@ -111,11 +111,11 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("ChannelCreate: could not build query. err: %v", err)
+		return fmt.Errorf("ChannelCreate: could not build query. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("ChannelCreate: Could not execute query. err: %v", err)
+		return fmt.Errorf("ChannelCreate: Could not execute query. err: %w", err)
 	}
 
 	// update the cache
@@ -188,11 +188,11 @@ func buildChannelSetDataItem(id, key string, value any, tmUpdate any) squirrel.U
 func (h *handler) ChannelSetDataItem(ctx context.Context, id string, key string, value interface{}) error {
 	q, args, err := buildChannelSetDataItem(id, key, value, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. ChannelSetDataItem. err: %v", err)
+		return fmt.Errorf("could not build query. ChannelSetDataItem. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. ChannelSetDataItem. err: %v", err)
+		return fmt.Errorf("could not execute. ChannelSetDataItem. err: %w", err)
 	}
 
 	// update the cache
@@ -325,12 +325,12 @@ func (h *handler) channelGetFromDB(ctx context.Context, id string) (*channel.Cha
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. channelGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. channelGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ChannelGet. err: %v", err)
+		return nil, fmt.Errorf("could not query. ChannelGet. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -338,7 +338,7 @@ func (h *handler) channelGetFromDB(ctx context.Context, id string) (*channel.Cha
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. channelGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. channelGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -420,12 +420,12 @@ func (h *handler) ChannelList(ctx context.Context, size uint64, token string, fi
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. ChannelList. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. ChannelList. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ChannelList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ChannelList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
@@ -446,7 +446,7 @@ func (h *handler) ChannelList(ctx context.Context, size uint64, token string, fi
 		res = append(res, u)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. ChannelList. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. ChannelList. err: %w", err)
 	}
 
 	return res, nil
@@ -478,7 +478,7 @@ func (h *handler) ChannelGetsForRecovery(
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. ChannelGetsForRecovery. err: %v", err)
+		return nil, fmt.Errorf("could not build query. ChannelGetsForRecovery. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
@@ -499,7 +499,7 @@ func (h *handler) ChannelGetsForRecovery(
 		res = append(res, u)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. ChannelGetsForRecovery. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. ChannelGetsForRecovery. err: %w", err)
 	}
 
 	return res, nil

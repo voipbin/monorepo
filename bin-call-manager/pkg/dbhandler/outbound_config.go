@@ -73,7 +73,7 @@ func (h *handler) OutboundConfigCreate(ctx context.Context, c *outboundconfig.Ou
 	// calls (docs/conventions/database.md §7.0a).
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. OutboundConfigCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. OutboundConfigCreate. err: %w", err)
 	}
 
 	query, args, err := squirrel.
@@ -82,7 +82,7 @@ func (h *handler) OutboundConfigCreate(ctx context.Context, c *outboundconfig.Ou
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. OutboundConfigCreate. err: %v", err)
+		return fmt.Errorf("could not build query. OutboundConfigCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
@@ -105,7 +105,7 @@ func (h *handler) OutboundConfigDelete(ctx context.Context, id uuid.UUID) error 
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. OutboundConfigDelete. err: %v", err)
+		return fmt.Errorf("could not build query. OutboundConfigDelete. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
@@ -130,7 +130,7 @@ func (h *handler) outboundConfigGetBy(ctx context.Context, funcName string, pred
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. %s. err: %v", funcName, err)
+		return nil, fmt.Errorf("could not build query. %s. err: %w", funcName, err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
@@ -144,7 +144,7 @@ func (h *handler) outboundConfigGetBy(ctx context.Context, funcName string, pred
 
 	if !rows.Next() {
 		if err := rows.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. %s. err: %v", funcName, err)
+			return nil, fmt.Errorf("row iteration error. %s. err: %w", funcName, err)
 		}
 		return nil, nil
 	}
@@ -206,7 +206,7 @@ func (h *handler) OutboundConfigUpdate(ctx context.Context, id uuid.UUID, req *o
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare fields. OutboundConfigUpdate. err: %v", err)
+		return nil, fmt.Errorf("could not prepare fields. OutboundConfigUpdate. err: %w", err)
 	}
 
 	query, args, err := squirrel.
@@ -217,7 +217,7 @@ func (h *handler) OutboundConfigUpdate(ctx context.Context, id uuid.UUID, req *o
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. OutboundConfigUpdate. err: %v", err)
+		return nil, fmt.Errorf("could not build query. OutboundConfigUpdate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
@@ -249,7 +249,7 @@ func (h *handler) OutboundConfigList(ctx context.Context, customerID uuid.UUID, 
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. OutboundConfigList. err: %v", err)
+		return nil, fmt.Errorf("could not build query. OutboundConfigList. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
@@ -265,12 +265,12 @@ func (h *handler) OutboundConfigList(ctx context.Context, customerID uuid.UUID, 
 	for rows.Next() {
 		c, err := h.outboundConfigGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. OutboundConfigList. err: %v", err)
+			return nil, fmt.Errorf("could not get data. OutboundConfigList. err: %w", err)
 		}
 		res = append(res, c)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. OutboundConfigList. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. OutboundConfigList. err: %w", err)
 	}
 
 	return res, nil

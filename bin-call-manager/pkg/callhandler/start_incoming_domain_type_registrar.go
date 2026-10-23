@@ -343,7 +343,7 @@ func (h *callHandler) parseAddressTypeExtension(ctx context.Context, customerID 
 	})
 
 	// validate destination target
-	var ext *rmextension.Extension = nil
+	var ext *rmextension.Extension
 	extensionID := uuid.FromStringOrNil(address.Target)
 	if extensionID != uuid.Nil {
 		log.Debugf("The destination target has valid uuid. target: %s", address.Target)

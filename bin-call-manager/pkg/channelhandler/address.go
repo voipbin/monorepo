@@ -13,7 +13,7 @@ import (
 // AddressGetSource gets the source address from the given channel
 func (h *channelHandler) AddressGetSource(cn *channel.Channel, addressType commonaddress.Type) *commonaddress.Address {
 
-	target := ""
+	var target string
 	if addressType == commonaddress.TypeSIP {
 		domainName := cn.StasisData[channel.StasisDataTypeDomain]
 		target = fmt.Sprintf("%s@%s", cn.SourceNumber, domainName)

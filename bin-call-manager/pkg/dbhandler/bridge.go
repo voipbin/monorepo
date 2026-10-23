@@ -21,7 +21,7 @@ func (h *handler) bridgeGetFromRow(row *sql.Rows) (*bridge.Bridge, error) {
 	res := &bridge.Bridge{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. bridgeGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. bridgeGetFromRow. err: %w", err)
 	}
 
 	// Initialize nil slices to empty.
@@ -49,7 +49,7 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 
 	fields, err := commondatabasehandler.PrepareFields(b)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. BridgeCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. BridgeCreate. err: %w", err)
 	}
 
 	sb := squirrel.
@@ -59,11 +59,11 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. BridgeCreate. err: %v", err)
+		return fmt.Errorf("could not build query. BridgeCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute. BridgeCreate. err: %v", err)
+		return fmt.Errorf("could not execute. BridgeCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -82,12 +82,12 @@ func (h *handler) bridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridg
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. bridgeGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. bridgeGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. bridgeGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. bridgeGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -95,14 +95,14 @@ func (h *handler) bridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridg
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. bridgeGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. bridgeGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.bridgeGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data. bridgeGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not get data. bridgeGetFromDB. err: %w", err)
 	}
 
 	return res, nil
@@ -175,11 +175,11 @@ func (h *handler) BridgeEnd(ctx context.Context, id string) error {
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. BridgeEnd. err: %v", err)
+		return fmt.Errorf("could not build query. BridgeEnd. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. BridgeEnd. err: %v", err)
+		return fmt.Errorf("could not execute. BridgeEnd. err: %w", err)
 	}
 
 	// update the cache
@@ -214,11 +214,11 @@ func buildBridgeAddChannelID(id, channelID string, tmUpdate any) squirrel.Update
 func (h *handler) BridgeAddChannelID(ctx context.Context, id, channelID string) error {
 	q, args, err := buildBridgeAddChannelID(id, channelID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. BridgeAddChannelID. err: %v", err)
+		return fmt.Errorf("could not build query. BridgeAddChannelID. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. BridgeAddChannelID. err: %v", err)
+		return fmt.Errorf("could not execute. BridgeAddChannelID. err: %w", err)
 	}
 
 	// update the cache
@@ -251,11 +251,11 @@ func buildBridgeRemoveChannelID(id, channelID string, tmUpdate any) squirrel.Upd
 func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID string) error {
 	q, args, err := buildBridgeRemoveChannelID(id, channelID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. BridgeRemoveChannelID. err: %v", err)
+		return fmt.Errorf("could not build query. BridgeRemoveChannelID. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. BridgeRemoveChannelID. err: %v", err)
+		return fmt.Errorf("could not execute. BridgeRemoveChannelID. err: %w", err)
 	}
 
 	// update the cache

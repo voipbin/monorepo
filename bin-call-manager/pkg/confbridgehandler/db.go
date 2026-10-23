@@ -54,7 +54,7 @@ func (h *confbridgeHandler) Create(
 
 	// create a confbridge
 	if errCreate := h.db.ConfbridgeCreate(ctx, cb); errCreate != nil {
-		return nil, fmt.Errorf("could not create a conference. err: %v", errCreate)
+		return nil, fmt.Errorf("could not create a conference. err: %w", errCreate)
 	}
 	promConfbridgeCreateTotal.Inc()
 

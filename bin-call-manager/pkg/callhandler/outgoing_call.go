@@ -39,10 +39,10 @@ import (
 
 const (
 	constTransportUDP = "udp"
-	constTransportTCP = "tcp" //nolint:deadcode,varcheck
-	constTransportTLS = "tls" //nolint:deadcode,varcheck
-	constTransportWS  = "ws"  //nolint:deadcode,varcheck
-	constTransportWSS = "wss" //nolint:deadcode,varcheck
+	constTransportTCP = "tcp"
+	constTransportTLS = "tls"
+	constTransportWS  = "ws"
+	constTransportWSS = "wss"
 )
 
 // CreateCallsOutgoing creates multiple outgoing calls.
@@ -744,15 +744,16 @@ func (h *callHandler) getNextDialroute(ctx context.Context, c *call.Call) (*rmro
 // getDestinationTransport returns given destination's transport
 func getDestinationTransport(endpointDestination string) channel.SIPTransport {
 
-	if strings.Contains(endpointDestination, "transport=wss") {
+	switch {
+	case strings.Contains(endpointDestination, "transport=wss"):
 		return channel.SIPTransportWSS
-	} else if strings.Contains(endpointDestination, "transport=ws") {
+	case strings.Contains(endpointDestination, "transport=ws"):
 		return channel.SIPTransportWS
-	} else if strings.Contains(endpointDestination, "transport=tcp") {
+	case strings.Contains(endpointDestination, "transport=tcp"):
 		return channel.SIPTransportTCP
-	} else if strings.Contains(endpointDestination, "transport=tls") {
+	case strings.Contains(endpointDestination, "transport=tls"):
 		return channel.SIPTransportTLS
-	} else {
+	default:
 		return channel.SIPTransportUDP
 	}
 }
@@ -868,12 +869,13 @@ func (h *callHandler) getValidatedSourceForOutgoingCall(
 			nmnumber.FieldDeleted:    false,
 		}
 		nums, err := h.reqHandler.NumberV1NumberList(ctx, "", 1, filters)
-		if err != nil {
+		switch {
+		case err != nil:
 			log.Errorf("Could not validate source number ownership. source: %s, err: %v", source.Target, err)
-		} else if len(nums) > 0 {
+		case len(nums) > 0:
 			log.Debugf("Source number validated. source: %s", source.Target)
 			return &source
-		} else {
+		default:
 			log.Infof("Source number is not a valid normal number owned by the customer. source: %s", source.Target)
 		}
 	} else {

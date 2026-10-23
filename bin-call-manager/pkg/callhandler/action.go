@@ -333,7 +333,7 @@ func (h *callHandler) actionExecuteBeep(ctx context.Context, c *call.Call) error
 	playbackID := fmt.Sprintf("%s%s", playback.IDPrefixCall, c.Action.ID.String())
 	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, playbackID, medias, "", 0, 0); errPlay != nil {
 		log.Errorf("Could not play the media. media: %v, err: %v", medias, errPlay)
-		return fmt.Errorf("could not play the media. err: %v", errPlay)
+		return fmt.Errorf("could not play the media. err: %v", errPlay) //nolint:errorlint // keep %v: wrapping with %w would let errorResponse errors.As match an upstream *VoipbinError and change the RPC response status from 500 to the upstream typed status
 	}
 
 	return nil
@@ -353,12 +353,12 @@ func (h *callHandler) actionExecuteEcho(ctx context.Context, c *call.Call) error
 
 	// continue the extension
 	if errContinue := h.channelHandler.Continue(ctx, c.ChannelID, "svc-echo", "s", 1, ""); errContinue != nil {
-		return fmt.Errorf("could not continue the call for action. call: %s, action: %s, err: %v", c.ID, c.Action.ID, errContinue)
+		return fmt.Errorf("could not continue the call for action. call: %s, action: %s, err: %v", c.ID, c.Action.ID, errContinue) //nolint:errorlint // keep %v: wrapping with %w would let errorResponse errors.As match an upstream *VoipbinError and change the RPC response status from 500 to the upstream typed status
 	}
 
 	// set timeout
 	if errTimeout := h.reqHandler.CallV1CallActionTimeout(ctx, c.ID, option.Duration, &c.Action); errTimeout != nil {
-		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, c.Action.ID, errTimeout)
+		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, c.Action.ID, errTimeout) //nolint:errorlint // keep %v: wrapping with %w would let errorResponse errors.As match an upstream *VoipbinError and change the RPC response status from 500 to the upstream typed status
 	}
 
 	return nil
@@ -433,13 +433,13 @@ func (h *callHandler) actionExecuteStreamEcho(ctx context.Context, c *call.Call)
 
 	// continue the extension
 	if errContinue := h.channelHandler.Continue(ctx, c.ChannelID, "svc-stream_echo", "s", 1, ""); errContinue != nil {
-		return fmt.Errorf("could not continue the call for action. call: %s, action: %s, err: %v", c.ID, c.Action.ID, errContinue)
+		return fmt.Errorf("could not continue the call for action. call: %s, action: %s, err: %v", c.ID, c.Action.ID, errContinue) //nolint:errorlint // keep %v: wrapping with %w would let errorResponse errors.As match an upstream *VoipbinError and change the RPC response status from 500 to the upstream typed status
 	}
 
 	// set timeout
 	// send delayed message for next action execution after 10 ms.
 	if err := h.reqHandler.CallV1CallActionTimeout(ctx, c.ID, option.Duration, &c.Action); err != nil {
-		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, c.Action.ID, err)
+		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, c.Action.ID, err) //nolint:errorlint // keep %v: wrapping with %w would let errorResponse errors.As match an upstream *VoipbinError and change the RPC response status from 500 to the upstream typed status
 	}
 
 	return nil
@@ -552,7 +552,7 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 
 	// send next action request
 	if errNext := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); errNext != nil {
-		return fmt.Errorf("could not send the next action request. err: %v", errNext)
+		return fmt.Errorf("could not send the next action request. err: %v", errNext) //nolint:errorlint // keep %v: wrapping with %w would let errorResponse errors.As match an upstream *VoipbinError and change the RPC response status from 500 to the upstream typed status
 	}
 
 	return nil
@@ -616,14 +616,14 @@ func (h *callHandler) actionExecuteDigitsReceive(ctx context.Context, c *call.Ca
 	if condition {
 		log.Debugf("The stored dtmfs are already qualified the finish condition.")
 		if err := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); err != nil {
-			return fmt.Errorf("could not send the next action request. err: %v", err)
+			return fmt.Errorf("could not send the next action request. err: %v", err) //nolint:errorlint // keep %v: wrapping with %w would let errorResponse errors.As match an upstream *VoipbinError and change the RPC response status from 500 to the upstream typed status
 		}
 		return nil
 	}
 
 	// set timeout
 	if err := h.reqHandler.CallV1CallActionTimeout(ctx, c.ID, option.Duration, &c.Action); err != nil {
-		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, c.Action.ID, err)
+		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, c.Action.ID, err) //nolint:errorlint // keep %v: wrapping with %w would let errorResponse errors.As match an upstream *VoipbinError and change the RPC response status from 500 to the upstream typed status
 	}
 
 	return nil
@@ -648,12 +648,12 @@ func (h *callHandler) actionExecuteDigitsSend(ctx context.Context, c *call.Call)
 	// because of the Asterisk doesn't send the dtmf send finish event, we need to do this.
 	maxTimeout := (option.Duration * len(option.Digits))
 	if len(option.Digits) > 1 {
-		maxTimeout = maxTimeout + (option.Interval * (len(option.Digits) - 1))
+		maxTimeout += (option.Interval * (len(option.Digits) - 1))
 	}
 
 	// set timeout
 	if err := h.reqHandler.CallV1CallActionTimeout(ctx, c.ID, maxTimeout, &c.Action); err != nil {
-		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, c.Action.ID, err)
+		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, c.Action.ID, err) //nolint:errorlint // keep %v: wrapping with %w would let errorResponse errors.As match an upstream *VoipbinError and change the RPC response status from 500 to the upstream typed status
 	}
 
 	return nil
@@ -799,7 +799,7 @@ func (h *callHandler) actionExecuteSleep(ctx context.Context, c *call.Call) erro
 
 	// set timeout
 	if err := h.reqHandler.CallV1CallActionTimeout(ctx, c.ID, option.Duration, &c.Action); err != nil {
-		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, c.Action.ID, err)
+		return fmt.Errorf("could not set action timeout for call. call: %s, action: %s, err: %v", c.ID, c.Action.ID, err) //nolint:errorlint // keep %v: wrapping with %w would let errorResponse errors.As match an upstream *VoipbinError and change the RPC response status from 500 to the upstream typed status
 	}
 
 	return nil

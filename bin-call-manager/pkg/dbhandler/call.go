@@ -26,7 +26,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 	res := &call.Call{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. callGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. callGetFromRow. err: %w", err)
 	}
 
 	// Initialize nil slices/maps to empty
@@ -84,7 +84,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. CallCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. CallCreate. err: %w", err)
 	}
 
 	// Add source_target and destination_target for indexed search
@@ -99,11 +99,11 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CallCreate. err: %v", err)
+		return fmt.Errorf("could not build query. CallCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("could not execute query. CallCreate. err: %v", err)
+		return fmt.Errorf("could not execute query. CallCreate. err: %w", err)
 	}
 
 	// update the cache
@@ -140,12 +140,12 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. CallGetByChannelID. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. CallGetByChannelID. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CallGetByChannelID. err: %v", err)
+		return nil, fmt.Errorf("could not query. CallGetByChannelID. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -153,14 +153,14 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. CallGetByChannelID. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. CallGetByChannelID. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.callGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get call. CallGetByChannelID, err: %v", err)
+		return nil, fmt.Errorf("could not get call. CallGetByChannelID, err: %w", err)
 	}
 
 	return res, nil
@@ -183,17 +183,17 @@ func (h *handler) CallList(ctx context.Context, size uint64, token string, filte
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. CallGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. CallGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CallGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CallGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CallGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. CallGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -203,12 +203,12 @@ func (h *handler) CallList(ctx context.Context, size uint64, token string, filte
 	for rows.Next() {
 		u, err := h.callGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. CallGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. CallGets, err: %w", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. CallGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. CallGets. err: %w", err)
 	}
 
 	return res, nil
@@ -335,12 +335,12 @@ func (h *handler) callGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, 
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. callGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. callGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. callGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. callGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -348,7 +348,7 @@ func (h *handler) callGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, 
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. callGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. callGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
@@ -401,11 +401,11 @@ func buildCallAddChainedCallID(id, chainedCallID uuid.UUID, tmUpdate any) squirr
 func (h *handler) CallAddChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error {
 	q, args, err := buildCallAddChainedCallID(id, chainedCallID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CallAddChainedCallID. err: %v", err)
+		return fmt.Errorf("could not build query. CallAddChainedCallID. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %v", err)
+		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %w", err)
 	}
 
 	// update the cache
@@ -433,11 +433,11 @@ func buildCallRemoveChainedCallID(id, chainedCallID uuid.UUID, tmUpdate any) squ
 func (h *handler) CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error {
 	q, args, err := buildCallRemoveChainedCallID(id, chainedCallID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CallRemoveChainedCallID. err: %v", err)
+		return fmt.Errorf("could not build query. CallRemoveChainedCallID. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %v", err)
+		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %w", err)
 	}
 
 	// update the cache
@@ -477,11 +477,11 @@ func buildCallAddExternalMediaID(id, externalMediaID uuid.UUID, tmUpdate any) sq
 func (h *handler) CallAddExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
 	q, args, err := buildCallAddExternalMediaID(id, externalMediaID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CallAddExternalMediaID. err: %v", err)
+		return fmt.Errorf("could not build query. CallAddExternalMediaID. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. CallAddExternalMediaID. err: %v", err)
+		return fmt.Errorf("could not execute. CallAddExternalMediaID. err: %w", err)
 	}
 
 	_ = h.callUpdateToCache(ctx, id)
@@ -507,11 +507,11 @@ func buildCallRemoveExternalMediaID(id, externalMediaID uuid.UUID, tmUpdate any)
 func (h *handler) CallRemoveExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
 	q, args, err := buildCallRemoveExternalMediaID(id, externalMediaID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CallRemoveExternalMediaID. err: %v", err)
+		return fmt.Errorf("could not build query. CallRemoveExternalMediaID. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. CallRemoveExternalMediaID. err: %v", err)
+		return fmt.Errorf("could not execute. CallRemoveExternalMediaID. err: %w", err)
 	}
 
 	_ = h.callUpdateToCache(ctx, id)
@@ -545,11 +545,11 @@ func buildCallAddRecordingIDs(id, recordID uuid.UUID, tmUpdate any) squirrel.Upd
 func (h *handler) CallAddRecordingIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
 	q, args, err := buildCallAddRecordingIDs(id, recordID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CallAddRecordingIDs. err: %v", err)
+		return fmt.Errorf("could not build query. CallAddRecordingIDs. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. CallAddRecordingIDs. err: %v", err)
+		return fmt.Errorf("could not execute. CallAddRecordingIDs. err: %w", err)
 	}
 
 	// update the cache
@@ -575,7 +575,7 @@ func (h *handler) CallTXStart(ctx context.Context, id uuid.UUID) (*sql.Tx, *call
 	query, args, err := sb.ToSql()
 	if err != nil {
 		_ = tx.Rollback()
-		return nil, nil, fmt.Errorf("could not build query. CallTXStart. err: %v", err)
+		return nil, nil, fmt.Errorf("could not build query. CallTXStart. err: %w", err)
 	}
 
 	row, err := tx.QueryContext(ctx, query, args...)
@@ -600,7 +600,7 @@ func (h *handler) CallTXStart(ctx context.Context, id uuid.UUID) (*sql.Tx, *call
 	res, err := h.callGetFromRow(row)
 	if err != nil {
 		_ = tx.Rollback()
-		return nil, nil, fmt.Errorf("could not get call. CallTXStart, err: %v", err)
+		return nil, nil, fmt.Errorf("could not get call. CallTXStart, err: %w", err)
 	}
 
 	return tx, res, nil
@@ -620,7 +620,7 @@ func (h *handler) CallTXFinish(tx *sql.Tx, commit bool) {
 func (h *handler) CallTXAddChainedCallID(ctx context.Context, tx *sql.Tx, id, chainedCallID uuid.UUID) error {
 	q, args, err := buildCallAddChainedCallID(id, chainedCallID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CallTXAddChainedCallID. err: %v", err)
+		return fmt.Errorf("could not build query. CallTXAddChainedCallID. err: %w", err)
 	}
 
 	if _, err := tx.ExecContext(ctx, q, args...); err != nil {
@@ -637,7 +637,7 @@ func (h *handler) CallTXAddChainedCallID(ctx context.Context, tx *sql.Tx, id, ch
 func (h *handler) CallTXRemoveChainedCallID(ctx context.Context, tx *sql.Tx, id, chainedCallID uuid.UUID) error {
 	q, args, err := buildCallRemoveChainedCallID(id, chainedCallID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. CallTXRemoveChainedCallID. err: %v", err)
+		return fmt.Errorf("could not build query. CallTXRemoveChainedCallID. err: %w", err)
 	}
 
 	if _, err := tx.ExecContext(ctx, q, args...); err != nil {

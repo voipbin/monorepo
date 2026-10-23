@@ -195,6 +195,6 @@ func (h *bridgeHandler) getWithTimeout(ctx context.Context, id string, timeout t
 	case res := <-chanRes:
 		return res, nil
 	case <-cctx.Done():
-		return nil, fmt.Errorf("could not get a bridge. GetWithTimeout. err: %v", cctx.Err())
+		return nil, fmt.Errorf("could not get a bridge. GetWithTimeout. err: %w", cctx.Err())
 	}
 }

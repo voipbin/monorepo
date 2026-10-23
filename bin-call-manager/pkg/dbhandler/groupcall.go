@@ -24,7 +24,7 @@ func (h *handler) groupcallGetFromRow(row *sql.Rows) (*groupcall.Groupcall, erro
 	res := &groupcall.Groupcall{}
 
 	if err := commondatabasehandler.ScanRow(row, res); err != nil {
-		return nil, fmt.Errorf("could not scan the row. groupcallGetFromRow. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. groupcallGetFromRow. err: %w", err)
 	}
 
 	// Initialize nil values to defaults
@@ -70,7 +70,7 @@ func (h *handler) GroupcallCreate(ctx context.Context, c *groupcall.Groupcall) e
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not prepare fields. GroupcallCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. GroupcallCreate. err: %w", err)
 	}
 
 	// Use SetMap instead of Columns/Values
@@ -81,7 +81,7 @@ func (h *handler) GroupcallCreate(ctx context.Context, c *groupcall.Groupcall) e
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. GroupcallCreate. err: %v", err)
+		return fmt.Errorf("could not build query. GroupcallCreate. err: %w", err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
@@ -129,17 +129,17 @@ func (h *handler) GroupcallList(ctx context.Context, size uint64, token string, 
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. GroupcallGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. GroupcallGets. err: %w", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. GroupcallGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. GroupcallGets. err: %w", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. GroupcallGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. GroupcallGets. err: %w", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -154,7 +154,7 @@ func (h *handler) GroupcallList(ctx context.Context, size uint64, token string, 
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. GroupcallGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. GroupcallGets. err: %w", err)
 	}
 
 	return res, nil
@@ -224,12 +224,12 @@ func (h *handler) groupcallGetFromDB(ctx context.Context, id uuid.UUID) (*groupc
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build sql. groupcallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. groupcallGetFromDB. err: %w", err)
 	}
 
 	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. groupcallGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. groupcallGetFromDB. err: %w", err)
 	}
 	defer func() {
 		_ = row.Close()
@@ -237,14 +237,14 @@ func (h *handler) groupcallGetFromDB(ctx context.Context, id uuid.UUID) (*groupc
 
 	if !row.Next() {
 		if err := row.Err(); err != nil {
-			return nil, fmt.Errorf("row iteration error. groupcallGetFromDB. err: %v", err)
+			return nil, fmt.Errorf("row iteration error. groupcallGetFromDB. err: %w", err)
 		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.groupcallGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get call. groupcallGetFromDB, err: %v", err)
+		return nil, fmt.Errorf("could not get call. groupcallGetFromDB, err: %w", err)
 	}
 
 	return res, nil
@@ -307,11 +307,11 @@ func buildGroupcallDecreaseCount(column string, id uuid.UUID, tmUpdate any) squi
 func (h *handler) groupcallDecreaseCount(ctx context.Context, column string, id uuid.UUID, funcName string) error {
 	q, args, err := buildGroupcallDecreaseCount(column, id, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not build query. %s. err: %v", funcName, err)
+		return fmt.Errorf("could not build query. %s. err: %w", funcName, err)
 	}
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
-		return fmt.Errorf("could not execute. %s. err: %v", funcName, err)
+		return fmt.Errorf("could not execute. %s. err: %w", funcName, err)
 	}
 
 	_ = h.groupcallUpdateToCache(ctx, id)

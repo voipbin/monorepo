@@ -31,7 +31,7 @@ func (h *callHandler) RecoveryStart(ctx context.Context, asteriskID string) erro
 
 	// run recovery
 	for _, ch := range channels {
-		go func(innerCh *channel.Channel) {
+		go func(innerCh *channel.Channel) { //nolint:contextcheck,gosec // G118: recovery outlives the caller, so it must not inherit the caller context
 			log := log.WithField("channel", innerCh.ID)
 
 			if innerCh.Type != channel.TypeCall {

@@ -32,7 +32,7 @@ func (h *recordingHandler) variablesSet(ctx context.Context, activeflowID uuid.U
 	variables := h.variablesGet(r)
 
 	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, activeflowID, variables); errSet != nil {
-		return fmt.Errorf("could not set the variable. variables: %s, err: %v", variables, errSet)
+		return fmt.Errorf("could not set the variable. variables: %s, err: %v", variables, errSet) //nolint:errorlint // keep %v: wrapping with %w would let errorResponse errors.As match an upstream *VoipbinError and change the RPC response status from 500 to the upstream typed status
 	}
 
 	return nil
