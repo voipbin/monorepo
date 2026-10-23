@@ -10,7 +10,7 @@ Follows `2026-10-13-main-auto-deploy-design.md`, `2026-10-14-main-auto-deploy-ph
   - 5 have no `build-approval`: `bin-dbscheme-manager` (its only approval is the main-only `migration-applied-checkpoint`) and the 4 non-service workflows.
 - The gate was introduced in `639271c76` (CI credit optimization, 2026-02-05) with the goal "zero credits until approved". That change names no registry or review reason, and its rollback plan says to revert the approval-first flow if it causes problems.
 - `<svc>-build` pushes `<repo>:$CIRCLE_SHA1` on every branch and `:latest` only when `CIRCLE_BRANCH == main`. `<svc>-deploy` is `only: main`. `<svc>-test` has no context.
-- The pipeline config is loaded from the pushed commit, so a branch decides its own jobs and filters. The approval was therefore never a technical boundary (the header comment already says `deploy_filters` is "Not a security boundary"); it was a point where a person looked at what the branch was about to run.
+- The approval was the point where a person looked at what a branch was about to run. The header comment of `config_work.yml` already says `deploy_filters` is "Not a security boundary".
 - `main` already runs the target shape: in recent main pipelines the service workflows show only `test-auto`, `build` and `deploy`, while `build-approval` and `test` are filtered out and `build` still runs with `requires: [test, test-auto]`. The non-main shape after this change is the mirror image of that.
 
 ## Change
@@ -42,7 +42,7 @@ Why keep the `test` / `test-auto` split instead of one unfiltered `test`: the re
 
 ## Risks and rollback
 
-- The click was also the point where a person looked at the pipeline-config changes of a branch. That look is gone. Behaviors that remain in the normal config: `deploy` is `only: main` and `:latest` is main-only.
+- The pre-run look at a branch's pipeline-config changes is gone. Behaviors that remain in the normal config: `deploy` is `only: main` and `:latest` is main-only.
 - A broken `.circleci` change now runs at once. Local `circleci config validate`/`process` and the bats suite run before the push.
 - Rollback is a revert of the commit: the shape returns to the approval-gated one and the checker returns with it. Credits already spent and images already pushed are not recoverable.
 
