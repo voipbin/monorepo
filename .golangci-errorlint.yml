@@ -1,22 +1,19 @@
 # Second golangci-lint configuration, used ONLY by the "Lint new-line
 # conventions" CI step together with --new-from-merge-base=origin/main.
 # (The file keeps its original name because CI path filters and docs reference it.)
-# - errorlint: docs/conventions/error-handling.md 4.2, fmt.Errorf must wrap an
-#   error with %w.
-# - noctx: docs/conventions/database.md 7.2a, DB calls (and other I/O calls such
-#   as net/http requests) must carry a context.
-# - rowserrcheck: docs/conventions/database.md 7.2a, rows.Err() must be checked
-#   after iterating sql.Rows.
-# - bodyclose, nilerr, wastedassign, predeclared, copyloopvar, gocritic,
-#   contextcheck, gosec, forbidigo, gocyclo, nestif, revive, usestdlibvars,
-#   nolintlint: anti-pattern and bug detectors, docs/conventions/linting.md
-#   lists the rules, the thresholds and the nolint policy.
 #
-# It is separate from .golangci.yml on purpose: --new-from-merge-base is a
-# global option, so adding it to the standard run would also hide issues on
-# unchanged lines (for example an `unused` function whose last caller was
-# removed). Existing violations are not reported; lines a branch adds or
-# changes are.
+# It holds the complexity limits only: gocyclo and nestif. The other
+# convention linters (errorlint, noctx, rowserrcheck, bodyclose, nilerr,
+# wastedassign, predeclared, copyloopvar, gocritic, contextcheck, gosec,
+# forbidigo, revive, usestdlibvars, nolintlint) run on all code from
+# .golangci.yml. docs/conventions/linting.md lists the rules, the thresholds
+# and the nolint policy.
+#
+# It is separate from .golangci.yml on purpose: existing functions above the
+# limits are not cleaned up yet (70 gocyclo and 21 nestif reports on
+# 2026-10-23), so these two linters only report on lines a branch adds
+# or changes. --new-from-merge-base is a global option, so adding it to the
+# standard run would also hide issues on unchanged lines.
 version: "2"
 
 run:
@@ -25,84 +22,22 @@ run:
 linters:
   default: none
   enable:
-    - errorlint
-    - noctx
-    - rowserrcheck
-    # Anti-pattern and bug detectors (VOIP-1641).
-    - bodyclose
-    - nilerr
-    - wastedassign
-    - predeclared
-    - copyloopvar
-    - gocritic
-    - contextcheck
-    - gosec
-    - forbidigo
     - gocyclo
     - nestif
-    - revive
-    - usestdlibvars
-    - nolintlint
   settings:
-    nolintlint:
-      require-explanation: true
-      require-specific: true
-      allow-unused: true
     gocyclo:
       min-complexity: 20
     nestif:
       min-complexity: 6
-    revive:
-      rules:
-        - name: error-naming
-        - name: error-return
-        - name: indent-error-flow
-        - name: superfluous-else
-        - name: context-as-argument
-        - name: context-keys-type
-        - name: empty-block
-        - name: unreachable-code
-        - name: var-naming
-    gosec:
-      excludes:
-        - G101 # hard-coded credentials: matches field and constant names, not values
-        - G115 # integer conversion: too frequent on proto and DB numeric types
-        - G117 # secret-named fields marshaled by API client request structs
-        - G304 # file inclusion via variable: paths are service-controlled
-    errorlint:
-      errorf: true
-      comparison: false
-      asserts: false
   exclusions:
     generated: lax
     paths:
       - (^|/)vendor(/|$)
     rules:
-      # Operator CLIs print results to stdout on purpose: cmd/*-control and the
-      # shared migrate commands.
-      - path: (^|/)cmd/[^/]+-control/
-        linters:
-          - forbidigo
-      - path: pkg/migrationhandler/command\.go
-        linters:
-          - forbidigo
-      # Test code (sqlmock, in-memory fixtures, table-driven copies) is exempt
-      # from the linters below. errorlint, nilerr, wastedassign, predeclared
-      # and nolintlint still apply to tests.
       - path: _test\.go
         linters:
-          - noctx
-          - rowserrcheck
-          - gosec
-          - contextcheck
-          - forbidigo
           - gocyclo
           - nestif
-          - bodyclose
-          - copyloopvar
-          - gocritic
-          - usestdlibvars
-          - revive
 
 issues:
   max-same-issues: 0

@@ -27,7 +27,7 @@ ResourceType: "ai_team",
 | `dmdirect.ResourceTypeConference` | `"conference"` |
 | `dmdirect.ResourceTypeExtension` | `"extension"` |
 
-**Exception:** The constant definition file itself (`bin-direct-manager/models/direct/direct.go`) and test data in `bin-direct-manager/pkg/dbhandler/` may use string literals. Add `// nolint:magicstring` to suppress false positives.
+**Exception:** The constant definition file itself (`bin-direct-manager/models/direct/direct.go`) and test data in `bin-direct-manager/pkg/dbhandler/` may use string literals. Add `//nolint:magicstring // <reason>` to suppress false positives.
 
 ### 16.2 Pre-commit Hook
 
@@ -39,7 +39,7 @@ A pre-commit hook at `.githooks/pre-commit` enforces this policy by scanning sta
 git config core.hooksPath .githooks
 ```
 
-The hook flags lines matching `ResourceType: "ai"` or similar patterns. To suppress a false positive, add `// nolint:magicstring` on the same line.
+The hook flags lines matching `ResourceType: "ai"` or similar patterns. To suppress a false positive, add `//nolint:magicstring // <reason>` on the same line.
 
 ### 16.3 Cross-Service Normalization
 

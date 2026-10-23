@@ -50,7 +50,7 @@ if [ "$VIOLATIONS" -gt 0 ]; then
     echo "[Hook] Found $VIOLATIONS magic string violation(s). Use constants:"
     echo "  dmdirect.ResourceTypeAI, dmdirect.ResourceTypeAITeam, dmdirect.ResourceTypeAgent,"
     echo "  dmdirect.ResourceTypeQueue, dmdirect.ResourceTypeConference, dmdirect.ResourceTypeExtension"
-    echo "  To suppress: add // nolint:magicstring on the line"
+    echo "  To suppress: add //nolint:magicstring // <reason> on the line"
     exit 2
 fi
 
