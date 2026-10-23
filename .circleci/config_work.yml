@@ -4,8 +4,9 @@ context_production: &context_production
   context: 
     - production
 
-# Deploy runs only on main. Non-main branches may approve to verify test/build
-# but must never reach production (VOIP-1584). Not a security boundary.
+# Deploy runs only on main. Non-main branches run test/build (after an approval
+# click in the approval-kept workflows) but must never reach production
+# (VOIP-1584). Not a security boundary.
 deploy_filters: &deploy_filters
   filters:
     branches:
