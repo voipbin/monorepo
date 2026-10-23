@@ -1,5 +1,7 @@
 package main
 
+// ci-check: VOIP-1642 (temporary, not for merge).
+
 import (
 	"context"
 	"encoding/json"
