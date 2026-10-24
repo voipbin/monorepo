@@ -202,19 +202,19 @@ func Test_engineMailgun_Send_attachment(t *testing.T) {
 			expectFiles:  []string{recordingID.String() + ".zip=synthetic-recording-bytes"},
 		},
 		{
-			name:        "lookup_error_fails_send",
+			name:        "lookup_error",
 			attachments: recordingAttachment,
 			lookupErr:   true,
 			expectErr:   "could not get attachment",
 		},
 		{
-			name:         "download_error_fails_send",
+			name:         "download_error",
 			attachments:  recordingAttachment,
 			downloadCode: http.StatusInternalServerError,
 			expectErr:    "could not download attachment",
 		},
 		{
-			name:        "unknown_reference_type_fails_send",
+			name:        "unknown_reference_type",
 			attachments: []email.Attachment{{ReferenceType: email.AttachmentReferenceType("unknown"), ReferenceID: recordingID}},
 			expectErr:   "unknown attachment reference type",
 		},
@@ -254,6 +254,9 @@ func Test_engineMailgun_Send_attachment(t *testing.T) {
 				}
 				if capture.count() != 0 {
 					t.Errorf("Expected no send call. got: %d", capture.count())
+				}
+				if n := strings.Count(err.Error(), "reference_type"); n > 1 {
+					t.Errorf("Expected the attachment context once. count: %d, err: %v", n, err)
 				}
 				return
 			}

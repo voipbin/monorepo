@@ -111,7 +111,7 @@ func (h *engineMailgun) getAttachment(ctx context.Context, e *email.Attachment) 
 	case email.AttachmentReferenceTypeRecording:
 		f, err = h.reqHandler.StorageV1RecordingGet(ctx, e.ReferenceID, 60000)
 		if err != nil {
-			return "", nil, errors.Wrapf(err, "could not get attachment. reference_type: %s, reference_id: %s", e.ReferenceType, e.ReferenceID)
+			return "", nil, errors.Wrap(err, "could not get recording")
 		}
 		log.WithField("recording", f).Debugf("Got recording attachment. recording_id: %s", f.ReferenceID)
 

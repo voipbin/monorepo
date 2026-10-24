@@ -74,8 +74,7 @@ func (h *engineSendgrid) Send(ctx context.Context, m *email.Email) (string, erro
 	for _, a := range m.Attachments {
 		attach, err := h.getAttachment(ctx, &a)
 		if err != nil {
-			log.WithField("attachment", a).Errorf("Could not get attachment. err: %v", err)
-			continue
+			return "", errors.Wrapf(err, "could not get attachment. reference_type: %s, reference_id: %s", a.ReferenceType, a.ReferenceID)
 		}
 
 		_ = message.AddAttachment(attach)
@@ -85,6 +84,14 @@ func (h *engineSendgrid) Send(ctx context.Context, m *email.Email) (string, erro
 	resp, err := h.client.Send(message)
 	if err != nil {
 		return "", errors.Wrapf(err, "could not send email.")
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		log.WithFields(logrus.Fields{
+			"status_code":   resp.StatusCode,
+			"response_body": resp.Body,
+		}).Errorf("Unexpected response status code.")
+		return "", errors.Errorf("unexpected response status code: %d", resp.StatusCode)
 	}
 
 	if resp.Headers == nil {
@@ -124,7 +131,7 @@ func (h *engineSendgrid) getAttachment(ctx context.Context, e *email.Attachment)
 	case email.AttachmentReferenceTypeRecording:
 		f, err = h.reqHandler.StorageV1RecordingGet(ctx, e.ReferenceID, 60000)
 		if err != nil {
-			return nil, errors.Wrapf(err, "could not get attachment. reference_type: %s, reference_id: %s", e.ReferenceType, e.ReferenceID)
+			return nil, errors.Wrap(err, "could not get recording")
 		}
 		log.WithField("recording", f).Debugf("Got recording attachment. recording_id: %s", f.ReferenceID)
 

@@ -7,7 +7,7 @@
 | Email not delivered | Status stays `initiated` | Both SendGrid and Mailgun APIs failing; check credentials |
 | SendGrid auth failure | Primary provider rejected | `sendgrid_api_key` invalid or expired |
 | Mailgun auth failure | Fallback also fails; email stuck | `mailgun_api_key` invalid or expired |
-| Attachment not attached | Email sent without attachment | `bin-storage-manager` RPC failed or recording not found |
+| Attachment failure | Email stays `initiated`; no provider sends it | `bin-storage-manager` RPC failed, recording not found or download failed |
 | Webhook status not updated | Email stays at `processed` forever | `bin-hook-manager` not forwarding; or provider webhook URL misconfigured |
 | Cache stale | Old email data returned | Redis out of sync; restart clears cache |
 
