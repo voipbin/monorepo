@@ -29,17 +29,17 @@
    - Set 후 Get 왕복: Ast Endpoint/Auth/AOR, Extension, Trunk, CustomerDomain, AstContacts. Extension 은 3개 키(ID, EndpointID, CustomerID+Extension), Trunk 는 2개 키(ID, DomainName)를 각각 개별 Get 으로 확인.
    - 키 형식 고정: 기대 키 문자열을 테스트에 리터럴로 쓰고(제품 Sprintf 재사용 금지) miniredis 에 해당 키가 있는지 확인. TTL 은 Ast Endpoint/Auth/AOR 와 AstContacts 가 정확히 3분, 나머지 정확히 24h 인지 각각 단언(범위 비교 금지).
    - 삭제 후 Get 이 redis.Nil, TrunkDel 은 두 키 모두 제거, 미존재 키 삭제는 오류 아님.
-   - 오류 경로: go-redis Hook(`AddHook`)으로 N번째 set/del 명령만 실패시켜 ExtensionSet 의 2, 3번째 키, TrunkSet 의 2번째 키, TrunkDel 의 2번째 키 실패 분기와 각 Del/Set 함수의 오류 전파를 검증. Hook 은 명령 이름(set, del)으로 걸러 센 카운터를 사용(Ping 이 섞이지 않음). 서버 종료 케이스는 Connect 와 소수 대표 함수에만 사용.
+   - 오류 경로: go-redis Hook(`AddHook`)으로 N번째 set/del 명령만 실패시켜 다중 키 쓰기/삭제 중 일부 명령이 실패하는 경우와 각 Del/Set 함수의 오류 전파를 검증. Hook 은 명령 이름(set, del)으로 걸러 센 카운터를 사용(Ping 이 섞이지 않음). 서버 종료 케이스는 Connect 와 소수 대표 함수에만 사용.
    - Get 오류: 손상된 JSON 과 타입 불일치(객체 대상에 배열, 배열 대상 AstContactsGet 에는 객체)를 각 Get 함수에서 unmarshal 오류로 전파하는지 확인.
-   - AstContactsGet 은 서로 다른 contact 여러 건이 각각 복원되는지 확인(Go 1.22 이후 반복마다 새 변수라 결함 아님, 이 동작을 고정). AstContactsSet 에 nil 슬라이스를 넣으면 JSON null 이 저장되므로 Get 이 빈 슬라이스를 반환하는 경계 확인.
-   - Ast*Set 은 `*e.ID` 를 역참조하므로 테스트는 항상 ID 를 채움(nil 이면 panic, 제품 코드 변경 금지).
+   - AstContactsGet 은 서로 다른 contact 여러 건이 각각 복원되는지 확인. AstContactsSet 에 nil 슬라이스를 넣으면 JSON null 이 저장되므로 Get 이 빈 슬라이스를 반환하는 경계 확인.
+   - 테스트는 ID 가 채워진 입력을 사용(제품 코드 변경 금지).
    - NewHandler 는 지연 연결이라 네트워크 없이 Addr, DB, Password 반영을 확인.
    - Connect: 정상 Ping 과 서버 종료 후 오류.
 2. extensionhandler: 기존 Test_Get, Test_ExtensionGet 과 이름이 겹치지 않도록 Test_Get_notFound, Test_Get_dbError, Test_GetByExtension 등 새 이름을 쓴다. Get 의 ErrNotFound 가 NotFound 오류로 변환(코드 단언), 일반 오류는 NotFound 로 변환되지 않고 그대로 전달, GetByExtension 도 정상, NotFound, 일반 오류.
-3. trunkhandler: 기존 Test_Get, Test_GetByDomainName 과 이름이 겹치지 않게 Test_Get_notFound, Test_Get_dbError, Test_GetByDomainName_notFound, Test_GetByDomainName_dbError 로 Get 과 GetByDomainName(trunk.go:139-143)의 ErrNotFound 변환과 일반 오류 비변환.
-4. listenhandler: processV1ExtensionsIDGet 정상(200, JSON 본문과 id 파싱), 핸들러 오류 전파, 잘못된 uuid 경로(uuid.Nil 이 Get 에 전달됨)의 경계값.
+3. trunkhandler: 기존 Test_Get, Test_GetByDomainName 과 이름이 겹치지 않게 Test_Get_notFound, Test_Get_dbError, Test_GetByDomainName_notFound, Test_GetByDomainName_dbError 로 Get 과 GetByDomainName 의 ErrNotFound 변환과 일반 오류 비변환.
+4. listenhandler: processV1ExtensionsIDGet 정상(200, JSON 본문과 id 파싱), 핸들러 오류 전파, 잘못된 uuid 경로(파싱 불가 id)의 경계값.
 5. subscribehandler: customer_deleted 에서 trunk, extension, customerdomain 핸들러 각각 실패 시 오류 전파와 이후 핸들러 미호출(gomock 호출 횟수로 단언). 잘못된 JSON 입력의 unmarshal 오류(customer_deleted, customer_created 둘 다)와 customer_created 핸들러 오류 전파도 포함.
-6. dbhandler(sqlmock, 기존 패턴, 필수): ExtensionCountByCustomerID(extension.go:46), TrunkCountByCustomerID(trunks.go:41), TrunkDelete(trunks.go:327)에 대해 정상, DB 오류, 0건 경계값. TrunkDelete 는 성공 끝에서 `_ = h.trunkUpdateToCache` 를 호출하므로 sqlmock 에 UPDATE 뒤 SELECT 와 cache mock 기대가 필요하고 캐시 갱신 실패는 무시된다(오류 확인은 prepare/Exec 실패로). trunkDeleteFromCache(trunks.go:184)는 `//nolint:unused` 로 호출되지 않는 함수라 대상 아님. 추가로 AstContactsSetToCache, AstContactDeleteFromCache(ast_contact.go:60, 81)와 *ToCache/*FromCache 류의 캐시 오류 전파를 cache mock 이 오류를 돌려주게 하여 확인.
+6. dbhandler(sqlmock, 기존 패턴, 필수): ExtensionCountByCustomerID, TrunkCountByCustomerID, TrunkDelete 에 대해 정상, DB 오류, 0건 경계값. TrunkDelete 는 성공 후 캐시를 갱신하므로 sqlmock 에 UPDATE 뒤 SELECT 와 cache mock 기대가 필요하고 캐시 갱신 오류는 호출 결과에 영향을 주지 않는다(오류 확인은 prepare/Exec 실패로). Count 쿼리의 소프트 삭제 조건은 sqlmock ExpectQuery 를 `tm_delete IS NULL` 포함 정규식 또는 QueryMatcherEqual 로 고정해 검출. 추가로 AstContactsSetToCache, AstContactDeleteFromCache 와 *ToCache/*FromCache 류의 캐시 오류 전파를 cache mock 이 오류를 돌려주게 하여 확인.
 
 예상 증분: cachehandler 약 175 + 나머지 약 55 = 약 225 statement, 수기 합계 약 62%. 목표 61% 이상 미달 시 구현 단계에서 dbhandler, extensionhandler 오류 경로를 추가한다.
 
@@ -47,6 +47,6 @@
 
 - 수기 합계 61% 이상. 계산 규칙은 gens/, mock_*.go, `Code generated ... DO NOT EDIT` 파일 제외, 같은 블록 중복은 최대 count 이며 scratch 의 계산 스크립트(PR 본문에 규칙을 서술)로 재현. 서비스 디렉터리에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile`.
 - 기존 테스트 전부 통과, `go mod tidy`, `go vet`, `golangci-lint run`. 로컬에서 `git fetch origin main` 후 `scripts/check-test-conventions.sh` 통과(Test_ 이름, 값 비교는 reflect.DeepEqual 과 t.Errorf(testify 금지), gomock 컨트롤러 이름 mc 는 gomock 을 쓰는 신규 테스트에 해당).
-- 변이 검사(임시 복사본에서 각각 주입해 새 테스트가 실패하는지 확인): 키 접두사 변경, Ast 3분과 나머지 24h 의 TTL 구분 변경, TrunkDel 한 키 누락, ExtensionSet 이 3개 키 중 하나를 안 씀, TrunkSet 이 DomainName 키를 안 씀, Extension/Trunk Get 과 GetByExtension 의 NotFound 변환 제거와 일반 오류의 오변환, subscribehandler 오류 시 이후 핸들러 호출, 2번째 키 실패를 무시하도록 바꾸는 변이(ExtensionSet, TrunkSet, TrunkDel), TrunkDelete 가 tm_delete 를 쓰지 않는 변이, Count 쿼리에서 tm_delete IS NULL 조건 제거 변이(squirrel 이 조건을 SQL 문자열에 넣으므로 sqlmock ExpectQuery 를 `tm_delete IS NULL` 포함 정규식 또는 QueryMatcherEqual 로 고정해 검출).
+- 변이 검사: 핵심 동작(키 형식, TTL, 키 단위 쓰기/삭제, NotFound 변환과 일반 오류 전달, 소프트 삭제 조건, 오류 전파)을 임시 복사본에서 각각 변형해 새 테스트가 실패하는지 확인.
 - 변경 파일은 bin-registrar-manager/ 안의 `_test.go`, docs/plans, go.mod, go.sum 뿐(`git diff --stat origin/main...HEAD`).
 - 합성 값만 사용, 네트워크와 외부 비용 호출 없음.
