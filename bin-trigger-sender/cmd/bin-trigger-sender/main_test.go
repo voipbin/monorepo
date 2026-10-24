@@ -57,8 +57,8 @@ func TestBuildRequest_marshalsToJSON(t *testing.T) {
 }
 
 // TestRunDialFailure verifies run returns an error when RabbitMQ is unreachable.
-// Note: the ctx.Done() timeout branch inside run requires a live broker to exercise.
-// That path is not unit-tested here; it is covered by integration testing against a real broker.
+// The ctx.Done() timeout branch and the later stages of run are exercised against
+// the in-process fake broker in fakebroker_test.go.
 func TestRunDialFailure(t *testing.T) {
 	err := run("amqp://127.0.0.1:1", "queue", "/v1/test", "POST", "application/json", "", 5000)
 	if err == nil {
