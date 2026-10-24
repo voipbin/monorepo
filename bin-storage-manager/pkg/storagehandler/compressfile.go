@@ -67,17 +67,11 @@ func (h *storageHandler) CompressfileCreate(ctx context.Context, referenceIDs []
 
 // compressGetFilesByFileIDs returns a list of files of the given file IDs.
 func (h *storageHandler) compressGetFilesByFileIDs(ctx context.Context, fileIDs []uuid.UUID) ([]*file.File, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":     "compressGetFilesByFileIDs",
-		"file_ids": fileIDs,
-	})
-
 	res := []*file.File{}
 	for _, id := range fileIDs {
 		f, err := h.FileGet(ctx, id)
 		if err != nil {
-			log.Errorf("Could not get file info. err: %v", err)
-			continue
+			return nil, errors.Wrapf(err, "could not get the file. file_id: %s", id)
 		}
 		res = append(res, f)
 	}
@@ -87,11 +81,6 @@ func (h *storageHandler) compressGetFilesByFileIDs(ctx context.Context, fileIDs 
 
 // compressGetFilesByReferenceIDs returns a list of files of the given reference IDs.
 func (h *storageHandler) compressGetFilesByReferenceIDs(ctx context.Context, referenceIDs []uuid.UUID) ([]*file.File, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "compressGetFilesByReferenceIDs",
-		"reference_ids": referenceIDs,
-	})
-
 	res := []*file.File{}
 	for _, id := range referenceIDs {
 		filters := map[file.Field]any{
@@ -101,8 +90,7 @@ func (h *storageHandler) compressGetFilesByReferenceIDs(ctx context.Context, ref
 
 		tmps, err := h.FileList(ctx, "", 1000, filters)
 		if err != nil {
-			log.Errorf("Could not get file info. err: %v", err)
-			continue
+			return nil, errors.Wrapf(err, "could not get the files. reference_id: %s", id)
 		}
 		res = append(res, tmps...)
 	}

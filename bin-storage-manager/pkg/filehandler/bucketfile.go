@@ -34,13 +34,13 @@ func (h *fileHandler) bucketfileMove(ctx context.Context, sourceBucketName strin
 	dst := h.client.Bucket(destBucketName).Object(destFilepath)
 	_, err := dst.Attrs(ctx)
 	if err == nil {
-		return nil, errors.Wrap(err, "destination already exists")
+		return nil, fmt.Errorf("destination already exists. dest_bucket_name: %s, dest_filepath: %s", destBucketName, destFilepath)
 	}
 
 	// copy to the destination
 	res, err := dst.CopierFrom(src).Run(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not copy the file to the destination. source_bucket_name: %s, source_filepath: %s, dest_bucket_name: %s, dest_filepath: %s")
+		return nil, errors.Wrapf(err, "could not copy the file to the destination. source_bucket_name: %s, source_filepath: %s, dest_bucket_name: %s, dest_filepath: %s", sourceBucketName, sourceFilepath, destBucketName, destFilepath)
 	}
 
 	// delete source
@@ -76,13 +76,18 @@ func (h *fileHandler) bucketfileCompressFiles(ctx context.Context, dstFilepath s
 	defer func() {
 		if resErr != nil {
 			log.Errorf("Could not finish the create compress file correctly. Deleting the file. err: %v", resErr)
-			_ = fo.Delete(ctx)
+			if errDelete := fo.Delete(ctx); errDelete != nil {
+				log.Errorf("Could not delete the incomplete compress file. err: %v", errDelete)
+			}
 		}
 	}()
 
 	fw := fo.NewWriter(ctx)
 	defer func() {
-		_ = fw.Close()
+		// closing the writer finalizes the upload
+		if errClose := fw.Close(); errClose != nil && resErr == nil {
+			resErr = errors.Wrap(errClose, "could not finish uploading the compress file")
+		}
 	}()
 
 	// create a zip
@@ -91,7 +96,9 @@ func (h *fileHandler) bucketfileCompressFiles(ctx context.Context, dstFilepath s
 		// close zip
 		if errClose := zw.Close(); errClose != nil {
 			log.Errorf("Could not close the zip writer. err: %v", errClose)
-			return
+			if resErr == nil {
+				resErr = errors.Wrap(errClose, "could not close the zip writer")
+			}
 		}
 	}()
 
@@ -101,8 +108,7 @@ func (h *fileHandler) bucketfileCompressFiles(ctx context.Context, dstFilepath s
 		// read open
 		reader, err := bucketFile.NewReader(ctx)
 		if err != nil {
-			log.Errorf("Could not create a reader. err: %v", err)
-			continue
+			return errors.Wrapf(err, "could not open the source file. bucket_name: %s, filepath: %s", f.BucketName, f.Filepath)
 		}
 		defer func() {
 			_ = reader.Close()

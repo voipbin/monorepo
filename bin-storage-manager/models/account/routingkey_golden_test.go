@@ -99,8 +99,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 	}{
 		// account resource -- the raw constants are CAPITALIZED (`Account_created`, ...);
 		// eventtopic.RoutingKey lowercases before splitting, so the resource segment normalizes
-		// to `account`. Publish sites: pkg/accounthandler/account.go:52 (created), :162 and :188
-		// (updated, from IncreaseFileInfo / DecreaseFileInfo), :136 (deleted).
+		// to `account`. Publish sites: accounthandler Create (created), IncreaseFileInfo and
+		// DecreaseFileInfo (updated), Delete (deleted).
 		{
 			"Account_created (uppercase constant, normalized key)",
 			account.EventTypeAccountCreated,
@@ -121,7 +121,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		},
 
 		// file resource -- lowercase constants, own id is the address.
-		// Publish sites: pkg/filehandler/file.go:140 (created), :219 (deleted).
+		// Publish sites: filehandler Create (created) and Delete (deleted).
 		{
 			"file_created",
 			file.EventTypeFileCreated,
