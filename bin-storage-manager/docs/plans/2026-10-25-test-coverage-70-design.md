@@ -92,7 +92,7 @@ cmd/storage-control (`main_test.go`, 전역 상태 `viper`, `config.Get()`, stdo
 - `resolveUUID`: 빈 값은 `<label> is required`, 형식 오류 값은 `invalid format for <label>: '<값>' is not a valid UUID`, 올바른 값은 그 UUID 반환.
 - `printJSON`(stdout 은 파이프로 바꿔 쓰기 종료 뒤 읽고 출력이 파이프 버퍼보다 작은 값만 쓴다): 구조체 출력이 들여쓰기 2칸 JSON 이고 개행으로 끝남, json 불가 값(채널)은 `failed to marshal JSON` 오류.
 - `cmd*` 생성자 10개: `Use` 와 `RunE` 비어 있지 않음, 플래그 이름과 기본값을 리터럴 목록으로 단언(예: file list 의 `limit` 기본 100, `reference-type`, account list 의 플래그).
-- `initCommand`: 루트 `Use`, 하위 명령 트리(`file`: create/get/list/delete, `account`: create/get/list/delete, `recording`: get/delete, `migrate`), `--database_dsn=invalid` 로 `migrate status` 실행 시 연결 없이 오류 반환.
+- `initCommand`: 루트 `Use`, 하위 명령 트리(`Execute` 후 자동 추가되는 `completion`, `help` 는 단언 대상에서 제외하고 사용자 정의 명령만 이름으로 단언, `file`: create/get/list/delete, `account`: create/get/list/delete, `recording`: get/delete, `migrate`), `--database_dsn=invalid` 로 `migrate status` 실행 시 연결 없이 오류 `could not parse the database dsn` 반환(문구를 단언). `PersistentPreRunE` 의 플래그 반영 경로는 `Execute` 직전에 `DatabaseDSN` 을 직접 대입하므로(`once` 소진 대응) 이 테스트가 검증하지 않으며, 변이 검사 대상에서도 제외한다.
 - `runFileCreate` 입력 검증: 필수값을 하나씩 비운 표(customer, owner, reference id 형식 오류, reference-type, name, filename, bucket-name, filepath)별 오류 문구 단언과 그 시점까지 `init` 이 호출되지 않음(DSN 을 `invalid` 로 두었는데 오류 문구가 검증 문구이면 init 전에 return 한 것).
 - `runAccountCreate`: customer-id 비었음과 형식 오류.
 - 나머지 `run*` 8개와 `initStorageHandler`/`initAccountHandler`: `config.Get().DatabaseDSN = "invalid"` 일 때 `failed to initialize handlers` 로 래핑된 오류(내부 `could not connect to the database` 포함) 반환.
@@ -115,5 +115,5 @@ pkg 단순 구간:
 
 - 수기 합계 70.0% 이상, 목표 71% 이상(CI 방식 측정, 집계는 1.1 의 제외 규칙과 중복 블록 최대 count 규칙).
 - `go test -count=1 ./...` 와 신규 테스트 `-race -count=3` 통과, `golangci-lint run -v --timeout 5m`, `go mod tidy` 후 `go.mod`/`go.sum` 불변, `-shuffle=on` 과 테스트 단독 `-run` 실행에서도 통과(`Execute` 와 `once` 의존 확인), `git diff --stat origin/main...HEAD` 가 bin-storage-manager/ 안에만 있음, `scripts/check-test-conventions.sh` 통과, 공개 저장소 위생 검사(내부 주소, 비밀값 없음).
-- 변이 검사(별도 scratch 복사본에서만): `resolveUUID` 의 빈 값 분기 제거, `runFileCreate` 의 검증 순서 변경(init 이전 return 파괴), `printJSON` 들여쓰기 변경, `runListen` 의 오류 무시, 플래그 기본값 변경(limit 100), `errorResponse` 상태 코드 변경, `readWavHeader` 의 홀수 청크 정렬 제거, `Get` 의 NotFound 변환 제거, `LoadGlobalConfig` 의 필드 매핑 하나 변경, `runSubscribe` 의 `QueueBind` 오류 무시, `initCommand` 의 `PersistentPreRunE` 제거 또는 `migrate` 의 DSN 인자 변경, `initStorageHandler`/`initAccountHandler` 의 오류 래핑 문구 변경, `decodeWavPeaks` 의 다채널 처리 변경에서 해당 신규 테스트가 실패하는지 확인한다.
+- 변이 검사(별도 scratch 복사본에서만): `resolveUUID` 의 빈 값 분기 제거, `runFileCreate` 의 검증 순서 변경(init 이전 return 파괴), `printJSON` 들여쓰기 변경, `runListen` 의 오류 무시, 플래그 기본값 변경(limit 100), `errorResponse` 상태 코드 변경, `readWavHeader` 의 홀수 청크 정렬 제거, `Get` 의 NotFound 변환 제거, `LoadGlobalConfig` 의 필드 매핑 하나 변경, `runSubscribe` 의 `QueueBind` 오류 무시, `migrate` 클로저의 DSN 인자 변경(`could not parse the database dsn` 문구 단언으로 잡음), `initStorageHandler`/`initAccountHandler` 의 오류 래핑 문구 변경, `decodeWavPeaks` 의 다채널 처리 변경에서 해당 신규 테스트가 실패하는지 확인한다.
 - 롤백: 테스트 추가뿐이므로 PR 되돌림만으로 복구된다.
