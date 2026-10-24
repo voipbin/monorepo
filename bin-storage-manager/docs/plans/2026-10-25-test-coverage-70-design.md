@@ -18,7 +18,7 @@ Only test files are added. No product code, `go.mod` or `go.sum` changes.
 - `pkg/listenhandler`: `errorResponse` with a typed nil error.
 - `pkg/filehandler`: boundaries of the WAV header and peak decoding (multi channel, bucket count above frame count, truncated data, odd chunk sizes, malformed headers).
 
-Global state (`viper`, the global config, `os.Stdout`) is reset and restored with `t.Cleanup`. Tests do not use `t.Parallel`, and they pass with `-race -shuffle=on -count=3`.
+Global state (`viper`, the global config, `os.Stdout`) is reset and restored with `t.Cleanup`. Tests do not use `t.Parallel`, and the packages touched here (cmd, internal/config, pkg/filehandler, pkg/listenhandler) pass with `-race -shuffle=on -count=3`.
 
 Not covered on purpose: `main`, `run`, `runService`, `initProm` and the code behind real Redis, RabbitMQ and database connections.
 

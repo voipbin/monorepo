@@ -24,7 +24,7 @@ var errSimulated = errors.New("simulated failure")
 const waitTimeout = 5 * time.Second
 
 func Test_rootCmd_flags(t *testing.T) {
-	// database_dsn and rabbitmq_address defaults carry account strings, so only their presence is checked.
+	// The defaults of database_dsn and rabbitmq_address are deployment specific, so only their presence is checked.
 	for _, name := range []string{"database_dsn", "rabbitmq_address"} {
 		if rootCmd.Flags().Lookup(name) == nil {
 			t.Errorf("Wrong match. expect flag: %s", name)
