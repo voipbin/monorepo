@@ -3,11 +3,11 @@
 ## 1. 티켓 검토 (이슈 분석)
 
 - 판정: 유효. origin/main 99b59c386 에서 같은 명령으로 실측한 수기 코드 65.8% (1502/2282), 원본 57.5% (1502/2612). 카드 수치와 일치.
-- 관련 PR/커밋: 이 경로의 최근 커밋은 VOIP-1647(60% 상향, 머지됨), VOIP-1648(문서 정리, 머지됨)이며 진행 중인 PR 은 없음. 중복 없음.
-- 필요량: 70.0% 는 1597 stmt (+95), 권장 71% 는 1620 stmt (+118). 목표는 71% 이상.
+- 관련 PR/커밋: 이 경로의 최근 커밋은 VOIP-1647(60% 목표, 48.2%에서 65.8%로 상향, 머지됨), VOIP-1648(문서 정리, 머지됨)이며 진행 중인 PR 은 없음. 중복 없음.
+- 필요량: 70.0% 는 1598 stmt (+96, 0.7x2282=1597.4 의 올림), 권장 71% 는 1621 stmt (+119, 0.71x2282=1620.2 의 올림). 목표는 71% 이상.
 - 로컬 `vendor/` 가 go.mod 와 어긋나 있어 `GOFLAGS=-mod=mod` 로 측정. 실행 간 변동은 없었음.
-- 테스트하기 어려운 구조: `cmd/number-control` (323 stmt, 0%) 과 `cmd/number-manager` (116 미커버) 는 DB, Redis, RabbitMQ, cobra 에 묶인 process wiring 이라 계획에서 제외. 제외해도 나머지 미커버(약 400 stmt) 안에서 달성 가능.
-- VOIP-1416(80% 미만 패키지 일반 상향)과 겹치는 패키지: numberhandler 76.7%, models/number 52.6%, pkg/cachehandler 0% (이 PR 이 올리지만 흡수 관계는 아님).
+- 테스트하기 어려운 구조: `cmd/number-control` (323 stmt, 0%) 과 `cmd/number-manager` (116 미커버) 는 DB, Redis, RabbitMQ, cobra 에 묶인 process wiring 이라 계획에서 제외. 제외하면 나머지 미커버는 341 stmt(780-439)이며 필요량 96~119 는 그 28~35%. 그중 requestexternal/telnyx.go 의 2 stmt 는 도달 불가로 제외.
+- 카드 본문이 적은 VOIP-1416(80% 미만 패키지 일반 상향, 카드 기준이며 저장소에서 별도 확인 불가)과 겹치는 패키지: numberhandler 76.7%, models/number 52.6%, pkg/cachehandler 0% (이 PR 이 올리지만 흡수 관계는 아님).
 
 ## 2. 대상과 산정 (패키지별 기준선, 수기 기준)
 
@@ -21,6 +21,8 @@
 | pkg/listenhandler | 342/418 | 76 | 요청 파싱, 하위 오류 응답 |
 | pkg/subscribehandler | 61/71 | 10 | processEventRun |
 | models/number | 10/19 | 9 | webhook 변환 |
+| 기타 (internal/config, numberhandler/main.go NewNumberHandler, requestexternal) | - | 9 | 대상 아님 (config 3, NewNumberHandler 4, requestexternal 2) |
+| 기타 (internal/config, numberhandler/main.go NewNumberHandler, requestexternal) | - | 9 | 대상 아님 (config 3, NewNumberHandler 4, requestexternal 2) |
 | requestexternal/models/telnyx | 23/28 | 5 | ConvertProviderNumber |
 
 예상 증가: cachehandler 약 60 + numberhandler 약 90 + dbhandler 약 30 + models 약 13 = 약 190 stmt (예상 수기 합계 약 74%). 부족하면 listenhandler 와 subscribehandler 를 추가.
