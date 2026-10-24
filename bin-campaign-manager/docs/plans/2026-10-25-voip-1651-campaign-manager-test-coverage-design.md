@@ -36,7 +36,7 @@
 
 ### 2.2 Execute 오류 분기의 mock 방침
 
-Execute 의 모든 오류 분기는 `updateExecuteStop` 을 호출한다. 이 체인(`db.CampaignUpdateExecute`, `campaignStop`, `isStoppable` 의 `h.Get` 과 `ListOngoingByCampaignID`, `campaignStopNow` 또는 `campaignStopping` 의 `CampaignGet` 과 `CampaignUpdateStatus` 과 `PublishWebhookEvent`)의 mock 기대는 테스트 파일 안의 헬퍼로 두되, 분기마다 단순화를 위해 `CampaignUpdateExecute` 가 오류를 반환하는 경우(체인 조기 종료)와 정지 체인 전체가 호출되는 경우를 각각 한 개 이상 포함한다. 정지 체인에서 `db.CampaignGet` 은 한 오류 분기에서 최대 4회(Execute, isStoppable, campaignStopNow, 갱신 후 조회) 호출되고 isStoppable 은 `util.TimeGetCurTime()` 도 호출하므로 이 mock 도 둔다. isStoppable 이 true 가 되려면 조회된 캠페인의 Execute 가 ExecuteStop 이어야 하며 campaignStopNow 갈래와 아니면 campaignStopping 갈래를 모두 쓴다. Execute 의 Get 이 실패하는 분기가 아니라 정지 체인의 Get 이 실패하는 분기에서는 Get 이 최대 3회(Execute, isStoppable, campaignStopping) 실패하도록 Times 와 gomock.InOrder 로 호출 횟수와 순서를 고정한다. Execute 는 반환값이 없으므로 관찰 가능한 결과는 mock 호출 시퀀스뿐이며, 분기마다 구별되는 호출 시퀀스(예: 대상 없음 + 계속은 지연 5000 의 CampaignV1CampaignExecute 한 번, 정상 종료는 지연 500)로 검증한다. "후속 mock 호출 없음" 은 오류 분기에서 정지 체인 외의 후속 호출(발신, campaigncall 생성)에 EXPECT 를 두지 않는 의미로만 사용한다.
+Execute 의 모든 오류 분기는 `updateExecuteStop` 을 호출한다. 이 체인(`db.CampaignUpdateExecute`, `campaignStop`, `isStoppable` 의 `h.Get` 과 `ListOngoingByCampaignID`, `campaignStopNow` 또는 `campaignStopping` 의 `CampaignGet` 과 `CampaignUpdateStatus` 과 `PublishWebhookEvent`)의 mock 기대는 테스트 파일 안의 헬퍼로 두되, 분기마다 단순화를 위해 `CampaignUpdateExecute` 가 오류를 반환하는 경우(체인 조기 종료)와 정지 체인 전체가 호출되는 경우를 각각 한 개 이상 포함한다. 정지 체인에서 `db.CampaignGet` 은 한 오류 분기에서 최대 4회(Execute, isStoppable, campaignStopNow, 갱신 후 조회) 호출되고 isStoppable 은 `util.TimeGetCurTime()` 도 호출하므로 이 mock 도 둔다. isStoppable 이 true 가 되려면 조회된 캠페인의 Execute 가 ExecuteStop 이어야 하며 campaignStopNow 갈래와 아니면 campaignStopping 갈래를 모두 쓴다. Execute 의 첫 Get 이 성공한 뒤 정지 체인의 Get 이 실패하는 분기에서는 Get 이 최대 3회(Execute, isStoppable, campaignStopping) 호출되며 실패하도록 Times 와 gomock.InOrder 로 호출 횟수와 순서를 고정한다. Execute 는 반환값이 없으므로 관찰 가능한 결과는 mock 호출 시퀀스뿐이며, 분기마다 구별되는 호출 시퀀스(예: 대상 없음 + 계속은 지연 5000 의 CampaignV1CampaignExecute 한 번, 정상 종료는 지연 500)로 검증한다. "후속 mock 호출 없음" 은 오류 분기에서 정지 체인 외의 후속 호출(발신, campaigncall 생성)에 EXPECT 를 두지 않는 의미로만 사용한다.
 
 ### 2.3 테스트 제외 분기
 
@@ -49,7 +49,7 @@ Execute 의 모든 오류 분기는 `updateExecuteStop` 을 호출한다. 이 �
 - 검증 함수: 고객 불일치, 삭제됨, 타 캠페인 사용 중이 각각 false 이고 정상값이 true 임을 같은 표에서 대조한다.
 - executeCall 의 UUIDCreate 는 callID, activeflowID 순으로 두 번 호출되므로 서로 다른 UUID 를 순서대로 반환하게 하여 CallV1CallCreateWithID 와 campaigncall.Create 의 인자 위치가 뒤바뀌면 실패하도록 한다.
 - 재시도 간격 미도래 테스트는 TryInterval 을 시간 단위(예: 1시간)로 크게 잡고 TMUpdate 를 TMCreate 와 다른 값(현재 시각 직전)으로 두어 한 번도 시도하지 않은 분기로 빠지지 않게 한다. 경계에서 충분한 여유를 두어 비결정성을 피한다.
-- 알 수 없는 캠페인 type 같은 비정상 입력 경로는 제외 분기와 같은 이유로 테스트하지 않고 사유는 카드 코멘트에만 남긴다. 모든 신규 테스트는 `-race -count=1` 로 통과해야 한다.
+- 모든 신규 테스트는 `-race -count=1` 로 통과해야 한다.
 
 ### 2.5 변이 검사 표본(변이 -> 실패해야 하는 테스트)
 
