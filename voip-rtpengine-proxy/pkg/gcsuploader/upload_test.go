@@ -228,3 +228,125 @@ func Test_Close(t *testing.T) {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 }
+
+func Test_New(t *testing.T) {
+	tests := []struct {
+		name string
+
+		emulatorHost string
+		credentials  func(t *testing.T) string // returns the credentials file path, empty for none
+
+		expectErr string
+	}{
+		{
+			name: "emulator host needs no credentials",
+
+			emulatorHost: "127.0.0.1:1",
+		},
+		{
+			name: "invalid credentials file is rejected",
+
+			emulatorHost: "",
+			credentials: func(t *testing.T) string {
+				p := filepath.Join(t.TempDir(), "credentials.json")
+				if err := os.WriteFile(p, []byte("not a credentials file"), 0o600); err != nil {
+					t.Fatalf("could not write fixture: %v", err)
+				}
+				return p
+			},
+
+			expectErr: "could not create GCS client",
+		},
+		{
+			name: "missing credentials file is rejected",
+
+			emulatorHost: "",
+			credentials: func(t *testing.T) string {
+				return filepath.Join(t.TempDir(), "missing.json")
+			},
+
+			expectErr: "could not create GCS client",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Both variables are always set so that local credentials or an
+			// emulator configured on the host cannot change the outcome.
+			t.Setenv("STORAGE_EMULATOR_HOST", tt.emulatorHost)
+			cred := ""
+			if tt.credentials != nil {
+				cred = tt.credentials(t)
+			}
+			t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", cred)
+
+			u, err := New("test-bucket")
+			if tt.expectErr != "" {
+				if err == nil {
+					t.Fatalf("Wrong match. expect: error containing %q, got: ok", tt.expectErr)
+				}
+				if !strings.Contains(err.Error(), tt.expectErr) {
+					t.Errorf("Wrong match. expect: %q, got: %v", tt.expectErr, err)
+				}
+				if u != nil {
+					t.Errorf("Wrong match. expect: nil uploader, got: %v", u)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			t.Cleanup(func() { _ = u.Close() })
+
+			impl, ok := u.(*gcsUploader)
+			if !ok {
+				t.Fatalf("Wrong match. expect: *gcsUploader, got: %T", u)
+			}
+			if impl.bucketName != "test-bucket" {
+				t.Errorf("Wrong match. expect: test-bucket, got: %s", impl.bucketName)
+			}
+		})
+	}
+}
+
+func Test_Upload_copyFailure(t *testing.T) {
+	tests := []struct {
+		name string
+
+		status int
+	}{
+		{
+			name: "source cannot be read, endpoint healthy",
+
+			status: http.StatusOK,
+		},
+		{
+			// Same assertions as above; the endpoint failure additionally
+			// drives the writer-close warning branch, which only logs.
+			name: "source cannot be read, endpoint failing",
+
+			status: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u, _ := newTestUploader(t, tt.status)
+
+			// A directory opens successfully and fails on the first read.
+			src := t.TempDir()
+
+			uri, err := u.Upload(src, "rtp-recordings/dir.pcap")
+			if err == nil {
+				t.Fatalf("Wrong match. expect: error, got: ok (%s)", uri)
+			}
+			if !strings.Contains(err.Error(), "could not upload to GCS") {
+				t.Errorf("Wrong match. expect: could not upload to GCS, got: %v", err)
+			}
+			if uri != "" {
+				t.Errorf("Wrong match. expect empty uri on error, got: %s", uri)
+			}
+		})
+	}
+}
