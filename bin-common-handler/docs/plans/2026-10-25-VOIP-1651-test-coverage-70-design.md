@@ -31,16 +31,16 @@ Needed: 71% means 7296 covered statements, i.e. about +580 over the 6716 covered
 
 Where the gap is:
 
-- `pkg/requesthandler` is 85% of the gap. It is a set of typed RPC client wrappers (`<Svc>V1<Resource><Action>`): build a URI, marshal a body, call `sendRequest<Svc>`, `parseResponse`. Every wrapper is testable with the existing `sockhandler.MockSockHandler`. Whole files with 0% coverage: ai_mcpservers (127 uncovered), rag_rags (108), tts_speakings (108), contact_contact_addresses (104), contact_contacts (89), ai_teams (87), webchat_widget (87), direct_directs (86), contact_addresses (67), webchat_session (67), route_providercalls (62), timeline_analyses (56), webchat_message (56), timeline_sip (47), agent_password (38), contact_tags (31), contact_interactions (30). Together about 1250 statements.
+- `pkg/requesthandler` is 85% of the gap. It is a set of typed RPC client wrappers (`<Svc>V1<Resource><Action>`): build a URI, marshal a body, call `sendRequest<Svc>`, `parseResponse`. Every wrapper is testable with the existing `sockhandler.MockSockHandler`. Largest whole files with 0% coverage (top 17 of 24 such files, 1364 statements in all): ai_mcpservers (127 uncovered), rag_rags (108), tts_speakings (108), contact_contact_addresses (104), contact_contacts (89), ai_teams (87), webchat_widget (87), direct_directs (86), contact_addresses (67), webchat_session (67), route_providercalls (62), timeline_analyses (56), webchat_message (56), timeline_sip (47), agent_password (38), contact_tags (31), contact_interactions (30). The top 17 together are about 1250 statements.
 - `pkg/databasehandler/mapping.go` (102 uncovered) holds pure reflection and conversion helpers (`convertValueForDB`, `copy*` scan helpers, `prepareFieldsFromMap`); they have branches for error input that are not exercised.
 - `pkg/migrationhandler/command.go` (cobra subcommands, 28 uncovered) takes an `open func() (*Migrator, error)` and can be driven without a database for the error path.
 
-Hard to test (excluded from the plan, listed so the exclusion is explicit):
+Hard to test or lower priority:
 
-- `pkg/rabbitmqhandler` (272 uncovered): connection, consume, publish, queue declare need a live broker; a network dependency, not allowed for unit tests.
-- `pkg/migrationhandler/migrator.go` (66 uncovered): `New` and `Up/Down` open a real MySQL connection.
-- `pkg/sockhandler` (3 statements): constructor wrapper around the broker.
+- `pkg/rabbitmqhandler` (272 uncovered): the package already has `amqpChannel` and `amqpConnection` interfaces with gomock mocks and existing tests, so most of publish, queue declare, consume paths can be exercised with channel mocks and no network. Only the real connection functions (`connect`, `Connect`) need a live broker and are excluded. It is a secondary candidate if the requesthandler files are not enough.
+- `pkg/migrationhandler/migrator.go` (66 uncovered): `New` opens a real MySQL connection, so it is excluded; the thin wrappers after `New` are not worth a mock without product code changes.
+- `pkg/sockhandler` (3 statements): constructor wrapper around the broker, excluded.
 
-Arithmetic feasibility: the fully uncovered requesthandler files alone provide about 1250 coverable statements, so reaching 71% (+580) needs under half of them. The goal is achievable without the hard-to-test packages.
+Arithmetic feasibility: the fully uncovered requesthandler files alone provide 1364 coverable statements (top 17 about 1250), so reaching 71% (+580) needs under half of them. The goal is achievable without the hard-to-test packages.
 
 Overlap with VOIP-1416 (generic raise of packages below 80%): requesthandler, rabbitmqhandler, databasehandler, migrationhandler are below 80% and overlap; this PR does not absorb VOIP-1416.
