@@ -129,3 +129,25 @@ func waitForLog(t *testing.T, hook *logrustest.Hook, msg string) {
 	}
 	t.Errorf("Wrong match. expect: error log containing %q, got: none", msg)
 }
+
+// Test_processEvent_otherPublisherIsIgnored verifies that an event type this service handles
+// is ignored when another publisher sends it.
+func Test_processEvent_otherPublisherIsIgnored(t *testing.T) {
+	types := []string{"groupcall_progressing", "groupcall_hangup", "call_hangup"}
+
+	for _, typ := range types {
+		t.Run(typ, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			// no expectation on the transfer handler: any lookup fails the test.
+			h, _ := newErrorTestHandler(mc)
+
+			h.processEvent(&sock.Event{
+				Publisher: "other-service",
+				Type:      typ,
+				Data:      []byte(`{"id":"` + testEventID + `"}`),
+			})
+		})
+	}
+}
