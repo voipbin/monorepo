@@ -285,7 +285,7 @@ func Test_dbUpdateTargets_errorPaths(t *testing.T) {
 	})
 }
 
-func Test_dbList_dbGet_dbDelete_dbErrors(t *testing.T) {
+func Test_dbList_dbGet_dbErrors(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 	h, m := newErrorPathHandler(mc)
@@ -518,5 +518,64 @@ func Test_Send_errorPaths(t *testing.T) {
 				t.Errorf("Wrong match. expect an error containing %q, got: %v", tt.expectErrContains, err)
 			}
 		})
+	}
+}
+
+func Test_Hook_createsInboundMessage(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	h, m := newErrorPathHandler(mc)
+	ctx := context.Background()
+
+	numberID := uuid.FromStringOrNil("67afdd50-a65d-11ec-84fa-8b61a2028c6a")
+	customerID := uuid.FromStringOrNil("755c7b90-197d-11ee-9cb0-a3ddbcba0c6f")
+	messageID := uuid.FromStringOrNil("0c6f1b7a-5b1c-4d6e-9d1f-2a3b4c5d6e7f")
+
+	// source and destination carry punctuation, they must be stored canonicalized.
+	data := []byte(`{
+  "data": {
+    "event_type": "message.received",
+    "payload": {
+      "from": {"phone_number": "+1 (555) 010-0001"},
+      "text": "hello",
+      "parts": 2,
+      "to": [{"phone_number": "+1.555.010.0002"}]
+    }
+  }
+}`)
+
+	m.req.EXPECT().NumberV1NumberList(ctx, "", uint64(1), gomock.Any()).Return([]nmnumber.Number{
+		{Identity: commonidentity.Identity{ID: numberID, CustomerID: customerID}, Number: "+15550100002"},
+	}, nil)
+	m.util.EXPECT().UUIDCreate().Return(messageID)
+
+	var created *message.Message
+	m.db.EXPECT().MessageCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, got *message.Message) error {
+		created = got
+		return nil
+	})
+	stored := &message.Message{Identity: commonidentity.Identity{ID: messageID, CustomerID: customerID}}
+	m.db.EXPECT().MessageGet(ctx, messageID).Return(stored, nil)
+	m.notify.EXPECT().PublishWebhookEvent(ctx, customerID, message.EventTypeMessageCreated, stored)
+
+	if err := h.Hook(ctx, "https://hook.example.com/v1.0/hooks/telnyx", data); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if created == nil {
+		t.Fatalf("Wrong match. expect the message to be created")
+	}
+	if created.ID != messageID || created.CustomerID != customerID {
+		t.Errorf("Wrong identity. id: %s, customer_id: %s", created.ID, created.CustomerID)
+	}
+	if created.ProviderName != message.ProviderNameTelnyx || created.Direction != message.DirectionInbound || created.Text != "hello" {
+		t.Errorf("Wrong message. provider: %s, direction: %s, text: %s", created.ProviderName, created.Direction, created.Text)
+	}
+	if created.Source == nil || created.Source.Target != "+15550100001" {
+		t.Errorf("Wrong source. got: %v", created.Source)
+	}
+	if len(created.Targets) != 1 || created.Targets[0].Destination.Target != "+15550100002" ||
+		created.Targets[0].Status != target.StatusReceived || created.Targets[0].Parts != 2 {
+		t.Errorf("Wrong targets. got: %v", created.Targets)
 	}
 }
