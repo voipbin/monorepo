@@ -9,20 +9,23 @@
 - internal/config 58/61, models/transfer 8/9, pkg/dbhandler 42/42
 - pkg/cachehandler 0/59, pkg/listenhandler 86/103, pkg/subscribehandler 71/88, pkg/transferhandler 250/320
 
-## 3. 변경 계획 (테스트 파일만, 제품 코드 변경 없음)
-목표: 수기 합계 61% 이상 (579/949 이상, 인수 조건)이며 계획상 62% 안팎(약 590)을 노립니다.
-1. cachehandler/handler_test.go: miniredis 로 TransferSet 이 3개 키(id, transferer_call_id, groupcall_id)를 모두 쓰는지, 각 Get 이 값을 복원하는지, 없는 키는 redis.Nil 오류, 손상된 JSON 은 unmarshal 오류, 서버 종료 후 Set/Get/Connect 오류를 확인합니다(같은 패키지 테스트이므로 MaxRetries 0 과 짧은 타임아웃의 redis.Client 를 직접 구성해 지연과 불안정을 피합니다). go.mod 에 miniredis 테스트 의존성 추가(타 서비스 사용 버전과 동일).
-2. subscribehandler: 세 callmanager 핸들러의 잘못된 JSON 은 오류 반환, 조회 실패는 nil 반환이며 transferHandler 의 Answer/Hangup 이 호출되지 않음, 하위 핸들러 오류도 nil 반환. Run 의 QueueCreate, TopicCreate, QueueBind 실패 전파와 processEvent 의 알 수 없는 이벤트 무시.
-3. listenhandler: V1TransfersPost 의 잘못된 JSON 은 400, ServiceStart 실패는 500, errorResponse 의 nil, VoipbinError, ErrNotFound, 기타 분기 상태코드, Run 의 QueueCreate 실패.
-4. transferhandler: attended/blind 의 confbridge 조회 실패, groupcall 생성 실패, Create 실패, rollback(unblock) 호출 여부, moh/mute 실패는 계속 진행, transferee 의 지원하지 않는 타입과 각 오류 분기, transferer, transfer, db 의 오류 분기.
+## 3. 변경 계획 (테스트 파일과 go.mod/go.sum 만, 제품 코드 변경 없음)
+목표: 수기 합계 61% 이상(579/949 이상, 인수 조건), 계획상 62% 안팎(약 590). 현재 미커버 중 cmd 를 뺀 163개 중 아래에서 약 95개를 덮습니다. 61% 미달이면 transferhandler 의 남은 분기를 추가합니다.
 
-## 4. 금지와 품질 기준
-빈 호출과 자기비교 테스트 금지. 각 테스트는 mock 호출 기대(gomock 엄격 모드)와 반환 오류 또는 상태코드를 단언합니다. 합성 값만 사용하고 네트워크와 외부 비용 호출은 없습니다.
+| 대상 | 기대 증가 stmt | 내용 |
+|---|---|---|
+| cachehandler/handler_test.go (신규) | 약 55 | miniredis v2.36.1(타 서비스 다수 버전). 리터럴 키 `mr.Get("transfer:transfer:<id>")`, `transfer:transferer_call_id:<id>`, `transfer:groupcall_id:<id>` 로 직접 조회해 세 키의 본문이 같은 JSON 이고 `mr.TTL` 이 24h 임을 단언, 각 Get 의 필드 단위 복원 단언(합성 입력과 다른 리터럴 JSON 을 심어 복원), 없는 키는 redis.Nil, 손상 JSON 은 unmarshal 오류, NewHandler(mr.Addr()) 정상 경로와 Connect 성공, 서버 종료 뒤 Connect/Get/Set 오류(컨텍스트 타임아웃으로 시간 제한, 같은 패키지이므로 MaxRetries 0 의 redis.Client 를 직접 구성). 두 번째와 세 번째 Set 만 실패하는 분기는 miniredis 의 명령 훅으로 N번째 SET 만 실패시켜 침. 불가하면 도달 불가로 명시 |
+| listenhandler | 약 6 | processRequest 진입점으로: 핸들러가 VoipbinError 를 반환하면 그 상태코드(191), ErrNotFound 는 404(193), 잘못된 JSON 은 400, ServiceStart 실패는 `(simpleResponse(500), nil)` 이라 500. Run 은 QueueCreate 실패 오류와 성공 시 ConsumeRPC 고루틴을 채널로 동기화해 종료 전 호출 완료를 보장. 기존 error_response_test.go 와 중복되는 errorResponse 케이스는 만들지 않음. 95-96(ToResponse 실패)와 Marshal 실패는 입력으로 만들 수 없으면 도달 불가로 제외 |
+| subscribehandler | 약 14 | 세 callmanager 핸들러: 잘못된 JSON 은 오류 반환(23-25, 51-53, 79-81), GetBy 조회 실패는 nil 반환이며 Answer/Hangup 미호출(gomock 컨트롤러에 t 전달, 기대 미설정), 하위 핸들러 오류도 nil(32-37 등). processEvent 의 오류 로그 분기(173-174)는 오류를 내는 핸들러 이벤트로 침. Run 의 QueueCreate, TopicCreateWithKind 실패와 QueueBind 를 두 번째 패턴에서 실패시켜 이후 호출이 없음을 확인, 성공 시 ConsumeMessage 고루틴 동기화 |
+| transferhandler | 약 25 이상 | attended/blind: confbridge 조회 실패, groupcall 생성 실패, Create 실패 시 rollback 이 올바른 confbridge ID 인자로 호출되고 rollback 자체가 실패해도 원 오류가 래핑되어 반환됨, moh/mute 실패는 이후 mock 호출이 진행되고 오류 없음. transferee/transferer: 지원하지 않는 타입, CallGet, ConfbridgeTerminate, updateTransfereeCallID, attendedUnblock 실패. transfer.go 와 db.go: GetByGroupcallID, GetByTransfererCallID, Get 각각 ErrNotFound 가 cerrors NotFound 타입이며 errors.Is(dbhandler.ErrNotFound) 가 보존됨, 그 외 오류는 래핑, updateTransfereeCallID 의 Get/Update/재Get 실패(141-143 포함), createFlow 와 calls 조회 실패 |
+
+## 4. 품질 규칙
+빈 호출과 자기비교 금지: 단언은 반환 오류, 상태코드, 호출 인자, 리터럴 키와 TTL 로 합니다. 고루틴 테스트는 채널로 호출 완료를 기다려 -race 에서 종료 뒤 mock 호출이 없게 합니다. 합성 값만 씁니다(203.0.113.x, 가짜 UUID, 주소는 mr.Addr()). 네트워크와 비용 호출은 없습니다. docs/conventions/testing.md 와 scripts/check-test-conventions.sh 규칙(Test_ 이름, mc 컨트롤러)을 따릅니다. prometheus 전역 메트릭 값에 의존하지 않습니다.
 
 ## 5. verify 항목
-- `go test -count=1 -race ./...` 통과, 수기 합계 61% 이상 (agg 스크립트로 전후 표 작성)
-- 변이 표본: transferHandler 의 rollback 호출 제거, cachehandler 의 키 접두사 변경, listenhandler 상태코드 변경 시 새 테스트가 실패해야 합니다.
-- golangci-lint, scripts/check-test-conventions.sh 통과. PR 파일은 bin-transfer-manager/ 안에만 있어야 합니다.
+- `go mod tidy && go mod vendor && go generate ./... && go test -count=1 -race ./... && golangci-lint run` 통과, 수기 합계 61% 이상(전후 표는 agg 스크립트). vendor 는 커밋하지 않음.
+- 변이 표본(제품 코드를 scratch 복사본에서만 바꿈, 변이 전후 go test 출력을 카드 코멘트에 남김): rollback 호출 제거, errors.Wrap 을 nil 반환으로, err != nil 뒤집기, 캐시 키 접두사 변경, 캐시 TTL 변경, QueueBind 루프를 첫 패턴 뒤 중단, ErrNotFound 의 404 매핑 제거. 각 변이에서 새 테스트가 실패해야 함.
+- `git diff --name-only origin/main...HEAD` 가 bin-transfer-manager/ 안의 테스트 파일, go.mod, go.sum, 설계 문서뿐임.
 
 ## 6. 롤백
-테스트 전용 변경이므로 PR revert 로 되돌립니다. 운영 영향 없음.
+테스트와 go.mod/go.sum 변경뿐이므로 PR revert 로 함께 되돌립니다. 운영 영향 없음.
