@@ -38,17 +38,18 @@
 1. `pkg/dbhandler/providercall_test.go` (추정 +100 stmt)
    - Create 후 Get 왕복에서 nil 슬라이스(Destinations, CallIDs, GroupcallIDs)가 빈 배열로 저장되고 TMCreate 가 주입된 시각이며 TMUpdate/TMDelete 가 nil.
    - Get 미존재 id 는 `ErrNotFound`.
-   - List: token 미지정 시 현재 시각 사용, limit 적용, `tm_create DESC` 정렬, customer_id 와 provider_id 필터, soft delete 된 행 제외, 알 수 없는 필터 필드의 오류.
+   - List: token 미지정 시 현재 시각 사용, limit 적용, `tm_create DESC` 정렬, customer_id 와 provider_id 필터, soft delete 된 행 제외, 알 수 없는 컬럼 필터는 `could not query` 오류(sqlite 의 no such column, 오류 발생 여부만 확인), 지원하지 않는 필터 값 타입(struct)은 `could not apply filters` 오류.
    - Delete: 대상 행의 tm_delete/tm_update 설정, 미존재 id 는 `ErrNotFound`, 삭제 후 List 에서 제외, Get 은 삭제 행을 반환(코드상 Get 은 tm_delete 를 거르지 않음).
-   - `ProviderUpdateHealthStatus`: health_status 와 health_checked_at 갱신 확인(기존 provider 테이블 사용).
+
+1-b. 기존 `pkg/dbhandler/provider_test.go` 에 `ProviderUpdateHealthStatus` 테스트 추가: health_status 와 health_checked_at 이 갱신되고(ProviderUpdate 가 캐시도 갱신하므로 그 파일의 mockCache 기대 패턴을 따름) 다시 읽은 값이 일치.
 2. `pkg/listenhandler/v1_providercalls_test.go` (추정 +110 stmt)
    - Post: 요청 본문이 providerCallHandler.Create 의 인자(customer, provider, flow, actions, source, destinations, anonymous)로 정확히 전달되고 200 응답 본문이 일치, 잘못된 JSON 은 오류, 핸들러 오류 전파.
    - Get: page_size/page_token 파싱, customer_id/provider_id 필터 uuid 변환, 잘못된 uuid 는 핸들러 호출 없이 오류, 핸들러 오류 전파.
    - IDGet/IDDelete: URI 에서 id 추출 후 핸들러 호출, 핸들러 오류 전파.
-   - `processRequest` 에 providercalls 4개 라우트 case 추가로 분기 확인.
-3. `pkg/providercallhandler`: Get 의 `dbhandler.ErrNotFound` 가 NotFound 도메인 오류로 변환되는지와 그 외 오류는 그대로 전파, List/Delete 의 db 오류 경로, Delete 후 재조회 실패 경로와 이벤트 미발행 확인.
+   - 이미 존재하는 providercalls 4개 라우트(GET 목록, POST, GET id, DELETE id)에 대한 `processRequest` 분기 테스트 추가(제품 코드 변경 아님). `processRequest` 를 거친 잘못된 JSON 본문은 400 응답이고, 핸들러 직접 호출 시에는 오류 반환이므로 구분해 검증한다. IDGet/IDDelete 의 uuid 파싱 오류는 라우트 정규식이 막아 도달 불가이므로 검증 대상에서 제외.
+3. `pkg/providercallhandler` (기존 Test_Get/Test_List/Test_Delete 는 happy path 이므로 오류 경로만 신규 추가하고 함수명 충돌을 피한다): Get 의 `dbhandler.ErrNotFound` 가 NotFound 도메인 오류로 변환되는지와 그 외 오류는 그대로 전파, List/Delete 의 db 오류 경로, Delete 후 재조회 실패 경로와 이벤트 미발행 확인.
 4. `models/providercall/webhook_test.go`: ConvertWebhookMessage 가 모든 필드를 옮기는지(필드별 비교, 입력과 기대값을 별도 리터럴로 작성), CreateWebhookEvent 가 유효 JSON 이고 json 키(`call_ids`, `groupcall_ids` 등)가 맞는지.
-5. `internal/config`: 환경변수로 값을 주입한 뒤 Bootstrap + LoadGlobalConfig 가 모든 필드에 반영되고, 환경변수가 없으면 flag 기본값이 쓰이는지. `sync.Once` 와 viper 전역 때문에 한 테스트 함수에서 순서대로 검증(환경변수 경유는 `t.Setenv`). 실패하면 확인이 어려운 전역 상태를 건드리지 않도록 이 항목은 후순위로 두고 필요량이 부족할 때만 쓴다.
+5. `internal/config`: 환경변수로 값을 주입한 뒤 Bootstrap + LoadGlobalConfig 가 모든 필드에 반영되고, 환경변수가 없으면 flag 기본값이 쓰이는지. `sync.Once` 와 viper 전역 때문에 `sync.Once` 때문에 한 테스트에서 LoadGlobalConfig 를 두 번 검증할 수 없으므로 테스트 시작에서 같은 패키지의 `once = sync.Once{}` 로 초기화하고, 환경변수 주입 검증(`t.Setenv`)과 기본값 검증(Bootstrap 후 viper.Get* 와 flag 기본값)을 분리한다. 기본값 검증은 CI 환경변수 오염에 취약하므로 관련 변수를 `t.Setenv("")` 가 아닌 `os.Unsetenv` 후 복구(t.Cleanup)로 비운다. 실패하면 확인이 어려운 전역 상태를 건드리지 않도록 이 항목은 후순위로 두고 필요량이 부족할 때만 쓴다.
 6. `pkg/telnyxclient`: `parseRejectedCountries`(marker 없음, 2글자 코드만 선택, 공백 처리), `CreateOutboundVoiceProfile` 의 미테스트 응답 분기를 httptest 로 검증.
 7. 필요량이 부족하면 healthcheckhandler.Run(컨텍스트 취소로 종료), providerhandler.Setup 오류 경로를 추가한다. 부족하지 않으면 추가하지 않는다.
 
