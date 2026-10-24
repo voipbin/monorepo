@@ -46,6 +46,6 @@
 - pkg/numberhandler number/db/event/renew 오류 경로 (gomock): Create 의 예약 접두사 거부(provider 와 billing 호출 없음), 잔액 조회 오류, 잔액 부족(구매 미호출), 구매 실패. CreateVirtual 의 db 오류들. Delete 의 Get 실패, provider 해제 실패(Telnyx, Twilio 각각), 미지원 provider 이름, dbDelete 실패. Get 의 NotFound 변환(cerrors)과 일반 오류 wrap. List/Count/Update 오류 wrap. db.go 의 dbCreate 의 NumberCreate/NumberGet 실패, dbDelete/dbUpdate 실패. EventCustomerDeleted 의 목록 실패 오류 반환과 삭제 실패 후 계속. EventFlowDeleted 의 목록 실패 중단, 업데이트 실패 후 계속, 1000건 가득 찬 페이지 후 다음 페이지 조회. RenewNumbers 의 days, hours, tmRenew 모두 비었을 때 오류.
 - pkg/dbhandler (기존 sqlite TestMain 재사용): 별도로 열었다 닫은 sql.DB 로 만든 handler 에서 각 메서드(Create/Get/List/Update/Delete/GetExisting/Count/GetsByTMRenew)의 쿼리 오류 전파, 캐시 mock 의 오류 시 DB 폴백(NumberGet), 캐시 갱신 오류 전파(numberUpdateToCache), NumberGetFromCacheByNumber.
 - models/number/webhook_test.go: ConvertWebhookMessage 가 모든 공개 필드를 옮기고 내부 필드(ProviderName, ProviderReferenceID)를 노출하지 않음을 리터럴 구조로 확인, CreateWebhookEvent 의 JSON 키 집합과 값(리터럴 기대 JSON).
-- pkg/requestexternal/models/telnyx: ConvertProviderNumber 의 필드 매핑을 리터럴 기대값으로, 알 수 없는 상태 값의 처리.
+- pkg/requestexternal/models/telnyx: ConvertProviderNumber 의 필드 매핑(ID, Status 캐스팅, T38 와 Emergency 플래그가 서로 바뀌지 않음)을 값이 서로 다른 리터럴 기대값으로.
 - 부족할 때만 listenhandler(요청 본문 파싱 오류, 하위 오류 응답), subscribehandler(processEventRun) 오류 분기.
 - 파일은 기존 `_test.go` 에 케이스를 추가하거나, 같은 이름 규칙의 새 `_test.go`(handler_test.go, webhook_test.go 등)를 만든다.
