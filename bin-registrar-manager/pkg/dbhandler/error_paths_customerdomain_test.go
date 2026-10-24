@@ -233,6 +233,17 @@ func Test_CustomerDomain_DBFailures(t *testing.T) {
 			fn:     func(h *handler) error { return h.CustomerDomainDelete(ctx, customerID) },
 			wantIs: errInjectedDB,
 		},
+		{
+			name: "delete exec failure is returned",
+			setup: func(m sqlmock.Sqlmock, c *cachehandler.MockCacheHandler, u *utilhandler.MockUtilHandler) {
+				m.ExpectQuery("(?is)registrar_customer_domains").WillReturnRows(
+					sqlmock.NewRows([]string{"customer_id", "domain_label", "realm", "tm_create", "tm_update"}).
+						AddRow(customerID.Bytes(), "ab12", "ab12.reg.example.test", nil, nil))
+				m.ExpectExec("(?is)delete from registrar_customer_domains").WillReturnError(errInjectedDB)
+			},
+			fn:     func(h *handler) error { return h.CustomerDomainDelete(ctx, customerID) },
+			wantIs: errInjectedDB,
+		},
 	}
 
 	for _, tt := range tests {

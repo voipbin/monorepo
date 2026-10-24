@@ -565,3 +565,28 @@ func Test_TrunkDeleteFromCache(t *testing.T) {
 		})
 	}
 }
+
+// Test_CachedDeletedTrunk_FallsBackToDB verifies that a soft-deleted cached
+// trunk is not served and the DB is consulted instead.
+func Test_CachedDeletedTrunk_FallsBackToDB(t *testing.T) {
+	ctx := context.Background()
+	deleted := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+
+	h, mock, mockCache, mockUtil := newErrorPathHandler(t)
+	mockCache.EXPECT().TrunkGetByDomainName(gomock.Any(), "t1").Return(&trunk.Trunk{TMDelete: &deleted}, nil)
+	mockUtil.EXPECT().TimeGetCurTime().Return("2026-01-01T00:00:00.000000Z")
+
+	// the DB has no live row: the soft-deleted cache entry must not be served.
+	mock.ExpectQuery("(?is)select.*from.*registrar_trunks").WillReturnRows(sqlmock.NewRows([]string{"id"}))
+
+	res, err := h.TrunkGetByDomainName(ctx, "t1")
+	if !errors.Is(err, ErrNotFound) {
+		t.Errorf("expected ErrNotFound, got: %v", err)
+	}
+	if res != nil {
+		t.Errorf("expected no trunk, got: %v", res)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("the db must be queried: %v", err)
+	}
+}

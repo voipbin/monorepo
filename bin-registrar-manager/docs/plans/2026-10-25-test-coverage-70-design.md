@@ -24,7 +24,7 @@
 
 ## 2. 테스트 계획 (코드는 구현 단계에서 작성)
 
-1. dbhandler (sqlmock + MockCacheHandler, 신규 `*_errors_test.go`): 쿼리 실패, 스캔 실패(열 불일치), 캐시 읽기/쓰기 실패 시 오류 전파 또는 DB 대체 조회, 그리고 캐시 쓰기 실패가 호출 결과를 바꾸지 않는 경로를 함수별로 단언. 대상: ast_aor, ast_auth, ast_endpoint, ast_contact, extension, trunks, customerdomains, sipauths 의 Get/List/Update/Delete 와 *ToCache/*FromCache. 오류 메시지 문자열이 아니라 `errors.Is` 와 ErrNotFound 구분, 호출 횟수(mock 기대)로 단언.
+1. dbhandler (sqlmock + MockCacheHandler, 신규 `*error_paths_*_test.go`): 쿼리 실패, 스캔 실패(열 불일치), 캐시 읽기/쓰기 실패 시 오류 전파 또는 DB 대체 조회, 그리고 캐시 쓰기 실패가 호출 결과를 바꾸지 않는 경로를 함수별로 단언. 대상: ast_aor, ast_auth, ast_endpoint, ast_contact, extension, trunks, customerdomains, sipauths 의 Get/List/Update/Delete 와 *ToCache/*FromCache. 오류 메시지 문자열이 아니라 `errors.Is` 와 ErrNotFound 구분, 호출 횟수(mock 기대)로 단언.
 2. listenhandler: 핸들러 오류의 상태코드 경로는 기존 listen_error_paths_test.go 와 error_response_test.go 가 이미 덮으므로 새로 쓰지 않는다. 실제 잔여 도달 가능 분기만 대상: `url.Parse` 실패 분기(잘못된 `%zz` 이스케이프 URI, 약 10곳)와 그 오류가 processRequest 의 기본 오류 응답으로 매핑되는 경로, URI 항목 부족 분기(4블록 5 statement, realm 빈 값 분기 포함), NewListenHandler 가 주입한 의존성을 유지하는지. 증분은 약 15~25.
 3. customerdomainhandler(Get/Update/Delete 오류 전파와 생성자, 약 10~12) / contacthandler / extensionhandler / trunkhandler / subscribehandler: 핸들러 오류 전파, 이벤트 처리 오류 경로, 생성자가 반환하는 구현이 인터페이스 기대 필드를 갖는지(생성자 0% 인 NewXHandler 는 반환값이 nil 이 아니고 주입한 의존성을 유지하는지로 확인).
 4. cmd/registrar-control/domain_migrate.go: run* 의 검증 오류(dry-run 과 execute 동시 지정, 잘못된 customer-id, execute 인데 --log 없음, 열 수 없는 로그 경로, rollback 의 --log 누락과 파일 없음과 파싱 실패), cmd* 의 플래그 이름과 기본값, writeMigrationLogLine 의 쓰기/동기화 실패 전파, buildExtensionMigrationRecord 의 빈 Realm 경계, domainMigrate/domainMigrateRollback/reprovisionExtension 의 미커버 오류 분기.
@@ -48,4 +48,5 @@
 
 ## 4. 구현 결과
 
-수기 합계 74.42% (2720/3655, 같은 제외 규칙과 측정 방법). 변경은 bin-registrar-manager 의 테스트 파일 6개이며 비테스트 .go 변경은 없다.
+수기 합계 74.45% (2721/3655, 같은 제외 규칙과 측정 방법). 변경은 bin-registrar-manager 의 테스트 파일 6개이며 비테스트 .go 변경은 없다.
+계획 3 의 contacthandler, extensionhandler, trunkhandler, subscribehandler 생성자와 이벤트 오류 분기는 71% 도달에 필요하지 않아 이번 PR 에서 구현하지 않았다.
