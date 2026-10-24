@@ -20,7 +20,7 @@ VOIP-1416 은 카드 본문에 따르면 80% 미만 패키지의 일반 상향 �
 |---|---|---|
 | internal/config (60) | Bootstrap 이 모든 flag 를 등록하고 환경변수가 flag 기본값을 덮어쓰는지, LoadGlobalConfig 가 viper 값을 Config 로 옮기는지, Get 이 같은 전역을 반환하는지 | 약 55 |
 | pkg/cachehandler (59) | miniredis 로 Provider/Route 의 Set/Get, RouteDelete, 존재하지 않는 키의 오류, 손상된 JSON 의 오류, Connect 성공과 연결 실패 | 약 55 |
-| pkg/listenhandler (106, 도달 가능 상한 약 74) | v1_routes, v1_providers, v1_providercalls, v1_dialroute, v1_providers_setup 의 잘못된 JSON, 잘못된 UUID(400), 하위 핸들러 오류 전파(errorResponse 변환 또는 nil, error)와 processRequest 의 미지원 경로/메서드 분기 | 약 70 |
+| pkg/listenhandler (106, 도달 가능 상한 약 74) | v1_routes, v1_providers, v1_providercalls, v1_dialroute, v1_providers_setup 의 잘못된 JSON, v1_routes 의 잘못된 UUID(400), 하위 핸들러 오류 전파(errorResponse 변환 또는 nil, error)와 processRequest 의 미지원 경로/메서드 분기 | 약 70 |
 | pkg/telnyxclient (31) | httptest 서버로 HTTP 오류 상태, 잘못된 응답 본문, 전송 실패 경로 | 약 25 |
 | pkg/healthcheckhandler (23, 모두 도달 가능) | Run 이 ctx 취소로 종료하고 tick 마다 runOnce 를 호출함 | 약 20 |
 | dbhandler, providerhandler 등 | 위로 71% 에 못 미칠 때만 오류 경로를 추가 | 필요 시 |
