@@ -36,11 +36,11 @@
 
 ### 2.2 Execute 오류 분기의 mock 방침
 
-Execute 의 모든 오류 분기는 `updateExecuteStop` 을 호출한다. 이 체인(`db.CampaignUpdateExecute`, `campaignStop`, `isStoppable` 의 `h.Get` 과 `ListOngoingByCampaignID`, `campaignStopNow` 또는 `campaignStopping` 의 `CampaignGet` 과 `CampaignUpdateStatus` 과 `PublishWebhookEvent`)의 mock 기대는 테스트 파일 안의 헬퍼로 두되, 분기마다 단순화를 위해 `CampaignUpdateExecute` 가 오류를 반환하는 경우(체인 조기 종료)와 정지 체인 전체가 호출되는 경우를 각각 한 개 이상 포함한다. 정지 체인에서 `db.CampaignGet` 은 한 오류 분기에서 최대 4회(Execute, isStoppable, campaignStopNow, 갱신 후 조회) 호출되고 isStoppable 은 `util.TimeGetCurTime()` 도 호출하므로 이 mock 도 둔다. isStoppable 이 true 가 되려면 조회된 캠페인의 Execute 가 ExecuteStop 이어야 하며 campaignStopNow 갈래와 아니면 campaignStopping 갈래를 모두 쓴다. 조회 실패 분기는 Get 이 최대 3회(Execute, isStoppable, campaignStopping) 실패하도록 Times 와 gomock.InOrder 로 호출 횟수와 순서를 고정한다. Execute 는 반환값이 없으므로 관찰 가능한 결과는 mock 호출 시퀀스뿐이며, 분기마다 구별되는 호출 시퀀스(예: 대상 없음 + 계속은 지연 5000 의 CampaignV1CampaignExecute 한 번, 정상 종료는 지연 500)로 검증한다. "후속 mock 호출 없음" 은 오류 분기에서 정지 체인 외의 후속 호출(발신, campaigncall 생성)에 EXPECT 를 두지 않는 의미로만 사용한다.
+Execute 의 모든 오류 분기는 `updateExecuteStop` 을 호출한다. 이 체인(`db.CampaignUpdateExecute`, `campaignStop`, `isStoppable` 의 `h.Get` 과 `ListOngoingByCampaignID`, `campaignStopNow` 또는 `campaignStopping` 의 `CampaignGet` 과 `CampaignUpdateStatus` 과 `PublishWebhookEvent`)의 mock 기대는 테스트 파일 안의 헬퍼로 두되, 분기마다 단순화를 위해 `CampaignUpdateExecute` 가 오류를 반환하는 경우(체인 조기 종료)와 정지 체인 전체가 호출되는 경우를 각각 한 개 이상 포함한다. 정지 체인에서 `db.CampaignGet` 은 한 오류 분기에서 최대 4회(Execute, isStoppable, campaignStopNow, 갱신 후 조회) 호출되고 isStoppable 은 `util.TimeGetCurTime()` 도 호출하므로 이 mock 도 둔다. isStoppable 이 true 가 되려면 조회된 캠페인의 Execute 가 ExecuteStop 이어야 하며 campaignStopNow 갈래와 아니면 campaignStopping 갈래를 모두 쓴다. Execute 의 Get 이 실패하는 분기가 아니라 정지 체인의 Get 이 실패하는 분기에서는 Get 이 최대 3회(Execute, isStoppable, campaignStopping) 실패하도록 Times 와 gomock.InOrder 로 호출 횟수와 순서를 고정한다. Execute 는 반환값이 없으므로 관찰 가능한 결과는 mock 호출 시퀀스뿐이며, 분기마다 구별되는 호출 시퀀스(예: 대상 없음 + 계속은 지연 5000 의 CampaignV1CampaignExecute 한 번, 정상 종료는 지연 500)로 검증한다. "후속 mock 호출 없음" 은 오류 분기에서 정지 체인 외의 후속 호출(발신, campaigncall 생성)에 EXPECT 를 두지 않는 의미로만 사용한다.
 
 ### 2.3 테스트 제외 분기
 
-일부 분기는 테스트 대상에서 제외한다(합계 약 7 statement). 사유는 카드 코멘트에만 기록하며, 위 확정 합계에는 이미 이 분기를 제외한 값을 사용했다.
+일부 분기는 테스트 대상에서 제외한다(합계 약 15 statement 이내). 사유는 카드 코멘트에만 기록하며, 위 확정 합계에는 이미 이 분기를 제외한 값을 사용했다.
 
 ### 2.4 verify 항목
 
