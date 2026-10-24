@@ -422,6 +422,83 @@ func Test_GetSIPMessages_sort_and_cap(t *testing.T) {
 	}
 }
 
+func Test_GetSIPMessages_sorts_by_numeric_time(t *testing.T) {
+	// base is a synthetic whole-second time; offsets are in milliseconds.
+	const base = int64(1767322800000)
+
+	tests := []struct {
+		name   string
+		body   string
+		expect []string
+	}{
+		{
+			name:   "different fractional digit counts",
+			body:   fmt.Sprintf(`{"data":{"messages":[{"micro_ts":%d,"method":"A"},{"micro_ts":%d,"method":"B"},{"micro_ts":%d,"method":"C"}]}}`, base+150, base+100, base+5),
+			expect: []string{"C", "B", "A"},
+		},
+		{
+			name:   "whole second sorts before fractional",
+			body:   fmt.Sprintf(`{"data":{"messages":[{"micro_ts":%d,"method":"A"},{"micro_ts":%d,"method":"B"}]}}`, base+1, base),
+			expect: []string{"B", "A"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFakeHomer(t, http.StatusOK, tt.body)
+			h := NewHomerHandler(f.srv.URL, "test-token")
+
+			res, err := h.GetSIPMessages(context.Background(), "call-abc", testFrom, testTo)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if len(res) != len(tt.expect) {
+				t.Fatalf("Wrong match. expect: %d messages, got: %d", len(tt.expect), len(res))
+			}
+			for i, m := range res {
+				if m.Method != tt.expect[i] {
+					t.Errorf("Wrong match at %d. expect: %s, got: %s", i, tt.expect[i], m.Method)
+				}
+			}
+		})
+	}
+}
+
+func Test_GetSIPMessages_equal_times_keep_response_order(t *testing.T) {
+	// 40 messages alternate between two times 1 ms apart; each time group must
+	// keep the order of the response (more than the size insertion sort covers).
+	const base = int64(1767322800000)
+	const n = 40
+
+	parts := make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		parts = append(parts, fmt.Sprintf(`{"micro_ts":%d,"method":"M%02d"}`, base+int64(i%2), i))
+	}
+	body := `{"data":{"messages":[` + strings.Join(parts, ",") + `]}}`
+
+	f := newFakeHomer(t, http.StatusOK, body)
+	h := NewHomerHandler(f.srv.URL, "test-token")
+
+	res, err := h.GetSIPMessages(context.Background(), "call-abc", testFrom, testTo)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if len(res) != n {
+		t.Fatalf("Wrong match. expect: %d messages, got: %d", n, len(res))
+	}
+
+	// even indexes (earlier time) first, then odd indexes, each in input order.
+	idx := 0
+	for parity := 0; parity < 2; parity++ {
+		for i := parity; i < n; i += 2 {
+			if expect := fmt.Sprintf("M%02d", i); res[idx].Method != expect {
+				t.Fatalf("Wrong match at %d. expect: %s, got: %s", idx, expect, res[idx].Method)
+			}
+			idx++
+		}
+	}
+}
+
 func Test_GetPcap_returns_body_as_is(t *testing.T) {
 	f := newFakeHomer(t, http.StatusOK, "\x00\x01pcap\xff")
 	h := NewHomerHandler(f.srv.URL, "test-token")

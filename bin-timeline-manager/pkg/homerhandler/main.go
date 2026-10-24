@@ -180,9 +180,15 @@ func (h *homerHandler) GetSIPMessages(ctx context.Context, sipCallID string, fro
 
 	log.WithField("message_count", len(apiResponse.Data.Messages)).Debug("Received SIP messages from Homer.")
 
+	// Sort by the numeric timestamp ascending; equal times keep the response order
+	homerMessages := apiResponse.Data.Messages
+	sort.SliceStable(homerMessages, func(i, j int) bool {
+		return homerMessages[i].MicroTS < homerMessages[j].MicroTS
+	})
+
 	// Convert Homer messages to SIPMessage model
 	messages := make([]*sipmessage.SIPMessage, 0, len(apiResponse.Data.Messages))
-	for _, msg := range apiResponse.Data.Messages {
+	for _, msg := range homerMessages {
 		// Convert micro_ts (milliseconds) to a timestamp string
 		// Note: Despite the field name, Homer returns milliseconds, not microseconds
 		ts := time.UnixMilli(msg.MicroTS).UTC().Format(time.RFC3339Nano)
@@ -197,11 +203,6 @@ func (h *homerHandler) GetSIPMessages(ctx context.Context, sipCallID string, fro
 			Raw:       msg.Raw,
 		})
 	}
-
-	// Sort by timestamp ascending
-	sort.Slice(messages, func(i, j int) bool {
-		return messages[i].Timestamp < messages[j].Timestamp
-	})
 
 	// Limit to max messages
 	if len(messages) > defaultSIPMessageLimit {
