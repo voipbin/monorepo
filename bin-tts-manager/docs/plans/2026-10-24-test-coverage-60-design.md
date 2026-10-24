@@ -2,9 +2,9 @@
 
 ## 1. 티켓 검토
 
-- 검토 결과: 유효. origin/main d68e695b5 에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile` 을 재측정한 결과 수기 합계 47.87% (1360/2841), 원본 43.92%. 카드 수치와 일치.
+- 검토 결과: 유효. origin/main d68e695b5 에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile` 을 재측정한 결과 수기 합계 47.87% (1360/2841), 원본 43.92%.
 - 60% 까지 필요한 추가 statement: 345개. 61% 목표는 약 374개.
-- 같은 목적의 열린 PR 과 중복 없음 (`gh pr list` 에서 NOJIRA-Test-coverage-tts-manager #502 가 과거에 머지됨, 이후 streaminghandler 가 확장되어 다시 낮아짐).
+- 같은 목적의 열린 PR 과 중복 없음. 과거 테스트 보강 이후 streaminghandler 가 확장되어 커버리지가 다시 낮아짐.
 - 제품 코드 변경 없음. 테스트 파일만 추가.
 
 ## 2. 기준선 (수기 코드, gens/ mock_*.go DO NOT EDIT 제외, 같은 블록은 최대 count 로 병합)
@@ -23,7 +23,7 @@
 | pkg/streaminghandler | 1240 | 412 | 33.2 |
 | pkg/ttshandler | 192 | 172 | 89.6 |
 
-표에서 models/message (1/1) 와 models/speaking (8/9) 는 생략했으며 합계 2841 에는 포함. 독립 재측정에서 streaminghandler 가 421/1240 (합계 48.19%, 필요 약 336개) 으로 나와 약 9 statement 의 측정 편차가 있음. 시간에 민감한 기존 테스트로 보이며 보수적으로 345개 기준으로 계획하고, 최종 수치는 반복 측정해 PR 본문에 기록.
+표에서 models/message (1/1) 와 models/speaking (8/9) 는 생략했으며 합계 2841 에는 포함. 다른 환경 재측정에서 streaminghandler 가 421/1240 (합계 48.19%, 필요 약 336개) 으로 나와 약 9 statement 의 측정 편차가 있음. 시간에 민감한 기존 테스트로 보이며 보수적으로 345개 기준으로 계획하고, 최종 수치는 반복 측정해 기록.
 
 ## 3. 구조 분석: 테스트 가능한 것과 어려운 것
 
@@ -63,11 +63,11 @@
 - `websocketWrite` 의 20ms pacing 을 피하도록 오디오 payload 는 프레임 크기 이하(ulaw 160, slin 320, slin16 640 바이트)로 한다. `runKeepAlive`(10초)와 gcp `runKeepalive`(4초) 의 틱 분기는 도달 불가이므로 ctx 취소 즉시 반환 경로만 다룬다.
 - 전역 상태: viper 를 쓰는 테스트는 `viper.Reset()` 과 `t.Cleanup`, `t.Parallel` 금지. logrus 전역 레벨과 훅은 바꾸지 않는다. prometheus 메트릭은 재등록하지 않고 값은 전후 delta 로만 단언한다.
 - elevenlabs 와 gcp 테스트가 만드는 `ConnWebsock`, `ConnAst` 클라이언트 연결도 `t.Cleanup` 에서 닫는다(readConnWebsock 고루틴 누수 방지). aws 스트림 읽기 오류는 httptest 핸들러가 일부 바이트를 flush 한 뒤 `panic(http.ErrAbortHandler)` 로 연결을 끊어 유도한다. `readConnWebsock` 의 "Error channel full" 분기는 도달 불가로 제외.
-- `polly.New` 옵션에는 `Region` 도 지정한다. aws `SayFlush` 는 `SayFinish` 로 닫힌 `audioCh` 에서 호출하면 무한 루프이므로(제품 결함, 완료 요약에 기록) Finish 이후 Flush 는 테스트하지 않는다. gcp 가짜 스트림은 `texttospeechpb.TextToSpeech_StreamingSynthesizeClient` 를 임베드한 구조체에서 Send, CloseSend 만 재정의한다.
+- `polly.New` 옵션에는 `Region` 도 지정한다. aws `SayFlush` 는 `SayFinish` 로 닫힌 `audioCh` 에서 호출하면 무한 루프이므로(제품 코드의 결함이며 이 범위에서는 고치지 않음) Finish 이후 Flush 는 테스트하지 않는다. gcp 가짜 스트림은 `texttospeechpb.TextToSpeech_StreamingSynthesizeClient` 를 임베드한 구조체에서 Send, CloseSend 만 재정의한다.
 - 새 테스트 파일은 함수 이름 `Test_` 규칙과 gomock 컨트롤러 이름 `mc` 를 따른다(`scripts/check-test-conventions.sh`).
 
-추가 규칙(2회차 반영):
-- elevenlabs `runProcess` 는 `ConnWebsock` 을 락 없이 읽고 `terminate` 는 락 안에서 nil 로 써서 `Run` 경유 테스트는 `-race` 에서 실패한다(제품 결함, 수정 금지, 완료 요약에 기록). 따라서 `runProcess` 는 `Run` 없이 직접 호출하고 `Message.Finish` 와 `TotalCount` 는 고루틴 시작 전에 설정한다. `SayAdd`, `SayFinish` 와 `runProcess` 는 서로 다른 테스트에서 다룬다. `Run` 테스트는 사전 취소 ctx 를 쓰지 않는다(연결이 non-nil 이면 terminate 의 nil 쓰기와 runProcess 의 읽기가 경합). 로컬 서버가 오디오 JSON 을 보내고 로컬 ConnAst 가 프레임 수신을 채널로 알린 뒤(네트워크 I/O 가 happens-before 를 제공) 종료하며, 반드시 `PlayFinished` 발행 신호를 기다린 뒤(PublishEvent 의 DoAndReturn 은 PlayStarted 와 PlayFinished 두 번 호출되므로 채널은 PlayFinished 에서만 한 번 닫는다) 테스트를 끝낸다. 오디오 성공 경로에는 로컬 `ConnAst` 가 필수(nil 이면 패닉).
+추가 규칙:
+- elevenlabs `runProcess` 는 `ConnWebsock` 을 락 없이 읽고 `terminate` 는 락 안에서 nil 로 써서 `Run` 경유 테스트는 `-race` 에서 실패한다(제품 코드의 결함이며 이 범위에서는 고치지 않음). 따라서 `runProcess` 는 `Run` 없이 직접 호출하고 `Message.Finish` 와 `TotalCount` 는 고루틴 시작 전에 설정한다. `SayAdd`, `SayFinish` 와 `runProcess` 는 서로 다른 테스트에서 다룬다. `Run` 테스트는 사전 취소 ctx 를 쓰지 않는다(연결이 non-nil 이면 terminate 의 nil 쓰기와 runProcess 의 읽기가 경합). 로컬 서버가 오디오 JSON 을 보내고 로컬 ConnAst 가 프레임 수신을 채널로 알린 뒤(네트워크 I/O 가 happens-before 를 제공) 종료하며, 반드시 `PlayFinished` 발행 신호를 기다린 뒤(PublishEvent 의 DoAndReturn 은 PlayStarted 와 PlayFinished 두 번 호출되므로 채널은 PlayFinished 에서만 한 번 닫는다) 테스트를 끝낸다. 오디오 성공 경로에는 로컬 `ConnAst` 가 필수(nil 이면 패닉).
 - polly 클라이언트는 `Retryer: aws.NopRetryer{}` 를 지정해 서비스 오류 1회 호출로 끝낸다(기본 재시도는 3.9초). `aws.Init`/`createClient` 를 다룰 때는 `t.Setenv` 로 `AWS_CONFIG_FILE`, `AWS_PROFILE` 등을 격리한다.
 - `runStreamer` 후속 SetVendorInfo(NONE) 검증: `Mockstreamer.Run` 을 채널로 막아 두고 먼저 SetVendorInfo 반영(이름, 설정)을 `VendorLock` 을 잡고 단언한 뒤 풀고, 종료 알림 채널이 있는 `DoAndReturn` 과 `VendorLock` 기반 확인(Run 종료 뒤 호출은 훅이 없으므로 `VendorLock` 을 잡고 읽는 벽시계 데드라인 5초(`time.Now()` 비교, 초과 시 `t.Fatal`)의 `runtime.Gosched()` 루프(`time.Sleep` 아님)를 쓰며 `time.Sleep` 과 testify 는 쓰지 않는다)으로 초기화를 확인한다.
 - aws `SayFinish` 는 SayAdd 와 경합하는 시나리오를 만들지 않는다(닫힌 채널 송신 select 가 무작위라 결정적 테스트 불가). Finish 플래그, Cancel 호출, `audioCh` close 상태만 단언하고, `SayFinish` 후 `SayAdd` 와 `SayFinish` 2회 호출은 패닉이므로 테스트하지 않는다. 이 순서 변이는 변이 표본에서 제외한다.
@@ -80,5 +80,5 @@
 verify:
 - 수기 합계 61% 이상(agg 와 같은 제외 규칙), 기존 테스트 전부 통과, `golangci-lint` 통과, check-test-conventions 통과.
 - `go test -race -count=3 -shuffle=on ./...` 통과, 새 테스트 추가 시간은 패키지당 1초 이내.
-- 변이 검사(scratch 복사본에서만 수행, 원 worktree 제품 코드 불변): 새 테스트 함수당 1개 이상, 표본은 elevenlabs `SayAdd` 의 TotalCount 증가 제거, `runProcess` 의 Finish 종료 조건 반전, aws `SayFinish` 의 `Finish` 플래그 설정 제거, aws `SayFlush` drain 제거, gcp `getVoiceID` 우선순위 변경, run.go `runStreamer` 의 SetVendorInfo 인자 제거, say.go 메시지 ID 비교 반전과 `SayFlush` VendorLock(mock 의 `DoAndReturn` 안에서 `st.VendorLock.TryLock()` 이 실패하는지 단언), `savePCMAsWAV` 의 ChunkSize 계산 변경. 각 변이에서 실패한 테스트 이름을 PR 본문에 기록한다.
+- 변이 검사(scratch 복사본에서만 수행, 원 worktree 제품 코드 불변): 새 테스트 함수당 1개 이상, 표본은 elevenlabs `SayAdd` 의 TotalCount 증가 제거, `runProcess` 의 Finish 종료 조건 반전, aws `SayFinish` 의 `Finish` 플래그 설정 제거, aws `SayFlush` drain 제거, gcp `getVoiceID` 우선순위 변경, run.go `runStreamer` 의 SetVendorInfo 인자 제거, say.go 메시지 ID 비교 반전과 `SayFlush` VendorLock(mock 의 `DoAndReturn` 안에서 `st.VendorLock.TryLock()` 이 실패하는지 단언), `savePCMAsWAV` 의 ChunkSize 계산 변경. 각 변이에서 실패한 테스트 이름을 기록한다.
 - 변경 파일은 `bin-tts-manager/` 안의 `*_test.go` 와 이 문서뿐.

@@ -85,12 +85,16 @@ func Test_awsHandler_SayAdd_streamsPCMToTheAudioChannel(t *testing.T) {
 		pcm[i] = byte(i % 251)
 	}
 
-	var gotPath string
-	var gotBody map[string]any
+	type capture struct {
+		path string
+		body map[string]any
+	}
+	captured := make(chan capture, 1)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotPath = r.URL.Path
 		body, _ := io.ReadAll(r.Body)
-		_ = json.Unmarshal(body, &gotBody)
+		var parsed map[string]any
+		_ = json.Unmarshal(body, &parsed)
+		captured <- capture{path: r.URL.Path, body: parsed}
 
 		w.Header().Set("Content-Type", "audio/pcm")
 		_, _ = w.Write(pcm)
@@ -104,8 +108,9 @@ func Test_awsHandler_SayAdd_streamsPCMToTheAudioChannel(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if gotPath != "/v1/speech" {
-		t.Errorf("Wrong request path. expected: /v1/speech, got: %s", gotPath)
+	got := <-captured
+	if got.path != "/v1/speech" {
+		t.Errorf("Wrong request path. expected: /v1/speech, got: %s", got.path)
 	}
 	for key, want := range map[string]string{
 		"Text":         "Hello world",
@@ -114,8 +119,8 @@ func Test_awsHandler_SayAdd_streamsPCMToTheAudioChannel(t *testing.T) {
 		"SampleRate":   "8000",
 		"TextType":     "text",
 	} {
-		if gotBody[key] != want {
-			t.Errorf("Wrong request field %s. expected: %q, got: %v", key, want, gotBody[key])
+		if got.body[key] != want {
+			t.Errorf("Wrong request field %s. expected: %q, got: %v", key, want, got.body[key])
 		}
 	}
 

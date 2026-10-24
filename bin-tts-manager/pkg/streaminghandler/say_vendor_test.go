@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -85,6 +86,10 @@ func Test_SayStop(t *testing.T) {
 		{
 			name: "vendor selected but not initialized",
 			st:   newSayTestStreaming(streaming.VendorNameElevenlabs, nil),
+		},
+		{
+			name: "stale config without a vendor name is not used",
+			st:   newSayTestStreaming(streaming.VendorNameNone, cfg),
 		},
 	}
 
@@ -556,9 +561,13 @@ func Test_Stop_errors(t *testing.T) {
 }
 
 // newMediaStartServer starts a local WebSocket server that sends the given
-// first message to every client and returns its ws:// URL.
-func newMediaStartServer(t *testing.T, firstMessageType int, first string) string {
+// first message to every client and returns its ws:// URL together with a
+// channel that is closed once the server noticed that a client went away.
+func newMediaStartServer(t *testing.T, firstMessageType int, first string) (string, <-chan struct{}) {
 	t.Helper()
+
+	clientGone := make(chan struct{})
+	var once sync.Once
 
 	upgrader := websocket.Upgrader{}
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -572,6 +581,7 @@ func newMediaStartServer(t *testing.T, firstMessageType int, first string) strin
 			for {
 				if _, _, errRead := conn.ReadMessage(); errRead != nil {
 					_ = conn.Close()
+					once.Do(func() { close(clientGone) })
 					return
 				}
 			}
@@ -579,7 +589,7 @@ func newMediaStartServer(t *testing.T, firstMessageType int, first string) strin
 	}))
 	t.Cleanup(srv.Close)
 
-	return "ws" + strings.TrimPrefix(srv.URL, "http")
+	return "ws" + strings.TrimPrefix(srv.URL, "http"), clientGone
 }
 
 func Test_startExternalMedia(t *testing.T) {
@@ -599,7 +609,7 @@ func Test_startExternalMedia(t *testing.T) {
 	t.Run("connects to the media endpoint and tracks the connection", func(t *testing.T) {
 		st := &streaming.Streaming{Identity: commonidentity.Identity{ID: testStreamingID}, Provider: "aws"}
 		h, mockReq := newHandler(t, st)
-		uri := newMediaStartServer(t, websocket.TextMessage, "MEDIA_START")
+		uri, _ := newMediaStartServer(t, websocket.TextMessage, "MEDIA_START")
 		mockReq.EXPECT().CallV1ExternalMediaStart(
 			gomock.Any(), testStreamingID, gomock.Any(), gomock.Any(), "INCOMING",
 			defaultEncapsulation, defaultTransport, "", defaultConnectionType, formatSlin,
@@ -642,7 +652,7 @@ func Test_startExternalMedia(t *testing.T) {
 	t.Run("a non-text first message is rejected and the media is stopped", func(t *testing.T) {
 		st := &streaming.Streaming{Identity: commonidentity.Identity{ID: testStreamingID}}
 		h, mockReq := newHandler(t, st)
-		uri := newMediaStartServer(t, websocket.BinaryMessage, "not text")
+		uri, _ := newMediaStartServer(t, websocket.BinaryMessage, "not text")
 		mockReq.EXPECT().CallV1ExternalMediaStart(
 			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
@@ -662,7 +672,7 @@ func Test_startExternalMedia(t *testing.T) {
 		st := &streaming.Streaming{Identity: commonidentity.Identity{ID: testStreamingID}}
 		h, mockReq := newHandler(t, st)
 		delete(h.mapStreaming, testStreamingID)
-		uri := newMediaStartServer(t, websocket.TextMessage, "MEDIA_START")
+		uri, clientGone := newMediaStartServer(t, websocket.TextMessage, "MEDIA_START")
 		mockReq.EXPECT().CallV1ExternalMediaStart(
 			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
@@ -670,6 +680,12 @@ func Test_startExternalMedia(t *testing.T) {
 
 		if err := h.startExternalMedia(context.Background(), st); err == nil {
 			t.Fatal("expected an error when the streaming is not tracked")
+		}
+
+		select {
+		case <-clientGone:
+		case <-time.After(5 * time.Second):
+			t.Fatal("the connection opened for the untracked streaming was not closed")
 		}
 	})
 }
