@@ -6,7 +6,9 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -126,5 +128,42 @@ func Test_processV1ConversationsCreateAndExecuteFlowPost(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+func Test_processV1ConversationsCreateAndExecuteFlowPost_typedError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockConversation := conversationhandler.NewMockConversationHandler(mc)
+	h := &listenHandler{
+		sockHandler:         sockhandler.NewMockSockHandler(mc),
+		conversationHandler: mockConversation,
+	}
+
+	mockConversation.EXPECT().
+		CreateAndExecuteFlow(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameConversationManager,
+			"FLOW_NOT_FOUND",
+			"the flow was not found.",
+		))
+
+	res, err := h.processRequest(&sock.Request{
+		URI:      "/v1/conversations/create_and_execute_flow",
+		Method:   sock.RequestMethodPost,
+		DataType: "application/json",
+		Data:     []byte(`{"customer_id":"f2b2c3d4-0001-0001-0001-000000000021","flow_id":"f2b2c3d4-0001-0001-0001-000000000022","type":"webchat"}`),
+	})
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	// a typed error keeps its own status and envelope instead of the generic 500.
+	if res.StatusCode != 400 {
+		t.Errorf("Wrong status code. expect: 400, got: %d", res.StatusCode)
+	}
+	if res.DataType != cerrors.DataTypeVoipbinError {
+		t.Errorf("Wrong data type. expect: %s, got: %s", cerrors.DataTypeVoipbinError, res.DataType)
 	}
 }
