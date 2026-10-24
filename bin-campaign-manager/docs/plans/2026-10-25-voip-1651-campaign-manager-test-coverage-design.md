@@ -40,7 +40,7 @@ Execute 의 모든 오류 분기는 `updateExecuteStop` 을 호출한다. 이 �
 
 ### 2.3 테스트 제외 분기
 
-일부 분기는 테스트 대상에서 제외한다(합계 약 15 statement 이내). 사유는 카드 코멘트에만 기록하며, 위 확정 합계에는 이미 이 분기를 제외한 값을 사용했다.
+일부 분기는 테스트 대상에서 제외한다. 사유는 카드 코멘트에만 기록하며, 위 확정 합계에는 이미 이 분기를 제외한 값을 사용했다.
 
 ### 2.4 verify 항목
 
@@ -48,7 +48,7 @@ Execute 의 모든 오류 분기는 `updateExecuteStop` 을 호출한다. 이 �
 - Get 계열: errors.As 로 cerrors 타입과 코드(CAMPAIGN_NOT_FOUND, OUTPLAN_NOT_FOUND, CAMPAIGNCALL_NOT_FOUND)를 확인하고, 기타 오류는 원본 오류가 그대로 전달됨(errors.Is)을 확인한다.
 - 검증 함수: 고객 불일치, 삭제됨, 타 캠페인 사용 중이 각각 false 이고 정상값이 true 임을 같은 표에서 대조한다.
 - executeCall 의 UUIDCreate 는 callID, activeflowID 순으로 두 번 호출되므로 서로 다른 UUID 를 순서대로 반환하게 하여 CallV1CallCreateWithID 와 campaigncall.Create 의 인자 위치가 뒤바뀌면 실패하도록 한다.
-- 재시도 간격 미도래 테스트는 TryInterval 을 시간 단위(예: 1시간)로 크게 잡고 TMUpdate 를 TMCreate 와 다른 값(현재 시각 직전)으로 두어 한 번도 시도하지 않은 분기로 빠지지 않게 한다. 경계에서 충분한 여유를 두어 비결정성을 피한다.
+- 재시도 간격 미도래 테스트는 TryInterval 을 밀리초 값(예: 3600000)으로 크게 잡고 TMUpdate 를 TMCreate 와 다른 값(현재 시각 직전)으로 두어 한 번도 시도하지 않은 분기로 빠지지 않게 한다. 경계에서 충분한 여유를 두어 비결정성을 피한다.
 - 모든 신규 테스트는 `-race -count=1` 로 통과해야 한다.
 
 ### 2.5 변이 검사 표본(변이 -> 실패해야 하는 테스트)
@@ -56,12 +56,16 @@ Execute 의 모든 오류 분기는 `updateExecuteStop` 을 호출한다. 이 �
 1. execute.go 의 `c.Status != campaign.StatusRun` 반전 -> Execute 상태 not run 테스트.
 2. EndHandleStop 비교 반전 -> 대상 없음 두 테스트.
 3. 지연 상수 5000 을 500 으로 변경(사이트별 개별 변이: 대상 없음 + 계속, 발신 불가 + 재예약, 재시도 간격 미도래) -> 각 사이트의 테스트.
-4. Done(ResultFail) 호출 제거(executeCall 1곳, executeFlow 2곳 개별) -> call 생성 실패, activeflow 생성 실패, activeflow 실행 실패 테스트.
+4. Done(ResultFail) 호출 제거(executeCall 과 executeFlow 의 호출 사이트 각각) -> call 생성 실패, activeflow 생성 실패, activeflow 실행 실패 테스트.
 5. 고객 불일치 비교 제거(isValidOutdialID, isValidOutplanID, isValidQueueID, isValidNextCampaignID 개별) -> 각 고객 불일치 테스트.
 6. NotFound 변환 제거(campaign, outplan, campaigncall 개별) -> 각 Get NotFound 테스트.
 7. isStoppable 의 Execute 비교 반전, campaignStopNow 와 campaignStopping 의 상태값 교체 -> status_stop 테스트.
 8. UpdateStatus 의 unsupported 거부 제거 -> unsupported 테스트.
 9. campaigncall List 계열의 필터 인자 변경 -> ListBy 테스트.
+10. isValid* 4개 함수의 삭제됨 검사 제거와 isValidOutdialID 의 타 캠페인 사용 중 검사 제거(각각 개별) -> 해당 거부 테스트.
+11. campaign.go 의 Create, Delete, Update* 단계별 오류 전파(`return err` 를 `return nil` 로)와 outplan.go 의 Delete, UpdateBasicInfo 오류 전파 -> 해당 오류 테스트.
+12. status_run.go 의 오류 경로 제거와 ExecuteRun 값 교체 -> campaignRun 테스트.
+13. isDialable 용량 경계 `<=` 를 `<` 로 -> 용량 경계 테스트(동일 값 케이스 포함).
 조건부 행(dbhandler, listenhandler)을 구현하면 각 행에 최소 1개의 변이 표본을 추가한다.
 각 변이는 scratch 복사본에서만 적용하고 결과를 카드 코멘트에 기록한다.
 
