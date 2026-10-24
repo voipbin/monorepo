@@ -93,7 +93,7 @@ func Test_Run_errors(t *testing.T) {
 				gomock.InOrder(
 					mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil),
 					mockSock.EXPECT().TopicCreateWithKind(eventExchange, "topic").Return(nil),
-					mockSock.EXPECT().QueueBind(queueName, topicPatterns[0], eventExchange, false, nil).Return(errors.New("boom")),
+					mockSock.EXPECT().QueueBind(queueName, "customer-manager.customer.*.created", eventExchange, false, nil).Return(errors.New("boom")),
 				)
 			},
 			expectErrContains: "could not bind the topic pattern",
@@ -130,7 +130,13 @@ func Test_Run_consumeError(t *testing.T) {
 		mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil),
 		mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil),
 	}
-	for _, pattern := range topicPatterns {
+	for _, pattern := range []string{
+		"customer-manager.customer.*.created",
+		"customer-manager.customer.*.updated",
+		"flow-manager.activeflow.*.created",
+		"flow-manager.activeflow.*.updated",
+		"flow-manager.activeflow.*.deleted",
+	} {
 		calls = append(calls, mockSock.EXPECT().QueueBind(queueName, pattern, string(commonoutline.QueueNameEvent), false, nil).Return(nil))
 	}
 	gomock.InOrder(calls...)

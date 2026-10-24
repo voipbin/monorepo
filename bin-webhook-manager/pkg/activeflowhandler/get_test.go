@@ -344,6 +344,9 @@ func Test_Get_cacheReadError(t *testing.T) {
 
 	ctx := context.Background()
 	activeflowID := uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000001")
+	if activeflowID == uuid.Nil {
+		t.Fatalf("invalid test uuid")
+	}
 	tmUpdate := time.Date(2026, 6, 10, 2, 0, 0, 0, time.UTC)
 
 	// a cache read error is treated as a miss and the RPC fallback resolves the destination.
@@ -382,9 +385,15 @@ func Test_Get_cacheWriteErrorsIgnored(t *testing.T) {
 		responseActiveflow *fmactiveflow.Activeflow
 		responseErr        error
 
-		expectSetPositive bool
+		expectSetPositive *mwactiveflow.Webhook
+
 		expectSetNegative bool
-		expectDest        *Destination
+		// expectNegTm nil means the current time (not found row only, checked as a range).
+		expectNegTm       *time.Time
+		expectNegTMDelete *time.Time
+		expectNegTTL      time.Duration
+
+		expectDest *Destination
 	}{
 		{
 			name:         "not found: transient negative write failure is ignored",
@@ -393,7 +402,7 @@ func Test_Get_cacheWriteErrorsIgnored(t *testing.T) {
 			responseErr: requesthandler.ErrNotFound,
 
 			expectSetNegative: true,
-			expectDest:        nil,
+			expectNegTTL:      5 * time.Second,
 		},
 		{
 			name:         "soft-deleted: negative write failure is ignored",
@@ -406,7 +415,9 @@ func Test_Get_cacheWriteErrorsIgnored(t *testing.T) {
 			},
 
 			expectSetNegative: true,
-			expectDest:        nil,
+			expectNegTm:       &tmCreate,
+			expectNegTMDelete: &tmDelete,
+			expectNegTTL:      10 * time.Minute,
 		},
 		{
 			name:         "empty uri: negative write failure is ignored",
@@ -417,7 +428,8 @@ func Test_Get_cacheWriteErrorsIgnored(t *testing.T) {
 			},
 
 			expectSetNegative: true,
-			expectDest:        nil,
+			expectNegTm:       &tmCreate,
+			expectNegTTL:      10 * time.Minute,
 		},
 		{
 			name:         "positive: write failure is ignored and the destination is still returned",
@@ -429,7 +441,7 @@ func Test_Get_cacheWriteErrorsIgnored(t *testing.T) {
 				TMCreate:      &tmCreate,
 			},
 
-			expectSetPositive: true,
+			expectSetPositive: &mwactiveflow.Webhook{URI: "af.test.com", Method: webhook.MethodTypePOST, Tm: tmCreate},
 			expectDest:        &Destination{URI: "af.test.com", Method: webhook.MethodTypePOST},
 		},
 	}
@@ -438,6 +450,10 @@ func Test_Get_cacheWriteErrorsIgnored(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
+
+			if tt.activeflowID == uuid.Nil {
+				t.Fatalf("invalid test uuid")
+			}
 
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
@@ -448,11 +464,22 @@ func Test_Get_cacheWriteErrorsIgnored(t *testing.T) {
 			mockCache.EXPECT().ActiveflowWebhookGet(ctx, tt.activeflowID).Return(nil, false, nil)
 			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, tt.responseErr).Times(1)
 
-			if tt.expectSetPositive {
-				mockCache.EXPECT().ActiveflowWebhookSet(ctx, tt.activeflowID, gomock.Any(), gomock.Any()).Return(errors.New("write failed")).Times(1)
+			before := time.Now()
+			if tt.expectSetPositive != nil {
+				mockCache.EXPECT().ActiveflowWebhookSet(ctx, tt.activeflowID, tt.expectSetPositive, 24*time.Hour).Return(errors.New("write failed")).Times(1)
 			}
 			if tt.expectSetNegative {
-				mockCache.EXPECT().ActiveflowWebhookSetNegative(ctx, tt.activeflowID, gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("write failed")).Times(1)
+				mockCache.EXPECT().ActiveflowWebhookSetNegative(ctx, tt.activeflowID, gomock.Any(), tt.expectNegTMDelete, tt.expectNegTTL).DoAndReturn(
+					func(_ context.Context, _ uuid.UUID, tm time.Time, _ *time.Time, _ time.Duration) error {
+						if tt.expectNegTm != nil {
+							if !tm.Equal(*tt.expectNegTm) {
+								t.Errorf("Wrong match. expect tm: %v, got: %v", *tt.expectNegTm, tm)
+							}
+						} else if tm.Before(before) || tm.After(time.Now()) {
+							t.Errorf("Wrong match. expect the current time, got: %v", tm)
+						}
+						return errors.New("write failed")
+					}).Times(1)
 			}
 
 			dest, err := h.Get(ctx, tt.activeflowID)
@@ -504,6 +531,10 @@ func Test_Get_fallbackTimestamp(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
+
+			if tt.activeflowID == uuid.Nil {
+				t.Fatalf("invalid test uuid")
+			}
 
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)

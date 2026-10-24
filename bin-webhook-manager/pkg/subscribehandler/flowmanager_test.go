@@ -190,26 +190,37 @@ func Test_processEventFMActiveflow_cacheErrors(t *testing.T) {
 		eventType string
 		run       func(h *subscribeHandler, m *sock.Event) error
 
-		expectPositive bool
+		expectPositive *mwactiveflow.Webhook
+		expectTm       time.Time
+		expectTMDelete *time.Time
+		expectTTL      time.Duration
 	}{
 		{
 			name:           "positive write failure is propagated",
 			data:           `{"id":"d1111111-1111-1111-1111-111111111111","webhook_uri":"https://example.com/hook","webhook_method":"POST","tm_create":"2026-06-10T00:00:00Z"}`,
 			eventType:      fmactiveflow.EventTypeActiveflowCreated,
 			run:            func(h *subscribeHandler, m *sock.Event) error { return h.processEventFMActiveflowCreatedUpdated(m) },
-			expectPositive: true,
+			expectPositive: &mwactiveflow.Webhook{URI: "https://example.com/hook", Method: webhook.MethodTypePOST, Tm: time.Date(2026, 6, 10, 0, 0, 0, 0, time.UTC)},
 		},
 		{
 			name:      "negative write failure is propagated",
 			data:      `{"id":"d1111111-1111-1111-1111-111111111111","tm_create":"2026-06-10T00:00:00Z"}`,
 			eventType: fmactiveflow.EventTypeActiveflowUpdated,
 			run:       func(h *subscribeHandler, m *sock.Event) error { return h.processEventFMActiveflowCreatedUpdated(m) },
+			expectTm:  time.Date(2026, 6, 10, 0, 0, 0, 0, time.UTC),
+			expectTTL: 10 * time.Minute,
 		},
 		{
 			name:      "delete tombstone write failure is propagated",
 			data:      `{"id":"d1111111-1111-1111-1111-111111111111","tm_create":"2026-06-10T00:00:00Z","tm_delete":"2026-06-10T01:00:00Z"}`,
 			eventType: fmactiveflow.EventTypeActiveflowDeleted,
 			run:       func(h *subscribeHandler, m *sock.Event) error { return h.processEventFMActiveflowDeleted(m) },
+			expectTm:  time.Date(2026, 6, 10, 1, 0, 0, 0, time.UTC),
+			expectTMDelete: func() *time.Time {
+				tm := time.Date(2026, 6, 10, 1, 0, 0, 0, time.UTC)
+				return &tm
+			}(),
+			expectTTL: 10 * time.Minute,
 		},
 	}
 
@@ -230,10 +241,10 @@ func Test_processEventFMActiveflow_cacheErrors(t *testing.T) {
 				t.Fatalf("invalid test uuid")
 			}
 
-			if tt.expectPositive {
-				mockCache.EXPECT().ActiveflowWebhookSet(gomock.Any(), activeflowID, gomock.Any(), gomock.Any()).Return(errCache).Times(1)
+			if tt.expectPositive != nil {
+				mockCache.EXPECT().ActiveflowWebhookSet(gomock.Any(), activeflowID, tt.expectPositive, 24*time.Hour).Return(errCache).Times(1)
 			} else {
-				mockCache.EXPECT().ActiveflowWebhookSetNegative(gomock.Any(), activeflowID, gomock.Any(), gomock.Any(), gomock.Any()).Return(errCache).Times(1)
+				mockCache.EXPECT().ActiveflowWebhookSetNegative(gomock.Any(), activeflowID, tt.expectTm, tt.expectTMDelete, tt.expectTTL).Return(errCache).Times(1)
 			}
 
 			event := &sock.Event{
