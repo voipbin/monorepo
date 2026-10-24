@@ -154,7 +154,7 @@ func Test_runSubscribe(t *testing.T) {
 		mockSock.EXPECT().QueueCreate(queue, "normal").Return(nil)
 		mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil)
 		// the topic patterns are private to the subscribehandler package, so they are matched loosely
-		mockSock.EXPECT().QueueBind(queue, gomock.Any(), string(commonoutline.QueueNameEvent), false, nil).Return(nil).AnyTimes()
+		mockSock.EXPECT().QueueBind(queue, gomock.Any(), string(commonoutline.QueueNameEvent), false, nil).Return(nil).MinTimes(1)
 		mockSock.EXPECT().ConsumeMessage(gomock.Any(), queue, gomock.Any(), false, false, false, 10, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, queueName, consumerName string, exclusive, noLocal, noWait bool, numWorkers int, cb sock.CbMsgConsume) error {
 				started <- queueName
