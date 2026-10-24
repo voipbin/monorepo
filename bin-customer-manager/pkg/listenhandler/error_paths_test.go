@@ -1,8 +1,10 @@
 package listenhandler
 
 import (
+	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -337,16 +339,17 @@ func Test_Run_queueCreateError(t *testing.T) {
 
 	mockSock := sockhandler.NewMockSockHandler(mc)
 	h := &listenHandler{sockHandler: mockSock}
+	errQueue := fmt.Errorf("queue error")
 
-	mockSock.EXPECT().QueueCreate("test-queue", "normal").Return(fmt.Errorf("queue error"))
+	mockSock.EXPECT().QueueCreate("test-queue", "normal").Return(errQueue)
 
 	// no ConsumeRPC expectation: a failed queue declaration must not start consuming
 	err := h.Run("test-queue", "")
 	if err == nil {
 		t.Fatalf("Wrong match. expect: error, got: nil")
 	}
-	if got := err.Error(); got != "could not declare the queue for listenHandler. err: queue error" {
-		t.Errorf("Wrong match. got: %s", got)
+	if !errors.Is(err, errQueue) {
+		t.Errorf("Wrong match. expect the queue error to be wrapped, got: %v", err)
 	}
 }
 
@@ -370,5 +373,9 @@ func Test_Run_startsConsumer(t *testing.T) {
 	}
 
 	// wait for the consumer goroutine so the mock is not called after the controller finishes
-	<-started
+	select {
+	case <-started:
+	case <-time.After(5 * time.Second):
+		t.Fatalf("Wrong match. expect: the consumer to be started, got: timeout")
+	}
 }
