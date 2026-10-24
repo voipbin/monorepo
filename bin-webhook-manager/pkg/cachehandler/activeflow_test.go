@@ -197,3 +197,70 @@ func Test_ActiveflowWebhook_TTLApplied(t *testing.T) {
 		t.Errorf("Wrong match. expect: expired/miss, got: found")
 	}
 }
+
+func Test_ActiveflowWebhookGet_errors(t *testing.T) {
+	id := uuid.FromStringOrNil("66666666-6666-6666-6666-666666666666")
+
+	t.Run("corrupted entry", func(t *testing.T) {
+		h, mr := setupTestHandler(t)
+		defer mr.Close()
+
+		if err := mr.Set("webhook:activeflow:66666666-6666-6666-6666-666666666666", "{not json"); err != nil {
+			t.Fatalf("Could not seed the key. err: %v", err)
+		}
+
+		res, found, err := h.ActiveflowWebhookGet(context.Background(), id)
+		if err == nil || found || res != nil {
+			t.Errorf("Wrong match. expect: error, not found, nil. got: %+v, %v, %v", res, found, err)
+		}
+	})
+
+	t.Run("server down is an error, not a miss", func(t *testing.T) {
+		h, mr := setupTestHandler(t)
+		mr.Close()
+
+		res, found, err := h.ActiveflowWebhookGet(context.Background(), id)
+		if err == nil || found || res != nil {
+			t.Errorf("Wrong match. expect: error, not found, nil. got: %+v, %v, %v", res, found, err)
+		}
+	})
+}
+
+func Test_ActiveflowWebhookSet_errors(t *testing.T) {
+	id := uuid.FromStringOrNil("77777777-7777-7777-7777-777777777777")
+	w := &mwactiveflow.Webhook{URI: "af.test.com", Method: webhook.MethodTypePOST, Tm: time.Date(2026, 6, 10, 0, 0, 0, 0, time.UTC)}
+
+	t.Run("nil entry is rejected without touching the cache", func(t *testing.T) {
+		h, mr := setupTestHandler(t)
+		defer mr.Close()
+
+		if err := h.ActiveflowWebhookSet(context.Background(), id, nil, time.Hour); err == nil {
+			t.Errorf("Wrong match. expect: error, got: nil")
+		}
+		if mr.Exists("webhook:activeflow:77777777-7777-7777-7777-777777777777") {
+			t.Errorf("Wrong match. expect no key to be written")
+		}
+	})
+
+	t.Run("server down", func(t *testing.T) {
+		h, mr := setupTestHandler(t)
+		mr.Close()
+
+		if err := h.ActiveflowWebhookSet(context.Background(), id, w, time.Hour); err == nil {
+			t.Errorf("Wrong match. expect: error, got: nil")
+		}
+	})
+
+	t.Run("unencodable delete time", func(t *testing.T) {
+		h, mr := setupTestHandler(t)
+		defer mr.Close()
+
+		bad := time.Date(10000, 1, 1, 0, 0, 0, 0, time.UTC)
+		if err := h.ActiveflowWebhookSetNegative(context.Background(), id, w.Tm, &bad, time.Hour); err == nil {
+			t.Errorf("Wrong match. expect: error, got: nil")
+		}
+		if mr.Exists("webhook:activeflow:77777777-7777-7777-7777-777777777777") {
+			t.Errorf("Wrong match. expect no key to be written")
+		}
+	})
+}
