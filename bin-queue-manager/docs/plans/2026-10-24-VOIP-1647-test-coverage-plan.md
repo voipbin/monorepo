@@ -2,7 +2,7 @@
 
 ## 1. 티켓 검토
 
-판정: 유효. 기준선은 origin/main d68e695b5 에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` 로 재측정했으며 테스트 실패 0건, 수기 합계 54.43% (1835/3371 statement), 원본 47.51% (1835/3862)로 카드 수치와 일치합니다. 수기 합계는 gens/, mock_*.go, `Code generated ... DO NOT EDIT` 헤더 파일을 빼고 같은 블록의 중복은 최대 count 로 합쳐 계산했습니다(scratch 스크립트).
+판정: 유효. 기준선은 origin/main d68e695b5 에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` 로 재측정했으며 테스트 실패 0건, 수기 합계 54.43% (1835/3371 statement), 원본 47.51% (1835/3862)로 카드 수치(54.4%, 3371개, 47.5%)와 일치합니다. 수기 합계는 gens/, mock_*.go, `Code generated ... DO NOT EDIT` 헤더 파일을 빼고 같은 블록의 중복은 최대 count 로 합쳐 계산했습니다(scratch 스크립트).
 
 60% 에는 188개, 권장 61% 에는 222개 statement 를 더 커버해야 합니다.
 
@@ -23,8 +23,9 @@
 
 구조 분석:
 - cmd/ 의 main 과 queue-control(합 641 statement), internal/config 는 프로세스 기동, 플래그와 환경 파싱, 외부 연결(DB, Redis, RabbitMQ)에 묶여 있어 단위 테스트 대상에서 제외합니다. 이를 제외해도 pkg 쪽 미커버가 약 750 statement 이므로 60% 달성은 산술적으로 가능합니다.
-- pkg/cachehandler 는 redis 클라이언트 구체 타입에 의존해 mock 이 없습니다. 제품 코드 변경 없이는 다루지 않습니다.
-- 나머지 패키지는 모두 gomock 인터페이스(dbhandler, requesthandler, notifyhandler, queuehandler, queuecallhandler)로 주입되어 있어 기존 방식 그대로 테스트할 수 있습니다. 제품 코드 변경은 필요 없습니다.
+- pkg/cachehandler 의 구체 구현(handler.go 54 + main.go 13 = 67 statement)은 `*redis.Client` 에 직접 의존하고 go.mod 에 miniredis 가 없어 단위 테스트가 어렵습니다(인터페이스 MockCacheHandler 는 있어 다른 패키지에서 쓰입니다). 제품 코드나 의존성 변경 없이는 다루지 않습니다.
+- queuehandler, queuecallhandler, listenhandler, subscribehandler 는 gomock 인터페이스(dbhandler, requesthandler, notifyhandler, queuehandler, queuecallhandler, cachehandler)로 주입됩니다. dbhandler 는 `*sql.DB` 를 받으며 기존 테스트가 sqlite(go-sqlite3)와 go-sqlmock 을 이미 씁니다. 모두 기존 방식 그대로 테스트할 수 있고 제품 코드 변경은 필요 없습니다.
+- 제외 후 여유는 pkg 미커버 750 statement 로 필요량 188(권장 222)의 약 4배입니다. 큰 파일: listenhandler/v1_queuecalls.go 106, queuehandler/db.go 84, queuecallhandler/db.go 84, dbhandler/queuecall.go 77, listenhandler/v1_queues.go 58, dbhandler/queue.go 52, queuecallhandler/health.go 41. 이 상위 7개 파일의 미커버 합이 502 이므로 이 파일들의 오류 경로 중 절반 가량만 채워도 61% 가 됩니다.
 
 ## 2. 계획
 
