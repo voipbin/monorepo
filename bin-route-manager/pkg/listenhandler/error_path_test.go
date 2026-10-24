@@ -3,7 +3,9 @@ package listenhandler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -13,6 +15,8 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	logtest "github.com/sirupsen/logrus/hooks/test"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-route-manager/pkg/dbhandler"
@@ -524,4 +528,55 @@ func Test_Run(t *testing.T) {
 			t.Fatalf("Wrong match. expect: ConsumeRPC called, got: timeout")
 		}
 	})
+}
+
+func Test_processRequest_providersSetup_credentialNotLogged(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h, m := newTestListenHandler(mc)
+
+	prevLevel := logrus.GetLevel()
+	logrus.SetLevel(logrus.DebugLevel)
+	hook := logtest.NewGlobal()
+	t.Cleanup(func() {
+		logrus.SetLevel(prevLevel)
+		hook.Reset()
+	})
+
+	credential := "synthetic-credential-value"
+	m.provider.EXPECT().Setup(gomock.Any(), "telnyx", "name", "detail", credential).Return(nil, errors.New("setup failed"))
+
+	if _, err := h.processRequest(&sock.Request{
+		URI:    "/v1/providers/setup",
+		Method: sock.RequestMethodPost,
+		Data:   []byte(`{"carrier":"telnyx","name":"name","detail":"detail","credentials":{"api_key":"` + credential + `"}}`),
+	}); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	redacted := false
+	for _, e := range hook.AllEntries() {
+		if strings.Contains(e.Message, credential) {
+			t.Errorf("Wrong match. expect: credential absent from the log message, got: %s", e.Message)
+		}
+		for k, v := range e.Data {
+			var text string
+			if b, ok := v.([]byte); ok {
+				text = string(b)
+			} else {
+				text = fmt.Sprint(v)
+			}
+
+			if strings.Contains(text, credential) {
+				t.Errorf("Wrong match. expect: credential absent from log field %s, got: %s", k, text)
+			}
+			if k == "data" && text == "[redacted]" {
+				redacted = true
+			}
+		}
+	}
+	if !redacted {
+		t.Errorf("Wrong match. expect: the request body logged as [redacted], got: not found")
+	}
 }
