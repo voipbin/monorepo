@@ -5,7 +5,8 @@
 판정: 유효. 기준선 `origin/main 99b59c386` 을 `GOFLAGS=-mod=mod go test -count=1 -coverprofile` 로 직접 재측정했다. 수기 코드(gens/, mock_*.go, `Code generated ... DO NOT EDIT` 제외, 같은 블록 중복은 최대 count) 합계는 2502 statement 중 1632개 커버, 65.2% 이다. 원본(생성 코드와 mock 포함)은 58.0% 이다. 70% 까지 약 120개, 71% 까지 약 144개가 더 필요하다. 카드 수치와 일치한다.
 
 - 관련 PR: VOIP-1647(#1508, 60% 상향, 머지됨)이 선행이다. 열린 중복 PR 은 없다. 제품 코드 변경은 하지 않는다.
-- 테스트 불가 구조: cmd/route-control(315), cmd/route-manager(174 미커버)는 DB, Redis, RabbitMQ 연결이 필요해 제외한다. 이를 빼도 나머지 미커버가 충분해 산술적으로 달성 가능하다.
+- 테스트 불가 구조: cmd/route-control(315)은 DB, Redis, RabbitMQ 연결이 필요해 제외한다. cmd/route-manager 는 대부분 데몬 기동 코드라 제외하되(커버 수가 실행마다 16~19개로 달라질 수 있다), 일부 함수는 mock 으로 가능하면 여유분으로만 쓴다. cmd/ 전체를 빼면 대상 1997 statement 중 미커버 381개이고 70% 에 약 117개, 71% 에 약 142개가 필요하므로 산술적으로 달성 가능하다. 여유를 위해 목표는 약 +150 statement 로 잡는다.
+- 수기 합계는 cp.out 후처리 스크립트(제외 필터 적용)로 산출한 값이며 go test 가 출력하는 값과 다르다. 이 방법은 PR 본문에 적는다. cachehandler(miniredis)와 config(viper 전역 상태)는 위험이 있어 먼저 시도하되, 둘 없이도 listenhandler, telnyxclient, dbhandler, healthcheckhandler 오류 경로만으로 70% 는 가능하다.
 
 패키지별 기준선(수기 기준, 커버/전체): cmd/route-control 0/315, cmd/route-manager 16/190, internal/config 0/60, models/* 9/10 각각, pkg/cachehandler 0/59, pkg/dbhandler 372/440, pkg/healthcheckhandler 70/93, pkg/listenhandler 468/574, pkg/providercallhandler 94/101, pkg/providerhandler 238/257, pkg/routehandler 190/195, pkg/telnyxclient 157/188.
 
