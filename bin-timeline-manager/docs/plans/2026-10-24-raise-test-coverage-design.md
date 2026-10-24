@@ -33,6 +33,7 @@ cmd/timeline-manager main (197 stmts) binds RabbitMQ, MySQL, ClickHouse and sign
 Conventions: names `Test_<Func>` or `Test_<Func>_<scenario>`, table style, `mc := gomock.NewController(t)` with `defer mc.Finish()`, no testify,
 fixed UUID literals, reuse existing helpers (newStartTestHandler) and avoid name collisions. Fixtures are synthetic: token `test-token`, IPs in 192.0.2.x and
 203.0.113.x, no real hosts. Expected values are literals (5000, 8000, 50, 240, paths, keys), never derived from product constants; only input sizing may use constants.
+Collect tests use a new helper in the new test file that returns the eventhandler mock (the existing helper does not return it) with a prefix that avoids collisions with existing helpers. JSON numbers decoded from payloads are compared as float64 literals. The PR text states that cmd/timeline-manager main and the ClickHouse paths are excluded.
 Mock calls use exact arguments (no gomock.Any for maps, page tokens, ids). Order: homerhandler first, measure, then the rest.
 
 1. pkg/homerhandler/main_test.go (httptest server with a hit counter). For each of GetSIPMessages, GetPcap, GetRTCPPcap:
@@ -73,7 +74,7 @@ Mock calls use exact arguments (no gomock.Any for maps, page tokens, ids). Order
 - Setup: `git fetch origin main`, then `bash scripts/check-test-conventions.sh`.
 - Hand-written total >= 66% with `GOFLAGS=-mod=mod go test -count=1 -coverprofile`, same exclusion rules; per-package before/after table in the PR.
   Expected gain: homerhandler about +170, verdict 20, webhook 9, get.go 22, reduce/collect about 100, which exceeds the 95 needed.
-- `go test ./...` and `golangci-lint run` pass. Equivalent mutations are excluded from the table (50 cap `>` to `>=`, dropping the id term of the dedup key).
+- `go test ./...` and `golangci-lint run` pass. Equivalent mutations are excluded from the table (50 cap `>` to `>=`, dropping the id term of the dedup key, reduceEvents early-return `<=` to `<` and a `+64` change in approxSize that only moves the gate: the returned values are identical, only the backing array differs, and no test asserts slice identity).
 - Mutation sample on a scratch copy only (the worktree `git status` stays clean); each mutation must fail the named new test:
 
 | mutation | expected failing test |
@@ -83,7 +84,7 @@ Mock calls use exact arguments (no gomock.Any for maps, page tokens, ids). Order
 | drop sort; drop the 50 cap | reverse-order case; 51-input case |
 | `idx >= eventCount` to `>`; `idx < 0` to `<= 0` | eventCount and 0 boundary cases |
 | remove the not-found mapping in each of Get, GetByActiveflowID, Delete | per-method masked error case |
-| reduceEvents `<=` to `<` (early return); loop `>` to `>=`; error-branch `continue` removed; drop-branch `continue` to `break`; `+64` changed in the loop and in approxSize | early boundary, loop boundary, late error event, small-after-large, size cases |
+| reduceEvents loop `>` to `>=`; error-branch `continue` removed; drop-branch `continue` to `break`; `+64` to `+63` in approxSize (target+1 case would not reduce) and in the loop | loop boundary, late error event, small-after-large, size cases |
 | isErrorEvent drop each of four tokens | token table |
-| collectEvents cap `>=` to `>`, remove dedup, remove token pass-through, 100 to 101 pages | cap, dedup, page-token, max-pages cases |
+| collectEvents `NextPageToken == ""` break removed (single-page mock), cap `>=` to `>`, remove dedup, remove token pass-through, 100 to 101 pages | cap, dedup, page-token, max-pages cases |
 | summarizeData 240 to 241 in each of 3 paths; transcript cap 8000 to 8001 | rune boundary cases per path |
