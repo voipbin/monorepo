@@ -157,12 +157,13 @@ func Test_AttendedTransfer_executeFailsRollsBack(t *testing.T) {
 
 			// block (hold and mute the other party) and, after the failure, the rollback
 			// (release both) on exactly the other party.
+			holdOn := e.mockReq.EXPECT().CallV1CallMusicOnHoldOn(ctx, epOtherCallID).Return(nil)
+			muteOn := e.mockReq.EXPECT().CallV1CallMuteOn(ctx, epOtherCallID, cmcall.MuteDirectionIn).Return(nil)
 			e.mockReq.EXPECT().CallV1ConfbridgeGet(ctx, epConfbridgeID).Return(cb, nil).Times(2)
-			e.mockReq.EXPECT().CallV1CallMusicOnHoldOn(ctx, epOtherCallID).Return(nil)
-			e.mockReq.EXPECT().CallV1CallMuteOn(ctx, epOtherCallID, cmcall.MuteDirectionIn).Return(nil)
 			tt.expectExecute(e, ctx)
-			e.mockReq.EXPECT().CallV1CallMusicOnHoldOff(ctx, epOtherCallID).Return(nil)
-			e.mockReq.EXPECT().CallV1CallMuteOff(ctx, epOtherCallID, cmcall.MuteDirectionIn).Return(nil)
+			// the release must come after the hold: it is the rollback of the executed block.
+			e.mockReq.EXPECT().CallV1CallMusicOnHoldOff(ctx, epOtherCallID).Return(nil).After(holdOn)
+			e.mockReq.EXPECT().CallV1CallMuteOff(ctx, epOtherCallID, cmcall.MuteDirectionIn).Return(nil).After(muteOn)
 
 			res, err := e.h.AttendedTransfer(ctx, epTransfererCall(), epFlow(), epAddresses())
 			if !stderrors.Is(err, errEP) {
@@ -535,6 +536,12 @@ func Test_get_mapsNotFound(t *testing.T) {
 			var ve *cerrors.VoipbinError
 			if !stderrors.As(err, &ve) {
 				t.Fatalf("Wrong match. expect: *VoipbinError, got: %T %v", err, err)
+			}
+			if ve.Status != cerrors.StatusNotFound {
+				t.Errorf("Wrong status. expect: %s, got: %s", cerrors.StatusNotFound, ve.Status)
+			}
+			if ve.Reason != "TRANSFER_NOT_FOUND" {
+				t.Errorf("Wrong reason. expect: TRANSFER_NOT_FOUND, got: %s", ve.Reason)
 			}
 			if !stderrors.Is(err, dbhandler.ErrNotFound) {
 				t.Errorf("Wrong match. expect: the cause ErrNotFound is preserved, got: %v", err)
