@@ -75,3 +75,44 @@ pkg/internal/models (미커버 134) 분류. 미커버 블록 목록을 하나씩
 - 전역 상태 추가: `run*` 는 `viper` 전역 값을 읽으므로 `viper.Reset()` 으로 복원한다. `printJSON` 은 stdout 에 쓰므로 표준출력을 파이프로 바꿔 검사하고 복원한다. `initCommand` 는 바인딩 오류 시 `cobra.CheckErr` 로 프로세스를 종료하므로 정상 경로만 호출한다. cmd/storage-manager 의 `init()` 은 `signal.Notify` 와 `go signalHandler()` 를 이미 실행하므로 테스트에서 시그널을 보내지 않는다.
 - 결함 발견 시 고치지 않고 카드 코멘트에만 기록한다.
 - VOIP-1416(80% 미만 패키지 일반 상향)과 겹침은 PR 본문에 명시만 한다. 수기 기준으로는 pkg 패키지가 모두 80% 이상(최저 87.5%)이고 cmd 만 0% 이다. 원본 Go 출력 기준(mock 포함)으로는 cachehandler 61.3%, accounthandler 70.9%, dbhandler 74.2% 가 80% 미만이므로 어느 기준인지 PR 본문에 같이 적는다.
+
+## 2. 설계
+
+### 2.1 원칙
+
+- 비테스트 `.go` 를 바꾸지 않는다. `go.mod`/`go.sum` 도 바꾸지 않는다(새 의존성 없음, sqlmock 없음).
+- 새 테스트는 `Test_<대상>_<시나리오>` 이름, gomock 컨트롤러 변수명 `mc`, 합성값만, 외부 호출과 네트워크 없음(`scripts/check-test-conventions.sh` 통과). DSN 은 `invalid`(슬래시 없는 비어 있지 않은 값)만 쓴다.
+- 기대값은 입력에서 계산하지 않고 리터럴로 적는다. 빈 호출과 자기비교는 금지한다.
+- 순서: cmd 도달 가능 구간(주 경로) → pkg 단순 구간 → 필요할 때만 fake 확장 구간. 각 단계 뒤 프로파일로 실측한다.
+
+### 2.2 테스트 항목
+
+cmd/storage-control (`main_test.go`, 전역 상태 `viper`, `config.Get()`, stdout 은 `t.Cleanup` 으로 복원, `t.Parallel` 없음):
+- `resolveUUID`: 빈 값은 `<label> is required`, 형식 오류 값은 `invalid format for <label>: '<값>' is not a valid UUID`, 올바른 값은 그 UUID 반환.
+- `printJSON`: 구조체 출력이 들여쓰기 2칸 JSON 이고 개행으로 끝남, json 불가 값(채널)은 `failed to marshal JSON` 오류.
+- `cmd*` 생성자 10개: `Use` 와 `RunE` 비어 있지 않음, 플래그 이름과 기본값을 리터럴 목록으로 단언(예: file list 의 `limit` 기본 100, `reference-type`, account list 의 플래그).
+- `initCommand`: 루트 `Use`, 하위 명령 트리(`file`: create/get/list/delete, `account`: create/get/list/delete, `recording`: get/delete, `migrate`), `--database_dsn=invalid` 로 `migrate status` 실행 시 연결 없이 오류 반환.
+- `runFileCreate` 입력 검증: 필수값을 하나씩 비운 표(customer, owner, reference id 형식 오류, reference-type, name, filename, bucket-name, filepath)별 오류 문구 단언과 그 시점까지 `init` 이 호출되지 않음(DSN 을 `invalid` 로 두었는데 오류 문구가 검증 문구이면 init 전에 return 한 것).
+- `runAccountCreate`: customer-id 비었음과 형식 오류.
+- 나머지 `run*` 8개와 `initStorageHandler`/`initAccountHandler`: `config.Get().DatabaseDSN = "invalid"` 일 때 `failed to initialize handlers` 로 래핑된 오류(내부 `could not connect to the database` 포함) 반환.
+
+cmd/storage-manager (`main_test.go`, `init()` 자동 실행):
+- `rootCmd` 플래그 이름과 기본값을 리터럴로 단언(`database_dsn`, `prometheus_endpoint`, `redis_database` 기본 1 등)하되 기본 DSN 의 계정 문자열은 단언하지 않는다.
+- `runListen`/`runSubscribe`: `sockhandler` mock 으로 큐 생성 실패는 오류 반환과 이후 호출 없음, 성공은 `ConsumeRPC`/구독 소비 고루틴 시작(채널로 동기화). `createDBHandler` 는 `invalid` DSN 으로 오류 반환.
+- 제외: `run`, `runService`, `initProm`, `main`, `signalHandler` 의 시그널 전송.
+
+pkg 단순 구간:
+- `decodeWavPeaks`/`readWavHeader`: 다채널 최대 크기, 버킷 수가 프레임 수보다 큼, 잘린 PCM, 홀수 크기 미지 청크 건너뛰기, 잘린 청크 헤더, 크기 0 데이터. 기대값은 손계산 리터럴.
+- `LoadGlobalConfig`(같은 패키지에서 `once` 초기화 후 환경변수 값 반영), models 의 `ConvertStringMapToFieldMap` 과 `CreateWebhookEvent` 오류(json 불가 값).
+- listenhandler: `url.Parse` 오류 4, 퍼센트 디코딩 오류 3, `errorResponse` 의 typed nil `*VoipbinError`(500 반환).
+- dbhandler: `ApplyFields` 지원하지 않는 필터 타입 오류 2, `AccountUpdate`/`FileUpdate` 의 json 불가 값 오류 2, 캐시 쓰기 실패 4(성공이나 NotFound 로 바뀌지 않고 오류 전파 또는 기존 계약 유지).
+- filehandler: `NewFileHandler` 인증 파일 분기(없는 경로, 파싱 불가 파일, 유효 키), `Get` 의 NotFound 변환과 일반 오류 래핑, `Create` 의 계정 검증 실패, DB 생성 실패, 재조회 실패, 계정 증가 실패(기존 mock 으로 가능한 것만), `compress.go`, `logDownloadURIFailure`.
+- storagehandler `CompressfileCreate` 의 파일 조회 오류, subscribehandler `processEvent` 오류 로그 분기.
+- fake 확장 구간(`PeaksComputeByFile` 등)은 위 단계 실측이 71% 에 못 미칠 때만 기존 `fake_gcs_test.go` 를 확장해 추가한다.
+
+### 2.3 검증
+
+- 수기 합계 70.0% 이상, 목표 71% 이상(CI 방식 측정, 집계는 `hw.py` 와 같은 규칙).
+- `go test -count=1 ./...` 와 신규 테스트 `-race -count=3` 통과, `golangci-lint run -v --timeout 5m`, `go mod tidy` 후 `go.mod`/`go.sum` 불변, `git diff --stat origin/main...HEAD` 가 bin-storage-manager/ 안에만 있음, `scripts/check-test-conventions.sh` 통과, 공개 저장소 위생 검사(내부 주소, 비밀값 없음).
+- 변이 검사(별도 scratch 복사본에서만): `resolveUUID` 의 빈 값 분기 제거, `runFileCreate` 의 검증 순서 변경(init 이전 return 파괴), `printJSON` 들여쓰기 변경, `runListen` 의 오류 무시, 플래그 기본값 변경(limit 100), `errorResponse` 상태 코드 변경, `readWavHeader` 의 홀수 청크 정렬 제거, `Get` 의 NotFound 변환 제거에서 해당 신규 테스트가 실패하는지 확인한다.
+- 롤백: 테스트 추가뿐이므로 PR 되돌림만으로 복구된다.
