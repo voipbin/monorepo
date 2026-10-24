@@ -99,7 +99,8 @@ cmd/storage-control (`main_test.go`, 전역 상태 `viper`, `config.Get()`, stdo
 
 cmd/storage-manager (`main_test.go`, `init()` 자동 실행):
 - `rootCmd` 플래그 이름과 기본값을 리터럴로 단언(`database_dsn`, `prometheus_endpoint`, `redis_database` 기본 1 등)하되 기본값에 계정 문자열이 있는 `database_dsn` 과 `rabbitmq_address` 는 단언하지 않는다.
-- `runListen`/`runSubscribe`: `sockhandler` mock 으로 `QueueCreate` 실패는 오류 반환과 이후 호출 없음, 구독은 `TopicCreateWithKind`, `QueueBind` 실패도 각각, 성공은 `ConsumeRPC`/`ConsumeMessage` 고루틴 시작(`DoAndReturn` 의 return 직전에 채널로 신호를 보내고 `nil` 을 반환해 고루틴이 끝나게 하며, 테스트가 그 신호를 기다린 뒤 종료해 종료 후 mock 호출을 막는다).  `createDBHandler` 는 `invalid` DSN 으로 오류 반환.
+- `runListen`/`runSubscribe`: `sockhandler` mock 으로 `QueueCreate` 실패는 오류 반환과 이후 호출 없음, 구독은 `QueueCreate` 실패 하나만(`TopicCreateWithKind`, `QueueBind` 실패 처리는 `pkg/subscribehandler` 에 있고 기존 테스트가 다루므로 cmd 에서 반복하지 않는다), 성공은 `ConsumeRPC`/`ConsumeMessage` 고루틴 시작(`DoAndReturn` 의 return 직전에 채널로 신호를 보내고 `nil` 을 반환해 고루틴이 끝나게 하며, 테스트가 그 신호를 기다린 뒤 종료해 종료 후 mock 호출을 막는다).  `createDBHandler` 는 `invalid` DSN 으로 오류 반환.
+- 성공 케이스의 `QueueBind` 기대는 `topicPatterns` 가 비공개 변수이므로 `gomock.Any()` 와 `AnyTimes` 로 쓴다.
 - 제외: `run`, `runService`, `initProm`, `main`, `signalHandler` 의 시그널 전송(시그널을 보내지 않아도 `init()` 의 고루틴 시작으로 `signalHandler` 진입 statement 는 따라올 수 있다).
 
 pkg 단순 구간:
@@ -115,5 +116,16 @@ pkg 단순 구간:
 
 - 수기 합계 70.0% 이상, 목표 71% 이상(CI 방식 측정, 집계는 1.1 의 제외 규칙과 중복 블록 최대 count 규칙).
 - `go test -count=1 ./...` 와 신규 테스트 `-race -count=3` 통과, `golangci-lint run -v --timeout 5m`, `go mod tidy` 후 `go.mod`/`go.sum` 불변, `-shuffle=on` 과 테스트 단독 `-run` 실행에서도 통과(`Execute` 와 `once` 의존 확인), `git diff --stat origin/main...HEAD` 가 bin-storage-manager/ 안에만 있음, `scripts/check-test-conventions.sh` 통과, 공개 저장소 위생 검사(내부 주소, 비밀값 없음).
-- 변이 검사(별도 scratch 복사본에서만): `resolveUUID` 의 빈 값 분기 제거, `runFileCreate` 의 검증 순서 변경(init 이전 return 파괴), `printJSON` 들여쓰기 변경, `runListen` 의 오류 무시, 플래그 기본값 변경(limit 100), `errorResponse` 상태 코드 변경, `readWavHeader` 의 홀수 청크 정렬 제거, `Get` 의 NotFound 변환 제거, `LoadGlobalConfig` 의 필드 매핑 하나 변경, `runSubscribe` 의 `QueueBind` 오류 무시, `migrate` 클로저의 DSN 인자 변경(`could not parse the database dsn` 문구 단언으로 잡음), `initStorageHandler`/`initAccountHandler` 의 오류 래핑 문구 변경, `decodeWavPeaks` 의 다채널 처리 변경에서 해당 신규 테스트가 실패하는지 확인한다.
+- 변이 검사(별도 scratch 복사본에서만): `resolveUUID` 의 빈 값 분기 제거, `runFileCreate` 의 검증 순서 변경(init 이전 return 파괴), `printJSON` 들여쓰기 변경, `runListen` 의 오류 무시(cmd 의 `return err`), 플래그 기본값 변경(limit 100), `errorResponse` 의 typed nil 분기(`ToResponse(nil)` 실패 후 500)의 상태 코드 변경(nil 오류와 일반 오류의 500 은 기존 테스트가 이미 잡으므로 대상 아님), `readWavHeader` 의 홀수 청크 정렬 제거, `Get` 의 NotFound 변환 제거, `LoadGlobalConfig` 의 필드 매핑 하나 변경, `runSubscribe` 의 `return err` 를 `return nil` 로 변경, `migrate` 클로저의 DSN 인자 변경(`could not parse the database dsn` 문구 단언으로 잡음), `initStorageHandler`/`initAccountHandler` 의 오류 래핑 문구 변경, `decodeWavPeaks` 의 다채널 처리 변경에서 해당 신규 테스트가 실패하는지 확인한다.
 - 롤백: 테스트 추가뿐이므로 PR 되돌림만으로 복구된다.
+
+### 2.4 pkg 단순 구간 입력 확정 (설계 5회차 사실 확인 반영, 구현 단계에서 프로파일로 재확인)
+
+- wav: 도달 가능한 경계는 13개다. `frameSize == 0` 분기와 `framesPerBucket <= 0` 분기는 앞선 조건이 막아 도달 불가이므로 제외한다. "잘린 PCM" 은 두 케이스로 나눈다: 헤더 프레임 수보다 적은 프레임이 있으면 부분 버킷이 flush 되고, 데이터 바이트 0 이면 peaks 가 nil 이며 duration 만 남는다. 기대값은 손계산 리터럴.
+- `CreateWebhookEvent`: `WebhookMessage` 에 채널을 넣을 자리가 없으므로 `time.Date(10000, ...)` 같이 연도 범위를 벗어난 시각으로 마샬 오류를 만든다.
+- `ConvertStringMapToFieldMap`: 입력 `{"account_id": "bad"}`(UUID 오류), `{"filesize": "x"}`(지원하지 않는 변환), `{"name": 5}`(타입 변환 불가) 각각의 오류 문구 단언.
+- dbhandler: 재조회 실패(`accounts.go`/`files.go` 의 쓰기 뒤 재조회 분기 2)는 Next 에서 실패하는 DB 래퍼가 필요하고, 캐시 쓰기 실패(2)는 `AccountSet`/`FileSet` 이 오류를 반환하게 하여 쓰기 함수가 nil 을 반환함을 단언한다. `ApplyFields` 오류는 빈 구조체와 문자열 슬라이스 필터로, `PrepareFields` 오류는 비어 있지 않은 값 안의 채널 또는 함수(`[]chan int{nil}`, `map[string]func(){"a": nil}`)로 만든다. 맨 채널은 `PrepareFields` 를 통과해 실행 단계에서 실패하므로 쓰지 않는다.
+- `NewFileHandler`: 도달 가능 분기는 6개(client 생성 실패 1개는 에뮬레이터 호스트 지정 시 도달 불가). 키 파일은 `type` 이 `service_account` 인 JSON 이어야 유효 파싱으로 간주되고, 없으면 파싱 실패 케이스로 쓴다. `private_key` 없는 변형은 서명 키 미설정 분기만 닿는다.
+- listenhandler: `url.Parse` 오류는 제어문자(`\x7f`)가 든 URI 로 `v1AccountsGet`, `v1AccountsIDGet`, `v1FilesGet`, `v1FilesIDGet` 메서드를 직접 호출해 만들고, 퍼센트 디코딩 오류도 `processRequest` 의 UUID 정규식에 걸러지므로 `v1RecordingsID*` 메서드를 직접 호출한다.
+- `logDownloadURIFailure`: 반환값이 없으므로 logrus 테스트 hook 으로 레벨과 메시지를 단언할 수 있을 때만 포함하고, 불가하면 제외한다.
+- 위 제외로 pkg 단순 구간의 실제 도달 수는 61보다 작아질 수 있으나(최대 약 56) 필수 경로는 cmd 이므로 결론에 영향이 없다.
