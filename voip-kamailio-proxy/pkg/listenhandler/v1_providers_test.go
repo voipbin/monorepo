@@ -124,6 +124,32 @@ func Test_processRequest_routing(t *testing.T) {
 			},
 			expectStatusCode: 404,
 		},
+		{
+			name: "health route with GET returns 404",
+			request: &sock.Request{
+				URI:    "/v1/providers/health",
+				Method: sock.RequestMethodGet,
+			},
+			expectStatusCode: 404,
+		},
+		{
+			name: "health route with path suffix returns 404",
+			request: &sock.Request{
+				URI:    "/v1/providers/health/extra",
+				Method: sock.RequestMethodPost,
+				Data:   []byte(`{"hostname": "192.0.2.10"}`),
+			},
+			expectStatusCode: 404,
+		},
+		{
+			name: "health route with path prefix returns 404",
+			request: &sock.Request{
+				URI:    "/x/v1/providers/health",
+				Method: sock.RequestMethodPost,
+				Data:   []byte(`{"hostname": "192.0.2.10"}`),
+			},
+			expectStatusCode: 404,
+		},
 	}
 
 	for _, tt := range tests {
@@ -169,5 +195,53 @@ func Test_healthResponseFormat(t *testing.T) {
 	}
 	if decoded["result_code"] != "200" {
 		t.Errorf("expected result_code=200, got %s", decoded["result_code"])
+	}
+}
+
+func Test_processRequest_unhealthyMapping(t *testing.T) {
+	var gotHost string
+	var gotTimeout time.Duration
+	checker := func(_ context.Context, hostname string, timeout time.Duration) (*siphandler.HealthCheckResult, error) {
+		gotHost = hostname
+		gotTimeout = timeout
+		return &siphandler.HealthCheckResult{Healthy: false, ResponseCode: "timeout"}, nil
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h := &listenHandler{
+		sockHandler: sockhandler.NewMockSockHandler(mc),
+		sipTimeout:  3 * time.Second,
+		sipChecker:  checker,
+	}
+
+	res, err := h.processRequest(&sock.Request{
+		URI:    "/v1/providers/health",
+		Method: sock.RequestMethodPost,
+		Data:   []byte(`{"hostname": "provider.example.invalid"}`),
+	})
+	if err != nil {
+		t.Fatalf("Expected nil error, got: %v", err)
+	}
+	if res.StatusCode != 200 {
+		t.Fatalf("Expected status 200, got %d", res.StatusCode)
+	}
+	if res.DataType != "application/json" {
+		t.Errorf("Expected DataType application/json, got %q", res.DataType)
+	}
+
+	var body request.V1ResponseProvidersHealthPost
+	if err := json.Unmarshal(res.Data, &body); err != nil {
+		t.Fatalf("Could not unmarshal response body: %v", err)
+	}
+	if body.Status != "unhealthy" || body.ResultCode != "timeout" {
+		t.Errorf("Expected unhealthy/timeout, got %q/%q", body.Status, body.ResultCode)
+	}
+	if gotHost != "provider.example.invalid" {
+		t.Errorf("Expected checker hostname provider.example.invalid, got %q", gotHost)
+	}
+	if gotTimeout != 3*time.Second {
+		t.Errorf("Expected checker timeout 3s, got %v", gotTimeout)
 	}
 }
