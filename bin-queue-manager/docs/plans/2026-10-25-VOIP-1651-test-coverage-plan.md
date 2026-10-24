@@ -19,7 +19,7 @@
 | pkg/queuehandler | 99.7 | 1/387 |
 | pkg/subscribehandler | 98.3 | 2/118 |
 
-구조 분석: cmd/queue-control 의 명령 실행 함수, cmd/queue-manager 의 main 과 run(RabbitMQ 연결 생성), cachehandler 의 연결 생성부는 DB, Redis, RabbitMQ 연결을 직접 만들어 제품 코드 변경 없이는 단위 테스트가 어렵습니다. 그 밖의 순수 함수는 테스트할 수 있으나 비용 대비 효과가 낮아 이번에는 선택하지 않으며, 모자랄 때의 예비 후보로 남깁니다. 남은 미커버 중 가장 큰 곳은 pkg/queuecallhandler/db.go (80개)이며 mock 주입(dbhandler, requesthandler, notifyhandler, queuehandler)만으로 제품 코드 변경 없이 테스트됩니다. 제외분을 모두 빼도 pkg 미커버가 300 안팎이어서 70% 는 산술적으로 가능합니다.
+구조 분석: cmd/queue-control 의 명령 실행 함수, cmd/queue-manager 의 main 과 run(RabbitMQ 연결 생성), cachehandler 의 연결 생성부는 DB, Redis, RabbitMQ 연결을 직접 만들어 제품 코드 변경 없이는 단위 테스트가 어렵습니다. 그 밖의 순수 함수는 테스트할 수 있으나 비용 대비 효과가 낮아 이번에는 선택하지 않으며, 모자랄 때의 예비 후보로 남깁니다. 남은 미커버 중 가장 큰 곳은 pkg/queuecallhandler/db.go (80개)이며 mock 주입(dbhandler, requesthandler, notifyhandler, queuehandler, utilhandler)만으로 제품 코드 변경 없이 테스트됩니다. 제외분을 모두 빼도 pkg 미커버가 300 안팎이어서 70% 는 산술적으로 가능합니다.
 
 ## 2. 계획
 
