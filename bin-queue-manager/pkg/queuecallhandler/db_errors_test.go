@@ -388,6 +388,35 @@ func Test_UpdateStatusService_sideEffects_errors(t *testing.T) {
 	}
 }
 
+func Test_UpdateStatusService_noAgentNoTimeout_errors(t *testing.T) {
+	createdAt := time.Date(2023, time.February, 16, 3, 21, 17, 0, time.UTC)
+	now := time.Date(2023, time.February, 16, 3, 22, 17, 0, time.UTC)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	h, m := newQCTestHandler(mc)
+	ctx := context.Background()
+
+	qc := newDBQC()
+	qc.TMCreate = &createdAt
+	qc.TimeoutService = 0
+	res0 := newDBQC()
+	res0.ServiceAgentID = uuid.Nil
+
+	// no AgentV1AgentReserveRelease and no QueueV1QueuecallTimeoutService expectation:
+	// both must be skipped.
+	m.util.EXPECT().TimeNow().Return(&now)
+	m.db.EXPECT().QueuecallSetStatusService(ctx, qc.ID, 60000, &now).Return(int64(1), nil)
+	m.db.EXPECT().QueuecallGet(ctx, qc.ID).Return(res0, nil)
+	m.notify.EXPECT().PublishWebhookEvent(ctx, tDBCustomerID, queuecall.EventTypeQueuecallServiced, res0)
+	m.queue.EXPECT().AddServiceQueuecallID(ctx, tDBQueueID, qc.ID).Return(&queue.Queue{}, nil)
+
+	res, err := h.UpdateStatusService(ctx, qc)
+	if err != nil || res != res0 {
+		t.Errorf("Wrong match. expect: (%v, nil), got: (%v, %v)", res0, res, err)
+	}
+}
+
 func Test_UpdateStatusAbandonedDone_removeFailure_errors(t *testing.T) {
 	errDB := errors.New("db failure")
 	createdAt := time.Date(2023, time.February, 16, 3, 21, 17, 0, time.UTC)
