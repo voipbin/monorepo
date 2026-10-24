@@ -80,7 +80,7 @@ func Test_CreateWebhookEvent(t *testing.T) {
 		"widget_id":   "11111111-aaaa-bbbb-cccc-000000000003",
 		"session_id":  "11111111-aaaa-bbbb-cccc-000000000004",
 		"direction":   "inbound",
-		"sender_id":   uuid.Nil.String(), // omitempty is inert on a uuid.UUID value
+		"sender_id":   uuid.Nil.String(),
 		"status":      "sent",
 		"text":        "synthetic text",
 		"tm_create":   nil,
