@@ -24,7 +24,7 @@ const (
 
 func Test_AIMcpServerWrappers(t *testing.T) {
 	if aiQueue != string(outline.QueueNameAIRequest) {
-		t.Fatalf("Wrong match. unexpected ai queue constant: %s", outline.QueueNameAIRequest)
+		t.Fatalf("Wrong match. expect: %s, got: %s", outline.QueueNameAIRequest, aiQueue)
 	}
 
 	id := uuid.FromStringOrNil("8a5c6b1e-2f0b-4c8e-9d3a-0c9f5a1b7e11")
@@ -91,6 +91,35 @@ func Test_AIMcpServerWrappers(t *testing.T) {
 				return h.AIV1McpServerUpdate(context.Background(), id, &name, &empty, nil, &status, &authType, nil, nil)
 			},
 			expectRes: &ammcpserver.McpServer{Identity: identity.Identity{ID: id}, Name: "synthetic name", Status: ammcpserver.StatusDisabled},
+		},
+		{
+			name:           "update_clear_secret",
+			queue:          aiQueue,
+			expectURI:      "/v1/mcp_servers/8a5c6b1e-2f0b-4c8e-9d3a-0c9f5a1b7e11",
+			expectMethod:   sock.RequestMethodPut,
+			expectDataType: ContentTypeJSON,
+			expectData:     `{"secret":""}`,
+			responseData:   `{"id":"8a5c6b1e-2f0b-4c8e-9d3a-0c9f5a1b7e11"}`,
+			call: func(h *requestHandler) (any, error) {
+				return h.AIV1McpServerUpdate(context.Background(), id, nil, nil, nil, nil, nil, nil, &empty)
+			},
+			expectRes: &ammcpserver.McpServer{Identity: identity.Identity{ID: id}},
+		},
+		{
+			name:           "update_replace_url_header_and_secret",
+			queue:          aiQueue,
+			expectURI:      "/v1/mcp_servers/8a5c6b1e-2f0b-4c8e-9d3a-0c9f5a1b7e11",
+			expectMethod:   sock.RequestMethodPut,
+			expectDataType: ContentTypeJSON,
+			expectData:     `{"url":"https://mcp2.example.invalid/v2","api_key_header":"X-Other-Key","secret":"` + mcpTestSecret + `"}`,
+			responseData:   `{"id":"8a5c6b1e-2f0b-4c8e-9d3a-0c9f5a1b7e11"}`,
+			call: func(h *requestHandler) (any, error) {
+				newURL := "https://mcp2.example.invalid/v2"
+				header := "X-Other-Key"
+				secret := mcpTestSecret
+				return h.AIV1McpServerUpdate(context.Background(), id, nil, nil, &newURL, nil, nil, &header, &secret)
+			},
+			expectRes: &ammcpserver.McpServer{Identity: identity.Identity{ID: id}},
 		},
 		{
 			name:           "update_nothing",
