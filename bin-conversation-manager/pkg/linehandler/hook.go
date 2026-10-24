@@ -31,13 +31,18 @@ func (h *lineHandler) Hook(ctx context.Context, ac *account.Account, data []byte
 		Events []*linebot.Event `json:"events"`
 	}{}
 
-	if errUnmarshal := json.Unmarshal(data, tmp); errUnmarshal != nil {
+	if errUnmarshal := unmarshalEvents(data, tmp); errUnmarshal != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", errUnmarshal)
 		return nil, errUnmarshal
 	}
 
 	results := []*HookResult{}
 	for _, e := range tmp.Events {
+		if e == nil {
+			log.Warnf("Received an empty event. Skipping.")
+			continue
+		}
+
 		r, err := h.hookEventHandle(ctx, ac, e)
 		if err != nil {
 			log.Errorf("Could not handle the message. err: %v", err)
@@ -51,8 +56,23 @@ func (h *lineHandler) Hook(ctx context.Context, ac *account.Account, data []byte
 	return results, nil
 }
 
+// unmarshalEvents decodes the webhook body and converts any decoder failure into an error.
+func unmarshalEvents(data []byte, v any) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("could not decode the events. err: %v", r)
+		}
+	}()
+
+	return json.Unmarshal(data, v)
+}
+
 // hookEventHandle handles the received line event.
 func (h *lineHandler) hookEventHandle(ctx context.Context, ac *account.Account, e *linebot.Event) (*HookResult, error) {
+	if e == nil {
+		return nil, fmt.Errorf("event is empty")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "hookEventHandle",
 		"customer_id": ac,
@@ -136,6 +156,10 @@ func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Acco
 	})
 	log.WithField("event", e).Debugf("Handleing the Line message.")
 
+	if e.Message == nil {
+		return nil, fmt.Errorf("event has no supported message")
+	}
+
 	// get reference id
 	dialogID := h.getDialogID(e)
 	if dialogID == "" {
@@ -198,6 +222,9 @@ func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Acco
 
 // getDialogID returns a reference id
 func (h *lineHandler) getDialogID(e *linebot.Event) string {
+	if e.Source == nil {
+		return ""
+	}
 
 	switch e.Source.Type {
 	case linebot.EventSourceTypeUser:
@@ -227,7 +254,7 @@ func (h *lineHandler) GetPeer(ctx context.Context, ac *account.Account, userID s
 
 	profile := c.GetProfile(userID)
 	if profile == nil {
-		return nil, errors.Wrapf(err, "Could not get profile")
+		return nil, fmt.Errorf("could not get profile. user_id: %s", userID)
 	}
 
 	tmp, err := profile.Do()
