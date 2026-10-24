@@ -174,6 +174,20 @@ func Test_ConferenceSetGet(t *testing.T) {
 	if !reflect.DeepEqual(res, cf) {
 		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", cf, res)
 	}
+
+	// setting the same id again replaces the cached value
+	updated := newTestConference()
+	updated.Status = conference.StatusTerminating
+	if err := h.ConferenceSet(ctx, updated); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	res, err = h.ConferenceGet(ctx, cf.ID)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if !reflect.DeepEqual(res, updated) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", updated, res)
+	}
 }
 
 func Test_ConferenceSet_marshalError(t *testing.T) {
@@ -223,6 +237,20 @@ func Test_ConferencecallSetGet(t *testing.T) {
 	}
 	if !reflect.DeepEqual(res, cc) {
 		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", cc, res)
+	}
+
+	// setting the same id again replaces the cached value
+	updated := newTestConferencecall()
+	updated.Status = conferencecall.StatusLeaved
+	if err := h.ConferencecallSet(ctx, updated); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	res, err = h.ConferencecallGet(ctx, cc.ID)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if !reflect.DeepEqual(res, updated) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", updated, res)
 	}
 }
 
