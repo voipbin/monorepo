@@ -37,10 +37,14 @@ New test files only, inside bin-number-manager:
 3. `pkg/numberhandlertwilio/*_test.go`: the three unimplemented methods must return an error.
 4. If the total is still under 61%, add error-path cases to `numberhandler` and `listenhandler` found by `go tool cover -func`.
 
+Rules for the new tests: `Test_` function names, table driven, gomock controller named `mc`, no testify, no `t.Parallel()`, fake tokens and reserved numbers (`+15550100xxx`) only.
+The fake transport is installed by one helper that restores the original with `t.Cleanup`; fake responses always have a non-nil `Body`. The `io.ReadAll` failure (body `Read` error) and the `IDUpdate` marshal failure (`chan` value) are covered. The `http.NewRequestWithContext` errors (hardcoded URLs) and the `NumberOrdersPost` marshal error are unreachable without a product code change and are not targeted. The multi-item success case of `TelnyxPhoneNumbersGet` asserts that each element is a distinct value. Tests do not touch the global prometheus registry.
+
 Estimated gain: about 270 + 70 + 25 = 365 statements, giving about 64%.
 
 ## 3. Verify
 
+- Run the 5 verification steps of CLAUDE.md (`go mod tidy`, `go mod vendor`, `go generate ./...`, `go test ./...`, `golangci-lint run -v --timeout 5m`), `go test -race -count=2 ./...`, and `git fetch origin main` then `scripts/check-test-conventions.sh`. `go.mod`/`go.sum` must not change.
 - Hand-written total >= 61.0% by the same method; all existing tests pass; `golangci-lint run` passes; `scripts/check-test-conventions.sh` passes.
 - Mutation sample: change a status check, a clamp bound and an error wrap in a scratch copy and confirm the new tests fail.
 - `git diff --stat origin/main...HEAD` shows only files under bin-number-manager/.
