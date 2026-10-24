@@ -19,7 +19,7 @@ Hand-written coverage excludes `gens/`, `mock_*.go` and files whose header has `
 | other 5 packages (internal/config, models/availablenumber, models/number, requestexternal/models/telnyx, subscribehandler) | 180/208 | 86.5 |
 | total (hand-written) | 1099/2282 | 48.2 |
 
-Raw total including generated code and mocks is 42.1%. 60% needs 1370 covered statements, 61% needs 1393 (+294). The 61% target only leaves a margin for CI rounding differences. The five other packages are already near or above 60%, so they are not targets.
+Raw total including generated code and mocks is 42.1%. 60% needs 1370 covered statements, 61% needs 1393 (+294). The 61% target only leaves a margin for CI rounding differences. The five other packages are 86.5% in total (`models/number` alone is 52.6%), so they are not targets. Percentages in the table exclude generated code and mocks, so they differ from the per-package `go test` output.
 
 Testability findings:
 - `cmd/*/main.go`: process wiring (DB, Redis, RabbitMQ, cobra). Not unit-testable without external services. Excluded from the plan.
@@ -32,6 +32,7 @@ Testability findings:
 
 New test files only, inside bin-number-manager:
 1. `pkg/requestexternal/telnyx_test.go`: for each of the 7 methods, success (request method, path, query, auth header and body are asserted by the fake transport), non-200 status, transport error, malformed JSON, and the input guards (empty country code, limit clamp to 10, size default 10, empty phone number list).
+   Mutation targets: status check (`!= 200`), limit clamp, empty-result guard, Authorization header.
 2. `pkg/numberhandlertelnyx/*_test.go`: purchase (order error, lookup error, success conversion), release and update tags (error propagation, token and provider reference id passed), available numbers (error, conversion).
 3. `pkg/numberhandlertwilio/*_test.go`: the three unimplemented methods must return an error.
 4. If the total is still under 61%, add error-path cases to `numberhandler` and `listenhandler` found by `go tool cover -func`.
