@@ -5,7 +5,7 @@
 Verdict: partially valid.
 
 - Valid: measured on origin/main 99b59c386 with `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` the hand-written total is 65.36% (10276 statements, 3560 uncovered), raw total 46.55%, 0 test failures. The numbers in the ticket reproduce.
-- Incorrect premise: the ticket says `cmd/` main is part of the hand-written total. bin-common-handler is a library and has no `cmd/` directory, so no `main` needs to be compensated for.
+- Incorrect premise: the card states that the `main` under `cmd/` is included in the hand-written total. bin-common-handler is a library and has no `cmd/` directory, so no `main` needs to be compensated for.
 - Not a duplicate: no open or merged PR matches VOIP-1651 for this service (`gh pr list --state all --search VOIP-1651` is empty). The recent history of the path is lint cleanup (VOIP-1642) and feature wrappers, none of which add coverage.
 - Scope check: only `_test.go` files (and go.mod/go.sum if a test-only module is needed) are changed. No product code is touched.
 
@@ -37,10 +37,10 @@ Where the gap is:
 
 Hard to test or lower priority:
 
-- `pkg/rabbitmqhandler` (272 uncovered): the package already has `amqpChannel` and `amqpConnection` interfaces with gomock mocks and existing tests, so most of publish, queue declare, consume paths can be exercised with channel mocks and no network. Only the real connection functions (`connect`, `Connect`) need a live broker and are excluded. It is a secondary candidate if the requesthandler files are not enough.
+- `pkg/rabbitmqhandler` (272 uncovered): the package has internal `amqpChannel` and `amqpConnection` interfaces, hand-written test doubles (`mockChannel`, `mockConnection` in `main_test.go`) and an injectable `amqpDial` variable, so publish, queue declare and consume paths can be exercised without a network. Only a successful dial against a real broker is out of reach. It is a secondary candidate if the requesthandler files are not enough.
 - `pkg/migrationhandler/migrator.go` (66 uncovered): `New` opens a real MySQL connection, so it is excluded; the thin wrappers after `New` are not worth a mock without product code changes.
-- `pkg/sockhandler` (3 statements): constructor wrapper around the broker, excluded.
+- `pkg/sockhandler` (3 statements): `NewSockHandler` only selects a type and `NewRabbit` does not dial, so both branches (RabbitMQ type and the default nil result) are testable at almost no cost and are included.
 
-Arithmetic feasibility: the fully uncovered requesthandler files alone provide 1364 coverable statements (top 17 about 1250), so reaching 71% (+580) needs under half of them. The goal is achievable without the hard-to-test packages.
+Arithmetic feasibility: the 24 fully uncovered requesthandler files hold 1364 statements (top 17: about 1250). Covering the success and error-propagation paths of each wrapper reaches roughly 90% of them (about 1230), which is well above the +580 needed (the top 17 alone at 46% would suffice). Partially covered files give extra margin if needed: customer_customer (128 uncovered), billing_accounts (86), call_calls (74), agent_agents (67), then databasehandler/mapping.go (102) and rabbitmqhandler.
 
 Overlap with VOIP-1416 (generic raise of packages below 80%): requesthandler, rabbitmqhandler, databasehandler, migrationhandler are below 80% and overlap; this PR does not absorb VOIP-1416.
