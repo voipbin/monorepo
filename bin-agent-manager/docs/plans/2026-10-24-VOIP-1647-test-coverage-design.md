@@ -11,7 +11,7 @@
 - 패키지별 현재값 (covered/total, %): cmd/agent-control 23/646 (3.6), cmd/agent-manager 1/103 (1.0), internal/config 57/65 (87.7), models/agent 35/36 (97.2), pkg/agenthandler 595/750 (79.3), pkg/cachehandler 0/61 (0), pkg/dbhandler 477/637 (74.9), pkg/listenhandler 473/601 (78.7), pkg/metricshandler 0/1, pkg/subscribehandler 76/92 (82.6).
 - 미커버의 대부분은 cmd/ 두 패키지(약 700 statement)입니다. cmd/agent-manager 의 main 과 runDaemon 계열은 RabbitMQ, Redis, DB 연결을 직접 만들어 단위 테스트가 어렵습니다. 제품 코드 변경 금지이므로 제외합니다.
 - 달성 가능성: cmd/agent-control 에서 네트워크 없이 도달 가능한 코드만으로 약 +200 statement 가 확보되어 산술적으로 가능합니다(아래 3절).
-- 최근 커밋/PR: 이 서비스에 대한 진행 중 PR 이 없음을 `gh pr list` 로 확인합니다. 제품 결함은 이 작업에서 고치지 않습니다.
+- 최근 커밋/PR: 이 서비스에 대한 진행 중 PR 이 없음을 `gh pr list` 로 확인합니다. 범위 밖 사항은 이 작업에서 고치지 않습니다.
 
 ## 2. 테스트하기 어려운 구조 (확인 결과)
 
@@ -38,7 +38,7 @@
 3. pkg/cachehandler/handler_test.go: 테스트 파일 안의 loopback 최소 RESP 서버(PING/GET/SET/DEL, 받은 명령과 인자를 기록).
    - AgentSet 은 `EX 86400`, PasswordResetTokenSet 은 `password_reset:` 접두와 전달한 ttl, Del 은 정수 응답.
    - 서버는 map 저장소로 동작: Delete 후 Get 이 `redis.Nil`(AgentDel, PasswordResetTokenDelete 모두), DEL 인자에 `password_reset:`+token 이 오는지 단언, 미존재 토큰의 PasswordResetTokenGet 은 `redis.Nil` 반환.
-   - AgentGet 왕복, 서로 다른 두 ID 는 서로 다른 키(키 문자열 형식 자체는 단언하지 않음), 미존재 GET 은 `redis.Nil`, 손상 JSON 은 오류와 nil 반환, PasswordResetTokenGet 정상과 잘못된 UUID 오류, Delete.
+   - AgentGet 왕복, 서로 다른 두 ID 는 서로 다른 키, 미존재 GET 은 `redis.Nil`, 손상 JSON 은 오류와 nil 반환, PasswordResetTokenGet 정상과 잘못된 UUID 오류, Delete.
    - 서버가 `-ERR` 를 돌려줄 때 AgentSet/Get/Del 과 PasswordResetToken Set/Get/Delete 의 오류 전파, PasswordResetTokenDelete 정상. PasswordResetTokenSet 의 ttl 은 24h 와 다른 값(15분, `ex 900`)을 씁니다.
    - RESP 서버 위생: 연결마다 고루틴, 기록은 mutex, 명령 이름은 대소문자 무시 비교, Cleanup 에서 client 와 listener Close.
    - Connect: RESP 서버의 PING 이 +PONG 이면 성공, `-ERR` 이면 실패(포트 경쟁과 재시도 지연 없음). 이 케이스는 `NewHandler(서버 주소, 비밀번호, DB)` 경로로 만들어 NewHandler 도 함께 커버. 서버는 `127.0.0.1:0` 으로 열며 외부 접속은 없고 비밀번호는 빈 문자열(AUTH 불필요). Set/Get/Del 오류 케이스는 `&handler{Cache: redis.NewClient(&redis.Options{Addr:.., MaxRetries:-1})}` 로 구성.
@@ -50,7 +50,7 @@
 
 ## 4. 범위와 위험
 
-- 변경 파일은 bin-agent-manager 의 `*_test.go` 와 이 문서뿐입니다. 제품 코드 변경 없음. 테스트 중 발견한 결함은 수정하지 않고 PR 본문에 적습니다.
+- 변경 파일은 bin-agent-manager 의 `*_test.go` 와 이 문서뿐입니다. 제품 코드 변경 없음. 테스트 중 범위 밖 발견 사항은 수정하지 않습니다.
 - 모든 run* 케이스는 검증 실패 입력만 사용하고(통과 입력은 initHandler 가 실제 DB/Redis 에 접속), 오류가 `invalid ...` 래핑으로 시작하며 `failed to initialize handlers` 가 아님을 단언합니다. runUpdateStatus 의 status 는 빈 값만 씁니다("foo" 는 검증을 통과해 접속으로 흐름).
 - viper 전역과 AutomaticEnv(환경변수 USERNAME 등)에 대비해 각 run* 테스트 시작과 Cleanup 에서 `viper.Reset()` 을 호출합니다. config.Bootstrap 은 logrus 전역과 환경 바인딩을 건드리므로 initCommand 는 한 테스트에서만 호출합니다.
 - stdout 캡처는 짧은 출력(64K 미만)만 대상으로 하고 `os.Stdout` 교체를 `t.Cleanup` 으로 복구하며 t.Parallel 과 섞지 않습니다.
@@ -60,7 +60,3 @@
 - initCommand 테스트의 Cleanup 에서도 `viper.Reset()` 을 호출합니다.
 - 대상 제외: runNormalizeAddresses(접속 전 검증이 없고 재시도, 초과 집계, 충돌 게이트가 접속 뒤에 있어 미검증 잔여 위험으로 PR 본문에 기록), PersistentPreRunE, processEventRun(고루틴), Login(메트릭 읽기 불가), cmd/agent-manager.
 - 수치 기준은 수기 합계(gens, mock, DO NOT EDIT 제외)이며 원본 기준 60% 는 별도로 +278 statement 가 필요합니다.
-
-## 5. 제품 코드에서 관찰한 사항 (수정하지 않고 보고)
-
-- `pkg/cachehandler/handler.go` 의 `fmt.Sprintf("agent:agent:%d", id)` 는 uuid.UUID 에 맞지 않는 verb 라서 실제 캐시 키가 `agent:agent:%!d(uuid.UUID=<값>)` 형태의 fmt 오류 문자열이 됩니다(왕복과 ID별 키 구분은 정상이며 go vet printf 대상일 수 있음, 직접 실행으로 확인). 키 형식은 단언하지 않습니다.
