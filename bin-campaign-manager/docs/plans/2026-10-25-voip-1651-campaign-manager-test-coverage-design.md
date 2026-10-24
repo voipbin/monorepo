@@ -22,7 +22,7 @@
 | 구분 | 파일 | 대상 분기 | 예상 statement |
 |---|---|---|---|
 | 확정 | campaignhandler/execute.go | Execute: 캠페인 조회 실패, 상태 not run, outplan 조회 실패, 대상 조회 실패, 대상 없음 + end handle stop, 대상 없음 + 계속(5000), 발신 불가 + 재예약 실패(5000), 재시도 간격 미도래(5000), 목적지 없음, 실행 오류, 후속 execute(500) 실패. isDialable 의 에이전트 조회 오류와 dialing 조회 오류와 용량 부족 분기(QueueV1QueueGetAgents 와 ListByCampaignIDAndStatus mock 필요), getTarget 오류 분기 | 약 60 |
-| 확정 | campaignhandler/execute.go | executeCall 전체(성공, campaigncall 생성 실패, call 생성 실패 시 Done(ResultFail)), Execute 의 TypeCall 경로, executeFlow 의 오류 분기와 Done(ResultFail) 호출 | 약 38 |
+| 확정 | campaignhandler/execute.go | executeCall 전체(성공, campaigncall 생성 실패, call 생성 실패 시 Done(ResultFail)), Execute 의 TypeCall 경로, executeFlow 의 activeflow 생성 실패와 실행 실패 분기와 Done(ResultFail) 호출 | 약 38 |
 | 확정 | campaignhandler/campaign.go | Get 의 NotFound 변환(코드 CAMPAIGN_NOT_FOUND)과 기타 오류 전달, Create 오류 경로, Delete 오류 경로, UpdateBasicInfo 와 UpdateNextCampaignID 와 UpdateServiceLevel 의 단계별 오류, UpdateResourceInfo 와 UpdateActions 의 단계별 오류, createFlowActions 의 queue 추가 분기, updateReferencedResources 오류 | 약 70 |
 | 확정 | campaignhandler/campaign.go | validateResources 와 isValidOutdialID, isValidOutplanID, isValidQueueID, isValidNextCampaignID 의 조회 오류, 고객 불일치, 삭제됨, 타 캠페인 사용 중(outdial) 거부 | 약 30 |
 | 확정 | campaignhandler/status_stop.go, status_run.go | UpdateStatus 의 unsupported 상태 거부와 stop 위임, campaignStopping 과 campaignStopNow 와 isStoppable 의 오류 분기, campaignRun 의 오류 경로 | 약 35 |
@@ -36,7 +36,7 @@
 
 ### 2.2 Execute 오류 분기의 mock 방침
 
-Execute 의 모든 오류 분기는 `updateExecuteStop` 을 호출한다. 이 체인(`db.CampaignUpdateExecute`, `campaignStop`, `isStoppable` 의 `h.Get` 과 `ListOngoingByCampaignID`, `campaignStopNow` 또는 `campaignStopping` 의 `CampaignGet` 과 `CampaignUpdateStatus` 과 `PublishWebhookEvent`)의 mock 기대는 테스트 파일 안의 헬퍼로 두되, 분기마다 단순화를 위해 `CampaignUpdateExecute` 가 오류를 반환하는 경우(체인 조기 종료)와 정지 체인 전체가 호출되는 경우를 각각 한 개 이상 포함한다. 정지 체인에서 `db.CampaignGet` 은 한 오류 분기에서 최대 4회(Execute, isStoppable, campaignStopNow, 갱신 후 조회) 호출되고 isStoppable 은 캠페인의 Execute 가 ExecuteStop 인 갈래에서만 `util.TimeGetCurTime()` 과 `ListOngoingByCampaignID` 를 호출하므로 이 mock 은 그 갈래에서만 둔다. campaignStopNow 와 campaignStopping 은 상태가 이미 stop(또는 stopping)이면 상태 갱신 없이 조기 반환하므로, 갱신 분기를 타려는 테스트는 캠페인 상태를 stop 이 아닌 값(예: run)으로 잡는다. isStoppable 이 true 가 되려면 조회된 캠페인의 Execute 가 ExecuteStop 이어야 하며 campaignStopNow 갈래와 아니면 campaignStopping 갈래를 모두 쓴다. Execute 의 첫 Get 이 성공한 뒤 정지 체인의 Get 이 실패하는 분기에서는 Get 이 최대 3회(Execute, isStoppable, campaignStopping) 호출되며 실패하도록 Times 와 gomock.InOrder 로 호출 횟수와 순서를 고정한다. Execute 는 반환값이 없으므로 관찰 가능한 결과는 mock 호출 시퀀스뿐이며, 분기마다 구별되는 호출 시퀀스(예: 대상 없음 + 계속은 지연 5000 의 CampaignV1CampaignExecute 한 번, 정상 종료는 지연 500)로 검증한다. "후속 mock 호출 없음" 은 오류 분기에서 정지 체인 외의 후속 호출(발신, campaigncall 생성)에 EXPECT 를 두지 않는 의미로만 사용한다.
+Execute 의 모든 오류 분기는 `updateExecuteStop` 을 호출한다. 이 체인(`db.CampaignUpdateExecute`, `campaignStop`, `isStoppable` 의 `h.Get` 과 `ListOngoingByCampaignID`, `campaignStopNow` 또는 `campaignStopping` 의 `CampaignGet` 과 `CampaignUpdateStatus` 과 `PublishWebhookEvent`)의 mock 기대는 테스트 파일 안의 헬퍼로 두되, 분기마다 단순화를 위해 `CampaignUpdateExecute` 가 오류를 반환하는 경우(체인 조기 종료)와 정지 체인 전체가 호출되는 경우를 각각 한 개 이상 포함한다. 정지 체인에서 `db.CampaignGet` 은 한 오류 분기에서 최대 4회(Execute, isStoppable, campaignStopNow, 갱신 후 조회) 호출되고 isStoppable 은 캠페인의 Execute 가 ExecuteStop 인 갈래에서만 `util.TimeGetCurTime()` 과 `ListOngoingByCampaignID` 를 호출하므로 이 mock 은 그 갈래에서만 둔다. campaignStopNow 는 상태가 이미 stop 이면, campaignStopping 은 stop 또는 stopping 이면 상태 갱신 없이 조기 반환하므로, 갱신 분기를 타려는 테스트는 캠페인 상태를 stop 이 아닌 값(예: run)으로 잡는다. isStoppable 이 true 가 되려면 조회된 캠페인의 Execute 가 ExecuteStop 이어야 하며 campaignStopNow 갈래와 아니면 campaignStopping 갈래를 모두 쓴다. Execute 의 첫 Get 이 성공한 뒤 정지 체인의 Get 이 실패하는 분기에서는 Get 이 최대 3회(Execute, isStoppable, campaignStopping) 호출되며 실패하도록 Times 와 gomock.InOrder 로 호출 횟수와 순서를 고정한다. Execute 는 반환값이 없으므로 관찰 가능한 결과는 mock 호출 시퀀스뿐이며, 분기마다 구별되는 호출 시퀀스(예: 대상 없음 + 계속은 지연 5000 의 CampaignV1CampaignExecute 한 번, 정상 종료는 지연 500)로 검증한다. "후속 mock 호출 없음" 은 오류 분기에서 정지 체인 외의 후속 호출(발신, campaigncall 생성)에 EXPECT 를 두지 않는 의미로만 사용한다.
 
 ### 2.3 verify 항목
 
@@ -64,7 +64,7 @@ Execute 의 모든 오류 분기는 `updateExecuteStop` 을 호출한다. 이 �
 13. isDialable 용량 경계 `<=` 를 `<` 로 -> 용량 경계 테스트(동일 값 케이스 포함).
 14. Execute 의 각 updateExecuteStop 호출 제거(조회 실패, outplan 조회 실패, 대상 조회 실패, 목적지 없음, 후속 execute 실패 사이트별), isDialable 과 isDialableTarget 의 `!` 반전, TypeCall 과 TypeFlow switch 교체 -> 해당 분기 테스트.
 15. isDialable 의 에이전트 조회 오류와 dialing 조회 오류의 `return false` 를 `true` 로 -> 해당 오류 테스트.
-16. Get 의 기타 오류 전달(원본 오류 errors.Is), createFlowActions 의 queue 분기, updateReferencedResources 오류, Delete 의 flow 삭제 실패 분기 라벨 변경, UpdateStatus 의 stop 위임 제거 -> 해당 테스트.
+16. Get 의 기타 오류 전달(원본 오류 errors.Is), createFlowActions 의 queue 분기, updateReferencedResources 오류, UpdateStatus 의 stop 위임 제거 -> 해당 테스트.
 17. campaigncallhandler 의 Done 과 Progressing 오류 전파, GetByReferenceID 와 GetByActiveflowID 오류 전달 -> 해당 테스트.
 조건부 행(dbhandler, listenhandler)을 구현하면 각 행에 최소 1개의 변이 표본을 추가한다.
 각 변이는 scratch 복사본에서만 적용하고 결과를 카드 코멘트에 기록한다.
