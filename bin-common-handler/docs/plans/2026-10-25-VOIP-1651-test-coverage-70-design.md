@@ -27,7 +27,7 @@ Hand-written baseline (generated code, `mock_*.go`, `gens/` and `Code generated 
 | models/errors | 95.8 | 48 | 2 |
 | total | 65.36 | 10276 | 3560 |
 
-Needed: 71% means 7296 covered statements, i.e. about +580 over the 6716 covered today.
+The acceptance floor is 70% (+478 statements); 71% is the recommended margin for CI rounding. The numbers were reproduced again at the plan commit (only a docs file differs from 99b59c386). Needed: 71% means 7296 covered statements, i.e. about +580 over the 6716 covered today.
 
 Where the gap is:
 
@@ -41,6 +41,6 @@ Hard to test or lower priority:
 - `pkg/migrationhandler/migrator.go` (66 uncovered): `New` opens a real MySQL connection, so it is excluded; the thin wrappers after `New` are not worth a mock without product code changes.
 - `pkg/sockhandler` (3 statements): `NewSockHandler` only selects a type and `NewRabbit` does not dial, so both branches (RabbitMQ type and the default nil result) are testable at almost no cost and are included.
 
-Arithmetic feasibility: the 24 fully uncovered requesthandler files hold 1364 statements (top 17: about 1250). Covering the success and error-propagation paths of each wrapper reaches roughly 90% of them (about 1230), which is well above the +580 needed (the top 17 alone at 46% would suffice). Partially covered files give extra margin if needed: customer_customer (128 uncovered), billing_accounts (86), call_calls (74), agent_agents (67), then databasehandler/mapping.go (102) and rabbitmqhandler.
+Arithmetic feasibility: the 24 fully uncovered requesthandler files hold 1364 statements (top 17: about 1250). Covering the success and error-propagation paths of each wrapper reaches roughly 90% of them (about 1230), which is well above the +580 needed (the top 17 alone would need about 46%, which is borderline, so the full set and the margin files below are used). Partially covered files give extra margin if needed: customer_customer (128 uncovered), billing_accounts (86), call_calls (74), agent_agents (67), then databasehandler/mapping.go (102) and rabbitmqhandler.
 
 Overlap with VOIP-1416 (generic raise of packages below 80%): requesthandler, rabbitmqhandler, databasehandler, migrationhandler are below 80% and overlap; this PR does not absorb VOIP-1416.
