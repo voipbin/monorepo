@@ -26,7 +26,7 @@ Testability findings:
 - `pkg/requestexternal/telnyx.go`: URLs are hardcoded, but the HTTP client is the package variable `telnyxHTTPClient`. An in-package test can replace its `Transport` with a fake `http.RoundTripper`. No network access and no product code change are needed.
 - `numberhandlertelnyx`: depends on the `RequestExternal` interface which has a gomock mock. Directly testable.
 - `numberhandlertwilio`: all three methods (`GetAvailableNumbers`, `CreateNumber`, `ReleaseNumber`) only log and return an `unimplemented` error. They do not call `RequestExternal`, so no mock is needed.
-- `cachehandler`: uses `*redis.Client`. `miniredis` is not in this module's go.mod; a fake via go-redis `Options.Dialer` is possible but is not planned because the other packages already give enough margin. It is the first fallback if the total is under 61%.
+- `cachehandler`: uses `*redis.Client`. `miniredis` is not in this module's go.mod; a fake via go-redis `Options.Dialer` is possible but is not planned because the other packages already give enough margin. It is the last resort, after the fallback in section 2.
 
 ## 2. Plan
 
