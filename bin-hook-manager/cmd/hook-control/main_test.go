@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -200,5 +201,49 @@ func Test_initCommand(t *testing.T) {
 	}
 	if config.Get().RabbitMQAddress != "amqp://rabbit-test" {
 		t.Errorf("config was not loaded from the flag. got: %s", config.Get().RabbitMQAddress)
+	}
+}
+
+func Test_runSend_validationFailsBeforeConnect(t *testing.T) {
+	tests := []struct {
+		name string
+
+		uri  string
+		data string
+
+		expectErr string
+	}{
+		{name: "uri is missing", uri: "", data: "", expectErr: "uri is required"},
+		{name: "payload is missing", uri: "example.test", data: "", expectErr: "failed to get payload data: either --data or --file is required"},
+	}
+
+	runners := map[string]func(*cobra.Command, []string) error{
+		"email":        runSendEmail,
+		"message":      runSendMessage,
+		"conversation": runSendConversation,
+	}
+
+	for runnerName, run := range runners {
+		for _, tt := range tests {
+			t.Run(runnerName+" "+tt.name, func(t *testing.T) {
+				resetViper(t)
+				viper.Set("uri", tt.uri)
+				viper.Set("data", tt.data)
+
+				done := make(chan error, 1)
+				go func() {
+					done <- run(&cobra.Command{}, nil)
+				}()
+
+				select {
+				case err := <-done:
+					if err == nil || err.Error() != tt.expectErr {
+						t.Errorf("Wrong match. expect: %s, got: %v", tt.expectErr, err)
+					}
+				case <-time.After(3 * time.Second):
+					t.Fatalf("the command did not return before connecting")
+				}
+			})
+		}
 	}
 }
