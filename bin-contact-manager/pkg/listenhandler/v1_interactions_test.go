@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
@@ -18,6 +17,7 @@ import (
 	"monorepo/bin-contact-manager/pkg/addresshandler"
 	"monorepo/bin-contact-manager/pkg/casehandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
+	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
 
 func newTestListenHandlerAll(mc *gomock.Controller) (*listenHandler, *contacthandler.MockContactHandler, *addresshandler.MockAddressHandler, *casehandler.MockCaseHandler) {
@@ -162,19 +162,30 @@ func Test_processV1InteractionsGet_DownstreamError(t *testing.T) {
 	contactID := uuid.FromStringOrNil("11111111-0053-0053-0053-000000000002")
 	body := []byte(fmt.Sprintf(`{"customer_id":"%s"}`, customerID))
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-	h, mockContact, _, _ := newTestListenHandlerAll(mc)
-
-	mockContact.EXPECT().InteractionList(gomock.Any(), customerID, uint64(0), "", "", "", contactID, uuid.Nil).Return(nil, "", fmt.Errorf("backend unavailable"))
-
-	res, err := h.processV1InteractionsGet(context.Background(), &sock.Request{URI: "/v1/interactions?contact_id=" + contactID.String(), Method: sock.RequestMethodGet, Data: body})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	tests := []struct {
+		name       string
+		err        error
+		expectCode int
+	}{
+		{"unclassified error is a 500", fmt.Errorf("backend unavailable"), 500},
+		{"not found is a 404", dbhandler.ErrNotFound, 404},
 	}
 
-	// an unclassified error maps through errorResponse
-	if expect := errorResponse(fmt.Errorf("backend unavailable")); !reflect.DeepEqual(res, expect) {
-		t.Errorf("response = %+v, want %+v", res, expect)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+			h, mockContact, _, _ := newTestListenHandlerAll(mc)
+
+			mockContact.EXPECT().InteractionList(gomock.Any(), customerID, uint64(0), "", "", "", contactID, uuid.Nil).Return(nil, "", tt.err)
+
+			res, err := h.processV1InteractionsGet(context.Background(), &sock.Request{URI: "/v1/interactions?contact_id=" + contactID.String(), Method: sock.RequestMethodGet, Data: body})
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if res.StatusCode != tt.expectCode {
+				t.Errorf("StatusCode = %d, want %d", res.StatusCode, tt.expectCode)
+			}
+		})
 	}
 }

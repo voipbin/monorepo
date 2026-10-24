@@ -159,12 +159,12 @@ func Test_processV1ContactAddressesPost_Create(t *testing.T) {
 		h, mockContact, _, _ := newTestListenHandlerAll(mc)
 
 		expectAddr := &contact.Address{
-			Address:   commonaddress.Address{Type: commonaddress.TypeEmail, Target: "user@example.com", Name: "work", Detail: "desk"},
+			Address:   commonaddress.Address{Type: commonaddress.TypeEmail, Target: "user-a@example.test", Name: "work", Detail: "desk"},
 			IsPrimary: true,
 		}
 		mockContact.EXPECT().AddAddress(gomock.Any(), contactID, expectAddr).Return(&contact.Address{ID: addressID}, nil)
 
-		body := fmt.Sprintf(`{"contact_id":"%s","type":"email","target":"user@example.com","name":"work","detail":"desk","is_primary":true}`, contactID)
+		body := fmt.Sprintf(`{"contact_id":"%s","type":"email","target":"user-a@example.test","name":"work","detail":"desk","is_primary":true}`, contactID)
 		res, err := h.processV1ContactAddressesPost(context.Background(), &sock.Request{URI: "/v1/contact_addresses", Data: []byte(body)})
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
