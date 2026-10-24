@@ -13,9 +13,9 @@
 | pkg/customerdomainhandler | 162 | 88.3% | 오류 경로 |
 | internal/config | 84 | 76.2% | Bootstrap 은 cobra 전역 상태에 묶임 |
 
-파일별 미커버 상위(statement): cmd/registrar-control/main.go 564, cmd/registrar-manager/main.go 148, domain_migrate.go 123, dbhandler/extension.go 44, trunks.go 34, customerdomains.go 25, sipauths.go 14, ast_contact.go 10, listenhandler/main.go 22(Run/NewListenHandler 약 15, processRequest 오류 매핑 분기 약 7), v1_trunks.go 18, v1_extensions.go 17, customerdomainhandler/customerdomain.go 10. main.go 두 개(712 statement)는 분모에 남으므로 합계 71% 에는 나머지 패키지에서 도달 가능한 분기를 대부분 채워야 한다.
+파일별 미커버 상위(statement): cmd/registrar-control/main.go 564, cmd/registrar-manager/main.go 148, domain_migrate.go 123, dbhandler/extension.go 44, trunks.go 34, customerdomains.go 25, sipauths.go 14, ast_contact.go 10, listenhandler/main.go 22(Run/NewListenHandler 약 15, processRequest 오류 매핑 분기 약 7), v1_trunks.go 18, v1_extensions.go 17, customerdomainhandler/customerdomain.go 10, internal/config/main.go 20(Bootstrap 은 cobra 전역 상태에 묶여 제외). main.go 두 개(712 statement)는 분모에 남으므로 합계 71% 에는 나머지 패키지에서 도달 가능한 분기를 대부분 채워야 한다.
 
-도달 불가(제품 코드 변경 없이는 단위 테스트로 못 닿음, 목표에서 제외): listenhandler v1_*.go 의 응답 `json.Marshal` 실패 분기(json 태그가 붙은 구체 도메인 타입이라 오류 주입 불가, 약 34), customerdomainhandler 의 라벨 생성 오류 분기(`generateLabel` 이 패키지 함수라 주입 불가), main.go 두 개의 cobra/데몬 기동 경로.
+도달 불가(제품 코드 변경 없이는 단위 테스트로 못 닿음, 목표에서 제외): listenhandler v1_*.go 의 응답 `json.Marshal` 실패 분기(json 태그가 붙은 구체 도메인 타입이라 오류 주입 불가, 약 32. 예외로 v1_contacts.go 의 응답은 float64 필드가 있어 NaN 으로 도달 가능하므로 contacts 테스트 1건 추가), customerdomainhandler 의 라벨 생성 오류 분기(`generateLabel` 이 패키지 함수라 주입 불가), main.go 두 개의 cobra/데몬 기동 경로.
 
 구조 분석: dbhandler 는 `handler{db, cache, utilHandler}` 를 테스트에서 직접 구성할 수 있고 sqlmock 과 MockCacheHandler 가 이미 쓰이므로 제품 코드 변경 없이 쿼리 실패, 스캔 실패, 캐시 실패 경로를 검증할 수 있다. domain_migrate 의 run* 함수는 입력 검증이 DB 연결 생성보다 앞서므로 연결 없이 검증 오류를 확인할 수 있다. 연결 생성 이후와 main.go 는 제외한다.
 
@@ -30,6 +30,8 @@
 예상 증분(도달 불가 분기 제외): dbhandler 약 70(미커버 148 중 file 별 상위 extension 44, trunks 34, customerdomains 25, sipauths 14 와 ast_* 약 30 의 오류 분기), listenhandler 약 20, domain_migrate 약 40(연결 이후 분기 제외로 낙관적일 수 있어 중간 측정으로 확인하고 부족하면 dbhandler 를 더 채움), 기타 약 20, 합계 약 150 statement 로 수기 합계 약 73%. 70% 통과선은 +37, 권장 71% 는 +74 이며 목표는 71% 이상.
 
 ## 3. verify 항목
+
+- 예비 풀(증분 부족 시): cmd/registrar-control/main.go 의 cmdExtension*/cmdTrunk* 플래그 정의 생성자와 resolveUUID, resolveString, printJSON 은 연결 없이 닿으며 약 100 statement 로 추정. listenhandler 도달 가능 잔여는 약 35 로 추정되어 본문 20 은 보수적.
 
 - 구현 주의: domain_migrate run* 테스트는 viper 전역 상태를 쓰므로 테스트마다 키를 설정하고 `t.Cleanup` 으로 되돌려 격리한다. 중간 측정(패키지 묶음마다)으로 71% 도달을 확인한다.
 
