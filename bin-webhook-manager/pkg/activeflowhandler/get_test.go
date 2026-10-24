@@ -3,6 +3,7 @@ package activeflowhandler
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -330,5 +331,247 @@ func Test_Get_singleflight(t *testing.T) {
 		if dest == nil || dest.URI != "af.test.com" {
 			t.Errorf("Wrong match. idx: %d, expect: af.test.com, got: %v", i, dest)
 		}
+	}
+}
+
+func Test_Get_cacheReadError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := NewActiveflowHandler(mockCache, mockReq)
+
+	ctx := context.Background()
+	activeflowID := uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000001")
+	if activeflowID == uuid.Nil {
+		t.Fatalf("invalid test uuid")
+	}
+	tmUpdate := time.Date(2026, 6, 10, 2, 0, 0, 0, time.UTC)
+
+	// a cache read error is treated as a miss and the RPC fallback resolves the destination.
+	mockCache.EXPECT().ActiveflowWebhookGet(ctx, activeflowID).Return(nil, false, errors.New("cache down"))
+	mockReq.EXPECT().FlowV1ActiveflowGet(ctx, activeflowID).Return(&fmactiveflow.Activeflow{
+		Identity:      commonidentity.Identity{ID: activeflowID},
+		WebhookURI:    "af.test.com",
+		WebhookMethod: fmactiveflow.WebhookMethodPost,
+		TMUpdate:      &tmUpdate,
+	}, nil).Times(1)
+	mockCache.EXPECT().ActiveflowWebhookSet(ctx, activeflowID, &mwactiveflow.Webhook{
+		URI:    "af.test.com",
+		Method: webhook.MethodTypePOST,
+		Tm:     tmUpdate,
+	}, 24*time.Hour).Return(nil).Times(1)
+	mockCache.EXPECT().ActiveflowWebhookSetNegative(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	dest, err := h.Get(ctx, activeflowID)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if dest == nil || dest.URI != "af.test.com" || dest.Method != webhook.MethodTypePOST {
+		t.Errorf("Wrong match. expect: af.test.com/POST, got: %v", dest)
+	}
+}
+
+func Test_Get_cacheWriteErrorsIgnored(t *testing.T) {
+	tmCreate := time.Date(2026, 6, 10, 0, 0, 0, 0, time.UTC)
+	tmDelete := time.Date(2026, 6, 10, 3, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name string
+
+		activeflowID uuid.UUID
+
+		responseActiveflow *fmactiveflow.Activeflow
+		responseErr        error
+
+		expectSetPositive *mwactiveflow.Webhook
+
+		expectSetNegative bool
+		// expectNegTm nil means the current time (not found row only, checked as a range).
+		expectNegTm       *time.Time
+		expectNegTMDelete *time.Time
+		expectNegTTL      time.Duration
+
+		expectDest *Destination
+	}{
+		{
+			name:         "not found: transient negative write failure is ignored",
+			activeflowID: uuid.FromStringOrNil("b1b1b1b1-0000-0000-0000-000000000001"),
+
+			responseErr: requesthandler.ErrNotFound,
+
+			expectSetNegative: true,
+			expectNegTTL:      5 * time.Second,
+		},
+		{
+			name:         "soft-deleted: negative write failure is ignored",
+			activeflowID: uuid.FromStringOrNil("b1b1b1b1-0000-0000-0000-000000000002"),
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				WebhookURI: "af.test.com",
+				TMCreate:   &tmCreate,
+				TMDelete:   &tmDelete,
+			},
+
+			expectSetNegative: true,
+			expectNegTm:       &tmCreate,
+			expectNegTMDelete: &tmDelete,
+			expectNegTTL:      10 * time.Minute,
+		},
+		{
+			name:         "empty uri: negative write failure is ignored",
+			activeflowID: uuid.FromStringOrNil("b1b1b1b1-0000-0000-0000-000000000003"),
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				TMCreate: &tmCreate,
+			},
+
+			expectSetNegative: true,
+			expectNegTm:       &tmCreate,
+			expectNegTTL:      10 * time.Minute,
+		},
+		{
+			name:         "positive: write failure is ignored and the destination is still returned",
+			activeflowID: uuid.FromStringOrNil("b1b1b1b1-0000-0000-0000-000000000004"),
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				WebhookURI:    "af.test.com",
+				WebhookMethod: fmactiveflow.WebhookMethodPost,
+				TMCreate:      &tmCreate,
+			},
+
+			expectSetPositive: &mwactiveflow.Webhook{URI: "af.test.com", Method: webhook.MethodTypePOST, Tm: tmCreate},
+			expectDest:        &Destination{URI: "af.test.com", Method: webhook.MethodTypePOST},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			if tt.activeflowID == uuid.Nil {
+				t.Fatalf("invalid test uuid")
+			}
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := NewActiveflowHandler(mockCache, mockReq)
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().ActiveflowWebhookGet(ctx, tt.activeflowID).Return(nil, false, nil)
+			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, tt.responseErr).Times(1)
+
+			before := time.Now()
+			if tt.expectSetPositive != nil {
+				mockCache.EXPECT().ActiveflowWebhookSet(ctx, tt.activeflowID, tt.expectSetPositive, 24*time.Hour).Return(errors.New("write failed")).Times(1)
+			}
+			if tt.expectSetNegative {
+				mockCache.EXPECT().ActiveflowWebhookSetNegative(ctx, tt.activeflowID, gomock.Any(), tt.expectNegTMDelete, tt.expectNegTTL).DoAndReturn(
+					func(_ context.Context, _ uuid.UUID, tm time.Time, _ *time.Time, _ time.Duration) error {
+						if tt.expectNegTm != nil {
+							if !tm.Equal(*tt.expectNegTm) {
+								t.Errorf("Wrong match. expect tm: %v, got: %v", *tt.expectNegTm, tm)
+							}
+						} else if tm.Before(before) || tm.After(time.Now()) {
+							t.Errorf("Wrong match. expect the current time, got: %v", tm)
+						}
+						return errors.New("write failed")
+					}).Times(1)
+			}
+
+			dest, err := h.Get(ctx, tt.activeflowID)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if !reflect.DeepEqual(dest, tt.expectDest) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectDest, dest)
+			}
+		})
+	}
+}
+
+func Test_Get_fallbackTimestamp(t *testing.T) {
+	tmCreate := time.Date(2026, 6, 10, 0, 0, 0, 0, time.UTC)
+	tmUpdate := time.Date(2026, 6, 10, 5, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name string
+
+		activeflowID uuid.UUID
+
+		tmCreate *time.Time
+		tmUpdate *time.Time
+
+		// expectTm is the exact cached timestamp; nil means "the current time" (checked as a range).
+		expectTm *time.Time
+	}{
+		{
+			name:         "update wins over create",
+			activeflowID: uuid.FromStringOrNil("c1c1c1c1-0000-0000-0000-000000000001"),
+			tmCreate:     &tmCreate,
+			tmUpdate:     &tmUpdate,
+			expectTm:     &tmUpdate,
+		},
+		{
+			name:         "create is used when there is no update",
+			activeflowID: uuid.FromStringOrNil("c1c1c1c1-0000-0000-0000-000000000002"),
+			tmCreate:     &tmCreate,
+			expectTm:     &tmCreate,
+		},
+		{
+			name:         "current time is used when neither exists",
+			activeflowID: uuid.FromStringOrNil("c1c1c1c1-0000-0000-0000-000000000003"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			if tt.activeflowID == uuid.Nil {
+				t.Fatalf("invalid test uuid")
+			}
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := NewActiveflowHandler(mockCache, mockReq)
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().ActiveflowWebhookGet(ctx, tt.activeflowID).Return(nil, false, nil)
+			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.activeflowID).Return(&fmactiveflow.Activeflow{
+				WebhookURI:    "af.test.com",
+				WebhookMethod: fmactiveflow.WebhookMethodPost,
+				TMCreate:      tt.tmCreate,
+				TMUpdate:      tt.tmUpdate,
+			}, nil)
+
+			var gotTm time.Time
+			before := time.Now()
+			mockCache.EXPECT().ActiveflowWebhookSet(ctx, tt.activeflowID, gomock.Any(), gomock.Any()).DoAndReturn(
+				func(_ context.Context, _ uuid.UUID, w *mwactiveflow.Webhook, _ time.Duration) error {
+					gotTm = w.Tm
+					return nil
+				}).Times(1)
+
+			if _, err := h.Get(ctx, tt.activeflowID); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			after := time.Now()
+
+			if tt.expectTm != nil {
+				if !gotTm.Equal(*tt.expectTm) {
+					t.Errorf("Wrong match. expect: %v, got: %v", *tt.expectTm, gotTm)
+				}
+				return
+			}
+			if gotTm.Before(before) || gotTm.After(after) {
+				t.Errorf("Wrong match. expect a time between %v and %v, got: %v", before, after, gotTm)
+			}
+		})
 	}
 }

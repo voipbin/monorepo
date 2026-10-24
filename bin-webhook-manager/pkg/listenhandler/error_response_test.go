@@ -48,3 +48,18 @@ func Test_errorResponse_typedNotFoundFromBusinessHandler(t *testing.T) {
 		t.Errorf("Is should walk")
 	}
 }
+
+func Test_errorResponse_typedNilFallback(t *testing.T) {
+	// a typed nil *VoipbinError cannot be converted by ToResponse, so the mapping falls back to a plain 500.
+	var ve *cerrors.VoipbinError
+	resp := errorResponse(ve)
+	if resp == nil {
+		t.Fatalf("Wrong match. expect: response, got: nil")
+	}
+	if resp.StatusCode != http.StatusInternalServerError {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusInternalServerError, resp.StatusCode)
+	}
+	if resp.DataType == cerrors.DataTypeVoipbinError {
+		t.Errorf("Wrong match. expect a plain fallback response, got data type: %s", resp.DataType)
+	}
+}

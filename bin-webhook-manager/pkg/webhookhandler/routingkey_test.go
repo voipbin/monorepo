@@ -3,11 +3,13 @@ package webhookhandler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"reflect"
 	"sort"
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	tkparticipant "monorepo/bin-talk-manager/models/participant"
 
@@ -194,4 +196,145 @@ func TestCreateRoutingKeysForChat(t *testing.T) {
 			t.Errorf("Expected keys to contain %q, got %v", expected, keys)
 		}
 	}
+}
+
+func Test_createRoutingKeysForChat_cases(t *testing.T) {
+	customerID := uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-0000000000c1")
+	ownerID := uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-0000000000a1")
+	otherID := uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-0000000000a2")
+	chatID := uuid.FromStringOrNil("ca740000-0000-0000-0000-000000000011")
+	identityID := uuid.FromStringOrNil("ca740000-0000-0000-0000-000000000022")
+	if customerID == uuid.Nil || ownerID == uuid.Nil || otherID == uuid.Nil || chatID == uuid.Nil || identityID == uuid.Nil {
+		t.Fatalf("invalid test uuid")
+	}
+
+	tests := []struct {
+		name string
+
+		data *webhookOwnerData
+
+		// expectListChatID is the chat id the participant list is requested for; Nil means no RPC.
+		expectListChatID uuid.UUID
+		responseList     []*tkparticipant.Participant
+		responseErr      error
+
+		expect []string
+	}{
+		{
+			name:   "no chat id and no identity id returns an empty non-nil slice without RPC",
+			data:   &webhookOwnerData{Identity: commonidentity.Identity{CustomerID: customerID}},
+			expect: []string{},
+		},
+		{
+			name: "missing chat id falls back to the identity id",
+			data: &webhookOwnerData{
+				Identity: commonidentity.Identity{ID: identityID, CustomerID: customerID},
+			},
+			expectListChatID: identityID,
+			responseList:     []*tkparticipant.Participant{},
+			expect: []string{
+				"customer_id." + customerID.String() + ".talk.chat_created." + identityID.String(),
+			},
+		},
+		{
+			name: "participant list failure keeps the customer and owner keys",
+			data: &webhookOwnerData{
+				Identity: commonidentity.Identity{CustomerID: customerID},
+				Owner:    commonidentity.Owner{OwnerID: ownerID},
+				ChatID:   chatID,
+			},
+			expectListChatID: chatID,
+			responseErr:      errors.New("rpc failed"),
+			expect: []string{
+				"customer_id." + customerID.String() + ".talk.chat_created." + chatID.String(),
+				"agent_id." + ownerID.String() + ".talk.chat_created." + chatID.String(),
+			},
+		},
+		{
+			name: "owner participant is not duplicated",
+			data: &webhookOwnerData{
+				Identity: commonidentity.Identity{CustomerID: customerID},
+				Owner:    commonidentity.Owner{OwnerID: ownerID},
+				ChatID:   chatID,
+			},
+			expectListChatID: chatID,
+			responseList: []*tkparticipant.Participant{
+				{Owner: commonidentity.Owner{OwnerID: ownerID}},
+				{Owner: commonidentity.Owner{OwnerID: otherID}},
+			},
+			expect: []string{
+				"customer_id." + customerID.String() + ".talk.chat_created." + chatID.String(),
+				"agent_id." + ownerID.String() + ".talk.chat_created." + chatID.String(),
+				"agent_id." + otherID.String() + ".talk.chat_created." + chatID.String(),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &webhookHandler{reqHandler: mockReq}
+
+			ctx := context.Background()
+			if tt.expectListChatID != uuid.Nil {
+				mockReq.EXPECT().TalkV1ParticipantList(ctx, tt.expectListChatID).Return(tt.responseList, tt.responseErr).Times(1)
+			}
+
+			got := h.createRoutingKeysForChat(ctx, tt.data, "chat_created")
+			if !reflect.DeepEqual(got, tt.expect) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expect, got)
+			}
+		})
+	}
+}
+
+func Test_publishRoutingKeyedEvent_cases(t *testing.T) {
+	customerID := "a1b2c3d4-0000-0000-0000-0000000000c1"
+	ownerID := "a1b2c3d4-0000-0000-0000-0000000000a1"
+	otherID := "a1b2c3d4-0000-0000-0000-0000000000a2"
+	chatID := "ca740000-0000-0000-0000-000000000011"
+
+	t.Run("event type without an underscore publishes nothing", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		// neither mock has an expectation, so any call fails the test.
+		h := &webhookHandler{
+			reqHandler:         requesthandler.NewMockRequestHandler(mc),
+			topicNotifyHandler: notifyhandler.NewMockNotifyHandler(mc),
+		}
+
+		data := json.RawMessage(`{"type":"call","data":{"id":"` + chatID + `","customer_id":"` + customerID + `"}}`)
+		h.publishRoutingKeyedEvent(context.Background(), "", data)
+	})
+
+	t.Run("chat event publishes one message per routing key in order", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		h := &webhookHandler{reqHandler: mockReq, topicNotifyHandler: mockNotify}
+
+		ctx := context.Background()
+		inner := `{"id":"` + chatID + `","customer_id":"` + customerID + `","owner_id":"` + ownerID + `","chat_id":"` + chatID + `"}`
+		data := json.RawMessage(`{"type":"chatmessage_created","data":` + inner + `}`)
+
+		mockReq.EXPECT().TalkV1ParticipantList(ctx, uuid.FromStringOrNil(chatID)).Return([]*tkparticipant.Participant{
+			{Owner: commonidentity.Owner{OwnerID: uuid.FromStringOrNil(ownerID)}},
+			{Owner: commonidentity.Owner{OwnerID: uuid.FromStringOrNil(otherID)}},
+		}, nil).Times(1)
+
+		payload := json.RawMessage(inner)
+		gomock.InOrder(
+			mockNotify.EXPECT().PublishEventWithRoutingKey(ctx, "chatmessage_created", "customer_id."+customerID+".talk.chatmessage_created."+chatID, payload).Times(1),
+			mockNotify.EXPECT().PublishEventWithRoutingKey(ctx, "chatmessage_created", "agent_id."+ownerID+".talk.chatmessage_created."+chatID, payload).Times(1),
+			mockNotify.EXPECT().PublishEventWithRoutingKey(ctx, "chatmessage_created", "agent_id."+otherID+".talk.chatmessage_created."+chatID, payload).Times(1),
+		)
+
+		h.publishRoutingKeyedEvent(ctx, "", data)
+	})
 }
