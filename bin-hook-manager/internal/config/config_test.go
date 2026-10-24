@@ -1,11 +1,27 @@
 package config
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+// resetConfigState clears the package singletons and global viper so each test
+// is independent of execution order and of -count and -shuffle, and restores
+// the cleared state after the test.
+func resetConfigState(t *testing.T) {
+	t.Helper()
+
+	reset := func() {
+		cfg = nil
+		once = sync.Once{}
+		viper.Reset()
+	}
+	reset()
+	t.Cleanup(reset)
+}
 
 func TestConfigStruct(t *testing.T) {
 	cfg := Config{
@@ -127,7 +143,7 @@ func TestInitConfig(t *testing.T) {
 	// Test InitConfig first to ensure it initializes the config
 	// Due to sync.Once, this must run before LoadGlobalConfig
 	t.Run("init with cobra command and all flags", func(t *testing.T) {
-		viper.Reset()
+		resetConfigState(t)
 
 		cmd := &cobra.Command{}
 		cmd.Flags().String("database_dsn", "init:init@tcp(localhost:3306)/initdb", "")
@@ -167,7 +183,7 @@ func TestLoadGlobalConfig(t *testing.T) {
 	// Note: Since InitConfig was called first, sync.Once will prevent re-initialization
 	// We just verify it doesn't panic
 	t.Run("load global config does not panic", func(t *testing.T) {
-		viper.Reset()
+		resetConfigState(t)
 		viper.Set("database_dsn", "test:test@tcp(localhost:3306)/testdb")
 		viper.Set("prometheus_endpoint", "/test-metrics")
 		viper.Set("prometheus_listen_address", ":9999")
@@ -227,5 +243,39 @@ func TestGet(t *testing.T) {
 				t.Error("Get() returned nil config")
 			}
 		})
+	}
+}
+
+func Test_LoadGlobalConfig_fields(t *testing.T) {
+	resetConfigState(t)
+
+	viper.Set("database_dsn", "dsn-value")
+	viper.Set("prometheus_endpoint", "/endpoint-value")
+	viper.Set("prometheus_listen_address", ":1111")
+	viper.Set("rabbitmq_address", "amqp://rabbit-value")
+	viper.Set("ssl_privkey_base64", "privkey-value")
+	viper.Set("ssl_cert_base64", "cert-value")
+	viper.Set("paddle_webhook_secret_key", "paddle-value")
+
+	LoadGlobalConfig()
+
+	want := Config{
+		DatabaseDSN:             "dsn-value",
+		PrometheusEndpoint:      "/endpoint-value",
+		PrometheusListenAddress: ":1111",
+		RabbitMQAddress:         "amqp://rabbit-value",
+		SSLPrivkeyBase64:        "privkey-value",
+		SSLCertBase64:           "cert-value",
+		PaddleWebhookSecretKey:  "paddle-value",
+	}
+	if got := *Get(); got != want {
+		t.Errorf("Wrong match.\nexpect: %+v\ngot: %+v", want, got)
+	}
+
+	// a second call must not overwrite the singleton
+	viper.Set("database_dsn", "changed")
+	LoadGlobalConfig()
+	if Get().DatabaseDSN != "dsn-value" {
+		t.Errorf("LoadGlobalConfig must load only once. got: %s", Get().DatabaseDSN)
 	}
 }
