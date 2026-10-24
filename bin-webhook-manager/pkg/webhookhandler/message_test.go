@@ -228,8 +228,8 @@ func Test_sendMessage_success(t *testing.T) {
 	}
 }
 
-// Test_sendMessage_clientError pins the current behaviour: a 4xx response is
-// treated as delivered and is not retried.
+// Test_sendMessage_clientError verifies that responses other than 5xx are not
+// retried and that sendMessage returns after a single call.
 func Test_sendMessage_clientError(t *testing.T) {
 	for _, code := range []int{400, 404, 410, 429} {
 		st := &stubTransport{responses: []func() (*http.Response, error){stubStatus(code)}}
