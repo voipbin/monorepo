@@ -2,6 +2,7 @@ package messagehandlermessagebird
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 
@@ -139,5 +140,35 @@ func Test_marshal(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+func Test_SendMessage_providerError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockExternalReq := requestexternal.NewMockRequestExternal(mc)
+
+	h := &messageHandlerMessagebird{
+		reqHandler:      mockReq,
+		db:              mockDB,
+		requestExternal: mockExternalReq,
+	}
+	ctx := context.Background()
+
+	sender := &commonaddress.Address{Target: "+15550000001"}
+	targets := []target.Target{{Destination: commonaddress.Address{Target: "+15550000002"}}}
+	errProvider := errors.New("provider failure")
+
+	mockExternalReq.EXPECT().MessagebirdSendMessage(ctx, "+15550000001", []string{"+15550000002"}, "hello").Return(nil, errProvider)
+
+	res, err := h.SendMessage(ctx, uuid.FromStringOrNil("883112b8-a0f1-11ec-a2da-efa31b2f00ae"), sender, targets, "hello")
+	if !errors.Is(err, errProvider) {
+		t.Errorf("Wrong match. expect: %v, got: %v", errProvider, err)
+	}
+	if res != nil {
+		t.Errorf("Wrong match. expect: nil, got: %v", res)
 	}
 }

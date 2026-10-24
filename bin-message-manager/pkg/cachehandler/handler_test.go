@@ -150,3 +150,15 @@ func Test_delSerialize(t *testing.T) {
 		t.Errorf("Wrong match. expect: error against a closed server, got: nil")
 	}
 }
+
+func Test_setSerialize_unmarshalableValue(t *testing.T) {
+	h, mr := newTestHandler(t)
+
+	// a channel cannot be encoded as JSON, so nothing may be written.
+	if err := h.setSerialize(context.Background(), "key-unmarshalable", make(chan int)); err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+	if mr.Exists("key-unmarshalable") {
+		t.Errorf("Wrong match. expect: no key written, got: key exists")
+	}
+}
