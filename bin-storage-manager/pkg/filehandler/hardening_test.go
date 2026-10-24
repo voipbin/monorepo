@@ -63,6 +63,7 @@ func Test_readWavHeader_fmtChunkSize(t *testing.T) {
 		{"minimum is accepted", 16, true},
 		{"extended is accepted", 18, true},
 		{"extensible is accepted", 40, true},
+		{"maximum is accepted", 1024, true},
 		{"above the maximum is rejected", 1025, false},
 	}
 
