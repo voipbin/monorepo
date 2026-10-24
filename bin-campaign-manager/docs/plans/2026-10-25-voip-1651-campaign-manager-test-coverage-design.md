@@ -2,10 +2,11 @@
 
 ## 1. 이슈 분석 (티켓 검토)
 
+- 지표 정의: statement 기준 커버리지이며 gens/, mock_*.go, `Code generated ... DO NOT EDIT` 파일을 제외하고 같은 블록은 최대 count 로 합친 값이다. 기준 커밋은 origin/main 99b59c386 이며 PR 직전 `git fetch origin main` 으로 이동 여부를 다시 확인한다.
 - 티켓 검토: 유효. 기준선은 origin/main 99b59c386 에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile` 로 재측정했고, gens/ 와 mock_*.go 와 `DO NOT EDIT` 파일을 제외하고 같은 블록은 최대 count 로 합쳐 수기 66.0% (2313/3503), 원본 56.9% 로 카드 수치와 일치했다. 테스트 실패 0건.
-- 70% 에는 140 statement(2453-2313), 권장 71% 에는 약 174 statement 를 더 덮어야 한다. 목표는 약 250 statement 이상(수기 73% 안팎)이다.
+- 70% 에는 140 statement(2453-2313), 권장 71% 에는 175 statement 를 더 덮어야 한다. 목표는 약 250 statement 이상(수기 73% 안팎)이다.
 - 패키지별 전 수치(수기 statement 기준): cmd/campaign-control 0/328, cmd/campaign-manager 0/144, internal/config 93/97, models/campaign 18/26, models/campaigncall 19/27, models/outplan 16/26, pkg/cachehandler 0/67, pkg/campaigncallhandler 200/265, pkg/campaignhandler 638/897, pkg/dbhandler 540/636, pkg/listenhandler 626/782, pkg/outplanhandler 93/121, pkg/subscribehandler 70/87.
-- cmd/ 의 main 두 개(472 statement)는 프로세스 기동과 외부 연결(DB, Redis, RabbitMQ)에 묶여 있어 단위 테스트 대상에서 제외한다. 이 둘을 빼도 분모 3503 은 그대로이고 cmd 를 제외한 미커버 statement 가 718개라 필요한 174개의 약 4배이므로 70% 달성은 산술적으로 가능하다.
+- cmd/ 의 main 두 개(472 statement)는 프로세스 기동과 외부 연결(DB, Redis, RabbitMQ)에 묶여 있어 단위 테스트 대상에서 제외한다. 이 둘을 빼도 분모 3503 은 그대로이고 cmd 를 제외한 미커버 statement 가 718개라 필요한 175개의 약 4배이므로 70% 달성은 산술적으로 가능하다.
 - 큰 미커버: campaignhandler/execute.go 107 (Execute 오류 분기와 executeCall 전체), campaignhandler/campaign.go 104 (오류 경로와 리소스 검증 분기), listenhandler campaigns/outplans/campaigncalls 126, campaigncallhandler 48, outplanhandler 24, status_stop.go 24, dbhandler 약 96.
 - 패키지 전역 상태: 전역 변수는 prometheus 카운터이며 패키지 init 에서 한 번 등록되므로 테스트 간 중복 등록이나 순서 의존은 없다(campaigncallhandler/main.go, campaignhandler/main.go 확인).
 - 최근 변경 이력과 열린/머지 PR 조회 결과 이 서비스에 대한 커버리지 PR 은 없다(중복 없음).
