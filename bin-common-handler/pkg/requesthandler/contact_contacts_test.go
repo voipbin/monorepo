@@ -89,6 +89,21 @@ func Test_ContactV1ContactWrappers(t *testing.T) {
 			expectRes: []cmcontact.Contact{*contactWant},
 		},
 		{
+			name:           "update_all_fields",
+			queue:          contactQueue,
+			expectURI:      "/v1/contacts/4d6f8a02-3c5e-4a79-8d03-2f4a6c8e0b35",
+			expectMethod:   sock.RequestMethodPut,
+			expectDataType: ContentTypeJSON,
+			expectData:     `{"first_name":"Alex","last_name":"Kim","display_name":"Alex K","company":"Example Co","job_title":"Engineer","external_id":"ext-0001","notes":"synthetic note"}`,
+			responseData:   contactResponse,
+			call: func(h *requestHandler) (any, error) {
+				lastName, displayName, company := "Kim", "Alex K", "Example Co"
+				jobTitle, externalID, notes := "Engineer", "ext-0001", "synthetic note"
+				return h.ContactV1ContactUpdate(context.Background(), contactID, &first, &lastName, &displayName, &company, &jobTitle, &externalID, &notes)
+			},
+			expectRes: contactWant,
+		},
+		{
 			name:           "update_only_set_fields",
 			queue:          contactQueue,
 			expectURI:      "/v1/contacts/4d6f8a02-3c5e-4a79-8d03-2f4a6c8e0b35",

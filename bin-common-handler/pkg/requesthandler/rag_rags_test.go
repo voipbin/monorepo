@@ -83,6 +83,21 @@ func Test_RagV1RagWrappers(t *testing.T) {
 			}},
 		},
 		{
+			name:           "add_sources_files_only",
+			queue:          ragQueue,
+			expectURI:      "/v1/rags/5e1f3b7a-9c24-4d68-b0a1-3f7d2c8e4a59/sources",
+			expectMethod:   sock.RequestMethodPost,
+			expectDataType: ContentTypeJSON,
+			expectData:     `{"storage_file_ids":["0b9d7f5e-3c1a-4e86-8d24-1a5c7e9b3d62"],"source_urls":null}`,
+			responseData:   `{"id":"5e1f3b7a-9c24-4d68-b0a1-3f7d2c8e4a59","sources":[{"id":"7d3f1b9c-5a2e-4c48-b6e0-9f1d3b5a7c24","source_url":"https://docs.example.invalid/b","status":"pending"}]}`,
+			call: func(h *requestHandler) (any, error) {
+				return h.RagV1RagAddSources(context.Background(), ragID, []uuid.UUID{fileID}, nil)
+			},
+			expectRes: &rmrag.Rag{ID: ragID, Sources: []rmrag.Source{
+				{Identity: identity.Identity{ID: sourceID}, SourceURL: "https://docs.example.invalid/b", Status: rmdocument.StatusPending},
+			}},
+		},
+		{
 			name:           "get",
 			queue:          ragQueue,
 			expectURI:      "/v1/rags/5e1f3b7a-9c24-4d68-b0a1-3f7d2c8e4a59",

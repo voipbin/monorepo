@@ -89,6 +89,20 @@ func Test_AIV1TeamWrappers(t *testing.T) {
 			expectRes: teamWant,
 		},
 		{
+			name:           "update_detail_only",
+			queue:          aiQueue,
+			expectURI:      "/v1/teams/1e3a5c7b-9d2f-4a60-8b14-3c5e7a9b1d28",
+			expectMethod:   sock.RequestMethodPut,
+			expectDataType: ContentTypeJSON,
+			expectData:     `{"detail":"new detail"}`,
+			responseData:   teamResponse,
+			call: func(h *requestHandler) (any, error) {
+				newDetail := "new detail"
+				return h.AIV1TeamUpdate(context.Background(), teamID, nil, &newDetail, nil, nil, nil)
+			},
+			expectRes: teamWant,
+		},
+		{
 			name:           "update_name_and_members_only",
 			queue:          aiQueue,
 			expectURI:      "/v1/teams/1e3a5c7b-9d2f-4a60-8b14-3c5e7a9b1d28",
