@@ -96,3 +96,7 @@ Wave 2 (only if the total is below 71% after wave 1): partial files customer_cus
 - Large test count slows `go test`: the runner uses mocks only; the measured time is recorded (verify item 4).
 - Duplicate test function names: new names use the `Test_RPC_<Wrapper>` form (3.2), checked by compiling the package.
 - Coverage drift versus CI: target 71% leaves margin over the 70% floor.
+
+## 4. Result
+
+Wave 1 covered eight of the 24 fully uncovered files (ai_mcpservers, rag_rags, tts_speakings, contact_contact_addresses, contact_contacts, ai_teams, webchat_widget, direct_directs). The hand-written total measured with the same method is 72.95% (10276 statements, 2780 uncovered), above the 71% gate, so wave 2 was not started. Only `pkg/requesthandler` changed (63.4% to 72.9%); the raw total went from 46.55% to 51.95%.
