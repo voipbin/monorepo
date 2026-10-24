@@ -31,20 +31,20 @@ Testability findings:
 ## 2. Plan
 
 New test files only, inside bin-number-manager:
-1. `pkg/requestexternal/telnyx_test.go`: for each of the 7 methods, success (request method, path, query, auth header and body are asserted by the fake transport), non-200 status, transport error, malformed JSON, and the input guards (empty country code, limit clamp to 10, size default 10, empty phone number list).
-   Mutation targets: status check (`!= 200`), limit clamp, empty-result guard, Authorization header.
-2. `pkg/numberhandlertelnyx/*_test.go`: purchase (order error, lookup error, success conversion), release and update tags (error propagation, token and provider reference id passed), available numbers (error, conversion).
-3. `pkg/numberhandlertwilio/*_test.go`: the three unimplemented methods must return an error.
-4. If the total is still under 61%, add error-path cases to `numberhandler` and `listenhandler` found by `go tool cover -func`.
+1. `pkg/requestexternal/telnyx_test.go`: for each of the 7 methods, success (request method, path, query, Authorization header, Content-Type for POST/PATCH and body are asserted by the fake transport), non-200 status, transport error, malformed JSON, `io.ReadAll` failure, and the input guards (empty country code, limit clamp to 10, size default 10, empty phone number list). Also `NewRequestExternal`.
+   Mutation targets: `!= 200` of at least 3 methods, limit clamp, empty-result guard, Authorization header, Content-Type.
+2. `pkg/numberhandlertelnyx/*_test.go`: purchase (order error, lookup error, success conversion), release and update tags (error propagation, token and provider reference id passed, exact `data` map), available numbers (error, conversion), and `NewNumberHandler` (returned type and injected token, connection id, profile id). Handler tests build the struct directly and inject the gomock `RequestExternal`, because `NewNumberHandler` creates the real one.
+3. `pkg/numberhandlertwilio/*_test.go`: the three unimplemented methods must return an error; `NewNumberHandler` injects sid and token.
+4. Fallback, only if the total is under 61% after 1 to 3: error-path cases for `numberhandler` and `listenhandler` found by `go tool cover -func`. `cachehandler` stays out unless that is still not enough.
 
 Rules for the new tests: `Test_` function names, table driven, gomock controller named `mc`, no testify, no `t.Parallel()`, fake tokens and reserved numbers (`+15550100xxx`) only.
-The fake transport is installed by one helper that restores the original with `t.Cleanup`; fake responses always have a non-nil `Body`. The `io.ReadAll` failure (body `Read` error) and the `IDUpdate` marshal failure (`chan` value) are covered. The `http.NewRequestWithContext` errors (hardcoded URLs) and the `NumberOrdersPost` marshal error are unreachable without a product code change and are not targeted. The multi-item success case of `TelnyxPhoneNumbersGet` asserts that each element is a distinct value. Tests do not touch the global prometheus registry.
+The fake transport is installed by one helper that restores the original with `t.Cleanup`; fake responses always have a non-nil `Body`, and an unexpected request fails the test, so nothing can reach the real host. The `IDUpdate` marshal failure (`chan` value) is covered. The `http.NewRequestWithContext` errors (7, hardcoded URLs) and the `NumberOrdersPost` marshal error are unreachable without a product code change and are not targeted. The multi-item success case of `TelnyxPhoneNumbersGet` asserts that each element is a distinct value (regression guard for the loop variable address). Tests do not touch the global prometheus registry.
 
-Estimated gain: about 270 + 70 + 25 = 365 statements, giving about 64%.
+Estimated gain: telnyx.go up to about 292 of 300 reachable (plan uses about 270), requestexternal/main.go 5, numberhandlertelnyx about 70, numberhandlertwilio about 25 including constructors. Total about 365 to 390, giving 64% to 65%. The method tests alone give about 340 which is still above the +294 needed.
 
 ## 3. Verify
 
-- Run the 5 verification steps of CLAUDE.md (`go mod tidy`, `go mod vendor`, `go generate ./...`, `go test ./...`, `golangci-lint run -v --timeout 5m`), `go test -race -count=2 ./...`, and `git fetch origin main` then `scripts/check-test-conventions.sh`. `go.mod`/`go.sum` must not change.
-- Hand-written total >= 61.0% by the same method; all existing tests pass; `golangci-lint run` passes; `scripts/check-test-conventions.sh` passes.
-- Mutation sample: change a status check, a clamp bound and an error wrap in a scratch copy and confirm the new tests fail.
+- Run the 5 verification steps of CLAUDE.md (`go mod tidy`, `go mod vendor`, `go generate ./...`, `go test ./...`, `golangci-lint run -v --timeout 5m`), `go test -race -shuffle=on -count=2 ./...`, and `git fetch origin main` then `scripts/check-test-conventions.sh`. `go.mod`/`go.sum` must not change.
+- Hand-written total >= 61.0% by the section 1 command and aggregation; the before/after table goes into the PR body.
+- Mutation sample: mutate the items listed above in a scratch copy and confirm the new tests fail.
 - `git diff --stat origin/main...HEAD` shows only files under bin-number-manager/.
