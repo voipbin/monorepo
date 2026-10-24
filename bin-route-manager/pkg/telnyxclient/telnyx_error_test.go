@@ -302,8 +302,8 @@ func Test_NewTelnyxClient_sendsBearerKey(t *testing.T) {
 	if !ok {
 		t.Fatalf("Wrong match. expect: *telnyxClient, got: %T", c)
 	}
-	if tc.baseURL != telnyxBaseURL {
-		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", telnyxBaseURL, tc.baseURL)
+	if tc.baseURL != "https://api.telnyx.com/v2" {
+		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", "https://api.telnyx.com/v2", tc.baseURL)
 	}
 
 	// point the real client at a test server to confirm the key is sent as a bearer token
