@@ -34,6 +34,7 @@ func Test_runListen(t *testing.T) {
 		name string
 
 		queueCreateErr error
+		consumeErr     error
 
 		expectConsume     bool
 		expectErrContains string
@@ -45,6 +46,11 @@ func Test_runListen(t *testing.T) {
 		},
 		{
 			name:          "success consumes the webhook request queue",
+			expectConsume: true,
+		},
+		{
+			name:          "consumer failure after start does not change the result",
+			consumeErr:    errors.New("consume failed"),
 			expectConsume: true,
 		},
 	}
@@ -67,7 +73,7 @@ func Test_runListen(t *testing.T) {
 				mockSock.EXPECT().ConsumeRPC(gomock.Any(), queue, "webhook-manager", false, false, false, 10, gomock.Any()).DoAndReturn(
 					func(_ interface{}, _, _ string, _, _, _ bool, _ int, _ sock.CbMsgRPC) error {
 						close(consumed)
-						return nil
+						return tt.consumeErr
 					})
 			}
 
@@ -103,6 +109,7 @@ func Test_runSubscribe(t *testing.T) {
 
 		queueCreateErr error
 		topicErr       error
+		consumeErr     error
 
 		expectBind        bool
 		expectErrContains string
@@ -119,6 +126,11 @@ func Test_runSubscribe(t *testing.T) {
 		},
 		{
 			name:       "success binds the event exchange and consumes the subscribe queue",
+			expectBind: true,
+		},
+		{
+			name:       "consumer failure after start does not change the result",
+			consumeErr: errors.New("consume failed"),
 			expectBind: true,
 		},
 	}
@@ -138,11 +150,19 @@ func Test_runSubscribe(t *testing.T) {
 
 			consumed := make(chan struct{})
 			if tt.expectBind {
-				mockSock.EXPECT().QueueBind(queue, gomock.Any(), eventExchange, false, nil).Return(nil).Times(5)
+				for _, pattern := range []string{
+					"customer-manager.customer.*.created",
+					"customer-manager.customer.*.updated",
+					"flow-manager.activeflow.*.created",
+					"flow-manager.activeflow.*.updated",
+					"flow-manager.activeflow.*.deleted",
+				} {
+					mockSock.EXPECT().QueueBind(queue, pattern, eventExchange, false, nil).Return(nil)
+				}
 				mockSock.EXPECT().ConsumeMessage(gomock.Any(), queue, "webhook-manager", false, false, false, 10, gomock.Any()).DoAndReturn(
 					func(_ interface{}, _, _ string, _, _, _ bool, _ int, _ sock.CbMsgConsume) error {
 						close(consumed)
-						return nil
+						return tt.consumeErr
 					})
 			}
 
