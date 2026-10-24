@@ -580,3 +580,59 @@ func Test_elevenlabsHandler_Run_playsAudioAndTearsDownOnAsteriskDisconnect(t *te
 		t.Error("the session context must be cancelled after Run returns")
 	}
 }
+
+func Test_elevenlabsHandler_runProcess_withoutConnection(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	cf := newTestElevenlabsConfig(nil)
+	t.Cleanup(cf.Cancel)
+
+	finished := make(chan struct{})
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), message.EventTypePlayStarted, gomock.Any()).Times(1)
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), message.EventTypePlayFinished, gomock.Any()).Times(1).Do(
+		func(ctx context.Context, eventType string, data any) { close(finished) },
+	)
+	h := &elevenlabsHandler{notifyHandler: mockNotify}
+
+	go h.runProcess(cf)
+
+	select {
+	case <-finished:
+	case <-time.After(5 * time.Second):
+		t.Fatal("runProcess did not finish without a connection")
+	}
+
+	select {
+	case <-cf.Ctx.Done():
+	default:
+		t.Error("the session context must be cancelled")
+	}
+}
+
+func Test_elevenlabsHandler_runProcess_afterTerminate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	client, _ := newLocalWSPair(t)
+	cf := newTestElevenlabsConfig(client)
+	t.Cleanup(cf.Cancel)
+
+	finished := make(chan struct{})
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), message.EventTypePlayStarted, gomock.Any()).Times(1)
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), message.EventTypePlayFinished, gomock.Any()).Times(1).Do(
+		func(ctx context.Context, eventType string, data any) { close(finished) },
+	)
+	h := &elevenlabsHandler{notifyHandler: mockNotify}
+
+	h.terminate(cf)
+	go h.runProcess(cf)
+
+	select {
+	case <-finished:
+	case <-time.After(5 * time.Second):
+		t.Fatal("runProcess did not finish after the session was terminated")
+	}
+}

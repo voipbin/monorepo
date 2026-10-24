@@ -40,7 +40,16 @@ type AWSConfig struct {
 
 	// audioCh receives PCM audio chunks from SayAdd calls
 	audioCh chan []byte
-	mu      sync.Mutex
+
+	// mu serializes sending on audioCh with closing it. closed is guarded by mu.
+	// Callers cancel Ctx before taking mu so a sender blocked on a full channel
+	// is always released.
+	mu     sync.Mutex
+	closed bool
+
+	// muMsg guards Message.TotalMessage, Message.TotalCount and Message.Finish.
+	// It is never held together with mu.
+	muMsg sync.Mutex
 }
 
 const (
@@ -170,7 +179,6 @@ func (h *awsHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 			StreamingID: st.ID,
 		},
 		audioCh: make(chan []byte, defaultAWSAudioChBuffer),
-		mu:      sync.Mutex{},
 	}
 
 	h.notifyHandler.PublishEvent(cfCtx, message.EventTypeInitiated, res.Message) //nolint:contextcheck // the session context outlives the request by design and is cancelled on session teardown
@@ -223,12 +231,11 @@ func (h *awsHandler) runProcess(cf *AWSConfig) {
 		"streaming_id": cf.Streaming.ID,
 	})
 
-	msg := cf.Message
-	h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayStarted, msg)
+	h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayStarted, cf.messageSnapshot())
 
 	defer func() {
 		cf.Cancel()
-		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
+		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, cf.messageSnapshot())
 	}()
 
 	for {
@@ -285,10 +292,8 @@ func (h *awsHandler) SayAdd(vendorConfig any, text string) error {
 			chunk := make([]byte, n)
 			copy(chunk, buf[:n])
 
-			select {
-			case cf.audioCh <- chunk:
-			case <-cf.Ctx.Done():
-				return cf.Ctx.Err()
+			if errSend := cf.send(chunk); errSend != nil {
+				return errSend
 			}
 		}
 		if readErr != nil {
@@ -300,10 +305,44 @@ func (h *awsHandler) SayAdd(vendorConfig any, text string) error {
 		}
 	}
 
+	cf.muMsg.Lock()
 	cf.Message.TotalMessage += text
 	cf.Message.TotalCount++
+	cf.muMsg.Unlock()
 
 	return nil
+}
+
+// send queues one audio chunk. The closed flag and the context are checked
+// under mu, so the channel is never written to after it was closed. The
+// context branch keeps a sender on a full channel from blocking forever.
+func (cf *AWSConfig) send(chunk []byte) error {
+	cf.mu.Lock()
+	defer cf.mu.Unlock()
+
+	if errCtx := cf.Ctx.Err(); errCtx != nil {
+		return errCtx
+	}
+	if cf.closed {
+		return fmt.Errorf("the streaming session is already finished")
+	}
+
+	select {
+	case cf.audioCh <- chunk:
+		return nil
+	case <-cf.Ctx.Done():
+		return cf.Ctx.Err()
+	}
+}
+
+// messageSnapshot returns a copy of the message that is safe to publish while
+// other calls keep updating the session message.
+func (cf *AWSConfig) messageSnapshot() *message.Message {
+	cf.muMsg.Lock()
+	defer cf.muMsg.Unlock()
+
+	snapshot := *cf.Message
+	return &snapshot
 }
 
 func (h *awsHandler) SayFlush(vendorConfig any) error {
@@ -312,11 +351,16 @@ func (h *awsHandler) SayFlush(vendorConfig any) error {
 		return fmt.Errorf("vendorConfig is not a *AWSConfig or is nil")
 	}
 
-	// Drain any pending audio from the channel
+	// Drain any pending audio from the channel. mu is not taken: a sender may
+	// hold it while waiting for room in the channel.
 	for {
 		select {
-		case <-cf.audioCh:
-			continue
+		case _, ok := <-cf.audioCh:
+			if !ok {
+				return nil
+			}
+		case <-cf.Ctx.Done():
+			return nil
 		default:
 			return nil
 		}
@@ -339,15 +383,21 @@ func (h *awsHandler) SayFinish(vendorConfig any) error {
 		return fmt.Errorf("vendorConfig is not a *AWSConfig or is nil")
 	}
 
+	cf.muMsg.Lock()
 	cf.Message.Finish = true
+	cf.muMsg.Unlock()
 
-	// Cancel context first so any in-flight SayAdd takes the ctx.Done branch
-	// instead of sending on the closed channel (which would panic).
+	// Cancel before taking mu: a sender blocked on a full channel holds mu and
+	// is only released by the context.
 	cf.Cancel()
 
 	cf.mu.Lock()
-	close(cf.audioCh)
-	cf.mu.Unlock()
+	defer cf.mu.Unlock()
+
+	if !cf.closed {
+		cf.closed = true
+		close(cf.audioCh)
+	}
 
 	return nil
 }

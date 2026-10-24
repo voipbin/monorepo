@@ -253,8 +253,17 @@ func (h *elevenlabsHandler) runProcess(cf *ElevenlabsConfig) {
 		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
 	}()
 
-	// read from elevenlabs websocket
-	go h.readConnWebsock(cf.Ctx, msg.ID, cf.ConnWebsock, msgCh, errCh)
+	// read from elevenlabs websocket. The connection is copied under the lock
+	// because terminate clears it.
+	cf.muConnWebsock.Lock()
+	connWebsock := cf.ConnWebsock
+	cf.muConnWebsock.Unlock()
+	if connWebsock == nil {
+		log.Debugf("The websocket connection is already closed.")
+		return
+	}
+
+	go h.readConnWebsock(cf.Ctx, msg.ID, connWebsock, msgCh, errCh)
 
 	for {
 		select {
