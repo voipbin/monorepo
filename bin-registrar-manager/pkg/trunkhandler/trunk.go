@@ -61,6 +61,10 @@ func (h *trunkHandler) Create(
 		log.Errorf("The given domain name is already existed. err: %v", err)
 		return nil, fmt.Errorf("already exists")
 	}
+	if !stderrors.Is(err, dbhandler.ErrNotFound) {
+		log.Errorf("Could not check the duplicated trunk. err: %v", err)
+		return nil, errors.Wrap(err, "could not check the duplicated trunk")
+	}
 
 	// create new trunk
 	id := h.utilHandler.UUIDCreate()

@@ -2,7 +2,6 @@ package trunkhandler
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -130,7 +129,7 @@ func Test_Create(t *testing.T) {
 			}
 
 			mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, tt.customerID, bmaccount.ResourceTypeTrunk).Return(true, nil)
-			mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.domainName).Return(nil, fmt.Errorf(""))
+			mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.domainName).Return(nil, dbhandler.ErrNotFound)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDBBin.EXPECT().TrunkCreate(ctx, tt.expectTrunk)
 			mockDBBin.EXPECT().TrunkGet(ctx, tt.expectTrunk.ID).Return(tt.responseTrunk, nil)
