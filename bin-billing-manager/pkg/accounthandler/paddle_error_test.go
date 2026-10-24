@@ -457,8 +457,7 @@ func Test_PaddleRefund_errorPaths(t *testing.T) {
 			},
 		},
 		{
-			// the refund call itself reports success even when the freeze step fails
-			name:   "negative balance and the freeze step fails",
+			name:   "negative balance and the status update fails",
 			amount: amount,
 			setup: func(f *paddleErrFixture) {
 				f.notProcessed()
