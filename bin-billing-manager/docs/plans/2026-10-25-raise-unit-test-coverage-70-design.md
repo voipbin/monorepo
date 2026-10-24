@@ -6,7 +6,7 @@
 - Hand-written excludes `mock_*.go`, `gens/`, and files whose header has `Code generated ... DO NOT EDIT`; duplicate blocks keep the max count.
 - Uncovered statements by package: cmd/billing-control 652 and cmd/billing-manager 174 (both `main` only, treated as not testable), pkg/dbhandler 122, pkg/listenhandler 106, pkg/cachehandler 71, pkg/accounthandler 46, pkg/subscribehandler 36, pkg/billinghandler 19, internal/config 13, models/billing 10.
 - Reaching 71% needs 57 more covered statements; 70% needs 15. The two `main` packages (826 statements) are left out of the plan; without them the hand-written share is 87.0% (2888/3321), and the other uncovered statements (433) are enough to reach the target.
-- Scope: test files only plus go.mod/go.sum (miniredis is not yet in this module; v2.36.1 is already used by other services). No product code change. VOIP-1416 overlap is not asserted here; it is checked and stated in the PR body only.
+- Scope: test files only plus go.mod/go.sum (miniredis is not yet in this module; v2.36.1 is already used by other services). No product code change. Overlap with the general coverage uplift of packages below 80% is stated in the PR body only.
 
 ## 2. Plan
 
@@ -28,7 +28,6 @@ The expected value of each case follows the source of its handler. Branches that
 - Cache tests: Get paths use directly seeded keys; Set paths assert the primary key, its stored content and its TTL. Fixture ids are distinct UUIDs.
 - Synthetic values only; no network, no external calls. Redis address comes from `s.Addr()` at run time, password argument is an empty string, no DSN with credentials, no email, phone or token-shaped strings (no `pdl_` or API key prefixes).
 - Test names `Test_<Func>_<case>`; gomock controller named `mc`; where a table-driven test already exists (hooks, accounts) new cases are added to that table or a new function with a distinct name is used. A failed `Connect` asserts only that an error is returned.
-- Defects found while testing are not fixed and not described in repository files; they are reported on the card only. A test that touches such a path asserts the current behavior with a neutral comment.
 
 ## 4. Verify
 
@@ -36,4 +35,4 @@ The expected value of each case follows the source of its handler. Branches that
 2. `go mod tidy` run twice leaves no further diff; go.mod/go.sum change only by miniredis and its transitive entries; `go list -deps ./cmd/...` does not contain miniredis (test-only import).
 3. `go test -race -count=1 ./...` and `golangci-lint run` pass.
 4. `git diff --stat origin/main...HEAD` lists only files under bin-billing-manager.
-5. Mutation sample in a scratch `git archive` copy (never the worktree), at least these six; results are recorded on the card, each with the test that fails recorded: cache primary key prefix change, `getSerialize` error return removed, one `ConvertWebhookMessage` field dropped, refund absolute value removed, a Paddle handler 500 mapped to 200, the 24h TTL of `setSerialize` removed (asserted with the miniredis TTL of the stored key).
+5. Mutation sample in a scratch `git archive` copy (never the worktree), at least these six, each with the test that fails recorded: cache primary key prefix change, `getSerialize` error return removed, one `ConvertWebhookMessage` field dropped, refund absolute value removed, a Paddle handler 500 mapped to 200, the 24h TTL of `setSerialize` removed (asserted with the miniredis TTL of the stored key).
