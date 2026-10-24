@@ -115,6 +115,27 @@ func Test_AccountUpdate(t *testing.T) {
 				t.Fatalf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			// a sibling account of the same customer must be left untouched by the update.
+			sibling := &account.Account{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b1000000-0000-0000-0000-0000000b" + tt.account.ID.String()[len(tt.account.ID.String())-4:]),
+					CustomerID: tt.account.CustomerID,
+				},
+				Type: account.TypeLine,
+				Name: "sibling name",
+			}
+			expectSibling := &account.Account{
+				Identity: sibling.Identity,
+				Type:     account.TypeLine,
+				Name:     "sibling name",
+				TMCreate: &createTime,
+			}
+			mockUtil.EXPECT().TimeNow().Return(&createTime)
+			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+			if err := h.AccountCreate(ctx, sibling); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
 			// the update stamps tm_update and refreshes the cache from the stored row.
 			mockUtil.EXPECT().TimeNow().Return(&updateTime)
 			mockCache.EXPECT().AccountSet(ctx, tt.expectRes).Return(nil)
@@ -131,6 +152,16 @@ func Test_AccountUpdate(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+			mockCache.EXPECT().AccountGet(ctx, sibling.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+			resSibling, err := h.AccountGet(ctx, sibling.ID)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if !reflect.DeepEqual(resSibling, expectSibling) {
+				t.Errorf("Sibling account was modified.\nexpect: %v\ngot: %v", expectSibling, resSibling)
 			}
 		})
 	}
