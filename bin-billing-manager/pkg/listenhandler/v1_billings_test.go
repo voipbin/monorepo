@@ -32,8 +32,9 @@ func Test_processV1BillingsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/billings?page_size=10&page_token=2023-06-08T03:22:17.995000Z&customer_id=6a93f71e-f542-11ee-9a48-7f8011d36229",
+				URI:    "/v1/billings?page_size=10&page_token=2023-06-08T03:22:17.995000Z",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"customer_id":"6a93f71e-f542-11ee-9a48-7f8011d36229"}`),
 			},
 
 			responseBillings: []*billing.Billing{
@@ -75,7 +76,7 @@ func Test_processV1BillingsGet(t *testing.T) {
 				billingHandler: mockBilling,
 			}
 
-			mockBilling.EXPECT().List(gomock.Any(), tt.expectSize, tt.expectToken, gomock.Any()).Return(tt.responseBillings, nil)
+			mockBilling.EXPECT().List(gomock.Any(), tt.expectSize, tt.expectToken, tt.expectFilters).Return(tt.responseBillings, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
