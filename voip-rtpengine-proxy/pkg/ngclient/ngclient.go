@@ -105,7 +105,10 @@ func (c *ngClient) readLoop() {
 		c.mu.Unlock()
 
 		if found {
-			ch <- resp
+			select {
+			case ch <- resp:
+			default:
+			}
 		}
 	}
 }

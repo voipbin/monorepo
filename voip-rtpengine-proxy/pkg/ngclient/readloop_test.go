@@ -139,3 +139,52 @@ func Test_Send_afterClose(t *testing.T) {
 	// closing an already closed client only logs a warning
 	c.Close()
 }
+
+func Test_readLoop_duplicateReplies(t *testing.T) {
+	const dupCookie = "dupcookie"
+
+	body := func(v string) string {
+		s, err := bencode.EncodeString(map[string]interface{}{"result": v})
+		if err != nil {
+			t.Fatalf("encode: %v", err)
+		}
+		return s
+	}
+
+	addr := newSequenceUDPServer(t, func(cookie string) [][]byte {
+		return [][]byte{
+			[]byte(dupCookie + " " + body("first")),
+			[]byte(dupCookie + " " + body("second")),
+			[]byte(dupCookie + " " + body("third")),
+			[]byte(cookie + " " + body("ok")),
+		}
+	})
+
+	c, err := newNGClient(addr, 2*time.Second)
+	if err != nil {
+		t.Fatalf("newNGClient: %v", err)
+	}
+	defer c.Close()
+
+	// a registered request without a waiting receiver
+	ch := make(chan map[string]interface{}, 1)
+	c.mu.Lock()
+	c.pending[dupCookie] = ch
+	c.mu.Unlock()
+
+	// duplicate replies for one cookie are discarded; the first reply is kept
+	res, err := c.Send(map[string]interface{}{"command": "ping"})
+	if err != nil {
+		t.Fatalf("Wrong match. expected: ok, got: %v", err)
+	}
+	if res["result"] != "ok" {
+		t.Errorf("Wrong match. expected: ok, got: %v", res["result"])
+	}
+
+	if len(ch) != 1 {
+		t.Fatalf("Wrong match. expected: 1 queued reply, got: %d", len(ch))
+	}
+	if got := <-ch; got["result"] != "first" {
+		t.Errorf("Wrong match. expected: first, got: %v", got["result"])
+	}
+}
