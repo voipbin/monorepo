@@ -102,6 +102,20 @@ func Test_decodeWavPeaks_boundaries(t *testing.T) {
 			expectDur:   0.000625,
 		},
 		{
+			name:        "peaks never exceed the bucket count",
+			data:        wavFile(fmtMono, wavChunk("data", 10, wavSamples(16384, 8192, 4096, 2048, 24576))),
+			bucketCount: 3,
+			expectPeaks: []float64{0.5, 0.25, 0.125},
+			expectDur:   0.000625,
+		},
+		{
+			name:        "duration follows the declared sample rate",
+			data:        wavFile(wavChunk("fmt ", 16, wavFmtPayload(1, 16000)), wavChunk("data", 4, wavSamples(16384, 8192))),
+			bucketCount: 2,
+			expectPeaks: []float64{0.5, 0.25},
+			expectDur:   0.000125,
+		},
+		{
 			name:        "odd declared data size drops the trailing byte",
 			data:        wavFile(fmtMono, wavChunk("data", 5, append(wavSamples(16384, 8192), 0))),
 			bucketCount: 2,
