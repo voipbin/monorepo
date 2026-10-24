@@ -1,23 +1,23 @@
 # bin-conversation-manager 단위 테스트 커버리지 상향 (VOIP-1647)
 
 ## 목표와 측정
-- 수기 코드(gens/, mock_*.go, `Code generated ... DO NOT EDIT` 파일 제외, 동일 블록은 최대 count) 커버리지를 56.47%(2035/3604)에서 61% 이상(2199 이상, 목표 2230 안팎)으로 올린다.
-- 측정은 패키지별 프로파일(`GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...`) 후 블록 단위 집계로 한다. `-coverpkg` 는 쓰지 않는다. CI 의 go tool cover total 은 mock 과 main 을 포함해 약 54% 로 다르다.
-- 범위: 테스트 파일 추가만. 제품 코드(비테스트 .go)는 바꾸지 않는다. 네트워크, 외부 비용 호출 없음. 값은 합성값만 쓴다.
-- 제외: cmd/ 두 개의 main, pkg/cachehandler(Redis 직접 생성), linehandler 의 Send, Setup, Teardown, GetPeer 와 follow 후반부(linebot Do 호출).
+- 수기 코드(gens/, mock_*.go, `Code generated ... DO NOT EDIT` 파일 제외, 동일 블록은 최대 count) 커버리지를 56.47%(2035/3604)에서 61% 이상(2199 이상, +164, 목표 2230 안팎)으로 올린다.
+- 측정: 패키지별 프로파일(`GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...`) 후 블록 단위 집계. `-coverpkg` 는 쓰지 않는다. PR 본문에는 수기 기준, 제외 목록, CI 의 go tool cover total(mock 과 main 포함, 약 54%)을 함께 적는다.
+- 범위: 테스트 파일 추가만. 제품 코드(비테스트 .go) 변경 없음. 네트워크, 외부 비용 호출 없음. 값은 합성값만.
+- 제외: cmd/ 두 main, pkg/cachehandler, linehandler 의 Send, Setup, Teardown, GetPeer, follow 후반부(linebot Do). 도달 불가로 제외하는 블록: models 의 `json.Marshal` 오류 반환(account/webhook.go:56-57, conversation/webhook.go:60-65, message/webhook.go:75-82), ConvertStringMapToFieldMap 의 로그 줄, AccountUpdate 의 ToSql/ExecContext 오류(sqlite 정상 입력으로 도달 불가).
 
-## 테스트 추가 계획 (파일 단위, 기존 파일에 추가하거나 새 `_test.go`)
-1. models/account, conversation, message: ConvertStringMapToFieldMap(UUID 문자열, time 문자열, 알 수 없는 키 오류 입력 확인), conversation ConvertWebhookMessage/CreateWebhookEvent, message/account CreateWebhookEvent. verify: 변환된 맵의 값 타입이 uuid.UUID 와 *time.Time 이고 웹훅 JSON 에 내부 필드(Owner 등)의 노출 범위가 구조체 정의와 일치.
-2. pkg/linehandler/hook_test.go: Hook(잘못된 JSON, 빈 events, 미지원 이벤트 타입이 결과에서 제외, 텍스트 메시지 성공, image JSON 비텍스트 성공), hookEventTypeMessage(dialogID 빈 값, List 오류, List 0건, MessageCreate 오류, 성공 시 source=peer destination=self 인자 확인), getDialogID(user, group, room, 기타), follow 의 dialogID 빈 값 조기 반환. verify: gomock 인자 매칭이 구체 값이며 mock 이 호출되지 않아야 하는 경로는 mock 기대를 두지 않음. e.Message nil 이벤트와 follow 정상 경로는 쓰지 않는다.
-3. pkg/conversationhandler: MessageEventSent(신규 생성, 기존 메시지 UpdateStatus, GetOrCreate 오류, Create 오류, UpdateStatus 오류, 타깃 2개), MessageSend 오류 경로, hook/event/event_webchat 의 미커버 오류 분기. verify: 타깃 2개에서 각 Create 인자의 destination 이 타깃별로 달라야 함.
-4. pkg/listenhandler: processV1ConversationsCreateAndExecuteFlowPost(성공, 400, 핸들러 오류), v1_conversations/v1_accounts/v1_messages 의 400, 핸들러 오류, 성공 분기 중 미커버 부분. verify: 상태 코드와 응답 본문 비교.
-5. pkg/subscribehandler: webchat 이벤트, email created/updated(JSON 오류, 핸들러 오류, 성공), message created 오류 경로, processEvent 분기. verify: 핸들러 오류가 그대로 반환.
-6. pkg/messagehandler/send.go: sendLine, sendWhatsApp, sendWebchat, sendSMS 의 오류 분기와 미지원 분기.
-7. pkg/dbhandler: AccountUpdate(sqlite shared DB, 새 UUID, 새 customer_id, 케이스마다 새 fields map). 캐시와 TimeNow mock 기대 정확히.
-8. 우선순위는 위험이 낮은 순(models, listenhandler, linehandler, subscribehandler, conversationhandler, messagehandler, dbhandler). 61% 도달 시 중단하고 불필요한 추가는 하지 않는다.
+## 항목별 대상과 예상 증분 (분석 및 설계 리뷰 재집계 기준, 구현 후 agg.py 로 확정)
+1. models 변환/웹훅 (약 48): ConvertStringMapToFieldMap 3개(account 7, conversation 17, message 7)는 UUID 문자열과 time 문자열 입력의 정상 변환, 알려진 필드의 잘못된 UUID/time 문자열은 오류, 모르는 키는 오류 없이 원값 통과(bin-common-handler/pkg/databasehandler/convert.go:71-75 확인 결과). conversation ConvertWebhookMessage/CreateWebhookEvent, message/account CreateWebhookEvent. verify: 리터럴 기대 JSON(키와 값)과 비교하고 구조체를 다시 읽어 비교하지 않는다.
+2. linehandler/hook.go (약 79): Hook(잘못된 JSON, 빈 events, 미지원 이벤트 타입은 결과에서 제외, 텍스트 성공, image JSON 비텍스트 성공), hookEventTypeMessage(dialogID 빈 값, List 오류, List 0건, MessageCreate 오류, 성공 시 source=cv.Peer destination=cv.Self 와 medias 는 `[]media.Media{}`), getDialogID(user, group, room, 그 외 type), follow 의 dialogID 빈 값 조기 반환, NewLineHandler. 빈 dialogID 케이스는 source 를 두되 type 을 user/group/room 이 아니게 한다. verify: 인자는 구체 값 매칭, 호출되면 안 되는 경로는 mock 기대를 두지 않는다. 쓰지 않는 입력: source 없는 이벤트(getDialogID nil 역참조), message 없는 message 이벤트(e.Message nil 역참조), follow 정상 경로. 제품 결함 후보로 완료 요약에 기록.
+3. conversationhandler (약 86): MessageEventSent 약 30(신규 Create, 기존 메시지 UpdateStatus, GetOrCreate 오류, Create 오류, UpdateStatus 오류, 타깃 0개, 타깃 2개에서 GetOrCreate mock 이 타깃별 다른 cv 를 반환할 때 Create 인자의 destination 이 타깃별로 다름; m.Source nil 금지), MessageSend 오류 경로 4, hook.go/event.go/event_webchat.go 의 미커버 52(agg 블록 목록에서 구현 시 확정).
+4. listenhandler (약 100, 구현 시 라인 확정): processV1ConversationsCreateAndExecuteFlowPost 20(성공, 400, 핸들러 오류 응답 코드), v1_conversations.go/v1_accounts.go/v1_messages.go/v1_hooks.go 의 400 및 핸들러 오류 분기, main.go 의 errorResponse 분기와 processRequest 404/오류 처리. Run 과 NewListenHandler 는 제외(고루틴 소비). verify: 상태 코드와 본문 비교.
+5. subscribehandler (약 37): webchat 7, emailmanager 16(created/updated 의 JSON 오류, 핸들러 오류 반환, 성공), messagemanager 오류 경로, processEvent 분기. 주의: processEvent 는 반환값이 없고 오류를 로그만 남기므로 분기별 verify 는 "해당 핸들러 mock 호출 여부"이고 default 는 mock 호출 없음이다. "핸들러 오류가 그대로 반환" verify 는 processEventEmail*/Webchat*/Message* 개별 함수에만 적용. processEventRun 은 `go` 로 실행되므로 쓰려면 WaitGroup 또는 채널로 동기화하고, 동기화가 어려우면 제외한다. Run 은 동기 오류 경로(QueueCreate, TopicCreateWithKind, QueueBind)만 대상.
+6. messagehandler/send.go (약 32): sendLine, sendWhatsApp, sendWebchat, sendSMS 의 오류 분기. verify: 오류 시 UpdateStatus(StatusFailed) 호출 여부와 반환 오류.
+7. dbhandler.AccountUpdate (약 12, 정상 경로 위주): sqlite shared DB, 새 UUID 와 새 customer_id(Test_AccountList 의 고정 customer_id 와 충돌 금지), 케이스마다 새 fields map(함수가 map 에 TMUpdate 를 씀), 캐시와 TimeNow mock 기대를 정확히. PrepareFields 오류는 도달 가능한 경우에만 포함. 조회 후 DB 행 값으로 갱신 반영을 확인.
+- 합계 예상: 48 + 79 + 86 + 100 + 37 + 32 + 12 = 약 394, 목표 164 의 2.4배. 위험이 낮은 순으로 진행하고 61% 를 넘고 안전마진(2230 안팎)이 확보되면 중단한다.
 
 ## 검증과 변이 확인
-- 각 단계 후 `agg.py` 실측. 최종: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run`, `scripts/check-test-conventions.sh`(Test_<Method>, testify 금지, gomock controller 이름 mc), `git diff --stat origin/main...HEAD` 가 bin-conversation-manager/ 안만 포함.
-- 변이 표본(scratch 복사본): MessageEventSent 의 UpdateStatus 분기 제거, hookEventTypeMessage 의 source/destination 교환, getDialogID 의 case 제거, AccountUpdate 의 TMUpdate 설정 제거에서 새 테스트가 실패해야 한다.
-- 자기비교식과 빈 호출 테스트 금지. 제품 결함 발견 시 고치지 않고 완료 요약에 적는다.
+- 단계별 agg.py 실측. 최종: `go mod tidy && go mod vendor && go generate ./...`(mock 재생성 diff 없음 확인) `&& go test ./... && golangci-lint run`; `git fetch origin main` 후 `scripts/check-test-conventions.sh`(Test_<Method>, testify 금지, gomock controller 이름 mc); `git diff --stat origin/main...HEAD` 가 bin-conversation-manager/ 안만 포함.
+- 변이 표본(scratch 복사본, 각각 새 테스트가 실패해야 함): MessageEventSent UpdateStatus 분기 제거, hookEventTypeMessage source/destination 교환, getDialogID case 제거, AccountUpdate 의 TMUpdate 설정 제거, processV1ConversationsCreateAndExecuteFlowPost 의 400 을 200 으로, processEventEmailEmailCreated 의 오류 반환을 nil 로, sendLine 의 UpdateStatus(StatusFailed) 호출 제거, conversation ConvertWebhookMessage 에서 필드 하나 누락.
+- 자기비교식과 빈 호출 테스트 금지. 제품 결함은 고치지 않고 완료 요약에 적는다.
 - 롤백: 테스트 파일 추가뿐이므로 PR revert.
