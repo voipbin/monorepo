@@ -61,7 +61,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 			},
 		},
 		{
-			name: "unknown filter key is dropped silently",
+			name: "unknown filter key",
 			request: &sock.Request{
 				URI:    "/v1/accounts?page_size=5",
 				Method: sock.RequestMethodGet,
@@ -83,7 +83,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 			},
 		},
 		{
-			name: "filter in the query string only is not a filter",
+			name: "filter in the query string",
 			request: &sock.Request{
 				URI:    "/v1/accounts?page_size=5&customer_id=6a93f71e-f542-11ee-9a48-7f8011d36229",
 				Method: sock.RequestMethodGet,
@@ -102,7 +102,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 			},
 		},
 		{
-			name: "broken filter json",
+			name: "invalid filter",
 			request: &sock.Request{
 				URI:    "/v1/accounts?page_size=5",
 				Method: sock.RequestMethodGet,
@@ -122,7 +122,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 			expectRes: &sock.Response{StatusCode: 400},
 		},
 		{
-			name: "url can not be parsed",
+			name: "malformed uri",
 			request: &sock.Request{
 				URI:    "/%zz/v1/accounts?page_size=5",
 				Method: sock.RequestMethodGet,
@@ -191,9 +191,8 @@ func Test_processV1AccountsGet(t *testing.T) {
 	}
 }
 
-// the url parse failure is returned as an error by the handler itself and
-// only turned into a 400 by the default error handler of processRequest.
-func Test_processV1AccountsGet_urlParseError(t *testing.T) {
+// the malformed uri case.
+func Test_processV1AccountsGet_malformedURI(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -277,7 +276,7 @@ func Test_processV1AccountsIsValidBalanceByCustomerIDPost(t *testing.T) {
 			},
 		},
 		{
-			name: "customer_id that is not a uuid is passed on as the nil uuid",
+			name: "invalid customer_id",
 			request: &sock.Request{
 				URI:      "/v1/accounts/is_valid_balance_by_customer_id",
 				Method:   sock.RequestMethodPost,
@@ -335,7 +334,7 @@ func Test_processV1AccountsIsValidBalanceByCustomerIDPost(t *testing.T) {
 			expectRes: &sock.Response{StatusCode: 500},
 		},
 		{
-			name: "broken body is a 400 through processRequest",
+			name: "invalid body",
 			request: &sock.Request{
 				URI:      "/v1/accounts/is_valid_balance_by_customer_id",
 				Method:   sock.RequestMethodPost,
@@ -455,7 +454,7 @@ func Test_processV1AccountsIsValidResourceLimitByCustomerIDPost(t *testing.T) {
 			},
 		},
 		{
-			name: "customer_id that is not a uuid is passed on as the nil uuid",
+			name: "invalid customer_id",
 			request: &sock.Request{
 				URI:      "/v1/accounts/is_valid_resource_limit_by_customer_id",
 				Method:   sock.RequestMethodPost,
@@ -507,7 +506,7 @@ func Test_processV1AccountsIsValidResourceLimitByCustomerIDPost(t *testing.T) {
 			expectRes: &sock.Response{StatusCode: 500},
 		},
 		{
-			name: "broken body is a 400 through processRequest",
+			name: "invalid body",
 			request: &sock.Request{
 				URI:      "/v1/accounts/is_valid_resource_limit_by_customer_id",
 				Method:   sock.RequestMethodPost,
