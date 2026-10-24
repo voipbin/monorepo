@@ -66,6 +66,7 @@ replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
 require (
 	cloud.google.com/go/storage v1.61.3
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/fumiama/go-docx v0.0.0-20250506085032-0c30fd09304b
 	github.com/gofrs/uuid v4.4.0+incompatible
@@ -84,6 +85,7 @@ require (
 	golang.org/x/net v0.58.0
 	google.golang.org/genai v1.50.0
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
+	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880
 )
 
 require (
@@ -178,7 +180,6 @@ require (
 	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d // indirect
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24 // indirect
 	monorepo/bin-schedule-manager v0.0.0-00010101000000-000000000000 // indirect
-	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880 // indirect
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d // indirect
 	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-timeline-manager v0.0.0-00010101000000-000000000000 // indirect
