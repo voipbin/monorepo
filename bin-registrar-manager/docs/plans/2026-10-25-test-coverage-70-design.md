@@ -45,3 +45,7 @@
 - 기존 테스트 전부 통과, `go mod tidy` 후 go.mod/go.sum 변경 없음(신규 의존성 없음), `go vet`, `golangci-lint run`, `scripts/check-test-conventions.sh`(Test_ 이름, reflect.DeepEqual 과 t.Errorf, gomock 컨트롤러 이름 mc).
 - 변이 검사: 임시 복사본에서 오류 전파 제거, 분기 조건 반전, 상태코드 변경 표본을 적용해 새 테스트가 실패하는지 확인.
 - 변경 파일은 bin-registrar-manager/ 안의 `_test.go` 와 docs/plans 뿐(`git diff --stat origin/main...HEAD`). 비테스트 .go 변경 없음. 합성 값만 사용, 네트워크와 외부 비용 호출 없음.
+
+## 4. 구현 결과
+
+수기 합계 74.25% (2714/3655, 같은 제외 규칙과 측정 방법). 변경은 bin-registrar-manager 의 테스트 파일 5개이며 비테스트 .go 변경은 없다.
