@@ -95,7 +95,7 @@ cmd/storage-control (`main_test.go`, 전역 상태 `viper`, `config.Get()`, stdo
 - `initCommand`: 루트 `Use`, 하위 명령 트리(`Execute` 후 자동 추가되는 `completion`, `help` 는 단언 대상에서 제외하고 사용자 정의 명령만 이름으로 단언, `file`: create/get/list/delete, `account`: create/get/list/delete, `recording`: get/delete, `migrate`), `--database_dsn=invalid` 로 `migrate status` 실행 시 연결 없이 오류 `could not parse the database dsn` 반환(문구를 단언). `PersistentPreRunE` 의 플래그 반영 경로는 `Execute` 직전에 `DatabaseDSN` 을 직접 대입하므로(`once` 소진 대응) 이 테스트가 검증하지 않으며, 변이 검사 대상에서도 제외한다.
 - `runFileCreate` 입력 검증: 필수값을 하나씩 비운 표(customer, owner, reference id 형식 오류, reference-type, name, filename, bucket-name, filepath)별 오류 문구 단언과 그 시점까지 `init` 이 호출되지 않음(DSN 을 `invalid` 로 두었는데 오류 문구가 검증 문구이면 init 전에 return 한 것).
 - `runAccountCreate`: customer-id 비었음과 형식 오류.
-- 나머지 `run*` 8개와 `initStorageHandler`/`initAccountHandler`: `config.Get().DatabaseDSN = "invalid"` 일 때 `failed to initialize handlers` 로 래핑된 오류(내부 `could not connect to the database` 포함) 반환.
+- 나머지 `run*` 8개와 `config.Get().DatabaseDSN = "invalid"` 일 때 각 `run*` 는 `failed to initialize handlers` 로 래핑된 오류(내부 `could not connect to the database` 포함)를 반환하고, `initStorageHandler`/`initAccountHandler` 자체는 `could not connect to the database` 로 시작하는 오류를 반환한다.
 
 cmd/storage-manager (`main_test.go`, `init()` 자동 실행):
 - `rootCmd` 플래그 이름과 기본값을 리터럴로 단언(`database_dsn`, `prometheus_endpoint`, `redis_database` 기본 1 등)하되 기본값에 계정 문자열이 있는 `database_dsn` 과 `rabbitmq_address` 는 단언하지 않는다.
@@ -130,3 +130,10 @@ pkg 단순 구간:
 - `logDownloadURIFailure`: 반환값이 없으므로 logrus 테스트 hook 으로 레벨과 메시지를 단언할 수 있을 때만 포함하고, 불가하면 제외한다.
 - pkg 변이 검사(그룹당 최소 1개): `NewFileHandler` 의 파싱 실패 `return` 을 `nil` 반환으로, dbhandler 쓰기 함수의 `_ = h.accountUpdateToCache(...)` 를 `return err` 로, listenhandler 의 `QueryUnescape` 오류 무시, `url.Parse` 오류 무시, `ConvertStringMapToFieldMap` 의 UUID 오류 분기 제거, `CreateWebhookEvent` 의 마샬 오류 무시, `ApplyFields` 의 지원하지 않는 필터 오류 분기를 nil 로, filehandler `Create` 의 DB 생성 실패 처리 제거, `compress.go` 의 오류 return 변경. 구현한 그룹만 해당하며, 변이에서 신규 테스트가 실패하지 않는 그룹은 테스트를 고치거나 제외한다.
 - 위 제외로 pkg 단순 구간의 실제 도달 수는 61보다 작아질 수 있으나(최대 약 56) 필수 경로는 cmd 이므로 결론에 영향이 없다.
+
+## 3. 구현 결과 (구현 단계 실측)
+
+- 수기 합계 2542 statement 중 2151 커버, 84.62% (기준선 68.37%). 기준선은 subscribehandler 고루틴 계측 때문에 실행마다 ±1 statement 변동한다.
+- 패키지별: cmd/storage-control 0.0 → 67.1, cmd/storage-manager 0.0 → 36.1, internal/config 90.4 → 95.9, pkg/filehandler 89.1 → 91.6, pkg/listenhandler 91.8 → 92.3, 나머지 불변.
+- pkg 중 구현한 그룹: LoadGlobalConfig 필드 매핑, errorResponse typed nil, wav 경계. dbhandler, NewFileHandler, models, url.Parse 계열은 이미 70% 를 크게 넘어 추가하지 않았다.
+- 변이 검사 12건 모두 신규 테스트가 실패로 잡음.
