@@ -28,3 +28,38 @@
 후순위 대상(cmd/ 전체 statement 505개, cachehandler 59개, 합 564개)의 미커버 약 548개를 빼도 나머지 미커버가 약 600개이므로 필요량(약 187개)은 산술적으로 달성 가능하다. 재측정 시 cmd/route-manager 의 커버 수가 실행마다 3개 내외 달라질 수 있다.
 
 반증하지 못한 주장: 기준선 수치, 60%까지의 필요량. 틀린 주장: 없음. 모호한 부분: "cmd/ 의 main" 은 테스트하기 어려우므로 다른 패키지로 채운다(카드 본문이 허용).
+
+## 2. 설계 (계획)
+
+범위: bin-route-manager 안의 `_test.go` 추가, sqlite 테스트 스키마 fixture 1개(`scripts/database_scripts/table_providercalls.sql`, 마이그레이션 baseline 의 route_providercalls 를 sqlite 문법으로 옮김) 추가. 제품 코드와 시그니처 변경 없음. 외부 호출과 네트워크 의존 없음(telnyx 는 기존 테스트처럼 `httptest.Server`).
+
+대상과 verify 항목(구현 시작 후 테스트 작성, 이 단계에서는 코드 없음):
+
+1. `pkg/dbhandler/providercall_test.go` (추정 +100 stmt)
+   - Create 후 Get 왕복에서 nil 슬라이스(Destinations, CallIDs, GroupcallIDs)가 빈 배열로 저장되고 TMCreate 가 주입된 시각이며 TMUpdate/TMDelete 가 nil.
+   - Get 미존재 id 는 `ErrNotFound`.
+   - List: token 미지정 시 현재 시각 사용, limit 적용, `tm_create DESC` 정렬, customer_id 와 provider_id 필터, soft delete 된 행 제외, 알 수 없는 필터 필드의 오류.
+   - Delete: 대상 행의 tm_delete/tm_update 설정, 미존재 id 는 `ErrNotFound`, 삭제 후 List 에서 제외, Get 은 삭제 행을 반환(코드상 Get 은 tm_delete 를 거르지 않음).
+   - `ProviderUpdateHealthStatus`: health_status 와 health_checked_at 갱신 확인(기존 provider 테이블 사용).
+2. `pkg/listenhandler/v1_providercalls_test.go` (추정 +110 stmt)
+   - Post: 요청 본문이 providerCallHandler.Create 의 인자(customer, provider, flow, actions, source, destinations, anonymous)로 정확히 전달되고 200 응답 본문이 일치, 잘못된 JSON 은 오류, 핸들러 오류 전파.
+   - Get: page_size/page_token 파싱, customer_id/provider_id 필터 uuid 변환, 잘못된 uuid 는 핸들러 호출 없이 오류, 핸들러 오류 전파.
+   - IDGet/IDDelete: URI 에서 id 추출 후 핸들러 호출, 핸들러 오류 전파.
+   - `processRequest` 에 providercalls 4개 라우트 case 추가로 분기 확인.
+3. `pkg/providercallhandler`: Get 의 `dbhandler.ErrNotFound` 가 NotFound 도메인 오류로 변환되는지와 그 외 오류는 그대로 전파, List/Delete 의 db 오류 경로, Delete 후 재조회 실패 경로와 이벤트 미발행 확인.
+4. `models/providercall/webhook_test.go`: ConvertWebhookMessage 가 모든 필드를 옮기는지(필드별 비교, 입력과 기대값을 별도 리터럴로 작성), CreateWebhookEvent 가 유효 JSON 이고 json 키(`call_ids`, `groupcall_ids` 등)가 맞는지.
+5. `internal/config`: 환경변수로 값을 주입한 뒤 Bootstrap + LoadGlobalConfig 가 모든 필드에 반영되고, 환경변수가 없으면 flag 기본값이 쓰이는지. `sync.Once` 와 viper 전역 때문에 한 테스트 함수에서 순서대로 검증(환경변수 경유는 `t.Setenv`). 실패하면 확인이 어려운 전역 상태를 건드리지 않도록 이 항목은 후순위로 두고 필요량이 부족할 때만 쓴다.
+6. `pkg/telnyxclient`: `parseRejectedCountries`(marker 없음, 2글자 코드만 선택, 공백 처리), `CreateOutboundVoiceProfile` 의 미테스트 응답 분기를 httptest 로 검증.
+7. 필요량이 부족하면 healthcheckhandler.Run(컨텍스트 취소로 종료), providerhandler.Setup 오류 경로를 추가한다. 부족하지 않으면 추가하지 않는다.
+
+제외: cmd/, cachehandler(후순위, 1절 참조).
+
+금지 사항: 빈 호출 테스트, 입력과 기대값을 같은 변수로 만드는 자기비교 테스트. 모든 기대값은 독립 리터럴로 쓴다. 테스트 값은 합성값만 쓴다.
+
+검증 절차:
+- 서비스 디렉터리에서 `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`, `bash scripts/check-test-conventions.sh`(Test_ 네이밍, gomock 컨트롤러 이름 mc) 통과.
+- 수기 합계를 `GOFLAGS=-mod=mod go test -count=1 -coverprofile` 와 집계 스크립트로 측정해 61% 이상(최소 60.0%). 패키지별 전후 표를 PR 본문에 쓴다.
+- 변이 검사(표본, scratch 사본에서만): (a) providercall Delete 의 RowsAffected==0 분기 제거, (b) List 의 tm_delete 필터 제거, (c) listenhandler 필터 uuid 변환 오류를 무시, (d) providercallhandler.Get 의 NotFound 변환 제거. 각 변이에서 새 테스트가 실패해야 한다.
+- 변경 파일은 `git diff --stat origin/main...HEAD` 로 bin-route-manager/ 안에만 있음을 확인.
+
+롤백: 테스트와 fixture 와 문서만 추가하므로 PR revert 로 충분하다. 운영과 DB 스키마 영향 없음.
