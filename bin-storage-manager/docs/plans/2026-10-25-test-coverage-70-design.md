@@ -29,7 +29,7 @@
 
 ### 1.3 미커버 분석 (함수 단위 statement 수, 기준선 프로파일에서 직접 집계)
 
-미커버 804개 중 670개가 cmd/ 에 있고 134개가 pkg/internal/models 에 있다. 134개를 전부 덮으면 (1738+134)/2542 = 73.6% 이므로 산술상 pkg 만으로도 가능하지만, 아래 분류에서 pkg 의 도달 불가가 약 50개이고 도달 가능 약 85개 중 일부(GCS 본문 읽기, zip 쓰기)는 fake 확장이 필요해 여유가 작다. 반면 cmd 에서 외부 연결 없이 닿는 구간은 약 380개로 필요한 67개의 몇 배이며 fake 도 필요 없다. 따라서 우선순위는 cmd 의 도달 가능 구간(주 경로), pkg 의 오류 경계와 입력 검증(품질 경로) 순이다.
+미커버 804개 중 670개가 cmd/ 에 있고 134개가 pkg/internal/models 에 있다. 134개를 전부 덮으면 (1738+134)/2542 = 73.6% 이므로 산술상 pkg 만으로도 가능하지만, 아래 분류에서 pkg 의 도달 불가가 46개이고 도달 가능 88개 중 29개(GCS 본문 읽기, zip 쓰기)는 fake 확장이 필요해 단순 구간만으로는 59개로 71% 에 필요한 67개에 못 미친다. 반면 cmd 에서 외부 연결 없이 닿는 구간은 약 380개로 필요한 67개의 몇 배이며 fake 도 필요 없다. 따라서 우선순위는 cmd 의 도달 가능 구간(주 경로), pkg 의 오류 경계와 입력 검증(품질 경로) 순이다.
 
 cmd/storage-control (미커버 490):
 
@@ -44,7 +44,7 @@ cmd/storage-control (미커버 490):
 | `initStorageHandler`/`initAccountHandler` 의 연결 실패 return | 약 6 | 가능 |
 | `initCache`, `initHandler`, 위 함수들의 연결 이후 구간, 각 `run*` 의 성공 경로, `main` | 약 168 | 불가(Redis, RabbitMQ, DB 연결 필요, 주입 지점 없음) |
 
-DSN 주의: `commondatabasehandler.Connect` 는 `sql.Open` 다음 `PingContext` 이다. go-sql-driver 는 `sql.Open` 에서 `ParseDSN` 으로 DSN 을 파싱하므로 `ParseDSN` 이 거부하는 값(슬래시가 없는 문자열, 빈 문자열)만 네트워크 없이 실패한다. 형식은 맞지만 닿지 않는 호스트는 Ping 에서 네트워크를 타므로 쓰지 않는다. 설정은 `config.Get()` 포인터에 직접 대입하거나 `--database_dsn` 플래그로 준다.
+DSN 주의: `commondatabasehandler.Connect` 는 `sql.Open` 다음 `PingContext` 이다. go-sql-driver 는 `sql.Open` 에서 `ParseDSN` 으로 DSN 을 파싱하며, 슬래시가 없는 비어 있지 않은 문자열(예: `invalid`)만 네트워크 없이 실패한다. 빈 문자열은 파싱을 통과해 로컬 3306 으로 연결을 시도하므로 쓰지 않고, 형식이 맞는 DSN 도 쓰지 않는다. 설정 주입은 두 경로를 섞지 않는다: `run*` 와 `init*Handler` 직접 호출 테스트는 `config.Get().DatabaseDSN` 에 위 값을 대입하고, 루트 명령을 `Execute` 하는 테스트(`migrate` 클로저)는 `PersistentPreRunE` 의 `LoadGlobalConfig`(sync.Once)가 `globalConfig` 전체를 덮어쓰므로 `--database_dsn` 플래그로 같은 값을 준다. `Execute` 테스트는 첫 실행의 값이 고정되므로 같은 DSN 만 쓴다.
 
 cmd/storage-manager (미커버 180):
 
@@ -54,24 +54,24 @@ cmd/storage-manager (미커버 180):
 | `runListen` 6, `runSubscribe` 6 | 12 | 가능(sockhandler mock) |
 | `createDBHandler` 의 DSN 파싱 실패 return | 약 5 | 가능 |
 | `signalHandler` 3 | 3 | 가능하나 `init()` 의 고루틴과 경합하므로 시그널을 보내지 않고 제외 |
-| `run` | 27 | 앞부분(Bootstrap 오류 return)만 가능. `initProm`(전역 `http.Handle` 과 포트 바인딩)을 먼저 부르므로 `run` 호출은 제외 |
+| `run` | 27 | 불가. `Bootstrap` 오류 return 은 정상 입력에서 닿지 않고, `initProm`(전역 `http.Handle` 과 포트 바인딩)을 먼저 부르므로 호출 자체를 제외 |
 | `initProm` 13, `runService` 61, `createDBHandler` 연결 이후, `main` 3 | 약 90 | 불가(연결, 포트 바인딩) |
 
-pkg/internal/models (미커버 134) 함수 단위 분류:
+pkg/internal/models (미커버 134) 분류. 미커버 블록 목록을 하나씩 분류한 값이며 도달 가능성은 구현 단계에서 실측으로 확인한다.
 
-| 분류 | statement | 비고 |
+| 분류 | statement | 내용 |
 |---|---|---|
-| 도달 불가 | 약 50 | listenhandler 의 마샬 실패 분기 23, dbhandler 의 `PrepareFields`/`ToSql` 실패 18, rows affected 오류 2, `bindConfig`/`Bootstrap` 바인딩 오류 3, 고루틴 안 `ConsumeMessage`/`ConsumeRPC` 오류 로그 2, 빈 `Init` 1 등 |
-| 도달 가능, 단순 | 약 40 | `decodeWavPeaks`/`readWavHeader` 경계 15(다채널, 버킷 수가 프레임 수보다 큼, 잘린 스트림, 홀수 크기 미지 청크, 잘린 청크 헤더, 빈 결과), `LoadGlobalConfig` 4, models 변환 오류 4, `v1_recordings` 의 퍼센트 디코딩 오류 3, `compress.go` 2, `file.go` `Get` 3, `storagehandler` 1, `NewFileHandler` 인증 파일 분기 5, dbhandler 캐시 쓰기 실패 4 |
-| 도달 가능, fake 확장 필요 | 약 40 | `PeaksComputeByFile` 9(GCS 객체 본문 읽기), `bucketfile` 의 이동, 압축, 서명 URL 오류 10, `file.go` `Create` 10 |
+| 도달 불가 | 46 | listenhandler 마샬 실패 분기 23, dbhandler `PrepareFields`/`ToSql` 실패 16, rows affected 오류 2, `bindConfig`/`Bootstrap` 바인딩 오류 3, 고루틴 안 `ConsumeMessage`/`ConsumeRPC` 오류 로그 2 (빈 `Init` 은 0 statement 라 집계 밖) |
+| 도달 가능, 단순 | 59 | `ApplyFields` 오류 2(지원하지 않는 필터 타입), dbhandler 행 스캔과 변환 오류 6, 캐시 쓰기 실패 4, listenhandler `url.Parse` 오류 4, `errorResponse` 2, `v1_recordings` 퍼센트 디코딩 오류 3, `logDownloadURIFailure` 1, `processEvent` 오류 로그 1, `compress.go` 2, `file.go` `Get` 3, `storagehandler` 1, models 변환 오류 4, `LoadGlobalConfig` 4, `NewFileHandler` 인증 파일 분기 7, `decodeWavPeaks`/`readWavHeader` 경계 15 |
+| 도달 가능, fake 확장 필요 | 29 | `PeaksComputeByFile` 9(GCS 객체 본문 읽기), `bucketfile` 의 이동, 압축, 서명 URL 오류 10, `file.go` `Create` 10 |
 
-산술 근거: 도달 가능한 cmd 약 380 + pkg 단순 약 40 = 약 420 로 필요한 67 의 6배 이상이고 fake 확장 구간은 필요하면 추가한다.
+세 분류의 합은 46+59+29 = 134 이다. 산술 근거: 도달 가능한 cmd 약 380 + pkg 단순 59 = 약 440 으로 필요한 67 의 6배 이상이다. 위 수치 중 "약 N" 은 소스 줄 수로 환산한 추정이며(프로파일 블록은 소스 줄 수와 일치하지 않는다) 구현 단계에서 항상 프로파일로 실측해 확인한다. fake 확장 구간은 필요할 때만 추가한다.
 
 ### 1.4 위험과 제약
 
 - 전역 상태: viper, `config.Get()`, `http.DefaultServeMux`, `STORAGE_EMULATOR_HOST` 환경변수. 이를 바꾸는 테스트는 `t.Parallel` 을 쓰지 않고 `t.Cleanup` 으로 복원한다.
-- `config` 의 `sync.Once` 는 패키지 밖에서 초기화할 수 없다. cmd 테스트는 `LoadGlobalConfig` 에 의존하지 않고 `config.Get()` 포인터를 직접 설정한다.
+- `config` 의 `sync.Once` 는 패키지 밖에서 초기화할 수 없다. 설정 주입 방식은 1.3 의 DSN 주의를 따른다.
 - cmd/storage-manager 의 `init()` 은 테스트 패키지가 생기면 자동 실행되어 42 statement 가 따라온다.
 - 전역 상태 추가: `run*` 는 `viper` 전역 값을 읽으므로 `viper.Reset()` 으로 복원한다. `printJSON` 은 stdout 에 쓰므로 표준출력을 파이프로 바꿔 검사하고 복원한다. `initCommand` 는 바인딩 오류 시 `cobra.CheckErr` 로 프로세스를 종료하므로 정상 경로만 호출한다. cmd/storage-manager 의 `init()` 은 `signal.Notify` 와 `go signalHandler()` 를 이미 실행하므로 테스트에서 시그널을 보내지 않는다.
 - 결함 발견 시 고치지 않고 카드 코멘트에만 기록한다.
-- VOIP-1416(80% 미만 패키지 일반 상향)과 겹치는 패키지는 없다(현재 모든 pkg 패키지가 80% 이상이고 cmd 만 0%). 겹치는 경우 PR 본문에 명시만 한다.
+- VOIP-1416(80% 미만 패키지 일반 상향)과 겹침은 PR 본문에 명시만 한다. 수기 기준으로는 pkg 패키지가 모두 80% 이상(최저 87.5%)이고 cmd 만 0% 이다. 원본 Go 출력 기준(mock 포함)으로는 cachehandler 61.3%, accounthandler 70.9%, dbhandler 74.2% 가 80% 미만이므로 어느 기준인지 PR 본문에 같이 적는다.
