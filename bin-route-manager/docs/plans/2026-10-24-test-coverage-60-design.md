@@ -64,3 +64,7 @@
 - 변경 파일은 `git diff --stat origin/main...HEAD` 로 bin-route-manager/ 안에만 있음을 확인.
 
 롤백: 테스트와 fixture 와 문서만 추가하므로 PR revert 로 충분하다. 운영과 DB 스키마 영향 없음.
+
+## 3. 구현 결과
+
+항목 1, 1-b, 2, 3, 4, 6 을 구현했다. 수기 합계가 65.3% 로 목표를 넘어 항목 5(config)와 항목 7(healthcheck, providerhandler 추가)은 구현하지 않았다.

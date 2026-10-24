@@ -1,7 +1,6 @@
 package providercall
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 	"time"
@@ -70,9 +69,6 @@ func Test_CreateWebhookEvent(t *testing.T) {
 	expect := `{"id":"d1000000-0000-0000-0000-000000000002","customer_id":"d2000000-0000-0000-0000-000000000002","provider_id":"d3000000-0000-0000-0000-000000000002","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"anonymous":"auto","call_ids":["d5000000-0000-0000-0000-000000000002"],"groupcall_ids":["d6000000-0000-0000-0000-000000000002"],"tm_create":null,"tm_update":null,"tm_delete":null}`
 	if string(res) != expect {
 		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", expect, res)
-	}
-	if !json.Valid(res) {
-		t.Errorf("Wrong match. expect: valid json")
 	}
 }
 

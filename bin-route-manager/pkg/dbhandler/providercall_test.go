@@ -27,6 +27,22 @@ func newProviderCallTestHandler(mc *gomock.Controller) (*handler, *utilhandler.M
 	return h, mockUtil
 }
 
+// cleanupProviderCalls removes the given rows before and after the test, because the sqlite
+// database is shared by all tests of the package and the test ids are fixed.
+func cleanupProviderCalls(t *testing.T, ids ...uuid.UUID) {
+	t.Helper()
+
+	del := func() {
+		for _, id := range ids {
+			if _, err := dbTest.Exec("DELETE FROM route_providercalls WHERE id = ?", id.Bytes()); err != nil {
+				t.Errorf("could not clean up the row. id: %s, err: %v", id, err)
+			}
+		}
+	}
+	del()
+	t.Cleanup(del)
+}
+
 func Test_ProviderCallCreate_Get(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -103,6 +119,7 @@ func Test_ProviderCallCreate_Get(t *testing.T) {
 
 			h, mockUtil := newProviderCallTestHandler(mc)
 			ctx := context.Background()
+			cleanupProviderCalls(t, tt.providerCall.ID)
 
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			if err := h.ProviderCallCreate(ctx, tt.providerCall); err != nil {
@@ -141,6 +158,7 @@ func Test_ProviderCallCreate_DuplicateID(t *testing.T) {
 	ctx := context.Background()
 
 	id := uuid.FromStringOrNil("a1000000-0000-0000-0000-000000000009")
+	cleanupProviderCalls(t, id)
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 0, 0, 0, 0, time.UTC))).Times(2)
 
 	if err := h.ProviderCallCreate(ctx, &providercall.ProviderCall{ID: id}); err != nil {
@@ -168,6 +186,7 @@ func Test_ProviderCallList(t *testing.T) {
 
 	h, mockUtil := newProviderCallTestHandler(mc)
 	ctx := context.Background()
+	cleanupProviderCalls(t, idJan, idFeb, idMar, idOther, idDeleted)
 
 	// the sqlite database is shared by all tests, so every row of this test uses its own customer ids
 	seeds := []struct {
@@ -219,6 +238,13 @@ func Test_ProviderCallList(t *testing.T) {
 			[]uuid.UUID{idFeb, idJan},
 		},
 		{
+			// the token is written in the format sqlite stores, so it equals the Feb row's tm_create exactly
+			"row created exactly at the token is excluded",
+			"2020-02-01 00:00:00+00:00", 10,
+			map[providercall.Field]any{providercall.FieldCustomerID: customerID},
+			[]uuid.UUID{idJan},
+		},
+		{
 			"customer and provider filters combine",
 			"2021-01-01T00:00:00.000000Z", 10,
 			map[providercall.Field]any{
@@ -262,6 +288,7 @@ func Test_ProviderCallList_DefaultToken(t *testing.T) {
 
 	customerID := uuid.FromStringOrNil("b2000000-0000-0000-0000-000000000010")
 	id := uuid.FromStringOrNil("b1000000-0000-0000-0000-000000000010")
+	cleanupProviderCalls(t, id)
 
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)))
 	if err := h.ProviderCallCreate(ctx, &providercall.ProviderCall{ID: id, CustomerID: customerID}); err != nil {
@@ -315,6 +342,7 @@ func Test_ProviderCallDelete(t *testing.T) {
 	ctx := context.Background()
 
 	id := uuid.FromStringOrNil("c1000000-0000-0000-0000-000000000001")
+	cleanupProviderCalls(t, id)
 	createdAt := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	deletedAt := time.Date(2020, 6, 1, 12, 0, 0, 0, time.UTC)
 
