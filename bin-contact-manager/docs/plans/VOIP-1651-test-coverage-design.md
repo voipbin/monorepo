@@ -32,7 +32,7 @@ Test rules checked by `scripts/check-test-conventions.sh` on added lines: `Test_
 ## Verify
 - Every new test asserts a concrete status code, body, mock call arguments or error text. No bare calls, no self comparison.
 - gomock strict expectations: for validation failures no downstream call is expected, so reaching it fails the test.
-- Mutation sample in a scratch copy (original worktree verified unchanged by `git diff`): 3 to 5 guards, including one `filterCount != 1` style check, one `customer_id` nil check, one `errorResponse` mapping, one `processRequest` route mis-wiring (one case calling the wrong handler) and, only when plan step 2 is executed, one dbhandler Tx error propagation (otherwise replaced by another listenhandler mutation so that 3 to 5 are always run). Only the count (N of N detected) is recorded in the card, not the guard locations.
+- Mutation sample in a scratch copy (original worktree verified unchanged by `git diff`): 3 to 5 guards, including one filter count validation check, one customer id nil check, one error response mapping, one `processRequest` route mis-wiring (one case calling the wrong handler) and, only when plan step 2 is executed, one dbhandler Tx error propagation (otherwise replaced by another listenhandler mutation so that 3 to 5 are always run). Only the count (N of N detected) is recorded in the card, not the guard locations.
 - Every error path test asserts the status code and that the downstream mock is not called. Each dbhandler sqlmock test asserts `ExpectationsWereMet`.
 - Measurement command (run in a scratch copy only, since `-mod=mod` may touch go.mod and go.sum): `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` then the hand-written filter (drop `/gens/`, `mock_*`, `Code generated` + `DO NOT EDIT` header files, merge duplicate blocks by max count), first reproduced as 2565/3831 before any change.
 - Full workflow: `go mod tidy` (no go.mod or go.sum diff expected), `go mod vendor`, `go generate ./...`, `go test -race -count=1 ./...`, `golangci-lint run -v --timeout 5m`, `git fetch origin main` then `bash scripts/check-test-conventions.sh` (run from the repository root), re-measure with the same method. Target 71% or more, interim check after each plan step.
@@ -40,4 +40,7 @@ Test rules checked by `scripts/check-test-conventions.sh` on added lines: `Test_
 - Test values are synthetic. No network, no external cost.
 
 ## Out of scope
-Product code behavior changes, `cmd/*` mains, packages tracked by VOIP-1416 beyond the files above (stated in the PR body, not absorbed).
+Product code behavior changes, `cmd/*` mains, other packages below 80% coverage beyond the files above.
+
+## Result
+Plan step 1 alone raised the hand-written total from 66.95% to 74.16% (2841/3831), so the conditional dbhandler step and the optional step 3 were not executed.
