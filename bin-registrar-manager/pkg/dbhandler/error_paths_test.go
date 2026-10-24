@@ -3,6 +3,7 @@ package dbhandler
 import (
 	"context"
 	"errors"
+	"reflect"
 	"testing"
 	"time"
 
@@ -138,8 +139,8 @@ func Test_CacheHit_SkipsDB(t *testing.T) {
 			if err != nil {
 				t.Fatalf("expected no error, got: %v", err)
 			}
-			if res == nil {
-				t.Fatalf("expected the cached value, got nil")
+			if !reflect.DeepEqual(res, tt.want) {
+				t.Errorf("wrong match.\nexpect: %v\ngot: %v", tt.want, res)
 			}
 			if err := mock.ExpectationsWereMet(); err != nil {
 				t.Errorf("unexpected db interaction: %v", err)

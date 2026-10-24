@@ -43,7 +43,7 @@ func Test_MigrateToShortDomain_failures(t *testing.T) {
 	legacy := &customerdomain.CustomerDomain{
 		CustomerID:  customerID,
 		DomainLabel: "a1a1a1a1-7f83-11ee-8f5a-1b2c3d4e5f60",
-		Realm:       "a1a1a1a1-7f83-11ee-8f5a-1b2c3d4e5f60.reg.voipbin.net",
+		Realm:       "a1a1a1a1-7f83-11ee-8f5a-1b2c3d4e5f60.reg.example.test",
 	}
 
 	tests := []struct {
@@ -116,7 +116,7 @@ func Test_UpdateByCustomerID_failures(t *testing.T) {
 		wantIs error
 	}{
 		{
-			name: "empty label is rejected before any db call", label: "", realm: "ab12.reg.voipbin.net",
+			name: "empty label is rejected before any db call", label: "", realm: "ab12.reg.example.test",
 			setup: func(m *dbhandler.MockDBHandler) {},
 		},
 		{
@@ -124,7 +124,7 @@ func Test_UpdateByCustomerID_failures(t *testing.T) {
 			setup: func(m *dbhandler.MockDBHandler) {},
 		},
 		{
-			name: "update failure", label: "ab12", realm: "ab12.reg.voipbin.net",
+			name: "update failure", label: "ab12", realm: "ab12.reg.example.test",
 			setup: func(m *dbhandler.MockDBHandler) {
 				m.EXPECT().CustomerDomainUpdate(ctx, customerID, gomock.Any()).Return(errInjectedDomainDB)
 			},
