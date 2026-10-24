@@ -131,10 +131,12 @@ func runRPCCases(t *testing.T, cases []rpcCase) {
 				if !strings.Contains(err.Error(), "404") {
 					t.Errorf("Wrong match. the status code is missing in the error: %v", err)
 				}
-			default:
+			case statusSentinel:
 				if !errors.Is(err, ErrNotFound) {
 					t.Errorf("Wrong match. expect: %v, got: %v", ErrNotFound, err)
 				}
+			default:
+				t.Fatalf("Wrong match. unknown status mode: %d", tt.statusMode)
 			}
 			assertZeroResult(t, res)
 		})
