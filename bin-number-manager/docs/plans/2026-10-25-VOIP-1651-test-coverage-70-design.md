@@ -26,7 +26,7 @@
 | internal/config, pkg/requestexternal | - | 3 + 2 | 대상 아님 (requestexternal 2 는 도달 불가) |
 | 합계 | 1502/2282 | 780 | 323+116+70+120+45+76+10+9+1+5+3+2 = 780 |
 
-예상 증가: cachehandler 68 + numberhandler 약 90 + dbhandler 약 25 + models 12 = 약 195 stmt (예상 수기 합계 약 74%). 부족하면 listenhandler 와 subscribehandler 를 추가.
+예상 증가: cachehandler 68 + numberhandler 약 115 + dbhandler 약 25 + models 12 = 약 220 stmt (예상 수기 합계 약 74%). 부족하면 listenhandler 와 subscribehandler 를 추가.
 
 ## 3. Verify 항목 (설계 단계, 코드 없음)
 
@@ -35,7 +35,7 @@
 3. 비테스트 .go 변경 0. `git diff --stat origin/main...HEAD` 가 bin-number-manager 의 _test.go, go.mod/go.sum(miniredis 추가 시), 이 문서뿐.
 4. go.mod/go.sum 변경은 miniredis v2.36.1 과 그 간접 의존성 gopher-lua v1.1.1 (bin-message-manager, bin-ai-manager 와 같은 버전)만. 테스트에서만 import, `go mod tidy` 후 추가 diff 없음.
 5. 기대값은 리터럴 또는 독립 계산. 제품 함수 출력으로 기대값을 만드는 자기비교 금지. 빈 호출 금지.
-6. 변이 표본 최소 4개(여기에 EventFlowDeleted 페이지네이션 경계 `< 1000` 을 `<= 1000` 으로 바꾸는 변이를 추가해 정확히 1000건과 999건 케이스가 구분되는지 확인)(변이와 원복은 scratch 사본에서만 하고 구현 worktree 의 비테스트 .go 변경 0 확인과 분리): 가상번호 필터의 existingSet 제거 무력화, Delete switch 의 Twilio 분기 변경, cachehandler 키 접두사(`number:`/`number-number:`) 변경, 웹훅 변환에서 필드 하나 누락. 추가로 Create 롤백 호출 제거.
+6. 변이 표본 최소 4개(여기에 EventFlowDeleted 페이지네이션 경계 `< 1000` 을 `<= 1000` 으로 바꾸는 변이를 추가해 1000건 케이스에서 NumberList 와 TimeGetCurTime 을 Times(2) 로 엄격히 고정해 이 변이를 죽이고, 999건 케이스는 1000 미만 종료의 경계 확인용)(변이와 원복은 scratch 사본에서만 하고 구현 worktree 의 비테스트 .go 변경 0 확인과 분리): 가상번호 필터의 existingSet 제거 무력화, Delete switch 의 Twilio 분기 변경, cachehandler 키 접두사(`number:`/`number-number:`) 변경, 웹훅 변환에서 필드 하나 누락. 추가로 Create 롤백 호출 제거.
 7. `go generate ./...` 실행 후 비테스트 .go(mock 포함) diff 가 생기지 않는지 확인. 합성값만. 외부 호출과 네트워크 의존 없음(miniredis 는 로컬 루프백 리스너).
 8. 가상번호 후보는 난수이므로 후보 집합에 의존하는 단언은 gomock DoAndReturn 으로 실제 전달된 후보를 받아 부분 집합으로 단언하고 고정 시드나 난수값 비교는 하지 않음.
 
@@ -56,7 +56,7 @@
 - renew.go 는 목록 조회 mock 의 두 번째 호출이 빈 목록을 반환하도록 구성한다. renew.go 미커버(35-36, 40-42, 59-61, 81-82, 125-127, 144-146): RenewNumbers 의 days/hours/tmRenew 모두 빔, renewNumbersByTMRenew 의 목록 조회 오류, 잔액 부족 시 Delete 실패해도 계속, renewNumbersByDays/ByHours 의 하위 오류 wrap.
 
 ### 4.4 pkg/dbhandler (기존 sqlite TestMain 재사용)
-- 닫힌 DB 케이스는 반드시 별도 `sql.Open` 으로 만든 `*sql.DB` 를 닫아 쓰고, 공유 전역 `dbTest` 는 닫지 않는다. 닫힌 sql.DB 로 만든 handler 에서 각 메서드(Create/Get/List/Update/Delete/GetExistingNumbers/CountVirtual/GetsByTMRenew)의 쿼리 또는 Exec 오류 전파(약 8-9 stmt).
+- 닫힌 DB 케이스는 반드시 별도 `sql.Open("sqlite3", ":memory:")`(공유 캐시 DSN 이 아닌 단독 메모리 DB)로 만든 `*sql.DB` 를 닫아 쓰고, 공유 전역 `dbTest` 는 닫지 않는다. 닫힌 sql.DB 로 만든 handler 에서 각 메서드(Create/Get/List/Update/Delete/GetExistingNumbers/CountVirtual/GetsByTMRenew)의 쿼리 또는 Exec 오류 전파(약 8-9 stmt).
 - ApplyFields 에 지원되지 않는 값 타입(예: struct 나 slice)의 필터를 넣는 NumberList/NumberGetsByTMRenew 오류(190, 378), 캐시 mock 오류 분기: numberGetFromCache 오류 시 DB 폴백(NumberGet), NumberList 에서 token 이 빈 문자열일 때 utilHandler.TimeGetCurTime 호출(handler.utilHandler 에 mock 주입), NumberGetFromCacheByNumber 의 성공 반환과 오류 전달, NumberGet 의 캐시 히트 경로(DB 미조회), numberSetToCache/numberUpdateToCache 오류는 비공개 함수를 같은 패키지에서 직접 호출해 전파를 확인하고 공개 메서드에서는 캐시 오류가 나도 DB 결과는 성공(`_ =` 로 버려짐)임을 확인.
 - 도달 불가로 제외: squirrel ToSql 오류, PrepareFields/ScanRow 오류(열 구성이 고정). main.go NewHandler 4 stmt 는 db 와 cache 가 보존되고 util 이 nil 이 아님을 단언하는 1개 케이스만(빈 호출 아님). 예상 도달 약 25 of 45.
 
