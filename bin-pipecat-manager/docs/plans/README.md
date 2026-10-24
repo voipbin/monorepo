@@ -11,3 +11,5 @@ Design documents and implementation plans for non-trivial changes.
 | [2026-09-07-team-pipeline-text-mode-issue-analysis.md](2026-09-07-team-pipeline-text-mode-issue-analysis.md) | 2026-09-07 | Issue analysis: webchat AI Talk (Team) always replies with backstop text |
 | [2026-09-07-team-pipeline-text-mode-gate-design.md](2026-09-07-team-pipeline-text-mode-gate-design.md) | 2026-09-07 | Design: gate team-pipeline TTS/STT on the session's audio mode |
 | [2026-09-07-team-pipeline-text-mode-gate-plan.md](2026-09-07-team-pipeline-text-mode-gate-plan.md) | 2026-09-07 | Implementation plan: gate team-pipeline TTS/STT on session audio mode |
+| [2026-10-24-test-coverage-60-design.md](2026-10-24-test-coverage-60-design.md) | 2026-10-24 | Design: unit test coverage to 60% |
+| [2026-10-24-test-coverage-65-design.md](2026-10-24-test-coverage-65-design.md) | 2026-10-24 | Design: unit test coverage to 65% |
