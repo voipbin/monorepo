@@ -86,7 +86,7 @@ func (h *listenHandler) processV1ConferencecallsIDGet(ctx context.Context, m *so
 	cc, err := h.conferencecallHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not remove the call from the conference. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	tmp, err := json.Marshal(cc)
@@ -121,7 +121,7 @@ func (h *listenHandler) processV1ConferencecallsIDDelete(ctx context.Context, m 
 	cc, err := h.conferencecallHandler.Terminate(ctx, id)
 	if err != nil {
 		log.Errorf("Could not remove the call from the conference. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	tmp, err := json.Marshal(cc)

@@ -394,6 +394,7 @@ func (h *conferenceHandler) AddConferencecallID(ctx context.Context, id uuid.UUI
 	res, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get updated conference info. err: %v", err)
+		return nil, errors.Wrap(err, "could not get updated conference info")
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conference.EventTypeConferenceUpdated, res)
 
@@ -420,6 +421,7 @@ func (h *conferenceHandler) UpdateStatus(ctx context.Context, id uuid.UUID, stat
 	res, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get updated conference info. err: %v", err)
+		return nil, errors.Wrap(err, "could not get updated conference info")
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conference.EventTypeConferenceUpdated, res)
 

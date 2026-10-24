@@ -439,6 +439,13 @@ func Test_Terminate_errors(t *testing.T) {
 			},
 		},
 		{
+			name: "conference lookup fails",
+			setup: func(ctx context.Context, m *testMocks) {
+				m.db.EXPECT().ConferencecallGet(ctx, ccID).Return(joined, nil)
+				m.conf.EXPECT().Get(ctx, confID).Return(nil, errTestFailure)
+			},
+		},
+		{
 			name: "status update to leaving fails: the call is not kicked",
 			setup: func(ctx context.Context, m *testMocks) {
 				m.db.EXPECT().ConferencecallGet(ctx, ccID).Return(joined, nil)

@@ -34,9 +34,9 @@ func (h *conferenceHandler) RecordingStart(
 	log.WithField("conference", cf).Debugf("Found conference info. conference_id: %s", cf.ID)
 
 	if cf.RecordingID != uuid.Nil {
-		return nil, errors.Wrapf(err, "recording is already progress. conference_id: %s, recording_id: %s", cf.ID, cf.RecordingID)
+		return nil, errors.Errorf("recording is already progress. conference_id: %s, recording_id: %s", cf.ID, cf.RecordingID)
 	} else if cf.Status != conference.StatusProgressing {
-		return nil, errors.Wrapf(err, "invalid status. conference_id: %s, status: %s", cf.ID, cf.Status)
+		return nil, errors.Errorf("invalid status. conference_id: %s, status: %s", cf.ID, cf.Status)
 	}
 
 	// send recording request

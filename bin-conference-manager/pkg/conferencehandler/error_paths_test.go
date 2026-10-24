@@ -526,10 +526,74 @@ func Test_Terminating_errors(t *testing.T) {
 			},
 			expectCause: errTestFailure,
 		},
+		{
+			name: "reading back the updated conference fails: no event is published",
+			setup: func(ctx context.Context, m *testMocks) {
+				gomock.InOrder(
+					m.db.EXPECT().ConferenceGet(ctx, id).Return(progressing(id), nil),
+					m.db.EXPECT().ConferenceUpdate(ctx, id, map[conference.Field]any{conference.FieldStatus: conference.StatusTerminating}).Return(nil),
+					m.db.EXPECT().ConferenceGet(ctx, id).Return(nil, errTestFailure),
+				)
+			},
+			expectCause: errTestFailure,
+		},
 	}
 
 	runErrorCases(t, tests, func(h *conferenceHandler, ctx context.Context) (*conference.Conference, error) {
 		return h.Terminating(ctx, id)
+	})
+}
+
+func Test_AddConferencecallID_errors(t *testing.T) {
+	id := uuid.FromStringOrNil("6c4b2e55-0e01-11f1-8b2f-7a3d4c5e6f01")
+	conferencecallID := uuid.FromStringOrNil("6c4b2e55-0e02-11f1-8b2f-7a3d4c5e6f02")
+
+	tests := []errorCase{
+		{
+			name: "adding the conferencecall fails",
+			setup: func(ctx context.Context, m *testMocks) {
+				m.db.EXPECT().ConferenceAddConferencecallID(ctx, id, conferencecallID).Return(errTestFailure)
+			},
+			expectCause: errTestFailure,
+		},
+		{
+			name: "reading back the conference fails: no event is published",
+			setup: func(ctx context.Context, m *testMocks) {
+				m.db.EXPECT().ConferenceAddConferencecallID(ctx, id, conferencecallID).Return(nil)
+				m.db.EXPECT().ConferenceGet(ctx, id).Return(nil, errTestFailure)
+			},
+			expectCause: errTestFailure,
+		},
+	}
+
+	runErrorCases(t, tests, func(h *conferenceHandler, ctx context.Context) (*conference.Conference, error) {
+		return h.AddConferencecallID(ctx, id, conferencecallID)
+	})
+}
+
+func Test_UpdateStatus_errors(t *testing.T) {
+	id := uuid.FromStringOrNil("6c4b2e55-0f01-11f1-8b2f-7a3d4c5e6f01")
+
+	tests := []errorCase{
+		{
+			name: "status update fails",
+			setup: func(ctx context.Context, m *testMocks) {
+				m.db.EXPECT().ConferenceUpdate(ctx, id, map[conference.Field]any{conference.FieldStatus: conference.StatusProgressing}).Return(errTestFailure)
+			},
+			expectCause: errTestFailure,
+		},
+		{
+			name: "reading back the conference fails: no event is published",
+			setup: func(ctx context.Context, m *testMocks) {
+				m.db.EXPECT().ConferenceUpdate(ctx, id, map[conference.Field]any{conference.FieldStatus: conference.StatusProgressing}).Return(nil)
+				m.db.EXPECT().ConferenceGet(ctx, id).Return(nil, errTestFailure)
+			},
+			expectCause: errTestFailure,
+		},
+	}
+
+	runErrorCases(t, tests, func(h *conferenceHandler, ctx context.Context) (*conference.Conference, error) {
+		return h.UpdateStatus(ctx, id, conference.StatusProgressing)
 	})
 }
 
@@ -576,6 +640,20 @@ func Test_RecordingStart_errors(t *testing.T) {
 				m.db.EXPECT().ConferenceGet(ctx, id).Return(nil, errTestFailure)
 			},
 			expectCause: errTestFailure,
+		},
+		{
+			name: "a recording is already stored",
+			setup: func(ctx context.Context, m *testMocks) {
+				withRecording := &conference.Conference{Identity: commonidentity.Identity{ID: id}, ConfbridgeID: confbridgeID, RecordingID: recordingID, Status: conference.StatusProgressing}
+				m.db.EXPECT().ConferenceGet(ctx, id).Return(withRecording, nil)
+			},
+		},
+		{
+			name: "conference is not progressing",
+			setup: func(ctx context.Context, m *testMocks) {
+				notProgressing := &conference.Conference{Identity: commonidentity.Identity{ID: id}, ConfbridgeID: confbridgeID, Status: conference.StatusStarting}
+				m.db.EXPECT().ConferenceGet(ctx, id).Return(notProgressing, nil)
+			},
 		},
 		{
 			name: "recording request fails: the recording id is not stored",
@@ -695,6 +773,13 @@ func Test_TranscribeStart_errors(t *testing.T) {
 				m.db.EXPECT().ConferenceGet(ctx, id).Return(nil, errTestFailure)
 			},
 			expectCause: errTestFailure,
+		},
+		{
+			name: "conference is not progressing",
+			setup: func(ctx context.Context, m *testMocks) {
+				notProgressing := &conference.Conference{Identity: commonidentity.Identity{ID: id, CustomerID: customerID}, ConfbridgeID: confbridgeID, Status: conference.StatusStarting}
+				m.db.EXPECT().ConferenceGet(ctx, id).Return(notProgressing, nil)
+			},
 		},
 		{
 			name: "transcribe request fails: the transcribe id is not stored",
