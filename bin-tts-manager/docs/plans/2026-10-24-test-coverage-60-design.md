@@ -32,7 +32,7 @@
 
 ## 4. 추가할 테스트 (우선순위순, 모두 로컬 전용, 외부 네트워크 없음)
 
-1. streaminghandler/elevenlabs: 로컬 `httptest` WebSocket 서버로 `SayAdd`, `SayFlush`, `SayStop`, `SayFinish`, `terminate`, `Run`, `runProcess`(오디오 디코드 오류, JSON 파싱 오류, 정상 종료 close, alignment 로 Finish 완료), `readConnWebsock`, `runKeepAlive`. 오류 경로: 잘못된 vendorConfig 타입, nil 연결, 닫힌 연결에서 쓰기 실패.
+1. streaminghandler/elevenlabs: 로컬 `httptest` WebSocket 서버로 `SayAdd`, `SayFlush`, `SayStop`, `SayFinish`, `terminate`, `Run`, `runProcess`(오디오 디코드 오류, JSON 파싱 오류, 정상 종료 close, alignment 로 Finish 완료), `readConnWebsock`, `runKeepAlive`. `connect` 는 호스트가 상수로 고정되어 제외(제품 코드 변경 금지). 오류 경로: 잘못된 vendorConfig 타입, nil 연결, 닫힌 연결에서 쓰기 실패.
 2. streaminghandler/say.go: `SayStop`, `SayFlush`, `SayFinish` 와 `SayAdd` 오류 경로(메시지 ID 불일치, VendorConfig nil, 알 수 없는 streaming). 가짜 streamer 로 위임과 오류 전파 확인.
 3. streaminghandler/run.go, streaming.go: `getStreamerByProvider` 모든 분기, `runStreamer`(미설정 provider, Init 실패, 성공 시 Run 호출과 VendorInfo 초기화), `UpdateConnAst`, `SetVendorInfo`.
 4. streaminghandler/gcp.go: `getVoiceID`(우선순위 3단계), `getVoiceIDByLangGender`, `extractLangCode`, `SayStop`, `SayFlush`, `SayFinish`, `closeStreamLocked` 를 가짜 `StreamingSynthesizeClient` 로 검증, `SayAdd` 의 Send 실패 후 재연결 불가 경로.
@@ -40,7 +40,7 @@
 6. audiohandler: `savePCMAsWAV` 헤더 바이트와 크기 필드 검증(임시 디렉터리), 쓰기 불가 경로 오류, `AudioCreate` 미지원 provider 오류.
 6b. audiohandler `awsAudioCreate`: awsClient 필드에 로컬 httptest 엔드포인트와 고정 테스트 자격의 polly 클라이언트를 주입해 voice 미결정 오류, 서비스 오류, 성공 경로 확인(저장 파일은 임시 디렉터리).
 7. cmd/tts-control: `resolveUUID` 의 빈 값, 잘못된 형식, 정상, `printJSON`, `runCreate` 입력 검증 오류. cmd/tts-manager: `initSignal`, `initProm` 의 빈 설정 즉시 반환 경로.
-8. 부족하면 listenhandler(v1_speakings, v1_streamings) 오류 경로로 보충.
+8. streaminghandler/websocket.go (`websocketConnect` 로컬 httptest WebSocket: MEDIA_START 정상, 바이너리 메시지, 연결 거부) 와 start.go 의 미커버 분기(mock 사용). 부족하면 listenhandler(v1_speakings, v1_streamings) 오류 경로로 보충.
 
 ## 5. verify 항목
 
