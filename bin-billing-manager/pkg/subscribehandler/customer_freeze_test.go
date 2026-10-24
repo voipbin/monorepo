@@ -83,7 +83,7 @@ func Test_processEvent_customerFrozenAndRecovered(t *testing.T) {
 			expectErrIs:     errHandler,
 		},
 		{
-			name: "frozen with broken data never reaches the handler",
+			name: "frozen with invalid data",
 			event: &sock.Event{
 				Publisher: "customer-manager",
 				Type:      cucustomer.EventTypeCustomerFrozen,
@@ -94,7 +94,7 @@ func Test_processEvent_customerFrozenAndRecovered(t *testing.T) {
 			expectAnyErr: true,
 		},
 		{
-			name: "recovered with broken data never reaches the handler",
+			name: "recovered with invalid data",
 			event: &sock.Event{
 				Publisher: "customer-manager",
 				Type:      cucustomer.EventTypeCustomerRecovered,
@@ -105,7 +105,7 @@ func Test_processEvent_customerFrozenAndRecovered(t *testing.T) {
 			expectAnyErr: true,
 		},
 		{
-			name: "frozen from another publisher is ignored",
+			name: "frozen from another publisher",
 			event: &sock.Event{
 				Publisher: "call-manager",
 				Type:      cucustomer.EventTypeCustomerFrozen,
@@ -199,7 +199,7 @@ func Test_SetFailedEventHandler(t *testing.T) {
 	}
 	SetFailedEventHandler(sh, mockInjected)
 
-	// customer_frozen with broken data fails in processEvent, so the failed event is saved.
+	// customer_frozen with invalid data fails in processEvent, so the failed event is saved.
 	event := &sock.Event{
 		Publisher: "customer-manager",
 		Type:      cucustomer.EventTypeCustomerFrozen,
@@ -207,7 +207,7 @@ func Test_SetFailedEventHandler(t *testing.T) {
 		Data:      []byte(`{"id":`),
 	}
 
-	// the error that processEvent returns for this event is deterministic (broken json),
+	// the error that processEvent returns for this event is deterministic (invalid data),
 	// and Save must receive it as it is.
 	h := sh.(*subscribeHandler)
 	expectErr := h.processEvent(event)

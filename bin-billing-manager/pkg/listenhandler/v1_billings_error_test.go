@@ -32,7 +32,7 @@ func Test_processV1BillingsGet_errors(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "broken filter json",
+			name: "invalid filter",
 			request: &sock.Request{
 				URI:    "/v1/billings?page_size=5",
 				Method: sock.RequestMethodGet,
@@ -52,7 +52,7 @@ func Test_processV1BillingsGet_errors(t *testing.T) {
 			expectRes: &sock.Response{StatusCode: 400},
 		},
 		{
-			name: "url can not be parsed",
+			name: "malformed uri",
 			request: &sock.Request{
 				URI:    "/%zz/v1/billings?page_size=5",
 				Method: sock.RequestMethodGet,
@@ -118,7 +118,7 @@ func Test_processV1BillingsGet_errors(t *testing.T) {
 	}
 }
 
-func Test_processV1BillingsGet_urlParseError(t *testing.T) {
+func Test_processV1BillingsGet_malformedURI(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -174,7 +174,7 @@ func Test_processV1BillingGet(t *testing.T) {
 			},
 		},
 		{
-			name: "id that is not a uuid is not routed",
+			name: "invalid id",
 			request: &sock.Request{
 				URI:    "/v1/billings/not-a-uuid",
 				Method: sock.RequestMethodGet,
@@ -192,7 +192,7 @@ func Test_processV1BillingGet(t *testing.T) {
 			expectRes: &sock.Response{StatusCode: 400},
 		},
 		{
-			name: "prefixed path is routed but has the wrong length",
+			name: "path with extra segments",
 			request: &sock.Request{
 				URI:    "/v1/billings/69cacd9e-f542-11ee-ab6d-afb3c2c93e56/v1/billings/6a1d387c-f542-11ee-b2cb-a36ed20fc369",
 				Method: sock.RequestMethodGet,
@@ -201,7 +201,7 @@ func Test_processV1BillingGet(t *testing.T) {
 			expectRes: &sock.Response{StatusCode: 400},
 		},
 		{
-			name: "url can not be parsed",
+			name: "malformed uri",
 			request: &sock.Request{
 				URI:    "/%zz/v1/billings/69cacd9e-f542-11ee-ab6d-afb3c2c93e56",
 				Method: sock.RequestMethodGet,

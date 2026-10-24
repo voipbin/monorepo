@@ -58,7 +58,7 @@ func Test_processV1AccountsIDPaddlePortalSessionPost(t *testing.T) {
 			expectRes: &sock.Response{StatusCode: 400},
 		},
 		{
-			name: "handler error is answered with 400",
+			name: "handler error",
 			request: &sock.Request{
 				URI:    "/v1/accounts/922907b6-0942-11ee-960e-f31d2cc10daa/paddle_portal_session",
 				Method: sock.RequestMethodPost,
@@ -71,7 +71,7 @@ func Test_processV1AccountsIDPaddlePortalSessionPost(t *testing.T) {
 			expectRes: &sock.Response{StatusCode: 400},
 		},
 		{
-			name: "wrong method is not routed",
+			name: "unsupported method",
 			request: &sock.Request{
 				URI:    "/v1/accounts/922907b6-0942-11ee-960e-f31d2cc10daa/paddle_portal_session",
 				Method: sock.RequestMethodGet,
