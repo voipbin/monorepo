@@ -145,3 +145,16 @@ func Test_NewHandler_passes_credentials_and_db(t *testing.T) {
 		t.Errorf("Wrong match. expect no key in database 0")
 	}
 }
+
+func Test_setSerialize_unmarshalable(t *testing.T) {
+	h, _ := setupTestHandler(t)
+
+	// a channel cannot be encoded, so nothing may reach the cache.
+	if err := h.setSerialize(context.Background(), "unmarshalable", make(chan int)); err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+
+	if h.Cache.Exists(context.Background(), "unmarshalable").Val() != 0 {
+		t.Errorf("Wrong match. expect: key not stored")
+	}
+}

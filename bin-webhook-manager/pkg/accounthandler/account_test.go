@@ -326,3 +326,39 @@ func Test_NewAccountHandler(t *testing.T) {
 		t.Errorf("Wrong match. expect: handler, got: nil")
 	}
 }
+
+func Test_UpdateByCustomer_update_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := accountHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	customer := &cscustomer.Customer{
+		ID:            uuid.FromStringOrNil("51a5325a-833d-11ec-8759-c79414e8a44e"),
+		WebhookMethod: "POST",
+		WebhookURI:    "test.com",
+	}
+	expect := &account.Account{
+		ID:            uuid.FromStringOrNil("51a5325a-833d-11ec-8759-c79414e8a44e"),
+		WebhookMethod: "POST",
+		WebhookURI:    "test.com",
+	}
+
+	// the account is still returned when the store update fails.
+	mockDB.EXPECT().AccountSet(gomock.Any(), expect).Return(fmt.Errorf("store down"))
+
+	res, err := h.UpdateByCustomer(context.Background(), customer)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if !reflect.DeepEqual(res, expect) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", expect, res)
+	}
+}
