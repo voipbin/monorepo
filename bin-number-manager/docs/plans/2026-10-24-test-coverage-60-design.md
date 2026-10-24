@@ -16,15 +16,17 @@ Hand-written coverage excludes `gens/`, `mock_*.go` and files whose header has `
 | pkg/numberhandlertelnyx | 0/72 | 0.0 |
 | pkg/cachehandler | 0/70 | 0.0 |
 | pkg/numberhandlertwilio | 0/28 | 0.0 |
+| other 5 packages (internal/config, models/availablenumber, models/number, requestexternal/models/telnyx, subscribehandler) | 180/208 | 86.5 |
 | total (hand-written) | 1099/2282 | 48.2 |
 
-Raw total including generated code and mocks is 42.1%. 60% needs 1370 covered statements, 61% needs 1392 (+293).
+Raw total including generated code and mocks is 42.1%. 60% needs 1370 covered statements, 61% needs 1392 (+293). The 61% target only leaves a margin for CI rounding differences. The five other packages are already near or above 60%, so they are not targets.
 
 Testability findings:
 - `cmd/*/main.go`: process wiring (DB, Redis, RabbitMQ, cobra). Not unit-testable without external services. Excluded from the plan.
 - `pkg/requestexternal/telnyx.go`: URLs are hardcoded, but the HTTP client is the package variable `telnyxHTTPClient`. An in-package test can replace its `Transport` with a fake `http.RoundTripper`. No network access and no product code change are needed.
-- `numberhandlertelnyx` and `numberhandlertwilio`: depend on the `RequestExternal` interface which has a gomock mock. Directly testable.
-- `cachehandler`: uses `*redis.Client`. Needs a fake server and `miniredis` is not in this module's go.mod, so it is not planned (adding a dependency changes go.mod/go.sum).
+- `numberhandlertelnyx`: depends on the `RequestExternal` interface which has a gomock mock. Directly testable.
+- `numberhandlertwilio`: all three methods (`GetAvailableNumbers`, `CreateNumber`, `ReleaseNumber`) only log and return an `unimplemented` error. They do not call `RequestExternal`, so no mock is needed.
+- `cachehandler`: uses `*redis.Client`. `miniredis` is not in this module's go.mod; a fake via go-redis `Options.Dialer` is possible but is not planned because the other packages already give enough margin. It is the first fallback if the total is under 61%.
 
 ## 2. Plan
 
