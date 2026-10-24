@@ -111,8 +111,8 @@ Notification event for call's hangup.
 # Deploy
 
 This service is the pilot for CircleCI's direct-SSH deploy to <prod-host>, our
-only server: `build-approval` gates the whole pipeline (test → build →
-deploy) with a single click, matching the old GKE release job's convenience.
+only server: the pipeline has no approval step (test → build on every
+branch push, test → build → deploy on main only).
 `bin-call-manager-deploy` runs after `bin-call-manager-build`, bumping this
 service's pin on <prod-host> and recreating the container. See
 `.circleci/scripts/ssh-deploy.sh`. The previous GKE deploy path for this

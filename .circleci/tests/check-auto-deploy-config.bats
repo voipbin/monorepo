@@ -81,32 +81,45 @@ expect_fail() {
 
 # ---- (a) shape of an allowlisted workflow ----
 
-@test "build-approval without a filter fails" {
-    mutate "$CFG" $'type: approval\n          <<: *non_main_filters' 'type: approval'
-    run_checker
-    expect_fail "build-approval filters must be exactly ignore: main"
-}
-
-@test "build-approval with only: main instead of ignore fails" {
-    mutate "$CFG" $'type: approval\n          <<: *non_main_filters' $'type: approval\n          filters:\n            branches:\n              only: main'
-    run_checker
-    expect_fail "build-approval filters must be exactly ignore: main"
-}
-
 @test "the gated test job without ignore main fails" {
     mutate "$CFG" $'bin-agent-manager-test:\n          <<: *non_main_filters\n' $'bin-agent-manager-test:\n'
     run_checker
     expect_fail "bin-agent-manager-test filters must be exactly ignore: main"
 }
 
-@test "the gated test job losing its build-approval requires fails" {
-    mutate "$CFG" $'<<: *non_main_filters\n          requires:\n            - build-approval\n      - bin-agent-manager-test:\n          name: bin-agent-manager-test-auto' $'<<: *non_main_filters\n      - bin-agent-manager-test:\n          name: bin-agent-manager-test-auto'
+@test "a build-approval job restored in an auto-deploy workflow fails" {
+    mutate "$CFG" $'  bin-agent-manager:\n    when: << pipeline.parameters.run-bin-agent-manager >>\n    jobs:\n' $'  bin-agent-manager:\n    when: << pipeline.parameters.run-bin-agent-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n          <<: *non_main_filters\n'
     run_checker
-    expect_fail "bin-agent-manager-test must require exactly build-approval"
+    expect_fail "workflow bin-agent-manager: build-approval must not exist in an auto-deploy workflow"
+}
+
+@test "an approval job under another name in an auto-deploy workflow fails" {
+    mutate "$CFG" $'  bin-agent-manager:\n    when: << pipeline.parameters.run-bin-agent-manager >>\n    jobs:\n' $'  bin-agent-manager:\n    when: << pipeline.parameters.run-bin-agent-manager >>\n    jobs:\n      - hold-gate:\n          type: approval\n          <<: *non_main_filters\n'
+    run_checker
+    expect_fail "workflow bin-agent-manager: jobs must be exactly"
+    [[ "$output" == *"job hold-gate must not have a type"* ]]
+}
+
+@test "type: approval attached to the auto-deploy test job fails" {
+    mutate "$CFG" $'      - bin-agent-manager-test:\n          <<: *non_main_filters\n' $'      - bin-agent-manager-test:\n          type: approval\n          <<: *non_main_filters\n'
+    run_checker
+    expect_fail "workflow bin-agent-manager: job bin-agent-manager-test must not have a type"
+}
+
+@test "a requires restored on the auto-deploy test job fails" {
+    mutate "$CFG" $'      - bin-agent-manager-test:\n          <<: *non_main_filters\n' $'      - bin-agent-manager-test:\n          <<: *non_main_filters\n          requires:\n            - bin-agent-manager-deploy\n'
+    run_checker
+    expect_fail "bin-agent-manager-test must not have requires"
+}
+
+@test "an empty requires on the auto-deploy test job fails" {
+    mutate "$CFG" $'      - bin-agent-manager-test:\n          <<: *non_main_filters\n' $'      - bin-agent-manager-test:\n          <<: *non_main_filters\n          requires: []\n'
+    run_checker
+    expect_fail "bin-agent-manager-test must not have requires"
 }
 
 @test "test-auto with a requires fails" {
-    mutate "$CFG" $'name: bin-agent-manager-test-auto\n          <<: *deploy_filters\n' $'name: bin-agent-manager-test-auto\n          <<: *deploy_filters\n          requires:\n            - build-approval\n'
+    mutate "$CFG" $'name: bin-agent-manager-test-auto\n          <<: *deploy_filters\n' $'name: bin-agent-manager-test-auto\n          <<: *deploy_filters\n          requires:\n            - bin-agent-manager-test\n'
     run_checker
     expect_fail "bin-agent-manager-test-auto must not have requires"
 }
@@ -124,7 +137,7 @@ expect_fail() {
 }
 
 @test "build with an extra requires fails" {
-    mutate "$CFG" $'            - bin-agent-manager-test\n            - bin-agent-manager-test-auto\n' $'            - bin-agent-manager-test\n            - bin-agent-manager-test-auto\n            - build-approval\n'
+    mutate "$CFG" $'            - bin-agent-manager-test\n            - bin-agent-manager-test-auto\n' $'            - bin-agent-manager-test\n            - bin-agent-manager-test-auto\n            - bin-agent-manager-deploy\n'
     run_checker
     expect_fail "bin-agent-manager-build must require exactly"
 }
@@ -342,12 +355,6 @@ expect_fail() {
     expect_fail 'workflow bin-agent-manager: unsupported when form'
 }
 
-@test "build-approval no longer of type approval fails" {
-    mutate "$CFG" $'      - build-approval:\n          type: approval\n          <<: *non_main_filters\n      - bin-agent-manager-test:' $'      - build-approval:\n          type: build\n          <<: *non_main_filters\n      - bin-agent-manager-test:'
-    run_checker
-    expect_fail "workflow bin-agent-manager: build-approval must be type: approval"
-}
-
 @test "a when parameter that is not a run-bin parameter fails even if mapped and present" {
     grep -q 'voip-asterisk-proxy/.\* *run-voip-asterisk-proxy true' "$SETUP"
     mkdir -p "$ROOT/voip-asterisk-proxy"
@@ -476,20 +483,38 @@ expect_fail() {
     expect_fail "bin-common-handler-test-auto filters must be exactly only: main"
 }
 
-@test "an auto-run build-approval that is not ignored on main fails" {
-    mutate "$CFG" $'  bin-openapi-manager:\n    when: << pipeline.parameters.run-bin-openapi-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n          <<: *non_main_filters' $'  bin-openapi-manager:\n    when: << pipeline.parameters.run-bin-openapi-manager >>\n    jobs:\n      - build-approval:\n          type: approval'
+@test "a build-approval job restored in an auto-run workflow fails" {
+    mutate "$CFG" $'  bin-openapi-manager:\n    when: << pipeline.parameters.run-bin-openapi-manager >>\n    jobs:\n' $'  bin-openapi-manager:\n    when: << pipeline.parameters.run-bin-openapi-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n          <<: *non_main_filters\n'
     run_checker
-    expect_fail "workflow bin-openapi-manager: build-approval filters must be exactly ignore: main"
+    expect_fail "workflow bin-openapi-manager: build-approval must not exist in an auto-run workflow"
 }
 
-@test "an auto-run verify job that no longer requires build-approval fails" {
-    mutate "$CFG" $'      - bin-openapi-manager-validate:\n          <<: *non_main_filters\n          requires:\n            - build-approval' $'      - bin-openapi-manager-validate:\n          <<: *non_main_filters'
+@test "type: approval attached to the auto-run verify job fails" {
+    mutate "$CFG" $'      - bin-openapi-manager-validate:\n          <<: *non_main_filters\n' $'      - bin-openapi-manager-validate:\n          type: approval\n          <<: *non_main_filters\n'
     run_checker
-    expect_fail "bin-openapi-manager-validate must require exactly build-approval"
+    expect_fail "workflow bin-openapi-manager: job bin-openapi-manager-validate must not have a type"
+}
+
+@test "a requires restored on the auto-run verify job fails" {
+    mutate "$CFG" $'      - bin-openapi-manager-validate:\n          <<: *non_main_filters\n' $'      - bin-openapi-manager-validate:\n          <<: *non_main_filters\n          requires:\n            - bin-openapi-manager-validate-auto\n'
+    run_checker
+    expect_fail "bin-openapi-manager-validate must not have requires"
+}
+
+@test "an empty requires on the auto-run verify job fails" {
+    mutate "$CFG" $'      - bin-openapi-manager-validate:\n          <<: *non_main_filters\n' $'      - bin-openapi-manager-validate:\n          <<: *non_main_filters\n          requires: []\n'
+    run_checker
+    expect_fail "bin-openapi-manager-validate must not have requires"
+}
+
+@test "an auto-run workflow with a duplicated verify job fails" {
+    mutate "$CFG" $'      - bin-openapi-manager-validate:\n          <<: *non_main_filters\n' $'      - bin-openapi-manager-validate:\n          <<: *non_main_filters\n      - bin-openapi-manager-validate:\n          <<: *non_main_filters\n'
+    run_checker
+    expect_fail "workflow bin-openapi-manager: jobs must be exactly one verify job and its -auto copy"
 }
 
 @test "an auto-run auto job with requires fails" {
-    mutate "$CFG" $'          name: bin-openapi-manager-validate-auto\n          <<: *deploy_filters' $'          name: bin-openapi-manager-validate-auto\n          <<: *deploy_filters\n          requires:\n            - build-approval'
+    mutate "$CFG" $'          name: bin-openapi-manager-validate-auto\n          <<: *deploy_filters' $'          name: bin-openapi-manager-validate-auto\n          <<: *deploy_filters\n          requires:\n            - bin-openapi-manager-validate'
     run_checker
     expect_fail "bin-openapi-manager-validate-auto must not have requires"
 }
@@ -497,7 +522,7 @@ expect_fail() {
 @test "an auto-run workflow with an extra job fails" {
     mutate "$CFG" $'          name: bin-common-handler-test-auto\n          <<: *deploy_filters' $'          name: bin-common-handler-test-auto\n          <<: *deploy_filters\n      - bin-common-handler-build:\n          <<: *context_production\n          requires:\n            - bin-common-handler-test-auto'
     run_checker
-    expect_fail "workflow bin-common-handler: jobs must be exactly build-approval, one verify job and its -auto copy"
+    expect_fail "workflow bin-common-handler: jobs must be exactly one verify job and its -auto copy"
 }
 
 @test "an auto-run verify job renamed to something else fails" {

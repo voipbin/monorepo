@@ -4,8 +4,9 @@ context_production: &context_production
   context: 
     - production
 
-# Deploy runs only on main. Non-main branches may approve to verify test/build
-# but must never reach production (VOIP-1584). Not a security boundary.
+# Deploy runs only on main. Non-main branches run test/build (after an approval
+# click in the approval-kept workflows) but must never reach production
+# (VOIP-1584). Not a security boundary.
 deploy_filters: &deploy_filters
   filters:
     branches:
@@ -18,23 +19,23 @@ deploy_filters: &deploy_filters
 # every branch; on main a human still approves the pipeline.
 #
 # Auto-deploy mode (services listed in .circleci/auto-deploy-services.txt):
-# on main there is no approval, test-auto -> build -> deploy run right after
-# the merge; on non-main branches build-approval still gates test/build as
-# before and deploy is never created. This is done inside one workflow:
-# build-approval and <svc>-test use non_main_filters, <svc>-test-auto (the
-# same test job under another name) uses deploy_filters, build requires both
-# (the one filtered out on a given branch is skipped, not an error), and the
-# deploy job serializes per service (serial-group) and refuses to deploy an
-# older commit that a newer one already superseded
-# (DEPLOY_REQUIRE_LATEST_FOR_PATHS, see komodo-api-deploy.sh).
+# there is no approval job (VOIP-1645). On main, test-auto -> build -> deploy run
+# right after the merge; on non-main branches test and build run on every push
+# and deploy is never created. This is done inside one workflow: <svc>-test uses
+# non_main_filters, <svc>-test-auto (the same test job under another name) uses
+# deploy_filters, build requires both (the one filtered out on a given branch is
+# skipped, not an error), and the deploy job serializes per service
+# (serial-group) and refuses to deploy an older commit that a newer one already
+# superseded (DEPLOY_REQUIRE_LATEST_FOR_PATHS, see komodo-api-deploy.sh).
 # .circleci/scripts/check-auto-deploy-config.rb pins this shape in CI.
 #
 # Auto-run mode (services listed in .circleci/auto-run-services.txt, VOIP-1597):
-# workflows that only verify (test or validate) and never build, push or deploy.
-# On main the verify job runs without an approval click (<job>-auto, only main);
-# on other branches build-approval still gates it. The checker rejects a context,
-# a deploy job or a push in these workflows.
-# Design: docs/plans/2026-10-13-main-auto-deploy-design.md.
+# workflows that only verify (test or validate) and never build, push or deploy,
+# with no approval job. The verify job runs on non-main branches (<job>) and on
+# main (<job>-auto, only main). The checker rejects a context, a deploy job or a
+# push in these workflows.
+# Design: docs/plans/2026-10-13-main-auto-deploy-design.md and
+# docs/plans/2026-10-24-remove-pr-branch-build-approval-design.md.
 non_main_filters: &non_main_filters
   filters:
     branches:
@@ -239,13 +240,8 @@ workflows:
   bin-agent-manager:
     when: << pipeline.parameters.run-bin-agent-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-agent-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-agent-manager-test:
           name: bin-agent-manager-test-auto
           <<: *deploy_filters
@@ -263,13 +259,8 @@ workflows:
     when:
       or: [<< pipeline.parameters.run-bin-api-manager >>, << pipeline.parameters.run-bin-openapi-manager >>]
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-api-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-api-manager-test:
           name: bin-api-manager-test-auto
           <<: *deploy_filters
@@ -286,13 +277,8 @@ workflows:
   bin-billing-manager:
     when: << pipeline.parameters.run-bin-billing-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-billing-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-billing-manager-test:
           name: bin-billing-manager-test-auto
           <<: *deploy_filters
@@ -309,13 +295,8 @@ workflows:
   bin-call-manager:
     when: << pipeline.parameters.run-bin-call-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-call-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-call-manager-test:
           name: bin-call-manager-test-auto
           <<: *deploy_filters
@@ -327,22 +308,16 @@ workflows:
       - bin-call-manager-deploy:
           <<: [*context_production, *deploy_filters]
           serial-group: << pipeline.project.slug >>/deploy-bin-call-manager
-          # Automatic deploy: on main there is no approval; test-auto, build and
-          # deploy run right after the merge. build-approval only gates test and
-          # build on non-main branches. See the mode note at the top of this file.
+          # Automatic deploy: there is no approval; on main test-auto, build and
+          # deploy run right after the merge. See the mode note at the top of this file.
           requires:
             - bin-call-manager-build
 
   bin-campaign-manager:
     when: << pipeline.parameters.run-bin-campaign-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-campaign-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-campaign-manager-test:
           name: bin-campaign-manager-test-auto
           <<: *deploy_filters
@@ -359,13 +334,8 @@ workflows:
   bin-ai-manager:
     when: << pipeline.parameters.run-bin-ai-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-ai-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-ai-manager-test:
           name: bin-ai-manager-test-auto
           <<: *deploy_filters
@@ -382,13 +352,8 @@ workflows:
   bin-common-handler:
     when: << pipeline.parameters.run-bin-common-handler >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-common-handler-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-common-handler-test:
           name: bin-common-handler-test-auto
           <<: *deploy_filters
@@ -396,13 +361,8 @@ workflows:
   bin-contact-manager:
     when: << pipeline.parameters.run-bin-contact-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-contact-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-contact-manager-test:
           name: bin-contact-manager-test-auto
           <<: *deploy_filters
@@ -419,13 +379,8 @@ workflows:
   bin-conference-manager:
     when: << pipeline.parameters.run-bin-conference-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-conference-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-conference-manager-test:
           name: bin-conference-manager-test-auto
           <<: *deploy_filters
@@ -442,13 +397,8 @@ workflows:
   bin-conversation-manager:
     when: << pipeline.parameters.run-bin-conversation-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-conversation-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-conversation-manager-test:
           name: bin-conversation-manager-test-auto
           <<: *deploy_filters
@@ -465,13 +415,8 @@ workflows:
   bin-customer-manager:
     when: << pipeline.parameters.run-bin-customer-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-customer-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-customer-manager-test:
           name: bin-customer-manager-test-auto
           <<: *deploy_filters
@@ -523,13 +468,8 @@ workflows:
   bin-direct-manager:
     when: << pipeline.parameters.run-bin-direct-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-direct-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-direct-manager-test:
           name: bin-direct-manager-test-auto
           <<: *deploy_filters
@@ -546,13 +486,8 @@ workflows:
   bin-email-manager:
     when: << pipeline.parameters.run-bin-email-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-email-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-email-manager-test:
           name: bin-email-manager-test-auto
           <<: *deploy_filters
@@ -569,13 +504,8 @@ workflows:
   bin-flow-manager:
     when: << pipeline.parameters.run-bin-flow-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-flow-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-flow-manager-test:
           name: bin-flow-manager-test-auto
           <<: *deploy_filters
@@ -592,13 +522,8 @@ workflows:
   bin-hook-manager:
     when: << pipeline.parameters.run-bin-hook-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-hook-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-hook-manager-test:
           name: bin-hook-manager-test-auto
           <<: *deploy_filters
@@ -615,13 +540,8 @@ workflows:
   bin-message-manager:
     when: << pipeline.parameters.run-bin-message-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-message-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-message-manager-test:
           name: bin-message-manager-test-auto
           <<: *deploy_filters
@@ -638,13 +558,8 @@ workflows:
   bin-number-manager:
     when: << pipeline.parameters.run-bin-number-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-number-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-number-manager-test:
           name: bin-number-manager-test-auto
           <<: *deploy_filters
@@ -661,13 +576,8 @@ workflows:
   bin-openapi-manager:
     when: << pipeline.parameters.run-bin-openapi-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-openapi-manager-validate:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-openapi-manager-validate:
           name: bin-openapi-manager-validate-auto
           <<: *deploy_filters
@@ -675,13 +585,8 @@ workflows:
   bin-outdial-manager:
     when: << pipeline.parameters.run-bin-outdial-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-outdial-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-outdial-manager-test:
           name: bin-outdial-manager-test-auto
           <<: *deploy_filters
@@ -698,13 +603,8 @@ workflows:
   bin-pipecat-manager:
     when: << pipeline.parameters.run-bin-pipecat-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-pipecat-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-pipecat-manager-test:
           name: bin-pipecat-manager-test-auto
           <<: *deploy_filters
@@ -721,13 +621,8 @@ workflows:
   bin-queue-manager:
     when: << pipeline.parameters.run-bin-queue-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-queue-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-queue-manager-test:
           name: bin-queue-manager-test-auto
           <<: *deploy_filters
@@ -744,13 +639,8 @@ workflows:
   bin-rag-manager:
     when: << pipeline.parameters.run-bin-rag-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-rag-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-rag-manager-test:
           name: bin-rag-manager-test-auto
           <<: *deploy_filters
@@ -767,13 +657,8 @@ workflows:
   bin-registrar-manager:
     when: << pipeline.parameters.run-bin-registrar-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-registrar-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-registrar-manager-test:
           name: bin-registrar-manager-test-auto
           <<: *deploy_filters
@@ -790,13 +675,8 @@ workflows:
   bin-route-manager:
     when: << pipeline.parameters.run-bin-route-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-route-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-route-manager-test:
           name: bin-route-manager-test-auto
           <<: *deploy_filters
@@ -813,13 +693,8 @@ workflows:
   bin-schedule-manager:
     when: << pipeline.parameters.run-bin-schedule-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-schedule-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-schedule-manager-test:
           name: bin-schedule-manager-test-auto
           <<: *deploy_filters
@@ -836,13 +711,8 @@ workflows:
   bin-sentinel-manager:
     when: << pipeline.parameters.run-bin-sentinel-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-sentinel-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-sentinel-manager-test:
           name: bin-sentinel-manager-test-auto
           <<: *deploy_filters
@@ -859,13 +729,8 @@ workflows:
   bin-storage-manager:
     when: << pipeline.parameters.run-bin-storage-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-storage-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-storage-manager-test:
           name: bin-storage-manager-test-auto
           <<: *deploy_filters
@@ -882,13 +747,8 @@ workflows:
   bin-tag-manager:
     when: << pipeline.parameters.run-bin-tag-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-tag-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-tag-manager-test:
           name: bin-tag-manager-test-auto
           <<: *deploy_filters
@@ -905,13 +765,8 @@ workflows:
   bin-talk-manager:
     when: << pipeline.parameters.run-bin-talk-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-talk-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-talk-manager-test:
           name: bin-talk-manager-test-auto
           <<: *deploy_filters
@@ -928,13 +783,8 @@ workflows:
   bin-timeline-manager:
     when: << pipeline.parameters.run-bin-timeline-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-timeline-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-timeline-manager-test:
           name: bin-timeline-manager-test-auto
           <<: *deploy_filters
@@ -951,13 +801,8 @@ workflows:
   bin-transcribe-manager:
     when: << pipeline.parameters.run-bin-transcribe-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-transcribe-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-transcribe-manager-test:
           name: bin-transcribe-manager-test-auto
           <<: *deploy_filters
@@ -974,13 +819,8 @@ workflows:
   bin-transfer-manager:
     when: << pipeline.parameters.run-bin-transfer-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-transfer-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-transfer-manager-test:
           name: bin-transfer-manager-test-auto
           <<: *deploy_filters
@@ -1012,13 +852,8 @@ workflows:
   bin-tts-manager:
     when: << pipeline.parameters.run-bin-tts-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-tts-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-tts-manager-test:
           name: bin-tts-manager-test-auto
           <<: *deploy_filters
@@ -1035,13 +870,8 @@ workflows:
   bin-webchat-manager:
     when: << pipeline.parameters.run-bin-webchat-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-webchat-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-webchat-manager-test:
           name: bin-webchat-manager-test-auto
           <<: *deploy_filters
@@ -1058,13 +888,8 @@ workflows:
   bin-webhook-manager:
     when: << pipeline.parameters.run-bin-webhook-manager >>
     jobs:
-      - build-approval:
-          type: approval
-          <<: *non_main_filters
       - bin-webhook-manager-test:
           <<: *non_main_filters
-          requires:
-            - build-approval
       - bin-webhook-manager-test:
           name: bin-webhook-manager-test-auto
           <<: *deploy_filters

@@ -35,7 +35,7 @@ Komodo-managed (VOIP-1353), same mechanism as the other `bin-*-manager` services
 (see bin-call-manager for the original pattern). `bin-hook-manager-build` pushes
 the image, then `bin-hook-manager-deploy` renders the tag into
 `komodo/docker-compose.yml` and deploys via `.circleci/scripts/komodo-api-deploy.sh`,
-gated behind a single `build-approval`.
+with no approval step (the deploy job runs on main only).
 
 Unlike every other `bin-*-manager` service, this one has no RabbitMQ
 competing-consumer safety net — `hook.voipbin.net`'s public traffic is routed by
