@@ -128,6 +128,9 @@ func decodeWavPeaks(r io.Reader, bucketCount int) ([]float64, float64) {
 	return peaks, duration
 }
 
+// maxWavFmtChunkSize is the largest fmt chunk accepted. The common sizes are 16, 18 and 40.
+const maxWavFmtChunkSize = 1024
+
 // readWavHeader scans RIFF chunks for `fmt ` and `data`, returning the audio
 // format and the data chunk's byte size. The reader is left positioned at the
 // start of the PCM data on success.
@@ -154,11 +157,11 @@ func readWavHeader(r io.Reader) (wavFormat, uint32, bool) {
 
 		switch chunkID {
 		case "fmt ":
-			fmtBuf := make([]byte, chunkSize)
-			if _, err := io.ReadFull(r, fmtBuf); err != nil {
+			if chunkSize < 16 || chunkSize > maxWavFmtChunkSize {
 				return format, 0, false
 			}
-			if chunkSize < 16 {
+			fmtBuf := make([]byte, chunkSize)
+			if _, err := io.ReadFull(r, fmtBuf); err != nil {
 				return format, 0, false
 			}
 			format.audioFormat = binary.LittleEndian.Uint16(fmtBuf[0:2])

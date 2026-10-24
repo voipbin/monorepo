@@ -102,8 +102,8 @@ func (h *listenHandler) v1RecordingsIDDelete(ctx context.Context, req *sock.Requ
 	recordingID := uuid.FromStringOrNil(tmpRecordingID)
 
 	if errDelete := h.storageHandler.RecordingDelete(ctx, recordingID); errDelete != nil {
-		log.Errorf("Could not get download url for recording. err: %v", err)
-		return nil, err
+		log.Errorf("Could not delete the recording. err: %v", errDelete)
+		return nil, errDelete
 	}
 
 	res := &sock.Response{

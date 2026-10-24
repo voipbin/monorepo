@@ -15,6 +15,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// errAccountNotFound is returned by getByCustomerID when the customer has no account.
+var errAccountNotFound = stderrors.New("no account found")
+
 // Create Creates the account and returns the created account
 func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -23,9 +26,13 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID) (*acc
 	})
 
 	tmp, err := h.getByCustomerID(ctx, customerID)
-	if err == nil || tmp != nil {
+	if err == nil {
 		log.WithField("account", tmp).Errorf("The customer already has an account. account_id: %v", tmp.ID)
 		return nil, fmt.Errorf("the customer already has an account")
+	}
+	if !stderrors.Is(err, errAccountNotFound) {
+		log.Errorf("Could not check the existing account. err: %v", err)
+		return nil, errors.Wrap(err, "could not check the existing account")
 	}
 
 	id := h.utilHandler.UUIDCreate()
@@ -89,7 +96,7 @@ func (h *accountHandler) getByCustomerID(ctx context.Context, customerID uuid.UU
 		return nil, err
 	}
 	if len(tmps) == 0 {
-		return nil, fmt.Errorf("no account found")
+		return nil, errAccountNotFound
 	}
 
 	res := tmps[0]

@@ -17,7 +17,7 @@ func (h *fileHandler) DownloadURIGet(ctx context.Context, bucketName string, fil
 	})
 
 	// get attrs
-	attrs, err := h.bucketfileGetAttrs(ctx, h.bucketTmp, filepath)
+	attrs, err := h.bucketfileGetAttrs(ctx, bucketName, filepath)
 	if err != nil {
 		log.Errorf("Could not get attrs after created a new compress file. err: %v", err)
 		return "", "", err
