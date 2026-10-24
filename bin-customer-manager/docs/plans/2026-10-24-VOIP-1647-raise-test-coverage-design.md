@@ -1,7 +1,7 @@
 # VOIP-1647: bin-customer-manager unit test coverage
 
 ## 목표와 범위
-수기 코드(gens/, mock_*.go, `Code generated ... DO NOT EDIT` 제외) 커버리지를 59.1%에서 61% 이상으로 올린다. 테스트 파일만 추가하며 제품 코드, 시그니처, 노출 범위는 바꾸지 않는다. cmd/ 의 main 693 statements 는 프로세스 기동 코드라 제외하고 다른 패키지로 채운다. 값은 합성값만, 외부 호출과 네트워크 의존 없음.
+수기 코드(gens/, mock_*.go, `Code generated ... DO NOT EDIT` 제외) 커버리지를 59.1%에서 60% 이상(여유를 두어 61% 이상 권장)으로 올린다. 테스트 파일만 추가하며 제품 코드, 시그니처, 노출 범위는 바꾸지 않는다. cmd/ 의 main 694 statements 는 프로세스 기동 코드라 제외하고 다른 패키지로 채운다. 값은 합성값만, 외부 호출과 네트워크 의존 없음.
 
 ## 기준선 (수기, base d68e695b5)
 합계 59.06% (1828/3095). 60% 까지 29개, 61% 까지 60개 부족.
@@ -20,6 +20,6 @@
 - `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`, `scripts/check-test-conventions.sh`(Test_ 이름, gomock 컨트롤러명 mc, Rule 2: reflect.DeepEqual 과 t.Errorf 사용, testify 미사용), `git diff --stat origin/main...HEAD` 가 bin-customer-manager/ 안에만 있음을 확인.
 - 테스트 중 발견한 결함은 고치지 않고 완료 요약에만 기록.
 
-## 구현 시 주의 (설계 2회차 반영)
+## 구현 시 주의
 - dbhandler 테스트는 CustomerCreate 의 TimeNow 와 CustomerSet 기대도 명시하고, 가드 불일치(ErrNotFound) 케이스에서는 캐시 미호출을 별도로 단언한다.
 - ListFrozenExpired 와 캐시 왕복 테스트의 시각은 UTC, 소수점 이하 없는 정초 값 또는 nil 로 둔다.
