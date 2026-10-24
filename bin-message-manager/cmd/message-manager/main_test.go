@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"os/signal"
 	"strings"
 	"syscall"
@@ -87,6 +89,15 @@ func Test_initProm_disabled(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// the enabled path registers an http handler and binds a port, so it is never called here.
 			initProm(tt.endpoint, tt.listen)
+
+			// nothing may be registered on the default mux when the metrics server is disabled.
+			if tt.endpoint == "" {
+				return
+			}
+			req := httptest.NewRequest(http.MethodGet, tt.endpoint, nil)
+			if _, pattern := http.DefaultServeMux.Handler(req); pattern != "" {
+				t.Errorf("Wrong match. expect: no registered handler, got: %s", pattern)
+			}
 		})
 	}
 }
