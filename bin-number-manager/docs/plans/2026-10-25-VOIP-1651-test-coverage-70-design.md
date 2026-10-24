@@ -3,7 +3,7 @@
 ## 1. 티켓 검토 (이슈 분석)
 
 - 판정: 유효. origin/main 99b59c386 에서 같은 명령으로 실측한 수기 코드 65.8% (1502/2282), 원본 57.5% (1502/2612). 카드 수치와 일치.
-- 관련 PR/커밋: 이 경로의 최근 커밋은 VOIP-1647(60% 목표, 48.2%에서 65.8%로 상향, 머지됨), VOIP-1648(문서 정리, 머지됨)이며 진행 중인 PR 은 없음. 중복 없음.
+- 관련 PR/커밋: 이 경로의 최근 테스트/문서 관련 커밋은 VOIP-1647(60% 목표, 48.2%에서 65.8%로 상향, 머지됨), VOIP-1648(문서 정리, 머지됨)이며 진행 중인 PR 은 없음. 중복 없음.
 - 필요량: 70.0% 는 1598 stmt (+96, 0.7x2282=1597.4 의 올림), 권장 71% 는 1621 stmt (+119, 0.71x2282=1620.2 의 올림). 목표는 71% 이상.
 - 로컬 `vendor/` 가 go.mod 와 어긋나 있어 `GOFLAGS=-mod=mod` 로 측정. 실행 간 변동은 없었음.
 - 테스트하기 어려운 구조: `cmd/number-control` (323 stmt, 0%) 과 `cmd/number-manager` (116 미커버) 는 DB, Redis, RabbitMQ, cobra 에 묶인 process wiring 이라 계획에서 제외. 제외하면 나머지 미커버는 341 stmt(780-439)이며 필요량 96~119 는 그 28~35%. 그중 requestexternal/telnyx.go 의 2 stmt 는 도달 불가로 제외.
@@ -16,14 +16,15 @@
 | cmd/number-control | 0/323 | 323 | 제외 |
 | cmd/number-manager | 2/118 | 116 | 제외 |
 | pkg/cachehandler | 0/70 | 70 | 전부 (miniredis) |
-| pkg/numberhandler | 395/515 | 120 | available_number 44, number.go 31, event.go 16, db.go 14, renew.go 11 |
+| pkg/numberhandler | 395/515 | 120 | available_number 44, number.go 31, event.go 16, db.go 14, renew.go 11 (116). main.go NewNumberHandler 4 는 대상 아님 |
 | pkg/dbhandler | 180/225 | 45 | 오류 경로 (닫힌 DB, 캐시 오류) |
 | pkg/listenhandler | 342/418 | 76 | 요청 파싱, 하위 오류 응답 |
 | pkg/subscribehandler | 61/71 | 10 | processEventRun |
 | models/number | 10/19 | 9 | webhook 변환 |
-| 기타 (internal/config, numberhandler/main.go NewNumberHandler, requestexternal) | - | 9 | 대상 아님 (config 3, NewNumberHandler 4, requestexternal 2) |
-| 기타 (internal/config, numberhandler/main.go NewNumberHandler, requestexternal) | - | 9 | 대상 아님 (config 3, NewNumberHandler 4, requestexternal 2) |
-| requestexternal/models/telnyx | 23/28 | 5 | ConvertProviderNumber |
+| models/availablenumber | 8/9 | 1 | 대상 아님 |
+| pkg/requestexternal/models/telnyx | 23/28 | 5 | ConvertProviderNumber |
+| internal/config, pkg/requestexternal | - | 3 + 2 | 대상 아님 (requestexternal 2 는 도달 불가) |
+| 합계 | 1502/2282 | 780 | 323+116+70+120+45+76+10+9+1+5+3+2 = 780 |
 
 예상 증가: cachehandler 약 60 + numberhandler 약 90 + dbhandler 약 30 + models 약 13 = 약 190 stmt (예상 수기 합계 약 74%). 부족하면 listenhandler 와 subscribehandler 를 추가.
 
