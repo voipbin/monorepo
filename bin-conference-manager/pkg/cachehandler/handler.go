@@ -80,11 +80,6 @@ func (h *handler) ConferencecallSet(ctx context.Context, data *conferencecall.Co
 		return err
 	}
 
-	keyWithReferenceID := fmt.Sprintf("conference:conferencecall:reference_id:%s", data.ID)
-	if err := h.setSerialize(ctx, keyWithReferenceID, data, time.Hour*24); err != nil {
-		return err
-	}
-
 	return nil
 }
 

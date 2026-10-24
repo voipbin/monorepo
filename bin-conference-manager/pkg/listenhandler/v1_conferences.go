@@ -132,7 +132,7 @@ func (h *listenHandler) processV1ConferencesIDDelete(ctx context.Context, m *soc
 	cf, err := h.conferenceHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the conference. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	tmp, err := json.Marshal(cf)
@@ -182,7 +182,7 @@ func (h *listenHandler) processV1ConferencesIDPut(ctx context.Context, m *sock.R
 	)
 	if err != nil {
 		log.Errorf("Could not update the conference. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	tmp, err := json.Marshal(cf)
@@ -217,7 +217,7 @@ func (h *listenHandler) processV1ConferencesIDGet(ctx context.Context, m *sock.R
 	cf, err := h.conferenceHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get conference info. conference: %s, err: %v", id, err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	tmp, err := json.Marshal(cf)

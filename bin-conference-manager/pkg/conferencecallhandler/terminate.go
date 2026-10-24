@@ -27,7 +27,7 @@ func (h *conferencecallHandler) Terminate(ctx context.Context, id uuid.UUID) (*c
 	// get conference
 	cf, err := h.conferenceHandler.Get(ctx, cc.ConferenceID)
 	if err != nil {
-		log.Errorf("Could not get conference info. conference_id: %s, err: %v", cf.ID, err)
+		log.Errorf("Could not get conference info. conference_id: %s, err: %v", cc.ConferenceID, err)
 		return nil, err
 	}
 	log = log.WithField("conference_id", cf.ID)

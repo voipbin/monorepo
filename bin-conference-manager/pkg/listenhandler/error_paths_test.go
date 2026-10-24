@@ -117,7 +117,7 @@ func Test_processRequest_errorPaths(t *testing.T) {
 			setup: func(cf *conferencehandler.MockConferenceHandler, _ *conferencecallhandler.MockConferencecallHandler) {
 				cf.EXPECT().Delete(gomock.Any(), id).Return(nil, errGeneric)
 			},
-			expectCode: http.StatusBadRequest,
+			expectCode: http.StatusInternalServerError,
 		},
 		{
 			name:    "conferences get id: handler error",
@@ -125,7 +125,31 @@ func Test_processRequest_errorPaths(t *testing.T) {
 			setup: func(cf *conferencehandler.MockConferenceHandler, _ *conferencecallhandler.MockConferencecallHandler) {
 				cf.EXPECT().Get(gomock.Any(), id).Return(nil, errGeneric)
 			},
-			expectCode: http.StatusBadRequest,
+			expectCode: http.StatusInternalServerError,
+		},
+		{
+			name:    "conferences delete: typed not found",
+			request: &sock.Request{URI: "/v1/conferences/" + testErrPathID, Method: sock.RequestMethodDelete},
+			setup: func(cf *conferencehandler.MockConferenceHandler, _ *conferencecallhandler.MockConferencecallHandler) {
+				cf.EXPECT().Delete(gomock.Any(), id).Return(nil, errTyped)
+			},
+			expectCode: http.StatusNotFound,
+		},
+		{
+			name:    "conferences get id: typed not found",
+			request: &sock.Request{URI: "/v1/conferences/" + testErrPathID, Method: sock.RequestMethodGet},
+			setup: func(cf *conferencehandler.MockConferenceHandler, _ *conferencecallhandler.MockConferencecallHandler) {
+				cf.EXPECT().Get(gomock.Any(), id).Return(nil, errTyped)
+			},
+			expectCode: http.StatusNotFound,
+		},
+		{
+			name:    "conferences put: wrapped not found",
+			request: &sock.Request{URI: "/v1/conferences/" + testErrPathID, Method: sock.RequestMethodPut, Data: []byte(`{"name":"n"}`)},
+			setup: func(cf *conferencehandler.MockConferenceHandler, _ *conferencecallhandler.MockConferencecallHandler) {
+				cf.EXPECT().Update(gomock.Any(), id, gomock.Any(), nil, nil, nil, nil, nil).Return(nil, errWrappedNotFound)
+			},
+			expectCode: http.StatusNotFound,
 		},
 		{
 			name:       "conferences put: broken json",
@@ -138,7 +162,7 @@ func Test_processRequest_errorPaths(t *testing.T) {
 			setup: func(cf *conferencehandler.MockConferenceHandler, _ *conferencecallhandler.MockConferencecallHandler) {
 				cf.EXPECT().Update(gomock.Any(), id, gomock.Any(), nil, nil, nil, nil, nil).Return(nil, errGeneric)
 			},
-			expectCode: http.StatusBadRequest,
+			expectCode: http.StatusInternalServerError,
 		},
 
 		// recording
@@ -289,7 +313,7 @@ func Test_processRequest_errorPaths(t *testing.T) {
 			setup: func(_ *conferencehandler.MockConferenceHandler, cc *conferencecallhandler.MockConferencecallHandler) {
 				cc.EXPECT().Get(gomock.Any(), id).Return(nil, errGeneric)
 			},
-			expectCode: http.StatusBadRequest,
+			expectCode: http.StatusInternalServerError,
 		},
 		{
 			name:    "conferencecalls delete: handler error",
@@ -297,7 +321,23 @@ func Test_processRequest_errorPaths(t *testing.T) {
 			setup: func(_ *conferencehandler.MockConferenceHandler, cc *conferencecallhandler.MockConferencecallHandler) {
 				cc.EXPECT().Terminate(gomock.Any(), id).Return(nil, errGeneric)
 			},
-			expectCode: http.StatusBadRequest,
+			expectCode: http.StatusInternalServerError,
+		},
+		{
+			name:    "conferencecalls get id: typed not found",
+			request: &sock.Request{URI: "/v1/conferencecalls/" + testErrPathID, Method: sock.RequestMethodGet},
+			setup: func(_ *conferencehandler.MockConferenceHandler, cc *conferencecallhandler.MockConferencecallHandler) {
+				cc.EXPECT().Get(gomock.Any(), id).Return(nil, errTyped)
+			},
+			expectCode: http.StatusNotFound,
+		},
+		{
+			name:    "conferencecalls delete: wrapped not found",
+			request: &sock.Request{URI: "/v1/conferencecalls/" + testErrPathID, Method: sock.RequestMethodDelete},
+			setup: func(_ *conferencehandler.MockConferenceHandler, cc *conferencecallhandler.MockConferencecallHandler) {
+				cc.EXPECT().Terminate(gomock.Any(), id).Return(nil, errWrappedNotFound)
+			},
+			expectCode: http.StatusNotFound,
 		},
 		{
 			name:       "conferencecalls health-check: broken json",

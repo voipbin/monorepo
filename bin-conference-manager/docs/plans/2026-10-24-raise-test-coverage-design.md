@@ -24,8 +24,8 @@
 | 대상 | 패키지 미커버 | 도달 가능(추정) | 목표 확보 |
 |---|---|---|---|
 | pkg/listenhandler (v1_conferences 55, v1_conferencecalls 19, v1_count 4, v1_services 4, v1_conferences_direct_hash 4, main.go 24: 404 분기 4, 오류 3분기 7, NewListenHandler 4, Run 9) | 146 | 약 110 (Marshal 실패 34 와 ToResponse 실패 2 제외) | 90 |
-| pkg/conferencecallhandler (service.go 38, db.go 17, health.go 13, terminate.go 12, joined/main 8) | 88 | 약 85 (terminate.go:30-32 제외. conferencecall `h.Get` 실패 terminate.go:20-24 는 안전하므로 주입 가능) | 55 |
-| pkg/conferencehandler (conference.go 56, transcribe 16, recording 12, direct_hash 10, terminate 8, 기타 13) | 115 | 약 108 (recording.go:37,39 와 transcribe.go:30 의 nil-wrap 3 제외, 4절) | 55 |
+| pkg/conferencecallhandler (service.go 38, db.go 17, health.go 13, terminate.go 12, joined/main 8) | 88 | 약 85 | 55 |
+| pkg/conferencehandler (conference.go 56, transcribe 16, recording 12, direct_hash 10, terminate 8, 기타 13) | 115 | 약 108 | 55 |
 | pkg/dbhandler (`NewHandler` 4, `ApplyFields` unsupported type 2, `Add*` 성공 경로 8 은 sqlmock 으로, 캐시 `return err` 경로는 `cachehandler` gomock 으로 관찰 가능한 것) | 86 | 약 40 (squirrel `ToSql`/`PrepareFields` 실패 약 17 은 도달 불가) | 30 |
 | internal/config (`once.Do` 클로저 블록 약 65 포함, `bindConfig` 오류 3 제외) | 76 | 약 73 | 45 |
 | pkg/subscribehandler (callmanager.go 10, main.go 5) | 15 | 약 15 | 12 |
@@ -45,7 +45,7 @@
 | `ErrNotFound` 를 반환하는 하위 핸들러 (List/Create/CountByCustomerID/DirectHashRegenerate/ServiceStart) | `errorResponse` 경로 | 404 | - |
 | 타입 오류 반환 (`cerrors` NotFound 등) | errorResponse 경로와 `nil, err` 경로 모두 | 해당 상태 | - |
 | 일반 오류 반환 (List/Create/Count/DirectHash/ServiceStart/conferencecalls List) | errorResponse 경로 | 500 | - |
-| 일반 `errors.New` 반환 (conferences Get/Delete/Put 과 conferencecalls Get/Delete) | 핸들러 직접 400 | 400 (타입 오류와 `ErrNotFound` 를 주입한 400 단언은 하지 않음: 4절의 불일치) | - |
+| 일반 `errors.New` 반환 (conferences Get/Delete/Put 과 conferencecalls Get/Delete) | `errorResponse` 경로 | 500 (타입 오류와 `ErrNotFound` 는 해당 상태, 404) | - |
 | 일반 오류 반환 (UpdateRecordingID/Recording*/Transcribe*/Stop) | `nil, err` | `processRequest` 가 400 | - |
 | `dbhandler.ErrNotFound` 를 감싼 오류를 `nil, err` 경로(예: RecordingStop)에서 반환 | `processRequest` 의 `case Is(ErrNotFound)` | 404 | - |
 | 짧은 URI (모든 ID 계열 핸들러) | 개별 핸들러 직접 호출 | 400 | 하위 핸들러 호출 없음 |
@@ -77,11 +77,7 @@
 
 ## 4. 위험
 
-- 제품 버그 의심(고정 금지): `conferencehandler/recording.go:37,39` 와 `transcribe.go:30` 은 `err` 가 nil 인 상태에서 `errors.Wrapf(err, ...)` 를 호출해 `return nil, nil` 이 됩니다. 이 3 statement 는 대상에서 제외하고 완료 요약에 적습니다.
-- 제품 버그 의심(고정 금지): `conferencecallhandler/terminate.go:28-31` 은 `conferenceHandler.Get` 실패 시 `cf` 가 nil 인데 `cf.ID` 를 로그 인자로 써서 nil 포인터 역참조 panic 이 납니다. 이 오류 주입은 하지 않고 panic 을 `recover` 로 기대하는 테스트도 쓰지 않으며 목표 증분 계산에서 뺍니다. `HealthCheck` 의 재시도 초과 후 `Terminate` 경로도 같은 이유로 `conferenceHandler.Get` 실패는 주입하지 않습니다.
-- 제품 버그 의심(고정 금지): `conferencehandler/conference.go:394-398` `AddConferencecallID` 와 `:420-424` `UpdateStatus` 는 내부 `ConferenceGet` 실패 시 `return` 없이 nil 인 `res` 의 `CustomerID` 를 사용해 panic 이 납니다. `Terminating`(terminate.go:34)과 `Delete`(conference.go:204)가 `UpdateStatus` 를 부르므로 `UpdateStatus` 안쪽(`conference.go:420`)의 `ConferenceGet` 에는 오류를 주입하지 않습니다(`Terminating` 단독 테스트에서는 2번째, `Delete` 에서는 3번째 호출). `Terminating` 자신의 `Get`(`terminate.go:21`)과 `Delete` 의 첫 `Get`(`conference.go:191`)과 마지막 `Get`(`conference.go:215`)은 `nil, err` 를 반환하므로 안전하고 `ConferenceUpdate` 실패(`conference.go:415-418`)도 안전합니다. conferencehandler 도달 가능은 약 108 로 줄입니다. `AddConferencecallID` 안쪽 `ConferenceGet`(`conference.go:394`)에도 주입하지 않습니다. 일반 규칙: 오류를 주입하기 전에 해당 오류 경로가 반환값을 nil 인 채 역참조하지 않는지 코드를 읽어 확인합니다.
-- 불일치(요약에 기재): conferences·conferencecalls 의 Get/Delete/Put 은 `ErrNotFound` 나 타입 오류도 400 으로 바꿔 `processRequest` 주석의 의도와 어긋납니다. 현재 동작을 정답으로 고정하지 않습니다.
-- 현재 코드의 의심 동작을 정답으로 고정하지 않습니다. `pkg/cachehandler/handler.go` 의 `ConferencecallSet` 이 reference id 키를 `data.ReferenceID` 가 아닌 `data.ID` 로 만드는 것으로 보이는 점은 cachehandler 가 범위 밖이므로 테스트하지 않고 완료 요약에 적습니다.
-- 핸들러마다 오류를 400 으로 직접 반환하거나 `nil, err` 로 반환하는 비일관성이 있고, `processRequest` 가 둘을 모두 400 으로 정규화합니다. 테스트는 정규화된 외부 응답을 단언하며 비일관성은 요약에 적습니다.
+- 오류를 주입하기 전에 해당 오류 경로가 반환값을 검사 없이 사용하지 않는지 코드를 읽어 확인합니다.
+- 핸들러마다 오류 반환 방식(`errorResponse` 또는 `nil, err`)이 다르므로 테스트는 `processRequest` 가 돌려주는 외부 응답 코드를 단언합니다.
 - 전역 상태(config 의 once/cfg/viper, prometheus 메트릭)는 `-shuffle=on -count=2` 로 순서 의존을 확인합니다.
 - `GOFLAGS=-mod=mod` 가 go.mod/go.sum 을 바꾸지 않았음을 확인합니다.

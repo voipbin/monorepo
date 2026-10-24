@@ -27,7 +27,7 @@ func (h *conferenceHandler) TranscribeStart(ctx context.Context, id uuid.UUID, l
 	}
 
 	if tmp.Status != conference.StatusProgressing {
-		return nil, errors.Wrapf(err, "invalid conference status")
+		return nil, errors.Errorf("invalid conference status")
 	}
 
 	tr, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, uuid.Nil, tmp.CustomerID, uuid.Nil, uuid.Nil, tmtranscribe.ReferenceTypeConfbridge, tmp.ConfbridgeID, lang, tmtranscribe.DirectionIn, tmtranscribe.ProviderEmpty, 30000)
