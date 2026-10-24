@@ -1,6 +1,7 @@
 package subscribehandler
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -130,5 +131,174 @@ func Test_processEventFMActiveflowDeleted(t *testing.T) {
 
 	if err := h.processEventFMActiveflowDeleted(event); err != nil {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+func Test_processEventFMActiveflowCreatedUpdated_invalidJSON(t *testing.T) {
+	tests := []struct {
+		name string
+
+		eventType string
+		run       func(h *subscribeHandler, m *sock.Event) error
+	}{
+		{
+			name:      "created/updated handler rejects malformed data",
+			eventType: fmactiveflow.EventTypeActiveflowCreated,
+			run:       func(h *subscribeHandler, m *sock.Event) error { return h.processEventFMActiveflowCreatedUpdated(m) },
+		},
+		{
+			name:      "deleted handler rejects malformed data",
+			eventType: fmactiveflow.EventTypeActiveflowDeleted,
+			run:       func(h *subscribeHandler, m *sock.Event) error { return h.processEventFMActiveflowDeleted(m) },
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			// the cache mock has no expectation, so any cache call fails the test.
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := &subscribeHandler{
+				sockHandler:    sockhandler.NewMockSockHandler(mc),
+				accountHandler: accounthandler.NewMockAccountHandler(mc),
+				cacheHandler:   mockCache,
+			}
+
+			event := &sock.Event{
+				Publisher: publisherFlowManager,
+				Type:      tt.eventType,
+				DataType:  "application/json",
+				Data:      []byte(`{"id": not-json`),
+			}
+
+			if err := tt.run(h, event); err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_processEventFMActiveflow_cacheErrors(t *testing.T) {
+	errCache := errors.New("cache write failed")
+
+	tests := []struct {
+		name string
+
+		data      string
+		eventType string
+		run       func(h *subscribeHandler, m *sock.Event) error
+
+		expectPositive bool
+	}{
+		{
+			name:           "positive write failure is propagated",
+			data:           `{"id":"d1111111-1111-1111-1111-111111111111","webhook_uri":"https://example.com/hook","webhook_method":"POST","tm_create":"2026-06-10T00:00:00Z"}`,
+			eventType:      fmactiveflow.EventTypeActiveflowCreated,
+			run:            func(h *subscribeHandler, m *sock.Event) error { return h.processEventFMActiveflowCreatedUpdated(m) },
+			expectPositive: true,
+		},
+		{
+			name:      "negative write failure is propagated",
+			data:      `{"id":"d1111111-1111-1111-1111-111111111111","tm_create":"2026-06-10T00:00:00Z"}`,
+			eventType: fmactiveflow.EventTypeActiveflowUpdated,
+			run:       func(h *subscribeHandler, m *sock.Event) error { return h.processEventFMActiveflowCreatedUpdated(m) },
+		},
+		{
+			name:      "delete tombstone write failure is propagated",
+			data:      `{"id":"d1111111-1111-1111-1111-111111111111","tm_create":"2026-06-10T00:00:00Z","tm_delete":"2026-06-10T01:00:00Z"}`,
+			eventType: fmactiveflow.EventTypeActiveflowDeleted,
+			run:       func(h *subscribeHandler, m *sock.Event) error { return h.processEventFMActiveflowDeleted(m) },
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := &subscribeHandler{
+				sockHandler:    sockhandler.NewMockSockHandler(mc),
+				accountHandler: accounthandler.NewMockAccountHandler(mc),
+				cacheHandler:   mockCache,
+			}
+
+			activeflowID := uuid.FromStringOrNil("d1111111-1111-1111-1111-111111111111")
+			if activeflowID == uuid.Nil {
+				t.Fatalf("invalid test uuid")
+			}
+
+			if tt.expectPositive {
+				mockCache.EXPECT().ActiveflowWebhookSet(gomock.Any(), activeflowID, gomock.Any(), gomock.Any()).Return(errCache).Times(1)
+			} else {
+				mockCache.EXPECT().ActiveflowWebhookSetNegative(gomock.Any(), activeflowID, gomock.Any(), gomock.Any(), gomock.Any()).Return(errCache).Times(1)
+			}
+
+			event := &sock.Event{
+				Publisher: publisherFlowManager,
+				Type:      tt.eventType,
+				DataType:  "application/json",
+				Data:      []byte(tt.data),
+			}
+
+			if err := tt.run(h, event); !errors.Is(err, errCache) {
+				t.Errorf("Wrong match. expect: %v, got: %v", errCache, err)
+			}
+		})
+	}
+}
+
+func Test_activeflowEventTimestamp(t *testing.T) {
+	tmCreate := time.Date(2026, 6, 10, 0, 0, 0, 0, time.UTC)
+	tmUpdate := time.Date(2026, 6, 10, 5, 0, 0, 0, time.UTC)
+	tmDelete := time.Date(2026, 6, 10, 9, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name string
+
+		message *fmactiveflow.WebhookMessage
+
+		// expect nil means the current time (checked as a range).
+		expect *time.Time
+	}{
+		{
+			name:    "delete wins over update and create",
+			message: &fmactiveflow.WebhookMessage{TMCreate: &tmCreate, TMUpdate: &tmUpdate, TMDelete: &tmDelete},
+			expect:  &tmDelete,
+		},
+		{
+			name:    "update wins over create",
+			message: &fmactiveflow.WebhookMessage{TMCreate: &tmCreate, TMUpdate: &tmUpdate},
+			expect:  &tmUpdate,
+		},
+		{
+			name:    "create is used alone",
+			message: &fmactiveflow.WebhookMessage{TMCreate: &tmCreate},
+			expect:  &tmCreate,
+		},
+		{
+			name:    "current time when no timestamp exists",
+			message: &fmactiveflow.WebhookMessage{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			before := time.Now()
+			got := activeflowEventTimestamp(tt.message)
+			after := time.Now()
+
+			if tt.expect != nil {
+				if !got.Equal(*tt.expect) {
+					t.Errorf("Wrong match. expect: %v, got: %v", *tt.expect, got)
+				}
+				return
+			}
+			if got.Before(before) || got.After(after) {
+				t.Errorf("Wrong match. expect a time between %v and %v, got: %v", before, after, got)
+			}
+		})
 	}
 }
