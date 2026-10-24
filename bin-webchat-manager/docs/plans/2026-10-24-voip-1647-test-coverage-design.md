@@ -27,4 +27,4 @@ Scope: add `_test.go` files only inside bin-webchat-manager. No product code cha
 
 ## Out of scope
 
-`cmd/*` (signal, broker, database and cache connections), generated and mock files, product code defects (not fixed here).
+`cmd/*` (signal, broker, database and cache connections), generated and mock files.

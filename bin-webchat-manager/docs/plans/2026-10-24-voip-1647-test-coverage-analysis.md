@@ -39,4 +39,4 @@
 - The listenhandler estimate (about 90% of 483) assumes every branch of the three `v1_*.go` files is reachable through mocks; the estimate is an assumption until measured.
 - Hard to test and left out of scope: `cmd/*` main and `runDaemon` (signal, RabbitMQ, DB and Redis connections).
 - Percentages above are after the exclusion rule, so they differ from the raw `go test` output (for example dbhandler 67.1% raw, because generated and mock code is counted). `migrations` has no statements and `listenhandler/models/request` has no executable statements (only types), so neither moves the total.
-- Out of scope: product code behavior changes. Defects noticed while reading are not fixed here.
+- Out of scope: product code behavior changes.
