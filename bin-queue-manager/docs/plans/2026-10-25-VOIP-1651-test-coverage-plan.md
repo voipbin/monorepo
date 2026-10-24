@@ -28,6 +28,7 @@
 | 파일 | 대상 | 내용 |
 |---|---|---|
 | pkg/queuecallhandler/db_errors_test.go | Create, Delete, UpdateStatusConnecting/Service/Abandoned/Done/Waiting/WaitingRollback | DB 쓰기 오류 전파, compare-and-swap 패배 시 현재 행만 반환하고 부수효과(webhook, 큐 제거, confbridge 삭제 등)가 없음, 재조회 오류, 큐 제거 실패 시 이후 정리 중단, 정리 단계(confbridge, 변수, groupcall hangup, 예약 해제) 실패는 비치명적, groupcall 과 agent 가 없으면 해당 RPC 생략, 비동기 큐 등록 경로 |
+| (참고) Create 는 성공 후 비치명 분기(setVariables, timeout-wait, health check 실패)에서도 결과를 반환하고 이후 RPC 가 계속됨을 단언합니다. 기존 db_test.go 와 이름이 겹치지 않도록 신규 함수는 `Test_X_errors` 형식의 접미사를 씁니다. 채널 close 는 mock 호출을 1회로 고정합니다. | | |
 | 필요 시 pkg/dbhandler 오류 경로 | queue.go, queuecall.go | 기존 sqlite/sqlmock 방식의 쿼리 오류 (queuecallhandler 만으로 71% 에 못 미칠 때만) |
 
 원칙: 빈 호출과 자기비교식 테스트 금지. gomock 엄격 매칭으로 인자를 단언하고, 오류 테스트는 후속 호출이 일어나지 않음을 mock 에 기대를 두지 않는 것으로 단언합니다. 오류 메시지 문자열은 단언하지 않고 `errors.Is` 로 전파만 단언합니다. 비동기 경로(`UpdateStatusWaiting`, `UpdateStatusWaitingRollback` 의 고루틴)는 sleep 대신 AddWaitQueueCallID mock 의 Do 에서 닫는 채널과 timeout select 로 동기화합니다. 이 두 고루틴 경로는 AddWait 오류에서 끝나는 분기만 다루므로 mock 호출이 모두 신호 이전에 끝납니다.
@@ -37,6 +38,6 @@ verify 항목:
 2. 루트 CLAUDE.md 검증 순서(`go mod tidy`, `go mod vendor`, `go generate`, `go test`, `golangci-lint`) 통과, go.mod, go.sum, 생성 파일 무변경.
 3. `-race -count=20` 으로 신규 테스트의 불안정성 없음.
 4. `scripts/check-test-conventions.sh` 통과(Test_ 명명, gomock 컨트롤러 이름 mc).
-5. 변이 검사: CAS 패배 분기의 조기 반환, 큐 제거 실패의 오류 반환, UpdateStatusWaiting 고루틴의 AddWaitQueueCallID 오류 시 return 을 각각 제거했을 때 신규 테스트가 실패함. 비동기 경로는 채널 대기 후 컨트롤러가 종료되도록 보장하고 전역 prometheus 카운터는 단언하지 않습니다.
+5. 변이 검사: CAS 패배 분기의 조기 반환, 큐 제거 실패의 오류 반환, 각각 제거했을 때 신규 테스트가 실패함. UpdateStatusWaiting 고루틴의 오류 시 return 제거는 신호 이후 비동기 실행이라 결정적으로 잡을 수 없으므로 한계로 PR 본문에 적습니다. 비동기 경로는 채널 대기 후 컨트롤러가 종료되도록 보장하고 전역 prometheus 카운터는 단언하지 않습니다.
 6. PR 의 파일 목록이 bin-queue-manager/ 안에만 있음(`git diff --stat origin/main...HEAD`).
 7. VOIP-1416 이 적은 80% 미만 패키지(dbhandler 외)와의 겹침은 PR 본문에 명시만 합니다.
