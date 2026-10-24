@@ -33,19 +33,35 @@
 1. 수기 합계 71% 이상. gens/, mock_*.go, DO NOT EDIT 제외, 중복 블록은 최대 count. PR 본문에 패키지별 전후 표.
 2. `GOFLAGS=-mod=mod go test -race -count=1 ./...` 전부 통과, golangci-lint 통과, `scripts/check-test-conventions.sh` 통과(Test_ 네이밍, gomock 컨트롤러명 mc).
 3. 비테스트 .go 변경 0. `git diff --stat origin/main...HEAD` 가 bin-number-manager 의 _test.go, go.mod/go.sum(miniredis 추가 시), 이 문서뿐.
-4. go.mod 변경은 miniredis v2.36.1(다른 서비스와 동일 버전)만. 테스트에서만 import, `go mod tidy` 후 추가 diff 없음.
+4. go.mod/go.sum 변경은 miniredis v2.36.1 과 그 간접 의존성 gopher-lua v1.1.1 (bin-message-manager, bin-ai-manager 와 같은 버전)만. 테스트에서만 import, `go mod tidy` 후 추가 diff 없음.
 5. 기대값은 리터럴 또는 독립 계산. 제품 함수 출력으로 기대값을 만드는 자기비교 금지. 빈 호출 금지.
-6. 변이 표본 최소 4개(원복 확인): 가상번호 후보 필터링 조건, Delete 의 provider switch, cachehandler 키 접두사, 웹훅 변환 필드 하나.
+6. 변이 표본 최소 4개(원복 확인): 가상번호 필터의 existingSet 제거 무력화, Delete switch 의 Twilio 분기 변경, cachehandler 키 접두사(`number:`/`number-number:`) 변경, 웹훅 변환에서 필드 하나 누락. 추가로 Create 롤백 호출 제거.
 7. 합성값만. 외부 호출과 네트워크 의존 없음(miniredis 는 로컬 루프백 리스너).
 8. 가상번호 후보는 난수이므로 후보 집합에 의존하는 단언은 gomock DoAndReturn 으로 실제 전달된 후보를 받아 부분 집합으로 단언하고 고정 시드나 난수값 비교는 하지 않음.
 
-## 4. 테스트 계획 (파일과 케이스)
+## 4. 테스트 계획 (파일과 케이스, 미커버 줄 대조)
 
-- pkg/cachehandler/handler_test.go (miniredis, 선례: bin-message-manager/pkg/cachehandler/handler_test.go): NewHandler 가 주소/DB 를 보존하고 Connect 가 성공, 서버 종료 후 Connect 오류. Number/NumberByNumber 의 Set 후 Get 왕복에서 필드 값을 리터럴과 비교하고 miniredis 에서 키 `number:<id>`, `number-number:<번호>` 가 모두 존재하며 TTL 이 24시간인지 확인(NumberSet 이 두 키를 쓰는지). 키 없음 오류, `mr.Set` 으로 넣은 손상된 JSON 의 Unmarshal 오류, Del 후 Get 오류, 서버 종료 후 Set/Get/Del 오류. setSerialize 의 Marshal 오류 분기는 Number 가 항상 직렬화 가능해 도달 불가라 제외.
-- pkg/numberhandler/available_number_test.go: GetAvailableVirtualNumbers. (a) limit=0 은 10 으로 처리되어 NumberGetExistingNumbers 에 전달된 후보가 30개, 모두 `+899` 접두사와 총 길이 13, 중복 없음(후보는 DoAndReturn 인자로 캡처). (b) 점유 번호를 후보의 일부로 반환하면 결과에 없음. (c) 후보보다 점유가 많아 limit 에 못 미치면 남은 수만 반환. (d) limit 절단. (e) db 오류는 wrap 되어 전파되고 결과 nil. 결과 필드(Provider none, 국가 코드 상수, 음성 기능)는 리터럴 상수가 아닌 모델 상수와 비교하되 상수 값 자체의 독립 확인(접두사 리터럴)을 병행.
-- pkg/numberhandler number/db/event/renew 오류 경로 (gomock): Create 의 예약 접두사 거부(provider 와 billing 호출 없음), 잔액 조회 오류, 잔액 부족(구매 미호출), 구매 실패. CreateVirtual 의 db 오류들. Delete 의 Get 실패, provider 해제 실패(Telnyx, Twilio 각각), 미지원 provider 이름, dbDelete 실패. Get 의 NotFound 변환(cerrors)과 일반 오류 wrap. List/Count/Update 오류 wrap. db.go 의 dbCreate 의 NumberCreate/NumberGet 실패, dbDelete/dbUpdate 실패. EventCustomerDeleted 의 목록 실패 오류 반환과 삭제 실패 후 계속. EventFlowDeleted 의 목록 실패 중단, 업데이트 실패 후 계속, 1000건 가득 찬 페이지 후 다음 페이지 조회. RenewNumbers 의 days, hours, tmRenew 모두 비었을 때 오류.
-- pkg/dbhandler (기존 sqlite TestMain 재사용): 별도로 열었다 닫은 sql.DB 로 만든 handler 에서 각 메서드(Create/Get/List/Update/Delete/GetExisting/Count/GetsByTMRenew)의 쿼리 오류 전파, 캐시 mock 의 오류 시 DB 폴백(NumberGet), 캐시 갱신 오류 전파(numberUpdateToCache), NumberGetFromCacheByNumber.
-- models/number/webhook_test.go: ConvertWebhookMessage 가 모든 공개 필드를 옮기고 내부 필드(ProviderName, ProviderReferenceID)를 노출하지 않음을 리터럴 구조로 확인, CreateWebhookEvent 의 JSON 키 집합과 값(리터럴 기대 JSON).
-- pkg/requestexternal/models/telnyx: ConvertProviderNumber 의 필드 매핑(ID, Status 캐스팅, T38 와 Emergency 플래그가 서로 바뀌지 않음)을 값이 서로 다른 리터럴 기대값으로.
+### 4.1 pkg/cachehandler/handler_test.go (miniredis, 선례: bin-message-manager)
+- `NewHandler(...).(*handler)` 타입 단언으로 비공개/비인터페이스 메서드(NumberSetByNumber, NumberDelByNumber)도 호출. NewHandler 가 주소와 DB 번호를 필드에 보존, Connect 성공, 서버 종료 후 Connect 오류. 서버 종료 후 오류 케이스는 go-redis v8 재시도/백오프로 느릴 수 있어 `MaxRetries` 를 0 으로 둔 클라이언트(테스트에서 h.Cache 교체)와 짧은 ctx 타임아웃을 사용.
+- Set 후 Get 왕복에서 필드를 리터럴과 비교. NumberSet 이 miniredis 에 `number:<id>` 와 `number-number:<번호>` 두 키를 모두 쓰고 TTL 이 24시간인지 확인. SetByNumber/GetByNumber/DelByNumber 왕복, Del 후 Get 오류, 키 없음 오류, `mr.Set` 으로 넣은 손상된 JSON 의 Unmarshal 오류, 서버 종료 후 Set/Get/Del 오류.
+- 도달 불가로 제외: setSerialize 의 Marshal 오류(Number 는 항상 직렬화 가능), NumberSet 의 두 번째 setSerialize 실패(첫 쓰기만 성공시키는 주입이 어려움). 예상 도달 약 66 of 70.
+
+### 4.2 pkg/numberhandler/available_number_test.go (GetAvailableVirtualNumbers, 44 stmt)
+- (a) limit=0 은 10 으로 처리되어 NumberGetExistingNumbers 에 전달된 후보가 30개(DoAndReturn 으로 인자 캡처), 모두 리터럴 접두사 `+899` 로 시작하고 길이 13, 중복 없음. (b) 점유 번호를 후보 일부로 반환하면 결과에 없음(캡처한 후보 중 지정한 2개를 점유로 반환). (c) 점유가 21개 이상(후보 30개 중)이면 limit=10 에 못 미쳐 남은 9개 이하만 반환. (d) 점유가 없으면 limit 으로 절단되어 정확히 limit 개이고 순서는 후보 순서. (e) db 오류는 wrap 되어 전파, 결과 nil. 결과 필드는 모델 상수가 아니라 리터럴(`"899"`, `"none"` 은 구현 단계에서 실제 상수 값을 확인해 사용)과 비교.
+
+### 4.3 pkg/numberhandler 오류 경로 (gomock), 미커버 줄 기준
+- number.go 미커버(34-35, 40-42, 45-47, 52-54, 80-81, 90-91, 139-141, 201-203, 219-221, 230, 237, 241-243, 247-249, 263-270, 289-291, 305-307, 324-326): Create 의 예약 접두사 거부(provider 와 billing 미호출), 잔액 조회 오류, 잔액 부족(구매 미호출), 구매 실패, Register 실패 시 NumberRelease 롤백 호출 확인과 롤백 자체 실패(오류는 여전히 반환), NumberUpdateTags 실패(결과는 성공). Register 의 목록 조회 오류, 이미 존재하는 번호, dbCreate 실패. Delete 의 Get 실패, Telnyx/Twilio 해제 실패, 미지원 provider 이름, dbDelete 실패. Get 의 NotFound 변환(cerrors 타입과 코드)과 일반 오류 wrap. List/Count/Update/UpdateMetadata 오류 wrap.
+- db.go 미커버(68-70, 75-77, 93-95, 100-102, 117-119, 160-162, 188-190): dbCreate 의 NumberCreate 실패와 NumberGet 실패, dbDelete 의 NumberDelete 실패와 삭제 후 Get 실패, dbGet/dbList/dbUpdate/dbListByTMRenew 실패 전파.
+- event.go 미커버(31-33, 42-43, 68, 77-78, 99-111): EventCustomerDeleted 의 목록 실패(오류 반환)와 삭제 실패 후 다음 번호 계속. EventFlowDeleted 는 call_flow 루프와 message_flow 루프 각각에 대해 목록 실패 중단, NumberUpdate 실패 후 계속, 1000건 가득 찬 첫 페이지 뒤 다음 페이지 조회(두 번째 조회가 빈 목록이면 종료), 1000건 미만이면 종료.
+- renew.go 미커버(35-36, 40-42, 59-61, 81-82, 125-127, 144-146): RenewNumbers 의 days/hours/tmRenew 모두 빔, renewNumbersByTMRenew 의 목록 조회 오류, 잔액 부족 시 Delete 실패해도 계속, dbUpdate 실패 후 continue 로 processed==0 이 되어 반복 종료, renewNumbersByDays/ByHours 의 하위 오류 wrap.
+
+### 4.4 pkg/dbhandler (기존 sqlite TestMain 재사용)
+- 닫힌 sql.DB 로 만든 handler 에서 각 메서드(Create/Get/List/Update/Delete/GetExistingNumbers/CountVirtual/GetsByTMRenew)의 쿼리 또는 Exec 오류 전파(약 8-9 stmt).
+- ApplyFields 에 잘못된 필터를 넣는 NumberList/NumberGetsByTMRenew 오류(190, 378), 캐시 mock 오류 분기: numberGetFromCache 오류 시 DB 폴백(NumberGet), NumberGetFromCacheByNumber 오류 전달, numberSetToCache/numberUpdateToCache 오류는 비공개 함수를 같은 패키지에서 직접 호출해 전파를 확인하고 공개 메서드에서는 캐시 오류가 나도 DB 결과는 성공(`_ =` 로 버려짐)임을 확인.
+- 도달 불가로 제외: squirrel ToSql 오류, PrepareFields/ScanRow 오류(열 구성이 고정). main.go NewHandler 4 stmt 는 필드 주입(db, cache, util)이 보존되는지 단언하는 1개 케이스만(빈 호출 아님). 예상 도달 약 25 of 45.
+
+### 4.5 기타
+- models/number/webhook_test.go: ConvertWebhookMessage 가 공개 필드를 모두(서로 다른 리터럴 값으로) 옮기고, 내부 필드(ProviderName, ProviderReferenceID)가 WebhookMessage 에 없음을 JSON 키 집합으로 확인. CreateWebhookEvent 의 JSON 키 집합과 값(리터럴 기대 JSON).
+- pkg/requestexternal/models/telnyx: ConvertProviderNumber 의 필드 매핑(ID, Status 캐스팅, T38 와 Emergency 가 서로 바뀌지 않음)을 값이 서로 다른 리터럴 기대값으로.
 - 부족할 때만 listenhandler(요청 본문 파싱 오류, 하위 오류 응답), subscribehandler(processEventRun) 오류 분기.
-- 파일은 기존 `_test.go` 에 케이스를 추가하거나, 같은 이름 규칙의 새 `_test.go`(handler_test.go, webhook_test.go 등)를 만든다.
+- 새 파일은 같은 이름 규칙의 `_test.go`(handler_test.go, webhook_test.go 등), 기존 파일에는 케이스 추가. Test_ 네이밍과 gomock 컨트롤러명 mc 준수.
