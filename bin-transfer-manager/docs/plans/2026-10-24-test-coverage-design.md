@@ -1,7 +1,7 @@
 # bin-transfer-manager 단위 테스트 커버리지 상향 설계 (VOIP-1647)
 
 ## 1. 티켓 검토
-유효. origin/main d68e695b5 에서 수기 코드 516/949 = 54.37%, 원본 516/1076 = 47.96% 를 재측정해 카드 수치와 일치합니다.
+유효. origin/main d68e695b5 에서 수기 코드 516/949 = 54.37%, 원본 516/1076 = 47.96% 를 재측정해 기준 수치와 일치합니다.
 수기 합계는 gens/, mock_*.go, `Code generated ... DO NOT EDIT` 헤더 파일을 제외하고 같은 블록 중복은 최대 count 로 합칩니다.
 
 ## 2. 기준선 (수기, covered/stmts)
@@ -24,7 +24,7 @@
 
 ## 5. verify 항목
 - `go mod tidy && go mod vendor && go generate ./... && go test -count=1 -race ./... && golangci-lint run` 통과, 수기 합계 61% 이상(전후 표는 agg 스크립트). vendor 는 커밋하지 않음.
-- 변이 표본(제품 코드를 scratch 복사본에서만 바꿈, 변이 전후 go test 출력을 카드 코멘트에 남김): rollback 호출 제거, errors.Wrap 을 nil 반환으로, err != nil 뒤집기, 캐시 키 접두사 변경, 캐시 TTL 변경, QueueBind 루프를 첫 패턴 뒤 중단, errors.Is(ErrNotFound) 를 cerrors NotFound 로 바꾸는 db.go 의 매핑 제거. 각 변이를 잡는 테스트: rollback 제거는 attended/blind rollback 인자 단언, Wrap 제거와 err 뒤집기는 오류 경로 단언, 키 접두사와 TTL 은 cachehandler 리터럴 키와 mr.TTL 단언, QueueBind 중단은 두 번째 패턴에서 실패시켜 호출 수를 보는 subscribehandler Run 테스트, NotFound 매핑은 transferhandler 의 cerrors 타입 단언. 각 변이에서 해당 테스트가 실패해야 함.
+- 변이 표본(제품 코드를 scratch 복사본에서만 바꿈, 변이 전후 go test 출력을 기록): rollback 호출 제거, errors.Wrap 을 nil 반환으로, err != nil 뒤집기, 캐시 키 접두사 변경, 캐시 TTL 변경, QueueBind 루프를 첫 패턴 뒤 중단, errors.Is(ErrNotFound) 를 cerrors NotFound 로 바꾸는 db.go 의 매핑 제거. 각 변이를 잡는 테스트: rollback 제거는 attended/blind rollback 인자 단언, Wrap 제거와 err 뒤집기는 오류 경로 단언, 키 접두사와 TTL 은 cachehandler 리터럴 키와 mr.TTL 단언, QueueBind 중단은 두 번째 패턴에서 실패시켜 호출 수를 보는 subscribehandler Run 테스트, NotFound 매핑은 transferhandler 의 cerrors 타입 단언. 각 변이에서 해당 테스트가 실패해야 함.
 - `git diff --name-only origin/main...HEAD` 가 bin-transfer-manager/ 안의 테스트 파일, go.mod, go.sum, 설계 문서뿐임.
 
 ## 6. 롤백
