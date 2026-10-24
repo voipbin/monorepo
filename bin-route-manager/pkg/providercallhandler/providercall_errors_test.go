@@ -121,11 +121,15 @@ func Test_Delete_Errors(t *testing.T) {
 		ctx := context.Background()
 
 		mockDB.EXPECT().ProviderCallDelete(ctx, id).Return(nil)
-		mockDB.EXPECT().ProviderCallGet(ctx, id).Return(nil, stderrors.New("db unavailable"))
+		readErr := stderrors.New("db unavailable")
+		mockDB.EXPECT().ProviderCallGet(ctx, id).Return(nil, readErr)
 
 		res, err := h.Delete(ctx, id)
 		if res != nil || err == nil {
-			t.Errorf("Wrong match. expect: nil response and an error, got: %v, %v", res, err)
+			t.Fatalf("Wrong match. expect: nil response and an error, got: %v, %v", res, err)
+		}
+		if !stderrors.Is(err, readErr) {
+			t.Errorf("Wrong match. expect: the cause to stay reachable, got: %v", err)
 		}
 	})
 }

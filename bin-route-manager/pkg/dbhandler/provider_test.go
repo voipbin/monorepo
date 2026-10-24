@@ -400,6 +400,13 @@ func Test_ProviderUpdateHealthStatus(t *testing.T) {
 	ctx := context.Background()
 
 	id := uuid.FromStringOrNil("7c1e0000-0000-0000-0000-000000000001")
+	delProvider := func() {
+		if _, err := dbTest.Exec("DELETE FROM route_providers WHERE id = ?", id.Bytes()); err != nil {
+			t.Errorf("could not clean up the row. err: %v", err)
+		}
+	}
+	delProvider()
+	t.Cleanup(delProvider)
 	createdAt := timePtr(time.Date(2022, 1, 2, 3, 4, 5, 0, time.UTC))
 	checkedAt := timePtr(time.Date(2022, 2, 3, 4, 5, 6, 0, time.UTC))
 
