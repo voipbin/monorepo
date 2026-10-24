@@ -23,9 +23,11 @@
 | pkg/streaminghandler | 1240 | 412 | 33.2 |
 | pkg/ttshandler | 192 | 172 | 89.6 |
 
+표에서 models/message (1/1) 와 models/speaking (8/9) 는 생략했으며 합계 2841 에는 포함. 독립 재측정에서 streaminghandler 가 421/1240 (합계 48.19%, 필요 약 336개) 으로 나와 약 9 statement 의 측정 편차가 있음. 시간에 민감한 기존 테스트로 보이며 보수적으로 345개 기준으로 계획하고, 최종 수치는 반복 측정해 PR 본문에 기록.
+
 ## 3. 구조 분석: 테스트 가능한 것과 어려운 것
 
-- 어려움 (제외): `cmd/*/main` (프로세스 기동, 실제 DB/Redis/RabbitMQ), `cachehandler` (실제 Redis 필요, miniredis 가 go.mod 에 없어 의존성 추가가 필요하므로 이번 범위에서 제외), `gcpGetClient`/`awsGetClient`/`gcp connect` (외부 클라우드 인증과 네트워크).
+- 어려움 (제외): `cmd/*/main`, `runDaemon`, `run` (프로세스 기동, 실제 DB/Redis/RabbitMQ), `cachehandler` (실제 Redis 필요, miniredis 가 go.mod 에 없어 의존성 추가가 필요하므로 이번 범위에서 제외), `gcpGetClient`/`awsGetClient`/`gcp connect` (외부 클라우드 인증과 네트워크).
 - 쉬움: streaminghandler 의 순수 로직과 로컬 WebSocket 으로 가능한 경로.
 
 ## 4. 추가할 테스트 (우선순위순, 모두 로컬 전용, 외부 네트워크 없음)
@@ -36,7 +38,8 @@
 4. streaminghandler/gcp.go: `getVoiceID`(우선순위 3단계), `getVoiceIDByLangGender`, `extractLangCode`, `SayStop`, `SayFlush`, `SayFinish`, `closeStreamLocked` 를 가짜 `StreamingSynthesizeClient` 로 검증, `SayAdd` 의 Send 실패 후 재연결 불가 경로.
 5. streaminghandler/aws.go: `getVoiceID`, `getVoiceIDByLangGender`, `SayFlush`(채널 비우기), `SayStop`, `SayFinish`(채널 close, 중복 호출 없음), `SayAdd` 는 polly 클라이언트를 `httptest` 로컬 엔드포인트와 고정 테스트 자격으로 구성해 성공과 서비스 오류 경로 확인.
 6. audiohandler: `savePCMAsWAV` 헤더 바이트와 크기 필드 검증(임시 디렉터리), 쓰기 불가 경로 오류, `AudioCreate` 미지원 provider 오류.
-7. cmd/tts-control: `resolveUUID` 의 빈 값, 잘못된 형식, 정상, `runCreate` 입력 검증 오류.
+6b. audiohandler `awsAudioCreate`: awsClient 필드에 로컬 httptest 엔드포인트와 고정 테스트 자격의 polly 클라이언트를 주입해 voice 미결정 오류, 서비스 오류, 성공 경로 확인(저장 파일은 임시 디렉터리).
+7. cmd/tts-control: `resolveUUID` 의 빈 값, 잘못된 형식, 정상, `printJSON`, `runCreate` 입력 검증 오류. cmd/tts-manager: `initSignal`, `initProm` 의 빈 설정 즉시 반환 경로.
 8. 부족하면 listenhandler(v1_speakings, v1_streamings) 오류 경로로 보충.
 
 ## 5. verify 항목
