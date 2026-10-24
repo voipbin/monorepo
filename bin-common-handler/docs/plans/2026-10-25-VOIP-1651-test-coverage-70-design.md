@@ -51,19 +51,24 @@ Scope: new `_test.go` files in `pkg/requesthandler` first, then (only if needed 
 
 ### 3.1 Shared test helper (inside a `_test.go` file)
 
-One table-driven runner in `pkg/requesthandler/rpc_table_test.go`:
+One table-driven runner in `pkg/requesthandler/rpc_table_test.go`. Before writing it, grep the package test files for helper and identifier names (for example `testTime`) so nothing collides.
 
-- A case holds: wrapper name, expected queue (`outline.QueueName...`), expected exact `sock.Request` (URI, Method, DataType, Data), a canned success response body, the call closure, and the independently written expected result.
+- A case holds: wrapper name; the expected queue as a plain string (a constant such as `string(outline.QueueNameAIRequest)`, or a computed per-pod queue for the wrappers that build the queue from a pod id, such as `TTSV1SpeakingSay`, `Flush`, `Stop`); the exact expected `sock.Request` (URI, Method, DataType, Data); a canned success response; a call closure normalized to `func(h *requestHandler) (any, error)`; and the expected result.
+- Return shapes differ, so the closure adapts them: wrappers returning only `error` (`AgentV1PasswordForgot`, `AgentV1PasswordReset`) return `(nil, err)`; multi-value wrappers (`AIV1McpOAuthStart` returns `(string, string, error)`, `AIV1McpOAuthCallback` returns `(bool, error)`) return a small struct or slice of the values, and the expected result is the same literal shape. On failure the expected result is spelled out per case (nil pointer, nil slice, empty string, zero value), not "nil or zero".
 - Subtests per case:
-  1. success: `MockSockHandler.RequestPublish(gomock.Any(), queue, wantRequest)` returns 200 and the body; assert no error and `reflect.DeepEqual` of the hand-written expected result (built from literals, not from the response bytes).
-  2. transport error: the mock returns an error; assert the wrapper returns a non-nil error and a nil or zero result.
-  3. non-2xx status: the mock returns a 404 response; assert the wrapper returns a non-nil error (exercises `parseResponse` status mapping through the wrapper).
-- Failure injection of the marshal step is not used (marshal of these structs cannot fail); wrappers that return an error for an invalid combination of arguments get an explicit case.
-- The gomock controller variable is named `mc` and test function names start with `Test_` to satisfy `scripts/check-test-conventions.sh`.
+  1. success: `MockSockHandler.RequestPublish(gomock.Any(), queue, wantRequest)` returns 200 with the body; assert no error and `reflect.DeepEqual` against the hand-written expected result. Response JSON and expected struct are written independently by hand.
+  2. transport error: the mock returns an error; assert `err != nil`, the error is not `ErrNotFound` (so the case is distinguishable from the status case), and the stated empty result.
+  3. non-2xx status: the mock returns a 404 with no typed-error DataType; assert `errors.Is(err, ErrNotFound)` and the stated empty result. This is the check that each wrapper actually calls `parseResponse` and propagates its error. The typed `VoipbinError` branch and the unknown status branch of `parseResponse` belong to `common.go`, which already has its own tests (`common_test.go`), so they are not repeated per wrapper.
+- `cb` is nil in these tests, exactly as in the existing tests (`requestHandler{sock: mockSock}`); `sendRequest` only touches the circuit breaker when it is set, so the transport case is the plain wrapped publish error.
+- The gomock controller variable is named `mc`, test names start with `Test_`, and no testify is used (`reflect.DeepEqual` only), which are the three rules of `scripts/check-test-conventions.sh`.
+- If a test exposes a real defect, the case is not skipped (`t.Skip` is not used) and the product code is not changed: the observed behavior is pinned with a neutral comment and the defect is reported in the card comment only.
+- Same-package (internal) tests are used for all packages, as the existing tests do.
 
 ### 3.2 Case files (one per source file, named after the source file)
 
 Wave 1, fully uncovered requesthandler files, largest first: ai_mcpservers, rag_rags, tts_speakings, contact_contact_addresses, contact_contacts, ai_teams, webchat_widget, direct_directs, contact_addresses, webchat_session, route_providercalls, timeline_analyses, webchat_message, timeline_sip, agent_password, contact_tags, contact_interactions, then the remaining small 0% files (ai_ai_prompt_histories, ai_participants, storage_compress, ai_analysis, timeline_aggregated_events, call_channels, flow_action).
+
+Case files that would share a name with an existing `*_test.go` (all wave 2 targets already have one) use the suffix `_rpc_test.go`, and test function names use a distinct form `Test_RPC_<Wrapper>` so they cannot collide with the existing `Test_<Wrapper>` names; compilation of the package is the collision check.
 
 Each wrapper gets its exact URI (including query escaping and pagination), method, data type, body JSON and a representative response; wrappers with pointer, optional, or empty-string arguments get one case per branch (for example `mcpServerID == nil` in `AIV1McpOAuthStart`, `reanalyze` true and false, uuid.Nil arguments).
 
@@ -71,17 +76,18 @@ Wave 2 (only if the total is below 71% after wave 1): partial files customer_cus
 
 ### 3.3 Verify items (written now, executed in the coding stage)
 
-1. Hand-written total is at least 71.0% with the same measurement method as section 2; per-package before/after table goes into the PR body together with the raw total and the exclusion method.
-2. `go test -count=1 ./...` passes with no existing test changed (`git diff --numstat` shows additions only in `_test.go`, plus docs).
-3. `golangci-lint run -v --timeout 5m` and `scripts/check-test-conventions.sh` pass; `go mod tidy` leaves go.mod and go.sum unchanged.
-4. Mutation sample (in a scratch copy, never in the worktree): at least five mutations across different files, such as changing a URI segment, swapping a method, dropping a body field, changing the queue, and ignoring an error from `sendRequest`; each must make at least one new test fail. Results go to the card.
-5. Meaningfulness: no case compares a value built from the same expression as the wrapper output; expected requests are literal strings; every wrapper test covers success, transport error and non-2xx status.
-6. Public repository hygiene: synthetic uuids and strings only; no password-like literals next to addresses; no host, IP, or customer data.
-7. `git diff --stat origin/main...HEAD` lists only paths under `bin-common-handler/`.
-8. Defects found while testing are reported in the card comment only and are not described in repo files.
+1. Measurement is reproducible: the hand-written coverage script and the exact command of section 2 (`GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...`, generated code, mocks and DO NOT EDIT files excluded, duplicate blocks merged by max count) are kept in the card scratch directory and rerun unchanged. Hand-written total must be at least 71.0%. The per-package before/after table goes into the PR body with the raw total and the exclusion method.
+2. Intermediate gate: after wave 1 the hand-written total is measured. Wave 2 is started only if it is below 71%; the expected gain from wave 1 is about 900 to 1200 statements, which is above the +580 needed, and the wave 1 result is recorded in a card comment.
+3. Additions only: `git diff --numstat origin/main...HEAD` shows 0 deleted lines for every Go file, and `git diff --name-status` shows only new `_test.go` files plus this document; go.mod and go.sum are unchanged after `go mod tidy`.
+4. Quality gates: `go test -count=1 ./...`, `go test -race -count=1 ./pkg/requesthandler/...`, `go vet ./...`, `golangci-lint run -v --timeout 5m`, and `scripts/check-test-conventions.sh` after `git fetch origin main` (the script needs the merge base) all pass. The `go test` time of `pkg/requesthandler` is recorded before and after.
+5. Mutation sample, in a scratch copy only: at least eight mutations across different files, including a URI segment change, a method swap, a dropped body field, a queue change, a `ContentTypeNone` versus `ContentTypeJSON` swap, a delay argument change, removing the `parseResponse` call from a wrapper, and ignoring the `sendRequest` error. Each must make at least one new test fail; the results go to the card.
+6. Meaningfulness is checked by the reviewers on the diff: expected requests are literal strings, response JSON and expected structs are written separately by hand, and every wrapper test has the success, transport error and 404 cases.
+7. Public repository hygiene: only synthetic values (reserved example domains, `203.0.113.x`, `+1555` style numbers, clearly fake secrets like `test-secret-not-real`, newly invented uuids). A grep over the added lines for `AKIA|sk-|BEGIN .*KEY|eyJ|://[^ ]*:[^ ]*@` must return nothing, secret-like literals are assigned in their own statement and never sit in the same literal as an address, and the GitGuardian check must be green.
+8. `git diff --stat origin/main...HEAD` lists only paths under `bin-common-handler/`.
+9. Defects found while testing go to the card comment only and are not described in repo files.
 
 ### 3.4 Risks
 
-- Large test count slows `go test`: the runner uses mocks only, so it adds well under a second.
-- Duplicate test function names: each case file uses the wrapper name as the suffix, checked by compiling the package.
+- Large test count slows `go test`: the runner uses mocks only; the measured time is recorded (verify item 4).
+- Duplicate test function names: new names use the `Test_RPC_<Wrapper>` form (3.2), checked by compiling the package.
 - Coverage drift versus CI: target 71% leaves margin over the 70% floor.
