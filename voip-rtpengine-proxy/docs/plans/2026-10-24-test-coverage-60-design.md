@@ -21,16 +21,16 @@ Deliberately not tested:
 - processmanager `CleanOrphans` glob error (fixed pattern) and `os.Remove` failure (root only).
 - `registerProxyRedis` success path (needs a RESP stub and a 5 minute sleep goroutine).
 
-Arithmetic (non-cmd only): listenhandler main.go +14, command.go:148 +2, ngclient +8 = +24 -> 445/716 = 62.2% (needs 437 for 61%).
+Arithmetic (non-cmd only): listenhandler main.go +14, command.go:148 +2, ngclient +8 = +24 -> 445/716 = 62.2% (measured 447/716 = 62.4%; needs 437 for 61%).
 
 ## Test design details
 
 - listenhandler sync: distinct queue names (`perm-q`, `vol-q`); `QueueCreate` calls ordered with `gomock.InOrder`; each `ConsumeRPC` expectation signals a channel from `DoAndReturn` and the test receives one signal per started consumer (bounded `time.After` only as failure guard) before the test returns. Exact args matched (`"rtpengine-proxy"`, false, false, false, 10, non-nil ctx). The callback is captured and fed a `POST /v1/commands` with an empty body to prove it is `processRequest` (400 response), not asserted by `gomock.Any()` alone. First-`QueueCreate`-failure case sets no `ConsumeRPC` expectation and `listenRun` returns synchronously; second-failure case waits for the first queue consumer signal. `Run` is covered with a `QueueCreate` signal and is not counted in the arithmetic.
 - ngclient: new multi-datagram UDP stub helper (existing helper untouched) replying to the request cookie with a space-less but valid bencode datagram, then an undecodable one, then one valid reply; one valid reply per cookie (the pending channel has capacity 1). Single loopback sender assumed. Every client created via `newNGClient` is closed with `defer c.Close()`. The unencodable value for `Send` is chosen by first checking that `zeebo/bencode` errors for it (func or chan). Note: the space-less datagram must be valid bencode, so removing the separator check panics (`data[:idx]`) and the test binary fails.
-- Every channel receive in tests is wrapped in `select` with a `time.After` guard (gomock failures inside goroutines would otherwise hang). The undecodable datagram carries the real cookie prefix so that removing the decode check is caught. The separator mutation fails the package by panic. In the `Send`-after-`Close` test the client is closed once explicitly; no deferred second close.
+- Every channel receive in tests is wrapped in `select` with a `time.After` guard (gomock failures inside goroutines would otherwise hang). The undecodable datagram carries the real cookie prefix so that removing the decode check is caught. The separator mutation fails the package by panic. In the `Send`-after-`Close` test the client is closed explicitly, then closed a second time on purpose to cover the already-closed warning path.
 - processNG marshal failure case asserts status 500, nil Data, nil error.
 - Style follows docs/conventions (table driven, `mc` controller with `defer mc.Finish()`, `Wrong match` messages).
-- Stop rule: if the hand-written total is below 61% after the main candidates, add gcsuploader.go:43 and :52-55; below 60% after that, stop and report to default.
+- Stop rule: if the hand-written total is below 61% after the main candidates, add gcsuploader.go:43 and :52-55; below 60% after that, stop and report.
 
 ## Verify
 

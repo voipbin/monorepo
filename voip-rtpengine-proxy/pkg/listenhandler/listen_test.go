@@ -156,11 +156,16 @@ func Test_Run(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := sockhandler.NewMockSockHandler(mc)
-	called := make(chan struct{}, 1)
+	called := make(chan struct{})
+	release := make(chan struct{})
+	done := make(chan struct{})
 
-	// the first queue creation fails, so the background goroutine stops without any further mock call
+	// QueueCreate blocks until released, so Run returning first proves the setup runs in the background.
+	// It fails, so the background goroutine stops without any further mock call.
 	mockSock.EXPECT().QueueCreate("perm-q", "normal").DoAndReturn(func(string, string) error {
-		called <- struct{}{}
+		close(called)
+		<-release
+		close(done)
 		return errors.New("broker down")
 	})
 
@@ -173,6 +178,13 @@ func Test_Run(t *testing.T) {
 	case <-called:
 	case <-time.After(testWait):
 		t.Fatalf("timed out waiting for QueueCreate")
+	}
+	close(release)
+
+	select {
+	case <-done:
+	case <-time.After(testWait):
+		t.Fatalf("timed out waiting for QueueCreate to finish")
 	}
 }
 
