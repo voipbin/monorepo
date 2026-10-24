@@ -60,28 +60,28 @@ func Test_QueuecallSetStatusWaitingIfInitiating(t *testing.T) {
 	}{
 		{
 			name:         "initiating moves to waiting",
-			id:           uuid.FromStringOrNil("e1000000-0000-0000-0000-000000000001"),
+			id:           uuid.Must(uuid.NewV4()),
 			startStatus:  queuecall.StatusInitiating,
 			expectAffect: 1,
 			expectStatus: queuecall.StatusWaiting,
 		},
 		{
 			name:         "abandoned stays abandoned",
-			id:           uuid.FromStringOrNil("e1000000-0000-0000-0000-000000000002"),
+			id:           uuid.Must(uuid.NewV4()),
 			startStatus:  queuecall.StatusAbandoned,
 			expectAffect: 0,
 			expectStatus: queuecall.StatusAbandoned,
 		},
 		{
 			name:         "waiting is not swapped again",
-			id:           uuid.FromStringOrNil("e1000000-0000-0000-0000-000000000003"),
+			id:           uuid.Must(uuid.NewV4()),
 			startStatus:  queuecall.StatusWaiting,
 			expectAffect: 0,
 			expectStatus: queuecall.StatusWaiting,
 		},
 		{
 			name:         "service is untouched",
-			id:           uuid.FromStringOrNil("e1000000-0000-0000-0000-000000000004"),
+			id:           uuid.Must(uuid.NewV4()),
 			startStatus:  queuecall.StatusService,
 			expectAffect: 0,
 			expectStatus: queuecall.StatusService,
@@ -120,7 +120,7 @@ func Test_QueuecallSetStatusWaitingIfInitiating(t *testing.T) {
 		now := time.Date(2025, 6, 1, 0, 5, 0, 0, time.UTC)
 		mockUtil.EXPECT().TimeNow().Return(&now)
 
-		affected, err := h.QueuecallSetStatusWaitingIfInitiating(ctx, uuid.FromStringOrNil("e1000000-0000-0000-0000-0000000000ff"))
+		affected, err := h.QueuecallSetStatusWaitingIfInitiating(ctx, uuid.Must(uuid.NewV4()))
 		if err != nil || affected != 0 {
 			t.Errorf("Wrong match. expect: (0, nil), got: (%d, %v)", affected, err)
 		}
@@ -147,7 +147,7 @@ func Test_QueuecallSetStatusWaitingIfInitiating_dbError(t *testing.T) {
 		cache:       cachehandler.NewMockCacheHandler(mc),
 	}
 
-	affected, err := h.QueuecallSetStatusWaitingIfInitiating(context.Background(), uuid.FromStringOrNil("e1000000-0000-0000-0000-000000000001"))
+	affected, err := h.QueuecallSetStatusWaitingIfInitiating(context.Background(), uuid.Must(uuid.NewV4()))
 	if err == nil || affected != 0 {
 		t.Errorf("Wrong match. expect: (0, error), got: (%d, %v)", affected, err)
 	}
@@ -169,13 +169,13 @@ func Test_QueueCountByCustomerID(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	customerA := uuid.FromStringOrNil("c1000000-0000-0000-0000-00000000000a")
-	customerB := uuid.FromStringOrNil("c1000000-0000-0000-0000-00000000000b")
-	customerEmpty := uuid.FromStringOrNil("c1000000-0000-0000-0000-00000000000c")
+	customerA := uuid.Must(uuid.NewV4())
+	customerB := uuid.Must(uuid.NewV4())
+	customerEmpty := uuid.Must(uuid.NewV4())
 
-	create := func(id string, customerID uuid.UUID) uuid.UUID {
+	create := func(customerID uuid.UUID) uuid.UUID {
 		t.Helper()
-		qid := uuid.FromStringOrNil(id)
+		qid := uuid.Must(uuid.NewV4())
 		tm := time.Date(2025, 6, 2, 0, 0, 0, 0, time.UTC)
 		mockUtil.EXPECT().TimeNow().Return(&tm)
 		if err := h.QueueCreate(ctx, &queue.Queue{
@@ -187,10 +187,10 @@ func Test_QueueCountByCustomerID(t *testing.T) {
 		return qid
 	}
 
-	create("d1000000-0000-0000-0000-000000000001", customerA)
-	create("d1000000-0000-0000-0000-000000000002", customerA)
-	deleted := create("d1000000-0000-0000-0000-000000000003", customerA)
-	create("d1000000-0000-0000-0000-000000000004", customerB)
+	create(customerA)
+	create(customerA)
+	deleted := create(customerA)
+	create(customerB)
 
 	tm := time.Date(2025, 6, 2, 1, 0, 0, 0, time.UTC)
 	mockUtil.EXPECT().TimeNow().Return(&tm)

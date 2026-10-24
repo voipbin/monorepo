@@ -260,31 +260,56 @@ func Test_processEvent_routing(t *testing.T) {
 	}
 }
 
-func Test_processEventRun_dispatchesAsynchronously(t *testing.T) {
+// Test_processEventRun_doesNotBlockOnTheHandler verifies that the consumer
+// callback returns while the event handler is still running: the handler is
+// held on a channel and only released after processEventRun has returned.
+func Test_processEventRun_doesNotBlockOnTheHandler(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	h, m := newSH(mc)
 
 	callID := uuid.FromStringOrNil("7d2e4b20-8f22-11ee-a101-000000000002")
-	done := make(chan struct{})
+	started := make(chan struct{})
+	release := make(chan struct{})
+	finished := make(chan struct{})
 	m.queuecall.EXPECT().EventCallCallHangup(gomock.Any(), callID).Do(func(_ any, _ uuid.UUID) {
-		close(done)
+		close(started)
+		<-release
+		close(finished)
 	})
 
-	err := h.processEventRun(&sock.Event{
-		Publisher: string(commonoutline.ServiceNameCallManager),
-		Type:      cmcall.EventTypeCallHangup,
-		Data:      []byte(`{"id":"7d2e4b20-8f22-11ee-a101-000000000002"}`),
-	})
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	returned := make(chan error, 1)
+	go func() {
+		returned <- h.processEventRun(&sock.Event{
+			Publisher: string(commonoutline.ServiceNameCallManager),
+			Type:      cmcall.EventTypeCallHangup,
+			Data:      []byte(`{"id":"7d2e4b20-8f22-11ee-a101-000000000002"}`),
+		})
+	}()
+
+	select {
+	case err := <-returned:
+		if err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+	case <-time.After(time.Second):
+		close(release)
+		t.Fatalf("Wrong match. processEventRun blocked on the event handler")
 	}
 
 	select {
-	case <-done:
+	case <-started:
 	case <-time.After(time.Second):
+		close(release)
 		t.Fatalf("Wrong match. the event was not dispatched to the handler")
+	}
+
+	close(release)
+	select {
+	case <-finished:
+	case <-time.After(time.Second):
+		t.Fatalf("Wrong match. the handler did not finish")
 	}
 }
 

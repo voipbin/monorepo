@@ -139,14 +139,27 @@ func Test_LoadGlobalConfig(t *testing.T) {
 	globalConfig = Config{}
 	once = sync.Once{}
 
-	t.Setenv("REDIS_ADDRESS", "redis-first:6379")
-	t.Setenv("REDIS_DATABASE", "3")
+	t.Setenv("DATABASE_DSN", "dsn-first")
+	t.Setenv("PROMETHEUS_ENDPOINT", "/first-metrics")
 	t.Setenv("PROMETHEUS_LISTEN_ADDRESS", ":8081")
+	t.Setenv("RABBITMQ_ADDRESS", "rabbit-first")
+	t.Setenv("REDIS_ADDRESS", "redis-first:6379")
+	t.Setenv("REDIS_PASSWORD", "redis-secret-first")
+	t.Setenv("REDIS_DATABASE", "3")
 
 	LoadGlobalConfig()
 
-	if Get().RedisAddress != "redis-first:6379" || Get().RedisDatabase != 3 || Get().PrometheusListenAddress != ":8081" {
-		t.Fatalf("Wrong match. the singleton must be loaded from viper. got: %+v", *Get())
+	expect := Config{
+		DatabaseDSN:             "dsn-first",
+		PrometheusEndpoint:      "/first-metrics",
+		PrometheusListenAddress: ":8081",
+		RabbitMQAddress:         "rabbit-first",
+		RedisAddress:            "redis-first:6379",
+		RedisDatabase:           3,
+		RedisPassword:           "redis-secret-first",
+	}
+	if *Get() != expect {
+		t.Fatalf("Wrong match. the singleton must be loaded from viper.\nexpect: %+v\ngot: %+v", expect, *Get())
 	}
 
 	// the singleton is loaded exactly once: later environment changes are not picked up.
@@ -154,7 +167,7 @@ func Test_LoadGlobalConfig(t *testing.T) {
 	t.Setenv("REDIS_DATABASE", "4")
 	LoadGlobalConfig()
 
-	if Get().RedisAddress != "redis-first:6379" || Get().RedisDatabase != 3 {
-		t.Errorf("Wrong match. a second LoadGlobalConfig must not reload. got: %+v", *Get())
+	if *Get() != expect {
+		t.Errorf("Wrong match. a second LoadGlobalConfig must not reload.\nexpect: %+v\ngot: %+v", expect, *Get())
 	}
 }
