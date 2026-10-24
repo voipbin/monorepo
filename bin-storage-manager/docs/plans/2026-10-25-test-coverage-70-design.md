@@ -83,6 +83,7 @@ pkg/internal/models (미커버 134) 분류. 미커버 블록 목록을 하나씩
 - 비테스트 `.go` 를 바꾸지 않는다. `go.mod`/`go.sum` 도 바꾸지 않는다(새 의존성 없음, sqlmock 없음).
 - 새 테스트는 `Test_<대상>_<시나리오>` 이름, gomock 컨트롤러 변수명 `mc`, 합성값만, 외부 호출과 네트워크 없음(`scripts/check-test-conventions.sh` 통과). DSN 은 `invalid`(슬래시 없는 비어 있지 않은 값)만 쓴다.
 - 기대값은 입력에서 계산하지 않고 리터럴로 적는다. 빈 호출과 자기비교는 금지한다.
+- 전역 상태: 각 테스트는 시작할 때 자기 값을 직접 대입(`viper.Reset()`, `config.Get().DatabaseDSN`)하고 `t.Cleanup` 으로 이전 값을 복원해 순서 의존을 없앤다. 루트 명령 `Execute` 테스트는 `viper.Reset()` 뒤 `initCommand()` 를 새로 만들고 반드시 `SetArgs(...)` 를 지정하며(안 하면 `-test.*` 플래그를 파싱한다), `migrate` 오류의 stderr 출력은 검사하지 않는다. `Execute` 가 `once` 로 `globalConfig` 를 덮어쓰므로 같은 DSN 만 쓴다.
 - 순서: cmd 도달 가능 구간(주 경로) → pkg 단순 구간 → 필요할 때만 fake 확장 구간. 각 단계 뒤 프로파일로 실측한다.
 
 ### 2.2 테스트 항목
@@ -98,12 +99,12 @@ cmd/storage-control (`main_test.go`, 전역 상태 `viper`, `config.Get()`, stdo
 
 cmd/storage-manager (`main_test.go`, `init()` 자동 실행):
 - `rootCmd` 플래그 이름과 기본값을 리터럴로 단언(`database_dsn`, `prometheus_endpoint`, `redis_database` 기본 1 등)하되 기본 DSN 의 계정 문자열은 단언하지 않는다.
-- `runListen`/`runSubscribe`: `sockhandler` mock 으로 큐 생성 실패는 오류 반환과 이후 호출 없음, 성공은 `ConsumeRPC`/구독 소비 고루틴 시작(채널로 동기화). `createDBHandler` 는 `invalid` DSN 으로 오류 반환.
-- 제외: `run`, `runService`, `initProm`, `main`, `signalHandler` 의 시그널 전송.
+- `runListen`/`runSubscribe`: `sockhandler` mock 으로 `QueueCreate` 실패는 오류 반환과 이후 호출 없음, 구독은 `TopicCreateWithKind`, `QueueBind` 실패도 각각, 성공은 `ConsumeRPC`/`ConsumeMessage` 고루틴 시작(`DoAndReturn` 안에서 채널로 신호를 보내고 테스트가 그 신호를 기다린 뒤 종료해 종료 후 mock 호출을 막는다). `createDBHandler` 는 `invalid` DSN 으로 오류 반환.
+- 제외: `run`, `runService`, `initProm`, `main`, `signalHandler` 의 시그널 전송(시그널을 보내지 않아도 `init()` 의 고루틴 시작으로 `signalHandler` 진입 statement 는 따라올 수 있다).
 
 pkg 단순 구간:
 - `decodeWavPeaks`/`readWavHeader`: 다채널 최대 크기, 버킷 수가 프레임 수보다 큼, 잘린 PCM, 홀수 크기 미지 청크 건너뛰기, 잘린 청크 헤더, 크기 0 데이터. 기대값은 손계산 리터럴.
-- `LoadGlobalConfig`(같은 패키지에서 `once` 초기화 후 환경변수 값 반영), models 의 `ConvertStringMapToFieldMap` 과 `CreateWebhookEvent` 오류(json 불가 값).
+- `LoadGlobalConfig`(기존 `TestLoadGlobalConfig` 는 `once` 를 소진시켜 본문을 실행하지 않으므로, 같은 패키지에서 `once = sync.Once{}` 후 `viper.Set` 값이 `Get()` 의 필드별로 반영되는지 단언하고 `globalConfig`, `once`, viper 를 복원), models 의 `ConvertStringMapToFieldMap` 과 `CreateWebhookEvent` 오류(json 불가 값).
 - listenhandler: `url.Parse` 오류 4, 퍼센트 디코딩 오류 3, `errorResponse` 의 typed nil `*VoipbinError`(500 반환).
 - dbhandler: `ApplyFields` 지원하지 않는 필터 타입 오류 2, `AccountUpdate`/`FileUpdate` 의 json 불가 값 오류 2, 캐시 쓰기 실패 4(성공이나 NotFound 로 바뀌지 않고 오류 전파 또는 기존 계약 유지).
 - filehandler: `NewFileHandler` 인증 파일 분기(없는 경로, 파싱 불가 파일, 유효 키), `Get` 의 NotFound 변환과 일반 오류 래핑, `Create` 의 계정 검증 실패, DB 생성 실패, 재조회 실패, 계정 증가 실패(기존 mock 으로 가능한 것만), `compress.go`, `logDownloadURIFailure`.
@@ -114,5 +115,5 @@ pkg 단순 구간:
 
 - 수기 합계 70.0% 이상, 목표 71% 이상(CI 방식 측정, 집계는 `hw.py` 와 같은 규칙).
 - `go test -count=1 ./...` 와 신규 테스트 `-race -count=3` 통과, `golangci-lint run -v --timeout 5m`, `go mod tidy` 후 `go.mod`/`go.sum` 불변, `git diff --stat origin/main...HEAD` 가 bin-storage-manager/ 안에만 있음, `scripts/check-test-conventions.sh` 통과, 공개 저장소 위생 검사(내부 주소, 비밀값 없음).
-- 변이 검사(별도 scratch 복사본에서만): `resolveUUID` 의 빈 값 분기 제거, `runFileCreate` 의 검증 순서 변경(init 이전 return 파괴), `printJSON` 들여쓰기 변경, `runListen` 의 오류 무시, 플래그 기본값 변경(limit 100), `errorResponse` 상태 코드 변경, `readWavHeader` 의 홀수 청크 정렬 제거, `Get` 의 NotFound 변환 제거에서 해당 신규 테스트가 실패하는지 확인한다.
+- 변이 검사(별도 scratch 복사본에서만): `resolveUUID` 의 빈 값 분기 제거, `runFileCreate` 의 검증 순서 변경(init 이전 return 파괴), `printJSON` 들여쓰기 변경, `runListen` 의 오류 무시, 플래그 기본값 변경(limit 100), `errorResponse` 상태 코드 변경, `readWavHeader` 의 홀수 청크 정렬 제거, `Get` 의 NotFound 변환 제거, `LoadGlobalConfig` 의 필드 매핑 하나 변경, `runSubscribe` 의 오류 무시에서 해당 신규 테스트가 실패하는지 확인한다.
 - 롤백: 테스트 추가뿐이므로 PR 되돌림만으로 복구된다.
