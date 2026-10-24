@@ -346,7 +346,7 @@ func Test_dialroutes_businessError(t *testing.T) {
 
 func Test_processRequest_errorMapping(t *testing.T) {
 	routeID := uuid.FromStringOrNil(testRouteID)
-	typedNotFound := cerrors.NotFound("route-manager", "ROUTE_NOT_FOUND", "missing")
+	typedForbidden := cerrors.PermissionDenied("route-manager", "PROVIDER_FORBIDDEN", "denied")
 
 	tests := []struct {
 		name         string
@@ -386,9 +386,9 @@ func Test_processRequest_errorMapping(t *testing.T) {
 			name:    "typed error keeps its status",
 			request: &sock.Request{URI: "/v1/providers/" + testProviderID, Method: sock.RequestMethodGet},
 			setup: func(m *testMocks) {
-				m.provider.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil(testProviderID)).Return(nil, typedNotFound)
+				m.provider.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil(testProviderID)).Return(nil, typedForbidden)
 			},
-			expectStatus: http.StatusNotFound,
+			expectStatus: http.StatusForbidden,
 		},
 		{
 			name:         "broken body becomes 400",
@@ -538,10 +538,11 @@ func Test_processRequest_providersSetup_credentialNotLogged(t *testing.T) {
 
 	prevLevel := logrus.GetLevel()
 	logrus.SetLevel(logrus.DebugLevel)
+	prevHooks := logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
 	hook := logtest.NewGlobal()
 	t.Cleanup(func() {
 		logrus.SetLevel(prevLevel)
-		hook.Reset()
+		logrus.StandardLogger().ReplaceHooks(prevHooks)
 	})
 
 	credential := "synthetic-credential-value"

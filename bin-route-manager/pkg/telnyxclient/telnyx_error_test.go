@@ -185,7 +185,7 @@ func Test_connectionAndRegisterFQDN_statusBodyIncluded(t *testing.T) {
 	}
 }
 
-func Test_CreateOutboundVoiceProfile_retriesWithoutRejectedCountries(t *testing.T) {
+func Test_CreateOutboundVoiceProfile_errorPath_retriesWithoutRejectedCountries(t *testing.T) {
 	var mu sync.Mutex
 	var attempts [][]string
 

@@ -109,6 +109,11 @@ func Test_LoadGlobalConfig_fromEnv(t *testing.T) {
 func Test_LoadGlobalConfig_defaults(t *testing.T) {
 	resetConfigState(t)
 
+	// the host environment must not influence the flag defaults under test
+	for _, key := range []string{"PROMETHEUS_ENDPOINT", "PROMETHEUS_LISTEN_ADDRESS", "REDIS_DATABASE", "HEALTH_CHECK_INTERVAL"} {
+		t.Setenv(key, "")
+	}
+
 	cmd := &cobra.Command{Use: "test"}
 	if err := Bootstrap(cmd); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)

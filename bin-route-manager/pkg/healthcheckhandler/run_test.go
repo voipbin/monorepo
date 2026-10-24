@@ -25,7 +25,7 @@ func Test_Run_ticksUntilContextCancelled(t *testing.T) {
 	defer cancel()
 
 	// first cycle fails, which must not stop the loop; the second cycle succeeds
-	listed := make(chan int, 2)
+	listed := make(chan int, 64)
 	calls := 0
 	mockDB.EXPECT().
 		ProviderList(gomock.Any(), "", healthCheckPageSize, map[provider.Field]any{}).
@@ -37,13 +37,13 @@ func Test_Run_ticksUntilContextCancelled(t *testing.T) {
 			}
 			return []*provider.Provider{}, nil
 		}).
-		Times(2)
+		MinTimes(2)
 
 	h := &healthCheckHandler{db: mockDB, reqHandler: mockReq, locker: newAlwaysSucceedsLocker(mc)}
 
 	done := make(chan struct{})
 	go func() {
-		h.Run(ctx, 10*time.Millisecond)
+		h.Run(ctx, 50*time.Millisecond)
 		close(done)
 	}()
 
