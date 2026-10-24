@@ -15,11 +15,11 @@
 2. linehandler Hook 계열: 잘못된 JSON, 빈 events, 미지원 이벤트, 텍스트와 비텍스트(image) 메시지 성공, dialog id 가 없는 follow 이벤트, hookEventTypeMessage 의 목록 오류와 0건과 생성 오류, getDialogID 의 user, group, room, 그 외. 성공 경로는 source 가 cv.Peer, destination 이 cv.Self 이고(두 값이 서로 다른 픽스처) medias 가 빈 슬라이스임을 인자 매칭으로 검증한다. source 가 없는 이벤트와 message 가 없는 message 이벤트는 제품 코드가 nil 역참조를 하므로 쓰지 않는다.
 3. conversationhandler: MessageEventSent(신규 생성과 case 힌트 전달, 기존 메시지 상태 갱신, 타깃 0개와 2개, 대화 생성 실패, 메시지 생성 실패, 상태 갱신 실패), MessageSend 의 조회 실패와 전송 실패. 타깃 2개에서는 타깃별로 다른 대화를 반환해 생성 인자의 destination 이 타깃별로 달라짐을 검증한다.
 4. listenhandler: create_and_execute_flow POST 의 성공, JSON 오류 400, 일반 오류 500, typed 오류의 상태 코드와 envelope.
-5. subscribehandler: email updated 의 정상, JSON 오류, 핸들러 오류, email created 와 message created 의 오류 경로, webchat 이벤트, processEvent 의 분기별 핸들러 호출 여부(processEvent 는 반환값이 없고 오류를 로그로만 남기므로 호출 여부로 검증한다). processEventRun 과 Run 은 고루틴을 쓰므로 대상에서 제외한다.
+5. subscribehandler: email updated 의 정상, JSON 오류, 핸들러 오류, email created 와 message created 의 오류 경로, webchat 이벤트, processEvent 의 분기별 핸들러 호출 여부와 publisher 가 다른 이벤트의 무시 (processEvent 는 반환값이 없고 오류를 로그로만 남기므로 호출 여부로 검증한다). processEventRun 과 Run 은 고루틴을 쓰므로 대상에서 제외한다.
 6. messagehandler: sendLine 의 계정 조회 실패, 메시지 생성 실패, 전송 실패 시 failed 상태 갱신, 전송 후 상태 갱신 실패, 미지원 대화 타입.
 7. dbhandler: AccountUpdate(sqlite 인메모리 DB, 다른 테스트와 겹치지 않는 ID 와 customer id, 케이스마다 새 fields map, tm_update 와 캐시 갱신 인자 검증, 같은 customer 의 형제 계정 불변 확인, 빈 fields 와 존재하지 않는 컬럼).
 
 ## 검증
 - `go mod tidy`, `go mod vendor`, `go generate ./...`, `go test ./...`, `golangci-lint run`, `scripts/check-test-conventions.sh` 를 모두 실행하고 go.mod 와 go.sum 이 바뀌지 않음을 확인한다.
-- 변이 표본(제품 코드를 임시로 바꿔 새 테스트가 실패하는지 확인): MessageEventSent 의 상태 갱신 인자, hook 의 source 와 destination 교환, getDialogID 의 room 분기, AccountUpdate 의 tm_update 설정과 WHERE 절 제거(같은 customer 의 다른 계정이 바뀌지 않음을 확인), create_and_execute_flow 의 400 응답, email created 의 오류 반환, sendLine 의 실패 상태 갱신, conversation 웹훅의 필드 누락, errorResponse 의 typed 오류 분기.
+- 변이 표본(제품 코드를 임시로 바꿔 새 테스트가 실패하는지 확인): MessageEventSent 의 상태 갱신 인자, hook 의 source 와 destination 교환, getDialogID 의 room 분기, AccountUpdate 의 tm_update 설정과 WHERE 절 제거(같은 customer 의 다른 계정이 바뀌지 않음을 확인), create_and_execute_flow 의 400 응답, email created 의 오류 반환, sendLine 의 실패 상태 갱신, conversation 웹훅의 필드 누락, errorResponse 의 typed 오류 분기, processEvent 의 publisher 조건 제거(다른 publisher 의 같은 type 이벤트가 핸들러로 가지 않음).
 - 롤백: 테스트 파일 추가뿐이므로 PR 되돌림으로 충분하다.

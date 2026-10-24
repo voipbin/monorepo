@@ -8,6 +8,7 @@ import (
 
 	commonsock "monorepo/bin-common-handler/models/sock"
 	emmemail "monorepo/bin-email-manager/models/email"
+	mmmessage "monorepo/bin-message-manager/models/message"
 	wmmessage "monorepo/bin-webchat-manager/models/message"
 
 	gomock "go.uber.org/mock/gomock"
@@ -239,6 +240,42 @@ func Test_processEvent_dispatch(t *testing.T) {
 			expect: func(mockConversation *conversationhandler.MockConversationHandler) {
 				mockConversation.EXPECT().EmailEventUpdated(gomock.Any(), gomock.Any()).Return(fmt.Errorf("update failed"))
 			},
+		},
+		{
+			name: "message created from a different publisher is ignored",
+			event: &commonsock.Event{
+				Publisher: publisherCustomerManager,
+				Type:      string(mmmessage.EventTypeMessageCreated),
+				Data:      json.RawMessage(`{"id":"e1000000-0000-0000-0000-000000000009"}`),
+			},
+			expect: func(mockConversation *conversationhandler.MockConversationHandler) {},
+		},
+		{
+			name: "email created from a different publisher is ignored",
+			event: &commonsock.Event{
+				Publisher: publisherCustomerManager,
+				Type:      emmemail.EventTypeCreated,
+				Data:      json.RawMessage(`{"id":"e1000000-0000-0000-0000-000000000010"}`),
+			},
+			expect: func(mockConversation *conversationhandler.MockConversationHandler) {},
+		},
+		{
+			name: "email updated from a different publisher is ignored",
+			event: &commonsock.Event{
+				Publisher: publisherCustomerManager,
+				Type:      emmemail.EventTypeUpdated,
+				Data:      json.RawMessage(`{"id":"e1000000-0000-0000-0000-000000000011"}`),
+			},
+			expect: func(mockConversation *conversationhandler.MockConversationHandler) {},
+		},
+		{
+			name: "webchat message created from a different publisher is ignored",
+			event: &commonsock.Event{
+				Publisher: publisherCustomerManager,
+				Type:      wmmessage.EventTypeMessageCreated,
+				Data:      json.RawMessage(`{"id":"e1000000-0000-0000-0000-000000000012"}`),
+			},
+			expect: func(mockConversation *conversationhandler.MockConversationHandler) {},
 		},
 		{
 			name: "known publisher with an unrelated type is ignored",
