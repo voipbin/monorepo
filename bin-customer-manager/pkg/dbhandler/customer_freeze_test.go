@@ -98,8 +98,13 @@ func Test_CustomerFreeze(t *testing.T) {
 				if res.TMDeletionScheduled != nil {
 					t.Errorf("Wrong match. expect deletion schedule untouched, got: %v", res.TMDeletionScheduled)
 				}
-			} else if res.TMDeletionScheduled == nil || !res.TMDeletionScheduled.Equal(scheduled) {
-				t.Errorf("Wrong match. expect deletion schedule: %v, got: %v", scheduled, res.TMDeletionScheduled)
+			} else {
+				if res.TMDeletionScheduled == nil || !res.TMDeletionScheduled.Equal(scheduled) {
+					t.Errorf("Wrong match. expect deletion schedule: %v, got: %v", scheduled, res.TMDeletionScheduled)
+				}
+				if res.TMUpdate == nil || !res.TMUpdate.Equal(scheduled) {
+					t.Errorf("Wrong match. expect tm_update: %v, got: %v", scheduled, res.TMUpdate)
+				}
 			}
 		})
 	}
@@ -234,8 +239,13 @@ func Test_CustomerRecover(t *testing.T) {
 				if res.TMDeletionScheduled == nil {
 					t.Errorf("Wrong match. expect deletion schedule untouched, got: nil")
 				}
-			} else if res.TMDeletionScheduled != nil {
-				t.Errorf("Wrong match. expect deletion schedule cleared, got: %v", res.TMDeletionScheduled)
+			} else {
+				if res.TMDeletionScheduled != nil {
+					t.Errorf("Wrong match. expect deletion schedule cleared, got: %v", res.TMDeletionScheduled)
+				}
+				if res.TMUpdate == nil || !res.TMUpdate.Equal(recoverTime) {
+					t.Errorf("Wrong match. expect tm_update: %v, got: %v", recoverTime, res.TMUpdate)
+				}
 			}
 		})
 	}

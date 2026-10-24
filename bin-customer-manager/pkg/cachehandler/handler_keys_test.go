@@ -132,7 +132,7 @@ func Test_EmailVerifyToken(t *testing.T) {
 }
 
 func Test_VerifyLock(t *testing.T) {
-	h, _ := newTestHandler(t)
+	h, s := newTestHandler(t)
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
 	other := uuid.FromStringOrNil("9f6245d5-21b3-4ca7-97ca-069729c87974")
@@ -142,9 +142,20 @@ func Test_VerifyLock(t *testing.T) {
 		t.Fatalf("Wrong match. expect: acquired, got: %v, err: %v", ok, err)
 	}
 
+	if ttl := s.TTL("verify_lock:" + id.String()); ttl != time.Minute {
+		t.Errorf("Wrong match. expect lock ttl: 1m, got: %v", ttl)
+	}
+
 	ok, err = h.VerifyLockAcquire(ctx, id, time.Minute)
 	if err != nil || ok {
 		t.Errorf("Wrong match. expect: second acquire denied, got: %v, err: %v", ok, err)
+	}
+
+	// a lock that is never released must still expire
+	s.FastForward(2 * time.Minute)
+	ok, err = h.VerifyLockAcquire(ctx, id, time.Minute)
+	if err != nil || !ok {
+		t.Fatalf("Wrong match. expect: acquired after expiry, got: %v, err: %v", ok, err)
 	}
 
 	// the lock is per customer
@@ -198,7 +209,11 @@ func Test_serverDown(t *testing.T) {
 func Test_NewHandler_Connect(t *testing.T) {
 	_, s := newTestHandler(t)
 
-	h := NewHandler(s.Addr(), "", 0)
+	h := NewHandler(s.Addr(), "pw", 3)
+	if impl, ok := h.(*handler); !ok || impl.Addr != s.Addr() || impl.Password != "pw" || impl.DB != 3 {
+		t.Errorf("Wrong match. expect: handler carrying the connection settings, got: %+v", h)
+	}
+	h = NewHandler(s.Addr(), "", 0)
 	if err := h.Connect(); err != nil {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
