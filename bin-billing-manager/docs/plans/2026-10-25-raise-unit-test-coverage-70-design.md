@@ -20,20 +20,20 @@
 
 The table sums to about 206 statements at most; the realistic gain is about 150 to 175 (about 73 to 74%). Items are added in the order above until the hand-written total is at least 71%. Branches that cannot be reached from a test (for example the second of two consecutive cache writes failing after the first succeeded) are left uncovered.
 
-Per-handler expectations differ and are fixed from the source of each handler, not assumed from a common rule (for example an unparsable customer id yields 400 in some Paddle handlers and a skipped 200 in the refund handler).
+Per-handler expectations are fixed from the source of each handler, not assumed from a common rule. Branches that only guard `json.Marshal` failure of a plain struct are unreachable from a test and stay uncovered, so the Uncovered column above is an upper bound.
 
 ## 3. Rules for the tests
 
 - No empty calls and no self-comparison; expected values are independent literals, never derived from the input fields under test.
-- Cache tests: the primary key of a Set is asserted by name and content; the secondary index is asserted only through a Get on a directly seeded key. Account and customer ids are different UUIDs.
-- Synthetic values only; no network, no external calls. Redis address comes from `s.Addr()` at run time, password argument is an empty string, no DSN with credentials, no email, phone or token-shaped strings.
-- Test names `Test_<Func>_<case>`; gomock controller named `mc`; new functions do not collide with existing test names.
+- Cache tests: Get paths use directly seeded keys; Set paths assert the stored content. Fixture ids are distinct UUIDs.
+- Synthetic values only; no network, no external calls. Redis address comes from `s.Addr()` at run time, password argument is an empty string, no DSN with credentials, no email, phone or token-shaped strings (no `pdl_` or API key prefixes).
+- Test names `Test_<Func>_<case>`; gomock controller named `mc`; where a table-driven test already exists (hooks, accounts) new cases are added to that table or a new function with a distinct name is used. A failed `Connect` asserts only that an error is returned.
 - Defects found while testing are not fixed and not described in repository files; they are reported on the card only. A test that touches such a path asserts the current behavior with a neutral comment.
 
 ## 4. Verify
 
-1. Hand-written total at least 71.0%: `GOFLAGS=-mod=mod go test -count=1 -coverprofile` then the reference aggregation (baseline 69.64%, 2888/4147); per-package before/after table in the PR body.
+1. Hand-written total at least 71.0%: `GOFLAGS=-mod=mod go test -count=1 -coverprofile` then aggregate the profile excluding `mock_*.go`, `/gens/` and files whose header has `Code generated` and `DO NOT EDIT`, keeping the max count for duplicate blocks (baseline 69.64%, 2888/4147); per-package before/after table in the PR body.
 2. `go mod tidy` run twice leaves no further diff; go.mod/go.sum change only by miniredis and its transitive entries; `go list -deps ./cmd/...` does not contain miniredis (test-only import).
 3. `go test -race -count=1 ./...` and `golangci-lint run` pass.
 4. `git diff --stat origin/main...HEAD` lists only files under bin-billing-manager.
-5. Mutation sample in a scratch `git archive` copy (never the worktree), at least these six, each with the test that fails recorded: cache primary key prefix change, `getSerialize` error return removed, one `ConvertWebhookMessage` field dropped, refund absolute value removed, a Paddle handler 500 mapped to 200, the secondary reference key of `BillingSet` changed to the id.
+5. Mutation sample in a scratch `git archive` copy (never the worktree), at least these six, each with the test that fails recorded: cache primary key prefix change, `getSerialize` error return removed, one `ConvertWebhookMessage` field dropped, refund absolute value removed, a Paddle handler 500 mapped to 200, the secondary reference key of `BillingSet` changed to the id (the BillingSet case asserts that key through `BillingGetByReferenceID`).
