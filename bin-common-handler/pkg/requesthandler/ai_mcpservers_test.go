@@ -15,6 +15,13 @@ import (
 
 const aiQueue = "bin-manager.ai-manager.request"
 
+// synthetic values, assigned apart from any address literal.
+const (
+	mcpTestSecret     = "test-secret-not-real"
+	mcpTestLinkToken1 = "link-token-0001"
+	mcpTestLinkToken2 = "link-token-0002"
+)
+
 func Test_AIMcpServerWrappers(t *testing.T) {
 	if aiQueue != string(outline.QueueNameAIRequest) {
 		t.Fatalf("Wrong match. unexpected ai queue constant: %s", outline.QueueNameAIRequest)
@@ -64,10 +71,10 @@ func Test_AIMcpServerWrappers(t *testing.T) {
 			expectURI:      "/v1/mcp_servers",
 			expectMethod:   sock.RequestMethodPost,
 			expectDataType: ContentTypeJSON,
-			expectData:     `{"customer_id":"1d7e0a3c-5b94-4f2a-8c61-7e2b9d4a6f30","name":"srv","detail":"d","url":"https://mcp.example.invalid/v1","auth_type":"api_key","api_key_header":"X-Test-Key","secret":"test-secret-not-real"}`,
+			expectData:     `{"customer_id":"1d7e0a3c-5b94-4f2a-8c61-7e2b9d4a6f30","name":"srv","detail":"d","url":"https://mcp.example.invalid/v1","auth_type":"api_key","api_key_header":"X-Test-Key","secret":"` + mcpTestSecret + `"}`,
 			responseData:   `{"id":"8a5c6b1e-2f0b-4c8e-9d3a-0c9f5a1b7e11","name":"srv","auth_type":"api_key","api_key_header":"X-Test-Key","has_secret":true}`,
 			call: func(h *requestHandler) (any, error) {
-				secret := "test-secret-not-real"
+				secret := mcpTestSecret
 				return h.AIV1McpServerCreate(context.Background(), customerID, "srv", "d", "https://mcp.example.invalid/v1", ammcpserver.AuthTypeAPIKey, "X-Test-Key", secret)
 			},
 			expectRes: &ammcpserver.McpServer{Identity: identity.Identity{ID: id}, Name: "srv", AuthType: ammcpserver.AuthTypeAPIKey, APIKeyHeader: "X-Test-Key", HasSecret: true},
@@ -117,7 +124,7 @@ func Test_AIMcpServerWrappers(t *testing.T) {
 			expectMethod:   sock.RequestMethodPost,
 			expectDataType: ContentTypeJSON,
 			expectData:     `{"customer_id":"1d7e0a3c-5b94-4f2a-8c61-7e2b9d4a6f30","vendor":"vendor-a"}`,
-			responseData:   `{"authorize_url":"https://auth.example.invalid/authorize?x=1","link_token":"link-token-0001"}`,
+			responseData:   `{"authorize_url":"https://auth.example.invalid/authorize?x=1","link_token":"` + mcpTestLinkToken1 + `"}`,
 			call: func(h *requestHandler) (any, error) {
 				authorizeURL, linkToken, err := h.AIV1McpOAuthStart(context.Background(), customerID, "vendor-a", nil)
 				return [2]string{authorizeURL, linkToken}, err
@@ -131,7 +138,7 @@ func Test_AIMcpServerWrappers(t *testing.T) {
 			expectMethod:   sock.RequestMethodPost,
 			expectDataType: ContentTypeJSON,
 			expectData:     `{"customer_id":"1d7e0a3c-5b94-4f2a-8c61-7e2b9d4a6f30","vendor":"vendor-a","mcp_server_id":"c4f2d8a9-3e17-4b6a-a0d5-9b1e7c3f2a48"}`,
-			responseData:   `{"authorize_url":"https://auth.example.invalid/authorize","link_token":"link-token-0002"}`,
+			responseData:   `{"authorize_url":"https://auth.example.invalid/authorize","link_token":"` + mcpTestLinkToken2 + `"}`,
 			call: func(h *requestHandler) (any, error) {
 				authorizeURL, linkToken, err := h.AIV1McpOAuthStart(context.Background(), customerID, "vendor-a", &serverID)
 				return [2]string{authorizeURL, linkToken}, err

@@ -121,4 +121,11 @@ func Test_AIV1TeamWrappers(t *testing.T) {
 	runMarshalErrorCase(t, "list_marshal_error", func(h *requestHandler, ctx context.Context) (any, error) {
 		return h.AIV1TeamList(ctx, "", 10, map[amteam.Field]any{amteam.FieldCustomerID: make(chan int)})
 	})
+	runMarshalErrorCase(t, "create_marshal_error", func(h *requestHandler, ctx context.Context) (any, error) {
+		return h.AIV1TeamCreate(ctx, customerID, "support", "d", memberID, nil, map[string]any{"mode": make(chan int)})
+	})
+	runMarshalErrorCase(t, "update_marshal_error", func(h *requestHandler, ctx context.Context) (any, error) {
+		bad := map[string]any{"mode": make(chan int)}
+		return h.AIV1TeamUpdate(ctx, teamID, nil, nil, nil, nil, &bad)
+	})
 }

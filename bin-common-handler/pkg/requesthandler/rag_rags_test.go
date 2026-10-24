@@ -178,7 +178,11 @@ func Test_RagV1RagDelete_onlyStatus200IsSuccess(t *testing.T) {
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			h := &requestHandler{sock: mockSock}
 
-			mockSock.EXPECT().RequestPublish(gomock.Any(), ragQueue, gomock.Any()).Return(&sock.Response{StatusCode: tt.statusCode}, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), ragQueue, &sock.Request{
+				URI:      "/v1/rags/5e1f3b7a-9c24-4d68-b0a1-3f7d2c8e4a59",
+				Method:   sock.RequestMethodDelete,
+				DataType: ContentTypeJSON,
+			}).Return(&sock.Response{StatusCode: tt.statusCode}, nil)
 
 			err := h.RagV1RagDelete(context.Background(), ragID)
 			if (err != nil) != tt.expectErr {

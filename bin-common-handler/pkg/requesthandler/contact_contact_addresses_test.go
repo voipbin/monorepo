@@ -67,6 +67,18 @@ func Test_ContactV1ContactAddressWrappers(t *testing.T) {
 			expectRes: []cmcontact.Address(nil),
 		},
 		{
+			name:           "list_page_size_one",
+			queue:          contactQueue,
+			expectURI:      "/v1/contact_addresses?customer_id=2b4d6f80-1a3c-4e57-9b81-0d2f4a6c8e13&page_size=1",
+			expectMethod:   sock.RequestMethodGet,
+			expectDataType: ContentTypeNone,
+			responseData:   `{"result":[]}`,
+			call: func(h *requestHandler) (any, error) {
+				return h.ContactV1ContactAddressList(context.Background(), customerID, nil, "", 1)
+			},
+			expectRes: []cmcontact.Address{},
+		},
+		{
 			name:           "list_ignores_mistyped_contact_id",
 			queue:          contactQueue,
 			expectURI:      "/v1/contact_addresses?customer_id=2b4d6f80-1a3c-4e57-9b81-0d2f4a6c8e13&type=email",
