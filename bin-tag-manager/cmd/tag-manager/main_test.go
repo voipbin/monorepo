@@ -169,10 +169,8 @@ func Test_runSubscribe(t *testing.T) {
 func Test_runListen(t *testing.T) {
 	const requestQueue = "bin-manager.tag-manager.request"
 
-	t.Run("queue create failure is logged and swallowed", func(t *testing.T) {
-		// Current behavior pinned: listenhandler.Run returns the QueueCreate error, but runListen only
-		// logs it and returns nil, so the daemon would keep running without a request consumer.
-		// This is a defect candidate and is intentionally not changed by this test-only change.
+	t.Run("queue create failure is logged and nil is returned", func(t *testing.T) {
+		// Current behavior: runListen logs the error from listenHandler.Run and returns nil.
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
