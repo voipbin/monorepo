@@ -45,10 +45,7 @@ func Test_runListen(t *testing.T) {
 		}
 	})
 
-	// characterization of the current behaviour: a failure of the listen handler is only
-	// logged and runListen still returns nil. If runListen is changed to return the error,
-	// update this case to expect it.
-	t.Run("a queue failure is logged and not returned", func(t *testing.T) {
+	t.Run("a queue failure does not stop runListen", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
