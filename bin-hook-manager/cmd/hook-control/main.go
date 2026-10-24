@@ -90,11 +90,6 @@ func cmdSendEmail() *cobra.Command {
 }
 
 func runSendEmail(cmd *cobra.Command, args []string) error {
-	handler, err := initHandler()
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
 	uri := viper.GetString("uri")
 	if uri == "" {
 		return fmt.Errorf("uri is required")
@@ -103,6 +98,11 @@ func runSendEmail(cmd *cobra.Command, args []string) error {
 	data, err := getPayloadData()
 	if err != nil {
 		return errors.Wrap(err, "failed to get payload data")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
 	req, _ := http.NewRequestWithContext(context.Background(), http.MethodPost, "http://"+uri, bytes.NewReader(data))
@@ -137,11 +137,6 @@ func cmdSendMessage() *cobra.Command {
 }
 
 func runSendMessage(cmd *cobra.Command, args []string) error {
-	handler, err := initHandler()
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
 	uri := viper.GetString("uri")
 	if uri == "" {
 		return fmt.Errorf("uri is required")
@@ -150,6 +145,11 @@ func runSendMessage(cmd *cobra.Command, args []string) error {
 	data, err := getPayloadData()
 	if err != nil {
 		return errors.Wrap(err, "failed to get payload data")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
 	req, _ := http.NewRequestWithContext(context.Background(), http.MethodPost, "http://"+uri, bytes.NewReader(data))
@@ -184,11 +184,6 @@ func cmdSendConversation() *cobra.Command {
 }
 
 func runSendConversation(cmd *cobra.Command, args []string) error {
-	handler, err := initHandler()
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
 	uri := viper.GetString("uri")
 	if uri == "" {
 		return fmt.Errorf("uri is required")
@@ -197,6 +192,11 @@ func runSendConversation(cmd *cobra.Command, args []string) error {
 	data, err := getPayloadData()
 	if err != nil {
 		return errors.Wrap(err, "failed to get payload data")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
 	req, _ := http.NewRequestWithContext(context.Background(), http.MethodPost, "http://"+uri, bytes.NewReader(data))

@@ -5,7 +5,7 @@
 - 기준선(origin/main d68e695b5, `GOFLAGS=-mod=mod go test -count=1 -coverprofile`): 원본(생성 코드와 mock 포함) 46.2%, 수기 합계 43.5% (수기 statement 577개 중 251개 커버). 목표는 수기 합계 61% 이상(인수 조건 60%, 여유 1%p)이며 약 352개 커버가 필요.
 - 미커버: `cmd/hook-control/main.go`(0%), `cmd/hook-manager/main.go`(0%), `api/v1.0/v1.0.go`(0%), `config.LoadGlobalConfig`(50%), `ValidationError.Error/Unwrap`(0%).
 - 선행 PR #486(머지됨)이 api, servicehandler, config 를 올렸고 중복 진행 PR 없음.
-- 제외(제품 코드 변경 금지): `runSend*`는 `initHandler()`가 uri 검증보다 먼저 실제 RabbitMQ `Connect()`(무한 재시도, 주입 지점 없음)를 호출해 불가. `runService`(DB, RabbitMQ, 포트 80/443), 두 `main`(`os.Exit`, `log.Fatalf`), `writeBase64` 의 base64 오류 경로(`log.Fatalf`), `config.Bootstrap` 의 BindPFlag 오류 경로(직전에 플래그를 정의하므로 도달 불가).
+- 제외(제품 코드 변경 금지): `runSend*`의 성공 경로는 외부 연결(RabbitMQ)에 의존해 제외(검증 실패 경로는 단위 테스트 가능). `runService`(DB, RabbitMQ, 포트 80/443), 두 `main`(`os.Exit`, `log.Fatalf`), `writeBase64` 의 치명적 오류 경로(프로세스 종료), `config.Bootstrap` 의 BindPFlag 오류 경로(직전에 플래그를 정의하므로 도달 불가).
 
 ## 2. 테스트 계획 (새 함수는 `Test_` 접두사, testify 미사용)
 

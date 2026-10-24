@@ -173,7 +173,6 @@ func writeBase64(filename string, data string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "writeBase64",
 		"filename": filename,
-		"data":     data,
 	})
 
 	// Create or open the file
@@ -188,7 +187,7 @@ func writeBase64(filename string, data string) error {
 
 	tmp, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
-		log.Fatalf("Error decoding Base64 string: %v", err) //nolint:gocritic // exitAfterDefer: an undecodable SSL certificate or key is fatal at startup, the deferred file close is irrelevant when the process exits
+		log.Fatalf("Error decoding Base64 string: %v", err) //nolint:gocritic // exitAfterDefer: fatal at startup by design
 	}
 
 	// Write the string data to the file

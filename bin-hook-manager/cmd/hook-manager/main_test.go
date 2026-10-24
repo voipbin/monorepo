@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -11,6 +12,9 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 )
 
 func Test_rootCmdFlags(t *testing.T) {
@@ -86,6 +90,44 @@ func Test_writeBase64(t *testing.T) {
 			t.Errorf("Wrong match. expect: error, got: nil")
 		}
 	})
+}
+
+func Test_writeBase64_logs(t *testing.T) {
+	payload := base64.StdEncoding.EncodeToString([]byte("neutral-payload-text"))
+	filename := filepath.Join(t.TempDir(), "missing-dir", "out.pem")
+
+	std := logrus.StandardLogger()
+	prevHooks := std.ReplaceHooks(make(logrus.LevelHooks))
+	prevLevel := std.GetLevel()
+	std.SetLevel(logrus.DebugLevel)
+	t.Cleanup(func() {
+		std.ReplaceHooks(prevHooks)
+		std.SetLevel(prevLevel)
+	})
+	hook := logrustest.NewLocal(std)
+
+	if err := writeBase64(filename, payload); err == nil {
+		t.Fatalf("Wrong match. expect: error, got: nil")
+	}
+
+	entries := hook.AllEntries()
+	if len(entries) < 1 {
+		t.Fatalf("Wrong match. expect: at least 1 log entry, got: %d", len(entries))
+	}
+
+	for _, e := range entries {
+		if strings.Contains(e.Message, payload) {
+			t.Errorf("the log message contains the input data. message: %s", e.Message)
+		}
+		if _, ok := e.Data["data"]; ok {
+			t.Errorf("the log entry has a data field")
+		}
+		for k, v := range e.Data {
+			if strings.Contains(fmt.Sprint(v), payload) {
+				t.Errorf("the log field contains the input data. field: %s", k)
+			}
+		}
+	}
 }
 
 var (
