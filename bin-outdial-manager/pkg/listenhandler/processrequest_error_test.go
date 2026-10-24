@@ -17,11 +17,10 @@ import (
 	"monorepo/bin-outdial-manager/pkg/outdialtargethandler"
 )
 
-// The tests in this file characterize the current behavior of processRequest:
+// The tests in this file verify the status code mapping of processRequest:
 // a request that cannot be decoded, or a business handler that returns a
-// generic error, is answered with 400 (the legacy default branch), while
-// dbhandler.ErrNotFound and a typed *cerrors.VoipbinError are mapped through
-// errorResponse.
+// generic error, is answered with 400, while dbhandler.ErrNotFound and a typed
+// *cerrors.VoipbinError are mapped through errorResponse.
 
 const (
 	testOutdialID       = "9f4a6b1c-b9c8-11ef-8a01-0a1b2c3d4e5f"
