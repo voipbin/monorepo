@@ -108,6 +108,7 @@ type storageFake struct {
 	uploadStatus int               // status code of the upload request
 	deleted      []string
 	uploaded     int
+	rewrites     int // copy requests received
 }
 
 func newStorageFake(t *testing.T, f *storageFake) *storage.Client {
@@ -123,6 +124,14 @@ func newStorageFake(t *testing.T, f *storageFake) *storage.Client {
 		}
 
 		path := r.URL.Path
+
+		// copy
+		if r.Method == http.MethodPost && strings.Contains(path, "/rewriteTo/") {
+			f.rewrites++
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = fmt.Fprint(w, `{"kind":"storage#rewriteResponse","totalBytesRewritten":"1","objectSize":"1","done":true,"resource":{"kind":"storage#object","bucket":"media","name":"bin/out","size":"1","generation":"1","metageneration":"1"}}`)
+			return
+		}
 
 		// upload
 		if r.Method == http.MethodPost && strings.Contains(path, "/upload/") {
@@ -279,8 +288,32 @@ func Test_bucketfileMove_existingDestinationIsRefused(t *testing.T) {
 	if err == nil || res != nil {
 		t.Errorf("Wrong match. expect: nil/error, got: %v/%v", res, err)
 	}
+	if err != nil && !strings.Contains(err.Error(), "destination already exists") {
+		t.Errorf("Wrong match. expect the destination refusal, got: %v", err)
+	}
+	if fake.rewrites != 0 {
+		t.Errorf("Wrong match. expect no copy request, got: %d", fake.rewrites)
+	}
 	if deleted := fake.deletedKeys(); len(deleted) != 0 {
 		t.Errorf("Wrong match. the source must stay in place, got deleted: %v", deleted)
+	}
+}
+
+func Test_bucketfileMove_freeDestinationIsCopied(t *testing.T) {
+	fake := &storageFake{
+		attrs: map[string]bool{"tmp/in.wav": true},
+	}
+	h := &fileHandler{client: newStorageFake(t, fake)}
+
+	res, err := h.bucketfileMove(context.Background(), "tmp", "in.wav", "media", "bin/out")
+	if err != nil || res == nil {
+		t.Fatalf("Wrong match. expect: attrs/nil, got: %v/%v", res, err)
+	}
+	if fake.rewrites != 1 {
+		t.Errorf("Wrong match. expect one copy request, got: %d", fake.rewrites)
+	}
+	if deleted := fake.deletedKeys(); len(deleted) != 1 || deleted[0] != "tmp/in.wav" {
+		t.Errorf("Wrong match. expect the source to be removed, got: %v", deleted)
 	}
 }
 
