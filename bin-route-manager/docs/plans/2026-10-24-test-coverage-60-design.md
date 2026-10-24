@@ -39,7 +39,7 @@
    - Create 후 Get 왕복에서 nil 슬라이스(Destinations, CallIDs, GroupcallIDs)가 빈 배열로 저장되고 TMCreate 가 주입된 시각이며 TMUpdate/TMDelete 가 nil.
    - Get 미존재 id 는 `ErrNotFound`.
    - List: token 미지정 시 현재 시각 사용, limit 적용, `tm_create DESC` 정렬, customer_id 와 provider_id 필터, soft delete 된 행 제외, 알 수 없는 컬럼 필터는 `could not query` 오류(sqlite 의 no such column, 오류 발생 여부만 확인), 지원하지 않는 필터 값 타입(struct)은 `could not apply filters` 오류.
-   - Delete: 대상 행의 tm_delete/tm_update 설정, 미존재 id 는 `ErrNotFound`, 삭제 후 List 에서 제외, Get 은 삭제 행을 반환(코드상 Get 은 tm_delete 를 거르지 않음).
+   - Delete: 대상 행의 tm_delete/tm_update 설정, 미존재 id 는 `ErrNotFound`, 삭제 후 List 에서 제외.
 
 1-b. 기존 `pkg/dbhandler/provider_test.go` 에 `ProviderUpdateHealthStatus` 테스트 추가: health_status 와 health_checked_at 이 갱신되고(ProviderUpdate 가 캐시도 갱신하므로 그 파일의 mockCache 기대 패턴을 따름) 다시 읽은 값이 일치.
 2. `pkg/listenhandler/v1_providercalls_test.go` (추정 +110 stmt)

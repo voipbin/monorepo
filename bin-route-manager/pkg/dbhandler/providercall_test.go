@@ -356,7 +356,7 @@ func Test_ProviderCallDelete(t *testing.T) {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 
-	// Get does not filter by tm_delete, so the soft-deleted row is returned with its timestamps set.
+	// Read the row back after the soft delete and check its timestamps.
 	res, err := h.ProviderCallGet(ctx, id)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
