@@ -113,10 +113,18 @@ func (h *handler) outdialTargetGetFromRowForAvailable(row *sql.Rows) (*outdialta
 
 	// Convert scanned values to struct
 	if id.Valid {
-		res.ID, _ = uuid.FromBytes([]byte(id.String))
+		parsed, err := uuid.FromBytes([]byte(id.String))
+		if err != nil {
+			return nil, fmt.Errorf("could not parse id. outdialTargetGetFromRowForAvailable. err: %w", err)
+		}
+		res.ID = parsed
 	}
 	if outdialID.Valid {
-		res.OutdialID, _ = uuid.FromBytes([]byte(outdialID.String))
+		parsed, err := uuid.FromBytes([]byte(outdialID.String))
+		if err != nil {
+			return nil, fmt.Errorf("could not parse outdial id. outdialTargetGetFromRowForAvailable. err: %w", err)
+		}
+		res.OutdialID = parsed
 	}
 	if name.Valid {
 		res.Name = name.String

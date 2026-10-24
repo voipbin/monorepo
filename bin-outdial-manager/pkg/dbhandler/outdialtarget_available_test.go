@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -153,11 +154,12 @@ func Test_OutdialTargetGetAvailable_error(t *testing.T) {
 	errDB := errors.New("simulated db failure")
 	good := `{"type":"tel","target":"+15550100000"}`
 
-	// rowWith returns a full row where the destination at position i is replaced.
-	rowWith := func(i int, dest string) []driver.Value {
+	// rowWithIDs returns a full row with explicit id and outdial id column
+	// values, where the destination at position i is replaced.
+	rowWithIDs := func(i int, dest string, id, outdialIDValue driver.Value) []driver.Value {
 		dests := []driver.Value{good, good, good, good, good}
 		dests[i] = dest
-		row := []driver.Value{outdialID.Bytes(), outdialID.Bytes(), "n", "d", "x", "idle"}
+		row := []driver.Value{id, outdialIDValue, "n", "d", "x", "idle"}
 		row = append(row, dests...)
 		row = append(row, int64(0), int64(0), int64(0), int64(0), int64(0))
 		row = append(row, nil, nil, nil)
@@ -165,16 +167,24 @@ func Test_OutdialTargetGetAvailable_error(t *testing.T) {
 		return row
 	}
 
+	// rowWith returns a full row where the destination at position i is replaced.
+	rowWith := func(i int, dest string) []driver.Value {
+		return rowWithIDs(i, dest, outdialID.Bytes(), outdialID.Bytes())
+	}
+
 	tests := []struct {
 		name string
 
 		setup func(mock sqlmock.Sqlmock)
+		// expect is a fragment the error message must contain.
+		expect string
 	}{
 		{
 			"prepare fails",
 			func(mock sqlmock.Sqlmock) {
 				mock.ExpectPrepare(regexp.QuoteMeta(outdialTargetSelectAvailable)).WillReturnError(errDB)
 			},
+			"simulated db failure",
 		},
 		{
 			"query fails",
@@ -182,6 +192,7 @@ func Test_OutdialTargetGetAvailable_error(t *testing.T) {
 				mock.ExpectPrepare(regexp.QuoteMeta(outdialTargetSelectAvailable)).
 					ExpectQuery().WillReturnError(errDB)
 			},
+			"simulated db failure",
 		},
 		{
 			"scan fails on a wrong column count",
@@ -190,6 +201,7 @@ func Test_OutdialTargetGetAvailable_error(t *testing.T) {
 					ExpectQuery().
 					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(outdialID.Bytes()))
 			},
+			"could not scan the row. outdialTargetGetFromRowForAvailable",
 		},
 		{
 			"invalid json in destination 0",
@@ -198,6 +210,7 @@ func Test_OutdialTargetGetAvailable_error(t *testing.T) {
 					ExpectQuery().
 					WillReturnRows(sqlmock.NewRows(availableColumns).AddRow(rowWith(0, "{broken")...))
 			},
+			"could not parse destination0",
 		},
 		{
 			"invalid json in destination 1",
@@ -206,6 +219,7 @@ func Test_OutdialTargetGetAvailable_error(t *testing.T) {
 					ExpectQuery().
 					WillReturnRows(sqlmock.NewRows(availableColumns).AddRow(rowWith(1, "{broken")...))
 			},
+			"could not parse destination1",
 		},
 		{
 			"invalid json in destination 2",
@@ -214,6 +228,7 @@ func Test_OutdialTargetGetAvailable_error(t *testing.T) {
 					ExpectQuery().
 					WillReturnRows(sqlmock.NewRows(availableColumns).AddRow(rowWith(2, "{broken")...))
 			},
+			"could not parse destination2",
 		},
 		{
 			"invalid json in destination 3",
@@ -222,6 +237,7 @@ func Test_OutdialTargetGetAvailable_error(t *testing.T) {
 					ExpectQuery().
 					WillReturnRows(sqlmock.NewRows(availableColumns).AddRow(rowWith(3, "{broken")...))
 			},
+			"could not parse destination3",
 		},
 		{
 			"invalid json in destination 4",
@@ -230,6 +246,34 @@ func Test_OutdialTargetGetAvailable_error(t *testing.T) {
 					ExpectQuery().
 					WillReturnRows(sqlmock.NewRows(availableColumns).AddRow(rowWith(4, "{broken")...))
 			},
+			"could not parse destination4",
+		},
+		{
+			"invalid id length",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectPrepare(regexp.QuoteMeta(outdialTargetSelectAvailable)).
+					ExpectQuery().
+					WillReturnRows(sqlmock.NewRows(availableColumns).AddRow(rowWithIDs(0, good, []byte("abc"), outdialID.Bytes())...))
+			},
+			"could not parse id",
+		},
+		{
+			"empty id",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectPrepare(regexp.QuoteMeta(outdialTargetSelectAvailable)).
+					ExpectQuery().
+					WillReturnRows(sqlmock.NewRows(availableColumns).AddRow(rowWithIDs(0, good, []byte{}, outdialID.Bytes())...))
+			},
+			"could not parse id",
+		},
+		{
+			"invalid outdial id length",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectPrepare(regexp.QuoteMeta(outdialTargetSelectAvailable)).
+					ExpectQuery().
+					WillReturnRows(sqlmock.NewRows(availableColumns).AddRow(rowWithIDs(0, good, outdialID.Bytes(), []byte("abc"))...))
+			},
+			"could not parse outdial id",
 		},
 	}
 
@@ -247,6 +291,9 @@ func Test_OutdialTargetGetAvailable_error(t *testing.T) {
 			}
 			if res != nil {
 				t.Errorf("expected a nil result on error, got: %+v", res)
+			}
+			if !strings.Contains(err.Error(), tt.expect) {
+				t.Errorf("wrong error message. expect fragment: %q, got: %v", tt.expect, err)
 			}
 			if errors.Is(err, ErrNotFound) {
 				t.Errorf("a failure must not be reported as ErrNotFound. err: %v", err)
