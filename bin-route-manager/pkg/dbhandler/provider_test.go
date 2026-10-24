@@ -385,3 +385,50 @@ func Test_ProviderGet_CacheHit(t *testing.T) {
 		t.Errorf("Expected ID %v, got %v", expected.ID, res.ID)
 	}
 }
+
+func Test_ProviderUpdateHealthStatus(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("7c1e0000-0000-0000-0000-000000000001")
+	delProvider := func() {
+		if _, err := dbTest.Exec("DELETE FROM route_providers WHERE id = ?", id.Bytes()); err != nil {
+			t.Errorf("could not clean up the row. err: %v", err)
+		}
+	}
+	delProvider()
+	t.Cleanup(delProvider)
+	createdAt := timePtr(time.Date(2022, 1, 2, 3, 4, 5, 0, time.UTC))
+	checkedAt := timePtr(time.Date(2022, 2, 3, 4, 5, 6, 0, time.UTC))
+
+	mockUtil.EXPECT().TimeNow().Return(createdAt).AnyTimes()
+	mockCache.EXPECT().ProviderSet(ctx, gomock.Any()).AnyTimes()
+	if err := h.ProviderCreate(ctx, &provider.Provider{ID: id, HealthStatus: "unknown"}); err != nil {
+		t.Fatalf("could not seed. err: %v", err)
+	}
+
+	if err := h.ProviderUpdateHealthStatus(ctx, id, "healthy", checkedAt); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	mockCache.EXPECT().ProviderGet(ctx, id).Return(nil, fmt.Errorf(""))
+	res, err := h.ProviderGet(ctx, id)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res.HealthStatus != "healthy" {
+		t.Errorf("Wrong match. expect health_status: healthy, got: %v", res.HealthStatus)
+	}
+	if res.HealthCheckedAt == nil || !res.HealthCheckedAt.Equal(*checkedAt) {
+		t.Errorf("Wrong match. expect health_checked_at: %v, got: %v", checkedAt, res.HealthCheckedAt)
+	}
+}
