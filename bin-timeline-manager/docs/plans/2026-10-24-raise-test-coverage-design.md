@@ -28,7 +28,7 @@ Verdict: valid. Measured on the branch (base 2fce50a00, which differs from origi
 
 ## 3. Plan (new test files only, no product code change)
 
-cmd/timeline-manager main (197 stmts) and pkg/dbhandler ClickHouse paths need live connections and are skipped.
+cmd/timeline-manager main (197 stmts) binds RabbitMQ, MySQL, ClickHouse and signals and is skipped. pkg/dbhandler ClickHouse paths are skipped because a fake of the ClickHouse driver connection, rows and batch interfaces costs more than it returns. pkg/analysishandler/run.go (63 stmts, async kickoff) is a reserve candidate.
 
 1. pkg/homerhandler/main_test.go: httptest server. Per method (GetSIPMessages, GetPcap, GetRTCPPcap): missing address or token, empty call id,
    non-2xx status (500, asserted separately for each of the three methods), transport error (closed server), success. Assert request path, method, Auth-Token header, and decoded payload
