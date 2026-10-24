@@ -27,7 +27,7 @@
 
 ## 3. 구조 분석: 테스트 가능한 것과 어려운 것
 
-- 어려움 (제외): `cmd/*/main`, `runDaemon`, `run` (프로세스 기동, 실제 DB/Redis/RabbitMQ), `cachehandler` (실제 Redis 필요, miniredis 가 go.mod 에 없어 의존성 추가가 필요하므로 이번 범위에서 제외), `gcpGetClient`/`awsGetClient`/`gcp connect` (외부 클라우드 인증과 네트워크).
+- 어려움 (제외): `cmd/*/main`, `runDaemon`, `run` (프로세스 기동, 실제 DB/Redis/RabbitMQ), `cachehandler` (실제 Redis 필요, miniredis 가 go.mod 에 없어 의존성 추가가 필요하므로 이번 범위에서 제외), `gcpGetClient`/`gcp connect` (외부 클라우드 인증과 네트워크).
 - 쉬움: streaminghandler 의 순수 로직과 로컬 WebSocket 으로 가능한 경로.
 
 ## 4. 추가할 테스트 (우선순위순, 모두 로컬 전용, 외부 네트워크 없음)
@@ -80,5 +80,5 @@
 verify:
 - 수기 합계 61% 이상(agg 와 같은 제외 규칙), 기존 테스트 전부 통과, `golangci-lint` 통과, check-test-conventions 통과.
 - `go test -race -count=3 -shuffle=on ./...` 통과, 새 테스트 추가 시간은 패키지당 1초 이내.
-- 변이 검사(scratch 복사본에서만 수행, 원 worktree 제품 코드 불변): 새 테스트 함수당 1개 이상, 표본은 elevenlabs `SayAdd` 의 TotalCount 증가 제거, `runProcess` 의 Finish 종료 조건 반전, aws `SayFinish` 의 `Finish` 플래그 설정 제거, aws `SayFlush` drain 제거, gcp `getVoiceID` 우선순위 변경, run.go `runStreamer` 의 SetVendorInfo 인자 제거, say.go 메시지 ID 비교 반전과 `SayFlush` VendorLock(mock 의 `DoAndReturn` 안에서 `st.VendorLock.TryLock()` 이 실패하는지 단언), `savePCMAsWAV` 의 ChunkSize 계산 변경. 각 변이에서 실패한 테스트 이름을 기록한다.
+- 변이 검사(복사본에서만 수행, 제품 코드 불변): 새 테스트 함수당 1개 이상, 표본은 elevenlabs `SayAdd` 의 TotalCount 증가 제거, `runProcess` 의 Finish 종료 조건 반전, aws `SayFinish` 의 `Finish` 플래그 설정 제거, aws `SayFlush` drain 제거, gcp `getVoiceID` 우선순위 변경, run.go `runStreamer` 의 SetVendorInfo 인자 제거, say.go 메시지 ID 비교 반전과 `SayFlush` VendorLock(mock 의 `DoAndReturn` 안에서 `st.VendorLock.TryLock()` 이 실패하는지 단언), `savePCMAsWAV` 의 ChunkSize 계산 변경. 각 변이에서 실패한 테스트 이름을 기록한다.
 - 변경 파일은 `bin-tts-manager/` 안의 `*_test.go` 와 이 문서뿐.

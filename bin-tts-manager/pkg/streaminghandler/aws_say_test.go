@@ -390,7 +390,7 @@ func Test_awsHandler_runProcess(t *testing.T) {
 		expectFrames [][]byte
 	}{
 		{
-			name:         "audio is forwarded and an empty chunk is skipped until the channel closes",
+			name:         "audio is forwarded in order and an empty chunk produces no frame until the channel closes",
 			chunks:       [][]byte{{1, 2, 3}, {}, {4, 5}},
 			closeChannel: true,
 			expectFrames: [][]byte{{1, 2, 3}, {4, 5}},

@@ -285,7 +285,7 @@ func Test_awsGetClient(t *testing.T) {
 	if client == nil {
 		t.Fatal("expected a client")
 	}
-	if got := client.Options().Region; got != defaultAWSRegion {
-		t.Errorf("Wrong region. expected: %s, got: %s", defaultAWSRegion, got)
+	if got := client.Options().Region; got != "eu-central-1" {
+		t.Errorf("Wrong region. expected: eu-central-1, got: %s", got)
 	}
 }
