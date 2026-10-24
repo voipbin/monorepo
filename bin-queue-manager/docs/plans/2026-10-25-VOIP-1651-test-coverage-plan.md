@@ -2,7 +2,7 @@
 
 ## 1. 티켓 검토
 
-판정: 유효. 기준선은 origin/main 에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` 로 재측정했고 테스트 실패 0건, 수기 합계 69.59% (2346/3371 statement), 원본 60.75% (2346/3862)로 카드 수치와 일치합니다. 수기 합계는 gens/, mock_*.go, `Code generated ... DO NOT EDIT` 헤더 파일을 빼고 같은 블록 중복은 최대 count 로 합쳤습니다. 70% 에는 14개, 권장 71% 에는 48개 statement 를 더 커버해야 합니다. 최근 경로 커밋(VOIP-1647 커버리지 상향, VOIP-1648 입력 파싱 강화)은 전제를 바꾸지 않으며 열린 중복 PR 은 없습니다.
+판정: 유효. 기준선은 origin/main 에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` 로 재측정했고 테스트 실패 0건, 수기 합계 69.59% (2346/3371 statement), 원본 60.75% (2346/3862)로 카드 수치와 일치합니다(재측정 시점에 따라 고루틴 타이밍으로 ±1 statement 변동 가능). 수기 합계는 gens/, mock_*.go, `Code generated ... DO NOT EDIT` 헤더 파일을 빼고 같은 블록 중복은 최대 count 로 합쳤습니다. 70% 에는 14개, 권장 71% 에는 48개 statement 를 더 커버해야 합니다. 최근 경로 커밋(VOIP-1647 커버리지 상향, VOIP-1648 입력 파싱 강화)은 전제를 바꾸지 않으며 열린 중복 PR 은 없습니다.
 
 패키지별 기준선(수기, 전):
 
@@ -19,7 +19,7 @@
 | pkg/queuehandler | 99.7 | 1/387 |
 | pkg/subscribehandler | 98.3 | 2/118 |
 
-구조 분석: cmd/queue-control 과 cmd/queue-manager 의 main, cachehandler 구체 구현은 DB, Redis, RabbitMQ 연결을 직접 만들어 제품 코드 변경 없이는 단위 테스트가 불가하므로 제외합니다. 남은 미커버 중 가장 큰 곳은 pkg/queuecallhandler/db.go (80개)이며 mock 주입(dbhandler, requesthandler, notifyhandler, queuehandler)만으로 제품 코드 변경 없이 테스트됩니다. 제외분을 모두 빼도 pkg 미커버가 300 안팎이어서 70% 는 산술적으로 가능합니다.
+구조 분석: cmd/queue-control 의 명령 실행 함수, cmd/queue-manager 의 main 과 run(RabbitMQ 연결 생성), cachehandler 의 연결 생성부는 DB, Redis, RabbitMQ 연결을 직접 만들어 제품 코드 변경 없이는 단위 테스트가 어렵습니다. 그 밖의 순수 함수는 테스트할 수 있으나 비용 대비 효과가 낮아 이번에는 선택하지 않으며, 모자랄 때의 예비 후보로 남깁니다. 남은 미커버 중 가장 큰 곳은 pkg/queuecallhandler/db.go (80개)이며 mock 주입(dbhandler, requesthandler, notifyhandler, queuehandler)만으로 제품 코드 변경 없이 테스트됩니다. 제외분을 모두 빼도 pkg 미커버가 300 안팎이어서 70% 는 산술적으로 가능합니다.
 
 ## 2. 계획
 
