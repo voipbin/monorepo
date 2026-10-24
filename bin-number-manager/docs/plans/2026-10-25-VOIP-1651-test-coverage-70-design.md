@@ -22,7 +22,7 @@
 | pkg/subscribehandler | 61/71 | 10 | processEventRun |
 | models/number | 10/19 | 9 | webhook 변환 |
 | models/availablenumber | 8/9 | 1 | 대상 아님 |
-| pkg/requestexternal/models/telnyx | 23/28 | 5 | ConvertProviderNumber |
+| pkg/requestexternal/models/telnyx | 23/28 | 5 | phone_number.go 4 (ConvertProviderNumber, 대상). available_number.go 1 은 대상 아님 |
 | internal/config, pkg/requestexternal | - | 3 + 2 | 대상 아님 (requestexternal 2 는 도달 불가) |
 | 합계 | 1502/2282 | 780 | 323+116+70+120+45+76+10+9+1+5+3+2 = 780 |
 
