@@ -27,6 +27,14 @@ VOIP-1416 은 카드 본문에 따르면 80% 미만 패키지의 일반 상향 �
 
 miniredis 는 테스트에서만 import 하며 main 의 다른 서비스(v2.36.1 은 11개 서비스가 사용하고 v2.38.0 은 1개이며, 다수가 쓰는 v2.36.1 을 택한다)와 같은 버전을 쓴다. go.mod 와 go.sum 변경 외에 비테스트 .go 변경은 없다.
 
+상세 케이스(단언은 모두 하드코딩한 기대값):
+
+- config: (1) 환경변수 9개를 합성값으로 설정하고 `Bootstrap` 후 `LoadGlobalConfig` 가 `Get()` 에 그 값을 채운다(포트 `:2112` 기본값 포함 flag 기본값은 환경변수를 지운 별도 `cobra.Command` 에서 확인). `sync.Once` 때문에 LoadGlobalConfig 는 프로세스당 1회이므로 한 테스트 함수에서만 호출하고 viper.Reset 으로 격리한다. 값 변경을 못 잡는 자기 비교를 피하려고 기대값은 리터럴이다.
+- cachehandler: ProviderSet 후 ProviderGet 이 필드 전체를 되돌리고 miniredis 에 `provider:<id>` 키와 24시간 TTL 이 생김, RouteSet/RouteGet/RouteDelete 후 키 소멸, 없는 키 Get 은 redis.Nil, 손상된 JSON 이 들어 있으면 오류, 서버 종료 후 Set/Get/Delete/Connect 는 오류, 기동 중 Connect 는 성공, NewHandler 가 주소, 비밀번호, DB 를 보관.
+- listenhandler: v1_routes, v1_providers, v1_providercalls, v1_dialroute, v1_providers_setup 각 핸들러에 대해 (a) 본문이 깨진 JSON(오류 반환, 하위 핸들러 미호출), (b) 경로 ID 가 UUID 가 아님(400 응답, 하위 핸들러 미호출), (c) 하위 핸들러 오류(오류 반환 또는 errorResponse 매핑 상태 코드), (d) 잘못된 URI 파싱 오류가 해당하면. processRequest 는 미지원 경로/메서드 404 분기. NewListenHandler 는 sockHandler 주입만 확인.
+- telnyxclient: httptest 로 각 호출의 비정상 상태 코드, 잘못된 JSON 본문, 연결 끊김(서버 종료 후 호출)에서 오류 반환과 오류 메시지의 일부를 단언.
+- healthcheckhandler: Run 은 짧은 interval 과 mock DB 로 runOnce 가 호출됨을 확인하고 ctx 취소로 반환됨을 단언(타임아웃 가드 포함).
+
 ## 3. verify 항목
 
 - 수기 합계 71% 이상, `go test ./...` 와 golangci-lint 통과, `bash scripts/check-test-conventions.sh` 통과.
