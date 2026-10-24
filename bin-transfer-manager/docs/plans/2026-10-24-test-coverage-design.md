@@ -10,8 +10,8 @@
 - pkg/cachehandler 0/59, pkg/listenhandler 86/103, pkg/subscribehandler 71/88, pkg/transferhandler 250/320
 
 ## 3. 변경 계획 (테스트 파일만, 제품 코드 변경 없음)
-목표 수기 합계 62% 이상 (약 590/949 이상).
-1. cachehandler/handler_test.go: miniredis 로 TransferSet 이 3개 키(id, transferer_call_id, groupcall_id)를 모두 쓰는지, 각 Get 이 값을 복원하는지, 없는 키는 redis.Nil 오류, 손상된 JSON 은 unmarshal 오류, 서버 종료 후 Set/Get/Connect 오류를 확인합니다. go.mod 에 miniredis 테스트 의존성 추가(타 서비스 사용 버전과 동일).
+목표: 수기 합계 61% 이상 (579/949 이상, 인수 조건)이며 계획상 62% 안팎(약 590)을 노립니다.
+1. cachehandler/handler_test.go: miniredis 로 TransferSet 이 3개 키(id, transferer_call_id, groupcall_id)를 모두 쓰는지, 각 Get 이 값을 복원하는지, 없는 키는 redis.Nil 오류, 손상된 JSON 은 unmarshal 오류, 서버 종료 후 Set/Get/Connect 오류를 확인합니다(같은 패키지 테스트이므로 MaxRetries 0 과 짧은 타임아웃의 redis.Client 를 직접 구성해 지연과 불안정을 피합니다). go.mod 에 miniredis 테스트 의존성 추가(타 서비스 사용 버전과 동일).
 2. subscribehandler: 세 callmanager 핸들러의 잘못된 JSON 은 오류 반환, 조회 실패는 nil 반환이며 transferHandler 의 Answer/Hangup 이 호출되지 않음, 하위 핸들러 오류도 nil 반환. Run 의 QueueCreate, TopicCreate, QueueBind 실패 전파와 processEvent 의 알 수 없는 이벤트 무시.
 3. listenhandler: V1TransfersPost 의 잘못된 JSON 은 400, ServiceStart 실패는 500, errorResponse 의 nil, VoipbinError, ErrNotFound, 기타 분기 상태코드, Run 의 QueueCreate 실패.
 4. transferhandler: attended/blind 의 confbridge 조회 실패, groupcall 생성 실패, Create 실패, rollback(unblock) 호출 여부, moh/mute 실패는 계속 진행, transferee 의 지원하지 않는 타입과 각 오류 분기, transferer, transfer, db 의 오류 분기.
