@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"runtime"
 	"testing"
 	"time"
 
@@ -172,6 +173,43 @@ func Test_awsHandler_SayAdd_errors(t *testing.T) {
 			t.Errorf("a broken stream must not count the message. got: %+v", cf.Message)
 		}
 	})
+}
+
+func Test_awsHandler_SayAdd_stopsWhenCancelledWhileTheAudioQueueIsFull(t *testing.T) {
+	// more audio than the queue can hold, so SayAdd blocks on the send
+	pcm := make([]byte, 4096*(defaultAWSAudioChBuffer+4))
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "audio/pcm")
+		_, _ = w.Write(pcm)
+	}))
+	defer srv.Close()
+
+	cf := newTestAWSConfig(newLocalPollyClient(srv.URL))
+	h := &awsHandler{}
+
+	result := make(chan error, 1)
+	go func() { result <- h.SayAdd(cf, "text") }()
+
+	deadline := time.Now().Add(5 * time.Second)
+	for len(cf.audioCh) < cap(cf.audioCh) {
+		if time.Now().After(deadline) {
+			t.Fatal("the audio queue never filled up")
+		}
+		runtime.Gosched()
+	}
+	cf.Cancel()
+
+	select {
+	case err := <-result:
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("expected context.Canceled, got: %v", err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("SayAdd did not return after the session was cancelled")
+	}
+	if cf.Message.TotalCount != 0 || cf.Message.TotalMessage != "" {
+		t.Errorf("a cancelled SayAdd must not count the message. got: %+v", cf.Message)
+	}
 }
 
 func Test_awsHandler_SayFlush_dropsPendingAudio(t *testing.T) {
