@@ -2,6 +2,8 @@ package conferencehandler
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -146,5 +148,99 @@ func Test_removeConferencecallIDTypeConference(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
+	}
+}
+
+func Test_RemoveConferencecallID_error(t *testing.T) {
+
+	conferenceID := uuid.FromStringOrNil("3f7a1c10-1a01-11ee-9b01-000000000001")
+	conferencecallID := uuid.FromStringOrNil("3f7a1c10-1a02-11ee-9b02-000000000002")
+
+	tests := []struct {
+		name string
+
+		errRemove error
+		errGet    error
+	}{
+		{
+			name:      "the db could not remove the conferencecall id",
+			errRemove: fmt.Errorf("remove failed"),
+		},
+		{
+			name:   "the updated conference could not be read",
+			errGet: fmt.Errorf("get failed"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := conferenceHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ConferenceRemoveConferencecallID(ctx, conferenceID, conferencecallID).Return(tt.errRemove)
+			if tt.errRemove == nil {
+				mockDB.EXPECT().ConferenceGet(ctx, conferenceID).Return(nil, tt.errGet)
+			}
+			// no webhook event is expected: gomock fails the test on an unexpected PublishWebhookEvent call.
+
+			res, err := h.RemoveConferencecallID(ctx, conferenceID, conferencecallID)
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil, got: %v", res)
+			}
+
+			expectErr := tt.errRemove
+			if expectErr == nil {
+				expectErr = tt.errGet
+			}
+			if !errors.Is(err, expectErr) {
+				t.Errorf("Wrong match. expect: %v, got: %v", expectErr, err)
+			}
+		})
+	}
+}
+
+func Test_removeConferencecallIDTypeConference_destroyError(t *testing.T) {
+
+	cf := &conference.Conference{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("3f7a1c10-1a03-11ee-9b03-000000000003"),
+		},
+		Status:            conference.StatusTerminating,
+		ConferencecallIDs: []uuid.UUID{},
+	}
+	errEnd := fmt.Errorf("end failed")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := conferenceHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	// the confbridge delete result is ignored by Destroy, only the end failure is propagated.
+	mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, cf.ConfbridgeID).Return(&confbridge.Confbridge{}, nil)
+	mockDB.EXPECT().ConferenceEnd(ctx, cf.ID).Return(errEnd)
+	// ConferenceGet and PublishWebhookEvent are not expected after the failure.
+
+	err := h.removeConferencecallIDTypeConference(ctx, cf)
+	if !errors.Is(err, errEnd) {
+		t.Errorf("Wrong match. expect: %v, got: %v", errEnd, err)
 	}
 }
