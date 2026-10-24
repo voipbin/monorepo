@@ -177,6 +177,38 @@ func Test_ChatList_filters(t *testing.T) {
 			want: []uuid.UUID{},
 		},
 		{
+			name: "customer and owner id",
+			filters: func() map[chat.Field]any {
+				return map[chat.Field]any{chat.FieldCustomerID: customerID, chat.FieldOwnerID: ownerX}
+			},
+			size: 10,
+			want: []uuid.UUID{chat3, chat1},
+		},
+		{
+			name: "customer, owner type and owner id",
+			filters: func() map[chat.Field]any {
+				return map[chat.Field]any{chat.FieldCustomerID: customerID, chat.FieldOwnerType: "agent", chat.FieldOwnerID: ownerY}
+			},
+			size: 10,
+			want: []uuid.UUID{chat2},
+		},
+		{
+			name: "customer, owner id and deleted",
+			filters: func() map[chat.Field]any {
+				return map[chat.Field]any{chat.FieldCustomerID: customerID, chat.FieldOwnerID: ownerX, chat.FieldDeleted: false}
+			},
+			size: 10,
+			want: []uuid.UUID{chat3, chat1},
+		},
+		{
+			name: "another customer and owner id",
+			filters: func() map[chat.Field]any {
+				return map[chat.Field]any{chat.FieldCustomerID: uuid.FromStringOrNil("c1a0f000-0009-11ef-9f2f-6f1c1d9c3e01"), chat.FieldOwnerID: ownerX}
+			},
+			size: 10,
+			want: []uuid.UUID{},
+		},
+		{
 			name: "owner filter combined with deleted",
 			filters: func() map[chat.Field]any {
 				return map[chat.Field]any{chat.FieldOwnerID: ownerY, chat.FieldDeleted: false}
@@ -264,6 +296,47 @@ func Test_FindDirectChatByParticipants_noMatch(t *testing.T) {
 			}
 			if res != nil {
 				t.Errorf("chat = %v, want none", res.ID)
+			}
+		})
+	}
+}
+
+func Test_FindDirectChatByParticipants_match(t *testing.T) {
+	customerID := uuid.FromStringOrNil("c1a0f000-0141-11ef-9f2f-6f1c1d9c3e02")
+	ownerA := uuid.FromStringOrNil("c1a0f000-0161-11ef-9f2f-6f1c1d9c3e02")
+	ownerB := uuid.FromStringOrNil("c1a0f000-0162-11ef-9f2f-6f1c1d9c3e02")
+	chatAB := uuid.FromStringOrNil("c1a0f000-0151-11ef-9f2f-6f1c1d9c3e02")
+	cleanupCustomer(t, customerID)
+
+	seedChat(t, chatAB, customerID, chat.TypeDirect, seedTime1, false)
+	if _, err := dbTest.Exec("UPDATE talk_chats SET member_count = 2 WHERE id = ?", chatAB.Bytes()); err != nil {
+		t.Fatalf("could not set the member count: %v", err)
+	}
+	seedParticipant(t, uuid.FromStringOrNil("c1a0f000-0171-11ef-9f2f-6f1c1d9c3e02"), customerID, chatAB, "agent", ownerA, seedTime1)
+	seedParticipant(t, uuid.FromStringOrNil("c1a0f000-0172-11ef-9f2f-6f1c1d9c3e02"), customerID, chatAB, "agent", ownerB, seedTime1)
+
+	tests := []struct {
+		name   string
+		owner1 uuid.UUID
+		owner2 uuid.UUID
+	}{
+		{"the pair in the stored order", ownerA, ownerB},
+		{"the pair in the reverse order", ownerB, ownerA},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &dbHandler{db: dbTest, utilHandler: commonutil.NewUtilHandler()}
+
+			res, err := h.FindDirectChatByParticipants(context.Background(), customerID, "agent", tt.owner1, "agent", tt.owner2)
+			if err != nil {
+				t.Fatalf("error = %v", err)
+			}
+			if res == nil {
+				t.Fatalf("chat = nil, want %v", chatAB)
+			}
+			if res.ID != chatAB || res.CustomerID != customerID || res.Type != chat.TypeDirect || res.MemberCount != 2 {
+				t.Errorf("chat = %+v, want id %v with member count 2", res, chatAB)
 			}
 		})
 	}

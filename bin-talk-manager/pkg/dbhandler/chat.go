@@ -141,6 +141,15 @@ func (h *dbHandler) ChatList(ctx context.Context, filters map[chat.Field]any, to
 		delete(filters, chat.FieldDeleted)
 	}
 
+	// With the participants joined, qualify the remaining filter keys with the chats table
+	if hasOwnerType || hasOwnerID {
+		qualified := make(map[chat.Field]any, len(filters))
+		for k, v := range filters {
+			qualified[chat.Field(tableChats+"."+string(k))] = v
+		}
+		filters = qualified
+	}
+
 	// Apply remaining filters to chats table
 	query, err := commondb.ApplyFields(query, filters)
 	if err != nil {
@@ -273,7 +282,7 @@ func (h *dbHandler) FindDirectChatByParticipants(ctx context.Context, customerID
 	// and ensure exactly 2 participants
 
 	sqlQuery := `
-		SELECT c.id, c.customer_id, c.type, c.name, c.detail, c.tm_create, c.tm_update, c.tm_delete
+		SELECT c.id, c.customer_id, c.type, c.name, c.detail, c.member_count, c.tm_create, c.tm_update, c.tm_delete
 		FROM talk_chats c
 		WHERE c.customer_id = ?
 		  AND c.type = ?
