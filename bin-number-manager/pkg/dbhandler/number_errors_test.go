@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -154,8 +155,12 @@ func Test_closedDB_errors(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			if err := tt.fn(h); err == nil {
-				t.Errorf("expected an error on a closed database, got nil")
+			err := tt.fn(h)
+			if err == nil {
+				t.Fatalf("expected an error on a closed database, got nil")
+			}
+			if !strings.Contains(err.Error(), "database is closed") {
+				t.Errorf("expected a closed database error, got: %v", err)
 			}
 		})
 	}

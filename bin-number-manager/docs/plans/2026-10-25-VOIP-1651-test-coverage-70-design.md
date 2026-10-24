@@ -46,7 +46,7 @@
 - Set 후 Get 왕복에서 필드를 리터럴과 비교. NumberSet 이 miniredis 에 `number:<id>` 와 `number-number:<번호>` 두 키를 모두 쓰고 TTL 이 24시간인지 확인. SetByNumber/GetByNumber/DelByNumber 왕복, Del 후 Get 오류, 키 없음 오류, `mr.Set` 으로 넣은 손상된 JSON 의 Unmarshal 오류, 서버 종료 후 Set/Get/Del 오류.
 - 도달 불가로 제외: setSerialize 의 Marshal 오류(Number 는 항상 직렬화 가능). NumberSet 의 두 번째 setSerialize 실패는 go-redis v8 Hook 으로 `number-number:` 키 쓰기만 실패시켜 시험(구현 중 실현 불가하면 제외하고 도달 수를 69 로 낮춤). 예상 도달 69 of 70, 최소 68.
 
-### 4.2 pkg/numberhandler/available_number_test.go (GetAvailableVirtualNumbers, 44 stmt 중 후보 중복 continue 1 stmt 는 도달 불가라 제외, 43)
+### 4.2 pkg/numberhandler/available_number_virtual_test.go (GetAvailableVirtualNumbers, 44 stmt 중 후보 중복 continue 1 stmt 는 도달 불가라 제외, 43)
 - (a) limit=0 은 10 으로 처리되어 NumberGetExistingNumbers 에 전달된 후보가 30개(DoAndReturn 으로 인자 캡처), 모두 리터럴 접두사 `+899` 로 시작하고 길이 13, 중복 없음. (b) 점유 번호를 후보 일부로 반환하면 결과에 없음(캡처한 후보 중 지정한 2개를 점유로 반환). (c) 점유가 21개 이상(후보 30개 중)이면 limit=10 에 못 미쳐 남은 9개 이하만 반환. (d) 점유가 없으면 limit 으로 절단되어 정확히 limit 개이고 순서는 후보 순서. (e) db 오류는 wrap 되어 전파, 결과 nil. 결과 필드는 모델 상수가 아니라 리터럴(국가 코드 `"899"`, Provider 는 실제 값 `""` 로 `models/number/number.go` 에서 확인함)과 비교.
 
 ### 4.3 pkg/numberhandler 오류 경로 (gomock), 미커버 줄 기준
