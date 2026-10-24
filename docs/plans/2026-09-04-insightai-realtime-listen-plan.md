@@ -6488,8 +6488,8 @@ func Test_EventTMTranscriptCreated(t *testing.T) {
 	}{
 		{
 			name: "a deleted transcript is dropped before any redis call",
-			// transcripthandler.dbDelete publishes transcript_created on DELETE
-			// too (a known upstream bug). Without this guard a deleted line
+			// A deleted transcript can still arrive here (for example from a
+			// publisher on an older version). Without this guard a deleted line
 			// replays into the LLM as freshly-spoken content.
 			expectResolve: false,
 		},
@@ -6599,11 +6599,10 @@ func (h *aicallHandler) EventTMTranscriptCreated(ctx context.Context, evt *tmtra
 		"transcribe_id": evt.TranscribeID,
 	})
 
-	// transcripthandler.dbDelete publishes EventTypeTranscriptCreated on DELETE
-	// as well as on create -- a known upstream bug this design defends against
-	// rather than fixes, because changing the emitted event type is a
-	// routing-key-visible change affecting every current subscriber. Without
-	// this guard a deleted line replays into the LLM as freshly-spoken content.
+	// A transcript event can carry a deleted transcript (TMDelete set) or an empty
+	// message, for example from a publisher on an older version during a rolling
+	// deployment. Without this guard such a line would replay into the LLM as
+	// freshly-spoken content.
 	if evt.TMDelete != nil || strings.TrimSpace(evt.Message) == "" {
 		promListenSegmentTotal.WithLabelValues("dropped_deleted").Inc()
 		return
@@ -8349,7 +8348,7 @@ These are real, but out of scope. **File them in Jira, not GitHub Issues** — J
 
 | # | Item | Why it is not in this plan |
 |---|---|---|
-| 1 | `transcripthandler.dbDelete` publishes `transcript_created` on DELETE as well as create | Changing the emitted event type is routing-key-visible and affects every current subscriber. This design defends against it at intake instead. |
+| 1 | A transcript event can carry a deleted transcript | The intake guard drops it (`TMDelete != nil`). |
 | 2 | An orphaned `tool`-role message reaches the LLM with no preceding `tool_calls` entry in the same request | `ToolHandle` writes the tool-call row with empty content, and pipecat-manager's own context filter drops empty-content rows — so what reaches the LLM is a `tool` result with nothing to reference. This predates and is independent of this feature; every existing Insight tool call already produces it. **Worth confirming against production traffic promptly** — OpenAI may be lenient in practice, or few sessions may exercise a tool call followed by a genuine follow-up question. Confirm before deciding urgency. |
 | 3 | Decouple `Send`'s cooldown from `tm_update` onto a dedicated `tm_last_send` | Pre-existing fragility. This plan bounds it (listen's own two writes skip the bump) but does not remove it for other write paths. |
 | 4 | Tool-call rows still reach a tenant's webhook consumer | The panels now hide them, but `aimessage_created` still fires for each. Whether to suppress those webhooks depends on whether any tenant automation relies on receiving them — unknown, and a genuinely separate decision. |

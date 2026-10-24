@@ -30,7 +30,7 @@ func (h *transcriptHandler) dbDelete(ctx context.Context, id uuid.UUID) (*transc
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get deleted transcript.")
 	}
-	h.notifyHandler.PublishEvent(ctx, transcript.EventTypeTranscriptCreated, res)
+	h.notifyHandler.PublishEvent(ctx, transcript.EventTypeTranscriptDeleted, res)
 
 	return res, nil
 }

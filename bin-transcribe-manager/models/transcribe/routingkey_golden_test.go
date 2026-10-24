@@ -15,11 +15,9 @@
 // and transcribe is the resource all of them address; it is an external test package so it can
 // import the sibling model packages without any import-cycle risk.
 //
-// MAINTENANCE: this table pins CURRENT behavior, including the known bug at
-// pkg/transcripthandler/db.go:33, where the transcript DELETE path publishes
-// `transcript_created`. When that bug is fixed, the `transcript_created (delete path)` entry must
-// be updated to `transcript_deleted` in the same change -- the table is not a specification of
-// what the events ought to be, it is a lock on what they are.
+// MAINTENANCE: this table pins the routing keys of the events published today. It is a lock on
+// what the events are, not a specification of what they ought to be; when a publish site
+// changes its event type, update the matching entry in the same change.
 package transcribe_test
 
 import (
@@ -179,14 +177,18 @@ func TestGoldenRoutingKeys(t *testing.T) {
 			"transcribe-manager.streaming.9f01c3d2-0000-4000-8000-000000000001.stopped",
 		},
 
-		// transcript resource. NOTE: this single event type covers BOTH publish sites today --
-		// transcripthandler/transcript.go:47 (create) and transcripthandler/db.go:33 (delete,
-		// which publishes `transcript_created` by mistake). See the maintenance note at the top.
+		// transcript resource -- addressed by the parent transcribe-id, not the transcript-id.
 		{
 			"transcript_created",
 			transcript.EventTypeTranscriptCreated,
 			transcriptData,
 			"transcribe-manager.transcript.9f01c3d2-0000-4000-8000-000000000001.created",
+		},
+		{
+			"transcript_deleted",
+			transcript.EventTypeTranscriptDeleted,
+			transcriptData,
+			"transcribe-manager.transcript.9f01c3d2-0000-4000-8000-000000000001.deleted",
 		},
 	}
 

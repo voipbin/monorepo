@@ -42,19 +42,33 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 	// sort by offset_ms
 	sortTranscriptsByOffset(tmpTranscripts)
 
-	res := []*transcript.Transcript{}
-	for _, tmp := range tmpTranscripts {
+	res := h.createTranscripts(ctx, customerID, transcribeID, tmpTranscripts)
+
+	return res, nil
+}
+
+// createTranscripts creates the given transcripts and returns the created ones in order.
+// An item that could not be created is skipped and does not fail the whole call.
+func (h *transcriptHandler) createTranscripts(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, items []*transcript.Transcript) []*transcript.Transcript {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "createTranscripts",
+		"transcribe_id": transcribeID,
+	})
+
+	res := make([]*transcript.Transcript, 0, len(items))
+	for _, tmp := range items {
 		t, err := h.Create(ctx, customerID, transcribeID, tmp.Direction, tmp.Message, tmp.OffsetMs)
 		if err != nil {
 			// we could not create transcript here, but we should not return an error
-			log.Errorf("Could not create a tracript. message: %s, err: %v", tmp.Message, err)
+			log.Errorf("Could not create a transcript. message: %s, err: %v", tmp.Message, err)
+			continue
 		}
 		res = append(res, t)
 
 		log.WithField("transcript", t).Debugf("Created a new transcript. transcript_id: %s, transcribe_id: %s", t.ID, t.TranscribeID)
 	}
 
-	return res, nil
+	return res
 }
 
 func (h *transcriptHandler) recordingGetTranscripts(ctx context.Context, files []smfile.File, language string, transcribeID string) ([]*transcript.Transcript, error) {

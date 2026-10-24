@@ -729,11 +729,10 @@ func (h *aicallHandler) EventTMTranscriptCreated(ctx context.Context, evt *tmtra
 		"transcribe_id": evt.TranscribeID,
 	})
 
-	// transcripthandler.dbDelete publishes EventTypeTranscriptCreated on DELETE
-	// as well as on create -- a known upstream bug this design defends against
-	// rather than fixes, because changing the emitted event type is a
-	// routing-key-visible change affecting every current subscriber. Without
-	// this guard a deleted line replays into the LLM as freshly-spoken content.
+	// A transcript event can carry a deleted transcript (TMDelete set) or an empty
+	// message, for example from a publisher on an older version during a rolling
+	// deployment. Without this guard such a line would replay into the LLM as
+	// freshly-spoken content.
 	if evt.TMDelete != nil || strings.TrimSpace(evt.Message) == "" {
 		promListenSegmentTotal.WithLabelValues("dropped_deleted").Inc()
 		return

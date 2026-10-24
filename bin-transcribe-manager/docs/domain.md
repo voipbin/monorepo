@@ -94,7 +94,6 @@ Every event below is published to the per-service fanout exchange `bin-manager.t
 | `streaming.EventTypeStreamingStarted` | `*streaming.Streaming` | Streaming leg registered in the session map | `transcribe-manager.streaming.<transcribe-id>.started` |
 | `streaming.EventTypeStreamingStopped` | `*streaming.Streaming` | Streaming leg removed from the session map | `transcribe-manager.streaming.<transcribe-id>.stopped` |
 | `transcript.EventTypeTranscriptCreated` | `*transcript.Transcript` | Final STT result persisted | `transcribe-manager.transcript.<transcribe-id>.created` |
+| `transcript.EventTypeTranscriptDeleted` | `*transcript.Transcript` | Transcript deleted | `transcribe-manager.transcript.<transcribe-id>.deleted` |
 
 `Speech`, `Streaming`, and `Transcript` all implement `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `TranscribeID`, because their own ids are either regenerated per event (`Speech`, `Transcript`) or address the wrong resource (`Streaming`). `Transcribe` needs no override — its own id already is the subscription address.
-
-`transcript.EventTypeTranscriptDeleted` is defined but never published: `pkg/transcripthandler/db.go:33` publishes `transcript_created` on the delete path. This is a known bug tracked separately; the golden routing-key table in `models/transcribe/routingkey_golden_test.go` pins the current behavior and must be updated together with the fix.

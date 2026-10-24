@@ -758,8 +758,8 @@ func Test_EventTMTranscriptCreated(t *testing.T) {
 	}{
 		{
 			name: "a deleted transcript is dropped before any redis call",
-			// transcripthandler.dbDelete publishes transcript_created on DELETE
-			// too (a known upstream bug). Without this guard a deleted line
+			// A deleted transcript can still arrive here (for example from a
+			// publisher on an older version). Without this guard a deleted line
 			// replays into the LLM as freshly-spoken content.
 			transcript: &tmtranscript.Transcript{
 				TranscribeID: transcribeID,
