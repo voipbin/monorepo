@@ -31,11 +31,11 @@
 ## 3. Verify 항목 (설계 단계, 코드 없음)
 
 1. 수기 합계 71% 이상. gens/, mock_*.go, DO NOT EDIT 제외, 중복 블록은 최대 count. PR 본문에 패키지별 전후 표.
-2. `GOFLAGS=-mod=mod go test -race -count=1 ./...` 전부 통과, golangci-lint 통과, `scripts/check-test-conventions.sh` 통과(Test_ 네이밍, gomock 컨트롤러명 mc).
+2. `GOFLAGS=-mod=mod go test -race -count=1 ./...` 전부 통과, golangci-lint 통과, `scripts/check-test-conventions.sh` 통과(Test_ 네이밍, 단언은 reflect.DeepEqual 과 t.Errorf 이며 testify 금지, gomock 컨트롤러명 mc. 헬퍼도 같은 규칙).
 3. 비테스트 .go 변경 0. `git diff --stat origin/main...HEAD` 가 bin-number-manager 의 _test.go, go.mod/go.sum(miniredis 추가 시), 이 문서뿐.
 4. go.mod/go.sum 변경은 miniredis v2.36.1 과 그 간접 의존성 gopher-lua v1.1.1 (bin-message-manager, bin-ai-manager 와 같은 버전)만. 테스트에서만 import, `go mod tidy` 후 추가 diff 없음.
 5. 기대값은 리터럴 또는 독립 계산. 제품 함수 출력으로 기대값을 만드는 자기비교 금지. 빈 호출 금지.
-6. 변이 표본 최소 4개(여기에 EventFlowDeleted 페이지네이션 경계 `< 1000` 을 `<= 1000` 으로 바꾸는 변이를 추가해 1000건 케이스에서 NumberList 와 TimeGetCurTime 을 Times(2) 로 엄격히 고정해 이 변이를 죽이고, 999건 케이스는 1000 미만 종료의 경계 확인용)(변이와 원복은 scratch 사본에서만 하고 구현 worktree 의 비테스트 .go 변경 0 확인과 분리): 가상번호 필터의 existingSet 제거 무력화, Delete switch 의 Twilio 분기 변경, cachehandler 키 접두사(`number:`/`number-number:`) 변경, 웹훅 변환에서 필드 하나 누락. 추가로 Create 롤백 호출 제거.
+6. 변이 표본 최소 4개(여기에 EventFlowDeleted 페이지네이션 경계 `< 1000` 을 `<= 1000` 으로 바꾸는 변이를 추가해 두 루프 call_flow 와 message_flow 모두에 1000건 케이스를 두고 두 위치의 변이를 각각 확인. 1000건 케이스에서 NumberList 와 TimeGetCurTime 을 Times(2) 로 엄격히 고정해 이 변이를 죽이고, 999건 케이스는 1000 미만 종료의 경계 확인용)(변이와 원복은 scratch 사본에서만 하고 구현 worktree 의 비테스트 .go 변경 0 확인과 분리): 가상번호 필터의 existingSet 제거 무력화, Delete switch 의 Twilio 분기 변경, cachehandler 키 접두사(`number:`/`number-number:`) 변경, 웹훅 변환에서 필드 하나 누락. 추가로 Create 롤백 호출 제거.
 7. `go generate ./...` 실행 후 비테스트 .go(mock 포함) diff 가 생기지 않는지 확인. 합성값만. 외부 호출과 네트워크 의존 없음(miniredis 는 로컬 루프백 리스너).
 8. 가상번호 후보는 난수이므로 후보 집합에 의존하는 단언은 gomock DoAndReturn 으로 실제 전달된 후보를 받아 부분 집합으로 단언하고 고정 시드나 난수값 비교는 하지 않음.
 
@@ -52,7 +52,7 @@
 ### 4.3 pkg/numberhandler 오류 경로 (gomock), 미커버 줄 기준
 - number.go 미커버(34-35, 40-42, 45-47, 52-54, 80-81, 90-91, 139-141, 201-203, 219-221, 230, 237, 241-243, 247-249, 263-270, 289-291, 305-307, 324-326): Create 의 예약 접두사 거부(provider 와 billing 미호출), 잔액 조회 오류, 잔액 부족(구매 미호출), 구매 실패, Register 실패 시 NumberRelease 롤백 호출 확인과 롤백 자체 실패(오류는 여전히 반환), NumberUpdateTags 실패(결과는 성공). Register 의 dbCreate 실패(201-203)와 CreateVirtual 의 Register 실패(139-141). Register 의 목록 오류와 이미 존재하는 번호는 기존 테스트가 커버하므로 추가하지 않음. Delete 의 Get 실패, Telnyx/Twilio 해제 실패, 미지원 provider 이름, dbDelete 실패. Get 의 NotFound 변환(cerrors 타입과 코드)과 일반 오류 wrap. List/Count/Update/UpdateMetadata 오류 wrap.
 - db.go 미커버(68-70, 75-77, 93-95, 100-102, 117-119, 160-162, 188-190): dbCreate 의 NumberCreate 실패와 NumberGet 실패, dbDelete 의 NumberDelete 실패와 삭제 후 Get 실패, dbGet/dbList/dbUpdate/dbListByTMRenew 실패 전파.
-- event.go 미커버(31-33, 42-43, 68, 77-78, 99-111): EventCustomerDeleted 의 목록 실패(오류 반환)와 삭제 실패 후 다음 번호 계속. EventFlowDeleted 는(목록 오류 시 해당 루프만 중단) call_flow 루프와 message_flow 루프 각각에 대해 목록 실패 중단, NumberUpdate 실패 후 계속, 1000건 가득 찬 첫 페이지 뒤 다음 페이지 조회(두 번째 조회가 빈 목록이면 종료), 1000건 미만이면 종료.
+- event.go 미커버(31-33, 42-43, 68, 77-78, 99-111): EventCustomerDeleted 의 목록 실패(오류 반환)와 삭제 실패 후 다음 번호 계속. EventFlowDeleted 는(목록 오류 시 해당 루프 종료) call_flow 루프와 message_flow 루프 각각에 대해 목록 실패 중단, NumberUpdate 실패 후 계속, 1000건 가득 찬 첫 페이지 뒤 다음 페이지 조회(두 번째 조회가 빈 목록이면 종료), 1000건 미만이면 종료.
 - renew.go 는 목록 조회 mock 의 두 번째 호출이 빈 목록을 반환하도록 구성한다. renew.go 미커버(35-36, 40-42, 59-61, 81-82, 125-127, 144-146): RenewNumbers 의 days/hours/tmRenew 모두 빔, renewNumbersByTMRenew 의 목록 조회 오류, 잔액 부족 시 Delete 실패해도 계속, renewNumbersByDays/ByHours 의 하위 오류 wrap.
 
 ### 4.4 pkg/dbhandler (기존 sqlite TestMain 재사용)
