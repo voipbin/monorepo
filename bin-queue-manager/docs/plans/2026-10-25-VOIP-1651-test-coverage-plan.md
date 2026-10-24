@@ -37,6 +37,6 @@ verify 항목:
 2. 루트 CLAUDE.md 검증 순서(`go mod tidy`, `go mod vendor`, `go generate`, `go test`, `golangci-lint`) 통과, go.mod, go.sum, 생성 파일 무변경.
 3. `-race -count=20` 으로 신규 테스트의 불안정성 없음.
 4. `scripts/check-test-conventions.sh` 통과(Test_ 명명, gomock 컨트롤러 이름 mc).
-5. 변이 검사: CAS 패배 분기의 조기 반환, 큐 제거 실패의 오류 반환을 각각 제거했을 때 신규 테스트가 실패함.
+5. 변이 검사: CAS 패배 분기의 조기 반환, 큐 제거 실패의 오류 반환, UpdateStatusWaiting 고루틴의 AddWaitQueueCallID 오류 시 return 을 각각 제거했을 때 신규 테스트가 실패함. 비동기 경로는 채널 대기 후 컨트롤러가 종료되도록 보장하고 전역 prometheus 카운터는 단언하지 않습니다.
 6. PR 의 파일 목록이 bin-queue-manager/ 안에만 있음(`git diff --stat origin/main...HEAD`).
 7. VOIP-1416 이 적은 80% 미만 패키지(dbhandler 외)와의 겹침은 PR 본문에 명시만 합니다.
