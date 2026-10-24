@@ -26,7 +26,7 @@
 | internal/config, pkg/requestexternal | - | 3 + 2 | 대상 아님 (requestexternal 2 는 도달 불가) |
 | 합계 | 1502/2282 | 780 | 323+116+70+120+45+76+10+9+1+5+3+2 = 780 |
 
-예상 증가: cachehandler 68 + numberhandler 약 115 + dbhandler 약 25 + models 12 = 약 220 stmt (예상 수기 합계 약 74%). 부족하면 listenhandler 와 subscribehandler 를 추가.
+예상 증가: cachehandler 68 + numberhandler 약 115 + dbhandler 약 25 + models 12 = 약 220 stmt (예상 수기 합계 약 75%). 부족하면 listenhandler 와 subscribehandler 를 추가.
 
 ## 3. Verify 항목 (설계 단계, 코드 없음)
 
