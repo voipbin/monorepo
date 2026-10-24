@@ -16,6 +16,7 @@ import (
 )
 
 func Test_SIPAuthCreate(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -106,6 +107,7 @@ func Test_SIPAuthCreate(t *testing.T) {
 }
 
 func Test_SIPAuthUpdate(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -223,6 +225,7 @@ func Test_SIPAuthUpdate(t *testing.T) {
 }
 
 func Test_SIPAuthDelete(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 

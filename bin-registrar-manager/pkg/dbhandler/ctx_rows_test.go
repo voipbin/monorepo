@@ -141,6 +141,8 @@ func countByID(t *testing.T, table string, id string) int {
 // database driver for every converted call site: a cancelled context aborts the
 // query (read, write and list paths) instead of the query running to completion.
 func Test_ContextCancel_QueryAborted(t *testing.T) {
+	resetTestTables(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

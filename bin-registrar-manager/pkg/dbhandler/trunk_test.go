@@ -20,6 +20,7 @@ import (
 )
 
 func Test_TrunkCreate(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -146,6 +147,7 @@ func Test_TrunkCreate(t *testing.T) {
 }
 
 func Test_TrunkList(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -245,6 +247,7 @@ func Test_TrunkList(t *testing.T) {
 }
 
 func Test_TrunkUpdate(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 

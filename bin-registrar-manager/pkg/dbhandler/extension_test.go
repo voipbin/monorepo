@@ -19,6 +19,7 @@ import (
 )
 
 func Test_ExtensionCreate(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -130,6 +131,7 @@ func Test_ExtensionCreate(t *testing.T) {
 }
 
 func Test_ExtensionGetByExtension(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -234,6 +236,7 @@ func Test_ExtensionGetByExtension(t *testing.T) {
 }
 
 func Test_ExtensionDelete(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -338,6 +341,7 @@ func Test_ExtensionDelete(t *testing.T) {
 }
 
 func Test_ExtensionUpdate(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -444,6 +448,7 @@ func Test_ExtensionUpdate(t *testing.T) {
 }
 
 func Test_ExtensionList(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 

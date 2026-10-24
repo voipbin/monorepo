@@ -13,6 +13,8 @@ import (
 )
 
 func TestAstAORCreate(t *testing.T) {
+	resetTestTables(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -62,6 +64,8 @@ func TestAstAORCreate(t *testing.T) {
 }
 
 func TestAstAORDelete(t *testing.T) {
+	resetTestTables(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
