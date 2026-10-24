@@ -341,6 +341,7 @@ func Test_shortURIs(t *testing.T) {
 		{"queuecalls delete", (*listenHandler).processV1QueuecallsIDDelete, "/v1/queuecalls", nil, 400},
 		{"queuecalls delete non-uuid", (*listenHandler).processV1QueuecallsIDDelete, "/v1/queuecalls/not-a-uuid", nil, 400},
 		{"queuecalls get by reference id", (*listenHandler).processV1QueuecallsReferenceIDIDGet, "/v1/queuecalls", nil, 400},
+		{"queuecalls get by reference id without id", (*listenHandler).processV1QueuecallsReferenceIDIDGet, "/v1/queuecalls/reference_id", nil, 400},
 		{"queuecalls kick", (*listenHandler).processV1QueuecallsIDKickPost, "/v1/queuecalls/" + tQueuecallID, nil, 400},
 		{"queuecalls kick by reference id", (*listenHandler).processV1QueuecallsReferenceIDIDKickPost, "/v1/queuecalls/reference_id", nil, 400},
 		{"queuecalls status_waiting", (*listenHandler).processV1QueuecallsIDStatusWaitingPost, "/v1/queuecalls/" + tQueuecallID, nil, 400},

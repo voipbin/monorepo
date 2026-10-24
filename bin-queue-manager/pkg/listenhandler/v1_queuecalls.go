@@ -77,7 +77,7 @@ func (h *listenHandler) processV1QueuecallsReferenceIDIDGet(ctx context.Context,
 	})
 
 	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 4 {
+	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
 	}
 

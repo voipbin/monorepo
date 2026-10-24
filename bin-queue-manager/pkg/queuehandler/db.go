@@ -245,7 +245,7 @@ func (h *queueHandler) RemoveWaitQueuecallID(ctx context.Context, id uuid.UUID, 
 
 	if errAdd := h.db.QueueRemoveWaitQueueCall(ctx, id, queuecallID); errAdd != nil {
 		log.Errorf("Could not remove the queuecall id to the queue. err: %v", errAdd)
-		return nil, errors.Wrap(errAdd, "Could not add the queuecall id to the queue.")
+		return nil, errors.Wrap(errAdd, "Could not remove the queuecall id from the queue.")
 	}
 
 	res, err := h.db.QueueGet(ctx, id)
