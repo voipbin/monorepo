@@ -93,6 +93,12 @@ func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmes
 		"message": m,
 	})
 
+	// Skip messages without a source address.
+	if m.Source == nil {
+		log.Warnf("Message has no source address. Skipping.")
+		return nil
+	}
+
 	if len(m.Targets) > 1 {
 		// something's wrong. but just log it
 		log.Warnf("Received message with multiple targets. targets: %v", m.Targets)
@@ -166,6 +172,12 @@ func (h *conversationHandler) MessageEventSent(ctx context.Context, m *mmmessage
 		"func":    "MessageEventSent",
 		"message": m,
 	})
+
+	// Skip messages without a source address.
+	if m.Source == nil {
+		log.Warnf("Message has no source address. Skipping.")
+		return nil
+	}
 
 	for _, target := range m.Targets {
 		self := *m.Source

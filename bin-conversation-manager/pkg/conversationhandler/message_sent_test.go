@@ -288,3 +288,37 @@ func Test_MessageSend_errors(t *testing.T) {
 		})
 	}
 }
+
+func Test_MessageEvent_malformed(t *testing.T) {
+	customerID := uuid.FromStringOrNil("d1000000-0000-0000-0000-000000000021")
+	incoming := &mmmessage.Message{
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("d1000000-0000-0000-0000-000000000022"), CustomerID: customerID},
+		Targets:  []mmtarget.Target{{Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15550000002"}}},
+		Text:     "text",
+	}
+
+	tests := []struct {
+		name string
+		run  func(h *conversationHandler) error
+	}{
+		{"received", func(h *conversationHandler) error { return h.MessageEventReceived(context.Background(), incoming) }},
+		{"sent", func(h *conversationHandler) error { return h.MessageEventSent(context.Background(), incoming) }},
+	}
+
+	for _, tt := range tests {
+		t.Run("handles malformed events safely/"+tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			// no db or message handler call is expected
+			h := &conversationHandler{
+				db:             dbhandler.NewMockDBHandler(mc),
+				messageHandler: messagehandler.NewMockMessageHandler(mc),
+			}
+
+			if err := tt.run(h); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

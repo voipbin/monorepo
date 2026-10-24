@@ -331,3 +331,34 @@ func Test_getDialogID(t *testing.T) {
 		})
 	}
 }
+
+func Test_Hook_malformedEvents(t *testing.T) {
+	tests := []struct {
+		name      string
+		data      string
+		expectErr bool
+	}{
+		{"null event", `{"events":[null]}`, false},
+		{"event without sub object", `{"events":[{"type":"message"}]}`, true},
+		{"event without source", `{"events":[{"type":"follow"}]}`, false},
+		{"message event with unknown message type", `{"events":[{"type":"message","source":{"type":"user","userId":"Utest-user"},"message":{"type":"unknown"}}]}`, false},
+	}
+
+	for _, tt := range tests {
+		t.Run("handles malformed events safely/"+tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			// no request is expected for any malformed input
+			h := &lineHandler{reqHandler: requesthandler.NewMockRequestHandler(mc)}
+
+			res, err := h.Hook(context.Background(), testHookAccount(), []byte(tt.data))
+			if (err != nil) != tt.expectErr {
+				t.Errorf("Wrong match. expect error: %v, got: %v", tt.expectErr, err)
+			}
+			if len(res) != 0 {
+				t.Errorf("Wrong match. expect: no result, got: %v", res)
+			}
+		})
+	}
+}
