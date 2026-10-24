@@ -23,7 +23,8 @@ type consumed struct {
 
 // expectConsume registers a ConsumeRPC expectation that checks the fixed
 // arguments and reports the queue and callback it was called with.
-func expectConsume(t *testing.T, mockSock *sockhandler.MockSockHandler, queue string, out chan<- consumed) {
+// When block is not nil the consumer stays blocked until it is closed, like the real ConsumeRPC.
+func expectConsume(t *testing.T, mockSock *sockhandler.MockSockHandler, queue string, out chan<- consumed, block <-chan struct{}) {
 	t.Helper()
 	mockSock.EXPECT().ConsumeRPC(gomock.Any(), queue, "rtpengine-proxy", false, false, false, 10, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, q, _ string, _, _, _ bool, _ int, cb sock.CbMsgRPC) error {
@@ -31,6 +32,9 @@ func expectConsume(t *testing.T, mockSock *sockhandler.MockSockHandler, queue st
 				t.Errorf("Wrong match. ConsumeRPC ctx is nil")
 			}
 			out <- consumed{queue: q, cb: cb}
+			if block != nil {
+				<-block
+			}
 			return nil
 		})
 }
@@ -65,8 +69,13 @@ func Test_listenRun(t *testing.T) {
 		mockSock.EXPECT().QueueCreate("vol-q", "volatile").Return(nil),
 	)
 	ch := make(chan consumed, 2)
-	expectConsume(t, mockSock, "perm-q", ch)
-	expectConsume(t, mockSock, "vol-q", ch)
+	// both consumers block until the end of the test, so the second queue only starts if
+	// listenRun does not wait for the first consumer to return
+	release := make(chan struct{})
+	defer close(release)
+	expectConsume(t, mockSock, "perm-q", ch, release)
+	expectConsume(t, mockSock, "vol-q", ch, release)
+	mockNG.EXPECT().Send(map[string]interface{}{"type": "ng", "command": "query", "call-id": "abc123"}).Return(map[string]interface{}{"result": "ok"}, nil).Times(2)
 
 	if err := h.listenRun(); err != nil {
 		t.Fatalf("Wrong match. expected: ok, got: %v", err)
@@ -83,13 +92,17 @@ func Test_listenRun(t *testing.T) {
 			t.Fatalf("Wrong match. queue %q has no consumer callback", q)
 		}
 
-		// the callback must be the request processor: an empty command body is rejected with 400
-		resp, err := cb(&sock.Request{URI: "/v1/commands", Method: sock.RequestMethodPost})
+		// the callback must be the request processor: a valid NG command reaches the NG client
+		resp, err := cb(&sock.Request{
+			URI:    "/v1/commands",
+			Method: sock.RequestMethodPost,
+			Data:   json.RawMessage(`{"type":"ng","command":"query","call-id":"abc123"}`),
+		})
 		if err != nil {
 			t.Fatalf("Wrong match. queue %q callback error: %v", q, err)
 		}
-		if resp.StatusCode != 400 {
-			t.Errorf("Wrong match. queue %q callback expected: 400, got: %d", q, resp.StatusCode)
+		if resp.StatusCode != 200 || string(resp.Data) != `{"result":"ok"}` {
+			t.Errorf("Wrong match. queue %q callback expected: 200 with the NG result, got: %d %s", q, resp.StatusCode, resp.Data)
 		}
 	}
 }
@@ -132,7 +145,7 @@ func Test_listenRun_queueCreateError(t *testing.T) {
 					mockSock.EXPECT().QueueCreate("perm-q", "normal").Return(nil),
 					mockSock.EXPECT().QueueCreate("vol-q", "volatile").Return(queueErr),
 				)
-				expectConsume(t, mockSock, "perm-q", ch)
+				expectConsume(t, mockSock, "perm-q", ch, nil)
 				defer func() {
 					if c := receiveConsumed(t, ch); c.queue != "perm-q" {
 						t.Errorf("Wrong match. expected: perm-q, got: %s", c.queue)
@@ -192,22 +205,25 @@ func Test_processRequest_commandsPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
+	mockNG := ngclient.NewMockNGClient(mc)
+	mockNG.EXPECT().Send(map[string]interface{}{"type": "ng", "command": "query", "call-id": "abc123"}).Return(map[string]interface{}{"result": "ok"}, nil)
+
 	h := &listenHandler{
-		ngClient: ngclient.NewMockNGClient(mc),
+		ngClient: mockNG,
 		procMgr:  processmanager.NewMockProcessManager(mc),
 	}
 
-	// POST /v1/commands is routed to the command processor; a body without a type is a 400
+	// POST /v1/commands is routed to the command processor and its NG result is returned
 	resp, err := h.processRequest(&sock.Request{
 		URI:    "/v1/commands",
 		Method: sock.RequestMethodPost,
-		Data:   json.RawMessage(`{"command":"query"}`),
+		Data:   json.RawMessage(`{"type":"ng","command":"query","call-id":"abc123"}`),
 	})
 	if err != nil {
 		t.Fatalf("Wrong match. expected: ok, got: %v", err)
 	}
-	if resp.StatusCode != 400 {
-		t.Errorf("Wrong match. expected: 400, got: %d", resp.StatusCode)
+	if resp.StatusCode != 200 || string(resp.Data) != `{"result":"ok"}` {
+		t.Errorf("Wrong match. expected: 200 with the NG result, got: %d %s", resp.StatusCode, resp.Data)
 	}
 }
 
