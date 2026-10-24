@@ -56,7 +56,7 @@ func (c *sendgridCapture) last() []byte {
 func newTestEngineSendgrid(t *testing.T, reqHandler requesthandler.RequestHandler, serverURL string) *engineSendgrid {
 	t.Helper()
 
-	client := sendgrid.NewSendClient("SG.test-key")
+	client := sendgrid.NewSendClient("test-key")
 	client.BaseURL = serverURL + "/v3/mail/send"
 
 	u, err := url.Parse(client.BaseURL)
@@ -100,7 +100,7 @@ func Test_engineSendgrid_Send_success(t *testing.T) {
 		if r.Method != http.MethodPost || r.URL.Path != "/v3/mail/send" {
 			t.Errorf("unexpected request. method: %s, path: %s", r.Method, r.URL.Path)
 		}
-		if got := r.Header.Get("Authorization"); got != "Bearer SG.test-key" {
+		if got := r.Header.Get("Authorization"); got != "Bearer test-key" {
 			t.Errorf("wrong authorization header. got: %s", got)
 		}
 		b, _ := io.ReadAll(r.Body)
@@ -169,30 +169,29 @@ func Test_engineSendgrid_Send_attachment(t *testing.T) {
 		lookupErr    bool
 		downloadCode int
 
-		expectAttachment bool
+		expectErr string
 	}{
 		{
-			name:             "recording_attached",
-			attachments:      []email.Attachment{{ReferenceType: email.AttachmentReferenceTypeRecording, ReferenceID: recordingID}},
-			downloadCode:     http.StatusOK,
-			expectAttachment: true,
+			name:         "recording_attached",
+			attachments:  []email.Attachment{{ReferenceType: email.AttachmentReferenceTypeRecording, ReferenceID: recordingID}},
+			downloadCode: http.StatusOK,
 		},
 		{
-			name:             "lookup_error_is_skipped",
-			attachments:      []email.Attachment{{ReferenceType: email.AttachmentReferenceTypeRecording, ReferenceID: recordingID}},
-			lookupErr:        true,
-			expectAttachment: false,
+			name:        "lookup_error",
+			attachments: []email.Attachment{{ReferenceType: email.AttachmentReferenceTypeRecording, ReferenceID: recordingID}},
+			lookupErr:   true,
+			expectErr:   "could not get attachment",
 		},
 		{
-			name:             "download_error_is_skipped",
-			attachments:      []email.Attachment{{ReferenceType: email.AttachmentReferenceTypeRecording, ReferenceID: recordingID}},
-			downloadCode:     http.StatusInternalServerError,
-			expectAttachment: false,
+			name:         "download_error",
+			attachments:  []email.Attachment{{ReferenceType: email.AttachmentReferenceTypeRecording, ReferenceID: recordingID}},
+			downloadCode: http.StatusInternalServerError,
+			expectErr:    "could not download attachment",
 		},
 		{
-			name:             "unknown_reference_type_is_skipped",
-			attachments:      []email.Attachment{{ReferenceType: email.AttachmentReferenceType("unknown"), ReferenceID: recordingID}},
-			expectAttachment: false,
+			name:        "unknown_reference_type",
+			attachments: []email.Attachment{{ReferenceType: email.AttachmentReferenceType("unknown"), ReferenceID: recordingID}},
+			expectErr:   "unknown attachment reference type",
 		},
 	}
 
@@ -235,6 +234,23 @@ func Test_engineSendgrid_Send_attachment(t *testing.T) {
 			h := newTestEngineSendgrid(t, mockReq, server.URL)
 
 			res, err := h.Send(context.Background(), testSendgridEmail(tt.attachments))
+
+			if tt.expectErr != "" {
+				if err == nil || !strings.Contains(err.Error(), tt.expectErr) {
+					t.Fatalf("Wrong match. expect error containing: %s, got: %v", tt.expectErr, err)
+				}
+				if res != "" {
+					t.Errorf("Expected an empty message id. got: %s", res)
+				}
+				if capture.count() != 0 {
+					t.Errorf("Expected no send call. got: %d", capture.count())
+				}
+				if n := strings.Count(err.Error(), "reference_type"); n > 1 {
+					t.Errorf("Expected the attachment context once. count: %d, err: %v", n, err)
+				}
+				return
+			}
+
 			if err != nil {
 				t.Fatalf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -255,13 +271,6 @@ func Test_engineSendgrid_Send_attachment(t *testing.T) {
 			}
 			if errUnmarshal := json.Unmarshal(capture.last(), &body); errUnmarshal != nil {
 				t.Fatalf("could not parse the request body. err: %v", errUnmarshal)
-			}
-
-			if !tt.expectAttachment {
-				if len(body.Attachments) != 0 {
-					t.Errorf("Expected the attachment to be skipped. got: %v", body.Attachments)
-				}
-				return
 			}
 
 			if len(body.Attachments) != 1 {
@@ -295,7 +304,19 @@ func Test_engineSendgrid_Send_responseErrors(t *testing.T) {
 		{
 			name:      "server_error_without_message_id",
 			status:    http.StatusInternalServerError,
-			expectErr: "could not get message id from response headers",
+			expectErr: "unexpected response status code: 500",
+		},
+		{
+			name:      "server_error_with_message_id",
+			status:    http.StatusInternalServerError,
+			messageID: "synthetic-message-id",
+			expectErr: "unexpected response status code: 500",
+		},
+		{
+			name:      "unauthorized_with_message_id",
+			status:    http.StatusUnauthorized,
+			messageID: "synthetic-message-id",
+			expectErr: "unexpected response status code: 401",
 		},
 	}
 
@@ -305,6 +326,9 @@ func Test_engineSendgrid_Send_responseErrors(t *testing.T) {
 			defer mc.Finish()
 
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if tt.messageID != "" {
+					w.Header().Set("X-Message-Id", tt.messageID)
+				}
 				w.WriteHeader(tt.status)
 			}))
 			defer server.Close()
