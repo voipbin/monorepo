@@ -2,13 +2,13 @@
 
 ## 1. 티켓 검토 (이슈 분석)
 
-판정: 유효. origin/main 99b59c386 기준 수기 코드(gens/, mock_*.go, `Code generated ... DO NOT EDIT` 제외, 같은 블록 중복은 최대 count) 합계 69.00% (2522/3655), 원본 58.7%. 71% 까지 약 74 statement 필요. 직전 레인(VOIP-1647, VOIP-1649, #1506, #1553)이 이미 머지되어 cachehandler 는 99.5% 이고, 열린 중복 PR 은 없음. 전제 변화 없음.
+판정: 유효. origin/main 99b59c386 기준 수기 코드(gens/, mock_*.go, `Code generated ... DO NOT EDIT` 제외, 같은 블록 중복은 최대 count) 합계 69.00% (2522/3655), 원본 58.7% (측정 기준은 HEAD 와 같은 트리이며 수치는 `go test` 패키지별 출력이 아니라 생성 코드와 mock 을 뺀 계산 스크립트 기준이라 `go test` 출력과 다름, 예: dbhandler 65.5% 대 84.0%). 71% 까지 약 74 statement 필요. 직전 레인(VOIP-1647, VOIP-1649, #1506, #1553)이 이미 머지되어 cachehandler 는 99.5% 이고, 열린 중복 PR 은 없음. 전제 변화 없음.
 
 | 패키지 | statement | 현재 | 비고 |
 |---|---|---|---|
 | cmd/registrar-control | 922 | 25.5% | main.go 580 중 564 미커버(cobra + 실제 연결), domain_migrate.go 342 중 123 미커버 |
 | cmd/registrar-manager | 156 | 5.1% | main 데몬 기동, 제외 |
-| pkg/dbhandler | 926 | 84.0% | sqlmock 기반. 오류 경로 약 190 statement 미커버 |
+| pkg/dbhandler | 926 | 84.0% | sqlmock 기반. 오류 경로 148 statement 미커버 |
 | pkg/listenhandler | 627 | 88.5% | 잘못된 입력과 핸들러 오류 경로 |
 | pkg/customerdomainhandler | 162 | 88.3% | 오류 경로 |
 | internal/config | 84 | 76.2% | Bootstrap 은 cobra 전역 상태에 묶임 |
@@ -21,9 +21,9 @@
 2. listenhandler: v1_extensions, v1_trunks, v1_customerdomains, v1_contacts, v1_count, direct hash 의 잘못된 JSON, 잘못된 uuid 경로, 핸들러 오류 시 응답 상태코드 단언(기대 코드는 제품 코드의 errorResponse 매핑을 읽고 확정).
 3. customerdomainhandler / contacthandler / extensionhandler / trunkhandler / subscribehandler: 핸들러 오류 전파, 이벤트 처리 오류 경로, 생성자가 반환하는 구현이 인터페이스 기대 필드를 갖는지(생성자 0% 인 NewXHandler 는 반환값이 nil 이 아니고 주입한 의존성을 유지하는지로 확인).
 4. cmd/registrar-control/domain_migrate.go: run* 의 검증 오류(dry-run 과 execute 동시 지정, 잘못된 customer-id, execute 인데 --log 없음, 열 수 없는 로그 경로, rollback 의 --log 누락과 파일 없음과 파싱 실패), cmd* 의 플래그 이름과 기본값, writeMigrationLogLine 의 쓰기/동기화 실패 전파, buildExtensionMigrationRecord 의 빈 Realm 경계, domainMigrate/domainMigrateRollback/reprovisionExtension 의 미커버 오류 분기.
-5. models/common 의 isValidDomain 및 getBaseDomainName* 경계값.
+5. models/common 의 isValidDomain 및 getBaseDomainName* 경계값(이미 92.1% 이므로 증분은 미미, 우선순위 낮음).
 
-예상 증분: dbhandler 약 90, listenhandler 약 40, domain_migrate 약 45, 기타 약 20, 합계 약 190 statement 로 수기 합계 약 74%. 목표는 71% 이상.
+예상 증분: dbhandler 약 70, listenhandler 약 30, domain_migrate 약 40, 기타 약 15, 합계 약 155 statement 로 수기 합계 약 73%. 70% 통과선은 +37, 권장 71% 는 +74 이며 목표는 71% 이상.
 
 ## 3. verify 항목
 
