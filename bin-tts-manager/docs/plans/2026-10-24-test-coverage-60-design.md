@@ -63,6 +63,7 @@
 - `websocketWrite` 의 20ms pacing 을 피하도록 오디오 payload 는 프레임 크기 이하(ulaw 160, slin 320, slin16 640 바이트)로 한다. `runKeepAlive`(10초)와 gcp `runKeepalive`(4초) 의 틱 분기는 도달 불가이므로 ctx 취소 즉시 반환 경로만 다룬다.
 - 전역 상태: viper 를 쓰는 테스트는 `viper.Reset()` 과 `t.Cleanup`, `t.Parallel` 금지. logrus 전역 레벨과 훅은 바꾸지 않는다. prometheus 메트릭은 재등록하지 않고 값은 전후 delta 로만 단언한다.
 - elevenlabs 와 gcp 테스트가 만드는 `ConnWebsock`, `ConnAst` 클라이언트 연결도 `t.Cleanup` 에서 닫는다(readConnWebsock 고루틴 누수 방지). aws 스트림 읽기 오류는 httptest 핸들러가 일부 바이트를 flush 한 뒤 `panic(http.ErrAbortHandler)` 로 연결을 끊어 유도한다. `readConnWebsock` 의 "Error channel full" 분기는 도달 불가로 제외.
+- `polly.New` 옵션에는 `Region` 도 지정한다. aws `SayFlush` 는 `SayFinish` 로 닫힌 `audioCh` 에서 호출하면 무한 루프이므로(제품 결함, 완료 요약에 기록) Finish 이후 Flush 는 테스트하지 않는다. gcp 가짜 스트림은 `texttospeechpb.TextToSpeech_StreamingSynthesizeClient` 를 임베드한 구조체에서 Send, CloseSend 만 재정의한다.
 - 새 테스트 파일은 함수 이름 `Test_` 규칙과 gomock 컨트롤러 이름 `mc` 를 따른다(`scripts/check-test-conventions.sh`).
 
 추가 규칙(2회차 반영):
