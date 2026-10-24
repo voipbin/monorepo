@@ -43,4 +43,4 @@ Test rules checked by `scripts/check-test-conventions.sh` on added lines: `Test_
 Product code behavior changes, `cmd/*` mains, other packages below 80% coverage beyond the files above.
 
 ## Result
-Plan step 1 alone raised the hand-written total from 66.95% to 74.16% (2841/3831), so the conditional dbhandler step and the optional step 3 were not executed.
+Plan step 1 alone raised the hand-written total from 66.95% to 74.05% (2837/3831), so the conditional dbhandler step and the optional step 3 were not executed.
