@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -67,6 +68,13 @@ func TestRun(t *testing.T) {
 			exchangeDelay: "test-exchange",
 			queueError:    nil,
 			expectError:   false,
+		},
+		{
+			name:          "queue_create_failure",
+			queue:         "test-queue",
+			exchangeDelay: "test-exchange",
+			queueError:    errors.New("queue create failed"),
+			expectError:   true,
 		},
 	}
 
