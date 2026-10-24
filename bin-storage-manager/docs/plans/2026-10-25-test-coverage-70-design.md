@@ -83,8 +83,8 @@ pkg/internal/models (미커버 134) 분류. 미커버 블록 목록을 하나씩
 - 비테스트 `.go` 를 바꾸지 않는다. `go.mod`/`go.sum` 도 바꾸지 않는다(새 의존성 없음, sqlmock 없음).
 - 새 테스트는 `Test_<대상>_<시나리오>` 이름, gomock 컨트롤러 변수명 `mc`, 합성값만, 외부 호출과 네트워크 없음(`scripts/check-test-conventions.sh` 통과). DSN 은 `invalid`(슬래시 없는 비어 있지 않은 값)만 쓴다.
 - 기대값은 입력에서 계산하지 않고 리터럴로 적는다. 빈 호출과 자기비교는 금지한다.
-- 전역 상태: 각 테스트는 시작할 때 자기 값을 직접 대입(`viper.Reset()`, `config.Get().DatabaseDSN`)하고 `t.Cleanup` 으로 이전 값을 복원해 순서 의존을 없앤다. 루트 명령 `Execute` 테스트는 `viper.Reset()` 뒤 `initCommand()` 를 새로 만들고 반드시 `SetArgs(...)` 를 지정하며(안 하면 `-test.*` 플래그를 파싱한다), `migrate` 오류의 stderr 출력은 검사하지 않는다. `Execute` 가 `once` 로 `globalConfig` 를 덮어쓰므로 같은 DSN 만 쓴다.
-- 순서: cmd 도달 가능 구간(주 경로) → pkg 단순 구간 → 필요할 때만 fake 확장 구간. 각 단계 뒤 프로파일로 실측한다.
+- 전역 상태: 각 테스트는 시작할 때 자기 값을 직접 대입(`viper.Reset()`, `config.Get().DatabaseDSN`)하고 `t.Cleanup` 으로 이전 값을 복원해 순서 의존을 없앤다. 루트 명령 `Execute` 테스트는 `viper.Reset()` 뒤 `initCommand()` 를 새로 만들고 반드시 `SetArgs(...)` 를 지정하며(안 하면 `-test.*` 플래그를 파싱한다), `migrate` 오류의 stderr 출력은 검사하지 않는다. `Execute` 가 `once` 로 `globalConfig` 를 덮어쓰며 `-count=3` 의 두 번째 반복부터는 `once` 가 소진되어 플래그를 다시 읽지 않으므로(다른 테스트의 복원으로 DSN 이 빈 문자열이면 빈 DSN 은 `ParseDSN` 을 통과해 로컬 3306 연결을 시도한다), `Execute` 직전에 `config.Get().DatabaseDSN = "invalid"` 도 직접 대입하고 플래그 `--database_dsn=invalid` 와 함께 쓴다. `Execute` 테스트는 `globalConfig` 를 복원하지 않는다. `bindConfig` 가 전역 viper 에 `AutomaticEnv` 를 켜므로 `name`, `filename`, `filepath`, `token` 같은 키는 환경변수를 읽을 수 있다. 따라서 필수값을 비우는 케이스는 부재에 기대지 않고 `viper.Set(key, "")` 로 명시한다. 순서(`-shuffle`, `-run` 단독 실행)와 상관없이 통과해야 하며 검증 절에서 확인한다.
+- 범위: 필수는 cmd 단계(2.2 의 cmd 항목)이며 단독으로 70% 와 71% 를 넘는다(임시 실측으로 control 약 52~60%, manager 약 29%, 합쳐 +300 statement 이상). pkg 단순 구간은 오류 경계와 입력 검증을 지키기 위한 선택 항목으로, 기대값이 코드로 하나로 정해지는 것만 추가한다. fake 확장 구간은 cmd 단계 실측이 71% 에 못 미칠 때만 한다. 70%, 71% 의 결정은 cmd 단계 완료 후 프로파일 실측으로 한다.
 
 ### 2.2 테스트 항목
 
@@ -98,22 +98,22 @@ cmd/storage-control (`main_test.go`, 전역 상태 `viper`, `config.Get()`, stdo
 - 나머지 `run*` 8개와 `initStorageHandler`/`initAccountHandler`: `config.Get().DatabaseDSN = "invalid"` 일 때 `failed to initialize handlers` 로 래핑된 오류(내부 `could not connect to the database` 포함) 반환.
 
 cmd/storage-manager (`main_test.go`, `init()` 자동 실행):
-- `rootCmd` 플래그 이름과 기본값을 리터럴로 단언(`database_dsn`, `prometheus_endpoint`, `redis_database` 기본 1 등)하되 기본 DSN 의 계정 문자열은 단언하지 않는다.
-- `runListen`/`runSubscribe`: `sockhandler` mock 으로 `QueueCreate` 실패는 오류 반환과 이후 호출 없음, 구독은 `TopicCreateWithKind`, `QueueBind` 실패도 각각, 성공은 `ConsumeRPC`/`ConsumeMessage` 고루틴 시작(`DoAndReturn` 안에서 채널로 신호를 보내고 테스트가 그 신호를 기다린 뒤 종료해 종료 후 mock 호출을 막는다). `createDBHandler` 는 `invalid` DSN 으로 오류 반환.
+- `rootCmd` 플래그 이름과 기본값을 리터럴로 단언(`database_dsn`, `prometheus_endpoint`, `redis_database` 기본 1 등)하되 기본값에 계정 문자열이 있는 `database_dsn` 과 `rabbitmq_address` 는 단언하지 않는다.
+- `runListen`/`runSubscribe`: `sockhandler` mock 으로 `QueueCreate` 실패는 오류 반환과 이후 호출 없음, 구독은 `TopicCreateWithKind`, `QueueBind` 실패도 각각, 성공은 `ConsumeRPC`/`ConsumeMessage` 고루틴 시작(`DoAndReturn` 의 return 직전에 채널로 신호를 보내고 `nil` 을 반환해 고루틴이 끝나게 하며, 테스트가 그 신호를 기다린 뒤 종료해 종료 후 mock 호출을 막는다). `printJSON` 의 stdout 은 파이프로 바꿔 쓰기 종료 뒤 읽고 출력이 파이프 버퍼보다 작은 값만 쓴다. `createDBHandler` 는 `invalid` DSN 으로 오류 반환.
 - 제외: `run`, `runService`, `initProm`, `main`, `signalHandler` 의 시그널 전송(시그널을 보내지 않아도 `init()` 의 고루틴 시작으로 `signalHandler` 진입 statement 는 따라올 수 있다).
 
 pkg 단순 구간:
 - `decodeWavPeaks`/`readWavHeader`: 다채널 최대 크기, 버킷 수가 프레임 수보다 큼, 잘린 PCM, 홀수 크기 미지 청크 건너뛰기, 잘린 청크 헤더, 크기 0 데이터. 기대값은 손계산 리터럴.
 - `LoadGlobalConfig`(기존 `TestLoadGlobalConfig` 는 `once` 를 소진시켜 본문을 실행하지 않으므로, 같은 패키지에서 `once = sync.Once{}` 후 `viper.Set` 값이 `Get()` 의 필드별로 반영되는지 단언하고 `globalConfig`, `once`, viper 를 복원), models 의 `ConvertStringMapToFieldMap` 과 `CreateWebhookEvent` 오류(json 불가 값).
 - listenhandler: `url.Parse` 오류 4, 퍼센트 디코딩 오류 3, `errorResponse` 의 typed nil `*VoipbinError`(500 반환).
-- dbhandler: `ApplyFields` 지원하지 않는 필터 타입 오류 2, `AccountUpdate`/`FileUpdate` 의 json 불가 값 오류 2, 캐시 쓰기 실패 4(성공이나 NotFound 로 바뀌지 않고 오류 전파 또는 기존 계약 유지).
-- filehandler: `NewFileHandler` 인증 파일 분기(없는 경로, 파싱 불가 파일, 유효 키), `Get` 의 NotFound 변환과 일반 오류 래핑, `Create` 의 계정 검증 실패, DB 생성 실패, 재조회 실패, 계정 증가 실패(기존 mock 으로 가능한 것만), `compress.go`, `logDownloadURIFailure`.
+- dbhandler: `ApplyFields` 지원하지 않는 필터 타입 오류 2, `AccountUpdate`/`FileUpdate` 의 json 불가 값 오류 2(1.3 은 `PrepareFields` 실패 16 을 도달 불가로 분류했으나 `Update` 계열 2개는 호출자가 넘긴 map 이라 실측으로 도달 가능하므로 이 항목이 우선하고 도달 불가는 14 로 정정), 캐시 쓰기 실패 4. 캐시 쓰기 실패의 계약은 코드 기준으로 확정: 쓰기 함수들이 `_ = h.<entity>UpdateToCache(...)` 로 오류를 버리므로 `AccountSet`/`FileSet` 이 실패해도 쓰기 함수는 nil 을 반환하고 DB 에는 반영되어 있음(재조회로 확인)을 단언한다.
+- filehandler: `NewFileHandler` 인증 파일 분기(파싱 불가 파일과 유효 키만. 없는 경로는 기존 `Test_NewFileHandler_credentials` 가 이미 다룬다. `JWTConfigFromJSON` 은 `private_key` 를 파싱하지 않으므로 `private_key` 는 PEM 형태가 아닌 명백한 가짜 문자열, 이메일은 `example.invalid` 류로 쓰고 시크릿 탐지기에 걸릴 형태를 만들지 않는다. 기존 테스트처럼 `STORAGE_EMULATOR_HOST` 를 `t.Setenv` 로 지정하고 `t.Parallel` 을 쓰지 않는다), `Get` 의 NotFound 변환과 일반 오류 래핑, `Create` 의 계정 검증 실패, DB 생성 실패, 재조회 실패, 계정 증가 실패(기존 mock 으로 가능한 것만), `compress.go`, `logDownloadURIFailure`.
 - storagehandler `CompressfileCreate` 의 파일 조회 오류, subscribehandler `processEvent` 오류 로그 분기.
 - fake 확장 구간(`PeaksComputeByFile` 등)은 위 단계 실측이 71% 에 못 미칠 때만 기존 `fake_gcs_test.go` 를 확장해 추가한다.
 
 ### 2.3 검증
 
 - 수기 합계 70.0% 이상, 목표 71% 이상(CI 방식 측정, 집계는 `hw.py` 와 같은 규칙).
-- `go test -count=1 ./...` 와 신규 테스트 `-race -count=3` 통과, `golangci-lint run -v --timeout 5m`, `go mod tidy` 후 `go.mod`/`go.sum` 불변, `git diff --stat origin/main...HEAD` 가 bin-storage-manager/ 안에만 있음, `scripts/check-test-conventions.sh` 통과, 공개 저장소 위생 검사(내부 주소, 비밀값 없음).
-- 변이 검사(별도 scratch 복사본에서만): `resolveUUID` 의 빈 값 분기 제거, `runFileCreate` 의 검증 순서 변경(init 이전 return 파괴), `printJSON` 들여쓰기 변경, `runListen` 의 오류 무시, 플래그 기본값 변경(limit 100), `errorResponse` 상태 코드 변경, `readWavHeader` 의 홀수 청크 정렬 제거, `Get` 의 NotFound 변환 제거, `LoadGlobalConfig` 의 필드 매핑 하나 변경, `runSubscribe` 의 오류 무시에서 해당 신규 테스트가 실패하는지 확인한다.
+- `go test -count=1 ./...` 와 신규 테스트 `-race -count=3` 통과, `golangci-lint run -v --timeout 5m`, `go mod tidy` 후 `go.mod`/`go.sum` 불변, `-shuffle=on` 과 테스트 단독 `-run` 실행에서도 통과(`Execute` 와 `once` 의존 확인), `git diff --stat origin/main...HEAD` 가 bin-storage-manager/ 안에만 있음, `scripts/check-test-conventions.sh` 통과, 공개 저장소 위생 검사(내부 주소, 비밀값 없음).
+- 변이 검사(별도 scratch 복사본에서만): `resolveUUID` 의 빈 값 분기 제거, `runFileCreate` 의 검증 순서 변경(init 이전 return 파괴), `printJSON` 들여쓰기 변경, `runListen` 의 오류 무시, 플래그 기본값 변경(limit 100), `errorResponse` 상태 코드 변경, `readWavHeader` 의 홀수 청크 정렬 제거, `Get` 의 NotFound 변환 제거, `LoadGlobalConfig` 의 필드 매핑 하나 변경, `runSubscribe` 의 `QueueBind` 오류 무시, `initCommand` 의 `PersistentPreRunE` 제거 또는 `migrate` 의 DSN 인자 변경, `initStorageHandler`/`initAccountHandler` 의 오류 래핑 문구 변경, `decodeWavPeaks` 의 다채널 처리 변경에서 해당 신규 테스트가 실패하는지 확인한다.
 - 롤백: 테스트 추가뿐이므로 PR 되돌림만으로 복구된다.
