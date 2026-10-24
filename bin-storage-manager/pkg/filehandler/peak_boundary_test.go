@@ -95,6 +95,13 @@ func Test_decodeWavPeaks_boundaries(t *testing.T) {
 			expectDur:   0,
 		},
 		{
+			name:        "odd declared data size drops the trailing byte",
+			data:        wavFile(fmtMono, wavChunk("data", 5, append(wavSamples(16384, 8192), 0))),
+			bucketCount: 2,
+			expectPeaks: []float64{0.5, 0.25},
+			expectDur:   0.00025,
+		},
+		{
 			name: "unknown chunk with odd size is skipped with its pad byte",
 			data: wavFile(
 				wavChunk("LIST", 3, []byte{1, 2, 3, 0}),

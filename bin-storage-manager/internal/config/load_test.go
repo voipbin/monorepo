@@ -35,7 +35,7 @@ func Test_LoadGlobalConfig_mapsEveryField(t *testing.T) {
 	for k, v := range values {
 		viper.Set(k, v)
 	}
-	fakeSecret := "fake-value-for-test"
+	fakeSecret := "x"
 	viper.Set("redis_password", fakeSecret)
 
 	LoadGlobalConfig()
