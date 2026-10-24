@@ -9,10 +9,14 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-conversation-manager/models/media"
 )
 
 func Test_CreateWebhookEvent(t *testing.T) {
 	tmCreate := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+	tmUpdate := time.Date(2026, 1, 2, 3, 4, 6, 0, time.UTC)
+	tmDelete := time.Date(2026, 1, 2, 3, 4, 7, 0, time.UTC)
 	caseID := uuid.FromStringOrNil("33333333-0000-0000-0000-000000000009")
 
 	m := &Message{
@@ -28,7 +32,12 @@ func Test_CreateWebhookEvent(t *testing.T) {
 		Source:         commonaddress.Address{Type: commonaddress.TypeLine, Target: "peer-target"},
 		Destination:    commonaddress.Address{Type: commonaddress.TypeLine, Target: "self-target"},
 		Text:           "hello",
-		TMCreate:       &tmCreate,
+		Medias: []media.Media{
+			{Type: media.TypeImage, Filename: "photo.png"},
+		},
+		TMCreate: &tmCreate,
+		TMUpdate: &tmUpdate,
+		TMDelete: &tmDelete,
 	}
 	// the internal case hint must never reach the customer-facing payload.
 	m.CaseID = &caseID
@@ -38,7 +47,7 @@ func Test_CreateWebhookEvent(t *testing.T) {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 
-	expected := `{"id":"33333333-0000-0000-0000-000000000001","customer_id":"33333333-0000-0000-0000-000000000002","conversation_id":"33333333-0000-0000-0000-000000000003","direction":"incoming","status":"done","reference_type":"line","reference_id":"33333333-0000-0000-0000-000000000004","source":{"type":"line","target":"peer-target"},"destination":{"type":"line","target":"self-target"},"text":"hello","tm_create":"2026-01-02T03:04:05Z","tm_update":null,"tm_delete":null}`
+	expected := `{"id":"33333333-0000-0000-0000-000000000001","customer_id":"33333333-0000-0000-0000-000000000002","conversation_id":"33333333-0000-0000-0000-000000000003","direction":"incoming","status":"done","reference_type":"line","reference_id":"33333333-0000-0000-0000-000000000004","source":{"type":"line","target":"peer-target"},"destination":{"type":"line","target":"self-target"},"text":"hello","medias":[{"id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","type":"image","filename":"photo.png","tm_create":null,"tm_update":null,"tm_delete":null}],"tm_create":"2026-01-02T03:04:05Z","tm_update":"2026-01-02T03:04:06Z","tm_delete":"2026-01-02T03:04:07Z"}`
 	if string(res) != expected {
 		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", expected, res)
 	}
