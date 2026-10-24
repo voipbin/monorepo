@@ -13,6 +13,8 @@ import (
 )
 
 func TestAstEndpointCreate(t *testing.T) {
+	resetTestTables(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -66,6 +68,8 @@ func TestAstEndpointCreate(t *testing.T) {
 }
 
 func TestAstEndpointDelete(t *testing.T) {
+	resetTestTables(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

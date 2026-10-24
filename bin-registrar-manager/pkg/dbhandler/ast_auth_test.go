@@ -13,6 +13,8 @@ import (
 )
 
 func TestAstAuthCreate(t *testing.T) {
+	resetTestTables(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -72,6 +74,8 @@ func TestAstAuthCreate(t *testing.T) {
 }
 
 func TestAstAuthDelete(t *testing.T) {
+	resetTestTables(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -121,6 +125,8 @@ func TestAstAuthDelete(t *testing.T) {
 }
 
 func TestAstAuthUpdate(t *testing.T) {
+	resetTestTables(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

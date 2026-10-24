@@ -91,6 +91,8 @@ func Test_extensionNormalizeDomainName_servingRule(t *testing.T) {
 // real sqlite read path: a row with a realm must come back with the realm as
 // domain_name while the stored column stays untouched.
 func Test_ExtensionGet_domainNameServing(t *testing.T) {
+	resetTestTables(t)
+
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
 	mc := gomock.NewController(t)

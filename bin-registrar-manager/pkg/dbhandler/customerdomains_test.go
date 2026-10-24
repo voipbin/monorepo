@@ -74,6 +74,7 @@ func Test_isDuplicateEntryErr(t *testing.T) {
 }
 
 func Test_CustomerDomainCreate(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2026, 8, 23, 10, 0, 0, 0, time.UTC); return &t }()
 
@@ -158,6 +159,8 @@ func Test_CustomerDomainCreate(t *testing.T) {
 }
 
 func Test_CustomerDomainCreate_duplicate(t *testing.T) {
+	resetTestTables(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -217,6 +220,8 @@ func Test_CustomerDomainCreate_duplicate(t *testing.T) {
 }
 
 func Test_CustomerDomainGet_notFound(t *testing.T) {
+	resetTestTables(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -238,6 +243,7 @@ func Test_CustomerDomainGet_notFound(t *testing.T) {
 }
 
 func Test_CustomerDomainGetByRealm(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2026, 8, 23, 10, 0, 0, 0, time.UTC); return &t }()
 
@@ -305,6 +311,7 @@ func Test_CustomerDomainGetByRealm(t *testing.T) {
 }
 
 func Test_CustomerDomainUpdate(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2026, 8, 23, 10, 0, 0, 0, time.UTC); return &t }()
 
@@ -371,6 +378,7 @@ func Test_CustomerDomainUpdate(t *testing.T) {
 }
 
 func Test_CustomerDomainUpdate_duplicate(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2026, 8, 23, 10, 0, 0, 0, time.UTC); return &t }()
 
@@ -423,6 +431,7 @@ func Test_CustomerDomainUpdate_duplicate(t *testing.T) {
 }
 
 func Test_CustomerDomainDelete(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2026, 8, 23, 10, 0, 0, 0, time.UTC); return &t }()
 
@@ -471,6 +480,7 @@ func Test_CustomerDomainDelete(t *testing.T) {
 }
 
 func Test_CustomerDomainList(t *testing.T) {
+	resetTestTables(t)
 
 	curTime := func() *time.Time { t := time.Date(2026, 8, 23, 10, 0, 0, 0, time.UTC); return &t }()
 

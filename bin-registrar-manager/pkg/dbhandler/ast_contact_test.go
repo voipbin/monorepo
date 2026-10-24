@@ -34,6 +34,8 @@ func countContactsByEndpoint(t *testing.T, endpoint string) int {
 }
 
 func Test_AstContactDeleteByEndpoint(t *testing.T) {
+	resetTestTables(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

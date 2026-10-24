@@ -181,7 +181,7 @@ func Test_Create_failureAfterLookup_errors(t *testing.T) {
 			}
 
 			f.req.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, customerID, bmaccount.ResourceTypeTrunk).Return(true, nil)
-			f.db.EXPECT().TrunkGetByDomainName(ctx, domainName).Return(nil, errors.New("not found"))
+			f.db.EXPECT().TrunkGetByDomainName(ctx, domainName).Return(nil, dbhandler.ErrNotFound)
 			f.util.EXPECT().UUIDCreate().Return(trunkID)
 
 			for idx := 0; idx <= failAt; idx++ {
