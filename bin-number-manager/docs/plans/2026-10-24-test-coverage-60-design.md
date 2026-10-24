@@ -19,7 +19,7 @@ Hand-written coverage excludes `gens/`, `mock_*.go` and files whose header has `
 | other 5 packages (internal/config, models/availablenumber, models/number, requestexternal/models/telnyx, subscribehandler) | 180/208 | 86.5 |
 | total (hand-written) | 1099/2282 | 48.2 |
 
-Raw total including generated code and mocks is 42.1%. 60% needs 1370 covered statements, 61% needs 1392 (+293). The 61% target only leaves a margin for CI rounding differences. The five other packages are already near or above 60%, so they are not targets.
+Raw total including generated code and mocks is 42.1%. 60% needs 1370 covered statements, 61% needs 1393 (+294). The 61% target only leaves a margin for CI rounding differences. The five other packages are already near or above 60%, so they are not targets.
 
 Testability findings:
 - `cmd/*/main.go`: process wiring (DB, Redis, RabbitMQ, cobra). Not unit-testable without external services. Excluded from the plan.
