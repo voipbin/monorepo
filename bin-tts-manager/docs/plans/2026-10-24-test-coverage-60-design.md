@@ -51,7 +51,7 @@
 3. run.go, streaming.go: `getStreamerByProvider` 전 분기, `runStreamer`(미설정 provider, Init 실패, 성공 시 Run 호출과 종료 뒤 VendorInfo 초기화), `UpdateConnAst`, `SetVendorInfo`.
 4. gcp: `getVoiceID` 3단계 우선순위, `getVoiceIDByLangGender`, `extractLangCode`, `SayStop`, `SayFlush`, `SayFinish`, `closeStreamLocked` 를 가짜 `TextToSpeech_StreamingSynthesizeClient` 로 검증. `SayAdd` 는 성공 경로(Stream non-nil 인 가짜 stream, connect 없음)와 Send 실패 뒤 재연결 경로 중 "session context cancelled" 오류로만 끝나는 경로만 허용하며 `processDone` 은 닫지 않은 채널, `Ctx` 는 취소 상태로 둔다(닫힌 processDone 이면 select 가 random 으로 갈라져 `connect` 가 실제 클라우드 클라이언트를 만들 수 있으므로 금지). 재연결 성공 경로는 제외.
 5. aws 스트리머: `getVoiceID`, `getVoiceIDByLangGender`, `SayFlush`(채널 비우기), `SayStop`, `SayFinish`(Cancel 후 채널 close), `SayAdd` 는 `polly.New` 에 `127.0.0.1` httptest `BaseEndpoint` 와 합성 자격(`test-access-key` 류)을 주어 성공, 서비스 오류, 스트림 읽기 오류 확인.
-6. audiohandler: `savePCMAsWAV` 는 리터럴 바이트로 RIFF/WAVE/fmt/data 마커, Subchunk1Size, AudioFormat, NumChannels, SampleRate, ByteRate, BlockAlign, BitsPerSample, ChunkSize, Subchunk2Size 와 PCM 본문 위치를 검증하고 입력 길이를 두 가지로 바꿔 기대값을 독립 계산한다. 쓰기 오류는 존재하지 않는 하위 디렉터리 경로로 유도(chmod 와 root 에 의존 금지). `AudioCreate(ProviderAWS)` 를 로컬 polly 클라이언트로 호출. `awsAudioCreate` 는 awsClient 필드에 로컬 엔드포인트 polly 클라이언트를 주입해 voice 미결정, 서비스 오류, 성공 확인(임시 디렉터리).
+6. audiohandler: `savePCMAsWAV` 는 리터럴 바이트로 RIFF/WAVE/fmt/data 마커, Subchunk1Size, AudioFormat, NumChannels, SampleRate, ByteRate, BlockAlign, BitsPerSample, ChunkSize, Subchunk2Size 와 PCM 본문 위치를 검증하고 입력 길이를 두 가지로 바꿔 기대값을 독립 계산한다. 쓰기 오류는 존재하지 않는 하위 디렉터리 경로로 유도(chmod 와 root 에 의존 금지). `AudioCreate(ProviderAWS)` 를 로컬 polly 클라이언트로 호출. `awsAudioCreate` 는 awsClient 필드에 로컬 엔드포인트 polly 클라이언트를 주입해 서비스 오류와 성공 확인(voice 미결정은 기존 테스트가 있음)(임시 디렉터리).
 7. cmd/tts-control: `resolveUUID`, `printJSON`, `runCreate` 입력 검증 오류(initHandler 이전 반환 경로만). cmd/tts-manager: `initProm` 의 빈 설정 즉시 반환 경로만(비어 있지 않은 경로는 DefaultServeMux 등록이라 재실행 시 패닉). `initSignal` 은 전역 시그널 상태를 남기므로 제외.
 8. websocket.go 의 `websocketConnect` 는 기존 로컬 테스트가 있으므로 미커버 분기(MEDIA_START 가 바이너리, 읽기 오류, 연결 거부)만 추가. start.go 미커버 분기는 mock 으로.
 
@@ -62,6 +62,7 @@
 - 동기화는 채널 기반만 허용하고 `time.Sleep` 금지. 고루틴이 발행하는 `PublishEvent` 호출은 gomock `DoAndReturn` 에서 채널을 닫아 테스트가 기다린 뒤 종료한다(ctrl.Finish 와의 경합 방지). 단언은 "반환했고 PlayFinished 가 발행됨" 수준으로 비결정 경로(닫힌 msgCh 선택)에 의존하지 않는다.
 - `websocketWrite` 의 20ms pacing 을 피하도록 오디오 payload 는 프레임 크기 이하(ulaw 160, slin 320, slin16 640 바이트)로 한다. `runKeepAlive`(10초)와 gcp `runKeepalive`(4초) 의 틱 분기는 도달 불가이므로 ctx 취소 즉시 반환 경로만 다룬다.
 - 전역 상태: viper 를 쓰는 테스트는 `viper.Reset()` 과 `t.Cleanup`, `t.Parallel` 금지. logrus 전역 레벨과 훅은 바꾸지 않는다. prometheus 메트릭은 재등록하지 않고 값은 전후 delta 로만 단언한다.
+- elevenlabs 와 gcp 테스트가 만드는 `ConnWebsock`, `ConnAst` 클라이언트 연결도 `t.Cleanup` 에서 닫는다(readConnWebsock 고루틴 누수 방지). aws 스트림 읽기 오류는 httptest 핸들러가 일부 바이트를 flush 한 뒤 `panic(http.ErrAbortHandler)` 로 연결을 끊어 유도한다. `readConnWebsock` 의 "Error channel full" 분기는 도달 불가로 제외.
 - 새 테스트 파일은 함수 이름 `Test_` 규칙과 gomock 컨트롤러 이름 `mc` 를 따른다(`scripts/check-test-conventions.sh`).
 
 추가 규칙(2회차 반영):
