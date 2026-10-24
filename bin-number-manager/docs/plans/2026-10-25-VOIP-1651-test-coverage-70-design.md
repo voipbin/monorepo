@@ -26,7 +26,7 @@
 | internal/config, pkg/requestexternal | - | 3 + 2 | 대상 아님 (requestexternal 2 는 도달 불가) |
 | 합계 | 1502/2282 | 780 | 323+116+70+120+45+76+10+9+1+5+3+2 = 780 |
 
-예상 증가: cachehandler 약 60 + numberhandler 약 90 + dbhandler 약 30 + models 약 13 = 약 190 stmt (예상 수기 합계 약 74%). 부족하면 listenhandler 와 subscribehandler 를 추가.
+예상 증가: cachehandler 약 60 + numberhandler 약 90 + dbhandler 약 30 + models 약 13 = 약 193 stmt (예상 수기 합계 약 74%). 부족하면 listenhandler 와 subscribehandler 를 추가.
 
 ## 3. Verify 항목 (설계 단계, 코드 없음)
 
@@ -39,12 +39,13 @@
 7. 합성값만. 외부 호출과 네트워크 의존 없음(miniredis 는 로컬 루프백 리스너).
 8. 가상번호 후보는 난수이므로 후보 집합에 의존하는 단언은 gomock DoAndReturn 으로 실제 전달된 후보를 받아 부분 집합으로 단언하고 고정 시드나 난수값 비교는 하지 않음.
 
-## 4. 테스트 계획
+## 4. 테스트 계획 (파일과 케이스)
 
-- pkg/cachehandler/handler_test.go: NewHandler/Connect(정상, 서버 중단 오류), Number/NumberByNumber 의 Set/Get/Del 왕복, NumberSet 이 두 키를 쓰는지, 키 없음 오류, 손상된 JSON 오류, 서버 중단 오류, TTL 24시간.
-- pkg/numberhandler/available_number_test.go: GetAvailableVirtualNumbers 의 limit=0 기본 10, 후보 3배수 요청, 점유 번호 제외, limit 절단, 점유로 limit 미달 시 부족한 수 반환, db 오류 전파, 결과 필드(Provider none, 국가, 음성 기능).
-- pkg/numberhandler 의 number/db/event/renew 오류 경로: 예약 접두사 거부, 잔액 조회 오류, 잔액 부족, 구매 실패, Delete(조회 실패, provider 해제 실패, 미지원 provider, dbDelete 실패), List/Count/Update 오류, db.go 의 NumberCreate/Get/Delete 실패, EventCustomerDeleted 목록 실패와 삭제 실패 계속, EventFlowDeleted 의 목록 실패와 1000건 페이지 반복, RenewNumbers 의 기간 미지정 오류.
-- pkg/dbhandler: 닫힌 sql.DB 로 각 메서드의 쿼리 오류, 캐시 mock 오류에서의 폴백.
-- models/number: ConvertWebhookMessage 필드 복사, CreateWebhookEvent 의 JSON 키 집합.
-- requestexternal/models/telnyx: ConvertProviderNumber.
-- 부족할 때만 listenhandler, subscribehandler 오류 분기.
+- pkg/cachehandler/handler_test.go (miniredis, 선례: bin-message-manager/pkg/cachehandler/handler_test.go): NewHandler 가 주소/DB 를 보존하고 Connect 가 성공, 서버 종료 후 Connect 오류. Number/NumberByNumber 의 Set 후 Get 왕복에서 필드 값을 리터럴과 비교하고 miniredis 에서 키 `number:<id>`, `number-number:<번호>` 가 모두 존재하며 TTL 이 24시간인지 확인(NumberSet 이 두 키를 쓰는지). 키 없음 오류, `mr.Set` 으로 넣은 손상된 JSON 의 Unmarshal 오류, Del 후 Get 오류, 서버 종료 후 Set/Get/Del 오류. setSerialize 의 Marshal 오류 분기는 Number 가 항상 직렬화 가능해 도달 불가라 제외.
+- pkg/numberhandler/available_number_test.go: GetAvailableVirtualNumbers. (a) limit=0 은 10 으로 처리되어 NumberGetExistingNumbers 에 전달된 후보가 30개, 모두 `+899` 접두사와 총 길이 13, 중복 없음(후보는 DoAndReturn 인자로 캡처). (b) 점유 번호를 후보의 일부로 반환하면 결과에 없음. (c) 후보보다 점유가 많아 limit 에 못 미치면 남은 수만 반환. (d) limit 절단. (e) db 오류는 wrap 되어 전파되고 결과 nil. 결과 필드(Provider none, 국가 코드 상수, 음성 기능)는 리터럴 상수가 아닌 모델 상수와 비교하되 상수 값 자체의 독립 확인(접두사 리터럴)을 병행.
+- pkg/numberhandler number/db/event/renew 오류 경로 (gomock): Create 의 예약 접두사 거부(provider 와 billing 호출 없음), 잔액 조회 오류, 잔액 부족(구매 미호출), 구매 실패. CreateVirtual 의 db 오류들. Delete 의 Get 실패, provider 해제 실패(Telnyx, Twilio 각각), 미지원 provider 이름, dbDelete 실패. Get 의 NotFound 변환(cerrors)과 일반 오류 wrap. List/Count/Update 오류 wrap. db.go 의 dbCreate 의 NumberCreate/NumberGet 실패, dbDelete/dbUpdate 실패. EventCustomerDeleted 의 목록 실패 오류 반환과 삭제 실패 후 계속. EventFlowDeleted 의 목록 실패 중단, 업데이트 실패 후 계속, 1000건 가득 찬 페이지 후 다음 페이지 조회. RenewNumbers 의 days, hours, tmRenew 모두 비었을 때 오류.
+- pkg/dbhandler (기존 sqlite TestMain 재사용): 별도로 열었다 닫은 sql.DB 로 만든 handler 에서 각 메서드(Create/Get/List/Update/Delete/GetExisting/Count/GetsByTMRenew)의 쿼리 오류 전파, 캐시 mock 의 오류 시 DB 폴백(NumberGet), 캐시 갱신 오류 전파(numberUpdateToCache), NumberGetFromCacheByNumber.
+- models/number/webhook_test.go: ConvertWebhookMessage 가 모든 공개 필드를 옮기고 내부 필드(ProviderName, ProviderReferenceID)를 노출하지 않음을 리터럴 구조로 확인, CreateWebhookEvent 의 JSON 키 집합과 값(리터럴 기대 JSON).
+- pkg/requestexternal/models/telnyx: ConvertProviderNumber 의 필드 매핑을 리터럴 기대값으로, 알 수 없는 상태 값의 처리.
+- 부족할 때만 listenhandler(요청 본문 파싱 오류, 하위 오류 응답), subscribehandler(processEventRun) 오류 분기.
+- 파일은 기존 `_test.go` 에 케이스를 추가하거나, 같은 이름 규칙의 새 `_test.go`(handler_test.go, webhook_test.go 등)를 만든다.
