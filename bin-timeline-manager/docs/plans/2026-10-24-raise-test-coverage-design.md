@@ -37,25 +37,28 @@ Mock calls use exact arguments (no gomock.Any for maps, page tokens, ids). Order
 
 1. pkg/homerhandler/main_test.go (httptest server with a hit counter). For each of GetSIPMessages, GetPcap, GetRTCPPcap:
    - missing address, missing token, empty call id: error message asserted and zero hits;
-   - status 204 and 299 succeed, 300 (no Location) and 500 fail, asserted per method;
+   - 299 succeeds for all three (GetSIPMessages with a valid JSON body `{}`); 204 succeeds only for the two pcap methods; for GetSIPMessages a 204 empty body is a separate unmarshal-error case;
+     300 (no Location) and 500 fail, asserted per method;
    - transport error (server closed first, immediate connection refused), cancelled context, invalid address with a control character (request build error);
-   - success: hits==1, POST, Content-Type and Auth-Token headers, endpoint path (transaction vs export pcap), decoded payload literals:
-     search key (`1_call` vs `5_default`), hepid (1/5, pcap only), limit (200/1000), from/to as literal UnixMilli of from-10m and to+10m, callid list.
+   - success: hits==1 (hit counter uses sync/atomic), POST, Content-Type and Auth-Token headers, endpoint path (transaction vs export pcap), decoded payload literals:
+     search key (`1_call` vs `5_default`), hepid (1/5, pcap only), limit (200/1000), from/to as literal UnixMilli of from-10m and to+10m, callid list, `type:"string"` and the empty transaction object where the code sets them; the whole decoded payload is compared to a literal with DeepEqual, and from and to are given different values so a sign mutation is caught.
    GetSIPMessages additionally: invalid JSON; field mapping and RFC3339Nano UTC timestamp literal; zero messages returns a non-nil empty slice;
    reverse-time input returns ascending order (all inputs with non-zero milliseconds and the same fractional digits); 50 inputs return all, 51 inputs return the
    earliest 50 (the latest dropped). GetPcap/GetRTCPPcap return the body bytes as is, including an empty body.
 2. pkg/analysishandler/reduce_test.go:
-   - reduceEvents: size equal to target unchanged, target+1 reduces; error events always kept; non-error dropped after the budget is reached, order preserved,
-     a small later non-error event is kept after a large one was dropped; over target but all error returns the original list and false. Sizes are built from Summary length with the +64 overhead.
-   - summarizeData: empty, `[1]` array, `null`, `{}`, key order, numeric and bool values, 240 vs 241 runes with a multibyte string and the `...` suffix.
+   - reduceEvents: approxSize equal to target unchanged and target+1 reduces; inside the loop an accumulated size exactly at target keeps the non-error event and +1 byte drops it;
+     error events kept, including an error event that arrives after the budget is full; non-error dropped after the budget is reached, order preserved,
+     a small later non-error event is kept after a large one was dropped; over target with all error returns the same elements in order and false (slice identity not asserted).
+     Sizes are built from Summary length with the +64 overhead. Target 98304 is asserted once as a literal through a sizing check.
+   - summarizeData: empty, `[1]` array, `null` (returns "null"), `{}`, key order, small numeric (`1`, `1.5`) and bool values, 240 vs 241 runes with a multibyte string and the `...` suffix on each of the three paths (non-object, no key, with keys).
    - resourceIDOf: string id, numeric id, invalid JSON, empty data. truncateRunes boundary.
    - collectTranscripts: nil activeflow makes no call; list error returns nil; per-transcribe error skips only that one; empty message skipped; 8000 vs 8001 rune cap;
      exact list arguments (token "", 100/1000, customer, activeflow, transcribe id, deleted false). joinTranscript format `[direction] message`.
 3. pkg/analysishandler/collect_test.go (eventhandler and requesthandler mocks):
-   - collectEvents: list error wrapped; nil and empty page stop; page 2 receives page 1 token; dedup inside a page, across pages, and differing only by data, type, time or id;
+   - collectEvents: list error wrapped; nil and empty page stop; page 2 receives page 1 token; dedup inside a page and across pages; pairs differing only by data, only by type, or only by microsecond are kept, a pair differing only below a microsecond is deduplicated (UTC timestamps); an id-only difference cannot exist because the id comes from the data;
      4999 distinct events stay false, exactly 5000 gives reducedByCap true even if data ends; the 100-page loop ends after exactly 100 calls with reducedByCap false.
    - collectInput: error wrap; indexes contiguous from 0 on the reduced list; allEvents length is the pre-reduction length (no Index assertion on it); errorSignals only error events;
-     inputReduced true by cap alone and by size alone; transcripts passed through.
+     inputReduced true by cap alone and by size alone; transcripts passed through (non-nil activeflow, so the transcribe list mock is set; page size 500 and 100 pages asserted as literals in the mock arguments).
    - dedupKey literal expectation plus single-field sensitivity; buildInventory unknown publisher and sort by type; isErrorEvent table (each of `_error`, `_failed`, `_hangup`, `_timeout`,
      upper case, and tokens without the underscore are false).
 4. pkg/analysishandler/get_test.go: Get, GetByActiveflowID, Delete: db not-found returns the masked ErrNotFound (err == ErrNotFound, errors.Is with the db error false, message does not expose
@@ -70,7 +73,7 @@ Mock calls use exact arguments (no gomock.Any for maps, page tokens, ids). Order
 - Setup: `git fetch origin main`, then `bash scripts/check-test-conventions.sh`.
 - Hand-written total >= 66% with `GOFLAGS=-mod=mod go test -count=1 -coverprofile`, same exclusion rules; per-package before/after table in the PR.
   Expected gain: homerhandler about +170, verdict 20, webhook 9, get.go 22, reduce/collect about 100, which exceeds the 95 needed.
-- `go test ./...` and `golangci-lint run` pass.
+- `go test ./...` and `golangci-lint run` pass. Equivalent mutations are excluded from the table (50 cap `>` to `>=`, dropping the id term of the dedup key).
 - Mutation sample on a scratch copy only (the worktree `git status` stays clean); each mutation must fail the named new test:
 
 | mutation | expected failing test |
@@ -80,7 +83,7 @@ Mock calls use exact arguments (no gomock.Any for maps, page tokens, ids). Order
 | drop sort; drop the 50 cap | reverse-order case; 51-input case |
 | `idx >= eventCount` to `>`; `idx < 0` to `<= 0` | eventCount and 0 boundary cases |
 | remove the not-found mapping in each of Get, GetByActiveflowID, Delete | per-method masked error case |
-| reduceEvents `>` to `>=`, `continue` to `break`, `<=` to `<` | boundary, order and size cases |
+| reduceEvents `<=` to `<` (early return); loop `>` to `>=`; error-branch `continue` removed; drop-branch `continue` to `break`; `+64` changed in the loop and in approxSize | early boundary, loop boundary, late error event, small-after-large, size cases |
 | isErrorEvent drop each of four tokens | token table |
-| collectEvents cap `>=` to `>`, remove dedup, remove token pass-through | cap, dedup, page-token cases |
-| summarizeData 240 to 241; transcript cap 8000 to 8001 | rune boundary cases |
+| collectEvents cap `>=` to `>`, remove dedup, remove token pass-through, 100 to 101 pages | cap, dedup, page-token, max-pages cases |
+| summarizeData 240 to 241 in each of 3 paths; transcript cap 8000 to 8001 | rune boundary cases per path |
