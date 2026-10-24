@@ -61,7 +61,7 @@ pkg/internal/models (미커버 134) 분류. 미커버 블록 목록을 하나씩
 
 | 분류 | statement | 내용 |
 |---|---|---|
-| 도달 불가 | 44 | listenhandler 마샬 실패 분기 23, dbhandler `PrepareFields`/`ToSql` 실패 14, rows affected 오류 2, `bindConfig`/`Bootstrap` 바인딩 오류 3, 고루틴 안 `ConsumeMessage`/`ConsumeRPC` 오류 로그 2 (빈 `Init` 은 0 statement 라 집계 밖) |
+| 도달 불가 | 44 | listenhandler 마샬 실패 분기 23, dbhandler `PrepareFields`/`ToSql` 실패 14, rows affected 오류 2, `bindConfig`/`Bootstrap` 바인딩 오류 3, 고루틴 안 `ConsumeMessage`/`ConsumeRPC` 오류 로그 2(mock 이 오류를 반환하면 도달 가능하나 2.2 의 성공 케이스가 nil 을 반환하므로 의도적으로 제외, 빈 `Init` 은 0 statement 라 집계 밖) |
 | 도달 가능, 단순 | 61 | `ApplyFields` 오류 2(지원하지 않는 필터 타입), `AccountUpdate`/`FileUpdate` 의 `PrepareFields` 오류 2, dbhandler 행 스캔과 변환 오류 6, 캐시 쓰기 실패 4, listenhandler `url.Parse` 오류 4, `errorResponse` 2, `v1_recordings` 퍼센트 디코딩 오류 3, `logDownloadURIFailure` 1, `processEvent` 오류 로그 1, `compress.go` 2, `file.go` `Get` 3, `storagehandler` 1, models 변환 오류 4, `LoadGlobalConfig` 4, `NewFileHandler` 인증 파일 분기 7, `decodeWavPeaks`/`readWavHeader` 경계 15 |
 | 도달 가능, fake 확장 필요 | 29 | `PeaksComputeByFile` 9(GCS 객체 본문 읽기), `bucketfile` 의 이동, 압축, 서명 URL 오류 10, `file.go` `Create` 10 |
 
@@ -121,11 +121,12 @@ pkg 단순 구간:
 
 ### 2.4 pkg 단순 구간 입력 확정 (설계 5회차 사실 확인 반영, 구현 단계에서 프로파일로 재확인)
 
-- wav: 도달 가능한 경계는 13개다. `frameSize == 0` 분기와 `framesPerBucket <= 0` 분기는 앞선 조건이 막아 도달 불가이므로 제외한다. "잘린 PCM" 은 두 케이스로 나눈다: 헤더 프레임 수보다 적은 프레임이 있으면 부분 버킷이 flush 되고, 데이터 바이트 0 이면 peaks 가 nil 이며 duration 만 남는다. 기대값은 손계산 리터럴.
+- wav: 도달 가능한 경계는 13개다. `frameSize == 0` 분기와 `framesPerBucket <= 0` 분기는 앞선 조건이 막아 도달 불가이므로 제외한다. "잘린 PCM" 은 두 케이스로 나눈다: 헤더 프레임 수보다 적은 프레임이 있으면 부분 버킷이 flush 되고, 헤더의 data 크기가 0 이면 `(nil, 0)` 을 반환하고, 헤더 크기는 양수인데 실제 바이트가 0 이면 peaks 가 nil 이며 duration 만 남는다. 그 밖의 경계는 잘린 fmt 본문, fmt 전에 data 가 오는 경우, 미지 청크 건너뛰기 중 잘림이다. 기대값은 손계산 리터럴.
 - `CreateWebhookEvent`: `WebhookMessage` 에 채널을 넣을 자리가 없으므로 `time.Date(10000, ...)` 같이 연도 범위를 벗어난 시각으로 마샬 오류를 만든다.
-- `ConvertStringMapToFieldMap`: 입력 `{"account_id": "bad"}`(UUID 오류), `{"filesize": "x"}`(지원하지 않는 변환), `{"name": 5}`(타입 변환 불가) 각각의 오류 문구 단언.
-- dbhandler: 재조회 실패(`accounts.go`/`files.go` 의 쓰기 뒤 재조회 분기 2)는 Next 에서 실패하는 DB 래퍼가 필요하고, 캐시 쓰기 실패(2)는 `AccountSet`/`FileSet` 이 오류를 반환하게 하여 쓰기 함수가 nil 을 반환함을 단언한다. `ApplyFields` 오류는 빈 구조체와 문자열 슬라이스 필터로, `PrepareFields` 오류는 비어 있지 않은 값 안의 채널 또는 함수(`[]chan int{nil}`, `map[string]func(){"a": nil}`)로 만든다. 맨 채널은 `PrepareFields` 를 통과해 실행 단계에서 실패하므로 쓰지 않는다.
+- `ConvertStringMapToFieldMap`: 패키지별로 입력이 다르다(알 수 없는 키는 오류 없이 무시된다). models/file: `{"account_id": "bad"}`(UUID 오류), `{"filesize": "x"}`(지원하지 않는 변환), `{"name": 5}`(타입 변환 불가). models/account: `{"customer_id": "bad"}`(UUID 오류), `{"total_file_size": "x"}`(지원하지 않는 변환), `{"id": 5}`(uuid 변환 불가). 각 오류 문구를 단언하며 구현 단계에서 실측으로 확인한다.
+- dbhandler: 재조회 실패(`accounts.go`/`files.go` 의 쓰기 뒤 재조회 분기 2)는 존재하지 않는 id 로 `accountUpdateToCache`/`fileUpdateToCache` 를 직접 호출해 NotFound 로 만들고(새 래퍼 불필요), 캐시 쓰기 실패(2)는 `AccountSet`/`FileSet` 이 오류를 반환하게 하여 쓰기 함수가 nil 을 반환함을 단언한다. `ApplyFields` 오류는 빈 구조체와 문자열 슬라이스 필터로, `PrepareFields` 오류는 비어 있지 않은 값 안의 채널 또는 함수(`[]chan int{nil}`, `map[string]func(){"a": nil}`)로 만든다. 맨 채널은 `PrepareFields` 를 통과해 실행 단계에서 실패하므로 쓰지 않는다.
 - `NewFileHandler`: 도달 가능 분기는 6개(client 생성 실패 1개는 에뮬레이터 호스트 지정 시 도달 불가). 키 파일은 `type` 이 `service_account` 인 JSON 이어야 유효 파싱으로 간주되고, 없으면 파싱 실패 케이스로 쓴다. `private_key` 없는 변형은 서명 키 미설정 분기만 닿는다.
-- listenhandler: `url.Parse` 오류는 제어문자(`\x7f`)가 든 URI 로 `v1AccountsGet`, `v1AccountsIDGet`, `v1FilesGet`, `v1FilesIDGet` 메서드를 직접 호출해 만들고, 퍼센트 디코딩 오류도 `processRequest` 의 UUID 정규식에 걸러지므로 `v1RecordingsID*` 메서드를 직접 호출한다.
+- listenhandler: `url.Parse` 오류는 제어문자(`\x7f`)가 든 URI 로 `v1AccountsGet`, `v1AccountsIDGet`, `v1FilesGet`, `v1FilesIDGet` 메서드를 직접 호출해 만들고, 퍼센트 디코딩 오류도 `processRequest` 의 UUID 정규식에 걸러지므로 `v1RecordingsID*` 메서드를 직접 호출하며, Peaks 메서드는 `/v1/recordings/%zz/peaks` 형태를 쓴다.
 - `logDownloadURIFailure`: 반환값이 없으므로 logrus 테스트 hook 으로 레벨과 메시지를 단언할 수 있을 때만 포함하고, 불가하면 제외한다.
+- pkg 변이 검사(그룹당 최소 1개): `NewFileHandler` 의 파싱 실패 `return` 을 `nil` 반환으로, dbhandler 쓰기 함수의 `_ = h.accountUpdateToCache(...)` 를 `return err` 로, listenhandler 의 `QueryUnescape` 오류 무시, `url.Parse` 오류 무시, `ConvertStringMapToFieldMap` 의 UUID 오류 분기 제거, `CreateWebhookEvent` 의 마샬 오류 무시, `ApplyFields` 의 지원하지 않는 필터 오류 분기를 nil 로, filehandler `Create` 의 DB 생성 실패 처리 제거, `compress.go` 의 오류 return 변경. 구현한 그룹만 해당하며, 변이에서 신규 테스트가 실패하지 않는 그룹은 테스트를 고치거나 제외한다.
 - 위 제외로 pkg 단순 구간의 실제 도달 수는 61보다 작아질 수 있으나(최대 약 56) 필수 경로는 cmd 이므로 결론에 영향이 없다.
