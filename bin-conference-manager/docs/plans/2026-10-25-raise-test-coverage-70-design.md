@@ -31,7 +31,7 @@
 
 - 수기 합계는 base 측정과 같은 방법(위 제외 규칙을 구현한 스크립트, 방법을 PR 본문에 기재)으로 계산해 1939 이상(71.0%), 수치는 PR 본문에 적습니다.
 - 모든 신규 테스트는 반환값 또는 저장 상태(키, TTL)를 단언합니다(단순 호출만 하는 테스트 금지).
-- 변이 확인(scratch 복사본에서만 하고 worktree 제품 코드는 건드리지 않음, 원복 확인): `getSerialize` 의 Unmarshal 오류 반환과 `Connect` 의 오류 반환을 nil 로, `NewHandler` 의 Addr/Password/DB 전달 제거, cachehandler 의 키 접두 3종(conference, conferencecall, reference_id)과 두 Set 의 TTL 을 각각 바꾸면, remove.go 의 세 오류 반환(DB 제거 실패, 재조회 실패, Destroy 실패)을 각각 nil 로 바꾸고 NewHandler 의 DB 전달을 빼면 해당 테스트가 실패해야 합니다.
+- 변이 확인(scratch 복사본에서만 하고 worktree 제품 코드는 건드리지 않음, 원복 확인): `getSerialize` 의 Unmarshal 오류 반환과 `Connect` 의 오류 반환을 nil 로, `NewHandler` 의 Addr/Password/DB 전달 제거, cachehandler 의 키 접두 3종(conference, conferencecall, reference_id)과 두 Set 의 TTL 을 각각 바꾸면, remove.go 의 세 오류 반환(DB 제거 실패, 재조회 실패, Destroy 실패)을 각각 nil 로 바꾸면 해당 테스트가 실패해야 합니다.
 - 루트 CLAUDE.md 5단계(`go mod tidy`, `go mod vendor`, `go generate ./...`, `go test ./...`, `golangci-lint run -v --timeout 5m`)와 `go test -race` 로 remove 패키지 확인.
 - `git diff origin/main...HEAD -- go.mod go.sum` 의 추가 줄이 miniredis 와 `yuin/gopher-lua`(go.mod 는 require 2줄, go.sum 은 각 2줄)뿐이고 기존 모듈 버전 변경과 `go` 지시문 변경이 0줄.
 - `git diff --name-only origin/main...HEAD` 가 `*_test.go`, go.mod, go.sum, docs/plans 뿐이며 `go generate` 후 mock 차이가 없음. go.mod 의 miniredis 는 직접 require 이고 버전과 전이 의존성이 ai-manager, contact-manager 의 go.mod/go.sum 과 일치.
