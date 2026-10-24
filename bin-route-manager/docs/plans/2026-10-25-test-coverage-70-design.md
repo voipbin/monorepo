@@ -1,16 +1,16 @@
-# bin-route-manager unit test coverage 70% (VOIP-1651)
+# bin-route-manager unit test coverage 70%
 
-## 1. 이슈 분석 (티켓 검토)
+## 1. 배경과 측정 기준선
 
-판정: 유효. 기준선(작업 시작 시점의 main)을 `GOFLAGS=-mod=mod go test -count=1 -coverprofile` 로 직접 재측정했다. 수기 코드(gens/, mock_*.go, `Code generated ... DO NOT EDIT` 제외, 같은 블록 중복은 최대 count) 합계는 2502 statement 중 1632개 커버, 65.2% 이다. 원본(생성 코드와 mock 포함)은 58.0% 이다. 70% 까지 120개(1752), 71% 까지 145개(1777)가 더 필요하다.
+기준선(작업 시작 시점의 main)을 `GOFLAGS=-mod=mod go test -count=1 -coverprofile` 로 직접 재측정했다. 수기 코드(gens/, mock_*.go, `Code generated ... DO NOT EDIT` 제외, 같은 블록 중복은 최대 count) 합계는 2502 statement 중 1632개 커버, 65.2% 이다. 원본(생성 코드와 mock 포함)은 58.0% 이다. 70% 까지 120개(1752), 71% 까지 145개(1777)가 더 필요하다.
 
-- 관련 PR: 선행 커버리지 PR(VOIP-1647)은 병합되었고 열린 중복 PR 은 없다. 제품 코드 변경은 하지 않는다.
+- 제품 코드 변경은 하지 않는다.
 - 테스트 불가 구조: cmd/route-control(315)은 DB, Redis, RabbitMQ 연결이 필요해 제외한다. cmd/route-manager 는 대부분 데몬 기동 코드라 제외하되(커버 수가 실행마다 16~19개로 달라질 수 있다), 일부 함수는 mock 으로 가능하면 여유분으로만 쓴다. 분모 2502 에는 cmd/ 505 statement(미커버 약 489)가 그대로 남는다. cmd/ 밖 미커버는 381개이며, 이 중 +120(70%), +145(71%), +150(목표)을 회수해야 하므로 회수율은 각각 31%, 38%, 39% 이다. 산술적으로 달성 가능하다. 여유를 위해 목표는 약 +150 statement 로 잡는다.
-- 수기 합계는 cp.out 후처리 스크립트(제외 필터 적용)로 산출한 값이며 go test 가 출력하는 값과 다르다. 이 방법을 기록한다. cachehandler(미커버 59, miniredis)와 config(미커버 60, viper 전역 상태)는 합 119개로 가장 큰 단일 몫이며 먼저 시도한다. 이 둘을 제외하면 cmd/ 밖 나머지 미커버는 262개(listenhandler 106, dbhandler 68, telnyxclient 31, healthcheckhandler 23, providerhandler 19, providercallhandler 7, routehandler 5, models 3)이고 +120~150 을 회수하려면 46~57% 가 필요해 현실적이지 않다. miniredis 는 bin-route-manager/go.mod 에 아직 없어 go.mod/go.sum 변경이 생기며(테스트 전용 의존성 miniredis 와 간접 의존 gopher-lua, 비테스트 .go 변경 없음), `go mod tidy` 후 그 외 추가 diff 가 없어야 한다. 둘 중 하나라도 구조적으로 불가능하면 목표를 낮추지 않고 사유와 달성값을 첨부해 작업을 중단한다.
+- 수기 합계는 cp.out 후처리 스크립트(제외 필터 적용)로 산출한 값이며 go test 가 출력하는 값과 다르다. 이 방법을 기록한다. cachehandler(미커버 59, miniredis)와 config(미커버 60, viper 전역 상태)는 합 119개로 가장 큰 단일 몫이며 먼저 시도한다. 이 둘을 제외하면 cmd/ 밖 나머지 미커버는 262개(listenhandler 106, dbhandler 68, telnyxclient 31, healthcheckhandler 23, providerhandler 19, providercallhandler 7, routehandler 5, models 3)이고 +120~150 을 회수하려면 46~57% 가 필요해 현실적이지 않다. miniredis 는 bin-route-manager/go.mod 에 아직 없어 go.mod/go.sum 변경이 생기며(테스트 전용 의존성 miniredis 와 간접 의존 gopher-lua, 비테스트 .go 변경 없음), `go mod tidy` 후 그 외 추가 diff 가 없어야 한다.
 
 패키지별 기준선(수기 기준, 커버/전체): cmd/route-control 0/315, cmd/route-manager 16/190, internal/config 0/60, models/* 9/10 각각, pkg/cachehandler 0/59, pkg/dbhandler 372/440, pkg/healthcheckhandler 70/93, pkg/listenhandler 468/574, pkg/providercallhandler 94/101, pkg/providerhandler 238/257, pkg/routehandler 190/195, pkg/telnyxclient 157/188.
 
-80% 미만 패키지를 일반 상향하는 별도 티켓과 범위가 겹칠 수 있다. 80% 미만인 cachehandler, config, dbhandler, healthcheckhandler, telnyxclient 와 범위가 겹칠 수 있어 명시만 하고 흡수하지 않는다.
+80% 미만인 cachehandler, config, dbhandler, healthcheckhandler, telnyxclient 는 일반적인 80% 상향 작업과 범위가 겹칠 수 있으며, 이 문서는 그 작업을 대신하지 않는다.
 
 ## 2. 계획
 
@@ -39,7 +39,7 @@ miniredis 는 테스트에서만 import 하며 main 의 다른 서비스(v2.36.1
 - healthcheckhandler (예상 +20): `Run` 은 기존 `newAlwaysSucceedsLocker`/`Mocklocker`, requesthandler mock, dbhandler mock 을 쓰고 sleep 대신 mock 의 `DoAndReturn` 에서 채널로 tick 호출을 동기화하며 `select` 타임아웃 가드를 둔다. ctx 취소로 반환됨, `ProviderList` 오류 후에도 루프가 계속됨, `UnlockContext` 오류, `last.TMCreate == nil` 종료 분기, `ProviderUpdateHealthStatus` 오류 로그 분기.
 - 추가 대상(트리거): 위를 마친 뒤 수기 합계가 71% 미만이면 미커버가 큰 순서로 dbhandler(오류 경로), providerhandler/setup.go, providercallhandler 를 추가한다.
 
-## 3. verify 항목
+## 3. 검증 방법
 
 - 수기 합계 71% 이상(`-count=3` 안팎으로 재측정해 하한값을 보고). 측정 절차: bin-route-manager 에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` 를 실행하고, cp.out 의 블록을 (파일, 범위) 키로 합쳐 count 최대값을 취한 뒤 `/gens/` 경로, `mock_` 파일명, `package` 앞 헤더에 `Code generated` 와 `DO NOT EDIT` 가 있는 파일을 제외하고 커버 statement / 전체 statement 를 계산한다. 계산에는 짧은 python 코드를 쓴다.
 - 저장소 루트 CLAUDE.md 의 5단계(`go mod tidy`, `go mod vendor`, `go generate ./...`, `go test ./...`, `golangci-lint run -v --timeout 5m`)를 bin-route-manager 에서 모두 실행하고, tidy 후 go.mod/go.sum 의 diff 가 miniredis 와 그 간접 의존(gopher-lua)뿐이며 generate 후 mock diff 가 없음을 확인한다.
