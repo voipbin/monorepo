@@ -34,6 +34,9 @@
 
 ## 3. verify 항목
 
+- 구현 세부: (a) run* 은 검증 오류 케이스만 대상이며 유효 입력의 성공 경로(initDomainMigrationDeps 의 실제 연결)는 만들지 않는다. 열 수 없는 로그 경로는 execute=true, customer-id 비움, `t.TempDir()` 아래 존재하지 않는 하위 디렉터리로 구성한다. viper 는 케이스마다 `viper.Reset()` 을 먼저 호출하고 `t.Cleanup(viper.Reset)`, `t.Parallel` 금지. (b) writeMigrationLogLine 의 쓰기 실패는 실패하는 fake writer, 동기화 실패는 Sync() 를 가진 fake 로 주입. (c) listenhandler.Run 은 QueueCreate 오류 분기만 MockSockHandler 로 확인하고 성공 경로의 고루틴은 동기화 수단 없이 만들지 않는다(AnyTimes 금지). (d) dbhandler 단언은 sqlmock 이 반환한 sentinel 오류를 `errors.Is` 로 확인하며, `%w` 로 감싸지 않는 경로는 구현 전에 확인해 다른 단언(ErrNotFound 여부 등)으로 정한다. (e) 증분은 dbhandler 우선으로 채우고 domain_migrate 는 보조.
+- 범위 점검 명령: `git diff --name-only origin/main...HEAD | grep -v '_test.go$' | grep -v '^bin-registrar-manager/docs/plans/'` 출력이 비어야 한다.
+
 - 예비 풀(증분 부족 시): cmd/registrar-control/main.go 의 cmdExtension*/cmdTrunk* 플래그 정의 생성자와 resolveUUID, resolveString, printJSON 은 연결 없이 닿으며 약 100 statement 로 추정. listenhandler 도달 가능 잔여는 약 35 로 추정되어 본문 20 은 보수적.
 
 - 구현 주의: domain_migrate run* 테스트는 viper 전역 상태를 쓰므로 테스트마다 키를 설정하고 `t.Cleanup` 으로 되돌려 격리한다. 중간 측정(패키지 묶음마다)으로 71% 도달을 확인한다.
