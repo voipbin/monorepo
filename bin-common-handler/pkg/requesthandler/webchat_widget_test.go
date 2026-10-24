@@ -91,6 +91,19 @@ func Test_WebchatV1WidgetWrappers(t *testing.T) {
 			expectRes: widgetWant,
 		},
 		{
+			name:           "update_with_theme",
+			queue:          webchatQueue,
+			expectURI:      "/v1/widgets/3a5c7e9b-1d2f-4b64-8c06-2e4a6c8e0b18",
+			expectMethod:   sock.RequestMethodPut,
+			expectDataType: ContentTypeJSON,
+			expectData:     `{"name":"renamed","session_flow_id":"b1d3f5a7-9c6e-4f08-9a4a-6c8e0a2c4e52","message_flow_id":"f5a7c9e1-3b8d-4a2c-8e6c-8e0a2c4e6f74","session_idle_timeout":60,"theme_config":{"primary_color":"#112233","header_title":"Hello"}}`,
+			responseData:   widgetResponse,
+			call: func(h *requestHandler) (any, error) {
+				return h.WebchatV1WidgetUpdate(context.Background(), widgetID, "renamed", sessionFlowID, messageFlowID, 60, theme)
+			},
+			expectRes: widgetWant,
+		},
+		{
 			name:           "delete",
 			queue:          webchatQueue,
 			expectURI:      "/v1/widgets/3a5c7e9b-1d2f-4b64-8c06-2e4a6c8e0b18",

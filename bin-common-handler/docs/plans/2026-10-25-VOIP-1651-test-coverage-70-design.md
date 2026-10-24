@@ -1,6 +1,6 @@
 # VOIP-1651: raise bin-common-handler unit test coverage to 70%
 
-## 1. Ticket review (adversarial)
+## 1. Premise check
 
 Verdict: partially valid.
 
