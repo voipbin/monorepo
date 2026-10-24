@@ -156,8 +156,8 @@ func Test_processRequest_noHashInLogs(t *testing.T) {
 			setup: func(m *directhandler.MockDirectHandler) {
 				m.EXPECT().GetByHash(gomock.Any(), secretLogHash).Return(nil, errors.New("backend failure"))
 			},
-			expectMsg: "Could not handle the message correctly.",
-			expectSC:  400,
+			expectMsg: "Could not get a direct by hash.",
+			expectSC:  500,
 		},
 		{
 			name: "by-hash uri with post method goes to the default branch",

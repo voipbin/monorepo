@@ -22,6 +22,7 @@ func (h *listenHandler) processV1DirectsGet(ctx context.Context, req *sock.Reque
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
+		// a malformed uri is answered by the dispatcher default (400)
 		return nil, err
 	}
 
@@ -54,7 +55,7 @@ func (h *listenHandler) processV1DirectsGet(ctx context.Context, req *sock.Reque
 	tmp, err := h.directHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get directs info. err:%v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -90,9 +91,7 @@ func (h *listenHandler) processV1DirectsIDGet(ctx context.Context, m *sock.Reque
 	tmp, err := h.directHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get a direct info. err: %v", err)
-		// Let the dispatcher route typed errors and ErrNotFound through
-		// errorResponse so the typed DIRECT_NOT_FOUND surfaces to the caller.
-		return nil, err
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -128,9 +127,7 @@ func (h *listenHandler) processV1DirectsByHashGet(ctx context.Context, m *sock.R
 	tmp, err := h.directHandler.GetByHash(ctx, hash)
 	if err != nil {
 		log.Errorf("Could not get a direct by hash. err: %v", err)
-		// Let the dispatcher route typed errors and ErrNotFound through
-		// errorResponse so the typed DIRECT_NOT_FOUND surfaces to the caller.
-		return nil, err
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -174,7 +171,7 @@ func (h *listenHandler) processV1DirectsPost(ctx context.Context, m *sock.Reques
 	)
 	if err != nil {
 		log.Errorf("Could not create a direct info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -210,7 +207,7 @@ func (h *listenHandler) processV1DirectsIDDelete(ctx context.Context, m *sock.Re
 	tmp, err := h.directHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the direct info. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -246,7 +243,7 @@ func (h *listenHandler) processV1DirectsIDRegenerate(ctx context.Context, m *soc
 	tmp, err := h.directHandler.Regenerate(ctx, id)
 	if err != nil {
 		log.Errorf("Could not regenerate the direct hash. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

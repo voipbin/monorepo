@@ -82,7 +82,7 @@ func simpleResponse(code int) *sock.Response {
 }
 
 // errorResponse maps a business-handler error to the appropriate sock.Response.
-// Resolution order: typed *cerrors.VoipbinError → ToResponse; legacy
+// Resolution order: typed *cerrors.VoipbinError → ToResponse;
 // dbhandler.ErrNotFound → 404; else → 500.
 func errorResponse(err error) *sock.Response {
 	if err == nil {
@@ -203,7 +203,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 
 	// default error handler — typed errors and ErrNotFound flow through
-	// errorResponse; other errors keep legacy 400.
+	// errorResponse; other errors (request parse failures) answer 400.
 	if err != nil {
 		log.Errorf("Could not handle the message correctly. method: %s, uri: %s, err: %v", m.Method, maskURI(m.URI), err)
 		var ve *cerrors.VoipbinError

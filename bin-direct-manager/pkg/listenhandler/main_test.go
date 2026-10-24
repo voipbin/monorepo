@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -94,156 +95,160 @@ func Test_Run(t *testing.T) {
 	})
 }
 
-// Test_processRequest_errorMapping pins the status code of every handler failure as the
-// dispatcher produces it today. GET by id and GET by hash hand the error to the
-// dispatcher, so typed errors and dbhandler.ErrNotFound keep their own status code. The
-// list, create and regenerate routes answer 500 themselves, and delete answers 400 for
-// every failure, including a typed not found.
+// Test_processRequest_errorMapping covers the status code and the body of every handler
+// failure on each route that calls the direct handler. The handler error is mapped at the
+// call site: a typed error keeps its own status code and body, dbhandler.ErrNotFound
+// (also when wrapped) answers 404 without a body, and any other error answers 500
+// without a body. The typed not found cases of the write routes drive the typed branch of
+// errorResponse with a mocked handler result.
 func Test_processRequest_errorMapping(t *testing.T) {
-	typedNotFound := cerrors.NotFound(commonoutline.ServiceNameDirectManager, "DIRECT_NOT_FOUND", "The direct was not found.").Wrap(dbhandler.ErrNotFound)
+	const (
+		testCustomerID = "92883d56-7fe3-11ec-8931-37d08180a2b9"
+		testResourceID = "c31676f0-4e69-11ec-afe3-77ba49fae527"
+		testHash       = "direct.abcdef123456"
+	)
 
-	tests := []struct {
+	typedNotFound := cerrors.NotFound(commonoutline.ServiceNameDirectManager, "DIRECT_NOT_FOUND", "The direct was not found.").Wrap(dbhandler.ErrNotFound)
+	typedInvalid := cerrors.InvalidArgument(commonoutline.ServiceNameDirectManager, "DIRECT_INVALID_ARGUMENT", "The argument is invalid.")
+	wrappedNotFound := fmt.Errorf("could not get the direct: %w", dbhandler.ErrNotFound)
+
+	routes := []struct {
 		name    string
 		request *sock.Request
+		expect  func(m *directhandler.MockDirectHandler, err error)
+	}{
+		{
+			name:    "get by id",
+			request: &sock.Request{URI: "/v1/directs/" + testID, Method: sock.RequestMethodGet},
+			expect: func(m *directhandler.MockDirectHandler, err error) {
+				m.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil(testID)).Return(nil, err)
+			},
+		},
+		{
+			name:    "get by hash",
+			request: &sock.Request{URI: "/v1/directs/by-hash/" + testHash, Method: sock.RequestMethodGet},
+			expect: func(m *directhandler.MockDirectHandler, err error) {
+				m.EXPECT().GetByHash(gomock.Any(), testHash).Return(nil, err)
+			},
+		},
+		{
+			name:    "list",
+			request: &sock.Request{URI: "/v1/directs?page_size=10&page_token=2021-11-23T17:55:39.712000Z", Method: sock.RequestMethodGet},
+			expect: func(m *directhandler.MockDirectHandler, err error) {
+				m.EXPECT().Gets(gomock.Any(), uint64(10), "2021-11-23T17:55:39.712000Z", gomock.Any()).Return(nil, err)
+			},
+		},
+		{
+			name: "create",
+			request: &sock.Request{URI: "/v1/directs", Method: sock.RequestMethodPost,
+				Data: []byte(`{"customer_id":"` + testCustomerID + `","resource_type":"extension","resource_id":"` + testResourceID + `"}`)},
+			expect: func(m *directhandler.MockDirectHandler, err error) {
+				m.EXPECT().Create(gomock.Any(), uuid.FromStringOrNil(testCustomerID), "extension", uuid.FromStringOrNil(testResourceID)).Return(nil, err)
+			},
+		},
+		{
+			name:    "delete",
+			request: &sock.Request{URI: "/v1/directs/" + testID, Method: sock.RequestMethodDelete},
+			expect: func(m *directhandler.MockDirectHandler, err error) {
+				m.EXPECT().Delete(gomock.Any(), uuid.FromStringOrNil(testID)).Return(nil, err)
+			},
+		},
+		{
+			name:    "regenerate",
+			request: &sock.Request{URI: "/v1/directs/" + testID + "/regenerate", Method: sock.RequestMethodPost},
+			expect: func(m *directhandler.MockDirectHandler, err error) {
+				m.EXPECT().Regenerate(gomock.Any(), uuid.FromStringOrNil(testID)).Return(nil, err)
+			},
+		},
+	}
 
-		expect       func(m *directhandler.MockDirectHandler)
+	failures := []struct {
+		name         string
+		err          error
+		expectStatus int
+		expectReason string // empty means no typed body
+	}{
+		{"another error", errHandlerTest, http.StatusInternalServerError, ""},
+		{"a wrapped not found", wrappedNotFound, http.StatusNotFound, ""},
+		{"a typed not found", typedNotFound, http.StatusNotFound, "DIRECT_NOT_FOUND"},
+		{"a typed invalid argument", typedInvalid, http.StatusBadRequest, "DIRECT_INVALID_ARGUMENT"},
+	}
+
+	for _, rt := range routes {
+		for _, f := range failures {
+			t.Run(rt.name+" with "+f.name, func(t *testing.T) {
+				mc := gomock.NewController(t)
+				defer mc.Finish()
+
+				mockDirect := directhandler.NewMockDirectHandler(mc)
+				rt.expect(mockDirect, f.err)
+
+				h := &listenHandler{
+					sockHandler:   sockhandler.NewMockSockHandler(mc),
+					directHandler: mockDirect,
+				}
+
+				res, err := h.processRequest(rt.request)
+				if err != nil {
+					t.Fatalf("processRequest() error = %v, the dispatcher answers failures with a status code", err)
+				}
+				if res == nil || res.StatusCode != f.expectStatus {
+					t.Fatalf("processRequest() = %+v, want status %d", res, f.expectStatus)
+				}
+
+				if f.expectReason == "" {
+					if res.DataType != "" || len(res.Data) != 0 {
+						t.Errorf("DataType = %q, body = %s, want no body", res.DataType, res.Data)
+					}
+					return
+				}
+				if res.DataType != cerrors.DataTypeVoipbinError {
+					t.Errorf("DataType = %q, want %q", res.DataType, cerrors.DataTypeVoipbinError)
+				}
+				if !strings.Contains(string(res.Data), f.expectReason) {
+					t.Errorf("body = %s, want the typed reason %s", res.Data, f.expectReason)
+				}
+			})
+		}
+	}
+}
+
+// Test_processRequest_requestFailure covers the requests that are rejected before the
+// direct handler is called, and the routes that do not exist.
+func Test_processRequest_requestFailure(t *testing.T) {
+	tests := []struct {
+		name         string
+		request      *sock.Request
 		expectStatus int
 	}{
 		{
-			name:    "get by id with a typed not found keeps its status",
-			request: &sock.Request{URI: "/v1/directs/" + testID, Method: sock.RequestMethodGet},
-			expect: func(m *directhandler.MockDirectHandler) {
-				m.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil(testID)).Return(nil, typedNotFound)
-			},
-			expectStatus: http.StatusNotFound,
-		},
-		{
-			name:    "get by id with a raw not found is a 404",
-			request: &sock.Request{URI: "/v1/directs/" + testID, Method: sock.RequestMethodGet},
-			expect: func(m *directhandler.MockDirectHandler) {
-				m.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil(testID)).Return(nil, dbhandler.ErrNotFound)
-			},
-			expectStatus: http.StatusNotFound,
-		},
-		{
-			name:    "get by id with another error is a 400",
-			request: &sock.Request{URI: "/v1/directs/" + testID, Method: sock.RequestMethodGet},
-			expect: func(m *directhandler.MockDirectHandler) {
-				m.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil(testID)).Return(nil, errHandlerTest)
-			},
-			expectStatus: http.StatusBadRequest,
-		},
-		{
-			name:    "get by hash with a typed not found keeps its status",
-			request: &sock.Request{URI: "/v1/directs/by-hash/direct.abcdef123456", Method: sock.RequestMethodGet},
-			expect: func(m *directhandler.MockDirectHandler) {
-				m.EXPECT().GetByHash(gomock.Any(), "direct.abcdef123456").Return(nil, typedNotFound)
-			},
-			expectStatus: http.StatusNotFound,
-		},
-		{
-			name:    "get by hash with a raw not found is a 404",
-			request: &sock.Request{URI: "/v1/directs/by-hash/direct.abcdef123456", Method: sock.RequestMethodGet},
-			expect: func(m *directhandler.MockDirectHandler) {
-				m.EXPECT().GetByHash(gomock.Any(), "direct.abcdef123456").Return(nil, dbhandler.ErrNotFound)
-			},
-			expectStatus: http.StatusNotFound,
-		},
-		{
-			name:    "get by hash with another error is a 400",
-			request: &sock.Request{URI: "/v1/directs/by-hash/direct.abcdef123456", Method: sock.RequestMethodGet},
-			expect: func(m *directhandler.MockDirectHandler) {
-				m.EXPECT().GetByHash(gomock.Any(), "direct.abcdef123456").Return(nil, errHandlerTest)
-			},
-			expectStatus: http.StatusBadRequest,
-		},
-		{
-			name:    "list failure is a 500",
-			request: &sock.Request{URI: "/v1/directs?page_size=10&page_token=2021-11-23T17:55:39.712000Z", Method: sock.RequestMethodGet},
-			expect: func(m *directhandler.MockDirectHandler) {
-				m.EXPECT().Gets(gomock.Any(), uint64(10), "2021-11-23T17:55:39.712000Z", gomock.Any()).Return(nil, errHandlerTest)
-			},
-			expectStatus: http.StatusInternalServerError,
-		},
-		{
-			name:         "list with a body that is not json is a 400 and never reaches the handler",
+			name:         "list with a body that is not json",
 			request:      &sock.Request{URI: "/v1/directs?page_size=10", Method: sock.RequestMethodGet, Data: []byte(`{not json`)},
-			expect:       func(m *directhandler.MockDirectHandler) {},
 			expectStatus: http.StatusBadRequest,
 		},
 		{
-			name:         "list with a filter value that cannot be converted is a 400 and never reaches the handler",
+			name:         "list with a filter value that cannot be converted",
 			request:      &sock.Request{URI: "/v1/directs?page_size=10", Method: sock.RequestMethodGet, Data: []byte(`{"customer_id":"not-a-uuid"}`)},
-			expect:       func(m *directhandler.MockDirectHandler) {},
 			expectStatus: http.StatusBadRequest,
 		},
 		{
-			name:         "list with a uri that cannot be parsed is a 400",
+			name:         "list with a uri that cannot be parsed",
 			request:      &sock.Request{URI: "/%zz/v1/directs?page_size=1", Method: sock.RequestMethodGet},
-			expect:       func(m *directhandler.MockDirectHandler) {},
 			expectStatus: http.StatusBadRequest,
 		},
 		{
-			name: "create failure is a 500",
-			request: &sock.Request{URI: "/v1/directs", Method: sock.RequestMethodPost,
-				Data: []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","resource_type":"extension","resource_id":"c31676f0-4e69-11ec-afe3-77ba49fae527"}`)},
-			expect: func(m *directhandler.MockDirectHandler) {
-				m.EXPECT().Create(gomock.Any(), uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"), "extension", uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527")).Return(nil, errHandlerTest)
-			},
-			expectStatus: http.StatusInternalServerError,
-		},
-		{
-			name:         "create with a body that is not json is a 400 and never reaches the handler",
+			name:         "create with a body that is not json",
 			request:      &sock.Request{URI: "/v1/directs", Method: sock.RequestMethodPost, Data: []byte(`{not json`)},
-			expect:       func(m *directhandler.MockDirectHandler) {},
 			expectStatus: http.StatusBadRequest,
 		},
 		{
-			name:    "delete with another error is a 400",
-			request: &sock.Request{URI: "/v1/directs/" + testID, Method: sock.RequestMethodDelete},
-			expect: func(m *directhandler.MockDirectHandler) {
-				m.EXPECT().Delete(gomock.Any(), uuid.FromStringOrNil(testID)).Return(nil, errHandlerTest)
-			},
-			expectStatus: http.StatusBadRequest,
-		},
-		{
-			// characterization of the current behaviour: delete answers 400 even for a typed
-			// not found. If delete is changed to use errorResponse, update this case to 404.
-			name:    "delete with a typed not found is still a 400",
-			request: &sock.Request{URI: "/v1/directs/" + testID, Method: sock.RequestMethodDelete},
-			expect: func(m *directhandler.MockDirectHandler) {
-				m.EXPECT().Delete(gomock.Any(), uuid.FromStringOrNil(testID)).Return(nil, typedNotFound)
-			},
-			expectStatus: http.StatusBadRequest,
-		},
-		{
-			name:    "regenerate failure is a 500",
-			request: &sock.Request{URI: "/v1/directs/" + testID + "/regenerate", Method: sock.RequestMethodPost},
-			expect: func(m *directhandler.MockDirectHandler) {
-				m.EXPECT().Regenerate(gomock.Any(), uuid.FromStringOrNil(testID)).Return(nil, errHandlerTest)
-			},
-			expectStatus: http.StatusInternalServerError,
-		},
-		{
-			// characterization of the current behaviour: regenerate answers 500 even for a
-			// typed not found. If regenerate is changed to use errorResponse, update to 404.
-			name:    "regenerate with a typed not found is still a 500",
-			request: &sock.Request{URI: "/v1/directs/" + testID + "/regenerate", Method: sock.RequestMethodPost},
-			expect: func(m *directhandler.MockDirectHandler) {
-				m.EXPECT().Regenerate(gomock.Any(), uuid.FromStringOrNil(testID)).Return(nil, typedNotFound)
-			},
-			expectStatus: http.StatusInternalServerError,
-		},
-		{
-			name:         "unknown route is a 404",
+			name:         "unknown route",
 			request:      &sock.Request{URI: "/v1/unknown", Method: sock.RequestMethodGet},
-			expect:       func(m *directhandler.MockDirectHandler) {},
 			expectStatus: http.StatusNotFound,
 		},
 		{
-			name:         "known route with an unsupported method is a 404",
+			name:         "known route with an unsupported method",
 			request:      &sock.Request{URI: "/v1/directs/" + testID, Method: sock.RequestMethodPut},
-			expect:       func(m *directhandler.MockDirectHandler) {},
 			expectStatus: http.StatusNotFound,
 		},
 	}
@@ -253,12 +258,10 @@ func Test_processRequest_errorMapping(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockDirect := directhandler.NewMockDirectHandler(mc)
-			tt.expect(mockDirect)
-
+			// no handler method may be called: the strict mock fails the test otherwise
 			h := &listenHandler{
 				sockHandler:   sockhandler.NewMockSockHandler(mc),
-				directHandler: mockDirect,
+				directHandler: directhandler.NewMockDirectHandler(mc),
 			}
 
 			res, err := h.processRequest(tt.request)
