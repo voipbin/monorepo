@@ -9,10 +9,13 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 	smfile "monorepo/bin-storage-manager/models/file"
 
 	"monorepo/bin-transcribe-manager/models/transcript"
+	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
 
 func Test_Recording_listFilesError(t *testing.T) {
@@ -139,6 +142,94 @@ func Test_toOffsetMs_values(t *testing.T) {
 			res := toOffsetMs(tt.duration)
 			if res != tt.expectRes {
 				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_createTranscripts(t *testing.T) {
+	customerID := uuid.FromStringOrNil("5b0f1a10-0000-11ee-9d23-000000000101")
+	transcribeID := uuid.FromStringOrNil("5b0f1a10-0000-11ee-9d23-000000000102")
+	ids := []uuid.UUID{
+		uuid.FromStringOrNil("5b0f1a10-0000-11ee-9d23-000000000111"),
+		uuid.FromStringOrNil("5b0f1a10-0000-11ee-9d23-000000000112"),
+		uuid.FromStringOrNil("5b0f1a10-0000-11ee-9d23-000000000113"),
+	}
+
+	tests := []struct {
+		name string
+
+		createErrs []error
+
+		expectMessages []string
+	}{
+		{
+			name:           "all items are created in order",
+			createErrs:     []error{nil, nil, nil},
+			expectMessages: []string{"stored-0", "stored-1", "stored-2"},
+		},
+		{
+			name:           "an item that could not be created is skipped",
+			createErrs:     []error{nil, fmt.Errorf("insert failed"), nil},
+			expectMessages: []string{"stored-0", "stored-2"},
+		},
+		{
+			name:           "no item is returned when every creation fails",
+			createErrs:     []error{fmt.Errorf("insert failed"), fmt.Errorf("insert failed"), fmt.Errorf("insert failed")},
+			expectMessages: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &transcriptHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			items := []*transcript.Transcript{}
+			for i := range tt.createErrs {
+				items = append(items, &transcript.Transcript{
+					Direction: transcript.DirectionIn,
+					Message:   fmt.Sprintf("item-%d", i),
+					OffsetMs:  int64(i * 100),
+				})
+
+				mockUtil.EXPECT().UUIDCreate().Return(ids[i])
+				mockDB.EXPECT().TranscriptCreate(ctx, gomock.Any()).Return(tt.createErrs[i])
+				if tt.createErrs[i] != nil {
+					continue
+				}
+
+				stored := &transcript.Transcript{
+					Message: fmt.Sprintf("stored-%d", i),
+				}
+				stored.ID = ids[i]
+				stored.CustomerID = customerID
+				mockDB.EXPECT().TranscriptGet(ctx, ids[i]).Return(stored, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, customerID, transcript.EventTypeTranscriptCreated, stored)
+			}
+
+			res := h.createTranscripts(ctx, customerID, transcribeID, items)
+			if res == nil {
+				t.Fatalf("Wrong match. expect: non-nil slice, got: nil")
+			}
+			if len(res) != len(tt.expectMessages) {
+				t.Fatalf("Wrong match. expect: %d, got: %d", len(tt.expectMessages), len(res))
+			}
+			for i, msg := range tt.expectMessages {
+				if res[i] == nil || res[i].Message != msg {
+					t.Errorf("Wrong match. index: %d, expect: %s, got: %v", i, msg, res[i])
+				}
 			}
 		})
 	}

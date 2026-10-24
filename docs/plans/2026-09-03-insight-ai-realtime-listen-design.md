@@ -1448,10 +1448,9 @@ func (h *subscribeHandler) processEventTMTranscriptCreated(ctx context.Context, 
     var evt tmtranscript.Transcript
     if err := json.Unmarshal([]byte(m.Data), &evt); err != nil { ... }
 
-    // H3: transcripthandler.dbDelete publishes EventTypeTranscriptCreated on
-    // DELETE too (bin-transcribe-manager/pkg/transcripthandler/db.go:33 — a
-    // known bug, documented in models/transcribe/routingkey_golden_test.go:
-    // 182-184). Without this guard a deleted line replays into the LLM as
+    // H3: a transcript event can carry a deleted transcript (TMDelete set),
+    // for example from a publisher on an older version during a rolling
+    // deployment. Without this guard a deleted line replays into the LLM as
     // freshly-spoken content.
     if evt.TMDelete != nil || strings.TrimSpace(evt.Message) == "" {
         return nil
@@ -3633,7 +3632,7 @@ a stale "item 7" reference).
 | B7 | Trigger never fires on the Case-resume path (`start.go:512-513` returns with no status transition) | Hook moved to `Start`'s dispatch branch, covering all three success returns; a named regression test per return | §5.1 |
 | H1 | `notify_agent` breaks the documented read-only invariant and its guarding test; `tool_names=["all"]` auto-grants | Invariant explicitly relaxed with a named exception; comment, test (`knownSanctionedWrite`), and the 2026-07-30 design doc all updated; auto-grant blast radius stated and bounded | §5.5.2 |
 | H2 | "Origin comes free from the tool-call record" is false; `RoleNotification` is the existing precedent | Rev-1 premise confirmed wrong and dropped. `role=notification` **evaluated and rejected** (it is skipped in LLM context, so the AI would forget its own notification). Decision: `role=assistant` + first-class `Message.Origin`. Ordering constraint discovered and handled | §5.6.1, §5.6.2, §5.6.3 |
-| H3 | `transcript.*.created` also carries DELETE events | `TMDelete != nil` guard at intake, with the upstream bug cited and left for its own ticket | §5.3.2, §11 |
+| H3 | A transcript event can carry a deleted transcript | `TMDelete != nil` guard at intake | §5.3.2, §11 |
 | H4 | Event-intake volume unbounded and unaccounted for | Per-event work reduced to one Redis `GET` (no DB, no RPC); volume explicitly sized; dynamic per-transcribe binding documented as a pre-analysed escape hatch with its leak caveat | §5.3.2, §3 |
 | M1 | `AIcallSet` secondary keys are never invalidated; a listen cache index would go stale and collide on nil-UUID | No cache index. The resolver key is explicitly written/deleted by the listen lifecycle and is deliberately outside `AIcallSet`'s snapshot scheme; hangup lookup uses a filtered `AIcallList` on an indexed column | §5.3.2, §5.7.1 |
 | M2 | Schema/plumbing scope understated; `transcribe_id` was deliberately dropped; `Metadata` already exists for flags | Reduced to one column + two `Metadata` keys, with a full plumbing checklist and an explicit note that `transcribe_id` is **not** being re-added | §5.8 |
@@ -4090,12 +4089,9 @@ reopen the very race it was built to close.
    `IDAIManagerListen`) needs a real `bin-customer-manager` row or is
    usable as a bare constant.** Small, but needs an answer before
    `pkg/aicallhandler` can reference it.
-6. **Follow-up ticket (separate):** `transcripthandler.dbDelete` publishes
-   `EventTypeTranscriptCreated` on delete
-   (`bin-transcribe-manager/pkg/transcripthandler/db.go:33`). This design
-   defends against it rather than fixing it, because changing the emitted
-   event type is a routing-key-visible change affecting every current
-   subscriber. It should be fixed on its own ticket.
+6. **Intake guard:** the intake drops transcripts with `TMDelete != nil` or an empty
+   message, so a deleted line never reaches the LLM, including events from a
+   publisher on an older version during a rolling deployment.
 7. **Follow-up ticket (separate):** decouple `Send`'s cooldown from
    `tm_update` onto a dedicated `tm_last_send`. Pre-existing fragility
    (`send.go:27-32` + `dbhandler/aicall.go:240`) that this design bounds

@@ -57,7 +57,7 @@ func Test_dbDelete(t *testing.T) {
 
 			mockDB.EXPECT().TranscriptDelete(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().TranscriptGet(ctx, tt.id).Return(tt.responseTranscript, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, transcript.EventTypeTranscriptCreated, tt.responseTranscript)
+			mockNotify.EXPECT().PublishEvent(ctx, transcript.EventTypeTranscriptDeleted, tt.responseTranscript)
 
 			res, err := h.dbDelete(ctx, tt.id)
 			if err != nil {
