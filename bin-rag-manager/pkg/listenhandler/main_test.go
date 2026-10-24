@@ -137,7 +137,7 @@ func TestNewListenHandler(t *testing.T) {
 
 func TestListenHandler_Run(t *testing.T) {
 	queueCreated := false
-	consumeCalled := false
+	consumeCh := make(chan struct{})
 
 	sockHandler := &mockSockHandler{
 		queueCreateFunc: func(name string, queueType string) error {
@@ -148,7 +148,7 @@ func TestListenHandler_Run(t *testing.T) {
 			return nil
 		},
 		consumeRPCFunc: func(ctx context.Context, queueName, consumerName string, skipVerify, enableDelay, enableDelayHourly bool, delayExpiredMin int, handler sock.CbMsgRPC) error {
-			consumeCalled = true
+			close(consumeCh)
 			return nil
 		},
 	}
@@ -164,10 +164,9 @@ func TestListenHandler_Run(t *testing.T) {
 		t.Error("expected queue to be created")
 	}
 
-	// Give goroutine time to start
-	time.Sleep(50 * time.Millisecond)
-
-	if !consumeCalled {
+	select {
+	case <-consumeCh:
+	case <-time.After(2 * time.Second):
 		t.Error("expected ConsumeRPC to be called")
 	}
 }

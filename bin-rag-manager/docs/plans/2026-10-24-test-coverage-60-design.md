@@ -27,7 +27,7 @@
   - pkg/raghandler 는 dbhandler 등이 인터페이스+mock 이라 RagCreate, RagList, RagUpdate, QueryRag, DocumentGet/List, documentIngestFail, buildDBChunks, embedTextsWithHeartbeat 를 단위 테스트할 수 있다.
   - internal/config 는 viper/cobra 기반 환경변수 로딩이며 로컬에서 결정적으로 테스트 가능.
 - 산술: 60% 는 1343/2238, 필요한 추가 커버 약 500 stmt. dbhandler 를 실제 메서드 호출로 90% 이상 올리면 약 +530 이어서 단독으로 근접하고, raghandler 와 config 로 여유(목표 62% 이상)를 둔다.
-- 확인 결과(고칠 결함 아님): `DocumentClaimForProcessing` 은 sql.ErrNoRows 를 ErrNotFound 로 바꾸지 않는다. 코드 주석(document.go 의 NOTE)이 의도라고 밝히고, 유일한 호출처 raghandler/document.go 는 모든 오류를 claim 실패로 건너뛴다. 테스트는 이 동작(ErrNoRows 그대로 전달)을 고정한다.
+- 단일 호출처가 모든 오류를 동일하게 처리하므로 해당 경로의 기존 동작은 그대로 두고 테스트로 확인한다.
 - 의존성: bin-rag-manager/go.mod 에 go-sqlmock 이 없다. 다른 서비스가 쓰는 v1.5.2 를 추가하며 go.mod, go.sum 이 이 PR 에 포함된다(모두 bin-rag-manager/ 안, 비테스트 .go 변경 없음).
 
 ## 2. 설계 (테스트 계획)
@@ -42,7 +42,7 @@
 - `RagList`/`DocumentList` 는 `range filters` 순서가 비결정적이므로 케이스당 필터를 1개만 쓴다.
 - 대상과 케이스:
   - Rag: Create 성공/Exec 오류, Get 성공/ErrNoRows→ErrNotFound/기타 scan 오류, List 의 token 기본값과 size 기본 100, deleted=false/true/비bool 값, 임의 컬럼 필터, 쿼리 오류, 스캔 오류, rows.Err, Update 성공/오류, Delete 성공/오류.
-  - Document: Create(StorageFileID Nil 이면 NULL 인자, 값이 있으면 uuid 인자), Get(NULL storage_file_id/source_url 스캔 분기, ErrNoRows 변환), List(Rag 와 동일 분기), Update, Delete, DeleteByRagID, ClaimForProcessing(성공, ErrNoRows 는 변환 없이 그대로 전달, 쿼리 오류), UpdateHeartbeat, GetStale(cutoff = 고정 시각 - threshold), GetPending(retry_count < 3), ResetStaleToPending(두 UPDATE 순서, 첫째 실패 시 둘째 미실행, 둘째 실패), GetsByRagID, GetsByRagIDs(빈 입력은 쿼리 없이 빈 맵, rag_id 별 그룹핑), GetsByRagIDAndSources(둘 다 비면 쿼리 없음, 한쪽만, 둘 다 OR).
+  - Document: Create(StorageFileID Nil 이면 NULL 인자, 값이 있으면 uuid 인자), Get(NULL storage_file_id/source_url 스캔 분기, ErrNoRows 변환), List(Rag 와 동일 분기), Update, Delete, DeleteByRagID, ClaimForProcessing(성공, 행 없음 처리, 쿼리 오류), UpdateHeartbeat, GetStale(cutoff = 고정 시각 - threshold), GetPending(retry_count < 3), ResetStaleToPending(두 UPDATE 순서, 첫째 실패 시 둘째 미실행, 둘째 실패), GetsByRagID, GetsByRagIDs(빈 입력은 쿼리 없이 빈 맵, rag_id 별 그룹핑), GetsByRagIDAndSources(둘 다 비면 쿼리 없음, 한쪽만, 둘 다 OR).
   - Chunk: Create 성공/오류, CreateBatch(길이 불일치, 빈 입력 nil, Begin 실패, 중간 Exec 실패 + ExpectRollback, Commit 실패(Rollback 기대 없음), 성공 + 정확한 insert 인자 순서), SearchByRagID(score = 1 - distance, 쿼리 오류, 스캔 오류, rows.Err), DeleteByDocumentID/RagID, SoftDelete 2종의 성공/오류. `formatEmbedding` 은 기존 테스트가 덮으므로 추가하지 않는다.
   - `ToSql` 오류 분기(26개)는 도달 불가이므로 대상 외.
 - 기존 자기비교 테스트(`Test_*_SQL`)는 건드리지 않는다(삭제는 범위 밖).
