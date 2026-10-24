@@ -13,14 +13,14 @@
 | Target | Uncovered | Approach |
 |---|---|---|
 | pkg/cachehandler | 71 | miniredis v2.36.1 with `miniredis.RunT(t)` and go-redis/v8, same shape as bin-customer-manager's cachehandler test. Get hit, miss, corrupt JSON; Set failure after server close; `Connect` ok and fail (closed server address); `NewHandler` |
-| pkg/listenhandler/v1_hooks_paddle.go | 44 | Cases per handler: malformed envelope, malformed data, unknown plan_type (400), amount parse failure (400), each accounthandler error mapped to 500, refund lookup failure (500), refund with several adjustments (sum) and negative amounts (absolute value), exact gomock arguments |
-| pkg/listenhandler/v1_accounts.go | 49 | Per handler: URI too short (400), malformed body, accounthandler error mapped by `errorResponse`. Expected value per case is taken from the source of that handler |
+| pkg/listenhandler/v1_hooks_paddle.go | 44 | Cases per handler: malformed envelope, malformed data, invalid customer_id, unknown plan_type, amount parse failure (400), each accounthandler error mapped to 500, refund lookup failure (500), refund with several adjustments (sum) and negative amounts (absolute value), exact gomock arguments |
+| pkg/listenhandler/v1_accounts.go | 49 | Per handler: URI too short (400), malformed body, accounthandler error mapped by `errorResponse`. Expected value per case follows the source of that handler |
 | models/billing/webhook.go | 9 | Every field set to a distinct value; expected `WebhookMessage` written as an independent literal; `CreateWebhookEvent` decoded into a map and keys and values asserted |
 | pkg/accounthandler/paddle.go | up to 33 | Per Paddle handler: idempotency check error other than not found, already processed event skipped, account lookup failure, db error; errors checked with `errors.Is` |
 
 The table sums to about 206 statements at most; the realistic gain is about 150 to 175 (about 73 to 74%). Items are added in the order above until the hand-written total is at least 71%. Branches that cannot be reached from a test (for example the second of two consecutive cache writes failing after the first succeeded) are left uncovered.
 
-Per-handler expectations are fixed from the source of each handler, not assumed from a common rule. Branches that only guard `json.Marshal` failure of a plain struct are unreachable from a test and stay uncovered, so the Uncovered column above is an upper bound.
+The expected value of each case follows the source of its handler. Branches that only guard `json.Marshal` failure of a plain struct are unreachable from a test and stay uncovered, so the Uncovered column above is an upper bound.
 
 ## 3. Rules for the tests
 
