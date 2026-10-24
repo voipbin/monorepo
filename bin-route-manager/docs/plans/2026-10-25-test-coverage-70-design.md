@@ -2,11 +2,11 @@
 
 ## 1. 이슈 분석 (티켓 검토)
 
-판정: 유효. 기준선 `origin/main 99b59c386` 을 `GOFLAGS=-mod=mod go test -count=1 -coverprofile` 로 직접 재측정했다. 수기 코드(gens/, mock_*.go, `Code generated ... DO NOT EDIT` 제외, 같은 블록 중복은 최대 count) 합계는 2502 statement 중 1632개 커버, 65.2% 이다. 원본(생성 코드와 mock 포함)은 58.0% 이다. 70% 까지 120개(1752), 71% 까지 145개(1777)가 더 필요하다. 카드 수치와 일치한다.
+판정: 유효. 기준선 `origin/main 99b59c386` 을 `GOFLAGS=-mod=mod go test -count=1 -coverprofile` 로 직접 재측정했다. 수기 코드(gens/, mock_*.go, `Code generated ... DO NOT EDIT` 제외, 같은 블록 중복은 최대 count) 합계는 2502 statement 중 1632개 커버, 65.2% 이다. 원본(생성 코드와 mock 포함)은 58.0% 이다. 70% 까지 120개(1752), 71% 까지 145개(1777)가 더 필요하다.
 
-- 관련 PR: VOIP-1647(#1508, 60% 상향)이 `gh pr list --state all --search "route-manager coverage"` 결과 MERGED 이며 선행이다. 같은 검색에서 열린 중복 PR 은 없다. 제품 코드 변경은 하지 않는다.
+- 관련 PR: VOIP-1647(#1508)이 `gh pr list --state all --search "route-manager coverage"` 결과 MERGED 이며 선행이다. 같은 검색에서 열린 중복 PR 은 없다. 제품 코드 변경은 하지 않는다.
 - 테스트 불가 구조: cmd/route-control(315)은 DB, Redis, RabbitMQ 연결이 필요해 제외한다. cmd/route-manager 는 대부분 데몬 기동 코드라 제외하되(커버 수가 실행마다 16~19개로 달라질 수 있다), 일부 함수는 mock 으로 가능하면 여유분으로만 쓴다. 분모 2502 에는 cmd/ 505 statement(미커버 약 489)가 그대로 남는다. cmd/ 밖 미커버는 381개이며, 이 중 +120(70%), +145(71%), +150(목표)을 회수해야 하므로 회수율은 각각 31%, 38%, 39% 이다. 산술적으로 달성 가능하다. 여유를 위해 목표는 약 +150 statement 로 잡는다.
-- 수기 합계는 cp.out 후처리 스크립트(제외 필터 적용)로 산출한 값이며 go test 가 출력하는 값과 다르다. 이 방법은 PR 본문에 적는다. cachehandler(miniredis)와 config(viper 전역 상태)는 위험이 있어 먼저 시도하되, , telnyxclient, dbhandler, healthcheckhandler 오류 경로만으로 70% 는 가능하다.
+- 수기 합계는 cp.out 후처리 스크립트(제외 필터 적용)로 산출한 값이며 go test 가 출력하는 값과 다르다. 이 방법은 PR 본문에 적는다. cachehandler(미커버 59, miniredis)와 config(미커버 60, viper 전역 상태)는 합 119개로 가장 큰 단일 몫이며 먼저 시도한다. 이 둘을 제외하면 cmd/ 밖 나머지 미커버는 262개(listenhandler 106, dbhandler 68, telnyxclient 31, healthcheckhandler 23, providerhandler 19, providercallhandler 7, routehandler 5, models 3)이고 +120~150 을 회수하려면 46~57% 가 필요해 현실적이지 않다. 따라서 둘이 불가능하면 그 사유와 함께 default 에 block 한다.
 
 패키지별 기준선(수기 기준, 커버/전체): cmd/route-control 0/315, cmd/route-manager 16/190, internal/config 0/60, models/* 9/10 각각, pkg/cachehandler 0/59, pkg/dbhandler 372/440, pkg/healthcheckhandler 70/93, pkg/listenhandler 468/574, pkg/providercallhandler 94/101, pkg/providerhandler 238/257, pkg/routehandler 190/195, pkg/telnyxclient 157/188.
 
@@ -36,3 +36,5 @@ miniredis 는 테스트에서만 import 하며 main 의 다른 서비스(v2.36.1
 - 변경 파일은 bin-route-manager/ 안(`*_test.go`, go.mod, go.sum, 본 문서)뿐이다.
 
 측정 재현: cp.out 의 블록을 (파일, 범위) 키로 합쳐 count 최대값을 취하고, 경로에 `/gens/` 가 있거나 파일명이 `mock_` 로 시작하거나 `package` 앞 헤더에 `Code generated` 와 `DO NOT EDIT` 가 있는 파일을 제외한 뒤 커버된 statement 수 / 전체 statement 수를 계산한다. cmd/route-manager 변동(±3개, 약 0.1%p) 때문에 최종 목표는 71% 이상으로 둔다.
+
+달성 기준은 위 후처리 스크립트 방식의 수기 합계이며 `go test` 가 출력하는 패키지별 값이 아니다. PR 본문에 두 값과 스크립트 방식을 함께 적는다.
