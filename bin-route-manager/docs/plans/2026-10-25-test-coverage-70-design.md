@@ -27,23 +27,24 @@ VOIP-1416 은 카드 본문에 따르면 80% 미만 패키지의 일반 상향 �
 
 miniredis 는 테스트에서만 import 하며 main 의 다른 서비스(v2.36.1 은 11개 서비스가 사용하고 v2.38.0 은 1개이며, 다수가 쓰는 v2.36.1 을 택한다)와 같은 버전을 쓴다. go.mod 와 go.sum 변경 외에 비테스트 .go 변경은 없다.
 
-상세 케이스(단언은 모두 하드코딩한 기대값):
+상세 케이스(단언은 모두 하드코딩한 기대값, 도달 불가 분기는 계산에서 제외):
 
-- config: (1) 환경변수 9개를 합성값으로 설정하고 `Bootstrap` 후 `LoadGlobalConfig` 가 `Get()` 에 그 값을 채운다(포트 `:2112` 기본값 포함 flag 기본값은 환경변수를 지운 별도 `cobra.Command` 에서 확인). `sync.Once` 때문에 LoadGlobalConfig 는 프로세스당 1회이므로 한 테스트 함수에서만 호출하고 viper.Reset 으로 격리한다. 값 변경을 못 잡는 자기 비교를 피하려고 기대값은 리터럴이다.
-- cachehandler: ProviderSet 후 ProviderGet 이 필드 전체를 되돌리고 miniredis 에 `provider:<id>` 키와 24시간 TTL 이 생김, RouteSet/RouteGet/RouteDelete 후 키 소멸, 없는 키 Get 은 redis.Nil, 손상된 JSON 이 들어 있으면 오류, 서버 종료 후 Set/Get/Delete/Connect 는 오류, 기동 중 Connect 는 성공, NewHandler 가 주소, 비밀번호, DB 를 보관.
-- listenhandler: v1_routes, v1_providers, v1_providercalls, v1_dialroute, v1_providers_setup 각 핸들러에 대해 (a) 본문이 깨진 JSON(오류 반환, 하위 핸들러 미호출), (b) 경로 ID 가 UUID 가 아님(400 응답, 하위 핸들러 미호출), (c) 하위 핸들러 오류(오류 반환 또는 errorResponse 매핑 상태 코드), (d) 잘못된 URI 파싱 오류가 해당하면. processRequest 는 미지원 경로/메서드 404 분기. NewListenHandler 는 sockHandler 주입만 확인.
-- telnyxclient: httptest 로 각 호출의 비정상 상태 코드, 잘못된 JSON 본문, 연결 끊김(서버 종료 후 호출)에서 오류 반환과 오류 메시지의 일부를 단언.
-- healthcheckhandler: Run 은 짧은 interval 과 mock DB 로 runOnce 가 호출됨을 확인하고 ctx 취소로 반환됨을 단언(타임아웃 가드 포함).
+- config (예상 +55, `BindPFlag`/`BindEnv` 오류 반환 2블록은 도달 불가라 제외): 각 테스트 시작에 `viper.Reset()` 과 `once = sync.Once{}`, `globalConfig = Config{}` 를 되돌려 `-count=N` 에서도 독립으로 만든다. `t.Setenv` 를 쓰므로 `t.Parallel` 은 쓰지 않는다. 환경변수 합성값은 호스트를 `example.invalid` 또는 `203.0.113.x` 로 하고 DSN 과 AMQP 주소에 자격증명을 넣지 않으며(예 `tcp(db.example.invalid:3306)/testdb`, `amqp://mq.example.invalid:5672`), 비밀번호는 주소와 분리된 명백한 가짜 값을 별도 문장에서 대입한다. flag 기본값 단언은 자격증명이 없는 항목(`/metrics`, `:2112`, redis db `1`, interval `30s`)으로 한정하고 `database_dsn` 과 `rabbitmq_address` 기본값 문자열은 테스트에 옮기지 않는다. Load 전 zero 값 단언처럼 실행 순서에 의존하는 단언은 쓰지 않는다.
+- cachehandler (예상 +55): `redis.NewClient` 를 miniredis 주소에 붙인 핸들러로 ProviderSet 후 ProviderGet 이 필드 전체를 되돌리고 `mr.Keys` 에 `provider:<id>`, `mr.TTL` 이 24시간임을 단언, RouteSet/RouteGet/RouteDelete 후 키 소멸, 없는 키 Get 은 redis.Nil, 손상된 JSON 이 들어 있으면 오류, miniredis `RequireAuth` 로 `NewHandler` 의 비밀번호가 실제로 쓰이는지(맞는 값이면 Connect 성공, 틀린 값이면 실패), 서버를 닫은 뒤 Set/Get/Delete/Connect 오류(`context.WithTimeout` 으로 상한). 비밀번호는 주소와 분리된 가짜 값. NewHandler 의 필드 보관 자체를 비교하는 자기 비교 단언은 쓰지 않는다.
+- listenhandler (예상 +80, `json.Marshal` 실패 블록은 도달 불가라 제외): 핸들러별 실제 미커버 블록과 1:1 로 둔다.
+  - v1_routes(36), v1_providers(28), v1_providercalls(8): (a) 깨진 JSON 본문은 오류 반환이고 하위 핸들러 미호출, (b) 경로 ID 가 UUID 가 아니면 400 응답이고 하위 핸들러 미호출, (c) 하위 핸들러 오류는 errorResponse 매핑 상태 코드 또는 오류 반환(핸들러별 기존 코드를 따름), (d) 잘못된 URI(`%zz`)로 url.Parse 오류.
+  - v1_dialroute(6)과 v1_providers_setup(4)에는 경로 UUID 가 없으므로 (b)는 제외하고, 깨진 JSON, 하위 오류, setup 의 `ErrInvalidKey`(422)와 일반 오류(400)를 단언.
+  - main.go(24): processRequest 의 `VoipbinError`/`ErrNotFound` 오류 매핑과 미지원 경로/메서드 404, errorResponse 의 `ToResponse` 실패 분기, `Run` 에서 sockHandler mock 의 `QueueCreate` 오류 반환, `NewListenHandler` 생성 후 인터페이스 동작.
+- telnyxclient (예상 +25, `json.Marshal` 실패 3블록은 도달 불가): `NewTelnyxClient` 생성, httptest 로 각 호출의 비정상 상태 코드, 잘못된 JSON 본문, 서버 종료 후 연결 오류, 제어문자가 든 baseURL 로 `NewRequestWithContext` 오류에서 오류 반환과 메시지 일부를 단언. password 인자는 가짜 값을 별도 변수로.
+- healthcheckhandler (예상 +15): `Run` 은 기존 `newAlwaysSucceedsLocker`/`Mocklocker`, requesthandler mock, dbhandler mock 을 쓰고 sleep 대신 mock 의 `DoAndReturn` 에서 채널로 tick 호출을 동기화하며 `select` 타임아웃 가드를 둔다. ctx 취소로 반환됨, `ProviderList` 오류 후에도 루프가 계속됨, `UnlockContext` 오류, `last.TMCreate == nil` 종료 분기.
+- 추가 대상(트리거): 위를 마친 뒤 수기 합계가 71% 미만이면 미커버가 큰 순서로 dbhandler(오류 경로), providerhandler/setup.go, providercallhandler 를 추가한다.
 
 ## 3. verify 항목
 
-- 수기 합계 71% 이상, `go test ./...` 와 golangci-lint 통과, `bash scripts/check-test-conventions.sh` 통과.
-- 모든 테스트는 기대값을 하드코딩한 상태를 비교하고 mock 의 호출 인자(gomock 엄격 매칭)로 검증한다. 호출만 하는 테스트와 자기 비교 테스트는 쓰지 않는다.
-- 오류 경로 테스트는 오류 응답의 상태 코드와 하위 핸들러 미호출(EXPECT 없음)을 단언한다.
-- 변이 검사: listenhandler 의 UUID 검증, cachehandler 의 키 접두어, config 의 flag 기본값을 각각 바꿔 새 테스트가 실패함을 확인한다.
+- 수기 합계 71% 이상(`-count=3` 안팎으로 재측정해 하한값을 보고).
+- 저장소 루트 CLAUDE.md 의 5단계(`go mod tidy`, `go mod vendor`, `go generate ./...`, `go test ./...`, `golangci-lint run -v --timeout 5m`)를 bin-route-manager 에서 모두 실행하고, tidy 후 go.mod/go.sum 에 miniredis 외 추가 diff 가 없으며 generate 후 mock diff 가 없음을 확인한다.
+- 저장소 루트에서 `git fetch origin main` 후 `bash scripts/check-test-conventions.sh` 통과(추가된 줄만 검사: `Test_` 접두어, `reflect.DeepEqual` 과 `t.Errorf`, gomock 컨트롤러 변수명 `mc`). 신규 테스트가 `docs/conventions/testing.md` 에 맞는지도 확인한다.
+- 단언은 하드코딩한 기대값과 gomock 엄격 매칭으로 하고 호출만 하는 테스트와 자기 비교 테스트는 쓰지 않는다. 오류 경로 테스트는 상태 코드와 하위 핸들러 미호출(EXPECT 없음)을 단언한다.
+- 변이 검사: 격리된 복사본에서만 적용하고(원 worktree 에서는 `git diff --stat` 로 `_test.go`, go.mod, go.sum, 본 문서 외 변경이 없음을 최종 확인) 기존 테스트는 통과하고 새 테스트만 실패해야 인정한다. 대상은 listenhandler UUID 검증, cachehandler 키 접두어, cachehandler TTL 24h, RouteDelete, processRequest default 404, config 의 flag 기본값(`:2112`), healthcheck `Run` 의 ctx.Done 분기이다. PR 본문에는 요약만 쓰고 출력은 붙이지 않는다.
 - 변경 파일은 bin-route-manager/ 안(`*_test.go`, go.mod, go.sum, 본 문서)뿐이다.
-
-측정 재현: cp.out 의 블록을 (파일, 범위) 키로 합쳐 count 최대값을 취하고, 경로에 `/gens/` 가 있거나 파일명이 `mock_` 로 시작하거나 `package` 앞 헤더에 `Code generated` 와 `DO NOT EDIT` 가 있는 파일을 제외한 뒤 커버된 statement 수 / 전체 statement 수를 계산한다. cmd/route-manager 변동(16~19개, 필요량은 70% 에 117~120, 71% 에 142~145) 때문에 최종 목표는 71% 이상으로 둔다.
-
-달성 기준은 위 후처리 스크립트 방식의 수기 합계이며 `go test` 가 출력하는 패키지별 값이 아니다. PR 본문에 두 값과 스크립트 방식을 함께 적는다.
-`go test` 패키지별 출력(예: dbhandler 68.9%)은 생성 코드를 포함하므로 수기 값(372/440, 84.5%)과 다르다. PR 본문에 둘을 함께 적는다.
+- 공개 저장소 위생: 테스트 값은 합성값이며 자격증명과 주소를 같은 리터럴에 두지 않고, GitGuardian 체크가 녹색이어야 한다.
