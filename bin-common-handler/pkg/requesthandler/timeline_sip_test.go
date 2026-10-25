@@ -42,6 +42,19 @@ func Test_TimelineV1SIPWrappers(t *testing.T) {
 			expectRes: analysisWant,
 		},
 		{
+			name:           "analysis_get_without_stats",
+			queue:          timelineQueue,
+			expectURI:      "/v1/sip/analysis",
+			expectMethod:   sock.RequestMethodPost,
+			expectDataType: ContentTypeJSON,
+			expectData:     requestBody,
+			responseData:   `{"sip_messages":[],"rtcp_stats":null}`,
+			call: func(h *requestHandler) (any, error) {
+				return h.TimelineV1SIPAnalysisGet(context.Background(), callID, "sip-call-a", "2026-03-04T05:00:00Z", "2026-03-04T06:00:00Z")
+			},
+			expectRes: &tmsipmessage.SIPAnalysisResponse{SIPMessages: []*tmsipmessage.SIPMessage{}, RTCPStats: nil},
+		},
+		{
 			// the pcap payload is base64 of the four byte pcap magic number.
 			name:           "pcap_get",
 			queue:          timelineQueue,
