@@ -19,7 +19,7 @@
 
 범위는 테스트 파일 추가와 기존 `_test.go` 에 케이스 추가뿐입니다(제품 코드, go.mod, go.sum 무변경). 단언은 `reflect.DeepEqual` 과 `t.Errorf`, 신규 함수는 `Test_` 접두, gomock 컨트롤러 변수는 `mc`. 실제 네트워크 접속은 만들지 않습니다. 목표는 수기 합계 76% 이상(2075, 필요 증분 116)이고 최소 75.0% 입니다.
 
-### 2.1 cmd/conference-control (신규 `main_test.go`, 필수, 이것만으로 목표 충족: 리뷰어 프로토타입 기준 패키지 약 64% 이며 합계 약 83%)
+### 2.1 cmd/conference-control (신규 `main_test.go`, 필수, 이것만으로 목표 충족: 리뷰어 프로토타입 기준 패키지 약 64% 이며 합계 약 84%)
 
 - `TestMain`: `viper.Set("database_dsn", "not-a-valid-dsn")` 후 `config.LoadGlobalConfig()` 한 번. 이후 `os.Exit(m.Run())`.
 - 각 테스트는 쓰는 viper 키를 `old := viper.Get(k)` 로 저장하고 `t.Cleanup` 에서 `viper.Set(k, old)` 로 복원합니다(viper 에 `Unset` 이 없고, 이전 값이 nil 이면 키가 해제된 것으로 동작하며 빈 문자열로 복원하면 `IsSet` 이 참이 되므로 사용하지 않습니다). `viper.Reset` 은 DSN 도 지우므로 사용하지 않습니다.
@@ -34,7 +34,7 @@
 
 ### 2.2 pkg/dbhandler (선택 추가, 기존 `error_paths_test.go` 에 추가, 목표 +25)
 
-도달 가능한 분기만 다룹니다. conference 에만 해당: `Data` 필드의 맵 안에 chan 을 넣어 `PrepareFields` 실패(Create 는 `could not prepare fields`, Update 는 `prepare fields failed` 문자열 단언. `FieldData` 값 자체를 chan 으로 주면 다른 위치에서 실패하므로 맵 안에 넣음). conferencecall 은 JSON 필드가 없어 이 분기가 도달 불가입니다. conference 와 conferencecall 공통: `NotEq{Value: <Value() 가 오류를 반환하는 값>}` 로 List 의 `could not build query` 실패, sqlmock 으로 캐시 적중 반환, `SetToCache` 실패, `ScanRow` 실패, NULL 컬럼의 빈 slice/map 초기화, `rows.Err()`. 오류 단언은 `err != nil` 이 아니라 오류 문자열 포함 여부로 합니다. 인자가 고정된 `ToSql` 실패(약 13)는 도달 불가라 제외합니다.
+도달 가능한 분기만 다룹니다. conference 에만 해당: `Data` 필드의 맵 안에 chan 을 넣어 `PrepareFields` 실패(Create 는 `could not prepare fields`, Update 는 `prepare fields failed` 문자열 단언. `FieldData` 값 자체를 chan 으로 주면 다른 위치에서 실패하므로 맵 안에 넣음). conferencecall 은 Create 에 JSON 필드가 없어 이 분기가 도달 불가이고, Update 는 `FieldStatus: []any{make(chan int)}` 처럼 맵 값 안에 chan 을 넣으면 `prepare fields failed` 에 도달합니다(Delete 는 인자 고정이라 불가). conference 와 conferencecall 공통: `NotEq{Value: <Value() 가 오류를 반환하는 값>}` 로 List 의 `could not build query` 실패, sqlmock 으로 캐시 적중 반환, `SetToCache` 실패, `ScanRow` 실패, NULL 컬럼의 빈 slice/map 초기화, `rows.Err()`. 오류 단언은 `err != nil` 이 아니라 오류 문자열 포함 여부로 합니다. 인자가 고정된 `ToSql` 실패(약 13)는 도달 불가라 제외합니다.
 
 ### 2.3 pkg/listenhandler (선택 추가, 기존 `error_paths_test.go` 에 추가, 목표 +20)
 
@@ -47,6 +47,7 @@
 ### 2.5 verify 항목과 변이 검사
 
 - 측정은 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=<f> ./...` 후 `hw.py <f>` (카드의 측정 방법과 같은 기준)로 하며 76% 이상(최소 75.0%), 전 패키지 `go test -count=1 -race ./...` 통과, `golangci-lint run -v --timeout 5m` 통과, `scripts/check-test-conventions.sh` 통과, go.mod/go.sum 무변경, `git diff --stat origin/main...HEAD` 가 bin-conference-manager/ 안에만 있음.
-- 변이 표본: `resolveUUID` 의 nil 비교 제거, `runCreate` 의 type 검증 제거, `printJSON` 오류 처리 제거, (선택 추가를 구현한 경우) dbhandler `PrepareFields` 오류 반환 제거, listenhandler Marshal 오류 분기 제거를 각각 scratch 복사본에서 적용했을 때 새 테스트가 실패해야 합니다. 오류 문자열 단언이 있어야 변이가 생존하지 않습니다.
+- 변이 표본(컴파일되는 변이만 인정하며 블록 삭제로 `err` 미사용 컴파일 실패가 나는 경우는 `if false {`, `&& false` 형태로 바꿉니다): `resolveUUID` 의 `val == ""` 검사와 `res == uuid.Nil` 검사 각각 무력화, `runCreate` 의 type 검증 무력화, `printJSON` 오류 분기 무력화, type flag 기본값 변경. `PersistentPreRunE` 단언은 약해 변이 표본에 넣지 않습니다. 선택 추가는 다음을 포함합니다: (선택 추가를 구현한 경우) dbhandler `PrepareFields` 오류 반환 제거, listenhandler Marshal 오류 분기 제거를 각각 scratch 복사본에서 적용했을 때 새 테스트가 실패해야 합니다. 오류 문자열 단언이 있어야 변이가 생존하지 않습니다.
+- 테스트 값은 `docs/conventions/testing.md` 의 규칙대로 하드코딩된 UUID 문자열을 쓰고 `uuid.Nil`/`uuid.NewV4()` 로 만든 값을 기대값으로 쓰지 않습니다. `scripts/check-test-conventions.sh` 는 `git fetch origin main` 후 실행합니다.
 - 금지: 빈 호출 테스트, 자기비교식 테스트, 비밀값 리터럴과 `user:pass@host` 형태 DSN(잘못된 DSN 은 `not-a-valid-dsn` 만 사용).
 - 결함 발견 시 고치지 않고 카드 코멘트와 완료 요약에만 적습니다.
