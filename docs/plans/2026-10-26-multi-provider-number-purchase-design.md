@@ -5,7 +5,7 @@
 origin/main 6bbe6b7fd 기준으로 직접 읽어 확인했습니다.
 
 - 유효(반증 못함): `numberhandler.Create`(`pkg/numberhandler/number.go`)는 구입을 `h.numberHandlerTelnyx.NumberPurchase`로 고정하고, 롤백 release와 태그 갱신도 Telnyx 고정입니다. 반환(`Delete`)만 번호의 `provider_name`으로 분기합니다(telnyx, twilio). provider 설정 테이블 없음(`migrations/`는 `number_numbers` 베이스라인 하나). 열린 PR과 중복 티켓 없음(`gh pr list --state all --search "number provider"`에 무관한 PR만).
-- 확인하지 못했던 것의 결과: Twilio 구입은 구현되어 있지 않습니다(`numberhandlertwilio.CreateNumber`와 `ReleaseNumber`는 "unimplemented" 에러 반환, 검색 `GetAvailableNumbers`만 구현). 따라서 이번 카드의 Twilio는 인터페이스 적합화까지이며 `Purchasable=false`로 구입 후보에서 제외됩니다(기본 비활성). api-manager 어드민 모델은 `hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin)`과 `a.IsDirect()` 거부 패턴입니다(`pkg/servicehandler/provider.go`). 최상위 `/providers`는 이미 route-manager의 SIP 캐리어 리소스이므로 이름 충돌을 피해 `/number_providers`를 씁니다.
+- 확인하지 못했던 것의 결과: Twilio 구입은 구현되어 있지 않습니다(`numberhandlertwilio.CreateNumber`와 `ReleaseNumber`는 "unimplemented" 에러 반환, 검색 `GetAvailableNumbers`도 unimplemented: `numberhandlertwilio/available.go`, `Test_unimplemented`). 따라서 이번 카드의 Twilio는 인터페이스 적합화까지이며 `Purchasable=false`로 구입 후보에서 제외됩니다(기본 비활성). api-manager 어드민 모델은 `hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin)`과 `a.IsDirect()` 거부 패턴입니다(`pkg/servicehandler/provider.go`). 최상위 `/providers`는 이미 route-manager의 SIP 캐리어 리소스이므로 이름 충돌을 피해 `/number_providers`를 씁니다.
 - 틀린 주장: 없음. 단 "ai-manager와 bin-common-handler를 건드리지 않는다"는 암호화 공용화에 대한 지시로 해석합니다. api-manager가 number-manager를 호출하려면 `bin-common-handler/pkg/requesthandler`에 RPC 메서드 추가가 불가피합니다(기존 모든 리소스와 동일한 방식, 암호화 코드는 포함하지 않음).
 - 숨은 가정: (a) Telnyx 주문 성공 후 확인 조회가 실패해도 폴백하면 이중 구입이 됩니다. 5절에서 폴백 중단 조건으로 처리합니다. (b) 구입 후 DB 등록 실패 시 롤백 release는 구입한 provider로 해야 합니다.
 
@@ -31,9 +31,9 @@ type Credentials struct { Secret string; Config map[string]string } // String/Go
 type Factory func(c Credentials) (Provider, error)
 ```
 
-- 레지스트리는 `map[number.ProviderName]Descriptor{Factory, AllowedConfig []string, RequiredConfig []string, Purchasable bool, DefaultEnabled bool, DefaultPriority int, EnvCredentials func() Credentials}`. `Purchasable=false`(twilio)이면 구입 후보에서 항상 제외하고 검색과 반환 해석에는 쓰입니다. 코드에 등록된 provider만 DB 행이 의미를 가집니다(알 수 없는 provider_name은 API가 404).
+- 레지스트리는 `map[number.ProviderName]Descriptor{Factory, AllowedConfig []string, RequiredConfig []string, Purchasable bool, DefaultEnabled bool, DefaultPriority int, EnvCredentials func() Credentials}`. `Purchasable=false`(twilio)이면 구입 후보에서 항상 제외하고 반환 해석에는 쓰입니다(반환도 unimplemented 에러가 되며 기존과 동일). 코드에 등록된 provider만 DB 행이 의미를 가집니다(알 수 없는 provider_name은 API가 404).
 - telnyx: 비밀=token, config=`connection_id`,`profile_id`. 기존 `numberhandlertelnyx`를 Provider에 맞춰 생성자가 Credentials를 받도록 바꿉니다(외부 HTTP 코드는 그대로).
-- twilio: 비밀=token, config=`sid`. `Purchasable=false`. Purchase, Release, Tags는 기존처럼 unimplemented 에러를 반환, 검색만 동작.
+- twilio: 비밀=token, config=`sid`. `Purchasable=false`. Twilio용 어댑터(`Provider` 구현)가 기존 `numberhandlertwilio`의 시그니처 차이(`CreateNumber`, `ReleaseNumber`만 있음)를 감싸, 검색, 구입, 반환, 태그 네 메서드 모두 `ErrNotImplemented`를 반환합니다. `RequiredConfig`는 비어 있고 `AllowedConfig`=`sid`.
 - telnyx: `AllowedConfig`=`connection_id`,`profile_id`, `RequiredConfig`=`connection_id`(db 소스 한정, env 소스는 현행처럼 token만 있으면 usable이며 profile_id 필수화는 하지 않음: 배포 직후 구입 중단 방지).
 - 기본값(행이 없을 때): telnyx enabled=true priority=10, twilio enabled=false priority=20. 어드민 PUT으로 행이 처음 만들어질 때 요청에 없는 필드는 DDL 기본값이 아니라 이 레지스트리 기본값으로 채웁니다(예: 행 없는 telnyx에 `priority`만 보내도 `enabled=true` 유지). usable provider가 0개가 되는 변경은 허용하되 warn 로그를 남깁니다. 따라서 배포 직후 환경변수만 있으면 Telnyx 단독으로 기존과 동일하게 동작합니다. 시드 마이그레이션(데이터 INSERT)은 두지 않습니다.
 - 새 provider 추가 = 레지스트리에 Descriptor 한 건과 구현체 추가(마이그레이션 불필요).
@@ -51,7 +51,7 @@ provider 하나에 대해: 행이 있으면 enabled, priority는 행 값, 없으
 `migrations/000002_number_providers_create_table_all.up.sql`/`.down.sql` (명명 규칙 `NNNNNN_<table>_<verb>_<type>_<items>`, items=all) (파일당 DDL 한 문장, 비파괴, 데이터 INSERT 없음):
 
 ```sql
-CREATE TABLE number_providers (
+CREATE TABLE IF NOT EXISTS number_providers (
   provider_name varchar(32) NOT NULL,
   enabled tinyint(1) NOT NULL DEFAULT 0,
   priority int NOT NULL DEFAULT 100,
@@ -95,7 +95,7 @@ down은 `DROP TABLE IF EXISTS number_providers`로 데이터를 복원하지 못
 - `Delete`(반환)는 번호의 `provider_name`으로 레지스트리에서 provider를 해석하되 enabled 여부와 무관하게 자격만 있으면 해석합니다(비활성 provider 번호도 반환 가능). 자격이 없으면 에러(기존과 동일하게 반환 실패). `ProviderNameNone`(virtual)과 알 수 없는 이름의 기존 동작은 유지합니다.
 - `RenewNumbers`(`renew.go`)는 provider를 직접 호출하지 않고 잔액 부족 시 `h.Delete`만 호출하므로(확인함) Delete 규칙을 따릅니다. 단 fail closed로 `Delete`가 실패할 가능성이 커지므로, 현재 `renew.go`에서 삭제 실패에도 `processed++`가 실행되어 실패한 번호가 `tm_renew` 조회에 계속 다시 나와 과금 RPC와 DB 조회가 반복되는 문제를 막습니다: 삭제에 실패한 번호는 처리 건수에 세지 않고 이번 실행의 제외 ID 목록에 넣으며, 다음 페이지 조회는 그 목록을 쿼리에서 제외합니다(`dbListByTMRenew`와 `NumberGetsByTMRenew`에 `excludeIDs []uuid.UUID` 인자를 추가하고 `squirrel.NotEq{id: 바이트}`; 인터페이스와 mock 변경). 조회 한 페이지(100건)가 전부 실패해도 다음 조회가 나머지를 가져오므로 굶지 않으며, 종료 조건은 '이번 페이지에서 `processed==0`이고 새로 제외된 ID도 0건'으로 바꿉니다(삭제 외의 `continue` 경로인 과금 RPC 오류와 `dbUpdate` 오류는 제외하지 않으며 기존처럼 processed==0이면 종료). `excludeIDs`는 비어 있으면 조건을 붙이지 않고, 여러 건이면 `squirrel.Expr("id NOT IN (?,?,...)")` 형태의 바이트 인자 `NOT IN`을 `Where`로 직접 붙입니다(`ApplyFields` 비경유). 100건 초과 실패 케이스를 테스트합니다. `event.go`의 고객 삭제 정리도 `Delete`를 호출합니다.
 - `cmd/number-control/main.go`도 `NewNumberHandler`를 조립하고 `number delete`가 provider를 호출하므로, 같은 secretcrypto와 providerhandler 조립을 적용하고 키 환경변수는 동일한 `NUMBER_SECRET_ENCRYPTION_KEYS`를 읽습니다. 두 `NewNumberHandler` 시그니처 변경과 mock 재생성이 따릅니다.
-- 검색(`GetAvailableNumbers`, 고객 대상 API)은 telnyx 고정을 유지하되 해석된 telnyx 자격을 씁니다(DB 비밀 반영). DB 조회가 필요하므로 `NumberHandler.GetAvailableNumbers`에 `ctx`를 추가하고 listenhandler 호출부, mock, 테스트를 함께 바꿉니다. providerHandler는 `NewNumberHandler`와 `NewListenHandler`(어드민 RPC용)에 각각 주입합니다. 고객 대상 응답은 변경하지 않습니다. 단 telnyx가 db 소스에서 복호화 실패이면 검색도 실패합니다(위 영향 범위).
+- 검색(`GetAvailableNumbers`, 고객 대상 API)은 telnyx 고정을 유지하되 해석된 telnyx 자격을 씁니다(DB 비밀 반영). DB 조회가 필요하므로 `NumberHandler.GetAvailableNumbers`에 `ctx`를 추가하고 listenhandler 호출부(`v1_available_numbers.go`), `cmd/number-control/main.go`의 호출부, mock, 테스트를 함께 바꿉니다. providerHandler는 `NewNumberHandler`와 `NewListenHandler`(어드민 RPC용)에 각각 주입합니다. 고객 대상 응답은 변경하지 않습니다. 단 telnyx가 db 소스에서 복호화 실패이면 검색도 실패합니다(위 영향 범위).
 - provider 설정은 구입과 반환 시점에 DB에서 읽습니다(호출 빈도가 낮아 Redis 캐시를 두지 않으므로 캐시에 비밀이 남지 않고 어드민 변경이 즉시 반영). 복호화한 비밀은 해당 요청의 Provider 인스턴스 안에만 있고 로그와 에러 메시지에 넣지 않습니다.
 
 ## 6. 비밀값 암호화
@@ -105,7 +105,7 @@ down은 `DROP TABLE IF EXISTS number_providers`로 데이터를 복원하지 못
 - 환경변수 `NUMBER_SECRET_ENCRYPTION_KEYS`: `<버전>:<base64 32바이트>` 쉼표 나열. 최신(최대) 버전으로 암호화하고 행의 `key_version`으로 복호화. 형식 오류, 중복 버전, 버전<=0, 32바이트 아님은 파싱 에러입니다. number-manager는 call-manager 등 통화 경로가 의존하므로 파싱 오류로 부팅 실패시키지 않고 error 로그(원인만, 값 제외) 후 키 없음으로 격하하여 기동합니다(여전히 fail closed: 암호화는 항상 에러이므로 비밀 저장 거부, DB 비밀 복호화 불가, 환경변수 자격으로만 동작). `number-control`은 같은 파서를 쓰되 파싱 오류를 즉시 에러로 반환합니다. 빈 값은 허용(키 없음).
 - 암호화: AES-256-GCM, 12바이트 랜덤 nonce, AAD=provider_name(행 바꿔치기 방지). 저장 형식은 `nonce || ciphertext`를 `secret_ciphertext` 한 컬럼에 담습니다. 평문 상한 1024바이트(바이트 기준).
 - 계정 교체 주의(PUT과 DELETE secret 모두 해당: DELETE는 DB 계정에서 환경변수 계정으로 바꿈): DB 비밀을 다른 계정의 token으로 교체하면 이전 계정에서 구입한 번호의 반환(`Delete`)이 실패하므로 기존 번호가 있는 provider의 계정 교체는 금지하고(강제하지 않음: 같은 계정의 token을 DB로 옮기는 정상 이전 경로를 막지 않기 위해 문서 경고로 둠) `docs/operations.md`에 적습니다. `number-control`은 `migrate up` 선행이 필요합니다(없으면 provider 조회 실패, fail closed). 키 파서 에러 메시지는 `ai-manager/secret.go`처럼 키 항목을 `%q`로 찍지 않고 값 제외를 테스트로 단언합니다. `ErrPurchaseUnconfirmed` 로그에도 `PURCHASE_UNCONFIRMED` 고정 마커를 둡니다.
-- 모델 `Provider.SecretCiphertext []byte`는 `json:"-"`. 조회 응답은 `has_secret`, `key_version`만 노출. 에러 메시지와 로그에 평문, 암호문, 키를 넣지 않습니다. 이벤트는 발행하지 않습니다(provider 설정은 이벤트 대상이 아님). Config 설정 로그(`logStartup`)에 신규 키를 출력하지 않으며 `cmd/number-manager/startup_log_test.go`의 필드 분류에서 `NumberSecretEncryptionKeys`를 `secrets`에 추가합니다. 비밀 PUT과 행 조회의 DB/내부 암호화 오류는 500으로 응답합니다(검증 400, 미설정 503, 없음 404).
+- 모델 `Provider.SecretCiphertext []byte`는 `json:"-"`. 조회 응답은 `has_secret`, `key_version`만 노출. 에러 메시지와 로그에 평문, 암호문, 키를 넣지 않습니다. 이벤트는 발행하지 않습니다(provider 설정은 이벤트 대상이 아님). Config 설정 로그(`logStartup`)에 신규 키를 출력하지 않으며 `cmd/number-manager/startup_log_test.go`의 필드 분류에서 `NumberSecretEncryptionKeys`를 `secrets`에 추가합니다. 오류 상태 매핑: 어드민 핸들러는 `errorResponse(err)`를 직접 호출하며(기본 500은 DB/내부 암호화 오류), 센티널 `ErrInvalidArgument`(400, 검증 위반)와 `ErrSecretKeyNotConfigured`(503) 분기를 `errorResponse`에 추가하고 알 수 없는 provider는 기존 `ErrNotFound`(404)를 씁니다. `processRequest` 말미의 기본 분기(400)로 흘러가지 않게 합니다. 센티널은 `models/provider`에 정의합니다.
 - 키 교체 절차(재암호화 배치 불필요 판단 근거: 행이 provider 종류 수뿐이고 비밀은 어드민이 가진 외부 값을 다시 입력하면 되며, 서버가 평문을 일괄로 다루는 경로를 만드는 것이 오히려 노출면을 키움): (1) 새 버전을 목록에 추가하고 이전 버전을 유지하여 배포, (2) 어드민이 provider별로 비밀을 다시 입력(새 버전으로 재암호화, 응답의 `key_version`으로 확인), (3) 모든 provider의 key_version이 최신인 것을 확인한 뒤 이전 버전을 제거. 이전 버전을 먼저 빼면 그 행은 복호화되지 않아 provider가 사용 불가가 되고(환경변수 폴백 없음) 로그에 provider_name과 key_version이 남습니다. 절차는 `docs/operations.md`에 문서화합니다.
 
 ## 7. 어드민 API
