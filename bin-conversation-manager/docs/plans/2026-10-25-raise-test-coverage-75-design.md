@@ -6,7 +6,7 @@
 - 제외 방법: gens/, 파일명 mock_*, 파일 머리(package 이전)에 `Code generated` 와 `DO NOT EDIT` 이 있는 파일을 뺍니다. 같은 블록의 중복은 최대 count 로 합칩니다.
 - 75.0% 는 이미 넘었으므로 인수 조건의 실질은 76% 이상 확보(CI 와의 소수점 차이 대비)입니다. 최소 2753/3622, 즉 28개 이상의 statement 를 더 커버해야 합니다.
 - 선행 PR: 같은 서비스에서 VOIP-1647(#1524, 56.47%에서 61% 이상)과 VOIP-1649(#1549, 65% 설계 `2026-10-24-test-coverage-65-design.md`)가 머지되었고 이번 카드가 그 결과를 기준선으로 이어받습니다. 두 PR 모두 linehandler 의 Send, Setup, Teardown, GetPeer 를 외부 호출로 보아 제외했습니다.
-- 분모 차이(3604, 3622) 설명: 1647 은 3604 기준이었고, 그 뒤 비테스트 코드가 바뀌었습니다(`git diff --stat 5a3496e0c accc03e -- bin-conversation-manager ':!*_test.go'`: pkg/linehandler/hook.go +31 줄, pkg/conversationhandler/message.go +12 줄). 이번 기준선 3622 는 accc03e 의 실측이며 이후 PR 본문의 '전' 열도 이 값을 씁니다.
+- 분모 차이(3604, 3622) 설명: 1647 은 3604 기준이었고, 그 뒤 VOIP-1648(cb3c753ca)이 비테스트 코드를 바꾸었습니다(`git diff --stat 5a3496e0c accc03e -- bin-conversation-manager ':!*_test.go'`: pkg/linehandler/hook.go +31 줄, pkg/conversationhandler/message.go +12 줄. 그 밖에 go.mod, go.sum 과 문서 변경은 분모와 무관). 이번 기준선 3622 는 accc03e 의 실측이며 이후 PR 본문의 '전' 열도 이 값을 씁니다.
 - cmd/ 두 패키지(1649 에서 이미 일부 테스트됨)는 분모에서 빼지 않습니다. 합계는 cmd 를 포함한 3622 기준이고, 신규 테스트 대상에서만 제외합니다(cmd main 은 외부 연결 의존).
 - 공개 저장소에 등록된 다른 열린 PR 중 이 서비스와 겹치는 것은 없습니다(`gh pr list --state all --search 'conversation-manager coverage'` 결과는 위 두 PR 과 오래된 무관 PR 뿐).
 
