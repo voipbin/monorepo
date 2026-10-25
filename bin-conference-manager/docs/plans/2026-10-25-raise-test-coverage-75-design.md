@@ -22,7 +22,7 @@
 ### 2.1 cmd/conference-control (신규 `main_test.go`, 필수, 이것만으로 목표 충족: 리뷰어 프로토타입 기준 패키지 약 64% 이며 합계 약 84%)
 
 - `TestMain`: `viper.Set("database_dsn", "not-a-valid-dsn")` 후 `config.LoadGlobalConfig()` 한 번. 이후 `os.Exit(m.Run())`.
-- 각 테스트는 쓰는 viper 키를 `old := viper.Get(k)` 로 저장하고 `t.Cleanup` 에서 `viper.Set(k, old)` 로 복원합니다(viper 에 `Unset` 이 없고, 이전 값이 nil 이면 키가 해제된 것으로 동작하며 빈 문자열로 복원하면 `IsSet` 이 참이 되므로 사용하지 않습니다). `viper.Reset` 은 DSN 도 지우므로 사용하지 않습니다.
+- 각 테스트는 쓰는 viper 키를 `old := viper.Get(k)` 로 저장하고 `t.Cleanup` 에서 `viper.Set(k, old)` 로 되돌립니다(환경변수가 있으면 그 값이 override 로 남을 수 있으나 각 케이스가 읽히는 키를 모두 명시 설정하므로 환경변수에 의존하지 않습니다)(viper 에 `Unset` 이 없고, 이전 값이 nil 이면 키가 해제된 것으로 동작하며 빈 문자열로 복원하면 `IsSet` 이 참이 되므로 사용하지 않습니다). `viper.Reset` 은 DSN 도 지우므로 사용하지 않습니다.
 - `PersistentPreRunE` 는 직접 호출로만 검증하고 `root.Execute()` 는 쓰지 않습니다. `Execute` 를 쓰면 `BindPFlags` 가 sub 명령의 flag(`id` 등)를 viper 에 묶어 `viper.Set(k, nil)` 로도 해제되지 않고, 복원이 그 값을 override 로 고정해 이후 테스트가 오염되기 때문입니다. 직접 호출은 루트 flag 만 묶으므로 `id`, `type` 같은 키에는 영향이 없고 `-shuffle`, `-count>1` 에서도 안전합니다. 이 호출의 성공(오류 nil)만 단언하며, `TestMain` 이 이미 `LoadGlobalConfig` 를 호출했으므로 DSN 유지 여부는 이 호출의 회귀를 잡지 못하는 약한 단언이라 쓰지 않습니다.
 - `initCommand` 가 `viper.AutomaticEnv()` 를 켜므로 `id`, `type`, `name`, `lang` 같은 키는 환경변수 `ID`, `TYPE`, `NAME`, `LANG` 의 영향을 받습니다. 각 케이스는 읽히는 모든 키(`customer-id`, `id`, `type`, `pre-flow-id`, `post-flow-id`)를 `viper.Set` 으로 명시하고(미사용은 빈 문자열) 환경변수에 의존하지 않습니다.
 - `Test_resolveUUID`: 빈 값(`... is required`), 잘못된 UUID(`invalid format`), 정상 UUID, 오류 메시지에 라벨이 들어가는지.
@@ -32,13 +32,13 @@
 - `Test_runCreate_validation`: customer-id 누락, id 형식 오류, type 오류, pre/post flow 형식 오류 각각의 오류 메시지. 모두 `initHandler` 이전에 끝나므로 DSN 과 무관. type 오류는 `invalid conference type` 문자열을 단언합니다(검증이 없으면 `failed to initialize handlers` 로 바뀌므로 문자열 단언이 변이를 잡습니다).
 - `Test_run_initHandlerFailure`: 11개 `run*` 이 잘못된 DSN 때문에 `failed to initialize handlers` 로 끝남(표 구동). `runCreate` 는 검증을 통과하는 입력으로 같은 실패.
 
-### 2.2 pkg/dbhandler (선택 추가, 기존 `error_paths_test.go` 에 추가, 목표 +25)
+### 2.2 pkg/dbhandler (선택 추가, 목표 충족에는 불필요한 방어적 보강, 기존 `error_paths_test.go` 에 추가, 목표 +25)
 
 도달 가능한 분기만 다룹니다. conference 에만 해당: `Data` 필드의 맵 안에 chan 을 넣어 `PrepareFields` 실패(Create 는 `could not prepare fields`, Update 는 `prepare fields failed` 문자열 단언. `FieldData` 값 자체를 chan 으로 주면 다른 위치에서 실패하므로 맵 안에 넣음). conferencecall 은 Create 에 JSON 필드가 없어 이 분기가 도달 불가이고, Update 는 `FieldStatus: []any{make(chan int)}` 처럼 맵 값 안에 chan 을 넣으면 `prepare fields failed` 에 도달합니다(Delete 는 인자 고정이라 불가). conference 와 conferencecall 공통: `NotEq{Value: <Value() 가 오류를 반환하는 값>}` 로 List 의 `could not build query` 실패, sqlmock 으로 캐시 적중 반환, `SetToCache` 실패, `ScanRow` 실패, NULL 컬럼의 빈 slice/map 초기화, `rows.Err()`. 오류 단언은 `err != nil` 이 아니라 오류 문자열 포함 여부로 합니다. 인자가 고정된 `ToSql` 실패(약 13)는 도달 불가라 제외합니다.
 
 ### 2.3 pkg/listenhandler (선택 추가, 기존 `error_paths_test.go` 에 추가, 목표 +20)
 
-`Conference.Data` 에 chan 을 가진 응답을 gomock 핸들러가 반환하게 해 `json.Marshal` 실패에 도달시킵니다. Marshal 실패는 모두 `simpleResponse` 이고 응답 코드는 라우트마다 500 과 400 이 섞여 있으므로 구현 시 라우트별 코드를 `v1_conferences.go`/`v1_conferences_direct_hash.go` 에서 읽어 표로 만들고 그 값을 단언합니다. 확인된 도달 가능 라우트만 다룹니다(conferences 의 Marshal 실패 지점 11개: list, post, id get, id put, id delete, recording_id put, recording_start/stop, transcribe_start/stop, stop 와 direct-hash 1개). conferencecalls 와 count 의 Marshal 실패는 도달 불가라 제외합니다.
+`Conference.Data` 에 chan 을 가진 응답을 gomock 핸들러가 반환하게 해 `json.Marshal` 실패에 도달시킵니다. Marshal 실패는 모두 `simpleResponse` 이고 응답 코드는 라우트마다 500 과 400 이 섞여 있으므로 구현 시 라우트별 코드를 `v1_conferences.go`/`v1_conferences_direct_hash.go` 에서 읽어 표로 만들고 그 값을 단언합니다. 확인된 도달 가능 라우트만 다룹니다(conferences 의 Marshal 실패 지점 12개 중 conferences 11개: list, post, id get, id put, id delete, recording_id put, recording_start/stop, transcribe_start/stop, stop 와 direct-hash 1개. 500 은 list, post, put, direct-hash. 400 은 id get, id delete, recording_id put, recording_start/stop, transcribe_start/stop, stop). conferencecalls 와 count 의 Marshal 실패는 도달 불가라 제외합니다.
 
 ### 2.4 그 밖
 
