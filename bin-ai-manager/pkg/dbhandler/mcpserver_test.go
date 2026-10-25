@@ -23,6 +23,8 @@ import (
 // silently wrong, and invisible to any test that only inspects the value
 // handed to a mocked db.McpServerCreate/Update before PrepareFields runs.
 func Test_McpServerCreate_Get_SecretRoundTrip(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 
 	tests := []struct {
@@ -92,6 +94,8 @@ func Test_McpServerCreate_Get_SecretRoundTrip(t *testing.T) {
 // pointing at "" must zero the stored ciphertext/nonce/version, not leave a
 // stale or corrupted value in the blob columns).
 func Test_McpServerUpdate_ClearSecret_RoundTrip(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 
 	id := uuid.Must(uuid.NewV4())
@@ -145,6 +149,8 @@ func Test_McpServerUpdate_ClearSecret_RoundTrip(t *testing.T) {
 // reconnected, rotated by another refresh, downgraded or deleted is left as
 // it is and ErrNotFound is returned.
 func Test_McpServerUpdateOAuthTokensIfCurrent(t *testing.T) {
+	resetTestDB(t)
+
 	spent := []byte{0x51, 0x52, 0x53}
 	newer := []byte{0x61, 0x62, 0x63}
 	stored := []byte{0x71, 0x72, 0x73}

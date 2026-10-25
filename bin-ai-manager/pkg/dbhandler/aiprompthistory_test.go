@@ -16,6 +16,7 @@ import (
 )
 
 func Test_AIPromptHistoryCreate(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC); return &t }()
 
@@ -109,6 +110,8 @@ func Test_AIPromptHistoryCreate(t *testing.T) {
 }
 
 func Test_AIPromptHistoryGet_NotFound(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -130,6 +133,7 @@ func Test_AIPromptHistoryGet_NotFound(t *testing.T) {
 }
 
 func Test_AIPromptHistoryGetsByAIID(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2025, 2, 1, 0, 0, 0, 0, time.UTC); return &t }()
 	laterTime := func() *time.Time { t := time.Date(2025, 2, 1, 0, 0, 1, 0, time.UTC); return &t }()
@@ -207,6 +211,8 @@ func Test_AIPromptHistoryGetsByAIID(t *testing.T) {
 }
 
 func Test_AIPromptHistoryGetsByAIID_Empty(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -231,6 +237,7 @@ func Test_AIPromptHistoryGetsByAIID_Empty(t *testing.T) {
 }
 
 func Test_AIPromptHistoryGetsByAIID_Pagination(t *testing.T) {
+	resetTestDB(t)
 
 	t0 := func() *time.Time { t := time.Date(2025, 3, 1, 0, 0, 0, 0, time.UTC); return &t }()
 	t1 := func() *time.Time { t := time.Date(2025, 3, 1, 0, 0, 1, 0, time.UTC); return &t }()

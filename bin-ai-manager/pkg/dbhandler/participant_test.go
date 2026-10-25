@@ -12,6 +12,8 @@ import (
 )
 
 func Test_ParticipantListByAIcallID(t *testing.T) {
+	resetTestDB(t)
+
 	aicallID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
 	aiID1 := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
 	aiID2 := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333")
@@ -84,6 +86,8 @@ func Test_ParticipantListByAIcallID(t *testing.T) {
 }
 
 func Test_ParticipantListByAIID(t *testing.T) {
+	resetTestDB(t)
+
 	aicallID1 := uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555")
 	aicallID2 := uuid.FromStringOrNil("66666666-6666-6666-6666-666666666666")
 	aiID := uuid.FromStringOrNil("77777777-7777-7777-7777-777777777777")
@@ -148,6 +152,8 @@ func Test_ParticipantListByAIID(t *testing.T) {
 }
 
 func Test_ParticipantCreate(t *testing.T) {
+	resetTestDB(t)
+
 	curTime := time.Now()
 
 	type input struct {

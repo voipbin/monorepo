@@ -18,6 +18,8 @@ import (
 )
 
 func Test_AI_EndpointColumns(t *testing.T) {
+	resetTestDB(t)
+
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 	id := uuid.FromStringOrNil("2f1c0b3e-0a4d-11ef-9a41-8b2d7c5e1111")
 	enc := []byte{0x00, 0x01, 0xff, 0x00, 0x7f}
@@ -86,6 +88,8 @@ func Test_AI_EndpointColumns(t *testing.T) {
 
 // Test_AIDelete_ClearsEndpointKey: the ciphertext must not outlive the AI; the URL is kept.
 func Test_AIDelete_ClearsEndpointKey(t *testing.T) {
+	resetTestDB(t)
+
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 	id := uuid.FromStringOrNil("2f1c0b3e-0a4d-11ef-9a41-8b2d7c5e2222")
 
@@ -133,6 +137,8 @@ func Test_AIDelete_ClearsEndpointKey(t *testing.T) {
 // Test_AI_CacheKeepsCiphertextOnly: whatever the caller put into the plaintext field, the cached
 // object carries the ciphertext and never the plaintext.
 func Test_AI_CacheKeepsCiphertextOnly(t *testing.T) {
+	resetTestDB(t)
+
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 	id := uuid.FromStringOrNil("2f1c0b3e-0a4d-11ef-9a41-8b2d7c5e3333")
 
