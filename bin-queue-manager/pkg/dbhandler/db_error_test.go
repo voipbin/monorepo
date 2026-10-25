@@ -176,52 +176,52 @@ func Test_dbQueryError(t *testing.T) {
 	tests := []struct {
 		name   string
 		expect string
-		fn     func(ctx context.Context, h *handler) error
+		fn     func(t *testing.T, ctx context.Context, h *handler) error
 	}{
-		{"QueueCountByCustomerID", "(?i)select count", func(ctx context.Context, h *handler) error {
+		{"QueueCountByCustomerID", "(?i)select count", func(t *testing.T, ctx context.Context, h *handler) error {
 			n, err := h.QueueCountByCustomerID(ctx, testOtherID)
 			if n != 0 {
 				t.Errorf("Wrong match. expect: 0, got: %d", n)
 			}
 			return err
 		}},
-		{"queueGetFromDB", "(?i)select .* from queue_queues", func(ctx context.Context, h *handler) error {
+		{"queueGetFromDB", "(?i)select .* from queue_queues", func(t *testing.T, ctx context.Context, h *handler) error {
 			_, err := h.queueGetFromDB(ctx, testQueueID)
 			return err
 		}},
-		{"QueueList", "(?i)select .* from queue_queues", func(ctx context.Context, h *handler) error {
+		{"QueueList", "(?i)select .* from queue_queues", func(t *testing.T, ctx context.Context, h *handler) error {
 			res, err := h.QueueList(ctx, 10, "", map[queue.Field]any{})
 			if res != nil {
 				t.Errorf("Wrong match. expect: nil, got: %v", res)
 			}
 			return err
 		}},
-		{"queuecallGetFromDB", "(?i)select .* from queue_queuecalls", func(ctx context.Context, h *handler) error {
+		{"queuecallGetFromDB", "(?i)select .* from queue_queuecalls", func(t *testing.T, ctx context.Context, h *handler) error {
 			_, err := h.queuecallGetFromDB(ctx, testQueuecallID)
 			return err
 		}},
-		{"QueuecallList", "(?i)select .* from queue_queuecalls", func(ctx context.Context, h *handler) error {
+		{"QueuecallList", "(?i)select .* from queue_queuecalls", func(t *testing.T, ctx context.Context, h *handler) error {
 			res, err := h.QueuecallList(ctx, 10, "", map[queuecall.Field]any{})
 			if res != nil {
 				t.Errorf("Wrong match. expect: nil, got: %v", res)
 			}
 			return err
 		}},
-		{"QueuecallListOldestWaiting", "(?i)select .* from queue_queuecalls", func(ctx context.Context, h *handler) error {
+		{"QueuecallListOldestWaiting", "(?i)select .* from queue_queuecalls", func(t *testing.T, ctx context.Context, h *handler) error {
 			res, err := h.QueuecallListOldestWaiting(ctx, testQueueID, 1)
 			if res != nil {
 				t.Errorf("Wrong match. expect: nil, got: %v", res)
 			}
 			return err
 		}},
-		{"QueuecallListConnectingStale", "(?i)select .* from queue_queuecalls", func(ctx context.Context, h *handler) error {
+		{"QueuecallListConnectingStale", "(?i)select .* from queue_queuecalls", func(t *testing.T, ctx context.Context, h *handler) error {
 			res, err := h.QueuecallListConnectingStale(ctx, tmNow, 10)
 			if res != nil {
 				t.Errorf("Wrong match. expect: nil, got: %v", res)
 			}
 			return err
 		}},
-		{"QueuecallListWaitingOldest", "(?i)select .* from queue_queuecalls", func(ctx context.Context, h *handler) error {
+		{"QueuecallListWaitingOldest", "(?i)select .* from queue_queuecalls", func(t *testing.T, ctx context.Context, h *handler) error {
 			res, err := h.QueuecallListWaitingOldest(ctx, 10)
 			if res != nil {
 				t.Errorf("Wrong match. expect: nil, got: %v", res)
@@ -235,7 +235,7 @@ func Test_dbQueryError(t *testing.T) {
 			h, mock, _ := newCtxTestHandler(t)
 			mock.ExpectQuery(tt.expect).WillReturnError(errTestBoom)
 
-			err := tt.fn(context.Background(), h)
+			err := tt.fn(t, context.Background(), h)
 			if !errors.Is(err, errTestBoom) {
 				t.Errorf("Wrong match. expect: %v, got: %v", errTestBoom, err)
 			}

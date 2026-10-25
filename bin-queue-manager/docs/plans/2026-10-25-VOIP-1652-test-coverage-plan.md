@@ -2,7 +2,7 @@
 
 ## 1. 티켓 검토
 
-판정: 유효. origin/main accc03e00 에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` 로 재측정했으며 테스트 실패 0건, 수기 합계 72.06% (2429/3371 statement), 원본 62.89% (2429/3862)로 요청서 수치와 일치합니다. 수기 합계는 gens/, mock_*.go, `Code generated ... DO NOT EDIT` 헤더 파일을 빼고 같은 블록의 중복은 최대 count 로 합쳐 계산했습니다(scratch 집계 스크립트). 75% 에는 약 99개, 권장 76% 에는 약 133개 statement 를 더 커버해야 합니다. 동일 서비스의 선행 PR(VOIP-1647 60%, VOIP-1651 70%)은 머지되었고 열린 중복 PR 은 없습니다.
+판정: 유효. origin/main accc03e00 에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` 로 재측정했으며 테스트 실패 0건, 수기 합계 72.06% (2429/3371 statement), 원본 62.89% (2429/3862)로 요청서 수치와 일치합니다. 수기 합계는 gens/, mock_*.go, `Code generated ... DO NOT EDIT` 헤더 파일을 빼고 같은 블록의 중복은 최대 count 로 합쳐 계산했습니다(집계 스크립트). 75% 에는 약 99개, 권장 76% 에는 약 133개 statement 를 더 커버해야 합니다. 동일 서비스의 선행 PR(VOIP-1647 60%, VOIP-1651 70%)은 머지되었고 열린 중복 PR 은 없습니다.
 
 패키지별 기준선(수기, 전):
 
@@ -36,7 +36,7 @@
 | pkg/dbhandler | 111 | 60 | 현 미커버: queue.go 46(오류 분기 약 37 블록과 SQL 실행 분기), queuecall.go 61, main.go 4(NewHandler), 따라서 queue.go 에서 25, queuecall.go 35 이상을 채웁니다. 대상 함수(측정으로 확정. dbhandler.NewHandler 4 statement 는 queue.go/queuecall.go 의 60 과 별도의 보조 채움이며 합계 196 에는 넣지 않음): queue.go 의 QueueCountByCustomerID, QueueCreate, QueueGet, QueueList, QueueUpdate, QueueDelete, QueueAddWaitQueueCallID, QueueIncreaseTotalServicedCount, QueueIncreaseTotalAbandonedCount, QueueRemoveServiceQueueCall, QueueRemoveWaitQueueCall 와 캐시 헬퍼, queuecall.go 의 QueuecallCreate/Get/GetByReferenceID/List/ListOldestWaiting/ListConnectingStale/ListWaitingOldest/Update/Delete, QueuecallSetStatus{Connecting,Service,Abandoned,Done,Kicking,WaitingIfConnecting}, queuecallSetStatusWaitingIf 와 캐시 헬퍼. 변경 함수별 ExecContext 오류 전파(`errors.Is` 로 원인 확인, `ExpectationsWereMet` 로 후속 쿼리 없음 확인)와 캐시 미호출, RowsAffected 오류(`sqlmock.NewErrorResult`), 조회 쿼리 오류, 캐시 get 오류 시 DB 대체 경로. 표 주도, mock 엄격 매칭 |
 | pkg/queuecallhandler | 72 | 45 | 측정 기준 미커버 블록: event.go(38, 65, 94, 121-141, 160-181), execute.go(37-121, 147, 175-184), service.go(46-119), kick.go(59, 104, 133), reconcile.go(46, 73, 99-124), health.go(50), timeout.go(37, 65), main.go NewQueuecallHandler(생성자). 오류 분기와 상태 분기 |
 | pkg/listenhandler | 45 | 30 | 각 processV1 핸들러의 핸들러 오류 → errorResponse(500 등), 잘못된 JSON/UUID 400, direct_hash regenerate, count, services |
-| cmd/queue-manager | 113 | 6 | runSubscribe(Run 오류는 호출자에게 반환됨, 성공 시 nil)와 runListen(성공 경로에서 ConsumeRPC 등 큐 이름 인자를 상수가 아닌 문자열 리터럴로 단언. Run 오류 경로는 테스트하지 않음). runSubscribe 의 큐 이름과 토픽 패턴도 리터럴로 단언. sockhandler/queuehandler/queuecallhandler gomock |
+| cmd/queue-manager | 113 | 6 | runSubscribe(Run 오류는 호출자에게 반환됨, 성공 시 nil)와 runListen(성공 경로에서 ConsumeRPC 등 큐 이름 인자를 상수가 아닌 문자열 리터럴로 단언. Run 오류 경로는 테스트하지 않음). runSubscribe 의 큐 이름과 거래소 이름도 리터럴로 단언하고 토픽 패턴은 바인딩이 1회 이상 일어남만 단언(패턴 목록은 subscribehandler 내부 값이므로 cmd 테스트에서 복제하지 않음). sockhandler/queuehandler/queuecallhandler gomock |
 | 보조 | | 0 | queuehandler, subscribehandler, internal/config, models 의 1~2 statement 와 NewQueueHandler, dbhandler.NewHandler 생성자, cmd/queue-control 순수 헬퍼는 합계가 모자랄 때의 2차 후보 |
 | 합계 | | 196 | 필요 133(2562/3371 = 76.0%). 여유 63 은 cachehandler 도달 불가 분기와 비동기 경로 제외분을 감안한 값이며 중간 측정에서 미달이면 2차 후보를 추가 |
 
@@ -45,11 +45,11 @@
 원칙: 빈 호출과 자기비교식 테스트 금지(표 주도 테스트의 기대값을 입력에서 계산해 만들지 않고 리터럴로 적습니다). mock 호출 인자는 gomock 엄격 매칭, 상태코드, 응답 본문, 오류 전파를 단언하고 "후속 호출 없음"은 기대를 두지 않는 방식으로 단언합니다. 제품 코드의 오류 메시지 문자열은 단언하지 않습니다. 테스트 중 발견한 결함은 고치거나 문서화하지 않고 작업 기록에만 적으며, 해당 동작을 고정하는 단언은 하지 않습니다. 테스트 값은 합성값만 씁니다. 비밀번호 리터럴은 별도 문장에서 대입합니다.
 
 verify 항목:
-1. 수기 합계 76% 이상(scratch 집계 스크립트), 패키지별 전후 표와 수기/원본 합계, 제외 방법을 PR 본문에 기재.
+1. 수기 합계 76% 이상(집계 스크립트), 패키지별 전후 표와 수기/원본 합계, 제외 방법을 PR 본문에 기재.
 2. `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m` 통과. go.mod/go.sum 변경은 miniredis 와 그 간접 의존 추가뿐이고 기존 의존 버전 상승과 생성 파일 변경이 없음을 `git diff` 로 확인하고 `go mod vendor` 결과(vendor/ 는 gitignore)가 커밋에 들어가지 않았음도 `git status` 로 확인.
 3. `git diff --stat origin/main...HEAD` 가 bin-queue-manager/ 안에만 있음. `git fetch origin main` 후 리포 루트에서 `bash scripts/check-test-conventions.sh` 통과.
 4. 변이 검사: 표본 10곳 이상(QueuecallSet 의 저장과 TTL, QueueGet 과 QueuecallGetByReferenceID 의 키 접두사, runListen 의 QueueCreate/ConsumeRPC 첫 인자(listenHandler.Run 은 두 번째 인자 exchangeDelay 를 쓰지 않으므로 그 인자 변이는 대상이 아님), listenhandler HealthCheck 호출 여부, ReconcileLockAcquire 의 NX 반환 분기, QueueSet 의 TTL 인자, QueuecallGet 의 JSON 오류 전파, ReconcileLockRelease 의 Del, runSubscribe 의 오류 반환, dbhandler Exec 오류 전파, listenhandler 오류 상태코드, queuecallhandler 오류 분기)에서 제품 코드를 임시 작업 영역의 복사본(모노레포 replace 경로 때문에 필요한 범위를 포함해 복사하며 원본 worktree 가 아님)에서 바꿔 새 테스트가 실패함을 확인하고 그 실패 로그 요약을 작업 기록에 남깁니다.
-5. 중간 측정: 패키지 하나를 끝낼 때마다 scratch 집계 스크립트로 재측정해 기록합니다(필요량 2562/3371).
+5. 중간 측정: 패키지 하나를 끝낼 때마다 집계 스크립트로 재측정해 기록합니다(필요량 2562/3371).
 6. 비동기 테스트 `-race -count=20` 통과.
 7. VOIP-1416 과 겹치는 패키지는 PR 본문에 명시만 합니다.
 
