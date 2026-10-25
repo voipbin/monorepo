@@ -47,6 +47,13 @@ func newErrTestHandler(mc *gomock.Controller) (*agentHandler, *errMocks) {
 	return h, m
 }
 
+// matchNewAgent matches the agent record passed to AgentCreate by its identity and direct fields.
+func matchNewAgent(id, customerID, directID uuid.UUID) gomock.Matcher {
+	return gomock.Cond(func(a *agent.Agent) bool {
+		return a.ID == id && a.CustomerID == customerID && a.DirectID == directID && a.DirectHash == "test-direct-hash" && a.PasswordHash == "test-hash"
+	})
+}
+
 func assertAddressAssignedError(t *testing.T, err error) {
 	t.Helper()
 
@@ -119,7 +126,7 @@ func Test_dbCreate_errors(t *testing.T) {
 				m.util.EXPECT().HashGenerate("test-password", defaultPasswordHashCost).Return("test-hash", nil)
 				m.util.EXPECT().UUIDCreate().Return(agentID)
 				m.req.EXPECT().DirectV1DirectCreate(ctx, customerID, dmdirect.ResourceTypeAgent, agentID).Return(direct, nil)
-				m.db.EXPECT().AgentCreate(ctx, gomock.Any()).Return(errBoom)
+				m.db.EXPECT().AgentCreate(ctx, matchNewAgent(agentID, customerID, directID)).Return(errBoom)
 				m.req.EXPECT().DirectV1DirectDelete(ctx, directID).Return(nil, fmt.Errorf("cleanup failed"))
 			},
 			expectErr: func(t *testing.T, err error) {
@@ -135,7 +142,7 @@ func Test_dbCreate_errors(t *testing.T) {
 				m.util.EXPECT().HashGenerate("test-password", defaultPasswordHashCost).Return("test-hash", nil)
 				m.util.EXPECT().UUIDCreate().Return(agentID)
 				m.req.EXPECT().DirectV1DirectCreate(ctx, customerID, dmdirect.ResourceTypeAgent, agentID).Return(direct, nil)
-				m.db.EXPECT().AgentCreate(ctx, gomock.Any()).Return(fmt.Errorf("insert: %w", dbhandler.ErrAlreadyExists))
+				m.db.EXPECT().AgentCreate(ctx, matchNewAgent(agentID, customerID, directID)).Return(fmt.Errorf("insert: %w", dbhandler.ErrAlreadyExists))
 				m.req.EXPECT().DirectV1DirectDelete(ctx, directID).Return(direct, nil)
 			},
 			expectErr: assertAddressAssignedError,
@@ -147,7 +154,7 @@ func Test_dbCreate_errors(t *testing.T) {
 				m.util.EXPECT().HashGenerate("test-password", defaultPasswordHashCost).Return("test-hash", nil)
 				m.util.EXPECT().UUIDCreate().Return(agentID)
 				m.req.EXPECT().DirectV1DirectCreate(ctx, customerID, dmdirect.ResourceTypeAgent, agentID).Return(direct, nil)
-				m.db.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
+				m.db.EXPECT().AgentCreate(ctx, matchNewAgent(agentID, customerID, directID)).Return(nil)
 				m.db.EXPECT().AgentGet(ctx, agentID).Return(nil, errBoom)
 			},
 			expectErr: func(t *testing.T, err error) {

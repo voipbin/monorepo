@@ -26,7 +26,8 @@ func Test_EventGroupcallProgressing_skips_failures(t *testing.T) {
 
 	goodAgent := &agent.Agent{Identity: commonidentity.Identity{ID: goodID, CustomerID: customerID}}
 
-	// the first destination fails for the reason under test, the second one must still be processed.
+	// first registers the mock calls of the failing first destination and returns it; the second
+	// destination is a healthy agent and must still be processed. Cases without a lookup ignore m and ctx.
 	tests := []struct {
 		name string
 
@@ -35,7 +36,7 @@ func Test_EventGroupcallProgressing_skips_failures(t *testing.T) {
 		{
 			name: "destination that is not an agent",
 			first: func(ctx context.Context, m *errMocks) commonaddress.Address {
-				return commonaddress.Address{Type: commonaddress.TypeExtension, Target: badID.String()}
+				return commonaddress.Address{Type: commonaddress.TypeExtension, Target: "test-ext"}
 			},
 		},
 		{

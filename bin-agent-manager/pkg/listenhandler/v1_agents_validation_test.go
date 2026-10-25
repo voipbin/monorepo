@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -227,7 +228,7 @@ func Test_processV1Agents_handler_error_validation(t *testing.T) {
 		expectTyped *cerrors.VoipbinError
 	}{
 		{
-			name:    "get by id passes the typed error through",
+			name:    "get by id maps the handler error",
 			handler: (*listenHandler).processV1AgentsIDGet,
 			uri:     idURI,
 			expect: func(m *agenthandler.MockAgentHandler, err error) {
@@ -237,18 +238,18 @@ func Test_processV1Agents_handler_error_validation(t *testing.T) {
 			expectTyped:  notFound,
 		},
 		{
-			name:    "get by customer id and address passes the typed error through",
+			name:    "get by customer id and address maps the handler error",
 			handler: (*listenHandler).processV1AgentsGetByCustomerIDAddressPost,
 			uri:     "/v1/agents/get_by_customer_id_address",
 			data:    []byte(`{"customer_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86","address":{"type":"extension","target":"test-ext"}}`),
 			expect: func(m *agenthandler.MockAgentHandler, err error) {
-				m.EXPECT().GetByCustomerIDAndAddress(gomock.Any(), uuid.FromStringOrNil("5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"), gomock.Any()).Return(nil, err)
+				m.EXPECT().GetByCustomerIDAndAddress(gomock.Any(), uuid.FromStringOrNil("5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"), &commonaddress.Address{Type: commonaddress.TypeExtension, Target: "test-ext"}).Return(nil, err)
 			},
 			expectStatus: 404,
 			expectTyped:  notFound,
 		},
 		{
-			name:    "login failure is 400 even for a typed error",
+			name:    "login handler error returns 400",
 			handler: (*listenHandler).processV1AgentsUsernameLogin,
 			uri:     "/v1/agents/test-user/login",
 			data:    []byte(`{"password":"test-password"}`),
@@ -258,17 +259,17 @@ func Test_processV1Agents_handler_error_validation(t *testing.T) {
 			expectStatus: 400,
 		},
 		{
-			name:    "addresses put failure is 400 even for a typed error",
+			name:    "addresses put handler error returns 400",
 			handler: (*listenHandler).processV1AgentsIDAddressesPut,
 			uri:     idURI + "/addresses",
-			data:    []byte(`{"addresses":[]}`),
+			data:    []byte(`{"addresses":[{"type":"extension","target":"test-ext"}]}`),
 			expect: func(m *agenthandler.MockAgentHandler, err error) {
-				m.EXPECT().UpdateAddresses(gomock.Any(), id, gomock.Any()).Return(nil, err)
+				m.EXPECT().UpdateAddresses(gomock.Any(), id, []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: "test-ext"}}).Return(nil, err)
 			},
 			expectStatus: 400,
 		},
 		{
-			name:    "info put failure is 400 even for a typed error",
+			name:    "info put handler error returns 400",
 			handler: (*listenHandler).processV1AgentsIDPut,
 			uri:     idURI,
 			data:    []byte(`{"name":"test name"}`),
@@ -279,7 +280,7 @@ func Test_processV1Agents_handler_error_validation(t *testing.T) {
 			expectStatus: 400,
 		},
 		{
-			name:    "status put failure is 400 even for a typed error",
+			name:    "status put handler error returns 400",
 			handler: (*listenHandler).processV1AgentsIDStatusPut,
 			uri:     idURI + "/status",
 			data:    []byte(`{"status":"available"}`),
@@ -289,7 +290,7 @@ func Test_processV1Agents_handler_error_validation(t *testing.T) {
 			expectStatus: 400,
 		},
 		{
-			name:    "password put failure is 400 even for a typed error",
+			name:    "password put handler error returns 400",
 			handler: (*listenHandler).processV1AgentsIDPasswordPut,
 			uri:     idURI + "/password",
 			data:    []byte(`{"password":"test-password"}`),
@@ -299,7 +300,7 @@ func Test_processV1Agents_handler_error_validation(t *testing.T) {
 			expectStatus: 400,
 		},
 		{
-			name:    "tag ids put failure is 400 even for a typed error",
+			name:    "tag ids put handler error returns 400",
 			handler: (*listenHandler).processV1AgentsIDTagIDsPut,
 			uri:     idURI + "/tag_ids",
 			data:    []byte(`{"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"]}`),
@@ -309,7 +310,7 @@ func Test_processV1Agents_handler_error_validation(t *testing.T) {
 			expectStatus: 400,
 		},
 		{
-			name:    "reserve failure is 500 even for a typed error",
+			name:    "reserve handler error returns 500",
 			handler: (*listenHandler).processV1AgentsIDReservePost,
 			uri:     idURI + "/reserve",
 			data:    []byte(`{"reference_type":"call","reference_id":"` + validationTestReferenceID + `"}`),
@@ -319,7 +320,7 @@ func Test_processV1Agents_handler_error_validation(t *testing.T) {
 			expectStatus: 500,
 		},
 		{
-			name:    "reserve release failure is 500 even for a typed error",
+			name:    "reserve release handler error returns 500",
 			handler: (*listenHandler).processV1AgentsIDReserveReleasePost,
 			uri:     idURI + "/reserve_release",
 			data:    []byte(`{"reference_id":"` + validationTestReferenceID + `"}`),
