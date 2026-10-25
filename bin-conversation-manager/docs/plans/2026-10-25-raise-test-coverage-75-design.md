@@ -22,7 +22,7 @@
 | pkg/conversationhandler | 598/688 | 86.9% |
 | pkg/accounthandler | 108/134 | 80.6% |
 | pkg/messagehandler | 155/183 | 84.7% |
-| 그 외 | 90% 안팎 | |
+| 그 외 | 85~99% | |
 
 cmd 의 두 main 은 외부 연결 의존이라 신규 테스트 대상에서 제외합니다(분모에는 포함). linehandler 의 Send(텍스트 있음, `send.go:45` 의 `Do()` 는 ctx 를 받지 않음)와 GetPeer(`hook.go` 의 `profile.Do()`)는 실제 LINE API 호출이므로 제외합니다. Setup, Teardown 은 `WithContext(ctx)` 를 쓰므로 이미 취소된 ctx 로 호출하면 연결 시도 없이 `context canceled` 로 끝남을 scratch 에서 확인했습니다(네트워크 호출 없음). 이 오류 경로와 텍스트 없는 Send 는 대상으로 삼습니다.
 
@@ -34,7 +34,9 @@ cmd 의 두 main 은 외부 연결 의존이라 신규 테스트 대상에서 �
 2. pkg/accounthandler: Update, Delete, Create 의 DB 오류와 setup 오류 전파, Delete 시 하위 호출 순서.
 3. pkg/messagehandler: sendWhatsApp, sendWebchat, SMS 전송의 오류 경로(계정 조회 실패, 생성 실패, 전송 실패 시 failed 로 상태 갱신, webchat 세션 ID 파싱 실패, 중복 키 경합 시 재조회).
 4. pkg/conversationhandler: Event 의 분기(알 수 없는 type 오류, 잘못된 JSON, direction 불명).
-5. pkg/linehandler: 텍스트와 media 가 없는 Send 가 클라이언트 생성 후 네트워크 호출 없이 성공함.
+5. pkg/linehandler: 텍스트와 media 가 없는 Send 가 클라이언트 생성 후 네트워크 호출 없이 성공함. 이미 취소된 ctx 로 Setup, Teardown 을 호출하면 `context canceled` 오류를 그대로 반환함(요청이 전송되지 않으므로 네트워크 호출 없음).
+
+예상 증가량(statement): listenhandler 약 45, accounthandler 약 12, messagehandler 약 15, conversationhandler 약 8, linehandler 약 20. 합계 약 100 이면 77% 이상(필요 +64). 반환값 직렬화 실패(500) 분기는 정상 타입에서 만들 수 없으므로 대상에서 뺍니다. 미달 시 dbhandler 오류 경로를 추가합니다.
 
 제품 코드, 시그니처, go.mod 는 바꾸지 않습니다. 테스트 규약: 함수명 Test_, gomock 컨트롤러 이름 mc, 합성 값만 사용.
 
