@@ -2,8 +2,11 @@ package listenhandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
@@ -152,6 +155,9 @@ func Test_listenHandler_inputValidation(t *testing.T) {
 		}, 0, true},
 		{"conversations id put bad field value", func(h *listenHandler) (*sock.Response, error) {
 			return h.processV1ConversationsIDPut(ctx, newReq(testConvURI, sock.RequestMethodPut, `{"owner_id":"not-a-uuid"}`))
+		}, 0, true},
+		{"accounts id put bad field value", func(h *listenHandler) (*sock.Response, error) {
+			return h.processV1AccountsIDPut(ctx, newReq(testAccURI, sock.RequestMethodPut, `{"message_flow_id":"not-a-uuid"}`))
 		}, 0, true},
 		{"accounts id put bad json", func(h *listenHandler) (*sock.Response, error) {
 			return h.processV1AccountsIDPut(ctx, newReq(testAccURI, sock.RequestMethodPut, `{`))
@@ -304,6 +310,49 @@ func Test_listenHandler_downstreamError(t *testing.T) {
 			}
 			if res.StatusCode != tt.expectStatus {
 				t.Errorf("Wrong status. expect: %d, got: %d", tt.expectStatus, res.StatusCode)
+			}
+		})
+	}
+}
+
+// Test_listenHandler_errorStatusMapping verifies that the status derived from a downstream
+// error reaches the response for a typed error, a plain not found and an unclassified error.
+func Test_listenHandler_errorStatusMapping(t *testing.T) {
+	tests := []struct {
+		name string
+
+		err error
+
+		expectStatus   int
+		expectDataType string
+	}{
+		{
+			"typed invalid argument",
+			cerrors.InvalidArgument(commonoutline.ServiceNameConversationManager, "TEST_REASON", "test message"),
+			400,
+			string(cerrors.DataTypeVoipbinError),
+		},
+		{"plain not found", dbhandler.ErrNotFound, 404, ""},
+		{"unclassified", fmt.Errorf("connection refused"), 500, ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			h, m := newErrorPathHandler(mc)
+			m.conv.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil(testConvID)).Return(nil, tt.err)
+
+			res, err := h.processV1ConversationsIDGet(context.Background(), newReq(testConvURI, sock.RequestMethodGet, ""))
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if res.StatusCode != tt.expectStatus {
+				t.Errorf("Wrong status. expect: %d, got: %d", tt.expectStatus, res.StatusCode)
+			}
+			if res.DataType != tt.expectDataType {
+				t.Errorf("Wrong data type. expect: %q, got: %q", tt.expectDataType, res.DataType)
 			}
 		})
 	}
