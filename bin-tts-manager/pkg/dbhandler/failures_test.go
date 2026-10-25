@@ -122,10 +122,10 @@ func Test_streamingGetFromCache_errors(t *testing.T) {
 			mockCache.EXPECT().StreamingGet(gomock.Any(), id).Return(nil, tt.cacheErr)
 
 			res, err := h.streamingGetFromCache(context.Background(), id)
-			if res != nil || err != tt.expectErr {
+			if res != nil || !errors.Is(err, tt.expectErr) {
 				t.Errorf("Wrong result. expect: %v, got res: %v, err: %v", tt.expectErr, res, err)
 			}
-			if tt.expectErr == errCache && errors.Is(err, ErrNotFound) {
+			if errors.Is(tt.expectErr, errCache) && errors.Is(err, ErrNotFound) {
 				t.Errorf("a cache failure must not be reported as not found")
 			}
 		})

@@ -163,11 +163,13 @@ func Test_Create_afterStart(t *testing.T) {
 			defer mc.Finish()
 			m := newTestMocks(mc)
 
+			customerID := uuid.Must(uuid.NewV4())
+			referenceID := uuid.Must(uuid.NewV4())
 			stored := &speaking.Speaking{Status: speaking.StatusActive}
 			m.db.EXPECT().SpeakingGets(gomock.Any(), "", uint64(100), gomock.Any()).Return([]*speaking.Speaking{}, nil).Times(2)
 			m.db.EXPECT().SpeakingCreate(gomock.Any(), gomock.Any()).Return(nil)
-			m.streaming.EXPECT().StartWithID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&streaming.Streaming{}, nil)
-			m.db.EXPECT().SpeakingUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.updateErr)
+			m.streaming.EXPECT().StartWithID(gomock.Any(), gomock.Any(), customerID, streaming.ReferenceTypeCall, referenceID, "en-US", string(streaming.VendorNameElevenlabs), "voice", streaming.DirectionIncoming).Return(&streaming.Streaming{}, nil)
+			m.db.EXPECT().SpeakingUpdate(gomock.Any(), gomock.Any(), map[speaking.Field]any{speaking.FieldStatus: speaking.StatusActive}).Return(tt.updateErr)
 			if tt.getErr != nil {
 				m.db.EXPECT().SpeakingGet(gomock.Any(), gomock.Any()).Return(nil, tt.getErr)
 			} else {
@@ -177,7 +179,7 @@ func Test_Create_afterStart(t *testing.T) {
 				m.notify.EXPECT().PublishEvent(gomock.Any(), speaking.EventTypeSpeakingStarted, stored)
 			}
 
-			res, err := m.handler.Create(context.Background(), uuid.Must(uuid.NewV4()), streaming.ReferenceTypeCall, uuid.Must(uuid.NewV4()), "en-US", "", "voice", streaming.DirectionIncoming)
+			res, err := m.handler.Create(context.Background(), customerID, streaming.ReferenceTypeCall, referenceID, "en-US", "", "voice", streaming.DirectionIncoming)
 			if err != nil || res == nil {
 				t.Fatalf("Wrong result. res: %v, err: %v", res, err)
 			}
