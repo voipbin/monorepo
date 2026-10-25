@@ -127,6 +127,30 @@ func validateConfig(desc Descriptor, config map[string]string) error {
 	return nil
 }
 
+// mergeConfig merges the changes into the config of the row: a key with an empty value is
+// deleted. A row that already holds a DB secret must keep its required keys.
+func mergeConfig(desc Descriptor, row *provider.Provider, changes map[string]string) (map[string]string, error) {
+	merged := map[string]string{}
+	for k, v := range row.Config {
+		merged[k] = v
+	}
+	for k, v := range changes {
+		if v == "" {
+			delete(merged, k)
+		} else {
+			merged[k] = v
+		}
+	}
+
+	if hasDBSecret(row) {
+		if key, missing := requiredConfigMissing(desc, merged); missing {
+			return nil, invalid("the config misses a required key: %s", key)
+		}
+	}
+
+	return merged, nil
+}
+
 // Update changes the enabled flag, the priority and the config of the provider.
 func (h *providerHandler) Update(ctx context.Context, name number.ProviderName, actor uuid.UUID, enabled *bool, priority *int, config map[string]string) (*provider.Info, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -173,23 +197,9 @@ func (h *providerHandler) Update(ctx context.Context, name number.ProviderName, 
 		changed = append(changed, "priority")
 	}
 	if len(config) > 0 {
-		merged := map[string]string{}
-		for k, v := range row.Config {
-			merged[k] = v
-		}
-		for k, v := range config {
-			if v == "" {
-				delete(merged, k)
-			} else {
-				merged[k] = v
-			}
-		}
-
-		// a row that already has a DB secret must stay complete
-		if hasDBSecret(row) {
-			if key, missing := requiredConfigMissing(desc, merged); missing {
-				return nil, invalid("the config misses a required key: %s", key)
-			}
+		merged, err := mergeConfig(desc, row, config)
+		if err != nil {
+			return nil, err
 		}
 
 		fields[provider.FieldConfig] = merged
