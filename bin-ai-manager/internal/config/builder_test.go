@@ -85,6 +85,7 @@ func Test_BuilderConfigEnvBindings(t *testing.T) {
 // Validate must refuse a value that would make the Builder misbehave. The
 // shipped defaults pass, so an untouched deploy still starts.
 func Test_Validate_Builder(t *testing.T) {
+	restoreGlobalConfig(t)
 	good := func() {
 		SetListenDefaultsForTest()
 		globalConfig.AIBuilderModel = "gemini-3.8-flash"
@@ -148,6 +149,7 @@ func Test_Validate_Builder(t *testing.T) {
 }
 
 func Test_Validate_Builder_namesEveryOffendingValue(t *testing.T) {
+	restoreGlobalConfig(t)
 	SetListenDefaultsForTest()
 	globalConfig.AIBuilderModel = "gemini-3.8-flash"
 	globalConfig.AIBuilderMaxOutputTokens = 4096
@@ -207,4 +209,30 @@ func Test_BuilderConfig_envToConfigField(t *testing.T) {
 	if cfg.AIBuilderLLMTimeoutSeconds != 44 {
 		t.Errorf("AIBuilderLLMTimeoutSeconds: got %d, want 44", cfg.AIBuilderLLMTimeoutSeconds)
 	}
+}
+
+// restoreGlobalConfig restores the package-level globalConfig when the test
+// ends, so a test that writes invalid or zero values cannot leak them into a
+// later test (the order varies with -shuffle and -count).
+func restoreGlobalConfig(t *testing.T) {
+	t.Helper()
+	prev := globalConfig
+	t.Cleanup(func() { globalConfig = prev })
+}
+
+// setValidConfigForTest restores globalConfig when the test ends and loads a
+// config that passes Validate: the listen defaults plus valid Builder values.
+// SetListenDefaultsForTest alone leaves the Builder fields at whatever an
+// earlier test left behind, so a test that expects Validate to pass must not
+// depend on test order.
+func setValidConfigForTest(t *testing.T) {
+	t.Helper()
+	restoreGlobalConfig(t)
+	SetListenDefaultsForTest()
+	globalConfig.AIBuilderModel = "gemini-3.8-flash"
+	globalConfig.AIBuilderReasoningEffort = "none"
+	globalConfig.AIBuilderMaxOutputTokens = 4096
+	globalConfig.AIBuilderDailyLimit = 200
+	globalConfig.AIBuilderMaxConcurrent = 3
+	globalConfig.AIBuilderLLMTimeoutSeconds = 40
 }
