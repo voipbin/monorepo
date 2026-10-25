@@ -16,7 +16,7 @@ import (
 
 // Test_processRequest_responseSerializationFailure verifies the external response
 // code of every conference route whose handler result cannot be serialized.
-// The expected code differs per route and is pinned as it is currently returned.
+// The expected code differs per route; the current behavior is recorded as is.
 func Test_processRequest_responseSerializationFailure(t *testing.T) {
 	const base = "/v1/conferences/" + testErrPathID
 
