@@ -19,24 +19,25 @@
 
 범위는 테스트 파일 추가와 기존 `_test.go` 에 케이스 추가뿐입니다(제품 코드, go.mod, go.sum 무변경). 단언은 `reflect.DeepEqual` 과 `t.Errorf`, 신규 함수는 `Test_` 접두, gomock 컨트롤러 변수는 `mc`. 실제 네트워크 접속은 만들지 않습니다. 목표는 수기 합계 76% 이상(2075, 필요 증분 116)이고 최소 75.0% 입니다.
 
-### 2.1 cmd/conference-control (신규 `main_test.go`, 목표 +150 이상)
+### 2.1 cmd/conference-control (신규 `main_test.go`, 필수, 이것만으로 목표 충족: 리뷰어 프로토타입 기준 패키지 약 64% 이며 합계 약 83%)
 
 - `TestMain`: `viper.Set("database_dsn", "not-a-valid-dsn")` 후 `config.LoadGlobalConfig()` 한 번. 이후 `os.Exit(m.Run())`.
-- 각 테스트는 쓰는 viper 키를 `t.Cleanup` 으로 되돌립니다(`viper.Reset` 은 DSN 도 지우므로 사용하지 않고 키별 복원).
+- 각 테스트는 쓰는 viper 키를 `old := viper.Get(k)` 로 저장하고 `t.Cleanup` 에서 `viper.Set(k, old)` 로 복원합니다(viper 에 `Unset` 이 없고, 이전 값이 nil 이면 키가 해제된 것으로 동작하며 빈 문자열로 복원하면 `IsSet` 이 참이 되므로 사용하지 않습니다). `viper.Reset` 은 DSN 도 지우므로 사용하지 않습니다.
+- `PersistentPreRunE` 는 직접 호출로 검증합니다(`root.Execute()` 를 쓰면 `SetArgs` 와 `SilenceUsage`/`SilenceErrors` 를 설정). `viper.Set` 은 flag 와 env 보다 우선하고 `LoadGlobalConfig` 는 `once` 라 DSN 이 덮어써지지 않음을 단언합니다.
 - `Test_resolveUUID`: 빈 값(`... is required`), 잘못된 UUID(`invalid format`), 정상 UUID, 오류 메시지에 라벨이 들어가는지.
 - `Test_printJSON`: 정상 값은 nil, 직렬화 불가 값(chan)은 `failed to marshal JSON` 오류.
 - `Test_cmd_constructors`: 12개 `cmd*` 의 `Use`, `RunE` 비-nil, 필수 flag 이름과 기본값(`type=conference`, `format=wav`, `lang=en`, `limit=100`)을 표로 단언.
 - `Test_initCommand`: 하위 명령 `conference` 아래 12개와 `migrate` 존재, 루트 persistent flag(`database_dsn` 등) 존재, `PersistentPreRunE` 실행 성공.
-- `Test_runCreate_validation`: customer-id 누락, id 형식 오류, type 오류, pre/post flow 형식 오류 각각의 오류 메시지. 모두 `initHandler` 이전에 끝나므로 DSN 과 무관.
+- `Test_runCreate_validation`: customer-id 누락, id 형식 오류, type 오류, pre/post flow 형식 오류 각각의 오류 메시지. 모두 `initHandler` 이전에 끝나므로 DSN 과 무관. type 오류는 `invalid conference type` 문자열을 단언합니다(검증이 없으면 `failed to initialize handlers` 로 바뀌므로 문자열 단언이 변이를 잡습니다).
 - `Test_run_initHandlerFailure`: 11개 `run*` 이 잘못된 DSN 때문에 `failed to initialize handlers` 로 끝남(표 구동). `runCreate` 는 검증을 통과하는 입력으로 같은 실패.
 
-### 2.2 pkg/dbhandler (기존 `error_paths_test.go` 계열에 추가, 목표 +25)
+### 2.2 pkg/dbhandler (선택 추가, 기존 `error_paths_test.go` 에 추가, 목표 +25)
 
-도달 가능한 분기만 다룹니다: `Data` 필드에 chan 을 넣어 `PrepareFields` 실패(Create, Update), `NotEq{Value: <Value() 가 오류를 반환하는 값>}` 로 List 의 `ToSql` 실패, sqlmock 으로 캐시 적중 반환, `SetToCache` 실패, `ScanRow` 실패, NULL 컬럼의 빈 slice/map 초기화, `rows.Err()`. 인자가 고정된 `ToSql` 실패(약 13)는 도달 불가라 제외합니다.
+도달 가능한 분기만 다룹니다. conference 에만 해당: `Data` 필드의 맵 안에 chan 을 넣어 `PrepareFields` 실패(Create 는 `could not prepare fields`, Update 는 `prepare fields failed` 문자열 단언. `FieldData` 값 자체를 chan 으로 주면 다른 위치에서 실패하므로 맵 안에 넣음). conferencecall 은 JSON 필드가 없어 이 분기가 도달 불가입니다. conference 와 conferencecall 공통: `NotEq{Value: <Value() 가 오류를 반환하는 값>}` 로 List 의 `could not build query` 실패, sqlmock 으로 캐시 적중 반환, `SetToCache` 실패, `ScanRow` 실패, NULL 컬럼의 빈 slice/map 초기화, `rows.Err()`. 오류 단언은 `err != nil` 이 아니라 오류 문자열 포함 여부로 합니다. 인자가 고정된 `ToSql` 실패(약 13)는 도달 불가라 제외합니다.
 
-### 2.3 pkg/listenhandler (기존 `error_paths_test.go` 에 추가, 목표 +20)
+### 2.3 pkg/listenhandler (선택 추가, 기존 `error_paths_test.go` 에 추가, 목표 +20)
 
-`Conference.Data` 에 chan 을 가진 응답을 gomock 핸들러가 반환하게 해 `json.Marshal` 실패 시 각 라우트의 외부 응답이 500 인지(또는 `nil, err`) 확인합니다. conferencecalls 와 count 의 Marshal 실패는 도달 불가라 제외합니다.
+`Conference.Data` 에 chan 을 가진 응답을 gomock 핸들러가 반환하게 해 `json.Marshal` 실패에 도달시킵니다. 응답 코드는 라우트마다 다르므로(`errorResponse` 경유 500, 직접 400) 구현 시 라우트별 코드를 `v1_conferences.go`/`v1_conferences_direct_hash.go` 에서 읽어 표로 만들고 그 값을 단언합니다. 확인된 도달 가능 라우트만 다룹니다(list, post, id get, id put, id delete, recording_start/stop, transcribe_start/stop, stop, direct-hash). conferencecalls 와 count 의 Marshal 실패는 도달 불가라 제외합니다.
 
 ### 2.4 그 밖
 
@@ -45,6 +46,6 @@
 ### 2.5 verify 항목과 변이 검사
 
 - 수기 합계 `hw.py` 로 76% 이상(최소 75.0%), 전 패키지 `go test -count=1 -race ./...` 통과, `golangci-lint run -v --timeout 5m` 통과, `scripts/check-test-conventions.sh` 통과, go.mod/go.sum 무변경, `git diff --stat origin/main...HEAD` 가 bin-conference-manager/ 안에만 있음.
-- 변이 표본: `resolveUUID` 의 nil 비교 제거, `runCreate` 의 type 검증 제거, `printJSON` 오류 처리 제거, dbhandler `PrepareFields` 오류 반환 제거, listenhandler Marshal 오류 분기 제거를 각각 scratch 복사본에서 적용했을 때 새 테스트가 실패해야 합니다.
+- 변이 표본: `resolveUUID` 의 nil 비교 제거, `runCreate` 의 type 검증 제거, `printJSON` 오류 처리 제거, (선택 추가를 구현한 경우) dbhandler `PrepareFields` 오류 반환 제거, listenhandler Marshal 오류 분기 제거를 각각 scratch 복사본에서 적용했을 때 새 테스트가 실패해야 합니다. 오류 문자열 단언이 있어야 변이가 생존하지 않습니다.
 - 금지: 빈 호출 테스트, 자기비교식 테스트, 비밀값 리터럴과 `user:pass@host` 형태 DSN(잘못된 DSN 은 `not-a-valid-dsn` 만 사용).
 - 결함 발견 시 고치지 않고 카드 코멘트와 완료 요약에만 적습니다.
