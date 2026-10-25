@@ -47,7 +47,7 @@ VOIP-1416(80% 미만 패키지 일반 상향, Backlog)은 저장소 로그와 gh
    - `telnyxCleanup` 삭제 실패(setup.go 215, 223, 231): Step 5(`h.Create` 의 `db.ProviderCreate` mock 오류)로 `fqdnID` 가 채워진 상태에서 `MockTelnyxClient` 의 `DeleteFQDN`, `DeleteFQDNConnection`, `DeleteOutboundVoiceProfile` 이 오류를 반환하게 하고(기존 setup 테스트는 httptest 가 아니라 mock 과 `setupWithClient` 를 쓴다) `provider create failed: %w` 래핑 메시지 접두를 확인하고 `errors.Is` 로 원 오류를 확인하며(FlowDelete 실패 테스트도 `could not create calls` 래핑을 전제로 한다) 각 Delete 호출이 gomock 으로 정확히 1회임을 단언한다.
 3. `pkg/routehandler`
    - Get 의 `ErrNotFound` 를 `ROUTE_NOT_FOUND` 로 변환.
-   - `ListByTarget`(route.go)의 target 경로 대 `all` 경로의 provider 중복과 `Dialroute`(dialroute.go)의 customer 경로 대 기본 경로의 provider 중복: 서로 다른 `Route.ID` 에 같은 `ProviderID` 를 주고 우선하는 쪽의 `ID` 가 결과에 남고 다른 쪽은 제외됨을 ID 로 단언한다(개수만 보지 않는다).
+   - `ListByTarget`(route.go)의 target 경로 대 `all` 경로의 provider 중복과 `Dialroute`(dialroute.go)의 customer 경로 대 기본 경로의 provider 중복: 서로 다른 `Route.ID` 에 같은 `ProviderID` 를 주고 우선하는 쪽의 `ID` 가 결과에 남고 다른 쪽은 제외됨을 ID 로 단언한다(개수만 보지 않는다). `Dialroute` 테스트는 각 `ListByTarget` 호출 결과 안에서는 provider 가 중복되지 않게 구성해 두 중복 제거 로직이 서로 가려지지 않게 한다.
 4. `pkg/providercallhandler`: `NewProviderCallHandler` 가 지정한 의존성으로 핸들러를 만든다. 그룹콜 목록 `[nil, g]` 입력에서 nil 을 건너뛰고(루프 본문 전체가 현재 미커버) 비-nil 의 ID 가 `ProviderCallCreate` 인자의 `GroupcallIDs` 에 정확히 들어간다(gomock 인자 일치). 임시 flow 정리(`FlowV1FlowDelete`) 실패 시에도 원 오류가 반환되고 정리 호출이 정확히 1회임을 mock 호출 횟수로 단언한다.
 증가분 추정(statement): dbhandler 약 35, providerhandler 약 13(Get NotFound 1, INVALID_CODECS 2, Update 사전 조회 1, Setup 래퍼 2, 포트 오류 3, 정리 실패 3 중 도달분), routehandler 5, providercallhandler 7 으로 합계 약 +60 이며 필요량 26 대비 여유가 있다.
 
