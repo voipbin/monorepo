@@ -185,3 +185,25 @@ func Test_NewCustomerDomainHandler_keepsSettings(t *testing.T) {
 		}
 	}
 }
+
+// Test_EnsureByCustomerID_shortLabelEnabled_createFailure verifies that a create failure that
+// is not a duplicate key is returned with its cause and is not retried.
+func Test_EnsureByCustomerID_shortLabelEnabled_createFailure(t *testing.T) {
+	setTestBaseDomains(t)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &customerDomainHandler{dbBin: mockDB, shortLabelEnabled: true}
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("a1a1a1a1-7f83-11ee-8f5a-1b2c3d4e5f60")
+
+	mockDB.EXPECT().CustomerDomainGet(ctx, customerID).Return(nil, dbhandler.ErrNotFound)
+	mockDB.EXPECT().CustomerDomainCreate(ctx, gomock.Any()).Return(errInjectedDomainDB).Times(1)
+
+	res, err := h.EnsureByCustomerID(ctx, customerID)
+	if res != nil || !errors.Is(err, errInjectedDomainDB) {
+		t.Errorf("Wrong match. expect: the create failure without a result, got: %+v / %v", res, err)
+	}
+}
