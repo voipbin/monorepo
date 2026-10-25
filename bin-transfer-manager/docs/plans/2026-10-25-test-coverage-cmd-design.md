@@ -51,15 +51,15 @@ cmd 도달 가능분을 함수별로 정리합니다(stmt 는 프로파일 블�
   - control printJSON 들여쓰기 변경: Test_printJSON
   - control cmdServiceStart 의 `transfer-type` 플래그 기본값을 `attended` 로 변경: Test_cmdFlags
   - control run* 의 errors.Wrap 제거: Test_run_initHandlerFailure
-  - control initCache 의 errors.Wrapf 제거: Test_initCache_error
+  - control initCache 의 errors.Wrapf 제거: Test_initCache
   - manager initProm 의 조건 `endpoint == "" || listen == ""` 를 정확한 부정 `endpoint != "" && listen != ""` 로 반전: Test_initProm_disabled(변이 판정 케이스는 endpoint 가 있고 listen 만 빈 케이스로 고정하며 DefaultServeMux 에 패턴이 없음을 단언)
   - manager initSignal 의 SIGHUP 을 Notify 목록에서 제거: Test_initSignal(실제 SIGHUP 으로 테스트 프로세스가 종료되어 실패하며 일반 FAIL 출력이 없음을 evidence 에 기록)
   - manager initSignal 의 chDone 전송 제거: Test_initSignal
-  - manager runSubscribe 의 오류 wrap 을 `return nil` 로 바꿔 오류를 삼킴, 그리고 wrap 을 `return err` 로 바꿈: Test_runSubscribe_error(오류 문자열 앞단 `could not run the subscribe handler` 단언 포함, 두 변이 모두 실패해야 함)
-  - manager runRequestListen 의 오류 wrap 을 `return nil` 로 바꿈, 그리고 `return err` 로 바꿈: Test_runRequestListen_error(앞단 `could not run the listen handler` 단언 포함)
+  - manager runSubscribe 의 오류 wrap 을 `return nil` 로 바꿔 오류를 삼킴, 그리고 wrap 을 `return err` 로 바꿈: Test_runSubscribe(오류 문자열 앞단 `could not run the subscribe handler` 단언 포함, 두 변이 모두 실패해야 함)
+  - manager runRequestListen 의 오류 wrap 을 `return nil` 로 바꿈, 그리고 `return err` 로 바꿈: Test_runRequestListen(앞단 `could not run the listen handler` 단언 포함)
   - (기존 pkg/subscribehandler 테스트도 같은 변이를 잡으며 cmd 테스트가 추가로 보장하는 것은 wrap 접두사와 실패 뒤 호출 부재임)
-  - subscribehandler Run 의 QueueBind 오류 반환을 continue 로 변경: Test_runSubscribe_error 의 2번째 QueueBind 실패 케이스
-  - manager runDaemon 의 DB 오류 wrap 제거: Test_runDaemon_dbFailure
+  - subscribehandler Run 의 QueueBind 오류 반환을 continue 로 변경: Test_runSubscribe 의 2번째 QueueBind 실패 케이스
+  - manager runDaemon 의 DB 오류 wrap 제거: Test_runDaemon_databaseFailure
 - `git diff --name-only origin/main...HEAD` 가 bin-transfer-manager/ 안의 테스트 파일과 설계 문서뿐임.
 
 ## 6. 롤백

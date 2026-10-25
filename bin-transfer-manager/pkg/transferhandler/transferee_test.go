@@ -194,3 +194,33 @@ func Test_TransfereeAnswer_TypeBlind(t *testing.T) {
 		})
 	}
 }
+
+func Test_TransfereeAnswer_TypeAttended(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	// no call is expected on the mocks: an answered transferee of an attended transfer
+	// changes nothing, so any request or db call fails the test.
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := transferHandler{
+		reqHandler: mockReq,
+		db:         mockDB,
+	}
+
+	tr := &transfer.Transfer{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("7c1e3a52-0001-11ee-9a11-000000000001"),
+		},
+		Type:         transfer.TypeAttended,
+		ConfbridgeID: uuid.FromStringOrNil("7c1e3a52-0002-11ee-9a11-000000000002"),
+	}
+	gc := &cmgroupcall.Groupcall{
+		AnswerCallID: uuid.FromStringOrNil("7c1e3a52-0003-11ee-9a11-000000000003"),
+	}
+
+	if err := h.TransfereeAnswer(context.Background(), tr, gc); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
