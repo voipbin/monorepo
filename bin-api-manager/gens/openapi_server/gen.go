@@ -2509,6 +2509,30 @@ func (e NumberManagerAvailableNumberFeature) Valid() bool {
 	}
 }
 
+// Defines values for NumberManagerNumberProviderCredentialSource.
+const (
+	NumberManagerNumberProviderCredentialSourceDB              NumberManagerNumberProviderCredentialSource = "db"
+	NumberManagerNumberProviderCredentialSourceDBUndecryptable NumberManagerNumberProviderCredentialSource = "db_undecryptable"
+	NumberManagerNumberProviderCredentialSourceEnv             NumberManagerNumberProviderCredentialSource = "env"
+	NumberManagerNumberProviderCredentialSourceNone            NumberManagerNumberProviderCredentialSource = "none"
+)
+
+// Valid indicates whether the value is a known member of the NumberManagerNumberProviderCredentialSource enum.
+func (e NumberManagerNumberProviderCredentialSource) Valid() bool {
+	switch e {
+	case NumberManagerNumberProviderCredentialSourceDB:
+		return true
+	case NumberManagerNumberProviderCredentialSourceDBUndecryptable:
+		return true
+	case NumberManagerNumberProviderCredentialSourceEnv:
+		return true
+	case NumberManagerNumberProviderCredentialSourceNone:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for NumberManagerNumberProviderName.
 const (
 	NumberManagerProviderNameMessagebird NumberManagerNumberProviderName = "messagebird"
@@ -6879,8 +6903,73 @@ type NumberManagerNumber struct {
 	Type *NumberManagerNumberType `json:"type,omitempty"`
 }
 
+// NumberManagerNumberProvider The setting of a number provider. It never contains a secret.
+type NumberManagerNumberProvider struct {
+	// Config The non-secret settings of the provider (for example the Telnyx `connection_id`). Omitted when empty.
+	Config *map[string]string `json:"config,omitempty"`
+
+	// CredentialSource Where the credentials of the number provider come from.
+	// `db` is the secret stored through the API, `env` is the platform environment, `none` means no credential exists,
+	// and `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).
+	CredentialSource *NumberManagerNumberProviderCredentialSource `json:"credential_source,omitempty"`
+
+	// Enabled Whether the provider takes part in the number purchase.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// HasSecret Whether a secret is stored through the API. The secret itself is never returned.
+	HasSecret *bool `json:"has_secret,omitempty"`
+
+	// KeyVersion The version of the encryption key that encrypted the stored secret. 0 when no secret is stored.
+	KeyVersion *int `json:"key_version,omitempty"`
+
+	// Priority The purchase order. A lower value is tried first; ties are ordered by `provider_name`.
+	Priority *int `json:"priority,omitempty"`
+
+	// ProviderName The name of the number provider.
+	ProviderName *string `json:"provider_name,omitempty"`
+
+	// SecretUpdatedBy The agent who last changed the secret. The agent ID returned from the `GET /agents` response. Omitted when never changed.
+	SecretUpdatedBy *string `json:"secret_updated_by,omitempty"`
+
+	// TmSecretUpdate The timestamp of the last secret change. Omitted when never changed.
+	TmSecretUpdate *time.Time `json:"tm_secret_update,omitempty"`
+
+	// TmUpdate The timestamp of the last change of the setting, including a secret change. Omitted when never changed.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// UpdatedBy The agent who last changed `enabled`, `priority` or `config`. The agent ID returned from the `GET /agents` response. Omitted when never changed.
+	UpdatedBy *string `json:"updated_by,omitempty"`
+
+	// Usable Whether the provider can currently serve (enabled, with a usable credential and, for a stored secret, its required `config`). It does not mean the provider can purchase numbers.
+	Usable *bool `json:"usable,omitempty"`
+}
+
+// NumberManagerNumberProviderCredentialSource Where the credentials of the number provider come from.
+// `db` is the secret stored through the API, `env` is the platform environment, `none` means no credential exists,
+// and `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).
+type NumberManagerNumberProviderCredentialSource string
+
 // NumberManagerNumberProviderName The provider name for the number.
 type NumberManagerNumberProviderName string
+
+// NumberManagerNumberProviderSecretRequest The secret to store. It is write-only and never returned.
+type NumberManagerNumberProviderSecretRequest struct {
+	// Secret The secret (for example the API token) of the provider. Trimmed of surrounding whitespace; 1 to 1024 bytes after that.
+	Secret *string `json:"secret,omitempty"`
+}
+
+// NumberManagerNumberProviderUpdateRequest The fields to change. At least one field is required; omitted fields keep their current value.
+type NumberManagerNumberProviderUpdateRequest struct {
+	// Config The non-secret settings, merged key by key. A key with an empty string value is removed.
+	// At most 8 keys, key up to 32 bytes and value up to 256 bytes. Only the keys the provider allows are accepted (Telnyx: `connection_id`, `profile_id`; Twilio: `sid`).
+	Config *map[string]string `json:"config,omitempty"`
+
+	// Enabled Whether the provider takes part in the number purchase.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Priority The purchase order. A lower value is tried first.
+	Priority *int `json:"priority,omitempty"`
+}
 
 // NumberManagerNumberStatus The status of the number.
 type NumberManagerNumberStatus string
@@ -11324,6 +11413,12 @@ type PutMcpserversIdJSONRequestBody PutMcpserversIdJSONBody
 // PostMessagesJSONRequestBody defines body for PostMessages for application/json ContentType.
 type PostMessagesJSONRequestBody PostMessagesJSONBody
 
+// PutNumberProvidersProviderNameJSONRequestBody defines body for PutNumberProvidersProviderName for application/json ContentType.
+type PutNumberProvidersProviderNameJSONRequestBody = NumberManagerNumberProviderUpdateRequest
+
+// PutNumberProvidersProviderNameSecretJSONRequestBody defines body for PutNumberProvidersProviderNameSecret for application/json ContentType.
+type PutNumberProvidersProviderNameSecretJSONRequestBody = NumberManagerNumberProviderSecretRequest
+
 // PostNumbersJSONRequestBody defines body for PostNumbers for application/json ContentType.
 type PostNumbersJSONRequestBody PostNumbersJSONBody
 
@@ -12235,6 +12330,21 @@ type ServerInterface interface {
 	// Get a message by ID
 	// (GET /messages/{id})
 	GetMessagesId(c *gin.Context, id string)
+	// List the number providers
+	// (GET /number_providers)
+	GetNumberProviders(c *gin.Context)
+	// Get a number provider
+	// (GET /number_providers/{provider_name})
+	GetNumberProvidersProviderName(c *gin.Context, providerName string)
+	// Update a number provider
+	// (PUT /number_providers/{provider_name})
+	PutNumberProvidersProviderName(c *gin.Context, providerName string)
+	// Delete the stored secret of a number provider
+	// (DELETE /number_providers/{provider_name}/secret)
+	DeleteNumberProvidersProviderNameSecret(c *gin.Context, providerName string)
+	// Store the secret of a number provider
+	// (PUT /number_providers/{provider_name}/secret)
+	PutNumberProvidersProviderNameSecret(c *gin.Context, providerName string)
 	// List order numbers
 	// (GET /numbers)
 	GetNumbers(c *gin.Context, params GetNumbersParams)
@@ -18588,6 +18698,119 @@ func (siw *ServerInterfaceWrapper) GetMessagesId(c *gin.Context) {
 	siw.Handler.GetMessagesId(c, id)
 }
 
+// GetNumberProviders operation middleware
+func (siw *ServerInterfaceWrapper) GetNumberProviders(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetNumberProviders(c)
+}
+
+// GetNumberProvidersProviderName operation middleware
+func (siw *ServerInterfaceWrapper) GetNumberProvidersProviderName(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "provider_name" -------------
+	var providerName string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "provider_name", c.Param("provider_name"), &providerName, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter provider_name: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetNumberProvidersProviderName(c, providerName)
+}
+
+// PutNumberProvidersProviderName operation middleware
+func (siw *ServerInterfaceWrapper) PutNumberProvidersProviderName(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "provider_name" -------------
+	var providerName string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "provider_name", c.Param("provider_name"), &providerName, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter provider_name: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutNumberProvidersProviderName(c, providerName)
+}
+
+// DeleteNumberProvidersProviderNameSecret operation middleware
+func (siw *ServerInterfaceWrapper) DeleteNumberProvidersProviderNameSecret(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "provider_name" -------------
+	var providerName string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "provider_name", c.Param("provider_name"), &providerName, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter provider_name: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteNumberProvidersProviderNameSecret(c, providerName)
+}
+
+// PutNumberProvidersProviderNameSecret operation middleware
+func (siw *ServerInterfaceWrapper) PutNumberProvidersProviderNameSecret(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "provider_name" -------------
+	var providerName string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "provider_name", c.Param("provider_name"), &providerName, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter provider_name: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutNumberProvidersProviderNameSecret(c, providerName)
+}
+
 // GetNumbers operation middleware
 func (siw *ServerInterfaceWrapper) GetNumbers(c *gin.Context) {
 
@@ -24543,6 +24766,11 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/messages", wrapper.PostMessages)
 	router.DELETE(options.BaseURL+"/messages/:id", wrapper.DeleteMessagesId)
 	router.GET(options.BaseURL+"/messages/:id", wrapper.GetMessagesId)
+	router.GET(options.BaseURL+"/number_providers", wrapper.GetNumberProviders)
+	router.GET(options.BaseURL+"/number_providers/:provider_name", wrapper.GetNumberProvidersProviderName)
+	router.PUT(options.BaseURL+"/number_providers/:provider_name", wrapper.PutNumberProvidersProviderName)
+	router.DELETE(options.BaseURL+"/number_providers/:provider_name/secret", wrapper.DeleteNumberProvidersProviderNameSecret)
+	router.PUT(options.BaseURL+"/number_providers/:provider_name/secret", wrapper.PutNumberProvidersProviderNameSecret)
 	router.GET(options.BaseURL+"/numbers", wrapper.GetNumbers)
 	router.POST(options.BaseURL+"/numbers", wrapper.PostNumbers)
 	router.POST(options.BaseURL+"/numbers/renew", wrapper.PostNumbersRenew)
@@ -42912,6 +43140,457 @@ func (response GetMessagesId500JSONResponse) VisitGetMessagesIdResponse(w http.R
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetNumberProvidersRequestObject struct {
+}
+
+type GetNumberProvidersResponseObject interface {
+	VisitGetNumberProvidersResponse(w http.ResponseWriter) error
+}
+
+type GetNumberProviders200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                        `json:"next_page_token,omitempty"`
+	Result        *[]NumberManagerNumberProvider `json:"result,omitempty"`
+}
+
+func (response GetNumberProviders200JSONResponse) VisitGetNumberProvidersResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetNumberProviders401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetNumberProviders401JSONResponse) VisitGetNumberProvidersResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetNumberProviders403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetNumberProviders403JSONResponse) VisitGetNumberProvidersResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetNumberProviders500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetNumberProviders500JSONResponse) VisitGetNumberProvidersResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetNumberProvidersProviderNameRequestObject struct {
+	ProviderName string `json:"provider_name"`
+}
+
+type GetNumberProvidersProviderNameResponseObject interface {
+	VisitGetNumberProvidersProviderNameResponse(w http.ResponseWriter) error
+}
+
+type GetNumberProvidersProviderName200JSONResponse NumberManagerNumberProvider
+
+func (response GetNumberProvidersProviderName200JSONResponse) VisitGetNumberProvidersProviderNameResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetNumberProvidersProviderName400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetNumberProvidersProviderName400JSONResponse) VisitGetNumberProvidersProviderNameResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetNumberProvidersProviderName401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetNumberProvidersProviderName401JSONResponse) VisitGetNumberProvidersProviderNameResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetNumberProvidersProviderName403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetNumberProvidersProviderName403JSONResponse) VisitGetNumberProvidersProviderNameResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetNumberProvidersProviderName404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetNumberProvidersProviderName404JSONResponse) VisitGetNumberProvidersProviderNameResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetNumberProvidersProviderName500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetNumberProvidersProviderName500JSONResponse) VisitGetNumberProvidersProviderNameResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutNumberProvidersProviderNameRequestObject struct {
+	ProviderName string `json:"provider_name"`
+	Body         *PutNumberProvidersProviderNameJSONRequestBody
+}
+
+type PutNumberProvidersProviderNameResponseObject interface {
+	VisitPutNumberProvidersProviderNameResponse(w http.ResponseWriter) error
+}
+
+type PutNumberProvidersProviderName200JSONResponse NumberManagerNumberProvider
+
+func (response PutNumberProvidersProviderName200JSONResponse) VisitPutNumberProvidersProviderNameResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutNumberProvidersProviderName400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutNumberProvidersProviderName400JSONResponse) VisitPutNumberProvidersProviderNameResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutNumberProvidersProviderName401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutNumberProvidersProviderName401JSONResponse) VisitPutNumberProvidersProviderNameResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutNumberProvidersProviderName403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PutNumberProvidersProviderName403JSONResponse) VisitPutNumberProvidersProviderNameResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutNumberProvidersProviderName404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PutNumberProvidersProviderName404JSONResponse) VisitPutNumberProvidersProviderNameResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutNumberProvidersProviderName500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutNumberProvidersProviderName500JSONResponse) VisitPutNumberProvidersProviderNameResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteNumberProvidersProviderNameSecretRequestObject struct {
+	ProviderName string `json:"provider_name"`
+}
+
+type DeleteNumberProvidersProviderNameSecretResponseObject interface {
+	VisitDeleteNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error
+}
+
+type DeleteNumberProvidersProviderNameSecret200JSONResponse NumberManagerNumberProvider
+
+func (response DeleteNumberProvidersProviderNameSecret200JSONResponse) VisitDeleteNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteNumberProvidersProviderNameSecret400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteNumberProvidersProviderNameSecret400JSONResponse) VisitDeleteNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteNumberProvidersProviderNameSecret401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteNumberProvidersProviderNameSecret401JSONResponse) VisitDeleteNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteNumberProvidersProviderNameSecret403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteNumberProvidersProviderNameSecret403JSONResponse) VisitDeleteNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteNumberProvidersProviderNameSecret404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteNumberProvidersProviderNameSecret404JSONResponse) VisitDeleteNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteNumberProvidersProviderNameSecret500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteNumberProvidersProviderNameSecret500JSONResponse) VisitDeleteNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutNumberProvidersProviderNameSecretRequestObject struct {
+	ProviderName string `json:"provider_name"`
+	Body         *PutNumberProvidersProviderNameSecretJSONRequestBody
+}
+
+type PutNumberProvidersProviderNameSecretResponseObject interface {
+	VisitPutNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error
+}
+
+type PutNumberProvidersProviderNameSecret200JSONResponse NumberManagerNumberProvider
+
+func (response PutNumberProvidersProviderNameSecret200JSONResponse) VisitPutNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutNumberProvidersProviderNameSecret400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutNumberProvidersProviderNameSecret400JSONResponse) VisitPutNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutNumberProvidersProviderNameSecret401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutNumberProvidersProviderNameSecret401JSONResponse) VisitPutNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutNumberProvidersProviderNameSecret403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PutNumberProvidersProviderNameSecret403JSONResponse) VisitPutNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutNumberProvidersProviderNameSecret404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PutNumberProvidersProviderNameSecret404JSONResponse) VisitPutNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutNumberProvidersProviderNameSecret500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutNumberProvidersProviderNameSecret500JSONResponse) VisitPutNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutNumberProvidersProviderNameSecret503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PutNumberProvidersProviderNameSecret503JSONResponse) VisitPutNumberProvidersProviderNameSecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -61313,6 +61992,21 @@ type StrictServerInterface interface {
 	// Get a message by ID
 	// (GET /messages/{id})
 	GetMessagesId(ctx context.Context, request GetMessagesIdRequestObject) (GetMessagesIdResponseObject, error)
+	// List the number providers
+	// (GET /number_providers)
+	GetNumberProviders(ctx context.Context, request GetNumberProvidersRequestObject) (GetNumberProvidersResponseObject, error)
+	// Get a number provider
+	// (GET /number_providers/{provider_name})
+	GetNumberProvidersProviderName(ctx context.Context, request GetNumberProvidersProviderNameRequestObject) (GetNumberProvidersProviderNameResponseObject, error)
+	// Update a number provider
+	// (PUT /number_providers/{provider_name})
+	PutNumberProvidersProviderName(ctx context.Context, request PutNumberProvidersProviderNameRequestObject) (PutNumberProvidersProviderNameResponseObject, error)
+	// Delete the stored secret of a number provider
+	// (DELETE /number_providers/{provider_name}/secret)
+	DeleteNumberProvidersProviderNameSecret(ctx context.Context, request DeleteNumberProvidersProviderNameSecretRequestObject) (DeleteNumberProvidersProviderNameSecretResponseObject, error)
+	// Store the secret of a number provider
+	// (PUT /number_providers/{provider_name}/secret)
+	PutNumberProvidersProviderNameSecret(ctx context.Context, request PutNumberProvidersProviderNameSecretRequestObject) (PutNumberProvidersProviderNameSecretResponseObject, error)
 	// List order numbers
 	// (GET /numbers)
 	GetNumbers(ctx context.Context, request GetNumbersRequestObject) (GetNumbersResponseObject, error)
@@ -68240,6 +68934,148 @@ func (sh *strictHandler) GetMessagesId(ctx *gin.Context, id string) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(GetMessagesIdResponseObject); ok {
 		if err := validResponse.VisitGetMessagesIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetNumberProviders operation middleware
+func (sh *strictHandler) GetNumberProviders(ctx *gin.Context) {
+	var request GetNumberProvidersRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetNumberProviders(ctx, request.(GetNumberProvidersRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetNumberProviders")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetNumberProvidersResponseObject); ok {
+		if err := validResponse.VisitGetNumberProvidersResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetNumberProvidersProviderName operation middleware
+func (sh *strictHandler) GetNumberProvidersProviderName(ctx *gin.Context, providerName string) {
+	var request GetNumberProvidersProviderNameRequestObject
+
+	request.ProviderName = providerName
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetNumberProvidersProviderName(ctx, request.(GetNumberProvidersProviderNameRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetNumberProvidersProviderName")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetNumberProvidersProviderNameResponseObject); ok {
+		if err := validResponse.VisitGetNumberProvidersProviderNameResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutNumberProvidersProviderName operation middleware
+func (sh *strictHandler) PutNumberProvidersProviderName(ctx *gin.Context, providerName string) {
+	var request PutNumberProvidersProviderNameRequestObject
+
+	request.ProviderName = providerName
+
+	var body PutNumberProvidersProviderNameJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutNumberProvidersProviderName(ctx, request.(PutNumberProvidersProviderNameRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutNumberProvidersProviderName")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PutNumberProvidersProviderNameResponseObject); ok {
+		if err := validResponse.VisitPutNumberProvidersProviderNameResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteNumberProvidersProviderNameSecret operation middleware
+func (sh *strictHandler) DeleteNumberProvidersProviderNameSecret(ctx *gin.Context, providerName string) {
+	var request DeleteNumberProvidersProviderNameSecretRequestObject
+
+	request.ProviderName = providerName
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteNumberProvidersProviderNameSecret(ctx, request.(DeleteNumberProvidersProviderNameSecretRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteNumberProvidersProviderNameSecret")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(DeleteNumberProvidersProviderNameSecretResponseObject); ok {
+		if err := validResponse.VisitDeleteNumberProvidersProviderNameSecretResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutNumberProvidersProviderNameSecret operation middleware
+func (sh *strictHandler) PutNumberProvidersProviderNameSecret(ctx *gin.Context, providerName string) {
+	var request PutNumberProvidersProviderNameSecretRequestObject
+
+	request.ProviderName = providerName
+
+	var body PutNumberProvidersProviderNameSecretJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutNumberProvidersProviderNameSecret(ctx, request.(PutNumberProvidersProviderNameSecretRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutNumberProvidersProviderNameSecret")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PutNumberProvidersProviderNameSecretResponseObject); ok {
+		if err := validResponse.VisitPutNumberProvidersProviderNameSecretResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

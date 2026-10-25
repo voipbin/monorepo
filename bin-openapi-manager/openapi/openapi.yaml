@@ -113,6 +113,12 @@ tags:
       description: Find more about number
       url: https://api.voipbin.net/docs/number.html
 
+  - name: NumberProvider
+    description: Operations related to number provider (admin-only setting of the carriers numbers are purchased from)
+    externalDocs:
+      description: Find more about number provider
+      url: https://api.voipbin.net/docs/number_provider.html
+
   - name: Outdial
     description: Operations related to outdial
     externalDocs:
@@ -6388,6 +6394,120 @@ components:
         - NumberManagerProviderNameTelnyx
         - NumberManagerProviderNameTwilio
         - NumberManagerProviderNameMessagebird
+    NumberManagerNumberProviderCredentialSource:
+      type: string
+      description: |
+        Where the credentials of the number provider come from.
+        `db` is the secret stored through the API, `env` is the platform environment, `none` means no credential exists,
+        and `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).
+      example: "db"
+      enum:
+        - db
+        - env
+        - none
+        - db_undecryptable
+      x-enum-varnames:
+        - NumberManagerNumberProviderCredentialSourceDB
+        - NumberManagerNumberProviderCredentialSourceEnv
+        - NumberManagerNumberProviderCredentialSourceNone
+        - NumberManagerNumberProviderCredentialSourceDBUndecryptable
+    NumberManagerNumberProvider:
+      type: object
+      description: The setting of a number provider. It never contains a secret.
+      properties:
+        provider_name:
+          type: string
+          pattern: '^[a-z0-9_]{1,32}$'
+          description: The name of the number provider.
+          example: "telnyx"
+        enabled:
+          type: boolean
+          description: Whether the provider takes part in the number purchase.
+          example: true
+        priority:
+          type: integer
+          description: The purchase order. A lower value is tried first; ties are ordered by `provider_name`.
+          example: 10
+        config:
+          type: object
+          additionalProperties:
+            type: string
+          description: The non-secret settings of the provider (for example the Telnyx `connection_id`). Omitted when empty.
+          example:
+            connection_id: "1234567890123456789"
+        has_secret:
+          type: boolean
+          description: Whether a secret is stored through the API. The secret itself is never returned.
+          example: true
+        key_version:
+          type: integer
+          description: The version of the encryption key that encrypted the stored secret. 0 when no secret is stored.
+          example: 1
+        credential_source:
+          $ref: '#/components/schemas/NumberManagerNumberProviderCredentialSource'
+        usable:
+          type: boolean
+          description: "Whether the provider can currently serve (enabled, with a usable credential and, for a stored secret, its required `config`). It does not mean the provider can purchase numbers."
+          example: true
+        updated_by:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The agent who last changed `enabled`, `priority` or `config`. The agent ID returned from the `GET /agents` response. Omitted when never changed.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        secret_updated_by:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The agent who last changed the secret. The agent ID returned from the `GET /agents` response. Omitted when never changed.
+          example: "00000000-0000-4000-8000-000000000002"
+        tm_update:
+          type: string
+          format: date-time
+          description: The timestamp of the last change of the setting, including a secret change. Omitted when never changed.
+          example: "2026-01-02T03:04:05.000000Z"
+        tm_secret_update:
+          type: string
+          format: date-time
+          description: The timestamp of the last secret change. Omitted when never changed.
+          example: "2026-01-03T04:05:06.000000Z"
+    NumberManagerNumberProviderUpdateRequest:
+      type: object
+      description: The fields to change. At least one field is required; omitted fields keep their current value.
+      properties:
+        enabled:
+          type: boolean
+          description: Whether the provider takes part in the number purchase.
+          example: true
+        priority:
+          type: integer
+          minimum: 0
+          maximum: 1000000
+          description: The purchase order. A lower value is tried first.
+          example: 10
+        config:
+          type: object
+          additionalProperties:
+            type: string
+          description: |
+            The non-secret settings, merged key by key. A key with an empty string value is removed.
+            At most 8 keys, key up to 32 bytes and value up to 256 bytes. Only the keys the provider allows are accepted (Telnyx: `connection_id`, `profile_id`; Twilio: `sid`).
+          example:
+            connection_id: "1234567890123456789"
+            profile_id: "9876543210987654321"
+    NumberManagerNumberProviderSecretRequest:
+      type: object
+      description: The secret to store. It is write-only and never returned.
+      required:
+        - secret
+      properties:
+        secret:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 1024
+          description: The secret (for example the API token) of the provider. Trimmed of surrounding whitespace; 1 to 1024 bytes after that.
+          example: "example-secret-token"
     NumberManagerNumberStatus:
       type: string
       description: The status of the number.
@@ -9141,6 +9261,13 @@ paths:
     $ref: './paths/numbers/main.yaml'
   /numbers/renew:
     $ref: './paths/numbers/renew.yaml'
+
+  /number_providers/{provider_name}/secret:
+    $ref: './paths/number_providers/id_secret.yaml'
+  /number_providers/{provider_name}:
+    $ref: './paths/number_providers/id.yaml'
+  /number_providers:
+    $ref: './paths/number_providers/main.yaml'
 
   /outdials/{id}/campaign_id:
     $ref: './paths/outdials/id_campaign_id.yaml'

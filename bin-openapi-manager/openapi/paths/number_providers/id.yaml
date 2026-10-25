@@ -1,0 +1,77 @@
+get:
+  summary: Get a number provider
+  description: |
+    Returns the setting of the given number provider. The response never contains a secret.
+    Requires the project super admin permission.
+  tags:
+    - NumberProvider
+  parameters:
+    - name: provider_name
+      in: path
+      required: true
+      description: "The name of the number provider. Returned from the `provider_name` field of the `GET /number_providers` response. Only the providers the platform supports are accepted (for example `telnyx`)."
+      schema:
+        type: string
+        pattern: '^[a-z0-9_]{1,32}$'
+        example: telnyx
+  responses:
+    '200':
+      description: The number provider.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NumberManagerNumberProvider'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+put:
+  summary: Update a number provider
+  description: |
+    Updates the `enabled`, `priority` and `config` of the given number provider. Omitted fields keep their current value, and at least one of the three fields is required (an empty body returns 400).
+    A request that removes a `config` key the provider requires while a secret is stored is rejected with 400.
+    `config` is merged key by key. A key whose value is an empty string is removed. Only the keys the provider allows are accepted, and they are not secrets.
+    When the provider has no stored setting yet, it is created with the provider defaults for the fields that are not sent.
+    Concurrent updates of the same provider's `config` are not serialized: the last write wins.
+    Requires the project super admin permission.
+  tags:
+    - NumberProvider
+  parameters:
+    - name: provider_name
+      in: path
+      required: true
+      description: "The name of the number provider. Returned from the `provider_name` field of the `GET /number_providers` response. Only the providers the platform supports are accepted (for example `telnyx`)."
+      schema:
+        type: string
+        pattern: '^[a-z0-9_]{1,32}$'
+        example: telnyx
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/NumberManagerNumberProviderUpdateRequest'
+  responses:
+    '200':
+      description: The updated number provider.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NumberManagerNumberProvider'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

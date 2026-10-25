@@ -114,6 +114,7 @@ What you can build
    :caption: Numbers & PSTN
 
    number
+   number_provider
    provider
    providercall
    route

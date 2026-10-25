@@ -57,6 +57,7 @@ import (
 	message1 "monorepo/bin-message-manager/models/message"
 	availablenumber "monorepo/bin-number-manager/models/availablenumber"
 	number "monorepo/bin-number-manager/models/number"
+	provider "monorepo/bin-number-manager/models/provider"
 	outdial "monorepo/bin-outdial-manager/models/outdial"
 	outdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 	queue "monorepo/bin-queue-manager/models/queue"
@@ -65,7 +66,7 @@ import (
 	extension "monorepo/bin-registrar-manager/models/extension"
 	sipauth "monorepo/bin-registrar-manager/models/sipauth"
 	trunk "monorepo/bin-registrar-manager/models/trunk"
-	provider "monorepo/bin-route-manager/models/provider"
+	provider0 "monorepo/bin-route-manager/models/provider"
 	providercall "monorepo/bin-route-manager/models/providercall"
 	route "monorepo/bin-route-manager/models/route"
 	account1 "monorepo/bin-storage-manager/models/account"
@@ -3527,6 +3528,81 @@ func (mr *MockServiceHandlerMockRecorder) NumberList(ctx, a, size, token any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberList", reflect.TypeOf((*MockServiceHandler)(nil).NumberList), ctx, a, size, token)
 }
 
+// NumberProviderDeleteSecret mocks base method.
+func (m *MockServiceHandler) NumberProviderDeleteSecret(ctx context.Context, a *auth.AuthIdentity, name string) (*provider.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberProviderDeleteSecret", ctx, a, name)
+	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberProviderDeleteSecret indicates an expected call of NumberProviderDeleteSecret.
+func (mr *MockServiceHandlerMockRecorder) NumberProviderDeleteSecret(ctx, a, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberProviderDeleteSecret", reflect.TypeOf((*MockServiceHandler)(nil).NumberProviderDeleteSecret), ctx, a, name)
+}
+
+// NumberProviderGet mocks base method.
+func (m *MockServiceHandler) NumberProviderGet(ctx context.Context, a *auth.AuthIdentity, name string) (*provider.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberProviderGet", ctx, a, name)
+	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberProviderGet indicates an expected call of NumberProviderGet.
+func (mr *MockServiceHandlerMockRecorder) NumberProviderGet(ctx, a, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberProviderGet", reflect.TypeOf((*MockServiceHandler)(nil).NumberProviderGet), ctx, a, name)
+}
+
+// NumberProviderList mocks base method.
+func (m *MockServiceHandler) NumberProviderList(ctx context.Context, a *auth.AuthIdentity) ([]*provider.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberProviderList", ctx, a)
+	ret0, _ := ret[0].([]*provider.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberProviderList indicates an expected call of NumberProviderList.
+func (mr *MockServiceHandlerMockRecorder) NumberProviderList(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberProviderList", reflect.TypeOf((*MockServiceHandler)(nil).NumberProviderList), ctx, a)
+}
+
+// NumberProviderUpdate mocks base method.
+func (m *MockServiceHandler) NumberProviderUpdate(ctx context.Context, a *auth.AuthIdentity, name string, enabled *bool, priority *int, config map[string]string) (*provider.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberProviderUpdate", ctx, a, name, enabled, priority, config)
+	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberProviderUpdate indicates an expected call of NumberProviderUpdate.
+func (mr *MockServiceHandlerMockRecorder) NumberProviderUpdate(ctx, a, name, enabled, priority, config any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberProviderUpdate", reflect.TypeOf((*MockServiceHandler)(nil).NumberProviderUpdate), ctx, a, name, enabled, priority, config)
+}
+
+// NumberProviderUpdateSecret mocks base method.
+func (m *MockServiceHandler) NumberProviderUpdateSecret(ctx context.Context, a *auth.AuthIdentity, name, secret string) (*provider.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberProviderUpdateSecret", ctx, a, name, secret)
+	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberProviderUpdateSecret indicates an expected call of NumberProviderUpdateSecret.
+func (mr *MockServiceHandlerMockRecorder) NumberProviderUpdateSecret(ctx, a, name, secret any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberProviderUpdateSecret", reflect.TypeOf((*MockServiceHandler)(nil).NumberProviderUpdateSecret), ctx, a, name, secret)
+}
+
 // NumberRenew mocks base method.
 func (m *MockServiceHandler) NumberRenew(ctx context.Context, a *auth.AuthIdentity, tmRenew string) ([]*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -4024,10 +4100,10 @@ func (mr *MockServiceHandlerMockRecorder) ProviderCallGets(ctx, a, size, token, 
 }
 
 // ProviderCreate mocks base method.
-func (m *MockServiceHandler) ProviderCreate(ctx context.Context, a *auth.AuthIdentity, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail, codecs string) (*provider.WebhookMessage, error) {
+func (m *MockServiceHandler) ProviderCreate(ctx context.Context, a *auth.AuthIdentity, providerType provider0.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail, codecs string) (*provider0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProviderCreate", ctx, a, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
-	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret0, _ := ret[0].(*provider0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4039,10 +4115,10 @@ func (mr *MockServiceHandlerMockRecorder) ProviderCreate(ctx, a, providerType, h
 }
 
 // ProviderDelete mocks base method.
-func (m *MockServiceHandler) ProviderDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*provider.WebhookMessage, error) {
+func (m *MockServiceHandler) ProviderDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*provider0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProviderDelete", ctx, a, id)
-	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret0, _ := ret[0].(*provider0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4054,10 +4130,10 @@ func (mr *MockServiceHandlerMockRecorder) ProviderDelete(ctx, a, id any) *gomock
 }
 
 // ProviderGet mocks base method.
-func (m *MockServiceHandler) ProviderGet(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID) (*provider.WebhookMessage, error) {
+func (m *MockServiceHandler) ProviderGet(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID) (*provider0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProviderGet", ctx, a, providerID)
-	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret0, _ := ret[0].(*provider0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4069,10 +4145,10 @@ func (mr *MockServiceHandlerMockRecorder) ProviderGet(ctx, a, providerID any) *g
 }
 
 // ProviderList mocks base method.
-func (m *MockServiceHandler) ProviderList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*provider.WebhookMessage, error) {
+func (m *MockServiceHandler) ProviderList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*provider0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProviderList", ctx, a, size, token)
-	ret0, _ := ret[0].([]*provider.WebhookMessage)
+	ret0, _ := ret[0].([]*provider0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4084,10 +4160,10 @@ func (mr *MockServiceHandlerMockRecorder) ProviderList(ctx, a, size, token any) 
 }
 
 // ProviderSetup mocks base method.
-func (m *MockServiceHandler) ProviderSetup(ctx context.Context, a *auth.AuthIdentity, carrier, name, detail, apiKey string) (*provider.WebhookMessage, error) {
+func (m *MockServiceHandler) ProviderSetup(ctx context.Context, a *auth.AuthIdentity, carrier, name, detail, apiKey string) (*provider0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProviderSetup", ctx, a, carrier, name, detail, apiKey)
-	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret0, _ := ret[0].(*provider0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4099,10 +4175,10 @@ func (mr *MockServiceHandlerMockRecorder) ProviderSetup(ctx, a, carrier, name, d
 }
 
 // ProviderUpdate mocks base method.
-func (m *MockServiceHandler) ProviderUpdate(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID, providerType *provider.Type, hostname, techPrefix, techPostfix *string, techHeaders *map[string]string, name, detail, codecs *string) (*provider.WebhookMessage, error) {
+func (m *MockServiceHandler) ProviderUpdate(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID, providerType *provider0.Type, hostname, techPrefix, techPostfix *string, techHeaders *map[string]string, name, detail, codecs *string) (*provider0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProviderUpdate", ctx, a, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
-	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret0, _ := ret[0].(*provider0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -19,6 +19,8 @@ With the Number API you can:
 - Manage number settings and metadata
 - Release numbers when no longer needed
 
+Which carrier a normal number is purchased from is a platform setting managed by administrators. See :ref:`Number Provider <number-provider-main>`.
+
 
 How Numbers Work
 ----------------

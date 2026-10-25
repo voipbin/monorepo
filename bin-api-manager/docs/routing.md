@@ -258,6 +258,11 @@ Public endpoint — no authentication required. Redeems a token issued by `POST 
 | PUT | `/numbers/:id/flow_ids` | bin-number-manager | Assign flows to number |
 | PUT | `/numbers/:id/metadata` | bin-number-manager | Update metadata |
 | GET | `/available_numbers` | bin-number-manager | List available numbers to purchase |
+| GET | `/number_providers` | bin-number-manager | List number providers (ProjectSuperAdmin) |
+| GET | `/number_providers/:provider_name` | bin-number-manager | Get number provider (ProjectSuperAdmin) |
+| PUT | `/number_providers/:provider_name` | bin-number-manager | Update enabled, priority, config (ProjectSuperAdmin) |
+| PUT | `/number_providers/:provider_name/secret` | bin-number-manager | Store provider secret, write-only (ProjectSuperAdmin) |
+| DELETE | `/number_providers/:provider_name/secret` | bin-number-manager | Delete stored provider secret (ProjectSuperAdmin) |
 
 ---
 

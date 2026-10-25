@@ -65,6 +65,7 @@ import (
 
 	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
 	nmnumber "monorepo/bin-number-manager/models/number"
+	nmprovider "monorepo/bin-number-manager/models/provider"
 
 	omoutdial "monorepo/bin-outdial-manager/models/outdial"
 	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
@@ -887,6 +888,13 @@ type ServiceHandler interface {
 		detail *string,
 		codecs *string,
 	) (*rmprovider.WebhookMessage, error)
+
+	// number provider handlers (admin)
+	NumberProviderList(ctx context.Context, a *auth.AuthIdentity) ([]*nmprovider.WebhookMessage, error)
+	NumberProviderGet(ctx context.Context, a *auth.AuthIdentity, name string) (*nmprovider.WebhookMessage, error)
+	NumberProviderUpdate(ctx context.Context, a *auth.AuthIdentity, name string, enabled *bool, priority *int, config map[string]string) (*nmprovider.WebhookMessage, error)
+	NumberProviderUpdateSecret(ctx context.Context, a *auth.AuthIdentity, name string, secret string) (*nmprovider.WebhookMessage, error)
+	NumberProviderDeleteSecret(ctx context.Context, a *auth.AuthIdentity, name string) (*nmprovider.WebhookMessage, error)
 
 	// providercall handlers
 	ProviderCallCreate(
