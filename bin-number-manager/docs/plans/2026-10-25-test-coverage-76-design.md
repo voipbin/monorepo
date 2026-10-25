@@ -13,7 +13,7 @@ Ticket review: valid. Baseline at origin/main accc03e00, measured with `GOFLAGS=
 | pkg/subscribehandler | 60/71 | 84.5 | 11 |
 | pkg/numberhandler | 510/515 | 99.0 | 5 |
 | internal/config | 78/81 | 96.3 | 3 |
-| other 7 packages | 449/451 | 99.6 | 2 |
+| other 7 packages | 525/531 | 98.9 | 6 |
 
 Testability: `cmd/*` is process wiring (DB, Redis, RabbitMQ, cobra) and is out of scope. Marshal and `ToSql` failure branches cannot be reached with real inputs and are out of scope. The remaining reachable misses are error and boundary paths of `listenhandler`, `subscribehandler.Run`, `dbhandler`, `config` and `NewNumberHandler`.
 
