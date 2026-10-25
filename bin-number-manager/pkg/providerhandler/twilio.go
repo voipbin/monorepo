@@ -12,7 +12,8 @@ import (
 )
 
 // twilioProvider adapts numberhandlertwilio to Provider. The twilio handler implements none
-// of the operations yet, so every operation reports provider.ErrNotImplemented.
+// of the operations yet, so every operation reports provider.ErrNotImplemented. When twilio
+// gets implemented, return the error of the handler as it is instead of wrapping it here.
 type twilioProvider struct {
 	h numberhandlertwilio.NumberHandlerTwilio
 }

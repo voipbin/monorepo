@@ -138,12 +138,17 @@ func (h *providerHandler) observeUnusable(r *resolved, reason string) {
 // PurchaseCandidates returns the providers to try for a purchase in order.
 func (h *providerHandler) PurchaseCandidates(ctx context.Context) ([]*Candidate, error) {
 	items := []*resolved{}
-	for name := range h.registry {
+	for name, desc := range h.registry {
+		// a provider that cannot purchase is never resolved here: no lookup and no unusable count
+		if !desc.Purchasable {
+			continue
+		}
+
 		r, err := h.resolve(ctx, name)
 		if err != nil {
 			return nil, err
 		}
-		if !r.usable || !r.desc.Purchasable {
+		if !r.usable {
 			continue
 		}
 		items = append(items, r)
