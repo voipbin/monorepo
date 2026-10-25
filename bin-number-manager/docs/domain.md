@@ -58,6 +58,8 @@ Release (`DELETE /v1/numbers/{uuid}`, renewal without balance, customer deletion
 
 One row per provider that an admin changed: `provider_name` (key), `enabled`, `priority` (lower is tried first), `config` (non-secret values such as the Telnyx `connection_id` and `profile_id`), `secret_ciphertext` with its `key_version` (AES-256-GCM, never returned), and the audit columns `updated_by`, `tm_update`, `secret_updated_by`, `tm_secret_update`. The admin view adds `has_secret`, `credential_source` (`db`, `env`, `none`, `db_undecryptable`) and `usable`. The row `config` is used only while the row holds a secret; with the environment credentials it is ignored.
 
+The public admin API (`/number_providers`) returns `provider.WebhookMessage` (`models/provider/webhook.go`), produced by `Info.ConvertWebhookMessage()`: the same fields as the admin view, never a secret or a ciphertext.
+
 ### Number Lifecycle
 
 ```

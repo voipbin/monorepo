@@ -153,6 +153,14 @@
       }
     },
     {
+      "name": "NumberProvider",
+      "description": "Operations related to number provider (admin-only setting of the carriers numbers are purchased from)",
+      "externalDocs": {
+        "description": "Find more about number provider",
+        "url": "https://api.voipbin.net/docs/number_provider.html"
+      }
+    },
+    {
       "name": "Outdial",
       "description": "Operations related to outdial",
       "externalDocs": {
@@ -14425,6 +14433,266 @@
           },
           "402": {
             "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/number_providers/{provider_name}/secret": {
+      "put": {
+        "summary": "Store the secret of a number provider",
+        "description": "Stores the secret (for example the API token) of the given number provider, encrypted. The secret is write-only: it is never returned, logged or placed in an event. The response tells only `has_secret`, the `key_version` that encrypted it and who changed it.\nThe value is trimmed of surrounding whitespace, and must be 1 to 1024 bytes long after that (multi-byte characters count per byte).\nThe provider's required `config` keys must already be set (see `PUT /number_providers/{provider_name}`), otherwise the request is rejected with 400. When the platform has no encryption key the request is answered with 503 before the `config` rule is checked.\nReplacing the secret with the token of another account makes the numbers purchased through the previous account impossible to release.\nRequires the project super admin permission.\n",
+        "tags": [
+          "NumberProvider"
+        ],
+        "parameters": [
+          {
+            "name": "provider_name",
+            "in": "path",
+            "required": true,
+            "description": "The name of the number provider. Returned from the `provider_name` field of the `GET /number_providers` response. Only the providers the platform supports are accepted (for example `telnyx`).",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9_]{1,32}$",
+              "example": "telnyx"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NumberManagerNumberProviderSecretRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The number provider with the secret stored. The secret is not included.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NumberManagerNumberProvider"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete the stored secret of a number provider",
+        "description": "Deletes the stored secret of the given number provider, so the provider uses the credentials of the platform environment again (`credential_source` becomes `env`, or `none` when the platform environment has no credential for the provider).\nThis is the recovery path when a stored secret cannot be decrypted. It returns 404 when no request has created a stored setting for the provider yet (a rejected secret request can also create one).\nSwitching from a stored account to the environment account makes the numbers purchased through the stored account impossible to release.\nRequires the project super admin permission.\n",
+        "tags": [
+          "NumberProvider"
+        ],
+        "parameters": [
+          {
+            "name": "provider_name",
+            "in": "path",
+            "required": true,
+            "description": "The name of the number provider. Returned from the `provider_name` field of the `GET /number_providers` response. Only the providers the platform supports are accepted (for example `telnyx`).",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9_]{1,32}$",
+              "example": "telnyx"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The number provider after the secret was deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NumberManagerNumberProvider"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/number_providers/{provider_name}": {
+      "get": {
+        "summary": "Get a number provider",
+        "description": "Returns the setting of the given number provider. The response never contains a secret.\nRequires the project super admin permission.\n",
+        "tags": [
+          "NumberProvider"
+        ],
+        "parameters": [
+          {
+            "name": "provider_name",
+            "in": "path",
+            "required": true,
+            "description": "The name of the number provider. Returned from the `provider_name` field of the `GET /number_providers` response. Only the providers the platform supports are accepted (for example `telnyx`).",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9_]{1,32}$",
+              "example": "telnyx"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The number provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NumberManagerNumberProvider"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a number provider",
+        "description": "Updates the `enabled`, `priority` and `config` of the given number provider. Omitted fields keep their current value, and at least one of the three fields is required (an empty body returns 400).\nA request that removes a `config` key the provider requires while a secret is stored is rejected with 400.\n`config` is merged key by key. A key whose value is an empty string is removed. Only the keys the provider allows are accepted, and they are not secrets.\nWhen the provider has no stored setting yet, it is created with the provider defaults for the fields that are not sent.\nConcurrent updates of the same provider's `config` are not serialized: the last write wins.\nRequires the project super admin permission.\n",
+        "tags": [
+          "NumberProvider"
+        ],
+        "parameters": [
+          {
+            "name": "provider_name",
+            "in": "path",
+            "required": true,
+            "description": "The name of the number provider. Returned from the `provider_name` field of the `GET /number_providers` response. Only the providers the platform supports are accepted (for example `telnyx`).",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9_]{1,32}$",
+              "example": "telnyx"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NumberManagerNumberProviderUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated number provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NumberManagerNumberProvider"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/number_providers": {
+      "get": {
+        "summary": "List the number providers",
+        "description": "Returns every number provider the platform supports, with its current setting. A provider that was never changed is listed with its default setting.\nThe response never contains a secret. `has_secret` tells only whether a secret is stored.\nRequires the project super admin permission.\n",
+        "tags": [
+          "NumberProvider"
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of the number providers. All providers are returned in one response, so `next_page_token` is always empty.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CommonPagination"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/NumberManagerNumberProvider"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
           },
           "403": {
             "$ref": "#/components/responses/PermissionDenied"
@@ -32407,6 +32675,145 @@
           "NumberManagerProviderNameTwilio",
           "NumberManagerProviderNameMessagebird"
         ]
+      },
+      "NumberManagerNumberProviderCredentialSource": {
+        "type": "string",
+        "description": "Where the credentials of the number provider come from.\n`db` is the secret stored through the API, `env` is the platform environment, `none` means no credential exists,\nand `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).\n",
+        "example": "db",
+        "enum": [
+          "db",
+          "env",
+          "none",
+          "db_undecryptable"
+        ],
+        "x-enum-varnames": [
+          "NumberManagerNumberProviderCredentialSourceDB",
+          "NumberManagerNumberProviderCredentialSourceEnv",
+          "NumberManagerNumberProviderCredentialSourceNone",
+          "NumberManagerNumberProviderCredentialSourceDBUndecryptable"
+        ]
+      },
+      "NumberManagerNumberProvider": {
+        "type": "object",
+        "description": "The setting of a number provider. It never contains a secret.",
+        "properties": {
+          "provider_name": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,32}$",
+            "description": "The name of the number provider.",
+            "example": "telnyx"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the provider takes part in the number purchase.",
+            "example": true
+          },
+          "priority": {
+            "type": "integer",
+            "description": "The purchase order. A lower value is tried first; ties are ordered by `provider_name`.",
+            "example": 10
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "The non-secret settings of the provider (for example the Telnyx `connection_id`). Omitted when empty.",
+            "example": {
+              "connection_id": "1234567890123456789"
+            }
+          },
+          "has_secret": {
+            "type": "boolean",
+            "description": "Whether a secret is stored through the API. The secret itself is never returned.",
+            "example": true
+          },
+          "key_version": {
+            "type": "integer",
+            "description": "The version of the encryption key that encrypted the stored secret. 0 when no secret is stored.",
+            "example": 1
+          },
+          "credential_source": {
+            "$ref": "#/components/schemas/NumberManagerNumberProviderCredentialSource"
+          },
+          "usable": {
+            "type": "boolean",
+            "description": "Whether the provider can currently serve (enabled, with a usable credential and, for a stored secret, its required `config`). It does not mean the provider can purchase numbers.",
+            "example": true
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The agent who last changed `enabled`, `priority` or `config`. The agent ID returned from the `GET /agents` response. Omitted when never changed.",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "secret_updated_by": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The agent who last changed the secret. The agent ID returned from the `GET /agents` response. Omitted when never changed.",
+            "example": "00000000-0000-4000-8000-000000000002"
+          },
+          "tm_update": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The timestamp of the last change of the setting, including a secret change. Omitted when never changed.",
+            "example": "2026-01-02T03:04:05.000000Z"
+          },
+          "tm_secret_update": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The timestamp of the last secret change. Omitted when never changed.",
+            "example": "2026-01-03T04:05:06.000000Z"
+          }
+        }
+      },
+      "NumberManagerNumberProviderUpdateRequest": {
+        "type": "object",
+        "description": "The fields to change. At least one field is required; omitted fields keep their current value.",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the provider takes part in the number purchase.",
+            "example": true
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000,
+            "description": "The purchase order. A lower value is tried first.",
+            "example": 10
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "The non-secret settings, merged key by key. A key with an empty string value is removed.\nAt most 8 keys, key up to 32 bytes and value up to 256 bytes. Only the keys the provider allows are accepted (Telnyx: `connection_id`, `profile_id`; Twilio: `sid`).\n",
+            "example": {
+              "connection_id": "1234567890123456789",
+              "profile_id": "9876543210987654321"
+            }
+          }
+        }
+      },
+      "NumberManagerNumberProviderSecretRequest": {
+        "type": "object",
+        "description": "The secret to store. It is write-only and never returned.",
+        "required": [
+          "secret"
+        ],
+        "properties": {
+          "secret": {
+            "type": "string",
+            "writeOnly": true,
+            "minLength": 1,
+            "maxLength": 1024,
+            "description": "The secret (for example the API token) of the provider. Trimmed of surrounding whitespace; 1 to 1024 bytes after that.",
+            "example": "example-secret-token"
+          }
+        }
       },
       "NumberManagerNumberStatus": {
         "type": "string",

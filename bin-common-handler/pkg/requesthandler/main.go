@@ -68,6 +68,7 @@ import (
 	mmmessage "monorepo/bin-message-manager/models/message"
 	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
 	nmnumber "monorepo/bin-number-manager/models/number"
+	nmprovider "monorepo/bin-number-manager/models/provider"
 
 	omoutdial "monorepo/bin-outdial-manager/models/outdial"
 	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
@@ -1189,6 +1190,13 @@ type RequestHandler interface {
 	NumberV1NumberRenewByDays(ctx context.Context, days int) ([]nmnumber.Number, error)
 	NumberV1NumberRenewByHours(ctx context.Context, hours int) ([]nmnumber.Number, error)
 	NumberV1VirtualNumberCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
+
+	// number-manager number provider (admin)
+	NumberV1NumberProviderList(ctx context.Context) ([]*nmprovider.Info, error)
+	NumberV1NumberProviderGet(ctx context.Context, name nmnumber.ProviderName) (*nmprovider.Info, error)
+	NumberV1NumberProviderUpdate(ctx context.Context, name nmnumber.ProviderName, actorID uuid.UUID, enabled *bool, priority *int, config map[string]string) (*nmprovider.Info, error)
+	NumberV1NumberProviderUpdateSecret(ctx context.Context, name nmnumber.ProviderName, actorID uuid.UUID, secret string) (*nmprovider.Info, error)
+	NumberV1NumberProviderDeleteSecret(ctx context.Context, name nmnumber.ProviderName, actorID uuid.UUID) (*nmprovider.Info, error)
 
 	// outdial-manager outdial
 	OutdialV1OutdialCreate(ctx context.Context, customerID, campaignID uuid.UUID, name, detail, data string) (*omoutdial.Outdial, error)

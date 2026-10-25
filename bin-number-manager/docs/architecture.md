@@ -40,6 +40,7 @@ Supporting binary:
 | Models | `models/number` | Number, Status, EventType |
 | Models | `models/availablenumber` | AvailableNumber (search results from providers) |
 | Models | `models/providernumber` | ProviderNumber (internal provider-to-number mapping) |
+| Models | `models/provider` | Provider (setting row), Info (admin view), WebhookMessage (public view), Credentials, sentinel errors |
 
 ## Event Publishing
 

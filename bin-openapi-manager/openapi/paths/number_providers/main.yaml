@@ -1,0 +1,28 @@
+get:
+  summary: List the number providers
+  description: |
+    Returns every number provider the platform supports, with its current setting. A provider that was never changed is listed with its default setting.
+    The response never contains a secret. `has_secret` tells only whether a secret is stored.
+    Requires the project super admin permission.
+  tags:
+    - NumberProvider
+  responses:
+    '200':
+      description: The list of the number providers. All providers are returned in one response, so `next_page_token` is always empty.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NumberManagerNumberProvider'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'

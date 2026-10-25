@@ -2501,6 +2501,30 @@ func (e NumberManagerAvailableNumberFeature) Valid() bool {
 	}
 }
 
+// Defines values for NumberManagerNumberProviderCredentialSource.
+const (
+	NumberManagerNumberProviderCredentialSourceDB              NumberManagerNumberProviderCredentialSource = "db"
+	NumberManagerNumberProviderCredentialSourceDBUndecryptable NumberManagerNumberProviderCredentialSource = "db_undecryptable"
+	NumberManagerNumberProviderCredentialSourceEnv             NumberManagerNumberProviderCredentialSource = "env"
+	NumberManagerNumberProviderCredentialSourceNone            NumberManagerNumberProviderCredentialSource = "none"
+)
+
+// Valid indicates whether the value is a known member of the NumberManagerNumberProviderCredentialSource enum.
+func (e NumberManagerNumberProviderCredentialSource) Valid() bool {
+	switch e {
+	case NumberManagerNumberProviderCredentialSourceDB:
+		return true
+	case NumberManagerNumberProviderCredentialSourceDBUndecryptable:
+		return true
+	case NumberManagerNumberProviderCredentialSourceEnv:
+		return true
+	case NumberManagerNumberProviderCredentialSourceNone:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for NumberManagerNumberProviderName.
 const (
 	NumberManagerProviderNameMessagebird NumberManagerNumberProviderName = "messagebird"
@@ -8525,10 +8549,111 @@ type NumberManagerNumber struct {
 	Type *NumberManagerNumberType `json:"type,omitempty"`
 }
 
+// NumberManagerNumberProvider The setting of a number provider. It never contains a secret.
+type NumberManagerNumberProvider struct {
+	// Config The non-secret settings of the provider (for example the Telnyx `connection_id`). Omitted when empty.
+	//
+	// Example: {"connection_id":"1234567890123456789"}
+	Config *map[string]string `json:"config,omitempty"`
+
+	// CredentialSource Where the credentials of the number provider come from.
+	// `db` is the secret stored through the API, `env` is the platform environment, `none` means no credential exists,
+	// and `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).
+	//
+	//
+	// Example: db
+	CredentialSource *NumberManagerNumberProviderCredentialSource `json:"credential_source,omitempty"`
+
+	// Enabled Whether the provider takes part in the number purchase.
+	//
+	// Example: true
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// HasSecret Whether a secret is stored through the API. The secret itself is never returned.
+	//
+	// Example: true
+	HasSecret *bool `json:"has_secret,omitempty"`
+
+	// KeyVersion The version of the encryption key that encrypted the stored secret. 0 when no secret is stored.
+	//
+	// Example: 1
+	KeyVersion *int `json:"key_version,omitempty"`
+
+	// Priority The purchase order. A lower value is tried first; ties are ordered by `provider_name`.
+	//
+	// Example: 10
+	Priority *int `json:"priority,omitempty"`
+
+	// ProviderName The name of the number provider.
+	//
+	// Example: telnyx
+	ProviderName *string `json:"provider_name,omitempty"`
+
+	// SecretUpdatedBy The agent who last changed the secret. The agent ID returned from the `GET /agents` response. Omitted when never changed.
+	//
+	// Example: 00000000-0000-4000-8000-000000000002
+	SecretUpdatedBy *string `json:"secret_updated_by,omitempty"`
+
+	// TmSecretUpdate The timestamp of the last secret change. Omitted when never changed.
+	//
+	// Example: 2026-01-03T04:05:06.000000Z
+	TmSecretUpdate *time.Time `json:"tm_secret_update,omitempty"`
+
+	// TmUpdate The timestamp of the last change of the setting, including a secret change. Omitted when never changed.
+	//
+	// Example: 2026-01-02T03:04:05.000000Z
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// UpdatedBy The agent who last changed `enabled`, `priority` or `config`. The agent ID returned from the `GET /agents` response. Omitted when never changed.
+	//
+	// Example: 550e8400-e29b-41d4-a716-446655440000
+	UpdatedBy *string `json:"updated_by,omitempty"`
+
+	// Usable Whether the provider can currently serve (enabled, with a usable credential and, for a stored secret, its required `config`). It does not mean the provider can purchase numbers.
+	//
+	// Example: true
+	Usable *bool `json:"usable,omitempty"`
+}
+
+// NumberManagerNumberProviderCredentialSource Where the credentials of the number provider come from.
+// `db` is the secret stored through the API, `env` is the platform environment, `none` means no credential exists,
+// and `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).
+//
+// Example: db
+type NumberManagerNumberProviderCredentialSource string
+
 // NumberManagerNumberProviderName The provider name for the number.
 //
 // Example: telnyx
 type NumberManagerNumberProviderName string
+
+// NumberManagerNumberProviderSecretRequest The secret to store. It is write-only and never returned.
+type NumberManagerNumberProviderSecretRequest struct {
+	// Secret The secret (for example the API token) of the provider. Trimmed of surrounding whitespace; 1 to 1024 bytes after that.
+	//
+	// Example: example-secret-token
+	Secret *string `json:"secret,omitempty"`
+}
+
+// NumberManagerNumberProviderUpdateRequest The fields to change. At least one field is required; omitted fields keep their current value.
+type NumberManagerNumberProviderUpdateRequest struct {
+	// Config The non-secret settings, merged key by key. A key with an empty string value is removed.
+	// At most 8 keys, key up to 32 bytes and value up to 256 bytes. Only the keys the provider allows are accepted (Telnyx: `connection_id`, `profile_id`; Twilio: `sid`).
+	//
+	//
+	// Example: {"connection_id":"1234567890123456789","profile_id":"9876543210987654321"}
+	Config *map[string]string `json:"config,omitempty"`
+
+	// Enabled Whether the provider takes part in the number purchase.
+	//
+	// Example: true
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Priority The purchase order. A lower value is tried first.
+	//
+	// Example: 10
+	Priority *int `json:"priority,omitempty"`
+}
 
 // NumberManagerNumberStatus The status of the number.
 //
@@ -14057,6 +14182,12 @@ type PutMcpserversIdJSONRequestBody PutMcpserversIdJSONBody
 
 // PostMessagesJSONRequestBody defines body for PostMessages for application/json ContentType.
 type PostMessagesJSONRequestBody PostMessagesJSONBody
+
+// PutNumberProvidersProviderNameJSONRequestBody defines body for PutNumberProvidersProviderName for application/json ContentType.
+type PutNumberProvidersProviderNameJSONRequestBody = NumberManagerNumberProviderUpdateRequest
+
+// PutNumberProvidersProviderNameSecretJSONRequestBody defines body for PutNumberProvidersProviderNameSecret for application/json ContentType.
+type PutNumberProvidersProviderNameSecretJSONRequestBody = NumberManagerNumberProviderSecretRequest
 
 // PostNumbersJSONRequestBody defines body for PostNumbers for application/json ContentType.
 type PostNumbersJSONRequestBody PostNumbersJSONBody

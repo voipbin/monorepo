@@ -66,6 +66,7 @@ import (
 	message1 "monorepo/bin-message-manager/models/message"
 	availablenumber "monorepo/bin-number-manager/models/availablenumber"
 	number "monorepo/bin-number-manager/models/number"
+	provider "monorepo/bin-number-manager/models/provider"
 	outdial "monorepo/bin-outdial-manager/models/outdial"
 	outdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 	message2 "monorepo/bin-pipecat-manager/models/message"
@@ -79,7 +80,7 @@ import (
 	extension "monorepo/bin-registrar-manager/models/extension"
 	sipauth "monorepo/bin-registrar-manager/models/sipauth"
 	trunk "monorepo/bin-registrar-manager/models/trunk"
-	provider "monorepo/bin-route-manager/models/provider"
+	provider0 "monorepo/bin-route-manager/models/provider"
 	providercall "monorepo/bin-route-manager/models/providercall"
 	route "monorepo/bin-route-manager/models/route"
 	execution "monorepo/bin-schedule-manager/models/execution"
@@ -5452,6 +5453,81 @@ func (mr *MockRequestHandlerMockRecorder) NumberV1NumberList(ctx, pageToken, pag
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberList", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberList), ctx, pageToken, pageSize, filters)
 }
 
+// NumberV1NumberProviderDeleteSecret mocks base method.
+func (m *MockRequestHandler) NumberV1NumberProviderDeleteSecret(ctx context.Context, name number.ProviderName, actorID uuid.UUID) (*provider.Info, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberV1NumberProviderDeleteSecret", ctx, name, actorID)
+	ret0, _ := ret[0].(*provider.Info)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberV1NumberProviderDeleteSecret indicates an expected call of NumberV1NumberProviderDeleteSecret.
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberProviderDeleteSecret(ctx, name, actorID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberProviderDeleteSecret", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberProviderDeleteSecret), ctx, name, actorID)
+}
+
+// NumberV1NumberProviderGet mocks base method.
+func (m *MockRequestHandler) NumberV1NumberProviderGet(ctx context.Context, name number.ProviderName) (*provider.Info, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberV1NumberProviderGet", ctx, name)
+	ret0, _ := ret[0].(*provider.Info)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberV1NumberProviderGet indicates an expected call of NumberV1NumberProviderGet.
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberProviderGet(ctx, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberProviderGet", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberProviderGet), ctx, name)
+}
+
+// NumberV1NumberProviderList mocks base method.
+func (m *MockRequestHandler) NumberV1NumberProviderList(ctx context.Context) ([]*provider.Info, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberV1NumberProviderList", ctx)
+	ret0, _ := ret[0].([]*provider.Info)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberV1NumberProviderList indicates an expected call of NumberV1NumberProviderList.
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberProviderList(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberProviderList", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberProviderList), ctx)
+}
+
+// NumberV1NumberProviderUpdate mocks base method.
+func (m *MockRequestHandler) NumberV1NumberProviderUpdate(ctx context.Context, name number.ProviderName, actorID uuid.UUID, enabled *bool, priority *int, config map[string]string) (*provider.Info, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberV1NumberProviderUpdate", ctx, name, actorID, enabled, priority, config)
+	ret0, _ := ret[0].(*provider.Info)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberV1NumberProviderUpdate indicates an expected call of NumberV1NumberProviderUpdate.
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberProviderUpdate(ctx, name, actorID, enabled, priority, config any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberProviderUpdate", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberProviderUpdate), ctx, name, actorID, enabled, priority, config)
+}
+
+// NumberV1NumberProviderUpdateSecret mocks base method.
+func (m *MockRequestHandler) NumberV1NumberProviderUpdateSecret(ctx context.Context, name number.ProviderName, actorID uuid.UUID, secret string) (*provider.Info, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberV1NumberProviderUpdateSecret", ctx, name, actorID, secret)
+	ret0, _ := ret[0].(*provider.Info)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberV1NumberProviderUpdateSecret indicates an expected call of NumberV1NumberProviderUpdateSecret.
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberProviderUpdateSecret(ctx, name, actorID, secret any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberProviderUpdateSecret", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberProviderUpdateSecret), ctx, name, actorID, secret)
+}
+
 // NumberV1NumberRenewByDays mocks base method.
 func (m *MockRequestHandler) NumberV1NumberRenewByDays(ctx context.Context, days int) ([]number.Number, error) {
 	m.ctrl.T.Helper()
@@ -6661,10 +6737,10 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderCallGets(ctx, pageToken
 }
 
 // RouteV1ProviderCreate mocks base method.
-func (m *MockRequestHandler) RouteV1ProviderCreate(ctx context.Context, provierType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail, codecs string) (*provider.Provider, error) {
+func (m *MockRequestHandler) RouteV1ProviderCreate(ctx context.Context, provierType provider0.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail, codecs string) (*provider0.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteV1ProviderCreate", ctx, provierType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
-	ret0, _ := ret[0].(*provider.Provider)
+	ret0, _ := ret[0].(*provider0.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -6676,10 +6752,10 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderCreate(ctx, provierType
 }
 
 // RouteV1ProviderDelete mocks base method.
-func (m *MockRequestHandler) RouteV1ProviderDelete(ctx context.Context, providerID uuid.UUID) (*provider.Provider, error) {
+func (m *MockRequestHandler) RouteV1ProviderDelete(ctx context.Context, providerID uuid.UUID) (*provider0.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteV1ProviderDelete", ctx, providerID)
-	ret0, _ := ret[0].(*provider.Provider)
+	ret0, _ := ret[0].(*provider0.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -6691,10 +6767,10 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderDelete(ctx, providerID 
 }
 
 // RouteV1ProviderGet mocks base method.
-func (m *MockRequestHandler) RouteV1ProviderGet(ctx context.Context, providerID uuid.UUID) (*provider.Provider, error) {
+func (m *MockRequestHandler) RouteV1ProviderGet(ctx context.Context, providerID uuid.UUID) (*provider0.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteV1ProviderGet", ctx, providerID)
-	ret0, _ := ret[0].(*provider.Provider)
+	ret0, _ := ret[0].(*provider0.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -6706,10 +6782,10 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderGet(ctx, providerID any
 }
 
 // RouteV1ProviderList mocks base method.
-func (m *MockRequestHandler) RouteV1ProviderList(ctx context.Context, pageToken string, pageSize uint64) ([]provider.Provider, error) {
+func (m *MockRequestHandler) RouteV1ProviderList(ctx context.Context, pageToken string, pageSize uint64) ([]provider0.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteV1ProviderList", ctx, pageToken, pageSize)
-	ret0, _ := ret[0].([]provider.Provider)
+	ret0, _ := ret[0].([]provider0.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -6721,10 +6797,10 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderList(ctx, pageToken, pa
 }
 
 // RouteV1ProviderSetup mocks base method.
-func (m *MockRequestHandler) RouteV1ProviderSetup(ctx context.Context, carrier, name, detail, apiKey string) (*provider.Provider, error) {
+func (m *MockRequestHandler) RouteV1ProviderSetup(ctx context.Context, carrier, name, detail, apiKey string) (*provider0.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteV1ProviderSetup", ctx, carrier, name, detail, apiKey)
-	ret0, _ := ret[0].(*provider.Provider)
+	ret0, _ := ret[0].(*provider0.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -6736,10 +6812,10 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderSetup(ctx, carrier, nam
 }
 
 // RouteV1ProviderUpdate mocks base method.
-func (m *MockRequestHandler) RouteV1ProviderUpdate(ctx context.Context, providerID uuid.UUID, providerType *provider.Type, hostname, techPrefix, techPostfix *string, techHeaders *map[string]string, name, detail, codecs *string) (*provider.Provider, error) {
+func (m *MockRequestHandler) RouteV1ProviderUpdate(ctx context.Context, providerID uuid.UUID, providerType *provider0.Type, hostname, techPrefix, techPostfix *string, techHeaders *map[string]string, name, detail, codecs *string) (*provider0.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteV1ProviderUpdate", ctx, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
-	ret0, _ := ret[0].(*provider.Provider)
+	ret0, _ := ret[0].(*provider0.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
