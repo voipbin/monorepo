@@ -94,9 +94,10 @@ func Test_Get_otherErrorKeepsCause(t *testing.T) {
 
 func Test_ServiceStop_error(t *testing.T) {
 	tests := []struct {
-		name      string
-		serviceID uuid.UUID
-		setup     func(m *afErrMocks)
+		name        string
+		serviceID   uuid.UUID
+		setup       func(m *afErrMocks)
+		expectCause error // nil means a plain error without a wrapped cause
 	}{
 		{
 			name:      "activeflow lookup fails",
@@ -104,6 +105,7 @@ func Test_ServiceStop_error(t *testing.T) {
 			setup: func(m *afErrMocks) {
 				m.db.EXPECT().ActiveflowGet(gomock.Any(), afErrID).Return(nil, errAfSynthetic)
 			},
+			expectCause: errAfSynthetic,
 		},
 		{
 			name:      "service is not in the current stack and nothing is popped",
@@ -122,8 +124,12 @@ func Test_ServiceStop_error(t *testing.T) {
 			h, m := newAfErrHandler(mc)
 			tt.setup(m)
 
-			if err := h.ServiceStop(context.Background(), afErrID, tt.serviceID); err == nil {
-				t.Errorf("Wrong match. expect: error, got: nil")
+			err := h.ServiceStop(context.Background(), afErrID, tt.serviceID)
+			if err == nil {
+				t.Fatalf("Wrong match. expect: error, got: nil")
+			}
+			if tt.expectCause != nil && !errors.Is(err, tt.expectCause) {
+				t.Errorf("Wrong error. expect: %v, got: %v", tt.expectCause, err)
 			}
 		})
 	}

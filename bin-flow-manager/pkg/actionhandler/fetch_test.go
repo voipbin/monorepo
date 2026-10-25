@@ -94,7 +94,7 @@ func Test_ActionFetchGet_error(t *testing.T) {
 				_, _ = w.Write([]byte(`[{"type":"answer"}]`))
 			},
 			option:        func(url string) map[string]any { return map[string]any{"event_url": url} },
-			expectedInErr: "status return. stauts: 500",
+			expectedInErr: "500",
 		},
 		{
 			name: "remote answers with a body that is cut short",

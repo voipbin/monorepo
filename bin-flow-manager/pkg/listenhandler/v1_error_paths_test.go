@@ -345,6 +345,9 @@ func Test_processRequest_handlerError(t *testing.T) {
 			if res.StatusCode != tt.expectStatus {
 				t.Errorf("Wrong status code. expect: %d, got: %d", tt.expectStatus, res.StatusCode)
 			}
+			if len(res.Data) != 0 || res.DataType != "" {
+				t.Errorf("Wrong body. expect: empty, got: %s (%s)", res.Data, res.DataType)
+			}
 		})
 	}
 

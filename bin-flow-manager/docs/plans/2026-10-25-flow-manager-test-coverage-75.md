@@ -19,7 +19,7 @@
 - pkg/activeflowhandler (255): activeflow.go(PushActions, AddActions, PopStack, ServiceStop 오류), stop.go, execute.go(ExecuteContinue, ExecuteNextAction 오류), db.go(Get, Delete, SetForwardActionID 오류) 의 오류 전파.
 - activeflowhandler/actionhandle.go (130 미커버)의 오류 분기는 목표 60 이 부족할 때 보충 후보이며 비동기 분기는 위 규칙을 따른다. listenhandler 의 Execute/Continue POST 안의 goroutine 오류 로그 블록은 제외한다(필요량에 쓰지 않음).
 - pkg/flowhandler/db.go (51, Get/Delete/Update 오류), pkg/dbhandler (61, 캐시/DB 오류 경로, 기존 sqlite 패턴), pkg/subscribehandler, pkg/stackmaphandler 는 위 목표가 부족할 때 숫자 목표(각 15~20)로 보충한다.
-- ActionFetchGet 은 `&http.Client{}` 를 쓰고 URL 검증이 없으므로 loopback httptest 서버로 정확한 상태 코드와 본문을 만들어 검증할 수 있다(외부 네트워크 없음).
+- ActionFetchGet 은 loopback httptest 서버로 정확한 상태 코드와 본문을 만들어 검증한다(외부 네트워크 없음).
 
 목표 추가 커버(목표이며 상한이 아님, 비동기 분기는 계산에 넣지 않음): listenhandler 65(Run 성공 경로 제외, QueueCreate 실패만), variablehandler 40, actionhandler 25, activeflowhandler 60, dbhandler 15, flowhandler 20, subscribehandler 10. 합계 약 235. 하한 기준은 76% 에 필요한 127 statement 이며 이를 넘기면 나머지 항목은 생략할 수 있다.
 
