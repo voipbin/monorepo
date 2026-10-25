@@ -408,3 +408,21 @@ func Test_DeleteSecret_audit(t *testing.T) {
 		t.Errorf("The deletion must record who deleted the secret and when. got: %+v", info)
 	}
 }
+
+func Test_UpdateSecret_trimsWhitespace(t *testing.T) {
+	ctx := context.Background()
+	db := newFakeDB()
+	h := newTestHandler(t, db, testKeys(1), NewEnvCredentials("", "", "", "sid", ""))
+
+	if _, err := h.UpdateSecret(ctx, number.ProviderNameTwilio, testActor, "  fake-token\n"); err != nil {
+		t.Fatal(err)
+	}
+	r, _ := h.resolve(ctx, number.ProviderNameTwilio)
+	if r.creds.Secret != "fake-token" {
+		t.Errorf("The stored secret keeps the surrounding whitespace")
+	}
+
+	if _, err := h.UpdateSecret(ctx, number.ProviderNameTwilio, testActor, " \n\t "); !errors.Is(err, provider.ErrInvalidArgument) {
+		t.Errorf("a blank secret must be rejected, got: %v", err)
+	}
+}

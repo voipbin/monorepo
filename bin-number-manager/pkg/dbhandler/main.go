@@ -36,7 +36,6 @@ type DBHandler interface {
 	// number provider
 	NumberProviderGet(ctx context.Context, name number.ProviderName) (*provider.Provider, error)
 	NumberProviderEnsure(ctx context.Context, p *provider.Provider) error
-	NumberProviderList(ctx context.Context) ([]*provider.Provider, error)
 	NumberProviderUpdate(ctx context.Context, name number.ProviderName, fields map[provider.Field]any) error
 }
 

@@ -112,7 +112,7 @@ func Test_NumberProvider_EnsureGetUpdate(t *testing.T) {
 	}
 }
 
-func Test_NumberProvider_ListAndErrors(t *testing.T) {
+func Test_NumberProvider_Errors(t *testing.T) {
 	ctx := context.Background()
 	h, mockUtil := newProviderTestHandler(t)
 
@@ -120,11 +120,6 @@ func Test_NumberProvider_ListAndErrors(t *testing.T) {
 	mockUtil.EXPECT().TimeNow().Return(&now).Times(2)
 	_ = h.NumberProviderEnsure(ctx, &provider.Provider{ProviderName: "zeta", Enabled: true, Priority: 1})
 	_ = h.NumberProviderEnsure(ctx, &provider.Provider{ProviderName: "alpha", Enabled: false, Priority: 2})
-
-	list, err := h.NumberProviderList(ctx)
-	if err != nil || len(list) != 2 || list[0].ProviderName != "alpha" || list[1].ProviderName != "zeta" {
-		t.Errorf("Wrong list. got: %v, %v", list, err)
-	}
 
 	// nothing to update is a no-op, an update of a missing row is not found
 	if err := h.NumberProviderUpdate(ctx, "alpha", map[provider.Field]any{}); err != nil {
@@ -146,9 +141,6 @@ func Test_NumberProvider_ListAndErrors(t *testing.T) {
 		t.Errorf("Wrong match. expect: a query error that is not not-found, got: %v", err)
 	}
 	if err := h.NumberProviderEnsure(ctx, &provider.Provider{ProviderName: "x"}); err == nil {
-		t.Errorf("Wrong match. expect: error, got: nil")
-	}
-	if _, err := h.NumberProviderList(ctx); err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
 	if err := h.NumberProviderUpdate(ctx, "alpha", map[provider.Field]any{provider.FieldPriority: 1}); err == nil {

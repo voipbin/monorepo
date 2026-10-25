@@ -171,3 +171,4 @@ PR2: (RPC 비밀 본문이 내부 RabbitMQ를 평문으로 통과하는 점은 P
 - `Provider` 인터페이스는 `providerhandler`에 둡니다(`models/provider`는 모델, 센티널, `Credentials`만).
 - `excludeIDs`는 `id.Bytes()`로 전달합니다(`gofrs/uuid`의 `Value()`는 문자열이므로 binary(16) 비교에 부적합).
 - 영향도 분석의 기준 문서는 `docs/workflows/service-owned-migrations.md`의 Impact analysis와 `bin-number-manager/CLAUDE.md`의 migrations 절입니다. PR 본문에 두 레플리카가 000002를 동시에 적용하는 경로를 `migrationhandler`의 named lock이 직렬화함을 한 줄 남깁니다.
+- 비밀 입력은 앞뒤 공백과 개행을 제거해 저장합니다(붙여 넣기로 섞인 개행이 Authorization 헤더를 깨는 것을 막기 위함). 공백만 있으면 400입니다.

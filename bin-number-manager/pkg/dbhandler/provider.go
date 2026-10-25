@@ -116,42 +116,6 @@ func (h *handler) NumberProviderEnsure(ctx context.Context, p *provider.Provider
 	return nil
 }
 
-// NumberProviderList returns all the provider setting rows.
-func (h *handler) NumberProviderList(ctx context.Context) ([]*provider.Provider, error) {
-	fields := commondatabasehandler.GetDBFields(&provider.Provider{})
-	query, args, err := squirrel.
-		Select(fields...).
-		From(providersTable).
-		OrderBy(string(provider.FieldProviderName)).
-		PlaceholderFormat(squirrel.Question).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("could not build query. NumberProviderList. err: %w", err)
-	}
-
-	rows, err := h.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. NumberProviderList. err: %w", err)
-	}
-	defer func() {
-		_ = rows.Close()
-	}()
-
-	res := []*provider.Provider{}
-	for rows.Next() {
-		p, err := h.providerGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not get data. NumberProviderList. err: %w", err)
-		}
-		res = append(res, p)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. NumberProviderList. err: %w", err)
-	}
-
-	return res, nil
-}
-
 // NumberProviderUpdate updates only the given columns of the provider row. It returns
 // ErrNotFound if there is no such row.
 func (h *handler) NumberProviderUpdate(ctx context.Context, name number.ProviderName, fields map[provider.Field]any) error {

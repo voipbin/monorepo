@@ -78,10 +78,6 @@ func (f *fakeDB) NumberProviderEnsure(_ context.Context, p *provider.Provider) e
 	return nil
 }
 
-func (f *fakeDB) NumberProviderList(_ context.Context) ([]*provider.Provider, error) {
-	return nil, nil
-}
-
 func (f *fakeDB) NumberProviderUpdate(_ context.Context, name number.ProviderName, fields map[provider.Field]any) error {
 	if f.updateErr != nil {
 		return f.updateErr

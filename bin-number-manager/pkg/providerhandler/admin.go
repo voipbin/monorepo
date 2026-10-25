@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -220,6 +221,8 @@ func (h *providerHandler) UpdateSecret(ctx context.Context, name number.Provider
 	if err := h.validateActor(actor); err != nil {
 		return nil, err
 	}
+	// a secret pasted with a trailing newline or spaces would break the Authorization header
+	secret = strings.TrimSpace(secret)
 	if secret == "" {
 		return nil, invalid("secret is required")
 	}
