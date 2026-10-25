@@ -2,6 +2,8 @@ package dbhandler
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -91,6 +93,10 @@ func Test_NumberUpdate_unencodableField(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "prepare fields failed") {
 		t.Errorf("expected the prepare failure. got: %v", err)
+	}
+	var encodeErr *json.UnsupportedTypeError
+	if !errors.As(err, &encodeErr) {
+		t.Errorf("the encoding failure is not wrapped in the error. got: %v", err)
 	}
 	if strings.Contains(err.Error(), "exec failed") {
 		t.Errorf("the database must not be reached. got: %v", err)
