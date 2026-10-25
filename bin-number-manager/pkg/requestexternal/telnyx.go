@@ -134,7 +134,7 @@ func (h *requestExternal) TelnyxNumberOrdersPost(token string, numbers []string,
 	}()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
+		return nil, &HTTPStatusError{StatusCode: resp.StatusCode}
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -153,11 +153,6 @@ func (h *requestExternal) TelnyxNumberOrdersPost(token string, numbers []string,
 
 // TelnyxPhoneNumbersGetByNumber returns number info of the given number
 func (h *requestExternal) TelnyxPhoneNumbersGetByNumber(token string, number string) (*telnyx.PhoneNumber, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":   "TelnyxPhoneNumbersGetByNumber",
-		"number": number,
-	})
-
 	// create a request uri
 	uri := fmt.Sprintf("https://api.telnyx.com/v2/phone_numbers?filter[phone_number]=%s", number)
 
@@ -179,7 +174,6 @@ func (h *requestExternal) TelnyxPhoneNumbersGetByNumber(token string, number str
 	defer func() {
 		_ = resp.Body.Close()
 	}()
-	log.WithField("response", resp).Debugf("Received response.")
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)

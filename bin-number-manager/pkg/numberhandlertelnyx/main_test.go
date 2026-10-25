@@ -92,7 +92,7 @@ func Test_NumberPurchase(t *testing.T) {
 			wrapped:   true,
 		},
 		{
-			name: "lookup fails and the cause is returned as it is",
+			name: "lookup fails after the order and the cause is wrapped as unconfirmed",
 			num:  "+15550100001",
 
 			responseOrder:     &telnyx.OrderNumber{ID: "order-1"},
@@ -100,6 +100,7 @@ func Test_NumberPurchase(t *testing.T) {
 			expectLookupCall:  true,
 
 			expectErr: lookupErr,
+			wrapped:   true,
 		},
 	}
 

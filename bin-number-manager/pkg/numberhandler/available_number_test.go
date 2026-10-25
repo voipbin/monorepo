@@ -1,6 +1,7 @@
 package numberhandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -12,6 +13,7 @@ import (
 	"monorepo/bin-number-manager/models/number"
 	"monorepo/bin-number-manager/pkg/dbhandler"
 	"monorepo/bin-number-manager/pkg/numberhandlertelnyx"
+	"monorepo/bin-number-manager/pkg/providerhandler"
 )
 
 func TestGetAvailableNumbersTelnyx(t *testing.T) {
@@ -21,11 +23,12 @@ func TestGetAvailableNumbersTelnyx(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+	mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 	h := numberHandler{
-		reqHandler:          mockReq,
-		db:                  mockDB,
-		numberHandlerTelnyx: mockTelnyx,
+		reqHandler:      mockReq,
+		db:              mockDB,
+		providerHandler: mockProvider,
 	}
 
 	type test struct {
@@ -59,9 +62,11 @@ func TestGetAvailableNumbersTelnyx(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
+			ctx := context.Background()
+			mockProvider.EXPECT().ForSearch(ctx).Return(mockTelnyx, nil)
 			mockTelnyx.EXPECT().GetAvailableNumbers(tt.country, tt.limit).Return(tt.expectRes, nil)
 
-			res, err := h.GetAvailableNumbers(tt.country, tt.limit)
+			res, err := h.GetAvailableNumbers(ctx, tt.country, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

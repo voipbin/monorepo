@@ -78,6 +78,12 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: TELNYX_TOKEN
+            - name: NUMBER_SECRET_ENCRYPTION_KEYS
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: NUMBER_SECRET_ENCRYPTION_KEYS
+                  optional: true
             - name: CLICKHOUSE_ADDRESS
               valueFrom:
                 secretKeyRef:

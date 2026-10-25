@@ -149,18 +149,18 @@ func (mr *MockNumberHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // GetAvailableNumbers mocks base method.
-func (m *MockNumberHandler) GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {
+func (m *MockNumberHandler) GetAvailableNumbers(ctx context.Context, countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAvailableNumbers", countyCode, limit)
+	ret := m.ctrl.Call(m, "GetAvailableNumbers", ctx, countyCode, limit)
 	ret0, _ := ret[0].([]*availablenumber.AvailableNumber)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAvailableNumbers indicates an expected call of GetAvailableNumbers.
-func (mr *MockNumberHandlerMockRecorder) GetAvailableNumbers(countyCode, limit any) *gomock.Call {
+func (mr *MockNumberHandlerMockRecorder) GetAvailableNumbers(ctx, countyCode, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableNumbers", reflect.TypeOf((*MockNumberHandler)(nil).GetAvailableNumbers), countyCode, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableNumbers", reflect.TypeOf((*MockNumberHandler)(nil).GetAvailableNumbers), ctx, countyCode, limit)
 }
 
 // GetAvailableVirtualNumbers mocks base method.

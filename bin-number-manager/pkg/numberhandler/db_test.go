@@ -15,7 +15,7 @@ import (
 
 	"monorepo/bin-number-manager/models/number"
 	"monorepo/bin-number-manager/pkg/dbhandler"
-	"monorepo/bin-number-manager/pkg/numberhandlertelnyx"
+	"monorepo/bin-number-manager/pkg/providerhandler"
 )
 
 func Test_dbCreate(t *testing.T) {
@@ -91,14 +91,14 @@ func Test_dbCreate(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := numberHandler{
-				utilHandler:         mockUtil,
-				reqHandler:          mockReq,
-				db:                  mockDB,
-				notifyHandler:       mockNotify,
-				numberHandlerTelnyx: mockTelnyx,
+				utilHandler:     mockUtil,
+				reqHandler:      mockReq,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				providerHandler: mockProvider,
 			}
 			ctx := context.Background()
 
@@ -155,13 +155,13 @@ func Test_dbUpdate(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := numberHandler{
-				reqHandler:          mockReq,
-				db:                  mockDB,
-				notifyHandler:       mockNotify,
-				numberHandlerTelnyx: mockTelnyx,
+				reqHandler:      mockReq,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				providerHandler: mockProvider,
 			}
 			ctx := context.Background()
 

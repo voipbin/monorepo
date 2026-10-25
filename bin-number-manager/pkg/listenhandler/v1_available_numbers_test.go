@@ -88,7 +88,7 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().GetAvailableNumbers(tt.countryCode, tt.pageSize).Return(tt.numbers, nil)
+			mockNumber.EXPECT().GetAvailableNumbers(gomock.Any(), tt.countryCode, tt.pageSize).Return(tt.numbers, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -142,7 +142,7 @@ func TestProcessV1AvailableNumbersGet_errorMapping(t *testing.T) {
 				Data:   []byte(`{"country_code":"US"}`),
 			}
 
-			mockNumber.EXPECT().GetAvailableNumbers("US", uint(10)).Return(nil, tt.handlerErr)
+			mockNumber.EXPECT().GetAvailableNumbers(gomock.Any(), "US", uint(10)).Return(nil, tt.handlerErr)
 
 			res, err := h.processRequest(req)
 			if err != nil {

@@ -29,8 +29,8 @@ import (
 	"monorepo/bin-number-manager/pkg/dbhandler"
 	"monorepo/bin-number-manager/pkg/listenhandler"
 	"monorepo/bin-number-manager/pkg/numberhandler"
-	"monorepo/bin-number-manager/pkg/numberhandlertelnyx"
-	"monorepo/bin-number-manager/pkg/numberhandlertwilio"
+	"monorepo/bin-number-manager/pkg/providerhandler"
+	"monorepo/bin-number-manager/pkg/secretcrypto"
 	"monorepo/bin-number-manager/pkg/subscribehandler"
 )
 
@@ -146,12 +146,26 @@ func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	nHandlerTelnyx := numberhandlertelnyx.NewNumberHandler(reqHandler, db, config.Get().TelnyxConnectionID, config.Get().TelnyxProfileID, config.Get().TelnyxToken)
-	nHandlerTwilio := numberhandlertwilio.NewNumberHandler(reqHandler, db, config.Get().TwilioSID, config.Get().TwilioToken)
+	// A malformed key set must not stop the daemon: other services depend on the numbers. The
+	// provider secrets of the DB stay unusable (fail closed) and the environment credentials apply.
+	crypto, errCrypto := secretcrypto.New(config.Get().NumberSecretEncryptionKeys)
+	if errCrypto != nil {
+		logrus.Errorf("The number secret encryption keys are malformed. The provider secrets of the DB cannot be used. err: %v", errCrypto)
+		crypto, _ = secretcrypto.New("")
+	}
 
-	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler, nHandlerTelnyx, nHandlerTwilio)
+	env := providerhandler.NewEnvCredentials(
+		config.Get().TelnyxConnectionID,
+		config.Get().TelnyxProfileID,
+		config.Get().TelnyxToken,
+		config.Get().TwilioSID,
+		config.Get().TwilioToken,
+	)
+	providerHandler := providerhandler.NewProviderHandler(reqHandler, db, crypto, env)
 
-	if err := runServiceListen(sockHandler, numberHandler); err != nil {
+	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler, providerHandler)
+
+	if err := runServiceListen(sockHandler, numberHandler, providerHandler); err != nil {
 		return err
 	}
 
@@ -163,8 +177,8 @@ func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runServiceListen runs the listen service
-func runServiceListen(sockHandler sockhandler.SockHandler, numberHandler numberhandler.NumberHandler) error {
-	listenHandler := listenhandler.NewListenHandler(sockHandler, numberHandler)
+func runServiceListen(sockHandler sockhandler.SockHandler, numberHandler numberhandler.NumberHandler, providerHandler providerhandler.ProviderHandler) error {
+	listenHandler := listenhandler.NewListenHandler(sockHandler, numberHandler, providerHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameNumberRequest), string(commonoutline.QueueNameDelay)); err != nil {

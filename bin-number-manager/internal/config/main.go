@@ -30,6 +30,8 @@ type Config struct {
 	TelnyxConnectionID      string // TelnyxConnectionID is the connection ID for Telnyx API authentication.
 	TelnyxProfileID         string // TelnyxProfileID is the profile ID for Telnyx API authentication.
 	TelnyxToken             string // TelnyxToken is the token for Telnyx API authentication.
+
+	NumberSecretEncryptionKeys string // NumberSecretEncryptionKeys is the key set that encrypts the provider secrets stored in the DB, as <version>:<base64 32 bytes>[,...].
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -59,6 +61,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("telnyx_connection_id", "", "Telnyx Connection ID")
 	f.String("telnyx_profile_id", "", "Telnyx Profile ID")
 	f.String("telnyx_token", "", "Telnyx Token")
+	f.String("number_secret_encryption_keys", "", "Encryption keys of the provider secrets, <version>:<base64 32 bytes>[,...]")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -73,6 +76,8 @@ func bindConfig(cmd *cobra.Command) error {
 		"telnyx_connection_id":      "TELNYX_CONNECTION_ID",
 		"telnyx_profile_id":         "TELNYX_PROFILE_ID",
 		"telnyx_token":              "TELNYX_TOKEN",
+
+		"number_secret_encryption_keys": "NUMBER_SECRET_ENCRYPTION_KEYS",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -110,6 +115,8 @@ func LoadGlobalConfig() {
 			TelnyxConnectionID:      viper.GetString("telnyx_connection_id"),
 			TelnyxProfileID:         viper.GetString("telnyx_profile_id"),
 			TelnyxToken:             viper.GetString("telnyx_token"),
+
+			NumberSecretEncryptionKeys: viper.GetString("number_secret_encryption_keys"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

@@ -6,6 +6,10 @@
 |---------|---------|-------------|
 | Number purchase fails | 402 or provider error | Insufficient billing balance or provider API credentials invalid |
 | Telnyx/Twilio API error | Number not created | Provider credentials (`telnyx_token`, `twilio_sid`/`twilio_token`) wrong or expired |
+| `could not purchase: no usable provider` | Every purchase fails | No enabled provider has a secret; see `credential_source` and `usable` of `GET /v1/number_providers` and the `provider_unusable_total` metric |
+| `PURCHASE_UNCONFIRMED` in the log | Purchase fails, no fallback | The order result is unknown; check the provider for an order of that number before retrying |
+| `ROLLBACK_RELEASE_FAILED` in the log | A number is bought but not recorded | Release it at the provider by hand |
+| `credential_source: db_undecryptable` | The provider is unusable, releases fail | The key version of the stored secret is not in `NUMBER_SECRET_ENCRYPTION_KEYS`; restore the key or delete the DB secret |
 | Cascade not triggered | Numbers persist after customer delete | subscribehandler not receiving `customer_deleted` event; check RabbitMQ queue |
 | Flow reference stale | Inbound calls fail after flow deleted | subscribehandler not receiving `flow_deleted` event; flow IDs not cleared |
 | Available number search empty | No numbers returned | Country code not supported by provider, or provider API rate limited |
@@ -103,11 +107,12 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `redis_database` | `REDIS_DATABASE` | `0` | Redis DB index |
 | `prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | `""` | Metrics path (e.g. `/metrics`) |
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | `""` | Metrics listen address (e.g. `:2112`) |
-| `telnyx_token` | `TELNYX_TOKEN` | required if Telnyx used | Telnyx API authentication token |
+| `telnyx_token` | `TELNYX_TOKEN` | required if Telnyx used and not stored in the DB | Telnyx API authentication token |
 | `telnyx_connection_id` | `TELNYX_CONNECTION_ID` | required if Telnyx used | Telnyx connection ID for call routing |
 | `telnyx_profile_id` | `TELNYX_PROFILE_ID` | required if Telnyx used | Telnyx messaging profile ID |
 | `twilio_sid` | `TWILIO_SID` | required if Twilio used | Twilio account SID |
 | `twilio_token` | `TWILIO_TOKEN` | required if Twilio used | Twilio auth token |
+| `number_secret_encryption_keys` | `NUMBER_SECRET_ENCRYPTION_KEYS` | `""` | Keys that encrypt the provider secrets stored in the DB: `<version>:<base64 of 32 bytes>` entries separated by commas. The highest version encrypts, the version of the row decrypts. Empty means no key: secrets cannot be stored and the environment credentials are used |
 
 ## Prometheus Metrics
 
@@ -119,8 +124,21 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `number_create_total` | Counter | — | Total number purchase operations |
 | `telnyx_number_create_total` | Counter | — | Telnyx-specific number purchases |
 | `twilio_number_create_total` | Counter | — | Twilio-specific number purchases |
+| `provider_unusable_total` | Counter | `provider`, `reason` | Resolutions of an enabled provider that could not be used (`no_secret`, `db_undecryptable`, `required_config`) |
+| `provider_purchase_total` | Counter | `provider`, `result` | Purchase attempts (`success`, `rejected`, `unconfirmed`) |
 
 **Alert guidance:**
 - `telnyx_number_create_total` or `twilio_number_create_total` dropping while `number_create_total` stays constant → provider-specific failures; check provider API credentials.
 - `request_external_process_time` p99 > 5s → provider API latency; purchases will time out.
 - `receive_subscribe_event_process_time` high → cascade operations (customer/flow deletes) backing up.
+
+## Provider Credentials and Secret Keys
+
+A provider uses one credential source at a time: with a stored secret in `number_providers` the secret and the `config` of the row are used and the environment is ignored; without one, the `TELNYX_*` / `TWILIO_*` variables are used. The admin view (`credential_source`) tells which one is active: `db`, `env`, `none` or `db_undecryptable`.
+
+- **A malformed key list** does not stop the service (other services depend on it). The error is logged without the key material and the service starts as if no key were configured: stored secrets cannot be decrypted (the provider is `db_undecryptable`, no fallback to the environment) and new secrets are refused. `number-control` refuses to start instead. Run `number-control migrate up` before the other `number-control` commands on a database the service has not migrated yet.
+- **Key rotation**: (1) add the new version to `NUMBER_SECRET_ENCRYPTION_KEYS`, keep the old one, deploy; (2) enter the secret of each provider again (it is re-encrypted with the newest version; check `key_version` in the provider view); (3) when every provider shows the newest `key_version`, remove the old version. Removing a version first makes the rows of that version undecryptable. There is no re-encryption batch: the rows are few and the secrets are external values the admin holds.
+- **Recovery** of a provider that is `db_undecryptable`: restore the missing key version, or delete the stored secret (`DELETE /v1/number_providers/{name}/secret`), which returns the provider to the environment credentials.
+- **Do not change the account** of a provider that still has numbers (a different token for the same provider, by replacing or deleting the stored secret): releasing a number needs the account it was bought on. Moving the same account's token into the DB is fine.
+- Concurrent changes of the same provider's `config` by two admins are last write wins.
+- The `tm_update` of a row changes with every change of the row, including a secret change; `secret_updated_by` and `tm_secret_update` tell the secret changes.

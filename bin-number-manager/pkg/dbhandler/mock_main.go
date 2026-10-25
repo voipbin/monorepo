@@ -12,6 +12,7 @@ package dbhandler
 import (
 	context "context"
 	number "monorepo/bin-number-manager/models/number"
+	provider "monorepo/bin-number-manager/models/provider"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -128,18 +129,18 @@ func (mr *MockDBHandlerMockRecorder) NumberGetExistingNumbers(ctx, numbers any) 
 }
 
 // NumberGetsByTMRenew mocks base method.
-func (m *MockDBHandler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[number.Field]any) ([]*number.Number, error) {
+func (m *MockDBHandler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[number.Field]any, excludeIDs []uuid.UUID) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberGetsByTMRenew", ctx, tmRenew, size, filters)
+	ret := m.ctrl.Call(m, "NumberGetsByTMRenew", ctx, tmRenew, size, filters, excludeIDs)
 	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NumberGetsByTMRenew indicates an expected call of NumberGetsByTMRenew.
-func (mr *MockDBHandlerMockRecorder) NumberGetsByTMRenew(ctx, tmRenew, size, filters any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) NumberGetsByTMRenew(ctx, tmRenew, size, filters, excludeIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetsByTMRenew", reflect.TypeOf((*MockDBHandler)(nil).NumberGetsByTMRenew), ctx, tmRenew, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetsByTMRenew", reflect.TypeOf((*MockDBHandler)(nil).NumberGetsByTMRenew), ctx, tmRenew, size, filters, excludeIDs)
 }
 
 // NumberList mocks base method.
@@ -155,6 +156,64 @@ func (m *MockDBHandler) NumberList(ctx context.Context, size uint64, token strin
 func (mr *MockDBHandlerMockRecorder) NumberList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberList", reflect.TypeOf((*MockDBHandler)(nil).NumberList), ctx, size, token, filters)
+}
+
+// NumberProviderEnsure mocks base method.
+func (m *MockDBHandler) NumberProviderEnsure(ctx context.Context, p *provider.Provider) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberProviderEnsure", ctx, p)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NumberProviderEnsure indicates an expected call of NumberProviderEnsure.
+func (mr *MockDBHandlerMockRecorder) NumberProviderEnsure(ctx, p any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberProviderEnsure", reflect.TypeOf((*MockDBHandler)(nil).NumberProviderEnsure), ctx, p)
+}
+
+// NumberProviderGet mocks base method.
+func (m *MockDBHandler) NumberProviderGet(ctx context.Context, name number.ProviderName) (*provider.Provider, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberProviderGet", ctx, name)
+	ret0, _ := ret[0].(*provider.Provider)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberProviderGet indicates an expected call of NumberProviderGet.
+func (mr *MockDBHandlerMockRecorder) NumberProviderGet(ctx, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberProviderGet", reflect.TypeOf((*MockDBHandler)(nil).NumberProviderGet), ctx, name)
+}
+
+// NumberProviderList mocks base method.
+func (m *MockDBHandler) NumberProviderList(ctx context.Context) ([]*provider.Provider, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberProviderList", ctx)
+	ret0, _ := ret[0].([]*provider.Provider)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberProviderList indicates an expected call of NumberProviderList.
+func (mr *MockDBHandlerMockRecorder) NumberProviderList(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberProviderList", reflect.TypeOf((*MockDBHandler)(nil).NumberProviderList), ctx)
+}
+
+// NumberProviderUpdate mocks base method.
+func (m *MockDBHandler) NumberProviderUpdate(ctx context.Context, name number.ProviderName, fields map[provider.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberProviderUpdate", ctx, name, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NumberProviderUpdate indicates an expected call of NumberProviderUpdate.
+func (mr *MockDBHandlerMockRecorder) NumberProviderUpdate(ctx, name, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberProviderUpdate", reflect.TypeOf((*MockDBHandler)(nil).NumberProviderUpdate), ctx, name, fields)
 }
 
 // NumberUpdate mocks base method.

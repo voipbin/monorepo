@@ -173,7 +173,7 @@ func (h *numberHandler) dbUpdate(ctx context.Context, id uuid.UUID, fields map[n
 }
 
 // dbListByTMRenew returns list of numbers info
-func (h *numberHandler) dbListByTMRenew(ctx context.Context, tmRenew string) ([]*number.Number, error) {
+func (h *numberHandler) dbListByTMRenew(ctx context.Context, tmRenew string, excludeIDs []uuid.UUID) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "dbListByTMRenew",
 		"tm_renew": tmRenew,
@@ -183,7 +183,7 @@ func (h *numberHandler) dbListByTMRenew(ctx context.Context, tmRenew string) ([]
 		number.FieldDeleted: false,
 	}
 
-	res, err := h.db.NumberGetsByTMRenew(ctx, tmRenew, 100, filters)
+	res, err := h.db.NumberGetsByTMRenew(ctx, tmRenew, 100, filters, excludeIDs)
 	if err != nil {
 		log.Errorf("Could not get numbers. tm_renew: %s, err:%v", tmRenew, err)
 		return nil, err

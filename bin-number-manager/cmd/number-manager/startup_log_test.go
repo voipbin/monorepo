@@ -26,6 +26,7 @@ func Test_logStartup(t *testing.T) {
 		"TwilioSID",
 		"TwilioToken",
 		"TelnyxToken",
+		"NumberSecretEncryptionKeys",
 	}
 
 	// logged maps every other Config field to the key it is logged under.

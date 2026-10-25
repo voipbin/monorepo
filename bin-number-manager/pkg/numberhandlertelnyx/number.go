@@ -2,13 +2,35 @@ package numberhandlertelnyx
 
 import (
 	"context"
+	stderrors "errors"
+	"fmt"
+	"net/http"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/models/provider"
 	"monorepo/bin-number-manager/models/providernumber"
+	"monorepo/bin-number-manager/pkg/requestexternal"
 )
+
+// orderStatusFailure is the status of a number order that the telnyx has definitely failed.
+const orderStatusFailure = "failure"
+
+// classifyOrderError classifies the error of the order request. Only an HTTP answer that
+// definitely refuses the request is a rejection; every other error (network, timeout, 5xx,
+// 408, 409, 429, ...) may have been accepted by the provider and is unconfirmed.
+func classifyOrderError(err error) error {
+	var statusErr *requestexternal.HTTPStatusError
+	if stderrors.As(err, &statusErr) {
+		switch statusErr.StatusCode {
+		case http.StatusBadRequest, http.StatusUnauthorized, http.StatusForbidden, http.StatusNotFound, http.StatusUnprocessableEntity:
+			return fmt.Errorf("%w: %w", provider.ErrPurchaseRejected, err)
+		}
+	}
+
+	return fmt.Errorf("%w: %w", provider.ErrPurchaseUnconfirmed, err)
+}
 
 // NumberPurchase creates a new order numbers of given numbers from the telnyx
 func (h *numberHandlerTelnyx) NumberPurchase(num string) (*providernumber.ProviderNumber, error) {
@@ -22,14 +44,21 @@ func (h *numberHandlerTelnyx) NumberPurchase(num string) (*providernumber.Provid
 	resOrder, err := h.requestExternal.TelnyxNumberOrdersPost(h.token, numbers, h.connectionID, h.profileID)
 	if err != nil {
 		log.Errorf("Could not send the order request to the telnyx. err: %v", err)
-		return nil, errors.Wrap(err, "could not send the order request to the telnyx")
+		return nil, classifyOrderError(err)
 	}
 	log.WithField("ordered_number", resOrder).Debugf("Ordered number correctly. number: %v", resOrder.PhoneNumbers)
 
+	// the order may have been accepted: only an order that the telnyx reports as failed is a definite refusal
+	if resOrder.Status == orderStatusFailure {
+		log.Errorf("The telnyx reported the order as failed.")
+		return nil, fmt.Errorf("%w: the order status is %s", provider.ErrPurchaseRejected, resOrder.Status)
+	}
+
 	tmp, err := h.requestExternal.TelnyxPhoneNumbersGetByNumber(h.token, num)
 	if err != nil {
-		log.Errorf("Could not get ordered number info. err: %v", err)
-		return nil, err
+		// the order was sent but the result could not be confirmed: do not let the caller try another provider
+		log.Errorf("PURCHASE_UNCONFIRMED. Could not get ordered number info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not get the ordered number info: %w", provider.ErrPurchaseUnconfirmed, err)
 	}
 
 	res := tmp.ConvertProviderNumber()

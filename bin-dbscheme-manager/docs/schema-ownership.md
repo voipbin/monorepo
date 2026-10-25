@@ -25,7 +25,7 @@ The `bin-manager` Alembic stream is frozen read-only history (last head `b030752
 | bin-email-manager | email_emails | `bin-email-manager/migrations/` |
 | bin-flow-manager | flow_activeflows, flow_flows | `bin-flow-manager/migrations/` |
 | bin-message-manager | message_messages | `bin-message-manager/migrations/` |
-| bin-number-manager | number_numbers | `bin-number-manager/migrations/` |
+| bin-number-manager | number_numbers, number_providers | `bin-number-manager/migrations/` |
 | bin-outdial-manager | outdial_outdials, outdial_outdialtargetcalls, outdial_outdialtargets | `bin-outdial-manager/migrations/` |
 | bin-pipecat-manager | pipecat_pipecatcalls | `bin-pipecat-manager/migrations/` |
 | bin-queue-manager | queue_queuecallreferences, queue_queuecalls, queue_queues | `bin-queue-manager/migrations/` |
@@ -95,6 +95,7 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | flow_flows | bin-flow-manager | Flow definitions |
 | message_messages | bin-message-manager | Outbound SMS/messaging records |
 | number_numbers | bin-number-manager | Purchased DID numbers |
+| number_providers | bin-number-manager | Number provider settings (priority, enabled flag, encrypted secret) |
 | outdial_outdials | bin-outdial-manager | Outbound dialer sessions |
 | outdial_outdialtargetcalls | bin-outdial-manager | Calls placed to outdialtargets |
 | outdial_outdialtargets | bin-outdial-manager | Individual dial targets |

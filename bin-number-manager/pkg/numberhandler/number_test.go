@@ -21,6 +21,7 @@ import (
 	"monorepo/bin-number-manager/models/providernumber"
 	"monorepo/bin-number-manager/pkg/dbhandler"
 	"monorepo/bin-number-manager/pkg/numberhandlertelnyx"
+	"monorepo/bin-number-manager/pkg/providerhandler"
 )
 
 func Test_Create_OrderNumberTelnyx(t *testing.T) {
@@ -102,20 +103,23 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := numberHandler{
-				utilHandler:         mockUtil,
-				reqHandler:          mockReq,
-				db:                  mockDB,
-				notifyHandler:       mockNotify,
-				numberHandlerTelnyx: mockTelnyx,
+				utilHandler:     mockUtil,
+				reqHandler:      mockReq,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				providerHandler: mockProvider,
 			}
 			ctx := context.Background()
 
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
 
+			mockProvider.EXPECT().PurchaseCandidates(ctx).Return([]*providerhandler.Candidate{{Name: number.ProviderNameTelnyx, Provider: mockTelnyx}}, nil)
 			mockTelnyx.EXPECT().NumberPurchase(tt.number).Return(tt.responseTelnyx, nil)
-			mockDB.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return([]*number.Number{}, nil)
+			// the duplicate check before the purchase and the one of Register
+			mockDB.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return([]*number.Number{}, nil).Times(2)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().NumberCreate(ctx, tt.expectNumber).Return(nil)
 			mockDB.EXPECT().NumberGet(ctx, gomock.Any()).Return(tt.responseNumber, nil)
@@ -143,12 +147,13 @@ func Test_Create_rollback_on_register_failure(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+	mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 	h := numberHandler{
-		reqHandler:          mockReq,
-		db:                  mockDB,
-		notifyHandler:       mockNotify,
-		numberHandlerTelnyx: mockTelnyx,
+		reqHandler:      mockReq,
+		db:              mockDB,
+		notifyHandler:   mockNotify,
+		providerHandler: mockProvider,
 	}
 	ctx := context.Background()
 
@@ -163,10 +168,14 @@ func Test_Create_rollback_on_register_failure(t *testing.T) {
 	// billing check passes
 	mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
 
+	// the duplicate check before the purchase passes
+	mockDB.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: num}).Return([]*number.Number{}, nil)
+
 	// purchase succeeds
+	mockProvider.EXPECT().PurchaseCandidates(ctx).Return([]*providerhandler.Candidate{{Name: number.ProviderNameTelnyx, Provider: mockTelnyx}}, nil)
 	mockTelnyx.EXPECT().NumberPurchase(num).Return(purchasedProvider, nil)
 
-	// Register fails because number already exists
+	// Register fails because the number got registered meanwhile
 	mockDB.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: num}).Return([]*number.Number{{Number: num}}, nil)
 
 	// rollback: release the purchased number with correct provider reference
@@ -407,13 +416,13 @@ func Test_Update(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := numberHandler{
-				reqHandler:          mockReq,
-				db:                  mockDB,
-				notifyHandler:       mockNotify,
-				numberHandlerTelnyx: mockTelnyx,
+				reqHandler:      mockReq,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				providerHandler: mockProvider,
 			}
 			ctx := context.Background()
 
@@ -503,13 +512,13 @@ func Test_UpdateMetadata(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := numberHandler{
-				reqHandler:          mockReq,
-				db:                  mockDB,
-				notifyHandler:       mockNotify,
-				numberHandlerTelnyx: mockTelnyx,
+				reqHandler:      mockReq,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				providerHandler: mockProvider,
 			}
 			ctx := context.Background()
 
@@ -608,13 +617,13 @@ func Test_List(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := numberHandler{
-				utilHandler:         mockUtil,
-				reqHandler:          mockReq,
-				db:                  mockDB,
-				numberHandlerTelnyx: mockTelnyx,
+				utilHandler:     mockUtil,
+				reqHandler:      mockReq,
+				db:              mockDB,
+				providerHandler: mockProvider,
 			}
 			ctx := context.Background()
 
@@ -658,12 +667,12 @@ func Test_Get(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := numberHandler{
-				reqHandler:          mockReq,
-				db:                  mockDB,
-				numberHandlerTelnyx: mockTelnyx,
+				reqHandler:      mockReq,
+				db:              mockDB,
+				providerHandler: mockProvider,
 			}
 
 			ctx := context.Background()
@@ -723,13 +732,14 @@ func Test_Delete(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := numberHandler{
-				utilHandler:         mockUtil,
-				reqHandler:          mockReq,
-				db:                  mockDB,
-				notifyHandler:       mockNotify,
-				numberHandlerTelnyx: mockTelnyx,
+				utilHandler:     mockUtil,
+				reqHandler:      mockReq,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				providerHandler: mockProvider,
 			}
 
 			ctx := context.Background()
@@ -738,6 +748,7 @@ func Test_Delete(t *testing.T) {
 
 			switch tt.responseNumber.ProviderName {
 			case number.ProviderNameTelnyx:
+				mockProvider.EXPECT().ForRelease(ctx, number.ProviderNameTelnyx).Return(mockTelnyx, nil)
 				mockTelnyx.EXPECT().NumberRelease(ctx, tt.responseNumber).Return(nil)
 			}
 
