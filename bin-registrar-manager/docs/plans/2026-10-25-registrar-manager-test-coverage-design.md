@@ -53,7 +53,7 @@ Statement figures below are counts taken from the uncovered block list for the r
 | pkg/customerdomainhandler | non-duplicate create failure is wrapped and not retried (strict mock, one create call) | 2 |
 | pkg/listenhandler | a typed error whose status is not 400 and a not-found error from a handler are mapped to their own response codes (a 400 would be indistinguishable from the default branch) | 2 |
 
-Lower-bound total is about 240 statements, so the expected hand-written total is about 81% at most, and the 76% requirement does not depend on the cobra rows (the non-cobra rows alone give about 78 statements, a margin of about 21 over 2781, so per-row measured gains are checked during implementation); the figure needed is 2781.
+Planned total is about 240 statements, so the planned hand-written total is about 81% at most, and the 76% requirement does not depend on the cobra rows (the non-cobra rows alone give about 78 statements, a margin of about 21 over 2781, so per-row measured gains are checked during implementation); the figure needed is 2781.
 
 Out of scope by design: the connection-building tails of `runDomainMigrate` (L202-L222) and `runDomainMigrateRollback` (L643-L659), the query-builder failure branches in dbhandler (they cannot fail with the fixed table and filter input), the root `PersistentPreRunE` hook body (it mutates process-wide configuration state), and every statement listed as unreachable in section 2.
 
@@ -64,3 +64,7 @@ Verify items:
 4. Diff only touches `bin-registrar-manager/`, test files, and this document. Test data is synthetic (documentation-reserved host names and addresses only).
 
 VOIP-1416 targets packages below 80%; this change overlaps it in dbhandler, contacthandler, trunkhandler and cmd/registrar-control, and does not absorb it.
+
+## 4. Result
+
+Measured on the branch with the method of section 1: hand-written statements 3658, covered 3088, 84.42% (baseline 74.47%). Raw total including generated code and mocks is reported in the PR body. All 21 mutations listed in the verify items (one or more per row) were applied one at a time to a scratch checkout of the branch and each was caught by the intended new test; `go.mod` and `go.sum` are unchanged.
