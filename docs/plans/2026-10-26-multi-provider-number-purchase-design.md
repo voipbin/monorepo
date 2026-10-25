@@ -12,8 +12,8 @@ origin/main 6bbe6b7fd 기준으로 직접 읽어 확인했습니다.
 ## 2. 범위와 비범위
 
 PR 분할: 이 문서는 두 PR 전체를 다루며 PR1에 포함해 머지합니다.
-- PR1(이 카드, VOIP-1654 브랜치): number-manager 단독. provider 레지스트리, 설정 테이블 마이그레이션, 라우팅, 암호화, number-manager RPC(listenhandler, 7절 표), 오류 분류, `number-control` 조립, komodo와 k8s 환경변수 이름, number-manager 문서(domain, operations, architecture, CLAUDE.md, schema-ownership.md).
-- PR2(별도 카드): bin-common-handler requesthandler 메서드, bin-openapi-manager 계약, bin-api-manager 어드민 엔드포인트, docsdev RST와 build HTML. PR1의 RPC 계약이 main에 있어야 합니다.
+- PR1(이 PR): number-manager 단독. provider 레지스트리, 설정 테이블 마이그레이션, 라우팅, 암호화, number-manager RPC(listenhandler, 7절 표), 오류 분류, `number-control` 조립, komodo와 k8s 환경변수 이름, number-manager 문서(domain, operations, architecture, CLAUDE.md, schema-ownership.md).
+- PR2(후속 PR): bin-common-handler requesthandler 메서드, bin-openapi-manager 계약, bin-api-manager 어드민 엔드포인트, docsdev RST와 build HTML. PR1의 RPC 계약이 main에 있어야 합니다.
 비범위: square-admin, 신규 provider 구현체, 고객 대상 API, 운영 값 주입, 재암호화 배치, 운영 DB 쓰기. PR1 단독 기간에는 어드민 API가 없어 DB 행 입력 수단이 없고 환경변수 자격으로 Telnyx 단독이 유지됩니다.
 
 ## 3. Provider 인터페이스와 레지스트리
@@ -102,7 +102,7 @@ down은 `DROP TABLE IF EXISTS number_providers`로 데이터를 복원하지 못
 
 ## 6. 비밀값 암호화
 
-`pkg/secretcrypto`(number-manager 안, ai-manager의 `SecretCrypto` 패턴을 별도 구현). 공용화는 세 번째 사용처가 생길 때(루트 CLAUDE.md 승인 규칙 3곳 이상).
+`pkg/secretcrypto`(number-manager 안, ai-manager의 `SecretCrypto` 패턴을 별도 구현). 공용화는 세 번째 사용처가 생길 때(루트 CLAUDE.md의 bin-common-handler 편입 규칙: 3곳 이상).
 
 - 환경변수 `NUMBER_SECRET_ENCRYPTION_KEYS`: `<버전>:<base64 32바이트>` 쉼표 나열. 최신(최대) 버전으로 암호화하고 행의 `key_version`으로 복호화. 형식 오류, 중복 버전, 버전<=0, 32바이트 아님은 파싱 에러입니다. number-manager는 call-manager 등 통화 경로가 의존하므로 파싱 오류로 부팅 실패시키지 않고 error 로그(원인만, 값 제외) 후 키 없음으로 격하하여 기동합니다(여전히 fail closed: 암호화는 항상 에러이므로 비밀 저장 거부, DB 비밀 복호화 불가, 환경변수 자격으로만 동작). `number-control`은 같은 파서를 쓰되 파싱 오류를 즉시 에러로 반환합니다. 빈 값은 허용(키 없음).
 - 암호화: AES-256-GCM, 12바이트 랜덤 nonce, AAD=provider_name(행 바꿔치기 방지). 저장 형식은 `nonce || ciphertext`를 `secret_ciphertext` 한 컬럼에 담습니다. 평문 상한 1024바이트(바이트 기준).
