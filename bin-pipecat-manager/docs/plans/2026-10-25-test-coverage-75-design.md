@@ -45,12 +45,12 @@ VOIP-1416 과의 겹침: 이 서비스에서 80% 미만인 패키지(httphandler
 | 항목 | 예상 증가 |
 |---|---|
 | httphandler.Run 실패 경로 | 52 |
-| runner.go: Output 의 Upgrade/조회 실패, protobuf 해제 실패, 알 수 없는 프레임과 메시지 종류, InputReceiver 의 종류별 분기, runnerStartScript 와 receiveMessageFrameTypeMessage 의 오류 분기 | 약 35 |
+| runner.go: Output 의 Upgrade/조회 실패, protobuf 해제 실패, 오디오 오류 한계, Transcription/Message/알 수 없는 프레임과 메시지 종류, InputReceiver 의 종류별 분기(약 28), receiveMessageFrameTypeMessage 의 타입별 unmarshal 오류(12) | 약 40 |
 | start.go 실패 경로: 106행 세션 생성 실패, 136행 orphan external media 중단 실패 로그, AIcall Call 분기 external media 시작 실패와 websocket 연결 실패 | 약 22 |
-| session.go SessionStop 오류 분기, pythonrunner.go 오류 분기, audiosocket.go, pipecatframe.go 의 미커버 오류 분기 | 약 20 |
-| 소계 | 약 129 |
+| 도달 가능한 오류 분기만: pythonrunner.go Start/Stop 의 HTTP 전송 오류와 본문 읽기 오류와 non-200 (약 5), SessionStop 의 python Stop 오류 로그(session.go 110행, 1) | 약 6 |
+| 소계 | 약 120 |
 
-소계 129 로 필요량 107 을 넘고 여유는 약 22 입니다. httphandler.Run 실패 경로는 포트 상태와 무관하게 결정적입니다: 테스트가 점유하든, 다른 프로세스가 이미 점유하고 있든 Listen 은 실패하고 Run 이 오류를 반환하므로 `t.Skip` 을 쓰지 않고 오류 반환을 단언합니다(점유가 실패해도 같은 결과이므로 52 statement 는 확정).
+소계 약 120 으로 필요량 107 을 넘고 여유는 약 13 입니다(설계 리뷰에서 session/audiosocket/pipecatframe 의 빈 구조체 생성자와 경합 분기, 정상 입력으로 도달할 수 없는 marshal 오류 분기는 제외해 재계산). httphandler.Run 실패 경로는 포트 상태와 무관하게 결정적입니다: 테스트가 점유하든, 다른 프로세스가 이미 점유하고 있든 Listen 은 실패하고 Run 이 오류를 반환하므로 `t.Skip` 을 쓰지 않고 오류 반환을 단언합니다(점유가 실패해도 같은 결과이므로 52 statement 는 확정).
 
 추가 여유(성공 꼬리, 약 36): 141-145행 8, 167-182행 8, 276-280행 8, 291-295행 4, 298-313행 8 입니다. 이 경로는 사전 조건이 많아 예산에 넣지 않았고, 필요할 때만 씁니다. 요건: (1) websocketAsteriskConnect 가 DialContext 결과에 `SetReadDeadline` 을 호출하고 SessionStop 이 `ConnAst.Close()` 를 부르므로 nil 이 아닌 실제 연결이 필요합니다(기존 `dialTestServer` 로 httptest websocket 서버에 접속). (2) runAsteriskReceivedMediaHandle 은 `ReadMessage` 를 반복 호출하고 종료 시 ConnAstDone 을 닫으므로 websocketAsteriskConnect 가 MEDIA_START 를 읽기 위해 ReadMessage 를 먼저 한 번 부르므로(`TextMessage` 를 반환해야 함) 첫 호출은 TextMessage, 이후 runAsteriskReceivedMediaHandle 의 호출은 오류를 반환하도록 순서를 두고 호출 종료를 기다려야 합니다. (3) 협력 객체는 흐름에 따라 다릅니다. Call 참조: RunnerStart 의 toolHandler.GetByNames 와 pythonRunner.Start(오류 반환으로 즉시 종료), terminate 의 CallV1CallGet(진행 중이 아니면 external media 중단 없음), notifyHandler.PublishEvent, SessionStop 의 pythonRunner.Stop. AICall 참조의 Call 분기: RunnerStart 가 AIV1AIcallGet, resolveTeamForPython, resolveAIFromAIcall, AIV1AIcallToolList 를 거치고, terminate 가 terminateReferenceTypeAICall 로 가서 AIV1AIcallGet 과 CallV1ExternalMediaStop 을 부릅니다. 호출마다 완료 신호 채널을 두고 모든 고루틴의 마지막 mock 호출을 기다린 뒤 종료해야 mc.Finish 이후 호출이 없습니다. 이 요건을 안정적으로 충족하지 못하면 쓰지 않고 부족분은 cmd/pipecat-control 의 순수 함수나 cachehandler(miniredis) 예비로 채웁니다.
 
@@ -64,15 +64,16 @@ Run 실패 경로 시험의 주의: 점유 리스너는 `t.Cleanup` 으로 닫�
 
 1. pkg/httphandler/main_test.go (기존 파일에 추가, +52): `Test_Run_listenFailure`. 테스트가 `127.0.0.1:8001` 을 먼저 점유하고(`t.Cleanup` 으로 닫음) `Run()` 을 호출해 오류가 반환되고 메시지에 `failed to listen on localhost:8001` 이 포함됨을 단언합니다. 점유 실패 원인이 EADDRINUSE 이면 그대로 Run 오류를 단언하고, 그 외 원인이면 skip 합니다(1절 설명 참조). 성공 경로는 서버를 종료할 수 없어 호출하지 않으며, 이 시험은 라우트가 실제로 서빙되는지 검증하지 못한다는 한계를 주석에 적습니다.
 2. pkg/pipecatcallhandler/runner_output_test.go (신규, runner.go 약 +35). 기존 `Test_logPolicy_RunnerWebsocketHandleOutput_frames` 와 겹치지 않는 분기만:
-   - RunnerWebsocketHandleOutput: Upgrade 실패(372-373행), 조회(`db.PipecatcallGet`) 실패(382-383행), 오디오 프레임 처리 오류가 첫 회와 이후 회에 계속되어도 루프가 이어지고 연속 오류가 500 을 넘으면 nil 을 반환(413-424행 주변), 오디오 성공 시 오류 카운터 리셋, 알 수 없는 프레임 종류, Frame_Message 처리 오류 로그 후 계속(429-439행), protobuf 해제 실패 후 계속(400-402행), CloseMessage 반환(457-458행), Ping/Pong/알 수 없는 메시지 종류(465-469행). 각 케이스는 mock 의 ReadMessage 순서와 이후 mock 호출(PublishEvent 의 `EventTypeInitialized` 인자)을 정확한 값으로 단언하고, 반환값(nil)과 소비한 메시지 수를 확인합니다.
+   - RunnerWebsocketHandleOutput: Upgrade 실패(372-373행), 조회(`db.PipecatcallGet`) 실패(382-383행), 오디오 프레임 처리 오류가 첫 회와 이후 회에 계속되어도 루프가 이어지고 연속 오류가 500 을 넘으면 nil 을 반환(413-424행 주변), 오디오 성공 시 오류 카운터 리셋, Transcription 프레임(445-447행), 알 수 없는 프레임 종류, Frame_Message 처리 오류 로그 후 계속(429-439행), protobuf 해제 실패 후 계속(400-402행), CloseMessage 반환(457-458행), Ping/Pong/알 수 없는 메시지 종류(465-469행). 각 케이스는 mock 의 ReadMessage 순서와 이후 mock 호출(PublishEvent 의 `EventTypeInitialized` 인자)을 정확한 값으로 단언하고, 반환값(nil)과 소비한 메시지 수를 확인합니다.
    - runnerWebsocketHandleInputReceiver: Text/Close/Pong/알 수 없는 종류(338-348행). 반환 시점(Close 에서 반환, 읽기 오류에서 반환)을 호출 횟수로 단언합니다.
    - RunnerWebsocketHandleInput 의 Upgrade 실패(284-285행).
 3. pkg/pipecatcallhandler/runner_message_test.go (신규): receiveMessageFrameTypeMessage 의 타입별 unmarshal 실패(611-655행 중 오류 분기), 알 수 없는 label, 알 수 없는 RTVI type 은 오류가 아닌 nil 반환. 기존 `Test_receiveMessageFrameTypeMessage` 에 있는 케이스와 겹치지 않게 추가하며 반환 오류 메시지의 접두어를 정확히 단언합니다.
-4. pkg/pipecatcallhandler/start_aicall_test.go (신규, start.go 약 +22): 
-   - startReferenceTypeCall 의 세션 생성 실패(106행): 같은 id 세션을 미리 넣어 `SessionCreate` 가 실패하게 하고 외부 호출이 없음을 확인.
+4. pkg/pipecatcallhandler/start_callpath_test.go (신규, start.go 약 +22):
+   - startReferenceTypeCall 의 세션 생성 실패(106행): 같은 id 세션을 미리 넣어 `SessionCreate` 가 실패하게 합니다. `CallV1CallGet` 은 호출되고 `CallV1ExternalMediaStart` 이후는 호출되지 않음을 단언합니다.
    - orphan external media 중단 실패 로그(136행): DialContext 실패 후 `CallV1ExternalMediaStop` 도 오류를 반환해도 시작 오류가 `asterisk setup failed` 로 반환되고 세션이 삭제됨을 단언.
-   - startReferenceTypeAIcall 의 `ReferenceTypeCall` 분기: external media 시작 실패(245-275행), websocket 연결 실패와 정리(284-287행). 두 경우 모두 반환 오류 문구와 세션 삭제를 단언합니다.
-5. pkg/pipecatcallhandler 여유(약 +20): SessionStop 의 오류 분기(session.go 110-111 의 python Stop 오류 로그, 132-161 의 ConnAst 종료 경합과 닫기 오류), NewAudiosocketHandler/NewPipecatframeHandler/NewPythonRunner/NewPipecatcallHandler 가 실제로 의존성을 연결하는지(구성된 필드가 비어 있지 않음). 값을 단순 비교하는 빈 호출은 쓰지 않습니다. 이 항목은 1-4번 실측 후 부족분만 채웁니다.
+   - startReferenceTypeAIcall 의 `ReferenceTypeCall` 분기: external media 시작 실패(245-275행), websocket 연결 실패와 정리(284-287행, `CallV1ExternalMediaStop` 오류 포함). 두 경우 모두 반환 오류 문구와 세션 삭제를 단언합니다.
+   - 고루틴 규칙: 이 경로들은 `astErrCh` 를 기다리기 전에 RunnerStart 고루틴을 띄우고, AICall 참조에서는 그 고루틴이 `AIV1AIcallGet`, `resolveTeamForPython`, `toolHandler.GetByNames`, `pythonRunner.Start/Stop` 을 호출하며 시점이 테스트 본문과 경합합니다. 따라서 (1) 고루틴이 부르는 mock 은 기존 `Test_startReferenceTypeCall_externalMediaFailure` 와 같이 `AnyTimes()` 로 두고 호출 횟수를 단언 대상에서 제외하며, (2) 테스트 종료 전에 세션 맵이 비고(`sessionDelete`) 세션 컨텍스트가 취소됨을 확인한 뒤 끝내고, (3) `go test -race -count=20` 으로 이 테스트들을 반복해 간헐 실패가 없음을 확인합니다.
+5. 도달 가능한 오류 분기(약 +6): pythonrunner.go Start/Stop 의 HTTP 전송 오류(141, 188행), 응답 본문 읽기 오류(149, 196행), Stop 의 non-200(203행)을 기존 테스트가 쓰는 `httpClient` 교체(`roundTripFunc`)로 만들고 오류 접두어를 단언합니다. SessionStop 의 python Stop 오류 로그(session.go 110행)는 Stop mock 이 오류를 반환해도 세션이 삭제됨을 단언합니다. 필드 없는 생성자(NewAudiosocketHandler, NewPythonRunner)와 동시성 경합이 필요한 SessionStop 분기(141-143행), 정상 입력으로는 도달할 수 없는 marshal 오류 분기는 시험하지 않습니다.
 6. 예비(1-5번으로 +107 이 안 되면): (a) start.go 성공 꼬리(1절 요건 충족 시, 약 36), (b) cmd/pipecat-control 의 resolveUUID 와 printJSON(각각 몇 statement 에 불과해 효과 작음), (c) cachehandler + miniredis(약 +50, go.mod/go.sum 변경이 필요하고 같은 버전이 이미 다른 서비스에 있음을 확인해야 함). 선택 기준은 제품 코드 무변경과 결정성이 확실한 (a) 우선, 그다음 효과가 큰 (c), (b)는 마지막입니다.
 
 ## 3. verify 항목
@@ -81,5 +82,6 @@ Run 실패 경로 시험의 주의: 점유 리스너는 `t.Cleanup` 으로 닫�
 - CLAUDE.md 5단계(go mod tidy, vendor, generate, test, golangci-lint) 통과, go.mod/go.sum 변경 없음(예비 (c) 를 쓰는 경우에만 예외로 보고). `go test -race -count=1 ./...` 와 `-count` 반복 실행 통과.
 - 수기 합계 76% 이상을 `GOFLAGS=-mod=mod go test -count=1 -coverprofile` 과 hw.py 방식으로 실측해 패키지별 전후 표를 PR 본문에 적습니다.
 - `scripts/check-test-conventions.sh` 통과(`git fetch origin main` 선행).
-- 변이 표본(scratch 복사본에서만): Run 의 Listen 오류 wrap 문구 변경, Output 의 audioErrors 500 한계 제거, receiveMessageFrameTypeMessage 의 unmarshal 오류 반환 제거, startReferenceTypeAIcall 의 `sessionDelete` 제거 각각에서 새 테스트가 실패함을 확인합니다.
+- 변이 표본(scratch 복사본에서만): Run 의 Listen 오류 wrap 문구 변경, Output 의 audioErrors 500 한계 제거, receiveMessageFrameTypeMessage 의 unmarshal 오류 반환 제거, Output 의 CloseMessage `return nil` 제거(457-458행), startReferenceTypeAIcall 의 `sessionDelete` 제거 각각에서 새 테스트가 실패함을 확인합니다.
+- 최종 측정에서 `go test -v -run Test_Run_listenFailure ./pkg/httphandler/` 로 skip 없이 PASS 임을 확인합니다(skip 되면 52 statement 가 조용히 빠지므로 목표 달성 판정에 포함하지 않습니다). 점유 리스너는 `-count` 반복마다 닫혀야 합니다.
 - `git diff --stat origin/main...HEAD` 가 bin-pipecat-manager/ 안의 `_test.go` 와 이 문서만 포함.
