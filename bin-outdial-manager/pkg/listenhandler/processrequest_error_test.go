@@ -259,3 +259,23 @@ func Test_v1OutdialsGet_malformedFilters(t *testing.T) {
 		})
 	}
 }
+
+func Test_processRequest_unknownURI(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	// no business handler may be reached
+	h := &listenHandler{
+		sockHandler:          sockhandler.NewMockSockHandler(mc),
+		outdialHandler:       outdialhandler.NewMockOutdialHandler(mc),
+		outdialTargetHandler: outdialtargethandler.NewMockOutdialTargetHandler(mc),
+	}
+
+	res, err := h.processRequest(&sock.Request{URI: "/v1/unknown", Method: sock.RequestMethodGet, DataType: "application/json"})
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+	if res == nil || res.StatusCode != http.StatusNotFound {
+		t.Errorf("expected 404, got: %v", res)
+	}
+}
