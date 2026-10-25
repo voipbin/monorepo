@@ -16,7 +16,7 @@ func newTestPaddleHandler(baseURL string) *paddleHandler {
 		httpClient: http.DefaultClient,
 		priceMap:   map[string]account.PlanType{},
 	}
-	h.apiKey = "synthetic-test-key"
+	h.apiKey = "x"
 	return h
 }
 

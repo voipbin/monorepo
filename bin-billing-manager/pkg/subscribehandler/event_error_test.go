@@ -174,8 +174,8 @@ func Test_processEvent_error_paths(t *testing.T) {
 			if err == nil {
 				t.Fatalf("expected an unmarshal error, got nil")
 			}
-			if errors.Is(err, errInjected) {
-				t.Errorf("unexpected downstream error: %v", err)
+			if errors.Is(err, errInjected) || !strings.Contains(err.Error(), "could not unmarshal") {
+				t.Errorf("expected the unmarshal failure, got: %v", err)
 			}
 		})
 

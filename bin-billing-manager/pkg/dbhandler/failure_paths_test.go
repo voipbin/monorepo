@@ -164,7 +164,7 @@ func Test_exec_failures(t *testing.T) {
 	}
 }
 
-// Test_ledger_failures covers the failures of the two ledger transactions that depend on the
+// Test_ledger_customer_id_parse_failure covers the failures of the two ledger transactions that depend on the
 // stored customer id.
 func Test_ledger_customer_id_parse_failure(t *testing.T) {
 	accountID := uuid.FromStringOrNil("a3000000-0000-0000-0000-000000000001")
