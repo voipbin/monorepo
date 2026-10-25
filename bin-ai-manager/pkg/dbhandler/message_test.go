@@ -17,6 +17,7 @@ import (
 )
 
 func Test_MessageCreate(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -189,6 +190,8 @@ func Test_MessageCreate(t *testing.T) {
 }
 
 func Test_MessageAssistantReplyExists(t *testing.T) {
+	resetTestDB(t)
+
 	curTime := func() *time.Time { t := time.Date(2026, 4, 29, 12, 0, 0, 0, time.UTC); return &t }()
 	deletedTime := func() *time.Time { t := time.Date(2026, 4, 29, 12, 30, 0, 0, time.UTC); return &t }()
 
@@ -363,6 +366,8 @@ func Test_MessageAssistantReplyExists(t *testing.T) {
 }
 
 func Test_MessageUpdateDeliveryStatus(t *testing.T) {
+	resetTestDB(t)
+
 	curTime := func() *time.Time { t := time.Date(2026, 4, 29, 13, 0, 0, 0, time.UTC); return &t }()
 
 	tests := []struct {

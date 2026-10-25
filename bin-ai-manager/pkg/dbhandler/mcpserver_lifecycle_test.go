@@ -53,6 +53,8 @@ func liveServerWithCredentials(t *testing.T, h DBHandler, id, customerID uuid.UU
 // the credentials behind exactly when they matter most -- which is why this
 // test asserts through Get rather than trusting the field map.
 func Test_McpServerDelete_ZeroesCredentials(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 
 	id := uuid.Must(uuid.NewV4())
@@ -121,6 +123,8 @@ func Test_McpServerDelete_ZeroesCredentials(t *testing.T) {
 // the predicate alone would make the write a no-op while the caller still
 // answered 200 and published an update event.
 func Test_McpServerUpdate_RefusesDeletedRow(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 
 	id := uuid.Must(uuid.NewV4())
@@ -155,6 +159,8 @@ func Test_McpServerUpdate_RefusesDeletedRow(t *testing.T) {
 // predicate above: a live row must keep updating normally. Without this, a
 // predicate that refused everything would pass the test above.
 func Test_McpServerUpdate_LiveRowStillUpdates(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 
 	id := uuid.Must(uuid.NewV4())
@@ -182,6 +188,8 @@ func Test_McpServerUpdate_LiveRowStillUpdates(t *testing.T) {
 // here is what lets the handler skip the duplicate deleted event instead of
 // publishing one for a delete that did not happen.
 func Test_McpServerDelete_RepeatReportsNotFound(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 
 	id := uuid.Must(uuid.NewV4())

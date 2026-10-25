@@ -113,6 +113,8 @@ func (m aiIDMatcher) String() string {
 const skipReasonNoForUpdate = "SQLite test driver does not support FOR UPDATE; requires MariaDB/MySQL test infra"
 
 func Test_AIAcceptProposal_HappyPath_RefreshesAICache(t *testing.T) {
+	resetTestDB(t)
+
 	t.Skip(skipReasonNoForUpdate)
 
 	mc := gomock.NewController(t)
@@ -168,6 +170,8 @@ func Test_AIAcceptProposal_HappyPath_RefreshesAICache(t *testing.T) {
 }
 
 func Test_AIAcceptProposal_AlreadyAccepted_RefreshesAICache_SelfHeal(t *testing.T) {
+	resetTestDB(t)
+
 	t.Skip(skipReasonNoForUpdate)
 
 	mc := gomock.NewController(t)
@@ -206,6 +210,8 @@ func Test_AIAcceptProposal_AlreadyAccepted_RefreshesAICache_SelfHeal(t *testing.
 }
 
 func Test_AIAcceptProposal_PromptVersionDrifted_NoCacheRefresh(t *testing.T) {
+	resetTestDB(t)
+
 	t.Skip(skipReasonNoForUpdate)
 
 	mc := gomock.NewController(t)
@@ -246,6 +252,8 @@ func Test_AIAcceptProposal_PromptVersionDrifted_NoCacheRefresh(t *testing.T) {
 }
 
 func Test_AIAcceptProposal_ProposalNotFound_NoCacheRefresh(t *testing.T) {
+	resetTestDB(t)
+
 	t.Skip(skipReasonNoForUpdate)
 
 	mc := gomock.NewController(t)

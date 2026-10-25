@@ -16,6 +16,8 @@ import (
 // database driver: a cancelled context aborts the query (read, write and list
 // paths) instead of the query running to completion.
 func Test_ContextCancel_QueryAborted(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

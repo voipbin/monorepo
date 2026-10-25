@@ -19,6 +19,7 @@ import (
 )
 
 func Test_AIcallCreate(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -149,6 +150,7 @@ func Test_AIcallCreate(t *testing.T) {
 }
 
 func Test_AIcallGetByReferenceID(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -227,6 +229,7 @@ func Test_AIcallGetByReferenceID(t *testing.T) {
 }
 
 func Test_AIcallUpdate(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -343,6 +346,7 @@ func Test_AIcallUpdate(t *testing.T) {
 }
 
 func Test_AIcallDelete(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -424,6 +428,7 @@ func Test_AIcallDelete(t *testing.T) {
 }
 
 func Test_AIcallUpdateIfActive(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -530,6 +535,7 @@ func Test_AIcallUpdateIfActive(t *testing.T) {
 }
 
 func Test_IsErrDuplicate(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name string
@@ -570,6 +576,7 @@ func Test_IsErrDuplicate(t *testing.T) {
 }
 
 func Test_AIcallList(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -696,6 +703,7 @@ func Test_AIcallList(t *testing.T) {
 // tm_update bump from listen's own stop-time bookkeeping would reject a genuine
 // question the agent just typed, for no reason the agent could understand.
 func Test_AIcallUpdateNoTouchTMUpdate(t *testing.T) {
+	resetTestDB(t)
 
 	createTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 	updateTime := func() *time.Time { t := time.Date(2024, 6, 7, 11, 12, 13, 140000000, time.UTC); return &t }()
@@ -797,6 +805,7 @@ func Test_AIcallUpdateNoTouchTMUpdate(t *testing.T) {
 // established the cached copy was suspect, so leaving the stale copy in place
 // would make the next ordinary AIcallGet wrong again.
 func Test_AIcallGetSkipCache(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 

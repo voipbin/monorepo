@@ -77,6 +77,8 @@ func newActivateTestHandler(t *testing.T, mc *gomock.Controller) (handler, *util
 // --- paths that return before the FOR UPDATE statement (runnable on SQLite) ---
 
 func Test_AIActivateInsight_NotFound(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -91,6 +93,8 @@ func Test_AIActivateInsight_NotFound(t *testing.T) {
 }
 
 func Test_AIActivateInsight_SoftDeletedTarget(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -115,6 +119,8 @@ func Test_AIActivateInsight_SoftDeletedTarget(t *testing.T) {
 }
 
 func Test_AIActivateInsight_NormalTypeRejected(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -136,6 +142,8 @@ func Test_AIActivateInsight_NormalTypeRejected(t *testing.T) {
 // --- delete / update side effects on is_insight_active (runnable on SQLite) ---
 
 func Test_AIDelete_ClearsIsInsightActive(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -159,6 +167,8 @@ func Test_AIDelete_ClearsIsInsightActive(t *testing.T) {
 }
 
 func Test_AIUpdate_ClearsIsInsightActive(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -187,6 +197,8 @@ func Test_AIUpdate_ClearsIsInsightActive(t *testing.T) {
 }
 
 func Test_AIGet_RoundTripsIsInsightActive(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -236,6 +248,8 @@ func Test_AIGet_RoundTripsIsInsightActive(t *testing.T) {
 // aipromptproposal_test.go.
 
 func Test_AIActivateInsight_SwapsActiveAndRefreshesBothCaches(t *testing.T) {
+	resetTestDB(t)
+
 	t.Skip(skipReasonNoForUpdate)
 
 	mc := gomock.NewController(t)
@@ -288,6 +302,8 @@ func Test_AIActivateInsight_SwapsActiveAndRefreshesBothCaches(t *testing.T) {
 }
 
 func Test_AIActivateInsight_Idempotent(t *testing.T) {
+	resetTestDB(t)
+
 	t.Skip(skipReasonNoForUpdate)
 
 	mc := gomock.NewController(t)
@@ -329,6 +345,8 @@ func Test_AIActivateInsight_Idempotent(t *testing.T) {
 }
 
 func Test_AIActivateInsight_DoesNotTouchOtherCustomers(t *testing.T) {
+	resetTestDB(t)
+
 	t.Skip(skipReasonNoForUpdate)
 
 	mc := gomock.NewController(t)
@@ -365,6 +383,8 @@ func Test_AIActivateInsight_DoesNotTouchOtherCustomers(t *testing.T) {
 }
 
 func Test_AIActivateInsight_ConcurrentActivationsSerialize(t *testing.T) {
+	resetTestDB(t)
+
 	t.Skip(skipReasonNoForUpdate)
 
 	mc := gomock.NewController(t)

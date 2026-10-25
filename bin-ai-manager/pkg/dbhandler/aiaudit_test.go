@@ -47,6 +47,8 @@ func insertTestAudit(t *testing.T, a *aiaudit.AIAudit, status aiaudit.Status, tm
 }
 
 func Test_AIAuditGet_ReturnNotFoundForSoftDeleted(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -78,6 +80,8 @@ func Test_AIAuditGet_ReturnNotFoundForSoftDeleted(t *testing.T) {
 }
 
 func Test_AIAuditGet_ReturnsTMDeleteNull(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -115,6 +119,8 @@ func Test_AIAuditGet_ReturnsTMDeleteNull(t *testing.T) {
 }
 
 func Test_AIAuditUpdateFinal_OnlyUpdatesWhenNotDeleted(t *testing.T) {
+	resetTestDB(t)
+
 	curTime := func() *time.Time {
 		t := time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC)
 		return &t
@@ -193,6 +199,8 @@ func Test_AIAuditUpdateFinal_OnlyUpdatesWhenNotDeleted(t *testing.T) {
 }
 
 func Test_AIAuditList_ExcludesSoftDeleted(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -252,6 +260,8 @@ func Test_AIAuditList_ExcludesSoftDeleted(t *testing.T) {
 }
 
 func Test_AIAuditUpdateFinal_StoresMessageIDs(t *testing.T) {
+	resetTestDB(t)
+
 	curTime := func() *time.Time {
 		t := time.Date(2024, 6, 2, 12, 0, 0, 0, time.UTC)
 		return &t
@@ -317,6 +327,8 @@ func Test_AIAuditUpdateFinal_StoresMessageIDs(t *testing.T) {
 }
 
 func Test_AIAuditCountProgressing_ExcludesSoftDeleted(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

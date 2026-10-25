@@ -18,6 +18,7 @@ import (
 )
 
 func Test_AICreate(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -131,6 +132,7 @@ func Test_AICreate(t *testing.T) {
 }
 
 func Test_AIDelete(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -209,6 +211,7 @@ func Test_AIDelete(t *testing.T) {
 }
 
 func Test_AIList(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -321,6 +324,7 @@ func Test_AIList(t *testing.T) {
 }
 
 func Test_AIUpdate(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -425,6 +429,8 @@ func Test_AIUpdate(t *testing.T) {
 }
 
 func Test_AICreate_InsightMultiplePerCustomer(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 
 	mc := gomock.NewController(t)

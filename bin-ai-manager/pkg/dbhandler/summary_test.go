@@ -17,6 +17,7 @@ import (
 )
 
 func Test_SummaryCreate(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -137,6 +138,7 @@ func Test_SummaryCreate(t *testing.T) {
 }
 
 func Test_SummaryUpdate(t *testing.T) {
+	resetTestDB(t)
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
@@ -248,6 +250,8 @@ func Test_SummaryUpdate(t *testing.T) {
 // the "AND status != done" clause actually rejects the second write rather than
 // silently re-applying it.
 func Test_SummaryUpdateStatusDoneIfNotDone(t *testing.T) {
+	resetTestDB(t)
+
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
 	sm := &summary.Summary{
