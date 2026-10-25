@@ -18,7 +18,7 @@ PR 분할: 이 문서는 두 PR 전체를 다루며 PR1에 포함해 머지합�
 
 ## 3. Provider 인터페이스와 레지스트리
 
-`pkg/providerhandler`(신규)가 모든 provider 접근을 소유합니다. 순환 import를 피하기 위해 리프 패키지 `models/provider`에 `Provider` 행 모델, 응답 도메인 타입 `Info`(계산 필드 `usable`, `credential_source` 포함, json 태그를 가진 도메인 타입으로 listenhandler가 직접 마샬링: 루트 CLAUDE.md layering 스타일 A), `Credentials`, 센티널 에러(`ErrPurchaseRejected`, `ErrPurchaseUnconfirmed`, `ErrSecretKeyNotConfigured`, `ErrNotImplemented`)를 둡니다. `numberhandlertelnyx`와 `numberhandlertwilio`는 `models/provider`만 import하고(생성자는 현행처럼 평문 문자열 인자), `providerhandler`의 레지스트리가 Factory 클로저에서 `Credentials`를 풀어 생성자를 호출합니다.
+`pkg/providerhandler`(신규)가 모든 provider 접근을 소유합니다. 순환 import를 피하기 위해 리프 패키지 `models/provider`에 `Provider` 행 모델, 응답 도메인 타입 `Info`(계산 필드 `usable`, `credential_source` 포함, json 태그를 가진 도메인 타입으로 listenhandler가 직접 마샬링: 루트 CLAUDE.md layering 스타일 A), `Credentials`, 센티널 에러(`ErrPurchaseRejected`, `ErrPurchaseUnconfirmed`, `ErrSecretKeyNotConfigured`, `ErrNotImplemented`, `ErrInvalidArgument`)를 둡니다. `numberhandlertelnyx`와 `numberhandlertwilio`는 `models/provider`만 import하고(생성자는 현행처럼 평문 문자열 인자), `providerhandler`의 레지스트리가 Factory 클로저에서 `Credentials`를 풀어 생성자를 호출합니다.
 
 ```go
 type Provider interface {
@@ -28,8 +28,10 @@ type Provider interface {
     NumberUpdateTags(ctx context.Context, num *number.Number, tags []string) error
 }
 type Credentials struct { Secret string; Config map[string]string } // String/GoString 은 [REDACTED]
-type Factory func(c Credentials) (Provider, error)
+type Factory func(c Credentials) (Provider, error) // reqHandler, db 는 레지스트리 생성 시 클로저로 캡처
 ```
+
+`providerhandler.ProviderHandler` 인터페이스(풀어낸 인자, request/response DTO 미사용): `Resolve(ctx, name) (*Resolved, error)`, `PurchaseCandidates(ctx) ([]Candidate, error)`, `ForRelease(ctx, name) (Provider, error)`(enabled 무관), `ForSearch(ctx) (Provider, error)`, `List(ctx) ([]*provider.Info, error)`, `Get(ctx, name) (*provider.Info, error)`, `Update(ctx, name, actor uuid.UUID, enabled *bool, priority *int, config map[string]string) (*provider.Info, error)`, `UpdateSecret(ctx, name, actor uuid.UUID, secret string) (*provider.Info, error)`, `DeleteSecret(ctx, name, actor uuid.UUID) (*provider.Info, error)`. `actor`가 `uuid.Nil`이거나 파싱에 실패하면 `ErrInvalidArgument`(400).
 
 - 레지스트리는 `map[number.ProviderName]Descriptor{Factory, AllowedConfig []string, RequiredConfig []string, Purchasable bool, DefaultEnabled bool, DefaultPriority int, EnvCredentials func() Credentials}`. `Purchasable=false`(twilio)이면 구입 후보에서 항상 제외하고 반환 해석에는 쓰입니다(반환도 unimplemented 에러가 되며 기존과 동일). 코드에 등록된 provider만 DB 행이 의미를 가집니다(알 수 없는 provider_name은 API가 404).
 - telnyx: 비밀=token, config=`connection_id`,`profile_id`. 기존 `numberhandlertelnyx`를 Provider에 맞춰 생성자가 Credentials를 받도록 바꿉니다(외부 HTTP 코드는 그대로).
@@ -75,7 +77,7 @@ down은 `DROP TABLE IF EXISTS number_providers`로 데이터를 복원하지 못
 
 ### 영향도 분석 (하드룰 17)
 
-- 파괴적 연산: DROP, TRUNCATE, UPDATE, DELETE, INSERT SELECT, 타입 변경, 기본값 제거, 이름 변경, 기존 데이터에 대한 NOT NULL, UNIQUE, FK, CHECK 추가 모두 해당 없음. upgrade는 신규 테이블 CREATE 한 문장뿐입니다(기존 테이블 무변경, NOT NULL 컬럼은 모두 DEFAULT가 있고 신규 빈 테이블). enum 값 제거 해당 없음.
+- 파괴적 연산: DROP, TRUNCATE, UPDATE, DELETE, INSERT SELECT, 타입 변경, 기본값 제거, 이름 변경, 기존 데이터에 대한 NOT NULL, UNIQUE, FK, CHECK 추가 모두 해당 없음. upgrade는 신규 테이블 CREATE 한 문장뿐입니다(기존 테이블 무변경, `provider_name`(PK)을 제외한 NOT NULL 컬럼은 모두 DEFAULT가 있고 PK는 항상 값을 지정하는 신규 빈 테이블이므로 기존 데이터와 무관). enum 값 제거 해당 없음.
 - 구/신 호환: 구 코드는 새 테이블을 참조하지 않으므로 신 스키마에서 동작합니다. 신 코드는 기동 시 마이그레이션이 리스닝 전에 실행되어 구 스키마를 보는 구간이 없습니다. `number_providers` 참조 코드는 신규뿐입니다(main에서 grep 결과 0건).
 - 락과 소요: 신규 테이블 CREATE는 기존 테이블 락이 없고 즉시 끝납니다. 행 수는 provider 종류 수(한 자리)입니다.
 - 롤백: 마이그레이터는 전진 호환이며 이전 코드는 신규 테이블을 사용하지 않으므로 이미지를 되돌려도 동작합니다. 테이블은 남습니다. 필요하면 후속 마이그레이션으로 DROP.
@@ -89,7 +91,7 @@ down은 `DROP TABLE IF EXISTS number_providers`로 데이터를 복원하지 못
 - `Create`는 후보 루프 사이에 ctx 취소를 확인합니다. provider 행은 한 자리 수라 호출마다 DB에서 읽으며 캐시를 두지 않습니다.
 - 구입 전에 `FieldDeleted=false, FieldNumber=num` 중복 검사를 먼저 합니다(이미 등록된 번호를 구입한 뒤 Register가 실패해 누수되는 것을 막음).
 - 폴백 전제: 고객이 검색에서 고른 번호(telnyx 재고)를 다른 provider가 가지고 있다는 보장은 없습니다. 폴백은 같은 번호를 보유한 provider가 있을 때만 의미가 있고, 다른 provider에 그 번호가 없으면 정상적인 확정 실패로 보고 다음 후보로 넘어갑니다. 이 한계는 문서화하고(검색의 provider 통합은 비범위) 테스트에 넣습니다.
-- 오류 분류 표(이중 구입 방지, 보수적 기본값): provider는 구입 에러를 두 종류로 반환합니다. 확정 실패 `ErrPurchaseRejected`(요청이 수신되어 4xx로 거절됨: 재고 없음, 번호 오류, 주문 status가 실패로 확정)만 다음 후보로 폴백합니다. 현재 `requestexternal`은 비-200 응답을 상태 코드가 없는 문자열 에러로만 반환하므로, `requestexternal`에 상태 코드를 담은 타입 오류(`*HTTPStatusError{StatusCode}`)를 추가하고 `TelnyxNumberOrdersPost`가 이를 반환하게 하며(인터페이스와 mock 변경). Telnyx 분류 표: HTTP 400, 401, 403, 404, 422는 `ErrPurchaseRejected`, 그 밖의 모든 상태(408, 409, 429, 5xx 포함)와 전송 오류는 `ErrPurchaseUnconfirmed`. HTTP 200이면 `OrderNumber.Status`를 읽어 `failure`는 `ErrPurchaseRejected`, `pending`/`success`와 알 수 없는 값은 이후 `TelnyxPhoneNumbersGetByNumber` 확인으로 진행하며 그 조회 실패는 `ErrPurchaseUnconfirmed`입니다. 그 밖의 모든 에러(네트워크 오류, 타임아웃(Telnyx 클라이언트 30초), 5xx, 주문 접수 후 조회 실패, 응답 파싱 실패)는 주문이 접수됐을 수 있는 불명확 실패로 보고 `ErrPurchaseUnconfirmed`로 감싸 폴백 없이 중단합니다(로그에 provider와 번호만, 운영자 확인). 불명확 실패는 provider 장애 때 폴백이 안 되는 단점이 있으나 이중 구입 비용 위험을 우선합니다(어드민이 provider를 비활성화하여 우회). 후보가 없으면 `could not purchase: no usable provider` 에러.
+- 오류 분류 표(이중 구입 방지, 보수적 기본값): provider는 구입 에러를 두 종류로 반환합니다. 확정 실패 `ErrPurchaseRejected`(요청이 수신되어 4xx로 거절됨: 재고 없음, 번호 오류, 주문 status가 실패로 확정)만 다음 후보로 폴백합니다. 현재 `requestexternal`은 비-200 응답을 상태 코드가 없는 문자열 에러로만 반환하므로, `requestexternal`에 상태 코드를 담은 타입 오류(`*HTTPStatusError{StatusCode}`)를 추가하고 `TelnyxNumberOrdersPost`가 이를 반환하게 하며(인터페이스와 mock 변경). Telnyx 분류 표: HTTP 400, 401, 403, 404, 422는 `ErrPurchaseRejected`, 그 밖의 모든 상태(408, 409, 429, 5xx 포함)와 전송 오류는 `ErrPurchaseUnconfirmed`. HTTP 200이면 `OrderNumber.Status`를 읽어 `failure`는 `ErrPurchaseRejected`, `pending`/`success`와 알 수 없는 값은 이후 `TelnyxPhoneNumbersGetByNumber` 확인으로 진행하며 그 조회 실패는 `ErrPurchaseUnconfirmed`입니다. 그 밖의 모든 에러(네트워크 오류, 타임아웃(Telnyx 클라이언트 30초), 5xx, 주문 접수 후 조회 실패, 응답 파싱 실패)는 주문이 접수됐을 수 있는 불명확 실패로 보고 `ErrPurchaseUnconfirmed`로 감싸 폴백 없이 중단합니다(로그에 provider와 번호만, 운영자 확인). 불명확 실패는 provider 장애 때 폴백이 안 되는 단점이 있으나 이중 구입 비용 위험을 우선합니다(어드민이 provider를 비활성화하여 우회). 후보가 없으면 `could not purchase: no usable provider` 에러(일반 error, 현행 `processV1NumbersPost`의 실패 응답 경로를 그대로 따르며 별도 상태 코드를 만들지 않음).
 - `requestexternal/telnyx.go`가 `http.Response` 전체를 Debug 로그로 남기는 곳(Authorization 헤더가 노출될 수 있음)을 삭제하고 로그 출력에 헤더가 없다는 테스트를 추가합니다.
 - `Register` 실패 시 롤백 release는 실제로 구입한 provider로 합니다. 롤백 release가 실패하면(예: provider가 release 미구현) error 레벨로 provider와 번호, `ROLLBACK_RELEASE_FAILED`를 남겨 운영 확인 대상으로 합니다. 태그 갱신도 같은 provider입니다. 번호의 `provider_name`에는 실제 구입한 provider 이름이 들어갑니다.
 - `Delete`(반환)는 번호의 `provider_name`으로 레지스트리에서 provider를 해석하되 enabled 여부와 무관하게 자격만 있으면 해석합니다(비활성 provider 번호도 반환 가능). 자격이 없으면 에러(기존과 동일하게 반환 실패). `ProviderNameNone`(virtual)과 알 수 없는 이름의 기존 동작은 유지합니다.
@@ -130,7 +132,7 @@ listenhandler 정규식은 `^`/`$` 앵커를 두고(`/v1/number_providers$`, `/v
 
 PR2 범위 참고용 계약: api-manager(`/number_providers` 최상위 어드민 표면, 상담사용 `service_agents` 경로는 만들지 않음): `GET /number_providers`, `GET /number_providers/{provider_name}`, `PUT /number_providers/{provider_name}`, `PUT /number_providers/{provider_name}/secret`, `DELETE /number_providers/{provider_name}/secret`. servicehandler는 `a.IsDirect()` 거부 후 `hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin)`만 허용하고 `a.AgentID()`를 actor_id로 전달합니다. 접근키(accesskey) 인증은 `AgentID()`가 Nil이므로 쓰기 거부(감사 불가). 응답은 `ConvertWebhookMessage()`를 거치며 비밀 입력 요청 본문은 로그에 남기지 않습니다(server 핸들러가 본문을 로그 필드에 넣지 않음). OpenAPI: `openapi/paths/number_providers/` 신규, 스키마 `NumberManagerNumberProvider*`, 비밀 입력 필드는 `writeOnly: true`.
 
-PR2: bin-common-handler `requesthandler`: `NumberV1NumberProviderList/Get/Update/UpdateSecret` 추가(암호화 코드 없음). 이 메서드는 api-manager와 number-manager 둘만 사용하는 기존 requesthandler 패턴을 따릅니다.
+PR2: (RPC 비밀 본문이 내부 RabbitMQ를 평문으로 통과하는 점은 PR2 설계에서 다룸) bin-common-handler `requesthandler`: `NumberV1NumberProviderList/Get/Update/UpdateSecret` 추가(암호화 코드 없음). 이 메서드는 api-manager와 number-manager 둘만 사용하는 기존 requesthandler 패턴을 따릅니다.
 
 ## 8. 환경변수와 배포 선언
 
