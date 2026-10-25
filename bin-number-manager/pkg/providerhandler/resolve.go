@@ -165,7 +165,9 @@ func (h *providerHandler) PurchaseCandidates(ctx context.Context) ([]*Candidate,
 	for _, r := range items {
 		p, err := r.desc.Factory(r.creds)
 		if err != nil {
-			return nil, fmt.Errorf("could not create the provider. provider_name: %s: %w", r.name, err)
+			// one provider that cannot be created must not stop the purchase at the others
+			logrus.WithField("provider_name", r.name).Errorf("Could not create the provider. err: %v", err)
+			continue
 		}
 		res = append(res, &Candidate{Name: r.name, Provider: p})
 	}

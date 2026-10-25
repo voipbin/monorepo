@@ -54,6 +54,10 @@ Purchase (`POST /v1/numbers`) after the balance check:
 
 Release (`DELETE /v1/numbers/{uuid}`, renewal without balance, customer deletion) uses the number's own `provider_name`, whether or not that provider is enabled. A provider that has no usable credential makes the release fail and keeps the record. During a renewal run, a number that could not be released is left out of the rest of that run.
 
+### Provider Settings (`number_providers`)
+
+One row per provider that an admin changed: `provider_name` (key), `enabled`, `priority` (lower is tried first), `config` (non-secret values such as the Telnyx `connection_id` and `profile_id`), `secret_ciphertext` with its `key_version` (AES-256-GCM, never returned), and the audit columns `updated_by`, `tm_update`, `secret_updated_by`, `tm_secret_update`. The admin view adds `has_secret`, `credential_source` (`db`, `env`, `none`, `db_undecryptable`) and `usable`. The row `config` is used only while the row holds a secret; with the environment credentials it is ignored.
+
 ### Number Lifecycle
 
 ```

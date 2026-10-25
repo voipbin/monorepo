@@ -329,3 +329,82 @@ func Test_DeleteSecret(t *testing.T) {
 		}
 	})
 }
+
+func Test_Update_boundaries(t *testing.T) {
+	ctx := context.Background()
+
+	for _, tt := range []struct {
+		priority int
+		ok       bool
+	}{{0, true}, {1, true}, {maxPriority, true}, {maxPriority + 1, false}, {-1, false}} {
+		h := newTestHandler(t, newFakeDB(), testKeys(1), envTelnyx())
+		_, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, intPtr(tt.priority), nil)
+		if (err == nil) != tt.ok {
+			t.Errorf("priority %d: expect ok=%v, got: %v", tt.priority, tt.ok, err)
+		}
+	}
+
+	t.Run("an update of one field keeps the registry defaults of the others on a new row", func(t *testing.T) {
+		db := newFakeDB()
+		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+
+		info, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, boolPtr(false), nil, nil)
+		if err != nil || info.Enabled || info.Priority != 10 {
+			t.Errorf("Wrong match. expect: disabled with priority 10, got: %+v, %v", info, err)
+		}
+	})
+
+	t.Run("the number of config keys is limited at eight", func(t *testing.T) {
+		h := newTestHandler(t, newFakeDB(), testKeys(1), envTelnyx())
+		keys := []string{"k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8", "k9"}
+		d := h.registry[number.ProviderNameTelnyx]
+		d.AllowedConfig = keys
+		h.registry[number.ProviderNameTelnyx] = d
+
+		eight := map[string]string{}
+		for _, k := range keys[:8] {
+			eight[k] = "v"
+		}
+		if _, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, nil, eight); err != nil {
+			t.Errorf("eight keys must be accepted, got: %v", err)
+		}
+
+		nine := map[string]string{}
+		for _, k := range keys {
+			nine[k] = "v"
+		}
+		if _, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, nil, nine); !errors.Is(err, provider.ErrInvalidArgument) {
+			t.Errorf("nine keys must be rejected, got: %v", err)
+		}
+	})
+
+	t.Run("the secret length is limited at 1024 bytes", func(t *testing.T) {
+		h := newTestHandler(t, newFakeDB(), testKeys(1), NewEnvCredentials("", "", "", "sid", ""))
+
+		if _, err := h.UpdateSecret(ctx, number.ProviderNameTwilio, testActor, strings.Repeat("a", 1024)); err != nil {
+			t.Errorf("1024 bytes must be accepted, got: %v", err)
+		}
+		if _, err := h.UpdateSecret(ctx, number.ProviderNameTwilio, testActor, strings.Repeat("a", 1025)); !errors.Is(err, provider.ErrInvalidArgument) {
+			t.Errorf("1025 bytes must be rejected, got: %v", err)
+		}
+	})
+}
+
+func Test_DeleteSecret_audit(t *testing.T) {
+	ctx := context.Background()
+	db := newFakeDB()
+	h := newTestHandler(t, db, testKeys(1), envTelnyx())
+
+	_, _ = h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, nil, map[string]string{"connection_id": "c1"})
+	if _, err := h.UpdateSecret(ctx, number.ProviderNameTelnyx, uuid.FromStringOrNil("a0000000-0000-4000-8000-0000000000b2"), "fake"); err != nil {
+		t.Fatal(err)
+	}
+
+	info, err := h.DeleteSecret(ctx, number.ProviderNameTelnyx, testActor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.SecretUpdatedBy == nil || *info.SecretUpdatedBy != testActor || info.TMSecretUpdate == nil {
+		t.Errorf("The deletion must record who deleted the secret and when. got: %+v", info)
+	}
+}

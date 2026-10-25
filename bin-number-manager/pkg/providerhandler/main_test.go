@@ -435,3 +435,21 @@ func Test_Credentials_redaction(t *testing.T) {
 		}
 	}
 }
+
+func Test_PurchaseCandidates_factoryFailure(t *testing.T) {
+	ctx := context.Background()
+	h := newTestHandler(t, newFakeDB(), "", envTelnyx())
+
+	h.registry["broken"] = Descriptor{
+		Factory:         func(provider.Credentials) (Provider, error) { return nil, errors.New("factory failure") },
+		Purchasable:     true,
+		DefaultEnabled:  true,
+		DefaultPriority: 1,
+	}
+	h.env["broken"] = provider.Credentials{Secret: "b"}
+
+	res, err := h.PurchaseCandidates(ctx)
+	if err != nil || len(res) != 1 || res[0].Name != number.ProviderNameTelnyx {
+		t.Errorf("Wrong match. expect: telnyx only, got: %v, %v", res, err)
+	}
+}

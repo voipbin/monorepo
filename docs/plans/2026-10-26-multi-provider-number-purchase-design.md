@@ -6,7 +6,7 @@ origin/main 6bbe6b7fd 기준으로 직접 읽어 확인했습니다.
 
 - 유효(반증 못함): `numberhandler.Create`(`pkg/numberhandler/number.go`)는 구입을 `h.numberHandlerTelnyx.NumberPurchase`로 고정하고, 롤백 release와 태그 갱신도 Telnyx 고정입니다. 반환(`Delete`)만 번호의 `provider_name`으로 분기합니다(telnyx, twilio). provider 설정 테이블 없음(`migrations/`는 `number_numbers` 베이스라인 하나). 열린 PR과 중복 티켓 없음(`gh pr list --state all --search "number provider"`에 무관한 PR만).
 - 확인하지 못했던 것의 결과: Twilio 구입은 구현되어 있지 않습니다(`numberhandlertwilio.CreateNumber`와 `ReleaseNumber`는 "unimplemented" 에러 반환, 검색 `GetAvailableNumbers`도 unimplemented: `numberhandlertwilio/available.go`, `Test_unimplemented`). 따라서 이번 카드의 Twilio는 인터페이스 적합화까지이며 `Purchasable=false`로 구입 후보에서 제외됩니다(기본 비활성). api-manager 어드민 모델은 `hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin)`과 `a.IsDirect()` 거부 패턴입니다(`pkg/servicehandler/provider.go`). 최상위 `/providers`는 이미 route-manager의 SIP 캐리어 리소스이므로 이름 충돌을 피해 `/number_providers`를 씁니다.
-- 틀린 주장: 없음. 단 "ai-manager와 bin-common-handler를 건드리지 않는다"는 암호화 공용화에 대한 지시로 해석합니다. api-manager가 number-manager를 호출하려면 `bin-common-handler/pkg/requesthandler`에 RPC 메서드 추가가 불가피합니다(기존 모든 리소스와 동일한 방식, 암호화 코드는 포함하지 않음).
+- 틀린 주장: 없음. 암호화 코드는 ai-manager와 bin-common-handler를 바꾸지 않고 number-manager 안에 둡니다(공용화는 세 번째 사용처가 생길 때). api-manager가 number-manager를 호출하려면 `bin-common-handler/pkg/requesthandler`에 RPC 메서드 추가가 불가피합니다(기존 모든 리소스와 동일한 방식, 암호화 코드는 포함하지 않음).
 - 숨은 가정: (a) Telnyx 주문 성공 후 확인 조회가 실패해도 폴백하면 이중 구입이 됩니다. 5절에서 폴백 중단 조건으로 처리합니다. (b) 구입 후 DB 등록 실패 시 롤백 release는 구입한 provider로 해야 합니다.
 
 ## 2. 범위와 비범위
@@ -75,7 +75,7 @@ down은 `DROP TABLE IF EXISTS number_providers`로 데이터를 복원하지 못
 
 감사: `updated_by`/`tm_update`는 enabled, priority, config 변경의 마지막 변경자와 시각, `secret_updated_by`/`tm_secret_update`는 비밀 변경의 변경자와 시각입니다. 변경마다 info 로그(변경자, provider_name, 바뀐 필드 이름만)를 남깁니다.
 
-### 영향도 분석 (하드룰 17)
+### 영향도 분석
 
 - 파괴적 연산: DROP, TRUNCATE, UPDATE, DELETE, INSERT SELECT, 타입 변경, 기본값 제거, 이름 변경, 기존 데이터에 대한 NOT NULL, UNIQUE, FK, CHECK 추가 모두 해당 없음. upgrade는 신규 테이블 CREATE 한 문장뿐입니다(기존 테이블 무변경, `provider_name`(PK)을 제외한 NOT NULL 컬럼은 모두 DEFAULT가 있고 PK는 항상 값을 지정하는 신규 빈 테이블이므로 기존 데이터와 무관). enum 값 제거 해당 없음.
 - 구/신 호환: 구 코드는 새 테이블을 참조하지 않으므로 신 스키마에서 동작합니다. 신 코드는 기동 시 마이그레이션이 리스닝 전에 실행되어 구 스키마를 보는 구간이 없습니다. `number_providers` 참조 코드는 신규뿐입니다(main에서 grep 결과 0건).
@@ -158,7 +158,7 @@ PR2: (RPC 비밀 본문이 내부 RabbitMQ를 평문으로 통과하는 점은 P
 - 테스트 PR 구분: 이 PR1은 number-manager 테스트만이며 api-manager/requesthandler 테스트는 PR2입니다(위 목록 중 api-manager 권한 거부 등은 PR2).
 - listenhandler: secret PUT 본문이 로그 hook에 나타나지 않음, requestexternal 로그에 Authorization 헤더 없음, 4xx/5xx/네트워크 오류 분류.
 
-못 하는 것(명시): 실제 Telnyx, Twilio 구입 호출(비용, 하드룰 9), 운영 DB 적용.
+못 하는 것(명시): 실제 Telnyx, Twilio 구입 호출(비용이 발생하는 호출), 운영 DB 적용.
 
 ## 11. 구현 시 확정 사항
 
@@ -170,4 +170,4 @@ PR2: (RPC 비밀 본문이 내부 RabbitMQ를 평문으로 통과하는 점은 P
 - `Credentials`는 `Secret`에 `json:"-"`를 붙이고 `String`/`GoString`은 값 수신자로 구현합니다.
 - `Provider` 인터페이스는 `providerhandler`에 둡니다(`models/provider`는 모델, 센티널, `Credentials`만).
 - `excludeIDs`는 `id.Bytes()`로 전달합니다(`gofrs/uuid`의 `Value()`는 문자열이므로 binary(16) 비교에 부적합).
-- 하드룰 17 영향도 분석의 기준 문서는 `docs/workflows/service-owned-migrations.md`의 Impact analysis와 `bin-number-manager/CLAUDE.md`의 migrations 절입니다. PR 본문에 두 레플리카가 000002를 동시에 적용하는 경로를 `migrationhandler`의 named lock이 직렬화함을 한 줄 남깁니다.
+- 영향도 분석의 기준 문서는 `docs/workflows/service-owned-migrations.md`의 Impact analysis와 `bin-number-manager/CLAUDE.md`의 migrations 절입니다. PR 본문에 두 레플리카가 000002를 동시에 적용하는 경로를 `migrationhandler`의 named lock이 직렬화함을 한 줄 남깁니다.

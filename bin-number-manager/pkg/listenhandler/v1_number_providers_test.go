@@ -343,6 +343,18 @@ func Test_processRequest_secretNotLogged(t *testing.T) {
 				}
 			}
 
+			if tt.name == "broken body" {
+				found := false
+				for _, e := range hook.AllEntries() {
+					if _, ok := e.Data["func"]; ok && strings.Contains(e.Message, "Could not unmarshal the data. err_type:") {
+						found = true
+					}
+				}
+				if !found {
+					t.Errorf("The unmarshal failure must be logged by the type of the error only")
+				}
+			}
+
 			if strings.Contains(tt.name, "success") || strings.Contains(tt.name, "handler failure") {
 				if stored != secret {
 					t.Errorf("The secret did not reach the handler. got: %q", stored)

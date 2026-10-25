@@ -128,6 +128,8 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `provider_purchase_total` | Counter | `provider`, `result` | Purchase attempts (`success`, `rejected`, `unconfirmed`) |
 
 **Alert guidance:**
+- `provider_unusable_total` increasing for an enabled provider → it cannot be used (`no_secret`, `db_undecryptable` or `required_config`); check the provider view and the key list.
+- `provider_purchase_total{result="unconfirmed"}` increasing → purchases stop without a fallback because the order result is unknown; check the provider for the orders.
 - `telnyx_number_create_total` or `twilio_number_create_total` dropping while `number_create_total` stays constant → provider-specific failures; check provider API credentials.
 - `request_external_process_time` p99 > 5s → provider API latency; purchases will time out.
 - `receive_subscribe_event_process_time` high → cascade operations (customer/flow deletes) backing up.
@@ -142,3 +144,5 @@ A provider uses one credential source at a time: with a stored secret in `number
 - **Do not change the account** of a provider that still has numbers (a different token for the same provider, by replacing or deleting the stored secret): releasing a number needs the account it was bought on. Moving the same account's token into the DB is fine.
 - Concurrent changes of the same provider's `config` by two admins are last write wins.
 - The `tm_update` of a row changes with every change of the row, including a secret change; `secret_updated_by` and `tm_secret_update` tell the secret changes.
+- A change of the `config` and a change of the secret of the same provider made at the same time can leave a DB-secret row without a required config key (for Telnyx `connection_id`). The provider then shows `credential_source: db` and `usable: false` and is left out of the purchases. Set the config key again, or delete the stored secret.
+- The `config` of a row is used only while the provider has a stored secret. With the environment credentials the `config` shown in the provider view is ignored; `credential_source` tells which one applies.
