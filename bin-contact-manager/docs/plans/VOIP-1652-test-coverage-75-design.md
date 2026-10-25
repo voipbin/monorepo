@@ -40,3 +40,7 @@ Harness rules:
   - D (top-ups): for the two largest functions, for example `staleRowRepairTx` (remove the rows-affected zero branch) and `OwnershipPeriodsLockAndResolveTx` (remove one error propagation).
   - Reserve candidates if D falls short of the target: `AddressUpdate` (14) and `ContactDeleteByCustomerID` (10).
 - Public repository hygiene check on `git diff`: no real addresses, hosts, secrets or personal data.
+
+## 4. Outcome versus plan
+
+Groups A, B and C were implemented as planned. Of group D only the ownership read helpers (`staleRowByTargetTx`, `contactTombstoneTx`, `latestOwnershipPeriodValidToTx`, `addressTypeTargetContactByID`) were covered; `staleRowRepairTx`, `OwnershipPeriodsLockAndResolveTx`, `AddressUpdateTx` and the listenhandler and contacthandler top-ups were not needed, because the measured result already passed the target: hand-written 2954/3831 = 77.11% (117 newly covered statements). The mutation table was run for groups A to C and for the ownership helpers; the unimplemented group D functions were not mutated because they were not touched. The error-path sqlmock tests call `ExpectationsWereMet` where expectations exist beyond the setup; the sqlite tests and the result-shape tests assert persisted rows and returned values instead.
