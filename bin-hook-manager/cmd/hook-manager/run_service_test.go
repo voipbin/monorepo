@@ -182,6 +182,29 @@ func Test_runService_privateKeyNotWritable(t *testing.T) {
 	}
 }
 
+func Test_runService_certNotWritable(t *testing.T) {
+	prepareRunService(t)
+	hook := captureLogs(t)
+
+	// a directory in place of the cert file makes the first write fail.
+	if err := os.Mkdir(constSSLCertFilename, 0o700); err != nil {
+		t.Skipf("could not occupy the cert path: %v", err)
+	}
+
+	runServiceReturns(t)
+
+	messages := funcMessages(hook, "runService")
+	if !containsMessage(messages, "Could not write the ssl cert") {
+		t.Errorf("Wrong match. expect: cert failure log, got: %v", messages)
+	}
+	if containsMessage(messages, "Could not write the ssl private key") || containsMessage(messages, "Could not access to database") {
+		t.Errorf("Wrong match. expect: return before the key and the database, got: %v", messages)
+	}
+	if _, ok := readFileString(t, constSSLPrivFilename); ok {
+		t.Errorf("Wrong match. expect: key file not written after the cert failure")
+	}
+}
+
 func Test_writeBase64_writeFailure(t *testing.T) {
 	// /dev/full accepts the open but fails every non-empty write.
 	if _, err := os.Stat("/dev/full"); err != nil {

@@ -35,26 +35,26 @@ func Test_BodyReadError(t *testing.T) {
 		name string
 
 		method string
-		call   func(h *serviceHandler, r *http.Request) error
+		call   func(t *testing.T, h *serviceHandler, r *http.Request) error
 	}{
 		{
 			name:   "email",
 			method: http.MethodPost,
-			call: func(h *serviceHandler, r *http.Request) error {
+			call: func(t *testing.T, h *serviceHandler, r *http.Request) error {
 				return h.Email(context.Background(), r)
 			},
 		},
 		{
 			name:   "message",
 			method: http.MethodPost,
-			call: func(h *serviceHandler, r *http.Request) error {
+			call: func(t *testing.T, h *serviceHandler, r *http.Request) error {
 				return h.Message(context.Background(), r)
 			},
 		},
 		{
 			name:   "conversation post",
 			method: http.MethodPost,
-			call: func(h *serviceHandler, r *http.Request) error {
+			call: func(t *testing.T, h *serviceHandler, r *http.Request) error {
 				_, err := h.Conversation(context.Background(), r)
 				return err
 			},
@@ -62,7 +62,7 @@ func Test_BodyReadError(t *testing.T) {
 		{
 			name:   "conversation get",
 			method: http.MethodGet,
-			call: func(h *serviceHandler, r *http.Request) error {
+			call: func(t *testing.T, h *serviceHandler, r *http.Request) error {
 				res, err := h.Conversation(context.Background(), r)
 				if res != "" {
 					t.Errorf("Wrong match. expect: empty challenge, got: %s", res)
@@ -85,7 +85,7 @@ func Test_BodyReadError(t *testing.T) {
 				r, _ := http.NewRequest(tt.method, "http://hook.example.com/v1.0/test", body())
 				r.Host = "hook.example.com"
 
-				err := tt.call(h, r)
+				err := tt.call(t, h, r)
 				if err == nil {
 					t.Fatalf("Wrong match. expect: error, got: nil")
 				}
