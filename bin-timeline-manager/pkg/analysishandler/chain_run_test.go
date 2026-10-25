@@ -398,16 +398,26 @@ func Test_addContextBlock(t *testing.T) {
 	metrics := &verdict.SessionMetrics{TurnsUser: 3}
 
 	tests := []struct {
-		name       string
-		enrichment *sessionEnrichment
-		expectKeys []string
+		name         string
+		enrichment   *sessionEnrichment
+		expectKeys   []string
+		expectValues map[string]string
 	}{
-		{"nil enrichment", nil, nil},
-		{"nothing resolved", &sessionEnrichment{}, nil},
-		{"context only", &sessionEnrichment{ctx: sc}, []string{"session_context"}},
-		{"outcome only", &sessionEnrichment{outcome: outcome}, []string{"outcome"}},
-		{"metrics only", &sessionEnrichment{metrics: metrics}, []string{"metrics"}},
-		{"all blocks", &sessionEnrichment{ctx: sc, outcome: outcome, metrics: metrics}, []string{"metrics", "outcome", "session_context"}},
+		{"nil enrichment", nil, nil, nil},
+		{"nothing resolved", &sessionEnrichment{}, nil, nil},
+		{"context only", &sessionEnrichment{ctx: sc}, []string{"session_context"}, nil},
+		{"outcome only", &sessionEnrichment{outcome: outcome}, []string{"outcome"}, nil},
+		{"metrics only", &sessionEnrichment{metrics: metrics}, []string{"metrics"}, nil},
+		{
+			"all blocks",
+			&sessionEnrichment{ctx: sc, outcome: outcome, metrics: metrics},
+			[]string{"metrics", "outcome", "session_context"},
+			map[string]string{
+				"outcome":         `{"result":"completed"}`,
+				"metrics":         `{"turns_user":3,"turns_bot":0}`,
+				"session_context": `{"reference_type":"call","channel":"","multi_leg":false,"ai_handled":false,"human_involved":false}`,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -445,6 +455,18 @@ func Test_addContextBlock(t *testing.T) {
 			sort.Strings(keys)
 			if !reflect.DeepEqual(keys, tt.expectKeys) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectKeys, keys)
+			}
+			for k, expect := range tt.expectValues {
+				var expectDoc, gotDoc any
+				if err := json.Unmarshal([]byte(expect), &expectDoc); err != nil {
+					t.Fatalf("could not parse the expectation for %s. err: %v", k, err)
+				}
+				if err := json.Unmarshal(block[k], &gotDoc); err != nil {
+					t.Fatalf("could not parse the block %s. err: %v", k, err)
+				}
+				if !reflect.DeepEqual(expectDoc, gotDoc) {
+					t.Errorf("Wrong match. expect: %s=%s, got: %s", k, expect, block[k])
+				}
 			}
 		})
 	}

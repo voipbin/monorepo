@@ -30,7 +30,7 @@ Conventions: `Test_<Func>_<scenario>`, table style where it fits, `mc := gomock.
 
 New files: `pkg/analysishandler/run_test.go`, `pkg/analysishandler/chain_run_test.go`.
 
-Handler helper (in the new test files): wraps `newStartTestHandler`, exposes the `MockEventHandler` it already builds (type assertion on `h.eventHandler`), and replaces `metricStarted`, `metricCompleted`, `metricDuration` and `metricEnrichment` with fresh collectors registered in a local registry; values are read through `registry.Gather()` getters (no new module import, go.mod unchanged).
+Handler helper (in the new test files): wraps `newStartTestHandler`, replaces the event handler with a new `MockEventHandler` it returns, and replaces `metricStarted`, `metricCompleted`, `metricDuration` and `metricEnrichment` with fresh collectors registered in a local registry; values are read through `registry.Gather()` getters (no new module import, go.mod unchanged).
 
 Verify items:
 1. persistCompleted / persistFailed: db success (n=1), row-gone (n=0), db error each return without panic; the db mock receives the exact status, verdict bytes, model and message (completed with model; failed with nil bytes, empty model and the given message).
