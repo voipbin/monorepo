@@ -2,8 +2,8 @@
 
 ## 1. Ticket review
 
-Verdict: valid. Measured on the branch (base accc03e00, `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...`, all tests pass), excluding gens/, mock_*.go and `Code generated ... DO NOT EDIT` files, duplicate blocks merged by max count: hand-written 2349/3142 = 74.76% (the raw profile also counts generated code). 75.0% needs 8 more statements, 76% needs 39 more.
-VOIP-1649 (merged, PR 1533) raised the service from 62.99% to 74.76% with test files only; no open or merged PR covers the remaining gap (`gh pr list --state all --search`). Only test files are added; no product code or signature changes. cmd/timeline-manager main (197 uncovered) binds RabbitMQ, MySQL, ClickHouse and signals and stays out of scope.
+Verdict: valid. Measured on the branch (origin/main accc03e00 content for this service, `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...`, all tests pass), excluding gens/, mock_*.go and `Code generated ... DO NOT EDIT` files, duplicate blocks merged by max count: hand-written 2349/3142 = 74.76% (the raw profile also counts generated code). 75.0% needs 8 more statements, 76% needs 39 more.
+VOIP-1649 (merged, PR 1533) raised the service from 62.99% to 74.76% with test files only; no open or merged PR covers the remaining gap (`gh pr list --state all --search`). Only test files are added; no product code or signature changes. cmd/timeline-manager main (197 uncovered) binds RabbitMQ, MySQL, ClickHouse and signals and stays out of scope. pkg/dbhandler (176 uncovered) runs ClickHouse queries through the driver connection, rows and batch interfaces; the existing tests only cover the connection-not-established branch, and a fake of those interfaces costs more than it returns, so it is excluded.
 
 ## 2. Baseline (hand-written, before)
 
@@ -40,4 +40,4 @@ Verify items:
 7. buildFinalVerdict with issues resolves evidence tuples from the frozen list; addContextBlock includes only the resolved enrichment blocks and omits `context` when empty.
 8. Mutation sample after the tests pass: flip the persisted failed status, drop the truncated guard, change the 50-event threshold comparison, remove the recover; each must fail at least one new test.
 
-Goal: hand-written total at least 76% (about +62 statements expected beyond the 39 needed). Gates: tests, golangci-lint, `scripts/check-test-conventions.sh`, `git diff --stat origin/main...HEAD` limited to bin-timeline-manager/.
+Goal: hand-written total at least 76% (the planned targets hold about 125 uncovered statements against the 39 needed). Gates: tests, golangci-lint, `scripts/check-test-conventions.sh`, `git fetch origin main` then `git diff --stat origin/main...HEAD` limited to bin-timeline-manager/.
