@@ -17,7 +17,11 @@ Every number purchase calls `bin-billing-manager` for balance validation **befor
 
 ## CRITICAL: Provider Credentials
 
-Both Telnyx and Twilio credentials must be valid for number operations to succeed. Missing or expired credentials cause silent purchase failures at the provider level.
+A provider's credentials come from one source at a time: the row of `number_providers` when it holds an encrypted secret (the secret and the `config` of the row only), otherwise the `TELNYX_*` / `TWILIO_*` environment variables. A row secret that cannot be decrypted never falls back to the environment: the provider is unusable until the key list is restored or the DB secret is deleted. Never log or return a secret, a ciphertext or a key, and never print a `Provider` or `Credentials` value with a custom formatter that bypasses `String()`/`GoString()`. See [docs/operations.md](docs/operations.md) for key rotation and recovery.
+
+## CRITICAL: Purchase Fallback Never Double Buys
+
+`numberhandler.Create` tries the usable, purchasable providers in priority order and falls back to the next one ONLY on `provider.ErrPurchaseRejected` (the provider received the order and definitively refused it). Every other failure is treated as `provider.ErrPurchaseUnconfirmed` and stops the purchase, because the order may exist at the provider. A new provider implementation must classify its purchase errors this way.
 
 ## Key Commands
 
@@ -44,6 +48,7 @@ DATABASE_DSN="user:pass@tcp(127.0.0.1:3306)/bin_manager" \
 RABBITMQ_ADDRESS="amqp://guest:guest@localhost:5672" \
 REDIS_ADDRESS="127.0.0.1:6379" \
 TELNYX_TOKEN="<token>" \
+NUMBER_SECRET_ENCRYPTION_KEYS="1:<base64 of 32 random bytes>" \
 ./bin/number-manager
 ```
 
@@ -51,7 +56,7 @@ TELNYX_TOKEN="<token>" \
 
 - **ListenHandler**: consumes `bin-manager.number-manager.request`; routes to numberhandler
 - **SubscribeHandler**: `customer_deleted` → release all customer numbers; `flow_deleted` → clear flow references
-- **Provider dispatch**: numberhandler delegates to `numberhandlertelnyx` or `numberhandlertwilio`
+- **Provider dispatch**: numberhandler asks `providerhandler` (registry of `numberhandlertelnyx` and a `numberhandlertwilio` adapter, priority and credentials from `number_providers`, `secretcrypto` for the stored secrets)
 - **ProviderNumber record**: created alongside Number; holds provider's own reference ID for release operations
 
 ## Testing
@@ -64,11 +69,12 @@ go test -v -run TestName ./pkg/numberhandler/...
 
 ## Database Tables
 
-- `number_numbers` — phone numbers (soft-delete with `tm_delete`). The only table owned by this service; `ProviderNumber` is an in-memory model, not a table.
+- `number_numbers` — phone numbers (soft-delete with `tm_delete`). `ProviderNumber` is an in-memory model, not a table.
+- `number_providers` — provider settings: `enabled`, `priority`, non-secret `config`, the AES-256-GCM `secret_ciphertext` with its `key_version`, and the audit columns. A provider without a row uses the registry defaults and the environment credentials. The admin RPC is `/v1/number_providers` (the public API is added separately).
 
 ## Database migrations
 
-The schema of `number_numbers` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax.
+The schema of `number_numbers` and `number_providers` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax.
 
 - Files: `migrations/NNNNNN_<table>_<verb>_<type>_<items>.up.sql` and `.down.sql` (six digits, from 000001 without gaps). `000001_baseline` is the schema at the time of the conversion.
 - `cmd/number-manager` runs `Up()` right after the database connection, before the cache and RabbitMQ. Failure stops the start (non-zero exit). Version table: `number_schema_migrations`.

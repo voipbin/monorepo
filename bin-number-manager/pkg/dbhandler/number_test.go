@@ -896,7 +896,7 @@ func Test_NumberListByTMRenew(t *testing.T) {
 				}
 			}
 
-			res, err := h.NumberGetsByTMRenew(ctx, tt.tmRenew, tt.size, tt.filters)
+			res, err := h.NumberGetsByTMRenew(ctx, tt.tmRenew, tt.size, tt.filters, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

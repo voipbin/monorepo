@@ -4,10 +4,12 @@ package listenhandler
 
 import (
 	"context"
+	"encoding/json"
 	stderrors "errors"
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	cerrors "monorepo/bin-common-handler/models/errors"
@@ -18,8 +20,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-number-manager/models/provider"
 	"monorepo/bin-number-manager/pkg/dbhandler"
 	"monorepo/bin-number-manager/pkg/numberhandler"
+	"monorepo/bin-number-manager/pkg/providerhandler"
 )
 
 // pagination parameters
@@ -41,7 +45,8 @@ type listenHandler struct {
 	utilHandler utilhandler.UtilHandler
 	sockHandler sockhandler.SockHandler
 
-	numberHandler numberhandler.NumberHandler
+	numberHandler   numberhandler.NumberHandler
+	providerHandler providerhandler.ProviderHandler
 }
 
 var (
@@ -51,6 +56,11 @@ var (
 
 	// available numbers
 	regV1AvailableNumbers = regexp.MustCompile("/v1/available_numbers")
+
+	// number providers (admin). Anchored on both ends, so they cannot overlap each other
+	regV1NumberProviders         = regexp.MustCompile(`^/v1/number_providers$`)
+	regV1NumberProvidersID       = regexp.MustCompile(`^/v1/number_providers/([a-z0-9_]{1,32})$`)
+	regV1NumberProvidersIDSecret = regexp.MustCompile(`^/v1/number_providers/([a-z0-9_]{1,32})/secret$`)
 
 	// numbers
 	regV1NumbersGet                    = regexp.MustCompile(`/v1/numbers\?`)
@@ -114,15 +124,42 @@ func errorResponse(err error) *sock.Response {
 		return simpleResponse(http.StatusNotFound)
 	}
 
+	if stderrors.Is(err, provider.ErrInvalidArgument) {
+		return simpleResponse(http.StatusBadRequest)
+	}
+
+	if stderrors.Is(err, provider.ErrSecretKeyNotConfigured) {
+		return simpleResponse(http.StatusServiceUnavailable)
+	}
+
 	return simpleResponse(http.StatusInternalServerError)
 }
 
+// redactedData is the body that replaces the body of a request that may hold a secret.
+var redactedData = json.RawMessage(`"[REDACTED]"`)
+
+// logSafeRequest returns the request to be logged. The body of the number provider requests
+// (the secret input in particular) is replaced, so that no log line can hold it. It decides by
+// the URI alone, independent of the routing, so an unrouted or mistyped secret request is
+// redacted too.
+func logSafeRequest(m *sock.Request) *sock.Request {
+	uri := strings.ToLower(m.URI)
+	if !strings.HasPrefix(uri, "/v1/number_providers") && !strings.HasSuffix(uri, "/secret") {
+		return m
+	}
+
+	res := *m
+	res.Data = redactedData
+	return &res
+}
+
 // NewListenHandler return ListenHandler interface
-func NewListenHandler(sockHandler sockhandler.SockHandler, numberHandler numberhandler.NumberHandler) ListenHandler {
+func NewListenHandler(sockHandler sockhandler.SockHandler, numberHandler numberhandler.NumberHandler, providerHandler providerhandler.ProviderHandler) ListenHandler {
 	h := &listenHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		sockHandler:   sockHandler,
-		numberHandler: numberHandler,
+		utilHandler:     utilhandler.NewUtilHandler(),
+		sockHandler:     sockHandler,
+		numberHandler:   numberHandler,
+		providerHandler: providerHandler,
 	}
 
 	return h
@@ -156,12 +193,15 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 
 	ctx := context.Background()
 
+	// every log line uses logM, never m: the body of a secret request must not be logged
+	logM := logSafeRequest(m)
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "processRequest",
-		"uri":       m.URI,
-		"method":    m.Method,
-		"data_type": m.DataType,
-		"data":      m.Data,
+		"uri":       logM.URI,
+		"method":    logM.Method,
+		"data_type": logM.DataType,
+		"data":      logM.Data,
 	})
 	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
@@ -178,6 +218,34 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AvailableNumbers.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1AvailableNumbersGet(ctx, m)
 		requestType = "/v1/available_numbers"
+
+	////////////////////
+	// number_providers
+	////////////////////
+	// GET /number_providers
+	case regV1NumberProviders.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1NumberProvidersGet(ctx, logM)
+		requestType = "/v1/number_providers"
+
+	// GET /number_providers/<name>
+	case regV1NumberProvidersID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1NumberProvidersIDGet(ctx, logM, regV1NumberProvidersID.FindStringSubmatch(m.URI))
+		requestType = "/v1/number_providers/<name>"
+
+	// PUT /number_providers/<name>
+	case regV1NumberProvidersID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1NumberProvidersIDPut(ctx, m, logM, regV1NumberProvidersID.FindStringSubmatch(m.URI))
+		requestType = "/v1/number_providers/<name>"
+
+	// PUT /number_providers/<name>/secret
+	case regV1NumberProvidersIDSecret.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1NumberProvidersIDSecretPut(ctx, m, logM, regV1NumberProvidersIDSecret.FindStringSubmatch(m.URI))
+		requestType = "/v1/number_providers/<name>/secret"
+
+	// DELETE /number_providers/<name>/secret
+	case regV1NumberProvidersIDSecret.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1NumberProvidersIDSecretDelete(ctx, m, logM, regV1NumberProvidersIDSecret.FindStringSubmatch(m.URI))
+		requestType = "/v1/number_providers/<name>/secret"
 
 	////////////////////
 	// numbers
@@ -235,7 +303,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		log.WithFields(logrus.Fields{
 			"uri":    m.URI,
 			"method": m.Method,
-		}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
+		}).Errorf("Could not find corresponded message handler. data: %s", logM.Data)
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"
@@ -251,7 +319,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 				"uri":    m.URI,
 				"method": m.Method,
 				"error":  err,
-			}).Errorf("Could not process the request correctly. data: %s", m.Data)
+			}).Errorf("Could not process the request correctly. data: %s", logM.Data)
 		var ve *cerrors.VoipbinError
 		switch {
 		case stderrors.As(err, &ve):

@@ -7,6 +7,7 @@ import (
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -52,9 +53,13 @@ func (h *numberHandler) renewNumbersByTMRenew(ctx context.Context, tmRenew strin
 	})
 
 	res := []*number.Number{}
+
+	// the numbers that could not be released are left out of the next queries, so one broken
+	// provider can neither block the other numbers nor make the loop run forever
+	excluded := []uuid.UUID{}
 	for {
 		// get list of numbers
-		numbers, err := h.dbListByTMRenew(ctx, tmRenew)
+		numbers, err := h.dbListByTMRenew(ctx, tmRenew, excluded)
 		if err != nil {
 			log.Errorf("Could not get list of numbers. err: %v", err)
 			return nil, errors.Wrap(err, "could not get list of numbers")
@@ -66,6 +71,7 @@ func (h *numberHandler) renewNumbersByTMRenew(ctx context.Context, tmRenew strin
 
 		// renew the numbers
 		processed := 0
+		newlyExcluded := 0
 		for _, n := range numbers {
 
 			valid, err := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1)
@@ -78,10 +84,12 @@ func (h *numberHandler) renewNumbersByTMRenew(ctx context.Context, tmRenew strin
 				log.WithField("number", n).Errorf("The customer has insufficient balance for number renew.")
 				tmp, err := h.Delete(ctx, n.ID)
 				if err != nil {
-					log.Errorf("Could not release the number. err: %v", err)
-				} else {
-					log.WithField("number", tmp).Debugf("Deleted number.")
+					log.Errorf("Could not release the number. number_id: %s, err: %v", n.ID, err)
+					excluded = append(excluded, n.ID)
+					newlyExcluded++
+					continue
 				}
+				log.WithField("number", tmp).Debugf("Deleted number.")
 				processed++
 				continue
 			}
@@ -101,7 +109,7 @@ func (h *numberHandler) renewNumbersByTMRenew(ctx context.Context, tmRenew strin
 			processed++
 		}
 
-		if processed == 0 {
+		if processed == 0 && newlyExcluded == 0 {
 			log.Warnf("No numbers processed in batch of %d, stopping pagination to avoid infinite loop", len(numbers))
 			break
 		}

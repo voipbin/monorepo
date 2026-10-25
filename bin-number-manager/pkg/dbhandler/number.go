@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -363,7 +364,8 @@ func (h *handler) NumberCountVirtualByCustomerID(ctx context.Context, customerID
 }
 
 // NumberGetsByTMRenew returns a list of numbers by tm_renew.
-func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[number.Field]any) ([]*number.Number, error) {
+// The numbers of excludeIDs are left out of the result.
+func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[number.Field]any, excludeIDs []uuid.UUID) ([]*number.Number, error) {
 	fields := commondatabasehandler.GetDBFields(&number.Number{})
 	sb := squirrel.
 		Select(fields...).
@@ -376,6 +378,17 @@ func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
 		return nil, fmt.Errorf("could not apply filters. NumberGetsByTMRenew. err: %w", err)
+	}
+
+	// squirrel's NotEq on a []byte slice would not expand one placeholder per id, so the list is built by hand
+	if len(excludeIDs) > 0 {
+		placeholders := make([]string, len(excludeIDs))
+		exclArgs := make([]any, len(excludeIDs))
+		for i, id := range excludeIDs {
+			placeholders[i] = "?"
+			exclArgs[i] = id.Bytes()
+		}
+		sb = sb.Where(squirrel.Expr(string(number.FieldID)+" NOT IN ("+strings.Join(placeholders, ",")+")", exclArgs...))
 	}
 
 	query, args, err := sb.ToSql()

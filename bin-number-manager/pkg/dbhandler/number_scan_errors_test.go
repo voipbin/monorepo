@@ -45,7 +45,7 @@ func Test_malformedRow_scanErrors(t *testing.T) {
 		{
 			"get by renew time",
 			func(h *handler) error {
-				_, err := h.NumberGetsByTMRenew(context.Background(), "2030-01-01 00:00:00.000000", 10, nil)
+				_, err := h.NumberGetsByTMRenew(context.Background(), "2030-01-01 00:00:00.000000", 10, nil, nil)
 				return err
 			},
 		},

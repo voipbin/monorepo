@@ -12,10 +12,15 @@ import (
 )
 
 // GetAvailableNumbers gets the numbers from the number providers
-func (h *numberHandler) GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {
+func (h *numberHandler) GetAvailableNumbers(ctx context.Context, countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {
 
-	// use telnyx as a default
-	return h.numberHandlerTelnyx.GetAvailableNumbers(countyCode, limit)
+	// the search is fixed to the telnyx; the credentials are resolved from the DB or the environment
+	p, err := h.providerHandler.ForSearch(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not get the search provider: %w", err)
+	}
+
+	return p.GetAvailableNumbers(countyCode, limit)
 }
 
 // GetAvailableVirtualNumbers generates random available virtual numbers that are not already registered.

@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/models/provider"
 	"monorepo/bin-number-manager/pkg/cachehandler"
 )
 
@@ -25,12 +26,17 @@ type DBHandler interface {
 	NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error)
 
 	NumberList(ctx context.Context, size uint64, token string, filters map[number.Field]any) ([]*number.Number, error)
-	NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[number.Field]any) ([]*number.Number, error)
+	NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[number.Field]any, excludeIDs []uuid.UUID) ([]*number.Number, error)
 
 	NumberUpdate(ctx context.Context, id uuid.UUID, fields map[number.Field]any) error
 
 	NumberGetExistingNumbers(ctx context.Context, numbers []string) ([]string, error)
 	NumberCountVirtualByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
+
+	// number provider
+	NumberProviderGet(ctx context.Context, name number.ProviderName) (*provider.Provider, error)
+	NumberProviderEnsure(ctx context.Context, p *provider.Provider) error
+	NumberProviderUpdate(ctx context.Context, name number.ProviderName, fields map[provider.Field]any) error
 }
 
 // handler database handler

@@ -12,7 +12,7 @@ import (
 
 	"monorepo/bin-number-manager/models/number"
 	"monorepo/bin-number-manager/pkg/dbhandler"
-	"monorepo/bin-number-manager/pkg/numberhandlertelnyx"
+	"monorepo/bin-number-manager/pkg/providerhandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -52,14 +52,14 @@ func Test_generateTags(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := numberHandler{
-				utilHandler:         mockUtil,
-				reqHandler:          mockReq,
-				db:                  mockDB,
-				notifyHandler:       mockNotify,
-				numberHandlerTelnyx: mockTelnyx,
+				utilHandler:     mockUtil,
+				reqHandler:      mockReq,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				providerHandler: mockProvider,
 			}
 			ctx := context.Background()
 

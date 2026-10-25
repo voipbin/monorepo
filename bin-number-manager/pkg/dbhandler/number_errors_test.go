@@ -135,7 +135,7 @@ func Test_closedDB_errors(t *testing.T) {
 		{
 			"gets by tm renew",
 			func(h *handler) error {
-				_, err := h.NumberGetsByTMRenew(context.Background(), "2030-01-01 00:00:00.000000", 10, nil)
+				_, err := h.NumberGetsByTMRenew(context.Background(), "2030-01-01 00:00:00.000000", 10, nil, nil)
 				return err
 			},
 		},
@@ -274,7 +274,7 @@ func Test_unsupportedFilter_errors(t *testing.T) {
 	if _, err := h.NumberList(context.Background(), 10, "2030-01-01 00:00:00.000000", filters); err == nil {
 		t.Errorf("NumberList: expected an error for an unsupported filter value")
 	}
-	if _, err := h.NumberGetsByTMRenew(context.Background(), "2030-01-01 00:00:00.000000", 10, filters); err == nil {
+	if _, err := h.NumberGetsByTMRenew(context.Background(), "2030-01-01 00:00:00.000000", 10, filters, nil); err == nil {
 		t.Errorf("NumberGetsByTMRenew: expected an error for an unsupported filter value")
 	}
 }

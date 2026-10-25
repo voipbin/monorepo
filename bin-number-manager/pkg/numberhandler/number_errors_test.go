@@ -25,16 +25,16 @@ import (
 	"monorepo/bin-number-manager/models/providernumber"
 	"monorepo/bin-number-manager/pkg/dbhandler"
 	"monorepo/bin-number-manager/pkg/numberhandlertelnyx"
-	"monorepo/bin-number-manager/pkg/numberhandlertwilio"
+	"monorepo/bin-number-manager/pkg/providerhandler"
 )
 
 type errTestMocks struct {
-	util   *utilhandler.MockUtilHandler
-	req    *requesthandler.MockRequestHandler
-	db     *dbhandler.MockDBHandler
-	notify *notifyhandler.MockNotifyHandler
-	telnyx *numberhandlertelnyx.MockNumberHandlerTelnyx
-	twilio *numberhandlertwilio.MockNumberHandlerTwilio
+	util     *utilhandler.MockUtilHandler
+	req      *requesthandler.MockRequestHandler
+	db       *dbhandler.MockDBHandler
+	notify   *notifyhandler.MockNotifyHandler
+	telnyx   *numberhandlertelnyx.MockNumberHandlerTelnyx
+	provider *providerhandler.MockProviderHandler
 }
 
 func newErrTestHandler(t *testing.T) (*numberHandler, *errTestMocks) {
@@ -44,21 +44,20 @@ func newErrTestHandler(t *testing.T) (*numberHandler, *errTestMocks) {
 	t.Cleanup(mc.Finish)
 
 	m := &errTestMocks{
-		util:   utilhandler.NewMockUtilHandler(mc),
-		req:    requesthandler.NewMockRequestHandler(mc),
-		db:     dbhandler.NewMockDBHandler(mc),
-		notify: notifyhandler.NewMockNotifyHandler(mc),
-		telnyx: numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc),
-		twilio: numberhandlertwilio.NewMockNumberHandlerTwilio(mc),
+		util:     utilhandler.NewMockUtilHandler(mc),
+		req:      requesthandler.NewMockRequestHandler(mc),
+		db:       dbhandler.NewMockDBHandler(mc),
+		notify:   notifyhandler.NewMockNotifyHandler(mc),
+		telnyx:   numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc),
+		provider: providerhandler.NewMockProviderHandler(mc),
 	}
 
 	h := &numberHandler{
-		utilHandler:         m.util,
-		reqHandler:          m.req,
-		db:                  m.db,
-		notifyHandler:       m.notify,
-		numberHandlerTelnyx: m.telnyx,
-		numberHandlerTwilio: m.twilio,
+		utilHandler:     m.util,
+		reqHandler:      m.req,
+		db:              m.db,
+		notifyHandler:   m.notify,
+		providerHandler: m.provider,
 	}
 
 	return h, m
@@ -111,6 +110,8 @@ func Test_Create_errors(t *testing.T) {
 		h, m := newErrTestHandler(t)
 
 		m.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, errTestCustomerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
+		m.db.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: errTestNumber}).Return([]*number.Number{}, nil)
+		m.provider.EXPECT().PurchaseCandidates(ctx).Return([]*providerhandler.Candidate{{Name: number.ProviderNameTelnyx, Provider: m.telnyx}}, nil)
 		m.telnyx.EXPECT().NumberPurchase(errTestNumber).Return(nil, fmt.Errorf("provider failure"))
 
 		if _, err := h.Create(ctx, errTestCustomerID, errTestNumber, uuid.Nil, uuid.Nil, "", ""); err == nil {
@@ -123,6 +124,8 @@ func Test_Create_errors(t *testing.T) {
 
 		purchased := &providernumber.ProviderNumber{ID: "provider-id-1", Status: number.StatusActive}
 		m.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, errTestCustomerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
+		m.db.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: errTestNumber}).Return([]*number.Number{}, nil)
+		m.provider.EXPECT().PurchaseCandidates(ctx).Return([]*providerhandler.Candidate{{Name: number.ProviderNameTelnyx, Provider: m.telnyx}}, nil)
 		m.telnyx.EXPECT().NumberPurchase(errTestNumber).Return(purchased, nil)
 		m.db.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: errTestNumber}).Return(nil, errTestDBFailure)
 		m.telnyx.EXPECT().NumberRelease(ctx, &number.Number{
@@ -152,6 +155,8 @@ func Test_Create_errors(t *testing.T) {
 		}
 
 		m.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, errTestCustomerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
+		m.db.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: errTestNumber}).Return([]*number.Number{}, nil)
+		m.provider.EXPECT().PurchaseCandidates(ctx).Return([]*providerhandler.Candidate{{Name: number.ProviderNameTelnyx, Provider: m.telnyx}}, nil)
 		m.telnyx.EXPECT().NumberPurchase(errTestNumber).Return(purchased, nil)
 		m.db.EXPECT().NumberList(ctx, uint64(1), "", gomock.Any()).Return([]*number.Number{}, nil)
 		m.util.EXPECT().UUIDCreate().Return(errTestNumberID)
@@ -262,6 +267,7 @@ func Test_Delete_errors(t *testing.T) {
 	t.Run("telnyx release failure keeps the record", func(t *testing.T) {
 		h, m := newErrTestHandler(t)
 		m.db.EXPECT().NumberGet(ctx, errTestNumberID).Return(telnyxNumber, nil)
+		m.provider.EXPECT().ForRelease(ctx, number.ProviderNameTelnyx).Return(m.telnyx, nil)
 		m.telnyx.EXPECT().NumberRelease(ctx, telnyxNumber).Return(fmt.Errorf("release failure"))
 
 		res, err := h.Delete(ctx, errTestNumberID)
@@ -273,7 +279,7 @@ func Test_Delete_errors(t *testing.T) {
 	t.Run("twilio release failure keeps the record", func(t *testing.T) {
 		h, m := newErrTestHandler(t)
 		m.db.EXPECT().NumberGet(ctx, errTestNumberID).Return(twilioNumber, nil)
-		m.twilio.EXPECT().ReleaseNumber(ctx, twilioNumber).Return(fmt.Errorf("release failure"))
+		m.provider.EXPECT().ForRelease(ctx, number.ProviderNameTwilio).Return(nil, fmt.Errorf("release failure"))
 
 		res, err := h.Delete(ctx, errTestNumberID)
 		if err == nil || res != nil {
@@ -284,7 +290,8 @@ func Test_Delete_errors(t *testing.T) {
 	t.Run("twilio release success deletes the record", func(t *testing.T) {
 		h, m := newErrTestHandler(t)
 		m.db.EXPECT().NumberGet(ctx, errTestNumberID).Return(twilioNumber, nil).Times(2)
-		m.twilio.EXPECT().ReleaseNumber(ctx, twilioNumber).Return(nil)
+		m.provider.EXPECT().ForRelease(ctx, number.ProviderNameTwilio).Return(m.telnyx, nil)
+		m.telnyx.EXPECT().NumberRelease(ctx, twilioNumber).Return(nil)
 		m.db.EXPECT().NumberDelete(ctx, errTestNumberID).Return(nil)
 		m.notify.EXPECT().PublishWebhookEvent(ctx, errTestCustomerID, number.EventTypeNumberDeleted, twilioNumber)
 
@@ -300,6 +307,7 @@ func Test_Delete_errors(t *testing.T) {
 	t.Run("unsupported provider", func(t *testing.T) {
 		h, m := newErrTestHandler(t)
 		m.db.EXPECT().NumberGet(ctx, errTestNumberID).Return(otherNumber, nil)
+		m.provider.EXPECT().ForRelease(ctx, otherNumber.ProviderName).Return(nil, fmt.Errorf("unknown provider: %w", dbhandler.ErrNotFound))
 
 		res, err := h.Delete(ctx, errTestNumberID)
 		if err == nil || res != nil {
@@ -310,6 +318,7 @@ func Test_Delete_errors(t *testing.T) {
 	t.Run("db delete failure", func(t *testing.T) {
 		h, m := newErrTestHandler(t)
 		m.db.EXPECT().NumberGet(ctx, errTestNumberID).Return(telnyxNumber, nil)
+		m.provider.EXPECT().ForRelease(ctx, number.ProviderNameTelnyx).Return(m.telnyx, nil)
 		m.telnyx.EXPECT().NumberRelease(ctx, telnyxNumber).Return(nil)
 		m.db.EXPECT().NumberDelete(ctx, errTestNumberID).Return(errTestDBFailure)
 
@@ -323,6 +332,7 @@ func Test_Delete_errors(t *testing.T) {
 		h, m := newErrTestHandler(t)
 		gomock.InOrder(
 			m.db.EXPECT().NumberGet(ctx, errTestNumberID).Return(telnyxNumber, nil),
+			m.provider.EXPECT().ForRelease(ctx, number.ProviderNameTelnyx).Return(m.telnyx, nil),
 			m.telnyx.EXPECT().NumberRelease(ctx, telnyxNumber).Return(nil),
 			m.db.EXPECT().NumberDelete(ctx, errTestNumberID).Return(nil),
 			m.db.EXPECT().NumberGet(ctx, errTestNumberID).Return(nil, errTestDBFailure),
@@ -430,9 +440,9 @@ func Test_dbListByTMRenew_failure(t *testing.T) {
 	h, m := newErrTestHandler(t)
 	ctx := context.Background()
 
-	m.db.EXPECT().NumberGetsByTMRenew(ctx, "2024-01-01 00:00:00.000000", uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return(nil, errTestDBFailure)
+	m.db.EXPECT().NumberGetsByTMRenew(ctx, "2024-01-01 00:00:00.000000", uint64(100), map[number.Field]any{number.FieldDeleted: false}, gomock.Any()).Return(nil, errTestDBFailure)
 
-	res, err := h.dbListByTMRenew(ctx, "2024-01-01 00:00:00.000000")
+	res, err := h.dbListByTMRenew(ctx, "2024-01-01 00:00:00.000000", nil)
 	if !errors.Is(err, errTestDBFailure) || res != nil {
 		t.Errorf("Wrong match. expect: db failure and nil, got: %v, %v", res, err)
 	}
@@ -471,6 +481,7 @@ func Test_EventCustomerDeleted_errors(t *testing.T) {
 		// the second number is deleted completely
 		gomock.InOrder(
 			m.db.EXPECT().NumberGet(ctx, secondID).Return(second, nil),
+			m.provider.EXPECT().ForRelease(ctx, number.ProviderNameTelnyx).Return(m.telnyx, nil),
 			m.telnyx.EXPECT().NumberRelease(ctx, second).Return(nil),
 			m.db.EXPECT().NumberDelete(ctx, secondID).Return(nil),
 			m.db.EXPECT().NumberGet(ctx, secondID).Return(second, nil),
@@ -597,7 +608,7 @@ func Test_RenewNumbers_errors(t *testing.T) {
 
 	t.Run("list failure by tm_renew", func(t *testing.T) {
 		h, m := newErrTestHandler(t)
-		m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters).Return(nil, errTestDBFailure)
+		m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters, gomock.Any()).Return(nil, errTestDBFailure)
 
 		res, err := h.RenewNumbers(ctx, 0, 0, tmRenew)
 		if !errors.Is(err, errTestDBFailure) || res != nil {
@@ -608,7 +619,7 @@ func Test_RenewNumbers_errors(t *testing.T) {
 	t.Run("list failure by days", func(t *testing.T) {
 		h, m := newErrTestHandler(t)
 		m.util.EXPECT().TimeGetCurTimeAdd(gomock.Any()).Return(tmRenew)
-		m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters).Return(nil, errTestDBFailure)
+		m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters, gomock.Any()).Return(nil, errTestDBFailure)
 
 		res, err := h.RenewNumbers(ctx, 3, 0, "")
 		if !errors.Is(err, errTestDBFailure) || res != nil {
@@ -619,7 +630,7 @@ func Test_RenewNumbers_errors(t *testing.T) {
 	t.Run("list failure by hours", func(t *testing.T) {
 		h, m := newErrTestHandler(t)
 		m.util.EXPECT().TimeGetCurTimeAdd(gomock.Any()).Return(tmRenew)
-		m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters).Return(nil, errTestDBFailure)
+		m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters, gomock.Any()).Return(nil, errTestDBFailure)
 
 		res, err := h.RenewNumbers(ctx, 0, 5, "")
 		if !errors.Is(err, errTestDBFailure) || res != nil {
@@ -637,12 +648,12 @@ func Test_RenewNumbers_errors(t *testing.T) {
 		}
 
 		gomock.InOrder(
-			m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters).Return([]*number.Number{n}, nil),
+			m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters, gomock.Any()).Return([]*number.Number{n}, nil),
 			m.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, errTestCustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(false, nil),
 			// Delete cannot read the number
 			m.db.EXPECT().NumberGet(ctx, errTestNumberID).Return(nil, errTestDBFailure),
-			// the next page is empty
-			m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters).Return([]*number.Number{}, nil),
+			// the next page leaves the number that failed out, and it is empty
+			m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters, []uuid.UUID{errTestNumberID}).Return([]*number.Number{}, nil),
 		)
 
 		res, err := h.RenewNumbers(ctx, 0, 0, tmRenew)
@@ -651,6 +662,45 @@ func Test_RenewNumbers_errors(t *testing.T) {
 		}
 		if len(res) != 0 {
 			t.Errorf("Wrong match. expect: no renewed numbers, got: %v", res)
+		}
+	})
+
+	t.Run("failed deletes accumulate in the exclusion list and the loop ends", func(t *testing.T) {
+		h, m := newErrTestHandler(t)
+
+		firstID := uuid.FromStringOrNil("a0000000-0000-4000-8000-0000000000c1")
+		secondID := uuid.FromStringOrNil("a0000000-0000-4000-8000-0000000000c2")
+		first := &number.Number{Identity: commonidentity.Identity{ID: firstID, CustomerID: errTestCustomerID}, ProviderName: number.ProviderNameTelnyx}
+		second := &number.Number{Identity: commonidentity.Identity{ID: secondID, CustomerID: errTestCustomerID}, ProviderName: number.ProviderNameTelnyx}
+
+		gomock.InOrder(
+			m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters, []uuid.UUID{}).Return([]*number.Number{first}, nil),
+			m.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, errTestCustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(false, nil),
+			m.db.EXPECT().NumberGet(ctx, firstID).Return(nil, errTestDBFailure),
+			// every number of the first page failed, yet the query goes on with the next numbers
+			m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters, []uuid.UUID{firstID}).Return([]*number.Number{second}, nil),
+			m.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, errTestCustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(false, nil),
+			m.db.EXPECT().NumberGet(ctx, secondID).Return(nil, errTestDBFailure),
+			m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters, []uuid.UUID{firstID, secondID}).Return([]*number.Number{}, nil),
+		)
+
+		if _, err := h.RenewNumbers(ctx, 0, 0, tmRenew); err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+	})
+
+	t.Run("a page of numbers that only fail on billing ends the loop", func(t *testing.T) {
+		h, m := newErrTestHandler(t)
+
+		n := &number.Number{Identity: commonidentity.Identity{ID: errTestNumberID, CustomerID: errTestCustomerID}, ProviderName: number.ProviderNameTelnyx}
+
+		gomock.InOrder(
+			m.db.EXPECT().NumberGetsByTMRenew(ctx, tmRenew, uint64(100), listFilters, gomock.Any()).Return([]*number.Number{n}, nil),
+			m.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, errTestCustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(false, errTestDBFailure),
+		)
+
+		if _, err := h.RenewNumbers(ctx, 0, 0, tmRenew); err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}
 	})
 }

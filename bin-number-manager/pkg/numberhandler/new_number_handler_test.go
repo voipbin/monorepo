@@ -9,8 +9,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-number-manager/pkg/dbhandler"
-	"monorepo/bin-number-manager/pkg/numberhandlertelnyx"
-	"monorepo/bin-number-manager/pkg/numberhandlertwilio"
+	"monorepo/bin-number-manager/pkg/providerhandler"
 )
 
 func Test_NewNumberHandler(t *testing.T) {
@@ -20,10 +19,9 @@ func Test_NewNumberHandler(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
-	mockTwilio := numberhandlertwilio.NewMockNumberHandlerTwilio(mc)
+	mockProvider := providerhandler.NewMockProviderHandler(mc)
 
-	res := NewNumberHandler(mockReq, mockDB, mockNotify, mockTelnyx, mockTwilio)
+	res := NewNumberHandler(mockReq, mockDB, mockNotify, mockProvider)
 
 	h, ok := res.(*numberHandler)
 	if !ok {
@@ -35,7 +33,7 @@ func Test_NewNumberHandler(t *testing.T) {
 	if h.reqHandler != mockReq || h.db != mockDB || h.notifyHandler != mockNotify {
 		t.Errorf("the injected handlers are not kept")
 	}
-	if h.numberHandlerTelnyx != mockTelnyx || h.numberHandlerTwilio != mockTwilio {
-		t.Errorf("the injected provider handlers are not kept")
+	if h.providerHandler != mockProvider {
+		t.Errorf("the injected provider handler is not kept")
 	}
 }

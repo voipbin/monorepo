@@ -18,13 +18,12 @@ import (
 	"monorepo/bin-number-manager/models/availablenumber"
 	"monorepo/bin-number-manager/models/number"
 	"monorepo/bin-number-manager/pkg/dbhandler"
-	"monorepo/bin-number-manager/pkg/numberhandlertelnyx"
-	"monorepo/bin-number-manager/pkg/numberhandlertwilio"
+	"monorepo/bin-number-manager/pkg/providerhandler"
 )
 
 // NumberHandler is interface for service handle
 type NumberHandler interface {
-	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
+	GetAvailableNumbers(ctx context.Context, countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
 	GetAvailableVirtualNumbers(ctx context.Context, limit uint) ([]*availablenumber.AvailableNumber, error)
 
 	Create(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error)
@@ -66,8 +65,7 @@ type numberHandler struct {
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	numberHandlerTelnyx numberhandlertelnyx.NumberHandlerTelnyx
-	numberHandlerTwilio numberhandlertwilio.NumberHandlerTwilio
+	providerHandler providerhandler.ProviderHandler
 }
 
 var (
@@ -94,8 +92,7 @@ func NewNumberHandler(
 	r requesthandler.RequestHandler,
 	db dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
-	nHandlerTelnyx numberhandlertelnyx.NumberHandlerTelnyx,
-	nHandlerTwilio numberhandlertwilio.NumberHandlerTwilio,
+	providerHandler providerhandler.ProviderHandler,
 ) NumberHandler {
 
 	h := &numberHandler{
@@ -104,8 +101,7 @@ func NewNumberHandler(
 		db:            db,
 		notifyHandler: notifyHandler,
 
-		numberHandlerTelnyx: nHandlerTelnyx,
-		numberHandlerTwilio: nHandlerTwilio,
+		providerHandler: providerHandler,
 	}
 
 	return h

@@ -13,8 +13,8 @@ import (
 	"monorepo/bin-number-manager/pkg/cachehandler"
 	"monorepo/bin-number-manager/pkg/dbhandler"
 	"monorepo/bin-number-manager/pkg/numberhandler"
-	"monorepo/bin-number-manager/pkg/numberhandlertelnyx"
-	"monorepo/bin-number-manager/pkg/numberhandlertwilio"
+	"monorepo/bin-number-manager/pkg/providerhandler"
+	"monorepo/bin-number-manager/pkg/secretcrypto"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -69,21 +69,22 @@ func initNumberHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (numberha
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	nHandlerTelnyx := numberhandlertelnyx.NewNumberHandler(
-		reqHandler,
-		db,
+	// the CLI rejects a malformed key set at once (the daemon only logs it)
+	crypto, err := secretcrypto.New(config.Get().NumberSecretEncryptionKeys)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not parse the number secret encryption keys")
+	}
+
+	env := providerhandler.NewEnvCredentials(
 		config.Get().TelnyxConnectionID,
 		config.Get().TelnyxProfileID,
 		config.Get().TelnyxToken,
-	)
-	nHandlerTwilio := numberhandlertwilio.NewNumberHandler(
-		reqHandler,
-		db,
 		config.Get().TwilioSID,
 		config.Get().TwilioToken,
 	)
+	providerHandler := providerhandler.NewProviderHandler(reqHandler, db, crypto, env)
 
-	return numberhandler.NewNumberHandler(reqHandler, db, notifyHandler, nHandlerTelnyx, nHandlerTwilio), nil
+	return numberhandler.NewNumberHandler(reqHandler, db, notifyHandler, providerHandler), nil
 }
 
 func initCommand() *cobra.Command {
@@ -329,7 +330,7 @@ func runGetAvailable(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "invalid country code")
 	}
 
-	res, err := handler.GetAvailableNumbers(countryCode, limit)
+	res, err := handler.GetAvailableNumbers(context.Background(), countryCode, limit)
 	if err != nil {
 		return errors.Wrap(err, "failed to get available numbers")
 	}

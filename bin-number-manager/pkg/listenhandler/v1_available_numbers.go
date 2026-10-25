@@ -68,7 +68,7 @@ func (h *listenHandler) processV1AvailableNumbersGet(ctx context.Context, m *soc
 	if numType == "virtual" {
 		numbers, err = h.numberHandler.GetAvailableVirtualNumbers(ctx, pageSize)
 	} else {
-		numbers, err = h.numberHandler.GetAvailableNumbers(countryCode, pageSize)
+		numbers, err = h.numberHandler.GetAvailableNumbers(ctx, countryCode, pageSize)
 	}
 	if err != nil {
 		log.Debugf("Could not get available numbers. err: %v", err)

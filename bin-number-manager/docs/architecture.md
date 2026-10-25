@@ -10,6 +10,8 @@ cmd/number-manager/main.go
     ├── pkg/cachehandler            (Redis — number lookups)
     ├── pkg/dbhandler               (MySQL — number records)
     ├── pkg/requestexternal         (HTTP clients for Telnyx/Twilio APIs)
+    ├── pkg/providerhandler         (provider registry, credential resolution, purchase candidates, admin settings)
+    ├── pkg/secretcrypto            (AES-256-GCM encryption of the provider secrets, versioned keys)
     ├── pkg/numberhandlertelnyx     (Telnyx provider implementation)
     ├── pkg/numberhandlertwilio     (Twilio provider implementation)
     ├── pkg/numberhandler           (Core business logic, provider dispatch)
@@ -29,6 +31,8 @@ Supporting binary:
 | Subscribe | `pkg/subscribehandler` | Consumes customer/flow events via pattern bindings on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407); cascading deletes and flow-ref cleanup |
 | Business | `pkg/numberhandler` | Number CRUD, provider dispatch, billing validation |
 | Provider | `pkg/numberhandlertelnyx` | Telnyx API: purchase, release, list available numbers |
+| Provider registry | `pkg/providerhandler` | Known providers, priority order, credentials (DB secret or environment), admin settings |
+| Secret crypto | `pkg/secretcrypto` | Encrypts and decrypts the provider secrets stored in `number_providers` |
 | Provider | `pkg/numberhandlertwilio` | Twilio API: purchase, release, list available numbers |
 | External | `pkg/requestexternal` | HTTP client wrapper for provider APIs |
 | Data | `pkg/dbhandler` | MySQL queries for numbers |
@@ -63,6 +67,11 @@ The `listenhandler` consumes from queue `bin-manager.number-manager.request` and
 | Method | URI Pattern | Handler |
 |--------|------------|---------|
 | GET | `/v1/available_numbers` | Search provider for purchasable numbers by country code |
+| GET | `/v1/number_providers` | List the providers with their resolved state (admin, no secret material) |
+| GET | `/v1/number_providers/{name}` | Get one provider (admin) |
+| PUT | `/v1/number_providers/{name}` | Update `enabled`, `priority`, `config` (admin; `actor_id` required) |
+| PUT | `/v1/number_providers/{name}/secret` | Store the provider secret, write-only (admin; `actor_id` required) |
+| DELETE | `/v1/number_providers/{name}/secret` | Delete the stored secret, back to the environment credentials (admin) |
 | GET | `/v1/numbers?` | List owned numbers (pagination) |
 | POST | `/v1/numbers` | Purchase (create) number from provider |
 | GET | `/v1/numbers/{uuid}` | Get number details |

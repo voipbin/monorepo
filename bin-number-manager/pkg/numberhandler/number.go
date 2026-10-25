@@ -16,7 +16,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/models/provider"
+	"monorepo/bin-number-manager/models/providernumber"
 	"monorepo/bin-number-manager/pkg/dbhandler"
+	"monorepo/bin-number-manager/pkg/providerhandler"
 )
 
 // Create creates a new order numbers of given numbers
@@ -46,11 +49,23 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 		return nil, fmt.Errorf("insufficient balance for number")
 	}
 
-	// use telnyx as a default
-	tmp, err := h.numberHandlerTelnyx.NumberPurchase(num)
+	// the number must not be registered yet, or the purchase would leak when the registration fails
+	existed, err := h.dbList(ctx, 1, "", map[number.Field]any{
+		number.FieldDeleted: false,
+		number.FieldNumber:  num,
+	})
 	if err != nil {
-		log.Errorf("Could not create a number from the telnyx. err: %v", err)
-		return nil, fmt.Errorf("could not create a number from the telnyx. err: %w", err)
+		log.Errorf("Could not check the existing number. err: %v", err)
+		return nil, errors.Wrap(err, "could not check existing number")
+	}
+	if len(existed) > 0 {
+		log.Errorf("The number already exists.")
+		return nil, fmt.Errorf("the number already exists")
+	}
+
+	bought, tmp, err := h.purchase(ctx, num)
+	if err != nil {
+		return nil, err
 	}
 
 	res, err := h.Register(
@@ -62,7 +77,7 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 		name,
 		detail,
 		number.TypeNormal,
-		number.ProviderNameTelnyx,
+		bought.Name,
 		tmp.ID,
 		tmp.Status,
 		tmp.T38Enabled,
@@ -71,13 +86,13 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 	if err != nil {
 		log.Errorf("Could not create the number record. err: %v", err)
 
-		// rollback: release the purchased number from the provider
+		// rollback: release the purchased number from the provider it was bought from
 		releaseNum := &number.Number{
-			ProviderName:        number.ProviderNameTelnyx,
+			ProviderName:        bought.Name,
 			ProviderReferenceID: tmp.ID,
 		}
-		if errRelease := h.numberHandlerTelnyx.NumberRelease(ctx, releaseNum); errRelease != nil {
-			log.Errorf("Could not rollback purchased number from provider. provider_reference_id: %s, err: %v", tmp.ID, errRelease)
+		if errRelease := bought.Provider.NumberRelease(ctx, releaseNum); errRelease != nil {
+			log.Errorf("ROLLBACK_RELEASE_FAILED. Could not rollback purchased number from provider. provider_name: %s, provider_reference_id: %s, err: %v", bought.Name, tmp.ID, errRelease)
 		}
 
 		return nil, errors.Wrap(err, "could not create the number record")
@@ -86,7 +101,7 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 
 	// generate and update purchased number's tags
 	tags := h.generateTags(ctx, res)
-	if errUpdate := h.numberHandlerTelnyx.NumberUpdateTags(ctx, res, tags); errUpdate != nil {
+	if errUpdate := bought.Provider.NumberUpdateTags(ctx, res, tags); errUpdate != nil {
 		log.Errorf("Could not update the number tags from the provider. err: %v", errUpdate)
 	}
 
@@ -222,19 +237,11 @@ func (h *numberHandler) Delete(ctx context.Context, id uuid.UUID) (*number.Numbe
 	log.Debugf("Deleting number info. number: %s", num.Number)
 
 	// send delete request by provider
-	switch num.ProviderName {
-	case number.ProviderNameTelnyx:
-		err = h.numberHandlerTelnyx.NumberRelease(ctx, num)
-
-	case number.ProviderNameTwilio:
-		err = h.numberHandlerTwilio.ReleaseNumber(ctx, num)
-
-	case number.ProviderNameNone:
+	if num.ProviderName == number.ProviderNameNone {
 		// virtual number or no provider — skip provider release
 		log.Debugf("No provider to release for number. number: %s", num.Number)
-
-	default:
-		err = fmt.Errorf("unsupported number provider. provider_name: %s", num.ProviderName)
+	} else {
+		err = h.releaseByProvider(ctx, num)
 	}
 
 	if err != nil {
@@ -348,4 +355,67 @@ func (h *numberHandler) UpdateMetadata(ctx context.Context, id uuid.UUID, metada
 	}
 
 	return res, nil
+}
+
+// purchase buys the number from the usable providers in priority order. It falls back to the
+// next provider only when the provider definitely refused the purchase. Any other failure may
+// have created an order, so the purchase stops instead of risking a double purchase.
+func (h *numberHandler) purchase(ctx context.Context, num string) (*providerhandler.Candidate, *providernumber.ProviderNumber, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "purchase",
+		"target_number": num,
+	})
+
+	candidates, err := h.providerHandler.PurchaseCandidates(ctx)
+	if err != nil {
+		log.Errorf("Could not get the purchase candidates. err: %v", err)
+		return nil, nil, errors.Wrap(err, "could not get the purchase candidates")
+	}
+	if len(candidates) == 0 {
+		log.Errorf("There is no usable provider.")
+		return nil, nil, fmt.Errorf("could not purchase: no usable provider")
+	}
+
+	var lastErr error
+	for _, c := range candidates {
+		if errCtx := ctx.Err(); errCtx != nil {
+			return nil, nil, errors.Wrap(errCtx, "the purchase is canceled")
+		}
+
+		tmp, errPurchase := c.Provider.NumberPurchase(num)
+		if errPurchase == nil {
+			providerhandler.ObservePurchase(c.Name, "success")
+			return c, tmp, nil
+		}
+
+		if stderrors.Is(errPurchase, provider.ErrPurchaseRejected) {
+			providerhandler.ObservePurchase(c.Name, "rejected")
+			log.Errorf("The provider rejected the purchase. Trying the next provider. provider_name: %s, err: %v", c.Name, errPurchase)
+			lastErr = errPurchase
+			continue
+		}
+
+		providerhandler.ObservePurchase(c.Name, "unconfirmed")
+		log.Errorf("PURCHASE_UNCONFIRMED. The purchase result is unknown, stopping without a fallback. provider_name: %s, err: %v", c.Name, errPurchase)
+		if stderrors.Is(errPurchase, provider.ErrPurchaseUnconfirmed) {
+			return nil, nil, fmt.Errorf("could not purchase the number: %w", errPurchase)
+		}
+		return nil, nil, fmt.Errorf("could not purchase the number: %w: %w", provider.ErrPurchaseUnconfirmed, errPurchase)
+	}
+
+	return nil, nil, fmt.Errorf("could not purchase the number from any provider: %w", lastErr)
+}
+
+// releaseByProvider releases the number from the provider the number was bought from. The
+// enabled flag of the provider is not checked, so the numbers of a disabled provider can be released.
+func (h *numberHandler) releaseByProvider(ctx context.Context, num *number.Number) error {
+	p, err := h.providerHandler.ForRelease(ctx, num.ProviderName)
+	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return fmt.Errorf("unsupported number provider. provider_name: %s", num.ProviderName)
+		}
+		return err
+	}
+
+	return p.NumberRelease(ctx, num)
 }
