@@ -29,7 +29,7 @@
 - 단언 강도: 개별 핸들러 오류 테스트는 `errors.Is` 또는 반환 오류의 원문과 비교하고, processRequest 테스트는 상태 코드와 본문과 비교한다. `err != nil` 만 보는 테스트와 `gomock.Any()` 일색의 기대를 쓰지 않는다. 하위 핸들러가 호출되면 안 되는 경로는 기대를 등록하지 않아 컨트롤러가 실패하게 한다.
 - 새 테스트 전후 프로파일을 (파일, 범위) 단위로 비교해 목표한 블록이 실제로 커버됐는지 확인한다.
 - 최종 검증은 루트 CLAUDE.md 의 5단계(go mod tidy, go mod vendor, go generate ./..., go test ./..., golangci-lint run)를 모두 실행한다.
-- 기준선: 새 테스트 작성 전에 변경 전 브랜치에서 `go test -race -count=3` 을 한 번 실행해 기존 불안정성을 구분한다. ValidateActions 의 옵션 파싱 실패는 경고만 남기고 nil 을 반환하므로 같은 목록의 뒤쪽 유효/무효 액션이 계속 검증됨을 함께 단언한다.
+- 기준선: 새 테스트 작성 전에 변경 전 브랜치에서 `go test -race -count=3` 을 한 번 실행해 기존 불안정성을 구분한다. ValidateActions 는 옵션 파싱 실패 액션이 있어도 뒤쪽 액션의 검증이 이어짐을 단언한다.
 - 측정 뒤 go.mod/go.sum 의 `git diff` 가 비어 있음을 확인한다(`-mod=mod` 가 go.sum 을 바꿀 수 있음). check-test-conventions.sh 는 저장소 루트에서 실행한다.
 - 컨벤션: gomock, 표 기반, `Test_` 접두, 컨트롤러 변수 `mc`, `reflect.DeepEqual` + `t.Errorf`(testify 금지). push 전 `git fetch origin main` 후 `bash scripts/check-test-conventions.sh` 를 실행해 통과시킨다.
 - 동기화: 신규 테스트는 `time.Sleep` 을 쓰지 않고 채널 또는 `sync.WaitGroup` 으로 goroutine 종료를 기다린다(컨트롤러 Finish 이후 호출로 인한 간헐 실패 방지).

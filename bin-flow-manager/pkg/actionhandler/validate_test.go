@@ -81,11 +81,11 @@ func Test_ValidateActions(t *testing.T) {
 			expectedReason: "INVALID_ANONYMOUS_VALUE",
 		},
 		{
-			name:    "call option that cannot be parsed is skipped",
+			name:    "call option that cannot be parsed is not an error",
 			actions: []action.Action{{Type: action.TypeCall, Option: map[string]any{"anonymous": 5}}},
 		},
 		{
-			name: "connect option that cannot be parsed is skipped and the next action is still checked",
+			name: "connect option that cannot be parsed does not stop the validation of the next action",
 			actions: []action.Action{
 				{Type: action.TypeConnect, Option: map[string]any{"anonymous": 5}},
 				{Type: action.Type("no_such_type")},
