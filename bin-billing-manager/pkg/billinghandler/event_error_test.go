@@ -47,8 +47,8 @@ func newTestHandler(t *testing.T) (*billingHandler, *dbhandler.MockDBHandler, *n
 	return h, mockDB, mockNotify, mockAccount
 }
 
-// durationSampleCount returns the number of observations recorded for the reference type.
-func durationSampleCount(t *testing.T, referenceType billing.ReferenceType) uint64 {
+// durationSamples returns the number and the sum of the observations recorded for the reference type.
+func durationSamples(t *testing.T, referenceType billing.ReferenceType) (uint64, float64) {
 	t.Helper()
 
 	reg := prometheus.NewPedanticRegistry()
@@ -64,12 +64,12 @@ func durationSampleCount(t *testing.T, referenceType billing.ReferenceType) uint
 		for _, m := range f.GetMetric() {
 			for _, l := range m.GetLabel() {
 				if l.GetValue() == string(referenceType) {
-					return m.GetHistogram().GetSampleCount()
+					return m.GetHistogram().GetSampleCount(), m.GetHistogram().GetSampleSum()
 				}
 			}
 		}
 	}
-	return 0
+	return 0, 0
 }
 
 // Test_event_start_failures verifies that a failing BillingStart is reported by every start event
@@ -203,9 +203,8 @@ func Test_event_end_failures(t *testing.T) {
 	}
 }
 
-// Test_BillingStart_retry_and_end_failures covers the two failures after the idempotency lookup:
-// an unfinished immediate-end billing whose end fails on retry, and a new immediate-end billing
-// whose end fails right after creation.
+// Test_BillingStart_retry_and_end_failures covers the failure of the end phase when an unfinished
+// immediate-end billing is retried.
 func Test_BillingStart_retry_and_end_failures(t *testing.T) {
 	customerID := uuid.FromStringOrNil("d3000000-0000-0000-0000-000000000001")
 	refID := uuid.FromStringOrNil("d3000000-0000-0000-0000-000000000002")
@@ -286,12 +285,16 @@ func Test_BillingEnd_free_call(t *testing.T) {
 		mockDB.EXPECT().BillingGet(gomock.Any(), billID).Return(res, nil)
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), billing.EventTypeBillingUpdated, res)
 
-		before := durationSampleCount(t, billing.ReferenceTypeCallExtension)
+		beforeCount, beforeSum := durationSamples(t, billing.ReferenceTypeCallExtension)
 		if err := h.BillingEnd(context.Background(), bill, &end, &commonaddress.Address{}, &commonaddress.Address{}); err != nil {
 			t.Fatalf("expected no error, got: %v", err)
 		}
-		if after := durationSampleCount(t, billing.ReferenceTypeCallExtension); after != before+1 {
-			t.Errorf("expected one more duration sample, before: %d, after: %d", before, after)
+		afterCount, afterSum := durationSamples(t, billing.ReferenceTypeCallExtension)
+		if afterCount != beforeCount+1 {
+			t.Errorf("expected one more duration sample, before: %d, after: %d", beforeCount, afterCount)
+		}
+		if afterSum-beforeSum != 42 {
+			t.Errorf("expected the observed duration to be 42 seconds, got: %v", afterSum-beforeSum)
 		}
 	})
 }
