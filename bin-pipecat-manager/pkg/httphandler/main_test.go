@@ -2,8 +2,11 @@ package httphandler
 
 import (
 	"errors"
+	"net"
 	"net/http"
 	"net/http/httptest"
+	"strings"
+	"syscall"
 	"testing"
 
 	"monorepo/bin-pipecat-manager/pkg/pipecatcallhandler"
@@ -159,5 +162,33 @@ func Test_handlers(t *testing.T) {
 				t.Errorf("Wrong body. expect: empty (the runner handler writes the response), got: %q", w.Body.String())
 			}
 		})
+	}
+}
+
+// Test_Run_listenFailure covers the listen failure path of Run(). The listen address is a
+// constant and the server cannot be stopped, so the success path is not called. This test
+// does not verify that the registered routes are served.
+func Test_Run_listenFailure(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	// occupy the listen address first. When another process already holds it, Run() fails the same way.
+	occupied, errListen := net.Listen("tcp", "127.0.0.1:8001")
+	if errListen != nil {
+		if !errors.Is(errListen, syscall.EADDRINUSE) {
+			t.Skipf("could not occupy the listen address for a reason other than being in use: %v", errListen)
+		}
+	} else {
+		t.Cleanup(func() { _ = occupied.Close() })
+	}
+
+	h := NewHTTPHandler(nil, pipecatcallhandler.NewMockPipecatcallHandler(mc))
+
+	err := h.Run()
+	if err == nil {
+		t.Fatalf("expected a listen error, got nil")
+	}
+	if !strings.Contains(err.Error(), "failed to listen on localhost:8001") {
+		t.Errorf("Wrong error. expect contains: failed to listen on localhost:8001, got: %v", err)
 	}
 }
