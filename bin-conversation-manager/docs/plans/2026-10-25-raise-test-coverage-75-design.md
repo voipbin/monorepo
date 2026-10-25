@@ -5,7 +5,10 @@
 - 판정: 유효. 기준선 origin/main accc03e 에서 수기 코드 커버리지는 2725/3622 = 75.23% 로 실측되어 카드 수치와 일치합니다. 원본(생성 코드와 mock 포함) 66.8% 도 카드와 같은 방법입니다.
 - 제외 방법: gens/, 파일명 mock_*, 파일 머리(package 이전)에 `Code generated` 와 `DO NOT EDIT` 이 있는 파일을 뺍니다. 같은 블록의 중복은 최대 count 로 합칩니다.
 - 75.0% 는 이미 넘었으므로 인수 조건의 실질은 76% 이상 확보(CI 와의 소수점 차이 대비)입니다. 최소 2753/3622, 즉 28개 이상의 statement 를 더 커버해야 합니다.
-- 전제 변경 없음: 대상 경로의 최근 커밋은 테스트 커버리지 PR 과 무관하며 열린 PR 중 중복은 없습니다.
+- 선행 PR: 같은 서비스에서 VOIP-1647(#1524, 56.47%에서 61% 이상)과 VOIP-1649(#1549, 65% 설계 `2026-10-24-test-coverage-65-design.md`)가 머지되었고 이번 카드가 그 결과를 기준선으로 이어받습니다. 두 PR 모두 linehandler 의 Send, Setup, Teardown, GetPeer 를 외부 호출로 보아 제외했습니다.
+- 분모 차이(3604, 3622) 설명: 1647 은 3604 기준이었고, 그 뒤 비테스트 코드가 바뀌었습니다(`git diff --stat 5a3496e0c accc03e -- bin-conversation-manager ':!*_test.go'`: pkg/linehandler/hook.go +31 줄, pkg/conversationhandler/message.go +12 줄). 이번 기준선 3622 는 accc03e 의 실측이며 이후 PR 본문의 '전' 열도 이 값을 씁니다.
+- cmd/ 두 패키지(1649 에서 이미 일부 테스트됨)는 분모에서 빼지 않습니다. 합계는 cmd 를 포함한 3622 기준이고, 신규 테스트 대상에서만 제외합니다(cmd main 은 외부 연결 의존).
+- 공개 저장소에 등록된 다른 열린 PR 중 이 서비스와 겹치는 것은 없습니다(`gh pr list --state all --search 'conversation-manager coverage'` 결과는 위 두 PR 과 오래된 무관 PR 뿐).
 
 ## 2. 기준선 (수기 코드, statement)
 
@@ -21,7 +24,9 @@
 | pkg/messagehandler | 155/183 | 84.7% |
 | 그 외 | 90% 안팎 | |
 
-cmd 의 두 main 은 외부 연결 의존이라 대상에서 제외합니다. linehandler 의 Setup, Teardown, Send(텍스트 있음), GetPeer 는 외부 LINE API 호출이므로 네트워크 의존 테스트 금지 규칙에 따라 제외하고, 외부 호출 이전에 끝나는 경로(텍스트 없는 Send)만 다룹니다.
+cmd 의 두 main 은 외부 연결 의존이라 신규 테스트 대상에서 제외합니다(분모에는 포함). linehandler 의 Send(텍스트 있음, `send.go:45` 의 `Do()` 는 ctx 를 받지 않음)와 GetPeer(`hook.go` 의 `profile.Do()`)는 실제 LINE API 호출이므로 제외합니다. Setup, Teardown 은 `WithContext(ctx)` 를 쓰므로 이미 취소된 ctx 로 호출하면 연결 시도 없이 `context canceled` 로 끝남을 scratch 에서 확인했습니다(네트워크 호출 없음). 이 오류 경로와 텍스트 없는 Send 는 대상으로 삼습니다.
+
+필요량: 76% 는 2753(+28), 77% 목표는 2789(+64) 입니다.
 
 ## 3. 변경 계획 (테스트 파일만)
 
@@ -42,4 +47,4 @@ cmd 의 두 main 은 외부 연결 의존이라 대상에서 제외합니다. li
 
 ## 5. VOIP-1416 중복
 
-pkg/linehandler, pkg/accounthandler, pkg/messagehandler, pkg/dbhandler 등 80% 미만 패키지가 VOIP-1416 대상과 겹칠 수 있습니다. 흡수하지 않고 명시만 합니다.
+pkg/linehandler, pkg/accounthandler, pkg/messagehandler, pkg/dbhandler 등 80% 미만 패키지중 VOIP-1416(80% 미만 패키지 상향, Backlog)이 적은 패키지와 겹치는 것이 있습니다(카드 본문 기준, 해당 티켓 내용은 열람 불가). 흡수하지 않고 명시만 합니다.
