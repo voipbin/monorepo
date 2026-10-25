@@ -20,9 +20,9 @@
 
 위 분류의 숫자는 블록 단위로 센 계획용 추정치이며(합 140 = 78 + 62) 구현 중 실측으로 갱신한다. 78 에는 실제로 도달 가능한 블록이 섞여 있을 수 있으므로 이론 상한이 아니라 보수적인 목표선이다. 이 분류로 계산한 천장은 2502 - 486 - 78 = 1938 (약 77.5%) 이고, 필요 증가분 26 은 채택 대상 약 62 로 충족할 수 있다(여유 약 35). dbhandler 를 0 으로 쳐도 providerhandler 13 + routehandler 5 + providercallhandler 7 + cachehandler 1 = 26 으로 필요량과 같아 하한은 여유가 없으므로 dbhandler 항목을 먼저 구현한다. providerhandler 13 에는 `Setup` 래퍼 2(비-telnyx carrier 로 호출하며 `NewTelnyxClient` 는 네트워크 호출이 없는 구조체 생성이다)가 포함된다. providercallhandler 7 은 `NewProviderCallHandler` 생성자 4 와 providercall.go 3 이다. 부족하면 cmd/route-control 의 순수 함수와 cmd/route-manager 의 mock 가능 함수, 그리고 위 미채택 항목 중 실측으로 도달이 확인된 것을 추가한다.
 
-VOIP-1416(80% 미만 패키지 일반 상향, Backlog)은 저장소 로그와 gh 에서 확인되지 않아 범위를 알 수 없다. 수기 코드 기준 80% 미만은 cmd/route-control, cmd/route-manager 뿐이지만 `go test` 패키지 출력(mock 포함) 기준으로는 cachehandler, dbhandler, providercallhandler, routehandler, telnyxclient, providerhandler 도 80% 미만이다. 지표가 달라 범위를 알 수 없으므로 PR 본문에 겹침 가능성만 적고 흡수하지 않는다.
+80% 미만 패키지 일반 상향 작업(VOIP-1416)의 범위는 저장소에서 확인되지 않는다. 수기 코드 기준 80% 미만은 cmd/route-control, cmd/route-manager 뿐이지만 `go test` 패키지 출력(mock 포함) 기준으로는 cachehandler, dbhandler, providercallhandler, routehandler, telnyxclient, providerhandler 도 80% 미만이다. 지표가 달라 범위를 알 수 없으므로 PR 본문에 겹침 가능성만 적고 흡수하지 않는다.
 
-반증하지 못한 주장: 기준선 수치(독립 리뷰어도 74.98% 재현), 필요량. 틀린 주장: 없음.
+반증하지 못한 주장: 기준선 수치, 필요량. 틀린 주장: 없음.
 
 ## 2. 설계 (계획)
 
@@ -58,7 +58,7 @@ VOIP-1416(80% 미만 패키지 일반 상향, Backlog)은 저장소 로그와 gh
 검증 방법:
 
 - 1절의 계산법으로 수기 합계 76% 이상(권장), 75.0% 이상(인수). 측정은 bin-route-manager 에서 `cd bin-route-manager && GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` 로 하고 PR 본문에 패키지별 전후 표, 수기/원본 합계, 계산법을 적는다.
-- bin-route-manager 에서 루트 CLAUDE.md 5단계(`go mod tidy`, `go mod vendor`, `go generate ./...`, `go test ./...`, `golangci-lint run -v --timeout 5m`)를 실행하고 go.mod/go.sum 변경이 없음을 `git diff` 로 확인한다. 저장소 루트에서 `git fetch origin main` 후 `bash scripts/check-test-conventions.sh` 를 실행한다. `-race -count=3` 으로 반복 실행해 안정성을 확인한다.
+- bin-route-manager 에서 루트 CLAUDE.md 5단계(`go mod tidy`, `go mod vendor`, `go generate ./...`, `go test ./...`, `golangci-lint run -v --timeout 5m`)를 실행하고 go.mod/go.sum 변경이 없음을 `git diff` 로 확인한다. 저장소 루트에서 `git fetch origin main` 후 `bash scripts/check-test-conventions.sh` 를 실행한다. 신규 테스트는 `-race -count=3` 으로 반복 실행해 안정성을 확인한다(기존 dbhandler 테스트는 고정 ID 를 쓰므로 `-count>1` 전체 실행 대상이 아니다).
 - 단언은 하드코딩한 기대값과 gomock 엄격 매칭으로 한다. 호출만 하거나 자기 비교인 테스트는 쓰지 않는다.
 - 변이 검사(격리 복사본에서만, 기존 테스트는 통과하고 새 테스트만 실패해야 인정): (a) 두 handler 의 `ErrNotFound` 매핑 제거, (b) 두 중복 제거 로직(route.go, dialroute.go)에서 `exist = true` 를 제거(같은 provider 가 중복으로 남는지 새 테스트가 잡아야 한다. `==` 를 `!=` 로 바꾸는 변이는 기존 테스트가 먼저 실패하므로 쓰지 않는다), (c) `INVALID_CODECS` 분기 제거(Update 쪽은 컴파일을 위해 `_ = errValidate` 로 대체), (d) provider/route dbhandler List 의 빈 token 분기 제거(providercall 에는 적용하지 않는다), (e) `providerSetToCache`/`routeSetToCache` 의 `return err` 를 `return nil` 로, (f) nil 그룹콜 건너뜀 제거(nil 역참조 panic 으로 패키지 바이너리 전체가 죽으므로 제외할 새 테스트 이름 목록을 PR 본문에 적고 기존 테스트는 `-run` 으로 따로 돌려 판정한다), (g) 닫힌 DB 경로의 `%w` 사이트(PR 본문에 목록 기재)를 `%v` 로, (j) 빈 token List 의 `tm_create <` 조건을 `<=` 로(경계 행 `tm_create == token` 을 저장 형식과 같은 문자열 토큰으로 만들어 잡는다. 저장 형식은 sqlite 드라이버 형식이고 `TimeGetCurTime` 은 ISO 형식이라 문자열 비교임을 고려해 mock 토큰을 저장 형식과 동일한 문자열로 둔다), (k) `Setup` 래퍼가 carrier 인자를 빈 문자열로 넘기도록 변경(오류 메시지에 `vonage` 가 포함되는지 단언한다), (m) `NewProviderCallHandler` 가 db 필드를 연결하지 않도록 변경(생성된 핸들러의 필드 값을 단언), (l) 포트 오류 분기의 cleanup 호출 제거, (h) `telnyxCleanup` 에서 `DeleteFQDN` 실패 시 early return 하도록 변경(기존 setup 테스트는 통과하고 정리 실패 새 테스트만 실패해야 한다), (o) `ProviderGet`/`RouteGet` 이 DB 오류 뒤에도 캐시 `Set` 을 호출하도록 변경, (i) `providerGetFromDB` 의 `ErrNotFound` 반환을 `nil, nil` 로(`routeGetFromDB` 도 동일).
 - 변경 파일은 bin-route-manager/ 안(`*_test.go`, 본 문서)뿐임을 `git diff --stat origin/main...HEAD` 로 확인한다.
