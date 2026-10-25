@@ -470,9 +470,29 @@ func Test_AssembleFlowDraft_wrongShapedOptionValueIsDroppedAndReported(t *testin
 		{Label: "e", Type: string(fmaction.TypeHangup)},
 	}}
 	draft, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeSleep, fmaction.TypeHangup))
-	raw, _ := json.Marshal(draft)
-	if strings.Contains(string(raw), "abc") {
-		t.Errorf("Wrong match. the wrong-shaped value stayed: %s", raw)
+	// Assert on the structure, not on a substring of the whole JSON: the
+	// generated action ids are random hex and may contain any short hex word.
+	if draft == nil {
+		t.Fatalf("Wrong match. expect a draft, got nil (warnings: %v)", warnings)
+	}
+	var sleep map[string]any
+	for _, a := range draft.Actions {
+		if a["type"] == string(fmaction.TypeSleep) {
+			sleep = a
+			break
+		}
+	}
+	if sleep == nil {
+		t.Fatalf("Wrong match. expect a sleep action in %v", draft.Actions)
+	}
+	if opt := sleep["option"]; opt != nil {
+		m, ok := opt.(map[string]any)
+		if !ok {
+			t.Fatalf("Wrong match. expect option to be a map, got %T", opt)
+		}
+		if _, found := m["duration"]; found {
+			t.Errorf("Wrong match. the wrong-shaped value stayed: %v", m)
+		}
 	}
 	if !containsExact(warnings, flowbuilder.WarningInvalidOption+": w.duration") {
 		t.Errorf("Wrong match. expect invalid_option for w.duration in %v", warnings)

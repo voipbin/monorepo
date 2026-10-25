@@ -39,6 +39,7 @@ func TestGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			restoreGlobalConfig(t)
 			globalConfig = tt.setupConfig
 
 			res := Get()
@@ -219,6 +220,7 @@ func TestSetAIcallConversationIdleTimeoutHoursForTest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			restoreGlobalConfig(t)
 			globalConfig = Config{}
 
 			SetAIcallConversationIdleTimeoutHoursForTest(tt.hours)
@@ -251,6 +253,7 @@ func TestSetAIcallInsightSessionIdleMinutesForTest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			restoreGlobalConfig(t)
 			globalConfig = Config{}
 
 			SetAIcallInsightSessionIdleMinutesForTest(tt.minutes)
@@ -439,8 +442,7 @@ func Test_Validate_ListenTiming(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			SetListenDefaultsForTest()
-			defer SetListenDefaultsForTest()
+			setValidConfigForTest(t)
 
 			tt.mutate()
 
@@ -524,8 +526,7 @@ func Test_Validate_ListenSizing(t *testing.T) {
 // Test_Validate_ZeroConversationFlushJitterIsAllowed pins that jitter is a
 // non-negative bound, not a positive one: 0 disables jitter and must validate.
 func Test_Validate_ZeroConversationFlushJitterIsAllowed(t *testing.T) {
-	SetListenDefaultsForTest()
-	defer SetListenDefaultsForTest()
+	setValidConfigForTest(t)
 
 	globalConfig.AIcallListenConversationFlushJitterMs = 0
 
