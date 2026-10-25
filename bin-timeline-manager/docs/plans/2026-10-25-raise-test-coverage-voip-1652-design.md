@@ -2,8 +2,8 @@
 
 ## 1. Ticket review
 
-Verdict: valid. Measured on the branch (origin/main accc03e00 content for this service, `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...`, all tests pass), excluding gens/, mock_*.go and `Code generated ... DO NOT EDIT` files, duplicate blocks merged by max count: hand-written 2349/3142 = 74.76% (the raw profile also counts generated code). 75.0% needs 8 more statements, 76% needs 39 more.
-VOIP-1649 (merged, PR 1533) raised the service from 62.99% to 74.76% with test files only; no open or merged PR covers the remaining gap (`gh pr list --state all --search`). Only test files are added; no product code or signature changes. cmd/timeline-manager main (197 uncovered) binds RabbitMQ, MySQL, ClickHouse and signals and stays out of scope. pkg/dbhandler (176 uncovered) runs ClickHouse queries through the driver connection, rows and batch interfaces; the existing tests only cover the connection-not-established branch, and a fake of those interfaces costs more than it returns, so it is excluded.
+Verdict: valid. Measured on the branch (branch rebased on origin/main accc03e00, which contains the VOIP-1650 homerhandler change, `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...`, all tests pass), excluding gens/, mock_*.go and `Code generated ... DO NOT EDIT` files, duplicate blocks merged by max count: hand-written 2350/3143 = 74.77% (the raw profile also counts generated code; the acceptance criterion is this hand-written total, measured with -mod=mod, and CI may differ by a fraction of a point). 75.0% needs 8 more statements, 76% needs 39 more.
+VOIP-1649 (merged, PR 1533) raised the service from 62.99% to about 74.8% with test files only; no open or merged PR covers the remaining gap (`gh pr list --state all --search`). Only test files are added; no product code or signature changes. cmd/timeline-manager main (197 uncovered) binds RabbitMQ, MySQL, ClickHouse and signals and stays out of scope. pkg/dbhandler (176 uncovered) runs ClickHouse queries through the driver connection, rows and batch interfaces; the existing tests only cover the connection-not-established branch, and a fake of those interfaces costs more than it returns, so it is excluded. cmd/timeline-control (69 uncovered) is a CLI entry point over live ClickHouse and MySQL connections, also excluded. pkg/siphandler/gcsreader_impl.go (36) wraps the cloud storage client and is excluded. pkg/analysishandler/collect_context.go (41) and pkg/listenhandler/v1_analyses.go (32) are mock-testable but smaller; they are the reserve if the planned targets fall short.
 
 ## 2. Baseline (hand-written, before)
 
@@ -19,7 +19,7 @@ VOIP-1649 (merged, PR 1533) raised the service from 62.99% to 74.76% with test f
 | models/analysis | 8/9 | 88.9 |
 | pkg/subscribehandler | 159/166 | 95.8 |
 | internal/config | 82/85 | 96.5 |
-| pkg/homerhandler | 180/186 | 96.8 |
+| pkg/homerhandler | 181/187 | 96.8 |
 | models/sipmessage, models/verdict, pkg/peereventhandler, pkg/eventhandler | 100% | 100 |
 
 ## 3. Plan (new test files only)
