@@ -12,8 +12,8 @@ dbhandler has 72 uncovered statements; an estimated 25 are reachable by test (to
 2. Closed database, every DB-backed method: error contains that method's own marker (ScheduleGet reports `scheduleGetFromDB`; it reads the cache first, so its mock expects one cache miss; all other methods have a cache mock with no expectation, so any cache call fails). Also ApplyFields errors in the two List methods via a `[]string` filter value (unsupported type).
 3. Empty-schema database: BeginTx succeeds, statements fail. Cron trigger fails in the claim update (`scheduleClaimSlot` marker); a non-cron trigger skips the claim and returns the unwrapped insert error, asserted as the original `no such table` text and `isDuplicateKeyErr == false`.
 4. Isolation: databases for items 2 and 3 are private sqlite (`file::memory:` without `cache=shared`, `SetMaxOpenConns(1)`), never the shared `dbTest`, which is never closed or reassigned (TestMain owns it).
-5. listenhandler: per route, filter parse or convert failure maps to 400, handler error maps to 404 (ErrNotFound) or 500, using the existing mocks. The unreachable json.Marshal failure branches are not targeted.
-6. schedulehandler: validation branches and db errors wrapped and returned, with no later step called.
+5. listenhandler: per route, filter parse or convert failure maps to 400, handler error maps to 500, and ErrNotFound on update and delete maps to 404, using the existing mocks. The unreachable json.Marshal failure branches are not targeted.
+6. schedulehandler: validation branches and db errors wrapped and returned, with no later step called. Not needed once the measured total passed 1545 after items 1-5 (77.0%), so it is not part of this change.
 
 ## Verify (no test code in this stage)
 - Measurement: `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` in the service directory, then the hand-written filter (drop gens/, mock_*.go, DO NOT EDIT; duplicate blocks use max count). Result must be >= 76.0% (>= 1545).

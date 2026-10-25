@@ -189,7 +189,7 @@ func Test_ListFilters_Unsupported(t *testing.T) {
 // Test_ScheduleClaimAndCreateExecution_NoSchema verifies the statement-level
 // failures inside an open transaction: the cron path fails at the claim
 // update, while the manual path skips the claim and returns the raw insert
-// error, which is not a duplicate-key error.
+// error, which must not be classified as a duplicate-key error.
 func Test_ScheduleClaimAndCreateExecution_NoSchema(t *testing.T) {
 	id := uuid.FromStringOrNil("5d2f1a3c-0000-4000-8000-0000000000b2")
 	now := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
@@ -200,10 +200,9 @@ func Test_ScheduleClaimAndCreateExecution_NoSchema(t *testing.T) {
 		triggerType execution.TriggerType
 
 		expectMarker string
-		expectDup    bool
 	}{
-		{"cron fails at the claim update", execution.TriggerTypeCron, "could not execute. scheduleClaimSlot", false},
-		{"manual fails at the insert", execution.TriggerTypeManual, "no such table", false},
+		{"cron fails at the claim update", execution.TriggerTypeCron, "could not execute. scheduleClaimSlot"},
+		{"manual fails at the insert", execution.TriggerTypeManual, "no such table"},
 	}
 
 	for _, tt := range tests {
@@ -224,8 +223,8 @@ func Test_ScheduleClaimAndCreateExecution_NoSchema(t *testing.T) {
 			if !strings.Contains(err.Error(), tt.expectMarker) {
 				t.Errorf("error = %q, expect it to contain %q", err.Error(), tt.expectMarker)
 			}
-			if isDuplicateKeyErr(err) != tt.expectDup {
-				t.Errorf("isDuplicateKeyErr(%q) = %v, expect: %v", err.Error(), !tt.expectDup, tt.expectDup)
+			if isDuplicateKeyErr(err) {
+				t.Errorf("a missing-table failure must not be classified as a duplicate-key error: %q", err.Error())
 			}
 		})
 	}
