@@ -57,6 +57,21 @@ func Test_TimelineV1SIPWrappers(t *testing.T) {
 			statusMode: statusCustom,
 		},
 		{
+			// the payload uses the standard base64 alphabet, which has plus and slash characters.
+			name:           "pcap_get_standard_alphabet",
+			queue:          timelineQueue,
+			expectURI:      "/v1/sip/pcap",
+			expectMethod:   sock.RequestMethodPost,
+			expectDataType: ContentTypeJSON,
+			expectData:     requestBody,
+			responseData:   `{"data":"+//+oQ=="}`,
+			call: func(h *requestHandler) (any, error) {
+				return h.TimelineV1SIPPcapGet(context.Background(), callID, "sip-call-a", "2026-03-04T05:00:00Z", "2026-03-04T06:00:00Z")
+			},
+			expectRes:  []byte{0xfb, 0xff, 0xfe, 0xa1},
+			statusMode: statusCustom,
+		},
+		{
 			name:           "pcap_get_empty_data",
 			queue:          timelineQueue,
 			expectURI:      "/v1/sip/pcap",

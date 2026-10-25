@@ -68,6 +68,13 @@ func Test_ContactV1InteractionList(t *testing.T) {
 		}
 	}
 
+	oneEvent := `[{"timestamp":"2026-03-04T05:06:07.123456Z","reference_id":"9d0e1f2a-3b4c-4d5e-8f60-819203142536"}]`
+	oneEventWant := interactionListResult{
+		ReferenceIDs: []string{"9d0e1f2a-3b4c-4d5e-8f60-819203142536"},
+		Timestamps:   []string{"2026-03-04T05:06:07.123456Z"},
+		NextToken:    "2026-03-04T05:06:07.123456Z",
+	}
+
 	empty := interactionListResult{ReferenceIDs: []string{}, Timestamps: []string{}, NextToken: ""}
 
 	cases := []rpcCase{
@@ -78,6 +85,8 @@ func Test_ContactV1InteractionList(t *testing.T) {
 		newCase("contact_only", "?contact_id=7b8c9d0e-1f2a-4b3c-8d4e-6f7081920314", twoEvents, twoEventsWant, 0, "", "", "", contactID, uuid.Nil),
 		newCase("address_only", "?address_id=8c9d0e1f-2a3b-4c4d-9e5f-708192031425", twoEvents, twoEventsWant, 0, "", "", "", uuid.Nil, addressID),
 		newCase("paging_only", "?page_size=5&page_token=t-2", twoEvents, twoEventsWant, 5, "t-2", "", "", uuid.Nil, uuid.Nil),
+		newCase("page_size_one", "?page_size=1", twoEvents, twoEventsWant, 1, "", "", "", uuid.Nil, uuid.Nil),
+		newCase("single_event_has_next_token", "?contact_id=7b8c9d0e-1f2a-4b3c-8d4e-6f7081920314", oneEvent, oneEventWant, 0, "", "", "", contactID, uuid.Nil),
 		newCase("no_filters", "?", twoEvents, twoEventsWant, 0, "", "", "", uuid.Nil, uuid.Nil),
 		newCase("empty_list_has_no_next_token", "?contact_id=7b8c9d0e-1f2a-4b3c-8d4e-6f7081920314", `[]`, empty, 0, "", "", "", contactID, uuid.Nil),
 		newCase("empty_response_data_has_no_next_token", "?contact_id=7b8c9d0e-1f2a-4b3c-8d4e-6f7081920314", ``, empty, 0, "", "", "", contactID, uuid.Nil),
