@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -83,7 +84,11 @@ func Test_Run(t *testing.T) {
 			}
 
 			if tt.queueCreateErr == nil {
-				<-consumed
+				select {
+				case <-consumed:
+				case <-time.After(5 * time.Second):
+					t.Fatalf("Wrong match. expect: ConsumeRPC to be called")
+				}
 			}
 		})
 	}

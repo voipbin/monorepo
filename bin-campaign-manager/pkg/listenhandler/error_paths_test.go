@@ -132,8 +132,8 @@ func Test_processRequest_invalidFilterValue(t *testing.T) {
 }
 
 // Test_processRequest_handlerError checks how an error from the business handler is
-// mapped to the response: unclassified errors become 400, record-not-found and typed
-// not-found errors become 404.
+// mapped to the response: the routes map unclassified errors to 400, while record-not-found and
+// typed not-found errors become 404.
 func Test_processRequest_handlerError(t *testing.T) {
 	anyArg := gomock.Any()
 	campaignID := uuid.FromStringOrNil(testCampaignURIID)
