@@ -337,14 +337,14 @@ func Test_Run(t *testing.T) {
 		}
 	})
 
-	t.Run("starts the consumer", func(t *testing.T) {
+	t.Run("starts the consumer and tolerates its failure", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
 		mockSock := sockhandler.NewMockSockHandler(mc)
 		started := make(chan struct{})
 		mockSock.EXPECT().QueueCreate(queue, "normal").Return(nil)
-		// the consumer returns an error, which Run only logs.
+		// the consumer returns an error; Run has already returned and does not report it.
 		mockSock.EXPECT().ConsumeRPC(gomock.Any(), queue, constCosumerName, false, false, false, 10, gomock.Any()).
 			DoAndReturn(func(_ any, _ string, _ string, _ bool, _ bool, _ bool, _ int, _ any) error {
 				close(started)

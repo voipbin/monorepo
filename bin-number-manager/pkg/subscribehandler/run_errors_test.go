@@ -99,7 +99,7 @@ func Test_Run_errors(t *testing.T) {
 	}
 }
 
-func Test_Run_consumerFailureIsLogged(t *testing.T) {
+func Test_Run_consumerFailureDoesNotFailRun(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
