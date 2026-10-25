@@ -27,7 +27,7 @@
 ## 3. 구조 분석
 
 - 제외(테스트 어려움): `cmd/tts-manager` 의 main, run, runDaemon 등(프로세스 기동, 실제 DB/Redis/RabbitMQ, 138 stmt), `audiohandler/gcp.go` 와 `streaminghandler` 의 gcp/aws/elevenlabs `connect`/`Init`(외부 클라우드 인증과 네트워크).
-- 테스트 가능: 미커버 오류 경로가 다수인 listenhandler(약 95), speakinghandler(약 23), dbhandler(11), buckethandler OSFileExist(8), cachehandler(50, miniredis), streaminghandler 의 websocket/start 오류 분기(약 10).
+- 테스트 가능: 미커버 오류 경로가 다수인 listenhandler(약 95), speakinghandler(약 23), dbhandler(11), buckethandler OSFileExist(11), cachehandler(50, miniredis), streaminghandler 의 websocket/start 오류 분기(약 10).
 - 75% 는 제외 대상을 분모에 포함한 수기 합계 기준이다. cmd/tts-control(미커버 57)의 initCommand 등은 보충 후보.
 - 합계 추정 약 190 stmt 로 필요량 133 을 넘는 여유가 있으며, 부족하면 gcp 스트리머의 `closeStreamLocked`/keepalive 분기 중 가짜 stream 으로 외부 호출 없이 닿는 분기에 한해 보충한다. 선행 계획(VOIP-1647)에서 시간에 민감한 기존 테스트로 약 9 stmt 의 측정 편차가 있었으므로 최종 수치는 반복 측정해 기록한다.
 
@@ -37,7 +37,7 @@
 2. speakinghandler: Create 의 기존 세션 조회 실패, 동시 세션 경합에서 후순위 세션 중단, Get 의 NotFound 변환, Gets/Stop/Delete 의 DB 오류와 재조회 실패 시 기존 값 반환. 모두 mock dbhandler.
 3. dbhandler: 기존 sqlite/mock 하네스로 SpeakingGet/Gets/Create/Update 의 쿼리 빌드 및 스캔 오류 경로, streaming 캐시 미스(ErrNotFound).
 4. buckethandler: `OSFileExist` 를 임시 디렉터리의 존재 파일과 없는 경로로 확인.
-5. cachehandler: miniredis(origin/main 의 18개 서비스가 쓰는 v2.36.1, 테스트에서만 import)로 StreamingSet/Get 왕복, 키 형식 `tts:streaming:<id>`, TTL, 미존재 키 오류, 손상된 JSON 오류, Connect 성공과 서버 종료 후 실패.
+5. cachehandler: miniredis(origin/main 의 18개 서비스가 쓰는 v2.36.1, 테스트에서만 import)로 StreamingSet/Get 왕복, 키 형식 `tts:streaming:<id>`, TTL, 미존재 키는 `redis.Nil` 이 그대로 반환됨(ErrNotFound 변환은 dbhandler 몫), 손상된 JSON 오류, Connect 성공과 서버 종료 후 실패.
 6. streaminghandler: `websocketConnect` 의 MEDIA_START 읽기 오류, `Start` 의 생성 오류 전파.
 
 ## 5. verify 항목
