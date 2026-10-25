@@ -6,8 +6,10 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 
+	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-conversation-manager/models/account"
 	"monorepo/bin-conversation-manager/pkg/accounthandler"
 	"monorepo/bin-conversation-manager/pkg/conversationhandler"
 	"monorepo/bin-conversation-manager/pkg/dbhandler"
@@ -45,8 +47,10 @@ func newReq(uri string, method sock.RequestMethod, data string) *sock.Request {
 }
 
 const (
-	testConvURI = "/v1/conversations/8d8ab6ae-0074-11ee-80d0-df60c15605d7"
-	testAccURI  = "/v1/accounts/792c0222-e4a9-11ec-af5e-679fe5991907"
+	testConvID  = "8d8ab6ae-0074-11ee-80d0-df60c15605d7"
+	testAccID   = "792c0222-e4a9-11ec-af5e-679fe5991907"
+	testConvURI = "/v1/conversations/" + testConvID
+	testAccURI  = "/v1/accounts/" + testAccID
 )
 
 // Test_listenHandler_inputValidation covers request rejection before any downstream handler is called.
@@ -214,7 +218,7 @@ func Test_listenHandler_downstreamError(t *testing.T) {
 			return h.processV1ConversationsPost(ctx, newReq("/v1/conversations", sock.RequestMethodPost, `{}`))
 		}, 404, false},
 		{"conversations id get", func(m *listenMocks) {
-			m.conv.EXPECT().Get(gomock.Any(), gomock.Any()).Return(nil, dbhandler.ErrNotFound)
+			m.conv.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil(testConvID)).Return(nil, dbhandler.ErrNotFound)
 		}, func(h *listenHandler) (*sock.Response, error) {
 			return h.processV1ConversationsIDGet(ctx, newReq(testConvURI, sock.RequestMethodGet, ""))
 		}, 404, false},
@@ -229,7 +233,7 @@ func Test_listenHandler_downstreamError(t *testing.T) {
 			return h.processV1ConversationsCreateAndExecuteFlowPost(ctx, newReq("/v1/conversations/create_and_execute_flow", sock.RequestMethodPost, `{}`))
 		}, 404, false},
 		{"conversations metadata put", func(m *listenMocks) {
-			m.conv.EXPECT().UpdateMetadata(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, dbhandler.ErrNotFound)
+			m.conv.EXPECT().UpdateMetadata(gomock.Any(), uuid.FromStringOrNil(testConvID), gomock.Any()).Return(nil, dbhandler.ErrNotFound)
 		}, func(h *listenHandler) (*sock.Response, error) {
 			return h.processV1ConversationsIDMetadataPut(ctx, newReq(testConvURI+"/metadata", sock.RequestMethodPut, `{}`))
 		}, 404, false},
@@ -239,17 +243,17 @@ func Test_listenHandler_downstreamError(t *testing.T) {
 			return h.processV1AccountsGet(ctx, newReq("/v1/accounts?page_size=10", sock.RequestMethodGet, "{}"))
 		}, 404, false},
 		{"accounts id get", func(m *listenMocks) {
-			m.acc.EXPECT().Get(gomock.Any(), gomock.Any()).Return(nil, dbhandler.ErrNotFound)
+			m.acc.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil(testAccID)).Return(nil, dbhandler.ErrNotFound)
 		}, func(h *listenHandler) (*sock.Response, error) {
 			return h.processV1AccountsIDGet(ctx, newReq(testAccURI, sock.RequestMethodGet, ""))
 		}, 404, false},
 		{"accounts id put", func(m *listenMocks) {
-			m.acc.EXPECT().Update(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, dbhandler.ErrNotFound)
+			m.acc.EXPECT().Update(gomock.Any(), uuid.FromStringOrNil(testAccID), map[account.Field]any{account.FieldName: "x"}).Return(nil, dbhandler.ErrNotFound)
 		}, func(h *listenHandler) (*sock.Response, error) {
 			return h.processV1AccountsIDPut(ctx, newReq(testAccURI, sock.RequestMethodPut, `{"name":"x"}`))
 		}, 404, false},
 		{"accounts id delete", func(m *listenMocks) {
-			m.acc.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil, dbhandler.ErrNotFound)
+			m.acc.EXPECT().Delete(gomock.Any(), uuid.FromStringOrNil(testAccID)).Return(nil, dbhandler.ErrNotFound)
 		}, func(h *listenHandler) (*sock.Response, error) {
 			return h.processV1AccountsIDDelete(ctx, newReq(testAccURI, sock.RequestMethodDelete, ""))
 		}, 404, false},

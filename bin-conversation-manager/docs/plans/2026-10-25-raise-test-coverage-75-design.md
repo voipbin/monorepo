@@ -41,7 +41,7 @@ cmd 의 두 main 은 외부 연결 의존이라 신규 테스트 대상에서 �
    - 반환값 직렬화 실패(500) 분기는 정상 타입에서 만들 수 없으므로 대상에서 뺍니다.
 2. pkg/accounthandler: Get 의 오류 매핑(NotFound 는 타입 오류, 그 외는 래핑), List 의 DB 오류, Update, Delete, Create 의 DB 오류와 setup 오류 전파. Delete 는 조회 실패 시 teardown 과 삭제를 호출하지 않음, 삭제 실패 시 알림을 발행하지 않음을 단언합니다.
 3. pkg/messagehandler (send.go): sendWhatsApp 의 계정 조회 실패, sendSMS 와 sendWhatsApp 각각의 생성 실패와 전송 실패(전송 실패 시 상태를 failed 로 갱신하고 갱신 결과는 버려지며 원래 오류가 반환됨), sendWhatsApp 의 완료 상태 갱신 실패 전파. sendWebchat 의 WebchatV1MessageCreate 실패. sendWebchat 은 세션 ID 파싱 실패가 이미 커버되어 제외하고, `Create` 실패 후 `Duplicate entry` 와 `UNIQUE constraint failed` 각각의 재조회 성공, 재조회도 실패하면 원래 오류 반환을 다룹니다.
-4. pkg/conversationhandler (event.go): 알 수 없는 type 오류, 잘못된 JSON, direction 불명, MessageEventReceived 와 MessageEventSent 의 오류 래핑 분기(하위 mock 설정 필요). Event(TypeWebchat) 직접 호출과 오류 전파. 예비 후보로 event_webchat.go 의 미커버 분기.
+4. pkg/conversationhandler (event.go): 알 수 없는 type 오류, 두 이벤트 type 별 잘못된 페이로드와 알 수 없는 direction 거절(디코더 오류 메시지로 라우팅 확인), sms 와 webchat 의 outbound 메시지 생성 실패 전파(각 type 에만 유효한 페이로드로 라우팅 확인). inbound 의 오류 래핑 분기와 event_webchat.go 의 나머지 분기는 증가량이 충분하여 이번에는 제외합니다.
 5. pkg/linehandler: 합성 secret 과 token 을 가진 계정으로 실제 `NewLineHandler` 핸들러의 Send 를 호출하되 텍스트를 비우고 media 를 한 개 넣어 media 루프를 지나게 하며, 외부 호출(PushMessage)이 일어나지 않고 nil 을 반환함을 단언합니다. 이미 취소된 ctx 로 Setup, Teardown 을 호출하면 `errors.Is(err, context.Canceled)` 임을 단언합니다(요청이 전송되지 않음).
 
 예상 증가량(statement, 대상 파일의 미커버 합에서 제외 분기를 뺀 어림): listenhandler 약 45(대상 약 75), accounthandler 약 12(대상 19), messagehandler 약 15(대상 21), conversationhandler 약 8(대상 13), linehandler 약 20(대상 53 중 Send 와 Setup/Teardown 의 가능분). 합계 약 100 이면 77% 이상(필요 +64). 미달 시 dbhandler 오류 경로를 추가합니다.
