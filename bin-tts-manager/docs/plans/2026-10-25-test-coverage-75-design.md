@@ -33,17 +33,36 @@
 
 ## 4. 추가할 테스트 (모두 로컬 전용, 외부 네트워크 없음)
 
-1. listenhandler: `processRequest` 표 기반으로 speakings/streamings/speeches 각 엔드포인트의 잘못된 JSON(400 또는 오류), 하위 핸들러 오류(404/500 또는 오류 전파), 잘못된 URI, 페이지 크기 기본값 100, reference_type/reference_id 필터 전달, 타입 있는 오류와 ErrNotFound 의 응답 변환. `Run` 은 mock sockHandler 로 QueueCreate 실패와 성공(ConsumeRPC 는 고루틴에서 불리므로 채널로 호출을 동기화해 flaky 방지)을 확인.
-2. speakinghandler: Create 의 기존 세션 조회 실패, 동시 세션 경합에서 후순위 세션 중단, Get 의 NotFound 변환, Gets/Stop/Delete 의 DB 오류와 재조회 실패 시 기존 값 반환. 모두 mock dbhandler.
-3. dbhandler: 기존 sqlite/mock 하네스로 SpeakingGet/Gets/Create/Update 의 쿼리 빌드 및 스캔 오류 경로, streaming 캐시 미스(ErrNotFound).
-4. buckethandler: `OSFileExist` 를 임시 디렉터리의 존재 파일과 없는 경로로 확인.
-5. cachehandler: miniredis(origin/main 의 18개 서비스가 쓰는 v2.36.1, 테스트에서만 import)로 StreamingSet/Get 왕복, 키 형식 `tts:streaming:<id>`, TTL, 미존재 키는 `redis.Nil` 이 그대로 반환됨(ErrNotFound 변환은 dbhandler 몫), 손상된 JSON 오류, Connect 성공과 서버 종료 후 실패.
-6. streaminghandler: `websocketConnect` 의 MEDIA_START 읽기 오류, `Start` 의 생성 오류 전파.
+도달 가능 stmt 추정(미커버 프로파일 기준. json.Marshal 실패 분기, squirrel 빌드 실패 분기처럼 입력으로 만들 수 없는 분기는 제외):
+
+| 항목 | 추정 stmt |
+|---|---|
+| listenhandler v1_speakings (파싱/하위 오류/필터) | 약 32 |
+| listenhandler v1_streamings, v1_speeches (오류 전파) | 약 29 |
+| listenhandler main (Run, processRequest 오류 변환) | 약 15 |
+| speakinghandler | 약 20 |
+| cachehandler (miniredis) | 약 45 |
+| buckethandler OSFileExist | 11 |
+| dbhandler (sqlmock 스캔/행 오류) | 약 4 |
+| streaminghandler websocket/start | 약 8 |
+| 합계 | 약 164 (필요 133, 여유 약 31). 부족하면 cmd/tts-control initCommand(구조 검사)와 gcp 스트리머 분기로 보충 |
+
+1. listenhandler (`processRequest` 표 기반, 엔드포인트별로 기대값을 명시):
+   - v1_speakings 는 모든 하위 오류를 응답으로 바꾼다(`nil` 오류 반환): 잘못된 JSON POST 400, Create 실패 500, 잘못된 목록 URI 400, 잘못된 id URI 400, Get 실패 404(어떤 오류든), SayAdd/Flush/Stop/Delete 실패 404, JSON 파싱 실패 400. 목록 조회는 page_size 미지정 시 100 이 mock 호출 인자로 전달됨, reference_type/reference_id 필터가 mock 인자로 전달됨, 조회 실패 500.
+   - v1_streamings, v1_speeches 는 `nil, err` 로 오류를 전파한다: 잘못된 JSON 과 하위 핸들러 오류에서 `res == nil` 이고 반환 오류가 mock 이 준 오류와 같음. 잘못된 URI 도 오류 반환.
+   - processRequest 의 변환 분기: 하위 핸들러가 `VoipbinError` 를 반환하면 `cerrors.ToResponse` 결과 응답, `dbhandler.ErrNotFound` 면 404, 그 외 오류는 그대로 전파(`errorResponse` 자체는 기존 `error_response_test.go` 가 검증하므로 중복하지 않고 processRequest 경유 변환만).
+   - `Run`: mock sockHandler 의 QueueCreate 실패 시 오류 반환(ConsumeRPC 미호출), 성공 시 nil 반환과 ConsumeRPC 호출(고루틴이므로 채널로 동기화).
+2. speakinghandler (mock dbhandler): Create 의 기존 세션 조회 실패(`SpeakingGets` 오류) 전파, 동시 세션 경합. id 는 `uuid.NewV4` 라 고정할 수 없으므로 재조회 결과에 `uuid.Nil`(항상 더 작음) active 세션을 주어 후순위로 중단(SpeakingUpdate stopped 호출 확인)되는 경우와 `ffff...` 세션을 주어 중단되지 않는 반대 경우를 둘 다 검증, 재조회 오류 시 계속 진행. Get 의 `ErrNotFound` 가 NotFound 타입 오류로 변환됨, Gets/Stop/Delete 의 DB 오류 전파, Stop/Delete 후 재조회 실패 시 기존 값 반환.
+3. dbhandler (sqlmock): 컬럼 수가 다른 행으로 `speakingGetFromRow` 스캔 오류, `SpeakingGet`/`SpeakingGets` 의 `RowError` 와 스캔 오류. 기존 `streaming_test.go` 가 이미 캐시 미스를 다루므로 추가하지 않는다. prepare/build 실패 분기는 입력으로 만들 수 없어 제외.
+4. buckethandler: `OSFileExist` 를 `t.TempDir()` 의 존재 파일(true)과 없는 경로(false)로 확인.
+5. cachehandler: miniredis(origin/main 의 18개 서비스가 쓰는 v2.36.1, 테스트에서만 import)로 StreamingSet/Get 왕복(저장한 필드 일치), 키 `tts:streaming:<id>` 와 TTL 이 0 보다 크고 24시간 이하, 미존재 키는 `redis.Nil` 이 그대로 반환됨(ErrNotFound 변환은 dbhandler 몫), 손상된 JSON 값은 파싱 오류, Connect 성공과 서버 종료 뒤 실패.
+6. streaminghandler: 로컬 `httptest` WebSocket 서버로 `websocketConnect` 의 MEDIA_START 전 연결 종료(읽기 오류)와 바이너리 첫 메시지 분기(읽기 데드라인 10초는 서버가 즉시 응답/종료하므로 대기 없음). `Start` 는 mock dbhandler 의 StreamingCreate 오류로 Create 실패가 그대로 전파됨.
 
 ## 5. verify 항목
 
-- 수기 합계 76% 이상(최소 75.0%), 기존 테스트 전부 통과, `golangci-lint run` 통과.
-- 각 테스트는 기대 응답 코드나 오류 문자열, 호출되지 않아야 하는 mock(미설정 EXPECT)로 검증하며 호출만 하는 테스트와 자기비교 테스트를 금지.
-- 변이 검사: 표본으로 listenhandler 오류 분기의 상태 코드, cachehandler 키 접두어, speakinghandler 경합 비교 연산자를 scratch 복사본에서 바꿔 새 테스트가 실패하는지 확인.
-- go.mod/go.sum 은 miniredis 와 그 전이 의존성 추가 외 변경 없음, `go mod tidy` 후 diff 없음. 비테스트 .go 변경 없음. 파일 목록은 bin-tts-manager/ 안.
+- 수기 합계 측정: 서비스 디렉터리에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` 후 scratch 의 계산 스크립트(gens/, mock_*.go, DO NOT EDIT 헤더 제외, 같은 블록은 최대 count)로 패키지별 전후 표와 수기/원본 합계를 산출. 최종은 `-count=3` 으로 3회 측정해 최소값이 76% 이상임을 기록.
+- 수기 합계 76% 이상(최소 75.0%), 기존 테스트 전부 통과, `golangci-lint run` 통과, `-race` 로 신규 테스트 통과.
+- 각 테스트는 기대 응답 코드, 반환 오류 동일성, 호출 인자, 호출되지 않아야 하는 mock(미설정 EXPECT)로 검증하며 호출만 하는 테스트와 자기비교 테스트를 금지.
+- 변이 검사(scratch 복사본, 결과는 PR 본문에 요약): listenhandler 오류 상태 코드 변경, page_size 100 상한 제거, `Run` 의 QueueCreate 오류 분기 제거, cachehandler 키 접두어 변경, speakinghandler 경합 비교 연산자 반전, `OSFileExist` 반환값 반전 각각에서 신규 테스트가 실패해야 함.
+- go.mod/go.sum: miniredis 와 그 전이 의존성 추가 외 변경 없음. `git diff go.mod` 로 go-redis 등 기존 require 버전이 오르지 않았음을 확인하고, `go mod tidy` 후 추가 diff 없음. 비테스트 .go 변경 없음. 파일 목록은 bin-tts-manager/ 안.
 - 비밀번호 리터럴은 별도 문장에서 대입하고 `user:pass@host` DSN 을 쓰지 않는다.
