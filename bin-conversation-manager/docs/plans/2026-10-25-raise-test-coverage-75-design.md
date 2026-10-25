@@ -34,7 +34,7 @@ cmd 의 두 main 은 외부 연결 의존이라 신규 테스트 대상에서 �
    - 잘못된 JSON 본문에서 400 응답을 반환: ConversationsPost, GetOrCreateBySelfAndPeerPost, CreateAndExecuteFlowPost, IDMetadataPut, AccountsPost, MessagesPost, MessagesCreatePost, HooksGet, HooksPost. 이때 하위 handler 는 호출되지 않아야 합니다(mock 에 기대를 걸지 않음).
    - 잘못된 JSON 본문 또는 URI 파싱 오류에서 `(nil, err)` 를 반환: ConversationsGet(본문이 비어 있으면 JSON 파싱 없이 기본 필터), AccountsGet, MessagesGet(JSON). AccountsIDPut 와 ConversationsIDPut 은 GetFilteredItems 의 JSON 오류와 ConvertStringMapToFieldMap 실패에서 `(nil, err)`.
    - 필터 변환 실패에서 400 응답: ConversationsGet, AccountsGet, MessagesGet.
-   - URI 항목 부족에서 400 응답: ConversationsIDGet, ConversationsIDPut, ConversationsIDMetadataPut, AccountsIDGet, AccountsIDPut, AccountsIDDelete.
+   - URI 항목 부족에서 400 응답(라우터 정규식 때문에 processRequest 로는 도달할 수 없으므로 process* 메서드를 직접 호출): ConversationsIDGet, ConversationsIDPut, ConversationsIDMetadataPut, AccountsIDGet, AccountsIDPut, AccountsIDDelete.
    - 하위 handler 오류에서 errorResponse 매핑(타입 오류 상태, ErrNotFound 404, 그 외 500): ConversationsGet, Post, IDGet, GetOrCreate, CreateAndExecuteFlow, IDMetadataPut, AccountsGet, IDGet, IDPut, IDDelete, MessagesPost, MessagesCreatePost. 반면 AccountsPost 와 MessagesGet 은 하위 오류를 `(nil, err)` 로 전달하므로 그렇게 단언합니다.
    - 허용 필드가 없는 PUT 은 200 이고 Update 가 호출되지 않음: ConversationsIDPut, AccountsIDPut.
    - HooksGet 의 잘못된 ReceivedURI 는 400.
@@ -52,7 +52,7 @@ cmd 의 두 main 은 외부 연결 의존이라 신규 테스트 대상에서 �
 
 - 수기 합계 76% 이상 (목표 77%), 패키지별 전후 표를 PR 본문에 첨부.
 - `go test ./...`, `golangci-lint run`, `scripts/check-test-conventions.sh` 통과, `git diff --stat origin/main...HEAD` 가 bin-conversation-manager/ 안에만 있음.
-- 변이 검사: 패키지별 최소 1곳, 최소 5곳을 scratch 복사본에서 확인하며 새 테스트가 실패해야 합니다. 예: listenhandler 의 400 을 500 으로, messagehandler 의 failed 상태 갱신 제거, 같은 곳의 재조회 제거, accounthandler 의 teardown 호출 제거, linehandler 의 Canceled 오류 삼킴.
+- 변이 검사: 패키지별 최소 1곳, 최소 5곳을 scratch 복사본에서 확인하며 새 테스트가 실패해야 합니다. 예: listenhandler 의 400 을 500 으로, messagehandler 의 failed 상태 갱신 제거, 같은 곳의 재조회 제거, accounthandler.Delete 의 Get 오류 검사 제거(조회 실패 후에도 teardown 과 삭제가 진행됨), linehandler 의 Canceled 오류 삼킴.
 - 결함을 발견하면 고치지 않고 카드 코멘트에만 적음.
 
 ## 5. VOIP-1416
