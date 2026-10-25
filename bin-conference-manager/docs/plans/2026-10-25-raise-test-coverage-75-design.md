@@ -23,7 +23,8 @@
 
 - `TestMain`: `viper.Set("database_dsn", "not-a-valid-dsn")` 후 `config.LoadGlobalConfig()` 한 번. 이후 `os.Exit(m.Run())`.
 - 각 테스트는 쓰는 viper 키를 `old := viper.Get(k)` 로 저장하고 `t.Cleanup` 에서 `viper.Set(k, old)` 로 복원합니다(viper 에 `Unset` 이 없고, 이전 값이 nil 이면 키가 해제된 것으로 동작하며 빈 문자열로 복원하면 `IsSet` 이 참이 되므로 사용하지 않습니다). `viper.Reset` 은 DSN 도 지우므로 사용하지 않습니다.
-- `PersistentPreRunE` 는 직접 호출로 검증합니다(`root.Execute()` 를 쓰면 `SetArgs` 와 `SilenceUsage`/`SilenceErrors` 를 설정). `viper.Set` 은 flag 와 env 보다 우선하고 `LoadGlobalConfig` 는 `once` 라 DSN 이 덮어써지지 않음을 단언합니다.
+- `PersistentPreRunE` 는 직접 호출로만 검증하고 `root.Execute()` 는 쓰지 않습니다. `Execute` 를 쓰면 `BindPFlags` 가 sub 명령의 flag(`id` 등)를 viper 에 묶어 `viper.Set(k, nil)` 로도 해제되지 않고, 복원이 그 값을 override 로 고정해 이후 테스트가 오염되기 때문입니다. 직접 호출은 루트 flag 만 묶으므로 `id`, `type` 같은 키에는 영향이 없고 `-shuffle`, `-count>1` 에서도 안전합니다. 이 호출의 성공(오류 nil)만 단언하며, `TestMain` 이 이미 `LoadGlobalConfig` 를 호출했으므로 DSN 유지 여부는 이 호출의 회귀를 잡지 못하는 약한 단언이라 쓰지 않습니다.
+- `initCommand` 가 `viper.AutomaticEnv()` 를 켜므로 `id`, `type`, `name`, `lang` 같은 키는 환경변수 `ID`, `TYPE`, `NAME`, `LANG` 의 영향을 받습니다. 각 케이스는 읽히는 모든 키(`customer-id`, `id`, `type`, `pre-flow-id`, `post-flow-id`)를 `viper.Set` 으로 명시하고(미사용은 빈 문자열) 환경변수에 의존하지 않습니다.
 - `Test_resolveUUID`: 빈 값(`... is required`), 잘못된 UUID(`invalid format`), 정상 UUID, 오류 메시지에 라벨이 들어가는지.
 - `Test_printJSON`: 정상 값은 nil, 직렬화 불가 값(chan)은 `failed to marshal JSON` 오류.
 - `Test_cmd_constructors`: 12개 `cmd*` 의 `Use`, `RunE` 비-nil, 필수 flag 이름과 기본값(`type=conference`, `format=wav`, `lang=en`, `limit=100`)을 표로 단언.
@@ -37,7 +38,7 @@
 
 ### 2.3 pkg/listenhandler (선택 추가, 기존 `error_paths_test.go` 에 추가, 목표 +20)
 
-`Conference.Data` 에 chan 을 가진 응답을 gomock 핸들러가 반환하게 해 `json.Marshal` 실패에 도달시킵니다. 응답 코드는 라우트마다 다르므로(`errorResponse` 경유 500, 직접 400) 구현 시 라우트별 코드를 `v1_conferences.go`/`v1_conferences_direct_hash.go` 에서 읽어 표로 만들고 그 값을 단언합니다. 확인된 도달 가능 라우트만 다룹니다(list, post, id get, id put, id delete, recording_start/stop, transcribe_start/stop, stop, direct-hash). conferencecalls 와 count 의 Marshal 실패는 도달 불가라 제외합니다.
+`Conference.Data` 에 chan 을 가진 응답을 gomock 핸들러가 반환하게 해 `json.Marshal` 실패에 도달시킵니다. Marshal 실패는 모두 `simpleResponse` 이고 응답 코드는 라우트마다 500 과 400 이 섞여 있으므로 구현 시 라우트별 코드를 `v1_conferences.go`/`v1_conferences_direct_hash.go` 에서 읽어 표로 만들고 그 값을 단언합니다. 확인된 도달 가능 라우트만 다룹니다(conferences 의 Marshal 실패 지점 11개: list, post, id get, id put, id delete, recording_id put, recording_start/stop, transcribe_start/stop, stop 와 direct-hash 1개). conferencecalls 와 count 의 Marshal 실패는 도달 불가라 제외합니다.
 
 ### 2.4 그 밖
 
@@ -45,7 +46,7 @@
 
 ### 2.5 verify 항목과 변이 검사
 
-- 수기 합계 `hw.py` 로 76% 이상(최소 75.0%), 전 패키지 `go test -count=1 -race ./...` 통과, `golangci-lint run -v --timeout 5m` 통과, `scripts/check-test-conventions.sh` 통과, go.mod/go.sum 무변경, `git diff --stat origin/main...HEAD` 가 bin-conference-manager/ 안에만 있음.
+- 측정은 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=<f> ./...` 후 `hw.py <f>` (카드의 측정 방법과 같은 기준)로 하며 76% 이상(최소 75.0%), 전 패키지 `go test -count=1 -race ./...` 통과, `golangci-lint run -v --timeout 5m` 통과, `scripts/check-test-conventions.sh` 통과, go.mod/go.sum 무변경, `git diff --stat origin/main...HEAD` 가 bin-conference-manager/ 안에만 있음.
 - 변이 표본: `resolveUUID` 의 nil 비교 제거, `runCreate` 의 type 검증 제거, `printJSON` 오류 처리 제거, (선택 추가를 구현한 경우) dbhandler `PrepareFields` 오류 반환 제거, listenhandler Marshal 오류 분기 제거를 각각 scratch 복사본에서 적용했을 때 새 테스트가 실패해야 합니다. 오류 문자열 단언이 있어야 변이가 생존하지 않습니다.
 - 금지: 빈 호출 테스트, 자기비교식 테스트, 비밀값 리터럴과 `user:pass@host` 형태 DSN(잘못된 DSN 은 `not-a-valid-dsn` 만 사용).
 - 결함 발견 시 고치지 않고 카드 코멘트와 완료 요약에만 적습니다.
