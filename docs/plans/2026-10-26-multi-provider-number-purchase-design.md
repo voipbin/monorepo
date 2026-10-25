@@ -5,7 +5,7 @@
 origin/main 6bbe6b7fd 기준으로 직접 읽어 확인했습니다.
 
 - 유효(반증 못함): `numberhandler.Create`(`pkg/numberhandler/number.go`)는 구입을 `h.numberHandlerTelnyx.NumberPurchase`로 고정하고, 롤백 release와 태그 갱신도 Telnyx 고정입니다. 반환(`Delete`)만 번호의 `provider_name`으로 분기합니다(telnyx, twilio). provider 설정 테이블 없음(`migrations/`는 `number_numbers` 베이스라인 하나). 열린 PR과 중복 티켓 없음(`gh pr list --state all --search "number provider"`에 무관한 PR만).
-- 확인하지 못했던 것의 결과: Twilio 구입은 구현되어 있지 않습니다(`numberhandlertwilio.CreateNumber`와 `ReleaseNumber`는 "unimplemented" 에러 반환, 검색 `GetAvailableNumbers`만 구현). 따라서 이번 카드의 Twilio는 인터페이스 적합화까지이며 구입 시 항상 실패하여 폴백 대상이 됩니다(기본 비활성). api-manager 어드민 모델은 `hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin)`과 `a.IsDirect()` 거부 패턴입니다(`pkg/servicehandler/provider.go`). 최상위 `/providers`는 이미 route-manager의 SIP 캐리어 리소스이므로 이름 충돌을 피해 `/number_providers`를 씁니다.
+- 확인하지 못했던 것의 결과: Twilio 구입은 구현되어 있지 않습니다(`numberhandlertwilio.CreateNumber`와 `ReleaseNumber`는 "unimplemented" 에러 반환, 검색 `GetAvailableNumbers`만 구현). 따라서 이번 카드의 Twilio는 인터페이스 적합화까지이며 `Purchasable=false`로 구입 후보에서 제외됩니다(기본 비활성). api-manager 어드민 모델은 `hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin)`과 `a.IsDirect()` 거부 패턴입니다(`pkg/servicehandler/provider.go`). 최상위 `/providers`는 이미 route-manager의 SIP 캐리어 리소스이므로 이름 충돌을 피해 `/number_providers`를 씁니다.
 - 틀린 주장: 없음. 단 "ai-manager와 bin-common-handler를 건드리지 않는다"는 암호화 공용화에 대한 지시로 해석합니다. api-manager가 number-manager를 호출하려면 `bin-common-handler/pkg/requesthandler`에 RPC 메서드 추가가 불가피합니다(기존 모든 리소스와 동일한 방식, 암호화 코드는 포함하지 않음).
 - 숨은 가정: (a) Telnyx 주문 성공 후 확인 조회가 실패해도 폴백하면 이중 구입이 됩니다. 5절에서 폴백 중단 조건으로 처리합니다. (b) 구입 후 DB 등록 실패 시 롤백 release는 구입한 provider로 해야 합니다.
 
@@ -69,6 +69,8 @@ CREATE TABLE number_providers (
 
 down은 `DROP TABLE IF EXISTS number_providers`로 데이터를 복원하지 못하므로 첫 줄에 `-- DOWN-LOSSY:`를 씁니다(up은 비파괴이므로 `[DESTRUCTIVE]` 대상 아님). 조회는 항상 컬럼을 명시합니다. 테스트용 sqlite 스키마는 기존 관례대로 `scripts/database_scripts_test/table_number_providers.sql`(디렉터리 전체가 로드됨, `dbhandler/main_test.go`)에 추가합니다. `verify-service-migrations.sh`의 E1은 'Alembic head에 서비스 마이그레이션 적용', E2는 '빈 DB에 서비스 마이그레이션 적용'이며 새 테이블은 양쪽에 모두 생기므로 diff 0이 정상입니다(`E1_ALLOWED_DIFF` 불필요). 기존 데이터가 있는 DB 적용 검증에는 `number_numbers` 행 INSERT를 담은 `EXISTING_ROWS_SQL` 파일을 직접 준비합니다(스크립트 기본값은 다른 서비스용). `docs/schema-ownership.md`와 `bin-number-manager/CLAUDE.md`의 Database Tables 절에 `number_providers`를 추가합니다. `config`는 비밀이 아닌 값만 담으며 API가 비밀 키 이름을 받지 않도록 허용 키를 Descriptor의 `AllowedConfig`로 제한합니다. sqlite 테스트 스키마는 `varbinary` 대신 `blob`을 씁니다.
 
+모델 타입: `UpdatedBy`, `SecretUpdatedBy`는 `*uuid.UUID`(`db:"...,uuid"`), `TMSecretUpdate`와 `TMUpdate`는 `*time.Time`으로 하여 NULL을 저장/조회하고(`databasehandler`는 `uuid.UUID` 값 타입 Nil을 16바이트 0으로 쓰기 때문), 응답 JSON은 `omitempty`입니다. `has_secret`은 DB에 암호문이 있을 때만 true이며 env 소스일 때는 false입니다.
+
 감사: `updated_by`/`tm_update`는 enabled, priority, config 변경의 마지막 변경자와 시각, `secret_updated_by`/`tm_secret_update`는 비밀 변경의 변경자와 시각입니다. 변경마다 info 로그(변경자, provider_name, 바뀐 필드 이름만)를 남깁니다.
 
 ### 영향도 분석 (하드룰 17)
@@ -91,9 +93,9 @@ down은 `DROP TABLE IF EXISTS number_providers`로 데이터를 복원하지 못
 - `requestexternal/telnyx.go`가 `http.Response` 전체를 Debug 로그로 남기는 곳(Authorization 헤더가 노출될 수 있음)을 삭제하고 로그 출력에 헤더가 없다는 테스트를 추가합니다.
 - `Register` 실패 시 롤백 release는 실제로 구입한 provider로 합니다. 롤백 release가 실패하면(예: provider가 release 미구현) error 레벨로 provider와 번호, `ROLLBACK_RELEASE_FAILED`를 남겨 운영 확인 대상으로 합니다. 태그 갱신도 같은 provider입니다. 번호의 `provider_name`에는 실제 구입한 provider 이름이 들어갑니다.
 - `Delete`(반환)는 번호의 `provider_name`으로 레지스트리에서 provider를 해석하되 enabled 여부와 무관하게 자격만 있으면 해석합니다(비활성 provider 번호도 반환 가능). 자격이 없으면 에러(기존과 동일하게 반환 실패). `ProviderNameNone`(virtual)과 알 수 없는 이름의 기존 동작은 유지합니다.
-- `RenewNumbers`(`renew.go`)는 provider를 직접 호출하지 않고 잔액 부족 시 `h.Delete`만 호출하므로(확인함) Delete 규칙을 따릅니다. 단 fail closed로 `Delete`가 실패할 가능성이 커지므로, 현재 `renew.go`에서 삭제 실패에도 `processed++`가 실행되어 실패한 번호가 `tm_renew` 조회에 계속 다시 나와 과금 RPC와 DB 조회가 반복되는 문제를 막습니다: 삭제에 실패한 번호는 처리 건수에 세지 않고 이번 실행의 제외 ID 목록에 넣으며, 다음 페이지 조회는 그 목록을 쿼리에서 제외합니다(`dbListByTMRenew`와 `NumberGetsByTMRenew`에 `excludeIDs []uuid.UUID` 인자를 추가하고 `squirrel.NotEq{id: 바이트}`; 인터페이스와 mock 변경). 조회 한 페이지(100건)가 전부 실패해도 다음 조회가 나머지를 가져오므로 굶지 않으며, 후보가 비면 종료합니다. 100건 초과 실패 케이스를 테스트합니다. `event.go`의 고객 삭제 정리도 `Delete`를 호출합니다.
+- `RenewNumbers`(`renew.go`)는 provider를 직접 호출하지 않고 잔액 부족 시 `h.Delete`만 호출하므로(확인함) Delete 규칙을 따릅니다. 단 fail closed로 `Delete`가 실패할 가능성이 커지므로, 현재 `renew.go`에서 삭제 실패에도 `processed++`가 실행되어 실패한 번호가 `tm_renew` 조회에 계속 다시 나와 과금 RPC와 DB 조회가 반복되는 문제를 막습니다: 삭제에 실패한 번호는 처리 건수에 세지 않고 이번 실행의 제외 ID 목록에 넣으며, 다음 페이지 조회는 그 목록을 쿼리에서 제외합니다(`dbListByTMRenew`와 `NumberGetsByTMRenew`에 `excludeIDs []uuid.UUID` 인자를 추가하고 `squirrel.NotEq{id: 바이트}`; 인터페이스와 mock 변경). 조회 한 페이지(100건)가 전부 실패해도 다음 조회가 나머지를 가져오므로 굶지 않으며, 종료 조건은 '이번 페이지에서 `processed==0`이고 새로 제외된 ID도 0건'으로 바꿉니다(삭제 외의 `continue` 경로인 과금 RPC 오류와 `dbUpdate` 오류는 제외하지 않으며 기존처럼 processed==0이면 종료). `excludeIDs`는 비어 있으면 조건을 붙이지 않고, 여러 건이면 `squirrel.Expr("id NOT IN (?,?,...)")` 형태의 바이트 인자 `NOT IN`을 `Where`로 직접 붙입니다(`ApplyFields` 비경유). 100건 초과 실패 케이스를 테스트합니다. `event.go`의 고객 삭제 정리도 `Delete`를 호출합니다.
 - `cmd/number-control/main.go`도 `NewNumberHandler`를 조립하고 `number delete`가 provider를 호출하므로, 같은 secretcrypto와 providerhandler 조립을 적용하고 키 환경변수는 동일한 `NUMBER_SECRET_ENCRYPTION_KEYS`를 읽습니다. 두 `NewNumberHandler` 시그니처 변경과 mock 재생성이 따릅니다.
-- 검색(`GetAvailableNumbers`, 고객 대상 API)은 telnyx 고정을 유지하되 해석된 telnyx 자격을 씁니다(DB 비밀 반영). 고객 대상 응답은 변경하지 않습니다. 단 telnyx가 db 소스에서 복호화 실패이면 검색도 실패합니다(위 영향 범위).
+- 검색(`GetAvailableNumbers`, 고객 대상 API)은 telnyx 고정을 유지하되 해석된 telnyx 자격을 씁니다(DB 비밀 반영). DB 조회가 필요하므로 `NumberHandler.GetAvailableNumbers`에 `ctx`를 추가하고 listenhandler 호출부, mock, 테스트를 함께 바꿉니다. providerHandler는 `NewNumberHandler`와 `NewListenHandler`(어드민 RPC용)에 각각 주입합니다. 고객 대상 응답은 변경하지 않습니다. 단 telnyx가 db 소스에서 복호화 실패이면 검색도 실패합니다(위 영향 범위).
 - provider 설정은 구입과 반환 시점에 DB에서 읽습니다(호출 빈도가 낮아 Redis 캐시를 두지 않으므로 캐시에 비밀이 남지 않고 어드민 변경이 즉시 반영). 복호화한 비밀은 해당 요청의 Provider 인스턴스 안에만 있고 로그와 에러 메시지에 넣지 않습니다.
 
 ## 6. 비밀값 암호화
@@ -103,7 +105,7 @@ down은 `DROP TABLE IF EXISTS number_providers`로 데이터를 복원하지 못
 - 환경변수 `NUMBER_SECRET_ENCRYPTION_KEYS`: `<버전>:<base64 32바이트>` 쉼표 나열. 최신(최대) 버전으로 암호화하고 행의 `key_version`으로 복호화. 형식 오류, 중복 버전, 버전<=0, 32바이트 아님은 파싱 에러입니다. number-manager는 call-manager 등 통화 경로가 의존하므로 파싱 오류로 부팅 실패시키지 않고 error 로그(원인만, 값 제외) 후 키 없음으로 격하하여 기동합니다(여전히 fail closed: 암호화는 항상 에러이므로 비밀 저장 거부, DB 비밀 복호화 불가, 환경변수 자격으로만 동작). `number-control`은 같은 파서를 쓰되 파싱 오류를 즉시 에러로 반환합니다. 빈 값은 허용(키 없음).
 - 암호화: AES-256-GCM, 12바이트 랜덤 nonce, AAD=provider_name(행 바꿔치기 방지). 저장 형식은 `nonce || ciphertext`를 `secret_ciphertext` 한 컬럼에 담습니다. 평문 상한 1024바이트(바이트 기준).
 - 계정 교체 주의(PUT과 DELETE secret 모두 해당: DELETE는 DB 계정에서 환경변수 계정으로 바꿈): DB 비밀을 다른 계정의 token으로 교체하면 이전 계정에서 구입한 번호의 반환(`Delete`)이 실패하므로 기존 번호가 있는 provider의 계정 교체는 금지하고(강제하지 않음: 같은 계정의 token을 DB로 옮기는 정상 이전 경로를 막지 않기 위해 문서 경고로 둠) `docs/operations.md`에 적습니다. `number-control`은 `migrate up` 선행이 필요합니다(없으면 provider 조회 실패, fail closed). 키 파서 에러 메시지는 `ai-manager/secret.go`처럼 키 항목을 `%q`로 찍지 않고 값 제외를 테스트로 단언합니다. `ErrPurchaseUnconfirmed` 로그에도 `PURCHASE_UNCONFIRMED` 고정 마커를 둡니다.
-- 모델 `Provider.SecretCiphertext []byte`는 `json:"-"`. 조회 응답은 `has_secret`, `key_version`만 노출. 에러 메시지와 로그에 평문, 암호문, 키를 넣지 않습니다. 이벤트는 발행하지 않습니다(provider 설정은 이벤트 대상이 아님). Config 설정 로그(`logStartup`)에 신규 키를 출력하지 않습니다.
+- 모델 `Provider.SecretCiphertext []byte`는 `json:"-"`. 조회 응답은 `has_secret`, `key_version`만 노출. 에러 메시지와 로그에 평문, 암호문, 키를 넣지 않습니다. 이벤트는 발행하지 않습니다(provider 설정은 이벤트 대상이 아님). Config 설정 로그(`logStartup`)에 신규 키를 출력하지 않으며 `cmd/number-manager/startup_log_test.go`의 필드 분류에서 `NumberSecretEncryptionKeys`를 `secrets`에 추가합니다. 비밀 PUT과 행 조회의 DB/내부 암호화 오류는 500으로 응답합니다(검증 400, 미설정 503, 없음 404).
 - 키 교체 절차(재암호화 배치 불필요 판단 근거: 행이 provider 종류 수뿐이고 비밀은 어드민이 가진 외부 값을 다시 입력하면 되며, 서버가 평문을 일괄로 다루는 경로를 만드는 것이 오히려 노출면을 키움): (1) 새 버전을 목록에 추가하고 이전 버전을 유지하여 배포, (2) 어드민이 provider별로 비밀을 다시 입력(새 버전으로 재암호화, 응답의 `key_version`으로 확인), (3) 모든 provider의 key_version이 최신인 것을 확인한 뒤 이전 버전을 제거. 이전 버전을 먼저 빼면 그 행은 복호화되지 않아 provider가 사용 불가가 되고(환경변수 폴백 없음) 로그에 provider_name과 key_version이 남습니다. 절차는 `docs/operations.md`에 문서화합니다.
 
 ## 7. 어드민 API
@@ -114,13 +116,13 @@ number-manager RPC (listenhandler, 모두 `/v1/number_providers...`):
 |---|---|---|
 | GET | `/v1/number_providers` | 레지스트리의 모든 provider 해석 결과 목록(행이 없어도 기본값으로 표시) |
 | GET | `/v1/number_providers/{name}` | 단건 |
-| PUT | `/v1/number_providers/{name}` | `enabled`, `priority`, `config` 부분 갱신(포인터 필드, 행이 없으면 레지스트리 기본값으로 생성, `config`는 키 단위 병합이며 값이 빈 문자열이면 그 키 삭제. 단 병합 결과가 db 소스 행의 RequiredConfig를 깨뜨려 usable이 아니게 되면 400으로 거부), 요청에 `actor_id` |
-| PUT | `/v1/number_providers/{name}/secret` | 비밀 쓰기 전용(`secret`, `actor_id`). 키 없음이면 거부, 행의 config가 RequiredConfig를 충족하지 않아 usable이 되지 않으면 거부(먼저 PUT `{name}`으로 config 입력). 행이 없으면 레지스트리 기본값으로 생성 |
+| PUT | `/v1/number_providers/{name}` | `enabled`, `priority`, `config` 부분 갱신(포인터 필드, 행이 없으면 레지스트리 기본값으로 생성, `config`는 키 단위 병합이며 값이 빈 문자열이면 그 키 삭제. 단 행의 소스가 db(암호문 있음)이고 병합 결과가 RequiredConfig를 깨뜨리면 enabled 여부와 무관하게 400으로 거부), 요청에 `actor_id` |
+| PUT | `/v1/number_providers/{name}/secret` | 비밀 쓰기 전용(`secret`, `actor_id`). 키 없음이면 거부, 행의 config가 RequiredConfig를 충족하지 않으면 거부(enabled 여부와 무관: 비활성 provider에도 비밀과 config를 먼저 입력할 수 있음)(먼저 PUT `{name}`으로 config 입력). 행이 없으면 레지스트리 기본값으로 생성 |
 | DELETE | `/v1/number_providers/{name}/secret` | DB 비밀 삭제(환경변수 소스로 복귀, 복구용, `actor_id`). 행이 없으면 404 |
 
 쓰기 방식: 행 보장은 insert-if-absent로 합니다. 방식은 저장소 선례(`bin-agent-manager/pkg/dbhandler/agent_address.go`)와 같이 평범한 INSERT(레지스트리 기본값, `tm_create` 포함) 후 MySQL 1062 또는 sqlite `UNIQUE constraint failed`를 중복으로 보고 성공 처리합니다(엔진 전용 문법 `INSERT IGNORE`, `OR IGNORE`, `ON CONFLICT`는 쓰지 않음). 그 뒤 변경된 컬럼만 UPDATE하며 비밀 PUT은 `secret_ciphertext`, `key_version`, `secret_updated_by`, `tm_secret_update`를 하나의 UPDATE로 씁니다. 전체 행 덮어쓰기 금지 및 같은 취지로(병행 호출이 서로의 컬럼을 지우지 않음). config 키 병합만 읽기-수정-쓰기이며 동시에 같은 provider config를 바꾸는 어드민은 마지막 쓰기가 이기고 이를 문서화합니다. 행 조회의 DB 오류는 기본값으로 취급하지 않고 요청을 실패시킵니다.
 
-**로그 마스킹(필수)**: `listenhandler/main.go`의 공통 요청 로그(`data` Debug 필드)와 에러 경로, 각 `processV1*`의 `"request": m` 로그는 본문을 기록하므로 `processRequest`는 원본 `m`을 핸들러에 그대로 넘기고(그렇지 않으면 비밀 PUT이 `[REDACTED]`를 파싱함), 로그에는 `Data`를 `[REDACTED]`로 치환한 사본 `logM`만 씁니다(`/secret` URI 한정: `main.go`의 `data` 필드와 에러 경로, 비밀 핸들러의 `"request"` 필드와 unmarshal 실패 로그). 비밀 핸들러는 `(ctx, m, logM)`을 받으며 `m.Data`를 로그에 직접 쓰지 않습니다. 테스트는 비밀이 실제로 저장(암호화 호출에 평문이 전달)되는 동시에 로그 hook 출력에 평문이 없음을 한 케이스에서 단언하며, 로그 hook으로 캡처해 평문이 나타나지 않는다는 테스트를 둡니다.
+**로그 마스킹(필수)**: `listenhandler/main.go`의 공통 요청 로그(`data` Debug 필드)와 에러 경로, 각 `processV1*`의 `"request": m` 로그는 본문을 기록하므로 `processRequest`는 원본 `m`을 핸들러에 그대로 넘기고(그렇지 않으면 비밀 PUT이 `[REDACTED]`를 파싱함), 로그에는 `Data`를 `[REDACTED]`로 치환한 사본 `logM`만 씁니다(마스킹 판정은 라우팅 정규식과 독립으로 URI가 `/secret`으로 끝나거나 `/v1/number_providers`로 시작하는지로 하며 대소문자 변형과 잘못된 메서드, notfound 분기도 포함. 다음은 `/secret` 대상 로그 지점: `main.go`의 `data` 필드와 에러 경로, 비밀 핸들러의 `"request"` 필드와 unmarshal 실패 로그). 비밀 핸들러는 `(ctx, m, logM)`을 받으며 `m.Data`를 로그에 직접 쓰지 않습니다. 테스트는 비밀이 실제로 저장(암호화 호출에 평문이 전달)되는 동시에 로그 hook 출력에 평문이 없음을 한 케이스에서 단언하며, 로그 hook으로 캡처해 평문이 나타나지 않는다는 테스트를 둡니다.
 
 listenhandler 정규식은 `^`/`$` 앵커를 두고(`/v1/number_providers$`, `/v1/number_providers/<name>$`, `/v1/number_providers/<name>/secret$`) 서로 겹치지 않게 합니다. `{name}`은 소문자 영숫자 `[a-z0-9_]{1,32}`.
 
