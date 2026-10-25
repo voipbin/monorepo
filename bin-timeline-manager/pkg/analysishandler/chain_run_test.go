@@ -510,7 +510,7 @@ func Test_buildFinalVerdict_issues_and_enrichment(t *testing.T) {
 	}
 }
 
-func Test_prompt_data_builders_error_signals(t *testing.T) {
+func Test_buildCombinedData_error_signals(t *testing.T) {
 	h := &analysisHandler{}
 	input := &collectedInput{
 		events: []*canonicalEvent{
@@ -552,6 +552,35 @@ func Test_prompt_data_builders_error_signals(t *testing.T) {
 	}
 	if _, ok := combined["context"]; !ok {
 		t.Errorf("Wrong match. expect: a context block, got: none")
+	}
+}
+
+func Test_buildStage3Data_error_signals(t *testing.T) {
+	h := &analysisHandler{}
+	input := &collectedInput{
+		events: []*canonicalEvent{
+			{Index: 0, EventType: "call_created", Publisher: "call-manager", Timestamp: "t0", Summary: "up"},
+			{Index: 1, EventType: "call_hangup", Publisher: "call-manager", Timestamp: "t1", Summary: "down"},
+		},
+		inventory:    []resourceCount{{Type: "call-manager", Count: 2}},
+		errorSignals: []*canonicalEvent{{Index: 1, EventType: "call_hangup", Publisher: "call-manager", Timestamp: "t1", Summary: "down"}},
+		transcripts:  []string{"[in] hi"},
+	}
+	decode := func(b json.RawMessage) map[string]json.RawMessage {
+		t.Helper()
+		var doc map[string]json.RawMessage
+		if err := json.Unmarshal(b, &doc); err != nil {
+			t.Fatalf("could not parse the payload. err: %v", err)
+		}
+		return doc
+	}
+	asString := func(raw json.RawMessage) string {
+		t.Helper()
+		var s string
+		if err := json.Unmarshal(raw, &s); err != nil {
+			t.Fatalf("could not parse a string field. err: %v", err)
+		}
+		return s
 	}
 
 	stage3 := decode(h.buildStage3Data(json.RawMessage(`{"s":1}`), json.RawMessage(`{"s":2}`), input, nil))
