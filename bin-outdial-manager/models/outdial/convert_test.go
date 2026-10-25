@@ -83,3 +83,25 @@ func TestConvertStringMapToFieldMap_UUIDConversion(t *testing.T) {
 		t.Error("Expected 'id' field in result")
 	}
 }
+
+func Test_ConvertStringMapToFieldMap_Errors(t *testing.T) {
+	t.Run("a known key with a value that is not a uuid", func(t *testing.T) {
+		res, err := ConvertStringMapToFieldMap(map[string]any{"campaign_id": "not-a-uuid"})
+		if err == nil {
+			t.Errorf("expected an error, got nil and %v", res)
+		}
+		if res != nil {
+			t.Errorf("expected no result with an error, got %v", res)
+		}
+	})
+
+	t.Run("an unknown key is passed through unchanged", func(t *testing.T) {
+		res, err := ConvertStringMapToFieldMap(map[string]any{"unknown_key": "x"})
+		if err != nil {
+			t.Fatalf("expected no error, got: %v", err)
+		}
+		if got, ok := res[Field("unknown_key")]; !ok || got != "x" {
+			t.Errorf("expected the unknown key with its value, got: %v", res)
+		}
+	})
+}
