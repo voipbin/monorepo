@@ -86,3 +86,24 @@ Run 실패 경로 시험의 주의: 점유 리스너는 `t.Cleanup` 으로 닫�
 - 변이 표본(scratch 복사본에서만): Run 의 Listen 오류 wrap 문구 변경, Output 의 audioErrors 500 한계 제거, receiveMessageFrameTypeMessage 의 unmarshal 오류 반환 제거, Output 의 CloseMessage `return nil` 제거(457-458행), Output 의 오디오 오류 카운터 리셋(`audioErrors = 0`) 제거, pythonrunner Stop 의 non-200 이 아닌 200 성공 반환 조건 변경, Stop 오류 시 `sessionDelete` 건너뛰는 변이, startReferenceTypeAIcall 의 `sessionDelete` 제거 각각에서 새 테스트가 실패함을 확인합니다.
 - 최종 측정에서 `go test -v -run Test_Run_listenFailure ./pkg/httphandler/` 로 skip 없이 PASS 임을 확인합니다(skip 되면 52 statement 가 조용히 빠지므로 목표 달성 판정에 포함하지 않습니다). 점유 리스너는 `-count` 반복마다 닫혀야 합니다.
 - `git diff --stat origin/main...HEAD` 가 bin-pipecat-manager/ 안의 `_test.go` 와 이 문서만 포함.
+
+## 4. 구현 결과
+
+수기 합계 71.60% (1727/2412) → 77.03% (1858/2412), 원본 65.12% → 69.79%. 측정은 `GOFLAGS=-mod=mod go test -count=1 -coverprofile` 이며 `go mod tidy` 후 go.mod/go.sum 변경은 없습니다.
+
+| 패키지 | 전 | 후 |
+|---|---|---|
+| cmd/pipecat-control | 0.0% | 0.0% |
+| cmd/pipecat-manager | 0.8% | 0.8% |
+| internal/config | 95.5% | 95.5% |
+| internal/logtest | 98.0% | 98.0% |
+| models/message | 100.0% | 100.0% |
+| models/pipecatcall | 81.0% | 81.0% |
+| pkg/cachehandler | 0.0% | 0.0% |
+| pkg/dbhandler | 90.8% | 90.8% |
+| pkg/httphandler | 40.8% | 93.9% |
+| pkg/listenhandler | 96.0% | 96.0% |
+| pkg/pipecatcallhandler | 88.5% | 94.4% |
+| pkg/toolhandler | 100.0% | 100.0% |
+
+변이 표본(별도 scratch worktree에서만 적용): Run 의 listen 오류 문구, 오디오 오류 한계 500, 오디오 오류 카운터 리셋, Output 의 CloseMessage 반환, user-transcription unmarshal 오류 반환, 비최종 user-transcription 필터, AIcall Call 분기와 Call 경로의 sessionDelete, pythonrunner Stop 의 200 판정, SessionStop 의 드롭 프레임 경고 조건, 토큰 채널 가득 참 경고 11건 모두에서 새 테스트가 실패했습니다.
