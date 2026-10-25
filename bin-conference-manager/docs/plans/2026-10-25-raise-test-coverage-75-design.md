@@ -51,3 +51,7 @@
 - 테스트 값은 `docs/conventions/testing.md` 의 규칙대로 하드코딩된 UUID 문자열을 쓰고 `uuid.Nil`/`uuid.NewV4()` 로 만든 값을 기대값으로 쓰지 않습니다. `scripts/check-test-conventions.sh` 는 `git fetch origin main` 후 실행합니다.
 - 금지: 빈 호출 테스트, 자기비교식 테스트, 비밀값 리터럴과 `user:pass@host` 형태 DSN(잘못된 DSN 은 `not-a-valid-dsn` 만 사용).
 - 결함 발견 시 고치지 않고 카드 코멘트와 완료 요약에만 적습니다.
+
+## 3. 결과
+
+수기 합계 71.76% (1959/2730) 에서 85.05% (2322/2730) 로 올랐고 원본은 63.56% 에서 75.34% 입니다. 패키지별(수기, 전 -> 후): cmd/conference-control 0.0 -> 65.5, pkg/dbhandler 89.9 -> 91.1, pkg/listenhandler 93.7 -> 97.9, 나머지 변화 없음. 구현은 2.1 전체와 2.2/2.3 의 도달 가능 분기 일부입니다. 변이 표본 7건(resolveUUID 두 검사, runCreate type 검증, printJSON 오류, type flag 기본값, dbhandler PrepareFields 오류, listenhandler get Marshal 오류)은 모두 새 테스트가 실패했습니다.
