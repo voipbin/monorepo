@@ -1,0 +1,85 @@
+# 2026-10-25 bin-pipecat-manager 단위 테스트 커버리지 75% 설계 (VOIP-1652)
+
+## 1. 티켓 검토 (이슈 분석)
+
+판정: 유효. origin/main accc03e00 에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` 를 직접 실행해 카드 수치와 일치함을 확인했습니다(테스트 실패 0건, go.mod/go.sum 변경 없음).
+
+- 수기 코드 71.60% (1727/2412 statement), 생성 코드와 mock 을 포함한 원본 65.12%.
+- 제외 방법: `gens/` 경로, `mock_*.go`, 헤더에 `Code generated` 와 `DO NOT EDIT` 가 있는 파일(frames.pb.go)을 빼고, 같은 블록의 중복은 최대 count 로 합칩니다.
+- 75.0% 는 1809 statement(+82), 권장 76% 는 올림하여 1834 statement(2412 x 0.76 = 1833.12, +107)입니다. 목표는 +107 statement 이상입니다. 측정 기준 커밋 accc03e00 은 이 브랜치의 기반 HEAD 와 같습니다.
+- 최근 변경 확인(`git log -- bin-pipecat-manager` 에서 6cccb1194 VOIP-1647, eed0006ba VOIP-1649 확인): 이 서비스는 VOIP-1647(60%)과 VOIP-1649(70%)로 이미 두 차례 올렸고 열린 중복 PR 은 없습니다(`gh pr list --state open --search pipecat` 2026-10-25 조회: Python 의존성 bump 두 건뿐). 카드 전제를 바꾸는 변경은 없습니다.
+
+패키지별 기준선(수기 statement 기준이며 `go test` 출력의 원본 기준 퍼센트와 다릅니다. models/pipecatframe 는 생성 코드, internal/logpolicy 와 migrations 와 listenhandler/models/request 는 statement 가 없어 표에서 뺐습니다):
+
+| 패키지 | statement | 미커버 | 커버리지 |
+|---|---|---|---|
+| cmd/pipecat-control | 268 | 268 | 0.0% (CLI main) |
+| cmd/pipecat-manager | 128 | 127 | 0.8% (main) |
+| internal/config | 88 | 4 | 95.5% |
+| internal/logtest | 49 | 1 | 98.0% |
+| models/message | 3 | 0 | 100.0% |
+| models/pipecatcall | 21 | 4 | 81.0% |
+| pkg/cachehandler | 50 | 50 | 0.0% (redis 의존) |
+| pkg/dbhandler | 130 | 12 | 90.8% |
+| pkg/httphandler | 98 | 58 | 40.8% |
+| pkg/listenhandler | 198 | 8 | 96.0% |
+| pkg/pipecatcallhandler | 1332 | 153 | 88.5% |
+| pkg/toolhandler | 47 | 0 | 100.0% |
+| 합계 | 2412 | 685 | 71.60% |
+
+미커버 구조 분석(실제 코드를 읽어 확인):
+
+- cmd/pipecat-control(268), cmd/pipecat-manager(128) 는 main 과 외부 연결(RabbitMQ, DB, Redis) 초기화라 단위 테스트를 쓰지 않습니다(합계 396 statement, 미커버 395). 수기 합계의 분모에는 그대로 남기며 분모에서 빼지 않습니다.
+- pkg/httphandler.Run: gin 라우터를 만들고 고정 주소 `localhost:8001` 에 listen 한 뒤 고루틴에서 Serve 합니다. 현재 테스트는 라우트를 테스트가 다시 등록해 핸들러만 검증하므로 Run 의 라우트 등록과 listen 실패 처리는 미커버입니다. loopback 고정 포트이므로 외부 네트워크 의존은 없습니다. 이 한 함수가 58 statement 입니다(coverprofile 의 블록 크기 기준). 분해: Listen 호출까지의 라우터 구성과 서버 생성 50, Listen 실패 분기 2, 고루틴과 반환 6 입니다. 포트가 상수라 테스트가 바꿀 수 없고 서버 핸들이 저장되지 않아 종료할 수 없으므로, 성공 경로는 호출하지 않고(listener 가 프로세스 끝까지 남음) 실패 경로만 시험합니다. 테스트가 같은 주소를 먼저 점유한 뒤 Run 을 호출하면 Listen 실패가 결정적으로 발생해 50+2=52 statement 가 커버됩니다. 점유는 Go 의 `localhost` listen 과 같은 IPv4 `127.0.0.1:8001` 로 시도하며, 점유가 이미 사용 중(EADDRINUSE)으로 실패하면 Run 의 Listen 도 똑같이 실패하므로 skip 하지 않고 오류 반환을 단언합니다. 이 경로는 라우터 구성까지만 실행하므로 라우트가 실제로 서빙되는지는 검증하지 못하며, 그 한계를 테스트 주석에 적습니다.
+- pkg/pipecatcallhandler/start.go (미커버 59): Start 의 성공 반환(83행), startReferenceTypeCall 의 세션 생성 실패(106행)와 external media 중단 실패 로그(136행)와 연결 성공 처리(141-145행), 성공 경로 말미(167-182행, 미디어 핸들러와 수명주기 모니터 고루틴), startReferenceTypeAIcall 의 `ReferenceTypeCall` 분기 245-313행(40 statement: 실패 경로 245-275행과 284-287행 약 20, 연결 성공 276-280행 8, 대기 이후 291-295행 4, 미디어 핸들러와 모니터 고루틴 298-313행 8). `default:` 분기(315-327행)와 LLM 키 해석 실패 분기는 이미 커버되어 있습니다. 모두 requestHandler 와 websocketHandler 가 인터페이스로 mock 가능합니다.
+- pkg/pipecatcallhandler/runner.go (미커버 55): RunnerWebsocketHandleOutput(65.7%)의 Upgrade 실패, 조회 실패, protobuf 해제 실패, 오디오 오류 누적 한계, 알 수 없는 프레임과 메시지 종류. runnerWebsocketHandleInputReceiver(75%)의 텍스트와 종료와 알 수 없는 종류. receiveMessageFrameTypeMessage(81.4%)의 일부 오류 분기.
+- pkg/cachehandler 는 redis 클라이언트를 직접 생성해 miniredis 가 필요합니다. 이 서비스 go.mod 에 miniredis 가 없고 go.mod/go.sum 변경이 따르므로, 아래 예산이 모자랄 때만 쓰는 예비입니다(미사용이 기본).
+- 테스트하기 어려운 구조: websocket 과 고루틴이 얽힌 start 성공 경로입니다. websocketHandler 와 pythonRunner 가 mock 가능한 인터페이스라 mock 의 완료 신호 채널로 고루틴 종료를 기다리는 방식이면 제품 코드 변경 없이 결정적으로 시험할 수 있다고 판단합니다. 시그니처나 노출 범위를 바꿀 필요는 없습니다.
+
+VOIP-1416 과의 겹침: 이 서비스에서 80% 미만인 패키지(httphandler, cachehandler, cmd)와 겹칩니다. PR 본문에 명시만 하고 흡수하지 않습니다.
+
+함수별 근거(`go tool cover -func` 기준): startReferenceTypeCall 68.4%, startReferenceTypeAIcall 51.2%, RunnerWebsocketHandleOutput 65.7%, runnerWebsocketHandleInputReceiver 75.0%, receiveMessageFrameTypeMessage 81.4%, httphandler.Run 0.0%.
+
+예산(미커버 statement 기준, 어려운 고루틴 경로를 뺀 쉬운 항목만 계산):
+
+| 항목 | 예상 증가 |
+|---|---|
+| httphandler.Run 실패 경로 | 52 |
+| runner.go: Output 의 Upgrade/조회 실패, protobuf 해제 실패, 알 수 없는 프레임과 메시지 종류, InputReceiver 의 종류별 분기, runnerStartScript 와 receiveMessageFrameTypeMessage 의 오류 분기 | 약 35 |
+| start.go 실패 경로: 106행 세션 생성 실패, 136행 orphan external media 중단 실패 로그, AIcall Call 분기 external media 시작 실패와 websocket 연결 실패 | 약 22 |
+| session.go SessionStop 오류 분기, pythonrunner.go 오류 분기, audiosocket.go, pipecatframe.go 의 미커버 오류 분기 | 약 20 |
+| 소계 | 약 129 |
+
+소계 129 로 필요량 107 을 넘고 여유는 약 22 입니다. httphandler.Run 실패 경로는 포트 상태와 무관하게 결정적입니다: 테스트가 점유하든, 다른 프로세스가 이미 점유하고 있든 Listen 은 실패하고 Run 이 오류를 반환하므로 `t.Skip` 을 쓰지 않고 오류 반환을 단언합니다(점유가 실패해도 같은 결과이므로 52 statement 는 확정).
+
+추가 여유(성공 꼬리, 약 36): 141-145행 8, 167-182행 8, 276-280행 8, 291-295행 4, 298-313행 8 입니다. 이 경로는 사전 조건이 많아 예산에 넣지 않았고, 필요할 때만 씁니다. 요건: (1) websocketAsteriskConnect 가 DialContext 결과에 `SetReadDeadline` 을 호출하고 SessionStop 이 `ConnAst.Close()` 를 부르므로 nil 이 아닌 실제 연결이 필요합니다(기존 `dialTestServer` 로 httptest websocket 서버에 접속). (2) runAsteriskReceivedMediaHandle 은 `ReadMessage` 를 반복 호출하고 종료 시 ConnAstDone 을 닫으므로 websocketAsteriskConnect 가 MEDIA_START 를 읽기 위해 ReadMessage 를 먼저 한 번 부르므로(`TextMessage` 를 반환해야 함) 첫 호출은 TextMessage, 이후 runAsteriskReceivedMediaHandle 의 호출은 오류를 반환하도록 순서를 두고 호출 종료를 기다려야 합니다. (3) 협력 객체는 흐름에 따라 다릅니다. Call 참조: RunnerStart 의 toolHandler.GetByNames 와 pythonRunner.Start(오류 반환으로 즉시 종료), terminate 의 CallV1CallGet(진행 중이 아니면 external media 중단 없음), notifyHandler.PublishEvent, SessionStop 의 pythonRunner.Stop. AICall 참조의 Call 분기: RunnerStart 가 AIV1AIcallGet, resolveTeamForPython, resolveAIFromAIcall, AIV1AIcallToolList 를 거치고, terminate 가 terminateReferenceTypeAICall 로 가서 AIV1AIcallGet 과 CallV1ExternalMediaStop 을 부릅니다. 호출마다 완료 신호 채널을 두고 모든 고루틴의 마지막 mock 호출을 기다린 뒤 종료해야 mc.Finish 이후 호출이 없습니다. 이 요건을 안정적으로 충족하지 못하면 쓰지 않고 부족분은 cmd/pipecat-control 의 순수 함수나 cachehandler(miniredis) 예비로 채웁니다.
+
+Run 실패 경로 시험의 주의: 점유 리스너는 `t.Cleanup` 으로 닫고, 점유 실패 원인이 EADDRINUSE 가 아니면(예: 권한) Run 의 결과를 예측할 수 없고 성공하면 리스너를 남기므로 그 경우에 한해 Run 을 호출하지 않고 skip 합니다(환경 이상일 때만이며 일반 CI 에서는 발생하지 않음). Go 코드에서 8001 을 listen 하는 곳은 이 상수 하나뿐입니다. VOIP-1647 은 고정 포트 listen 을 이유로 Run 을 제외했으나, 이번에는 서버를 남기지 않는 실패 경로만 시험하는 것으로 입장을 바꿉니다. Run 52 가 예산의 절반이므로 이 시험이 막히면 목표가 줄어드는 위험이 있고, 그 경우 위 예비를 씁니다. 모든 statement 수는 go.mod 가 지정한 툴체인의 coverprofile 기준이며(한 문장짜리 블록을 10 으로 세는 경우가 있음), 기준선 실행의 테스트 실패 0건과 go.mod/go.sum 무변경은 이 문서 작성자가 직접 실행한 결과입니다.
+
+반증하지 못한 주장: 카드의 모든 수치와 제외 방법. 틀린 주장: 없음(재검토 과정에서 문서의 76% 필요 statement 1833 을 1834 로, start.go 미커버 서술을 실제 위치로 정정).
+
+## 2. 계획
+
+기준: 브랜치 기반 accc03e00. 제품 코드는 바꾸지 않고 `_test.go` 만 추가합니다. 새 테스트 이름은 `Test_` 로 시작하고 gomock 컨트롤러는 `mc`, testify 는 쓰지 않습니다. 목표는 수기 합계 76.04% 이상(1834 statement, +107)이며 실제 증가량은 구현 후 coverprofile 로 측정해 보고합니다. 설계 단계라 테스트 코드는 쓰지 않고 verify 항목만 적습니다.
+
+1. pkg/httphandler/main_test.go (기존 파일에 추가, +52): `Test_Run_listenFailure`. 테스트가 `127.0.0.1:8001` 을 먼저 점유하고(`t.Cleanup` 으로 닫음) `Run()` 을 호출해 오류가 반환되고 메시지에 `failed to listen on localhost:8001` 이 포함됨을 단언합니다. 점유 실패 원인이 EADDRINUSE 이면 그대로 Run 오류를 단언하고, 그 외 원인이면 skip 합니다(1절 설명 참조). 성공 경로는 서버를 종료할 수 없어 호출하지 않으며, 이 시험은 라우트가 실제로 서빙되는지 검증하지 못한다는 한계를 주석에 적습니다.
+2. pkg/pipecatcallhandler/runner_output_test.go (신규, runner.go 약 +35). 기존 `Test_logPolicy_RunnerWebsocketHandleOutput_frames` 와 겹치지 않는 분기만:
+   - RunnerWebsocketHandleOutput: Upgrade 실패(372-373행), 조회(`db.PipecatcallGet`) 실패(382-383행), 오디오 프레임 처리 오류가 첫 회와 이후 회에 계속되어도 루프가 이어지고 연속 오류가 500 을 넘으면 nil 을 반환(413-424행 주변), 오디오 성공 시 오류 카운터 리셋, 알 수 없는 프레임 종류, Frame_Message 처리 오류 로그 후 계속(429-439행), protobuf 해제 실패 후 계속(400-402행), CloseMessage 반환(457-458행), Ping/Pong/알 수 없는 메시지 종류(465-469행). 각 케이스는 mock 의 ReadMessage 순서와 이후 mock 호출(PublishEvent 의 `EventTypeInitialized` 인자)을 정확한 값으로 단언하고, 반환값(nil)과 소비한 메시지 수를 확인합니다.
+   - runnerWebsocketHandleInputReceiver: Text/Close/Pong/알 수 없는 종류(338-348행). 반환 시점(Close 에서 반환, 읽기 오류에서 반환)을 호출 횟수로 단언합니다.
+   - RunnerWebsocketHandleInput 의 Upgrade 실패(284-285행).
+3. pkg/pipecatcallhandler/runner_message_test.go (신규): receiveMessageFrameTypeMessage 의 타입별 unmarshal 실패(611-655행 중 오류 분기), 알 수 없는 label, 알 수 없는 RTVI type 은 오류가 아닌 nil 반환. 기존 `Test_receiveMessageFrameTypeMessage` 에 있는 케이스와 겹치지 않게 추가하며 반환 오류 메시지의 접두어를 정확히 단언합니다.
+4. pkg/pipecatcallhandler/start_aicall_test.go (신규, start.go 약 +22): 
+   - startReferenceTypeCall 의 세션 생성 실패(106행): 같은 id 세션을 미리 넣어 `SessionCreate` 가 실패하게 하고 외부 호출이 없음을 확인.
+   - orphan external media 중단 실패 로그(136행): DialContext 실패 후 `CallV1ExternalMediaStop` 도 오류를 반환해도 시작 오류가 `asterisk setup failed` 로 반환되고 세션이 삭제됨을 단언.
+   - startReferenceTypeAIcall 의 `ReferenceTypeCall` 분기: external media 시작 실패(245-275행), websocket 연결 실패와 정리(284-287행). 두 경우 모두 반환 오류 문구와 세션 삭제를 단언합니다.
+5. pkg/pipecatcallhandler 여유(약 +20): SessionStop 의 오류 분기(session.go 110-111 의 python Stop 오류 로그, 132-161 의 ConnAst 종료 경합과 닫기 오류), NewAudiosocketHandler/NewPipecatframeHandler/NewPythonRunner/NewPipecatcallHandler 가 실제로 의존성을 연결하는지(구성된 필드가 비어 있지 않음). 값을 단순 비교하는 빈 호출은 쓰지 않습니다. 이 항목은 1-4번 실측 후 부족분만 채웁니다.
+6. 예비(1-5번으로 +107 이 안 되면): (a) start.go 성공 꼬리(1절 요건 충족 시, 약 36), (b) cmd/pipecat-control 의 resolveUUID 와 printJSON(각각 몇 statement 에 불과해 효과 작음), (c) cachehandler + miniredis(약 +50, go.mod/go.sum 변경이 필요하고 같은 버전이 이미 다른 서비스에 있음을 확인해야 함). 선택 기준은 제품 코드 무변경과 결정성이 확실한 (a) 우선, 그다음 효과가 큰 (c), (b)는 마지막입니다.
+
+## 3. verify 항목
+
+- 모든 단언은 기대값을 독립적으로 적고 반환 오류 문구, 상태, mock 호출 인자를 확인합니다. 자기비교와 빈 호출 금지.
+- CLAUDE.md 5단계(go mod tidy, vendor, generate, test, golangci-lint) 통과, go.mod/go.sum 변경 없음(예비 (c) 를 쓰는 경우에만 예외로 보고). `go test -race -count=1 ./...` 와 `-count` 반복 실행 통과.
+- 수기 합계 76% 이상을 `GOFLAGS=-mod=mod go test -count=1 -coverprofile` 과 hw.py 방식으로 실측해 패키지별 전후 표를 PR 본문에 적습니다.
+- `scripts/check-test-conventions.sh` 통과(`git fetch origin main` 선행).
+- 변이 표본(scratch 복사본에서만): Run 의 Listen 오류 wrap 문구 변경, Output 의 audioErrors 500 한계 제거, receiveMessageFrameTypeMessage 의 unmarshal 오류 반환 제거, startReferenceTypeAIcall 의 `sessionDelete` 제거 각각에서 새 테스트가 실패함을 확인합니다.
+- `git diff --stat origin/main...HEAD` 가 bin-pipecat-manager/ 안의 `_test.go` 와 이 문서만 포함.
