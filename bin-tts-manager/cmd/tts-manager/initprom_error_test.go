@@ -65,7 +65,18 @@ func withCapturingHook(t *testing.T) *capturingHook {
 	t.Helper()
 
 	stdLogger := logrus.StandardLogger()
+	// logrus.LevelHooks is a map; stdLogger.Hooks shares the same underlying
+	// map with any alias, and AddHook mutates it in place. A shallow copy of
+	// the map header would therefore "restore" the very map this test just
+	// mutated. Swap in a deep copy before adding the hook, and keep the
+	// original (untouched) map to restore in cleanup.
 	original := stdLogger.Hooks
+	deepCopy := make(logrus.LevelHooks, len(original))
+	for level, hooks := range original {
+		deepCopy[level] = append([]logrus.Hook(nil), hooks...)
+	}
+	stdLogger.ReplaceHooks(deepCopy)
+
 	hook := &capturingHook{}
 	stdLogger.AddHook(hook)
 	t.Cleanup(func() {

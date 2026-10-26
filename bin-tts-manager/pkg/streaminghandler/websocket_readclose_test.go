@@ -48,8 +48,16 @@ func Test_runWebSocketRead_normalCloseIsLoggedAsDebugNotError(t *testing.T) {
 
 	stdLogger := logrus.StandardLogger()
 	originalLevel := stdLogger.GetLevel()
+	// logrus.LevelHooks is a map; a shallow copy aliases the same map that
+	// AddHook mutates in place, which would make ReplaceHooks(originalHooks)
+	// a no-op. Deep-copy before adding this test's hook.
 	originalHooks := stdLogger.Hooks
+	deepCopy := make(logrus.LevelHooks, len(originalHooks))
+	for level, hooks := range originalHooks {
+		deepCopy[level] = append([]logrus.Hook(nil), hooks...)
+	}
 	stdLogger.SetLevel(logrus.DebugLevel)
+	stdLogger.ReplaceHooks(deepCopy)
 	hook := &websocketReadCaptureHook{}
 	stdLogger.AddHook(hook)
 	t.Cleanup(func() {
