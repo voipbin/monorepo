@@ -4588,7 +4588,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
 				m.util.EXPECT().UUIDCreate().Return(aicallID)
 				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
-				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), uuid.FromStringOrNil("20000000-0004-11f0-bbbb-000000000001")).Return(existingActive, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, uuid.FromStringOrNil("20000000-0002-11f0-bbbb-000000000001"), uuid.FromStringOrNil("20000000-0004-11f0-bbbb-000000000001")).Return(existingActive, nil)
 			},
 
 			expectRes: &aicall.AIcall{
