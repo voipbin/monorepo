@@ -31,6 +31,9 @@ const (
 
 	// maxTwilioErrorBody is the most bytes read from an error answer.
 	maxTwilioErrorBody = 4096
+
+	// maxTwilioBody is the most bytes read from a success answer.
+	maxTwilioBody = 1 << 20
 )
 
 // twilioErrorBody is the error answer of twilio.
@@ -75,7 +78,7 @@ func (h *requestExternal) twilioSend(method, sid, token, path string, query, for
 
 	for _, ok := range okStatus {
 		if resp.StatusCode == ok {
-			res, errRead := io.ReadAll(resp.Body)
+			res, errRead := io.ReadAll(io.LimitReader(resp.Body, maxTwilioBody))
 			if errRead != nil {
 				return nil, fmt.Errorf("could not read the response body. err: %w", errRead)
 			}

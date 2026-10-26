@@ -42,6 +42,7 @@ type Descriptor struct {
 	AllowedConfig []string
 
 	// RequiredConfig is the list of config keys a row needs when its credential source is the DB.
+	// The environment credential is checked against RequiredEnvConfig instead.
 	RequiredConfig []string
 
 	// RequiredEnvConfig is the list of config keys the environment credential needs. A provider

@@ -110,8 +110,8 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `telnyx_token` | `TELNYX_TOKEN` | required if Telnyx used and not stored in the DB | Telnyx API authentication token |
 | `telnyx_connection_id` | `TELNYX_CONNECTION_ID` | required if Telnyx used | Telnyx connection ID for call routing |
 | `telnyx_profile_id` | `TELNYX_PROFILE_ID` | required if Telnyx used | Telnyx messaging profile ID |
-| `twilio_sid` | `TWILIO_SID` | required if Twilio used | Twilio account SID |
-| `twilio_token` | `TWILIO_TOKEN` | required if Twilio used | Twilio auth token |
+| `twilio_sid` | `TWILIO_SID` | required for Twilio release | Twilio account SID. The environment credential can release numbers but never purchase (see Provider Credentials) |
+| `twilio_token` | `TWILIO_TOKEN` | required for Twilio release | Twilio auth token. The surrounding whitespace is removed |
 | `number_secret_encryption_keys` | `NUMBER_SECRET_ENCRYPTION_KEYS` | `""` | Keys that encrypt the provider secrets stored in the DB: `<version>:<base64 of 32 bytes>` entries separated by commas. The highest version encrypts, the version of the row decrypts. Empty means no key: secrets cannot be stored and the environment credentials are used |
 
 ## Prometheus Metrics
@@ -128,7 +128,7 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `provider_purchase_total` | Counter | `provider`, `result` | Purchase attempts (`success`, `rejected`, `unconfirmed`) |
 
 **Alert guidance:**
-- `provider_unusable_total` increasing for an enabled provider → it cannot be used (`no_secret`, `db_undecryptable` or `required_config`); check the provider view and the key list.
+- `provider_unusable_total` increasing for an enabled provider → it cannot be used (`no_secret`, `db_undecryptable`, `required_config` or `factory`); check the provider view and the key list.
 - `provider_purchase_total{result="unconfirmed"}` increasing → purchases stop without a fallback because the order result is unknown; check the provider for the orders.
 - `telnyx_number_create_total` or `twilio_number_create_total` dropping while `number_create_total` stays constant → provider-specific failures; check provider API credentials.
 - `request_external_process_time` p99 > 5s → provider API latency; purchases will time out.

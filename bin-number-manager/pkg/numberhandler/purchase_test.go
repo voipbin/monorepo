@@ -346,3 +346,43 @@ func Test_Create_twilioFirstCandidate(t *testing.T) {
 		}
 	})
 }
+
+func Test_Delete_twilioNumber(t *testing.T) {
+	ctx := context.Background()
+	n := &number.Number{
+		Identity:            commonidentity.Identity{ID: errTestNumberID, CustomerID: errTestCustomerID},
+		ProviderName:        number.ProviderNameTwilio,
+		ProviderReferenceID: "PN00000000000000000000000000000000",
+	}
+
+	// a twilio number is released through the twilio provider even when twilio is disabled
+	h, m, twilio, _ := newPurchaseMocks(t)
+	m.db.EXPECT().NumberGet(ctx, errTestNumberID).Return(n, nil).Times(2)
+	m.provider.EXPECT().ForRelease(ctx, number.ProviderNameTwilio).Return(twilio, nil)
+	twilio.EXPECT().NumberRelease(ctx, n).Return(nil)
+	m.db.EXPECT().NumberDelete(ctx, errTestNumberID).Return(nil)
+	m.notify.EXPECT().PublishWebhookEvent(ctx, errTestCustomerID, number.EventTypeNumberDeleted, n)
+
+	if _, err := h.Delete(ctx, errTestNumberID); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+func Test_Delete_twilioReleaseFailureKeepsTheRecord(t *testing.T) {
+	ctx := context.Background()
+	n := &number.Number{
+		Identity:            commonidentity.Identity{ID: errTestNumberID, CustomerID: errTestCustomerID},
+		ProviderName:        number.ProviderNameTwilio,
+		ProviderReferenceID: "PN00000000000000000000000000000000",
+	}
+
+	h, m, twilio, _ := newPurchaseMocks(t)
+	m.db.EXPECT().NumberGet(ctx, errTestNumberID).Return(n, nil)
+	m.provider.EXPECT().ForRelease(ctx, number.ProviderNameTwilio).Return(twilio, nil)
+	twilio.EXPECT().NumberRelease(ctx, n).Return(fmt.Errorf("release failed"))
+	// NumberDelete has no expectation: the record stays
+
+	if res, err := h.Delete(ctx, errTestNumberID); res != nil || err == nil {
+		t.Errorf("Wrong match. expect: error, got: %v, %v", res, err)
+	}
+}

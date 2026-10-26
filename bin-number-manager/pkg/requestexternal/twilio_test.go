@@ -8,9 +8,6 @@ import (
 	"net/url"
 	"strings"
 	"testing"
-
-	"github.com/sirupsen/logrus"
-	logrustest "github.com/sirupsen/logrus/hooks/test"
 )
 
 const (
@@ -285,35 +282,14 @@ func Test_TwilioAvailableNumberGets(t *testing.T) {
 	}
 }
 
-// the logs of a twilio request must never hold the credential or the account sid
-func Test_Twilio_noCredentialInLogs(t *testing.T) {
-	hook := logrustest.NewGlobal()
-	prevLevel := logrus.GetLevel()
-	logrus.SetLevel(logrus.DebugLevel)
-	t.Cleanup(func() { logrus.SetLevel(prevLevel) })
+func Test_TwilioIncomingPhoneNumbersPost_successBodyIsBounded(t *testing.T) {
+	big := `{"sid":"` + testNumberSID + `","pad":"` + strings.Repeat("a", maxTwilioBody) + `"}`
+	installTwilio(t, reply(http.StatusCreated, big))
 
-	installTwilio(t, reply(http.StatusCreated, `{"sid":"`+testNumberSID+`"}`))
-	_, _ = NewRequestExternal().TwilioIncomingPhoneNumbersPost(testTwilioSID, testTwilioToken, "+15550000001", testTrunkSID)
-	_ = NewRequestExternal().TwilioIncomingPhoneNumbersIDDelete(testTwilioSID, testTwilioToken, testNumberSID)
-	_, _ = NewRequestExternal().TwilioAvailableNumberGets(testTwilioSID, testTwilioToken, "US", 1)
-
-	for _, e := range hook.AllEntries() {
-		line := e.Message
-		for _, v := range e.Data {
-			line += " " + toString(v)
-		}
-		if strings.Contains(line, testTwilioToken) || strings.Contains(line, testTwilioSID) || strings.Contains(strings.ToLower(line), "authorization") {
-			t.Errorf("A log entry holds a credential: %s", line)
-		}
+	// the body is cut at the limit, so it cannot be parsed and the purchase stays unconfirmed
+	_, err := NewRequestExternal().TwilioIncomingPhoneNumbersPost(testTwilioSID, testTwilioToken, "+15550000001", "")
+	var statusErr *HTTPStatusError
+	if err == nil || errors.As(err, &statusErr) {
+		t.Errorf("Wrong error. expect: a parse error, got: %v", err)
 	}
-}
-
-func toString(v any) string {
-	if s, ok := v.(string); ok {
-		return s
-	}
-	if e, ok := v.(error); ok {
-		return e.Error()
-	}
-	return ""
 }

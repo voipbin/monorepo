@@ -126,7 +126,7 @@ func (h *providerHandler) resolve(ctx context.Context, name number.ProviderName)
 
 	if key, missing := requiredConfigMissing(Descriptor{RequiredConfig: desc.RequiredEnvConfig}, env.Config); missing {
 		// release and search still work with the secret; only the purchase needs the key
-		log.Errorf("The environment credential misses a required config. key: %s", key)
+		log.Debugf("The environment credential misses a required config. key: %s", key)
 		res.usable = false
 		h.observeUnusable(res, "required_config")
 		return res, nil

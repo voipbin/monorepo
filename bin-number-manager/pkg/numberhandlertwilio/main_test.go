@@ -345,3 +345,60 @@ func Test_classifyOrderError_sentinels(t *testing.T) {
 		t.Errorf("Wrong kind. got: %v", unconfirmed)
 	}
 }
+
+func Test_NumberPurchase_logMarkers(t *testing.T) {
+	prevLevel := logrus.GetLevel()
+	logrus.SetLevel(logrus.DebugLevel)
+	t.Cleanup(func() { logrus.SetLevel(prevLevel) })
+
+	hasMarker := func(hook *logrustest.Hook, marker string) bool {
+		for _, e := range hook.AllEntries() {
+			if strings.Contains(e.Message, marker) {
+				return true
+			}
+		}
+		return false
+	}
+
+	tests := []struct {
+		name        string
+		trunkSID    string
+		responseErr error
+		call        bool
+		marker      string
+		absent      string
+	}{
+		{name: "401 is an auth rejection", trunkSID: testTrunkSID, call: true, responseErr: &requestexternal.HTTPStatusError{StatusCode: 401}, marker: "PROVIDER_AUTH_REJECTED"},
+		{name: "403 is an auth rejection", trunkSID: testTrunkSID, call: true, responseErr: &requestexternal.HTTPStatusError{StatusCode: 403}, marker: "PROVIDER_AUTH_REJECTED"},
+		{name: "404 is an auth rejection", trunkSID: testTrunkSID, call: true, responseErr: &requestexternal.HTTPStatusError{StatusCode: 404}, marker: "PROVIDER_AUTH_REJECTED"},
+		{name: "400 is not an auth rejection", trunkSID: testTrunkSID, call: true, responseErr: &requestexternal.HTTPStatusError{StatusCode: 400}, absent: "PROVIDER_AUTH_REJECTED"},
+		{name: "no trunk_sid is a config error", trunkSID: "", marker: "PROVIDER_CONFIG_INVALID"},
+		{name: "a malformed trunk_sid is a config error", trunkSID: "TK1", marker: "PROVIDER_CONFIG_INVALID"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hook := logrustest.NewGlobal()
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockExternal := requestexternal.NewMockRequestExternal(mc)
+			h := newTestHandler(mockExternal)
+			h.trunkSID = tt.trunkSID
+
+			if tt.call {
+				mockExternal.EXPECT().TwilioIncomingPhoneNumbersPost(testSID, testToken, testNumber, tt.trunkSID).Return(nil, tt.responseErr)
+			}
+
+			_, _ = h.NumberPurchase(testNumber)
+
+			if tt.marker != "" && !hasMarker(hook, tt.marker) {
+				t.Errorf("Wrong match. expect the log marker %s", tt.marker)
+			}
+			if tt.absent != "" && hasMarker(hook, tt.absent) {
+				t.Errorf("Wrong match. the log marker %s must be absent", tt.absent)
+			}
+		})
+	}
+}
