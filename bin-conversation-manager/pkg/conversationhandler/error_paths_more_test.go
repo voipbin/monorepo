@@ -37,6 +37,15 @@ import (
 // errDBDown is the injected database failure used to assert that the cause is propagated.
 var errDBDown = errors.New("db down")
 
+// Other injected failures, distinct from errDBDown so that a test can tell which one reached the caller.
+var (
+	errUpstreamDown = errors.New("upstream down")
+	errCreateFailed = errors.New("create failed")
+	errBadHook      = errors.New("bad hook payload")
+	errFirst        = errors.New("first failure")
+	errSecond       = errors.New("second failure")
+)
+
 // fullMocks bundles the mocks used by the error path tests of this file.
 type fullMocks struct {
 	util     *utilhandler.MockUtilHandler
@@ -77,7 +86,7 @@ func newFullMocks(mc *gomock.Controller) (*conversationHandler, *fullMocks) {
 func expectGetOrCreateFailure(m *fullMocks, ctx context.Context) {
 	m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("not found"))
 	m.util.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001"))
-	m.db.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(fmt.Errorf("create failed"))
+	m.db.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(errCreateFailed)
 }
 
 func Test_Hook_errors(t *testing.T) {
@@ -91,12 +100,13 @@ func Test_Hook_errors(t *testing.T) {
 		setup func(ctx context.Context, m *fullMocks)
 
 		expectContains string
+		expectIs       error
 	}{
 		{
 			name:           "unparsable uri",
 			uri:            "://bad",
 			setup:          func(ctx context.Context, m *fullMocks) {},
-			expectContains: "missing protocol scheme",
+			expectContains: "parse",
 		},
 		{
 			name:           "path too short",
@@ -108,9 +118,10 @@ func Test_Hook_errors(t *testing.T) {
 			name: "account lookup failure",
 			uri:  validURI,
 			setup: func(ctx context.Context, m *fullMocks) {
-				m.account.EXPECT().Get(ctx, accountID).Return(nil, fmt.Errorf("db down"))
+				m.account.EXPECT().Get(ctx, accountID).Return(nil, errDBDown)
 			},
 			expectContains: "could not get account info",
+			expectIs:       errDBDown,
 		},
 		{
 			name: "line hook failure",
@@ -118,9 +129,10 @@ func Test_Hook_errors(t *testing.T) {
 			setup: func(ctx context.Context, m *fullMocks) {
 				ac := &account.Account{Identity: commonidentity.Identity{ID: accountID}, Type: account.TypeLine}
 				m.account.EXPECT().Get(ctx, accountID).Return(ac, nil)
-				m.line.EXPECT().Hook(ctx, ac, []byte("x")).Return(nil, fmt.Errorf("bad signature"))
+				m.line.EXPECT().Hook(ctx, ac, []byte("x")).Return(nil, errBadHook)
 			},
-			expectContains: "bad signature",
+			expectContains: "hook",
+			expectIs:       errBadHook,
 		},
 		{
 			name: "whatsapp hook failure",
@@ -128,9 +140,10 @@ func Test_Hook_errors(t *testing.T) {
 			setup: func(ctx context.Context, m *fullMocks) {
 				ac := &account.Account{Identity: commonidentity.Identity{ID: accountID}, Type: account.TypeWhatsApp}
 				m.account.EXPECT().Get(ctx, accountID).Return(ac, nil)
-				m.whatsapp.EXPECT().Hook(ctx, ac, []byte("x"), "sig").Return(nil, fmt.Errorf("bad payload"))
+				m.whatsapp.EXPECT().Hook(ctx, ac, []byte("x"), "sig").Return(nil, errBadHook)
 			},
-			expectContains: "bad payload",
+			expectContains: "hook",
+			expectIs:       errBadHook,
 		},
 		{
 			name: "unsupported account type",
@@ -159,6 +172,9 @@ func Test_Hook_errors(t *testing.T) {
 			if !strings.Contains(err.Error(), tt.expectContains) {
 				t.Errorf("Wrong error. expect to contain: %q, got: %v", tt.expectContains, err)
 			}
+			if tt.expectIs != nil && !errors.Is(err, tt.expectIs) {
+				t.Errorf("Wrong cause. expect: %v, got: %v", tt.expectIs, err)
+			}
 		})
 	}
 }
@@ -182,10 +198,10 @@ func Test_HookVerify_errors(t *testing.T) {
 		h, m := newFullMocks(mc)
 		ctx := context.Background()
 
-		m.account.EXPECT().Get(ctx, accountID).Return(nil, fmt.Errorf("db down"))
+		m.account.EXPECT().Get(ctx, accountID).Return(nil, errDBDown)
 
 		res, err := h.HookVerify(ctx, "https://hook.example.com/v1.0/conversation/accounts/"+accountID.String(), "subscribe", "t", "c")
-		if err == nil || !strings.Contains(err.Error(), "could not get account") {
+		if !errors.Is(err, errDBDown) || !strings.Contains(err.Error(), "could not get account") {
 			t.Errorf("Wrong match. expect: lookup error, got: %v", err)
 		}
 		if res != "" {
@@ -255,10 +271,10 @@ func Test_hookResults_dispatch(t *testing.T) {
 		ctx := context.Background()
 
 		m.whatsapp.EXPECT().Hook(ctx, ac, []byte("x"), "sig").Return([]*whatsapphandler.HookResult{{Conversation: flowOwned, Message: msg}}, nil)
-		m.account.EXPECT().Get(ctx, accountID).Return(nil, fmt.Errorf("db down"))
+		m.account.EXPECT().Get(ctx, accountID).Return(nil, errDBDown)
 
 		err := h.hookWhatsApp(ctx, ac, []byte("x"), "sig")
-		if err == nil || !strings.Contains(err.Error(), "could not run flow mode") {
+		if !errors.Is(err, errDBDown) || !strings.Contains(err.Error(), "could not run flow mode") {
 			t.Errorf("Wrong match. expect: flow mode error, got: %v", err)
 		}
 	})
@@ -297,6 +313,7 @@ func Test_runExecuteModeFlow_activeflowFailure(t *testing.T) {
 		setup func(ctx context.Context, m *fullMocks)
 
 		expectContains string
+		expectIs       error
 	}{
 		{
 			name: "message conversation",
@@ -309,6 +326,7 @@ func Test_runExecuteModeFlow_activeflowFailure(t *testing.T) {
 				m.req.EXPECT().NumberV1NumberList(ctx, "", uint64(1), gomock.Any()).Return([]nmnumber.Number{{MessageFlowID: flowID}}, nil)
 			},
 			expectContains: "could not execute activeflow. number_id",
+			expectIs:       errUpstreamDown,
 		},
 		{
 			name: "whatsapp conversation",
@@ -321,6 +339,7 @@ func Test_runExecuteModeFlow_activeflowFailure(t *testing.T) {
 				m.account.EXPECT().Get(ctx, waAccountID).Return(&account.Account{MessageFlowID: flowID}, nil)
 			},
 			expectContains: "could not execute activeflow. account_id",
+			expectIs:       errUpstreamDown,
 		},
 		{
 			name: "webchat conversation",
@@ -333,6 +352,7 @@ func Test_runExecuteModeFlow_activeflowFailure(t *testing.T) {
 				m.req.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(&wcwidget.Widget{MessageFlowID: flowID}, nil)
 			},
 			expectContains: "could not execute activeflow. widget_id",
+			expectIs:       errUpstreamDown,
 		},
 	}
 
@@ -344,11 +364,11 @@ func Test_runExecuteModeFlow_activeflowFailure(t *testing.T) {
 			ctx := context.Background()
 
 			tt.setup(ctx, m)
-			m.req.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, custID, flowID, fmactiveflow.ReferenceTypeConversation, convID, uuid.Nil, nil, "", fmactiveflow.WebhookMethodNone).Return(nil, fmt.Errorf("flow down"))
+			m.req.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, custID, flowID, fmactiveflow.ReferenceTypeConversation, convID, uuid.Nil, nil, "", fmactiveflow.WebhookMethodNone).Return(nil, errUpstreamDown)
 
 			err := h.runExecuteModeFlow(ctx, tt.cv, m1)
-			if err == nil || !strings.Contains(err.Error(), tt.expectContains) {
-				t.Errorf("Wrong match. expect to contain: %q, got: %v", tt.expectContains, err)
+			if err == nil || !strings.Contains(err.Error(), tt.expectContains) || (tt.expectIs != nil && !errors.Is(err, tt.expectIs)) {
+				t.Errorf("Wrong match. expect to contain: %q with cause: %v, got: %v", tt.expectContains, tt.expectIs, err)
 			}
 		})
 	}
@@ -366,10 +386,10 @@ func Test_setVariables_errors(t *testing.T) {
 		ctx := context.Background()
 
 		// a single call is expected: the message variables must not be attempted.
-		m.req.EXPECT().FlowV1VariableSetVariable(ctx, afID, gomock.Any()).Return(fmt.Errorf("flow down"))
+		m.req.EXPECT().FlowV1VariableSetVariable(ctx, afID, gomock.Any()).Return(errUpstreamDown)
 
 		err := h.setVariables(ctx, afID, cv, msg)
-		if err == nil || !strings.Contains(err.Error(), "conversation variable") {
+		if !errors.Is(err, errUpstreamDown) || !strings.Contains(err.Error(), "conversation variable") {
 			t.Errorf("Wrong match. expect: conversation variable error, got: %v", err)
 		}
 	})
@@ -382,11 +402,11 @@ func Test_setVariables_errors(t *testing.T) {
 
 		gomock.InOrder(
 			m.req.EXPECT().FlowV1VariableSetVariable(ctx, afID, gomock.Any()).Return(nil),
-			m.req.EXPECT().FlowV1VariableSetVariable(ctx, afID, gomock.Any()).Return(fmt.Errorf("flow down")),
+			m.req.EXPECT().FlowV1VariableSetVariable(ctx, afID, gomock.Any()).Return(errUpstreamDown),
 		)
 
 		err := h.setVariables(ctx, afID, cv, msg)
-		if err == nil || !strings.Contains(err.Error(), "message variable") {
+		if !errors.Is(err, errUpstreamDown) || !strings.Contains(err.Error(), "message variable") {
 			t.Errorf("Wrong match. expect: message variable error, got: %v", err)
 		}
 	})
@@ -542,7 +562,7 @@ func Test_CreateAndExecuteFlow_errors(t *testing.T) {
 		m.notify.EXPECT().PublishWebhookEvent(ctx, custID, conversation.EventTypeConversationCreated, created)
 		m.req.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, custID, flowID, fmactiveflow.ReferenceTypeConversation, id, uuid.Nil, nil, "", fmactiveflow.WebhookMethodNone).Return(&fmactiveflow.Activeflow{Identity: commonidentity.Identity{ID: afID}}, nil)
 		m.req.EXPECT().FlowV1VariableSetVariable(ctx, afID, gomock.Any()).Return(nil)
-		m.req.EXPECT().FlowV1ActiveflowExecute(ctx, afID).Return(fmt.Errorf("flow down"))
+		m.req.EXPECT().FlowV1ActiveflowExecute(ctx, afID).Return(errUpstreamDown)
 
 		res, err := h.CreateAndExecuteFlow(ctx, custID, flowID, conversation.TypeWebchat, "", self, peer)
 		if err != nil {
@@ -575,25 +595,25 @@ func Test_Email_errors(t *testing.T) {
 	dstA, dstB := normalized(e.Destinations[0]), normalized(e.Destinations[1])
 	txA, txB := txIDOf(e.Destinations[0]), txIDOf(e.Destinations[1])
 
-	t.Run("sent: duplicate lookup failure does not stop the other destination", func(t *testing.T) {
+	t.Run("sent: duplicate lookup failure does not stop the other destination and the first error is returned", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 		h, m := newFullMocks(mc)
 		ctx := context.Background()
 
 		gomock.InOrder(
-			m.db.EXPECT().MessageGetsByTransactionID(ctx, txA, "", uint64(1)).Return(nil, errDBDown),
-			// the second destination is already materialized, so it is skipped without a create.
-			m.db.EXPECT().MessageGetsByTransactionID(ctx, txB, "", uint64(1)).Return([]*message.Message{{}}, nil),
+			m.db.EXPECT().MessageGetsByTransactionID(ctx, txA, "", uint64(1)).Return(nil, errFirst),
+			// the second destination is still looked up after the first failure and fails differently.
+			m.db.EXPECT().MessageGetsByTransactionID(ctx, txB, "", uint64(1)).Return(nil, errSecond),
 		)
 
 		err := h.EmailEventSent(ctx, e)
-		if !errors.Is(err, errDBDown) || !strings.Contains(err.Error(), "could not check existing message") {
-			t.Errorf("Wrong match. expect: lookup error, got: %v", err)
+		if !errors.Is(err, errFirst) || errors.Is(err, errSecond) || !strings.Contains(err.Error(), "could not check existing message") {
+			t.Errorf("Wrong match. expect: the first lookup error only, got: %v", err)
 		}
 	})
 
-	t.Run("sent: conversation failure does not stop the other destination", func(t *testing.T) {
+	t.Run("sent: conversation failure does not stop the other destination and the first error is returned", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 		h, m := newFullMocks(mc)
@@ -604,11 +624,14 @@ func Test_Email_errors(t *testing.T) {
 		m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, self, dstA).Return(nil, fmt.Errorf("not found"))
 		m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, self, dstB).Return(nil, fmt.Errorf("not found"))
 		m.util.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")).Times(2)
-		m.db.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(fmt.Errorf("create failed")).Times(2)
+		gomock.InOrder(
+			m.db.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(errFirst),
+			m.db.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(errSecond),
+		)
 
 		err := h.EmailEventSent(ctx, e)
-		if err == nil || !strings.Contains(err.Error(), "could not get conversation") {
-			t.Errorf("Wrong match. expect: conversation error, got: %v", err)
+		if !errors.Is(err, errFirst) || errors.Is(err, errSecond) || !strings.Contains(err.Error(), "could not get conversation") {
+			t.Errorf("Wrong match. expect: the first conversation error only, got: %v", err)
 		}
 	})
 
@@ -631,33 +654,33 @@ func Test_Email_errors(t *testing.T) {
 				if args.ConversationID != cvA.ID {
 					t.Errorf("Wrong match. expect first destination conversation: %s, got: %s", cvA.ID, args.ConversationID)
 				}
-				return nil, fmt.Errorf("first failure")
+				return nil, errFirst
 			}),
 			m.message.EXPECT().Create(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, args messagehandler.MessageCreateArgs) (*message.Message, error) {
 				if args.ConversationID != cvB.ID {
 					t.Errorf("Wrong match. expect second destination conversation: %s, got: %s", cvB.ID, args.ConversationID)
 				}
-				return nil, fmt.Errorf("second failure")
+				return nil, errSecond
 			}),
 		)
 
 		err := h.EmailEventSent(ctx, e)
-		if err == nil || !strings.Contains(err.Error(), "first failure") || strings.Contains(err.Error(), "second failure") {
+		if !errors.Is(err, errFirst) || errors.Is(err, errSecond) {
 			t.Errorf("Wrong match. expect: the first error only, got: %v", err)
 		}
 	})
 
-	t.Run("updated: lookup failure is accumulated", func(t *testing.T) {
+	t.Run("updated: lookup failure on every destination returns the first error", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 		h, m := newFullMocks(mc)
 		ctx := context.Background()
 
-		m.db.EXPECT().MessageGetsByTransactionID(ctx, txA, "", uint64(1)).Return(nil, errDBDown)
-		m.db.EXPECT().MessageGetsByTransactionID(ctx, txB, "", uint64(1)).Return(nil, errDBDown)
+		m.db.EXPECT().MessageGetsByTransactionID(ctx, txA, "", uint64(1)).Return(nil, errFirst)
+		m.db.EXPECT().MessageGetsByTransactionID(ctx, txB, "", uint64(1)).Return(nil, errSecond)
 
 		err := h.EmailEventUpdated(ctx, e)
-		if !errors.Is(err, errDBDown) || !strings.Contains(err.Error(), "could not find the message") {
+		if !errors.Is(err, errFirst) || errors.Is(err, errSecond) || !strings.Contains(err.Error(), "could not find the message") {
 			t.Errorf("Wrong match. expect: lookup error, got: %v", err)
 		}
 	})
@@ -682,7 +705,7 @@ func Test_MessageEvent_errors(t *testing.T) {
 		expectGetOrCreateFailure(m, ctx)
 
 		err := h.MessageEventReceived(ctx, mm)
-		if err == nil || !strings.Contains(err.Error(), "Could not get conversation") {
+		if !errors.Is(err, errCreateFailed) || !strings.Contains(err.Error(), "Could not get conversation") {
 			t.Errorf("Wrong match. expect: conversation error, got: %v", err)
 		}
 	})
@@ -696,7 +719,7 @@ func Test_MessageEvent_errors(t *testing.T) {
 		expectGetOrCreateFailure(m, ctx)
 
 		err := h.MessageEventSent(ctx, mm)
-		if err == nil || !strings.Contains(err.Error(), "Could not get conversation") {
+		if !errors.Is(err, errCreateFailed) || !strings.Contains(err.Error(), "Could not get conversation") {
 			t.Errorf("Wrong match. expect: conversation error, got: %v", err)
 		}
 	})
@@ -715,10 +738,10 @@ func Test_MessageEvent_errors(t *testing.T) {
 		}
 		m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(cv, nil)
 		m.message.EXPECT().Create(ctx, gomock.Any()).Return(&message.Message{Identity: commonidentity.Identity{ID: msgID}}, nil)
-		m.req.EXPECT().NumberV1NumberList(ctx, "", uint64(1), gomock.Any()).Return(nil, fmt.Errorf("number down"))
+		m.req.EXPECT().NumberV1NumberList(ctx, "", uint64(1), gomock.Any()).Return(nil, errUpstreamDown)
 
 		err := h.MessageEventReceived(ctx, mm)
-		if err == nil || !strings.Contains(err.Error(), "could not run flow mode") {
+		if !errors.Is(err, errUpstreamDown) || !strings.Contains(err.Error(), "could not run flow mode") {
 			t.Errorf("Wrong match. expect: flow mode error, got: %v", err)
 		}
 	})
@@ -731,10 +754,10 @@ func Test_MessageEvent_errors(t *testing.T) {
 
 		cv := &conversation.Conversation{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50"), CustomerID: custID}}
 		m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(cv, nil)
-		m.message.EXPECT().Create(ctx, gomock.Any()).Return(nil, fmt.Errorf("db down"))
+		m.message.EXPECT().Create(ctx, gomock.Any()).Return(nil, errDBDown)
 
 		err := h.MessageEventReceived(ctx, mm)
-		if err == nil || !strings.Contains(err.Error(), "Could not create a message") {
+		if !errors.Is(err, errDBDown) || !strings.Contains(err.Error(), "Could not create a message") {
 			t.Errorf("Wrong match. expect: create error, got: %v", err)
 		}
 	})
@@ -748,10 +771,10 @@ func Test_MessageEvent_errors(t *testing.T) {
 		cv := &conversation.Conversation{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50"), CustomerID: custID}}
 		m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(cv, nil)
 		m.message.EXPECT().Get(ctx, msgID).Return(nil, fmt.Errorf("not found"))
-		m.message.EXPECT().Create(ctx, gomock.Any()).Return(nil, fmt.Errorf("db down"))
+		m.message.EXPECT().Create(ctx, gomock.Any()).Return(nil, errDBDown)
 
 		err := h.MessageEventSent(ctx, mm)
-		if err == nil || !strings.Contains(err.Error(), "Could not create a message") {
+		if !errors.Is(err, errDBDown) || !strings.Contains(err.Error(), "Could not create a message") {
 			t.Errorf("Wrong match. expect: create error, got: %v", err)
 		}
 	})
@@ -765,10 +788,10 @@ func Test_MessageEvent_errors(t *testing.T) {
 		cv := &conversation.Conversation{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50"), CustomerID: custID}}
 		m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(cv, nil)
 		m.message.EXPECT().Get(ctx, msgID).Return(&message.Message{Identity: commonidentity.Identity{ID: msgID}}, nil)
-		m.message.EXPECT().UpdateStatus(ctx, msgID, message.StatusDone).Return(nil, fmt.Errorf("db down"))
+		m.message.EXPECT().UpdateStatus(ctx, msgID, message.StatusDone).Return(nil, errDBDown)
 
 		err := h.MessageEventSent(ctx, mm)
-		if err == nil || !strings.Contains(err.Error(), "Could not update the message") {
+		if !errors.Is(err, errDBDown) || !strings.Contains(err.Error(), "Could not update the message") {
 			t.Errorf("Wrong match. expect: update error, got: %v", err)
 		}
 	})
@@ -801,6 +824,7 @@ func Test_EventWebchat_errors(t *testing.T) {
 		setup     func(ctx context.Context, m *fullMocks)
 
 		expectContains string
+		expectIs       error
 	}{
 		{
 			name:      "inbound: conversation failure",
@@ -809,15 +833,17 @@ func Test_EventWebchat_errors(t *testing.T) {
 				expectGetOrCreateFailure(m, ctx)
 			},
 			expectContains: "Could not get conversation",
+			expectIs:       errCreateFailed,
 		},
 		{
 			name:      "inbound: message create failure",
 			direction: webchatDirectionInbound,
 			setup: func(ctx context.Context, m *fullMocks) {
 				m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, selfAddr, peerAddr).Return(cvFlow, nil)
-				m.message.EXPECT().Create(ctx, gomock.Any()).Return(nil, fmt.Errorf("db down"))
+				m.message.EXPECT().Create(ctx, gomock.Any()).Return(nil, errDBDown)
 			},
 			expectContains: "Could not create a message",
+			expectIs:       errDBDown,
 		},
 		{
 			name:      "inbound: flow failure",
@@ -825,9 +851,10 @@ func Test_EventWebchat_errors(t *testing.T) {
 			setup: func(ctx context.Context, m *fullMocks) {
 				m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, selfAddr, peerAddr).Return(cvFlow, nil)
 				m.message.EXPECT().Create(ctx, gomock.Any()).Return(&message.Message{Identity: commonidentity.Identity{ID: msgID}}, nil)
-				m.req.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(nil, fmt.Errorf("widget down"))
+				m.req.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(nil, errUpstreamDown)
 			},
 			expectContains: "could not run flow mode",
+			expectIs:       errUpstreamDown,
 		},
 		{
 			name:      "outbound: conversation failure",
@@ -836,6 +863,7 @@ func Test_EventWebchat_errors(t *testing.T) {
 				expectGetOrCreateFailure(m, ctx)
 			},
 			expectContains: "Could not get conversation",
+			expectIs:       errCreateFailed,
 		},
 		{
 			name:      "outbound: message create failure",
@@ -843,9 +871,10 @@ func Test_EventWebchat_errors(t *testing.T) {
 			setup: func(ctx context.Context, m *fullMocks) {
 				m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, selfAddr, peerAddr).Return(cvFlow, nil)
 				m.message.EXPECT().Get(ctx, msgID).Return(nil, fmt.Errorf("not found"))
-				m.message.EXPECT().Create(ctx, gomock.Any()).Return(nil, fmt.Errorf("db down"))
+				m.message.EXPECT().Create(ctx, gomock.Any()).Return(nil, errDBDown)
 			},
 			expectContains: "Could not create a message",
+			expectIs:       errDBDown,
 		},
 		{
 			name:      "outbound: update failure of an existing message",
@@ -853,9 +882,10 @@ func Test_EventWebchat_errors(t *testing.T) {
 			setup: func(ctx context.Context, m *fullMocks) {
 				m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, selfAddr, peerAddr).Return(cvFlow, nil)
 				m.message.EXPECT().Get(ctx, msgID).Return(&message.Message{Identity: commonidentity.Identity{ID: msgID}}, nil)
-				m.message.EXPECT().UpdateStatus(ctx, msgID, message.StatusDone).Return(nil, fmt.Errorf("db down"))
+				m.message.EXPECT().UpdateStatus(ctx, msgID, message.StatusDone).Return(nil, errDBDown)
 			},
 			expectContains: "Could not update the message",
+			expectIs:       errDBDown,
 		},
 	}
 
@@ -869,8 +899,8 @@ func Test_EventWebchat_errors(t *testing.T) {
 			tt.setup(ctx, m)
 
 			err := h.eventWebchat(ctx, payload(t, tt.direction))
-			if err == nil || !strings.Contains(err.Error(), tt.expectContains) {
-				t.Errorf("Wrong match. expect to contain: %q, got: %v", tt.expectContains, err)
+			if err == nil || !strings.Contains(err.Error(), tt.expectContains) || (tt.expectIs != nil && !errors.Is(err, tt.expectIs)) {
+				t.Errorf("Wrong match. expect to contain: %q with cause: %v, got: %v", tt.expectContains, tt.expectIs, err)
 			}
 		})
 	}
@@ -932,7 +962,7 @@ func Test_eventSMS_handlerFailures(t *testing.T) {
 			}
 
 			err = h.eventSMS(ctx, data)
-			if err == nil || !strings.Contains(err.Error(), "Could not handle the event correctly") {
+			if !errors.Is(err, errCreateFailed) || !strings.Contains(err.Error(), "Could not handle the event correctly") {
 				t.Errorf("Wrong match. expect: wrapped handler error, got: %v", err)
 			}
 		})
