@@ -60,9 +60,15 @@ func (h *eventHandler) EventHandlerPlaybackFinished(ctx context.Context, evt int
 	case "channel":
 		cn, err := h.channelHandler.UpdatePlaybackID(ctx, targetID, "")
 		if err != nil {
+			// The event is not redelivered, so keep processing it with the channel read directly.
+			// The call handler uses only the channel id, but the stored playback id may remain.
+			var errGet error
+			cn, errGet = h.db.ChannelGet(ctx, targetID)
+			if errGet != nil {
+				log.Errorf("Could not get the channel after the playback id update failed. channel_id: %s, update_err: %v, get_err: %v", targetID, err, errGet)
+				return fmt.Errorf("could not get the channel after the playback id update failed: %w", errGet)
+			}
 			log.Errorf("Could not update the channel's playback id. channel_id: %s, err: %v", targetID, err)
-			// we've failed to set the plabyback id, but the playback is working.
-			// we don't return the error here.
 		}
 
 		if cn.TMEnd != nil {

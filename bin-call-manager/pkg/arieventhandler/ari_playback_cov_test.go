@@ -14,6 +14,7 @@ import (
 	"monorepo/bin-call-manager/pkg/bridgehandler"
 	"monorepo/bin-call-manager/pkg/callhandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
 )
 
@@ -28,9 +29,13 @@ func Test_EventHandlerPlaybackFinished_cov(t *testing.T) {
 		name  string
 		event *ari.PlaybackFinished
 
-		channelResp *channel.Channel
-		bridgeResp  *bridge.Bridge
-		bridgeErr   error
+		channelResp   *channel.Channel
+		updateErr     error
+		refetchResp   *channel.Channel
+		refetchErr    error
+		expectRefetch bool
+		bridgeResp    *bridge.Bridge
+		bridgeErr     error
 
 		callErr  error
 		extErr   error
@@ -73,6 +78,27 @@ func Test_EventHandlerPlaybackFinished_cov(t *testing.T) {
 			extErr: errors.New("ext"), expectErr: true,
 		},
 		{name: "unsupported target", event: newEvent("recording:r-1"), expectErr: true},
+		{
+			name: "channel update failure continues with re-read channel", event: newEvent("channel:ch-1"),
+			updateErr: errors.New("update"), refetchResp: &channel.Channel{ID: "ch-1", PlaybackID: "left"},
+			expectCh: true, expectRefetch: true, expectCa: true,
+		},
+		{
+			name: "channel update failure and re-read not found", event: newEvent("channel:ch-1"),
+			updateErr: errors.New("update"), refetchErr: dbhandler.ErrNotFound,
+			expectCh: true, expectRefetch: true, expectErr: true,
+		},
+		{
+			name: "channel update failure and re-read channel already hungup", event: newEvent("channel:ch-1"),
+			updateErr: errors.New("update"), refetchResp: &channel.Channel{ID: "ch-1", TMEnd: &now},
+			expectCh: true, expectRefetch: true,
+		},
+		{
+			name: "channel update failure and call handler error", event: newEvent("channel:ch-1"),
+			updateErr: errors.New("update"), refetchResp: &channel.Channel{ID: "ch-1"},
+			expectCh: true, expectRefetch: true, expectCa: true,
+			callErr: errors.New("call"), expectErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -80,12 +106,14 @@ func Test_EventHandlerPlaybackFinished_cov(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockExt := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := eventHandler{
+				db:                   mockDB,
 				channelHandler:       mockChannel,
 				bridgeHandler:        mockBridge,
 				callHandler:          mockCall,
@@ -94,10 +122,21 @@ func Test_EventHandlerPlaybackFinished_cov(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.expectCh {
-				mockChannel.EXPECT().UpdatePlaybackID(ctx, "ch-1", "").Return(tt.channelResp, nil)
+				if tt.updateErr != nil {
+					mockChannel.EXPECT().UpdatePlaybackID(ctx, "ch-1", "").Return(nil, tt.updateErr)
+				} else {
+					mockChannel.EXPECT().UpdatePlaybackID(ctx, "ch-1", "").Return(tt.channelResp, nil)
+				}
+			}
+			if tt.expectRefetch {
+				mockDB.EXPECT().ChannelGet(ctx, "ch-1").Return(tt.refetchResp, tt.refetchErr).Times(1)
 			}
 			if tt.expectCa {
-				mockCall.EXPECT().ARIPlaybackFinished(ctx, tt.channelResp, tt.event).Return(tt.callErr)
+				expectCh := tt.channelResp
+				if tt.expectRefetch {
+					expectCh = tt.refetchResp
+				}
+				mockCall.EXPECT().ARIPlaybackFinished(ctx, expectCh, tt.event).Return(tt.callErr)
 			}
 			if tt.expectBr {
 				mockBridge.EXPECT().Get(ctx, "br-1").Return(tt.bridgeResp, tt.bridgeErr)
@@ -109,6 +148,9 @@ func Test_EventHandlerPlaybackFinished_cov(t *testing.T) {
 			err := h.EventHandlerPlaybackFinished(ctx, tt.event)
 			if (err != nil) != tt.expectErr {
 				t.Errorf("Wrong match. expect err: %v, got: %v", tt.expectErr, err)
+			}
+			if tt.refetchErr != nil && !errors.Is(err, tt.refetchErr) {
+				t.Errorf("Wrong match. expect err to wrap: %v, got: %v", tt.refetchErr, err)
 			}
 		})
 	}
