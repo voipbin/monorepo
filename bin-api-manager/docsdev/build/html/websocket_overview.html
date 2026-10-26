@@ -765,6 +765,8 @@
 <span class="o">|</span> <span class="n">customer_id</span><span class="p">:</span><span class="n">abc123</span><span class="p">:</span><span class="n">call</span><span class="p">:</span><span class="n">xyz789</span>      <span class="o">|</span> <span class="n">Specific</span> <span class="n">call</span>                   <span class="o">|</span>
 <span class="o">|</span> <span class="n">customer_id</span><span class="p">:</span><span class="n">abc123</span><span class="p">:</span><span class="n">message</span>          <span class="o">|</span> <span class="n">All</span> <span class="n">messages</span> <span class="k">for</span> <span class="n">customer</span>       <span class="o">|</span>
 <span class="o">|</span> <span class="n">agent_id</span><span class="p">:</span><span class="n">agent123</span><span class="p">:</span><span class="n">queue</span>             <span class="o">|</span> <span class="n">All</span> <span class="n">queues</span> <span class="k">for</span> <span class="n">agent</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="n">agent_id</span><span class="p">:</span><span class="n">agent123</span><span class="p">:</span><span class="n">conversation</span>      <span class="o">|</span> <span class="n">All</span> <span class="n">conversation</span> <span class="n">events</span> <span class="n">of</span> <span class="n">the</span>  <span class="o">|</span>
+<span class="o">|</span>                                     <span class="o">|</span> <span class="n">agent</span><span class="s1">'s own conversations       |</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 
 <span class="n">Matching</span> <span class="nb">all</span> <span class="n">resources</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">type</span><span class="p">:</span>
@@ -869,35 +871,21 @@ Authentication:
 </section>
 <section id="event-message-format">
 <h2>Event Message Format<a class="headerlink" href="#event-message-format" title="Link to this heading">¶</a></h2>
-<p>Server-pushed events are <strong>not</strong> wrapped in a <code class="docutils literal notranslate"><span class="pre">topic</span></code>/<code class="docutils literal notranslate"><span class="pre">timestamp</span></code> envelope. However, the platform is mid-migration to a new event-routing path (backend “Task 4.6” cutover), and two different payload shapes currently coexist on the same topic:</p>
-<ul class="simple">
-<li><p><strong>Wrapped (legacy fanout path)</strong> – the classic webhook envelope documented in <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Struct</span></a>: a top-level <code class="docutils literal notranslate"><span class="pre">type</span></code> field naming the event (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;call_created&quot;</span></code>) plus a <code class="docutils literal notranslate"><span class="pre">data</span></code> field holding the resource.</p></li>
-<li><p><strong>Unwrapped (new routing-keyed path)</strong> – the raw resource object only, with <strong>no</strong> top-level <code class="docutils literal notranslate"><span class="pre">type</span></code>/<code class="docutils literal notranslate"><span class="pre">data</span></code> wrapper at all. There is no event-action indicator (created/updated/deleted) in this shape; only the resource’s own fields (<code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">customer_id</span></code>, etc.) are present.</p></li>
-</ul>
-<p>Until the migration completes, treat both as possible: check for a top-level <code class="docutils literal notranslate"><span class="pre">type</span></code> field first – if present, unwrap <code class="docutils literal notranslate"><span class="pre">data</span></code> per the Webhook Struct docs; if absent, the entire message is the raw resource object for whatever topic you subscribed to.</p>
-<p><strong>Wrapped example</strong></p>
+<p>A server-pushed event is the resource payload itself – the same fields as the corresponding webhook <code class="docutils literal notranslate"><span class="pre">data</span></code> documented in <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Struct</span></a> – with one added top-level key, <code class="docutils literal notranslate"><span class="pre">event_type</span></code>, naming the event (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;call_created&quot;</span></code>). There is no <code class="docutils literal notranslate"><span class="pre">topic</span></code>/<code class="docutils literal notranslate"><span class="pre">timestamp</span></code> envelope and no <code class="docutils literal notranslate"><span class="pre">data</span></code> wrapper.</p>
+<p><strong>Example</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"call_created"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"xyz789"</span><span class="p">,</span>
-        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"abc123"</span><span class="p">,</span>
-        <span class="o">...</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p><strong>Unwrapped example</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"call_created"</span><span class="p">,</span>
     <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"xyz789"</span><span class="p">,</span>
     <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"abc123"</span><span class="p">,</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">event_type</span></code> is the only key added to the resource payload; the resource’s own keys are unchanged. Some resources have their own field named <code class="docutils literal notranslate"><span class="pre">type</span></code> (for example chats and conversations); that field belongs to the resource and is not the event type.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Because neither shape includes a <code class="docutils literal notranslate"><span class="pre">topic</span></code> field, correlate an incoming event to the subscription that produced it using the resource fields in the payload itself (<code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">customer_id</span></code>, <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>), not by comparing against the topic string you subscribed with. This dual-shape behavior is a temporary migration state, not a stable contract – expect it to collapse to a single shape once the backend cutover completes.</p>
+<p>Branch on <code class="docutils literal notranslate"><span class="pre">event_type</span></code> to tell events of the same resource apart (for example <code class="docutils literal notranslate"><span class="pre">chatmessage_created</span></code> vs <code class="docutils literal notranslate"><span class="pre">chatmessage_deleted</span></code>, or <code class="docutils literal notranslate"><span class="pre">chatparticipant_added</span></code> vs <code class="docutils literal notranslate"><span class="pre">chatparticipant_removed</span></code>). Frames carry no <code class="docutils literal notranslate"><span class="pre">topic</span></code> field, so correlate an event to the subscription that produced it using the resource fields in the payload itself (<code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">customer_id</span></code>, <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>). Subscribing with overlapping prefixes (for example <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;id&gt;:chat</span></code> and <code class="docutils literal notranslate"><span class="pre">agent_id:&lt;id&gt;:chat</span></code>) can deliver the same event more than once; make handlers idempotent by resource <code class="docutils literal notranslate"><span class="pre">id</span></code>.</p>
 </div>
 <p><strong>Common Event Types</strong></p>
 <p>The webhook event type strings below use the same underscored naming as <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Struct</span></a> (not the dotted <code class="docutils literal notranslate"><span class="pre">resource.action</span></code> style used elsewhere in this page for topic <em>resource</em> names).</p>
@@ -950,6 +938,12 @@ Authentication:
 </tr>
 <tr class="row-odd"><td><p>agent_status_updated</p></td>
 <td><p>Agent availability changed</p></td>
+</tr>
+<tr class="row-even"><td><p>conversation_created, conversation_updated, conversation_deleted</p></td>
+<td><p>Conversation created or updated (including owner changes)</p></td>
+</tr>
+<tr class="row-odd"><td><p>conversation_message_created, conversation_message_updated, conversation_message_deleted</p></td>
+<td><p>Conversation message events. When the conversation is owned by an agent, these frames also carry <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> and <code class="docutils literal notranslate"><span class="pre">owner_type</span></code>, which are the owner of the conversation the message belongs to (not of the message itself). An agent subscribed to <code class="docutils literal notranslate"><span class="pre">agent_id:&lt;agent-id&gt;:conversation</span></code> receives these for the conversations it owns.</p></td>
 </tr>
 </tbody>
 </table>

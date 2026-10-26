@@ -1157,9 +1157,8 @@
     <span class="n">event_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"event_type"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">event_type</span><span class="p">:</span>
         <span class="k">if</span> <span class="s2">"transcript"</span> <span class="ow">in</span> <span class="n">event_type</span><span class="p">:</span>
-            <span class="n">transcript</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span>
-            <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"direction"</span><span class="p">,</span> <span class="s2">"?"</span><span class="p">)</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="n">transcript</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"message"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"direction"</span><span class="p">,</span> <span class="s2">"?"</span><span class="p">)</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"message"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[TRANSCRIBE </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[EVENT] </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -1487,37 +1486,31 @@
 </section>
 <section id="observe-real-time-transcription">
 <h5>Observe real-time transcription<a class="headerlink" href="#observe-real-time-transcription" title="Link to this heading">¶</a></h5>
-<p>After answering the call on Linphone, you receive transcription events via your configured event subscription (WebSocket or customer webhook). The examples below show WebSocket event payloads.</p>
+<p>After answering the call on Linphone, you receive transcription events via your configured event subscription (WebSocket or customer webhook). The examples below show WebSocket event payloads: the resource fields at the top level plus an <code class="docutils literal notranslate"><span class="pre">event_type</span></code> key.</p>
 <p><strong>The TTS greeting appears first</strong> (<code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;out&quot;</span></code> — VoIPBin to caller):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"transcript_created"</span><span class="p">,</span>
-    <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:05:02.000000Z"</span><span class="p">,</span>
-    <span class="s2">"topic"</span><span class="p">:</span> <span class="s2">"customer_id:&lt;your-customer-id&gt;:transcribe:&lt;transcribe-id&gt;"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9d59e7f0-7bdc-4c52-bb8c-bab718952050"</span><span class="p">,</span>
-        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
-        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hello. This is the VoIPBin real-time voice interaction test. You can speak now and your speech will be transcribed."</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:05:02.233415Z"</span>
-    <span class="p">}</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9d59e7f0-7bdc-4c52-bb8c-bab718952050"</span><span class="p">,</span>
+    <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
+    <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hello. This is the VoIPBin real-time voice interaction test. You can speak now and your speech will be transcribed."</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:05:02.233415Z"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Transcript event fields:</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">data.transcribe_id</span></code> (UUID): The transcription session ID, generated internally when the <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action executes. Query all transcripts for this session via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcripts?transcribe_id=&lt;transcribe_id&gt;</span></code>. Transcripts are paginated; see the <a class="reference internal" href="transcribe_tutorial.html#transcribe-tutorial"><span class="std std-ref">Transcribe tutorial</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">data.direction</span></code> (enum String): <code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> — speech from the caller to VoIPBin. <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> — speech from VoIPBin to the caller (TTS output).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">data.message</span></code> (String): The transcribed text.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> (UUID): The transcription session ID, generated internally when the <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action executes. Query all transcripts for this session via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcripts?transcribe_id=&lt;transcribe_id&gt;</span></code>. Transcripts are paginated; see the <a class="reference internal" href="transcribe_tutorial.html#transcribe-tutorial"><span class="std std-ref">Transcribe tutorial</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum String): <code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> — speech from the caller to VoIPBin. <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> — speech from VoIPBin to the caller (TTS output).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">message</span></code> (String): The transcribed text.</p></li>
 </ul>
 <p><strong>When you speak into Linphone</strong>, your speech appears as <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;in&quot;</span></code> (caller to VoIPBin):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"transcript_created"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"in"</span><span class="p">,</span>
-        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hi, this is a test of the transcription feature."</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:05:15.100000Z"</span>
-    <span class="p">}</span>
+    <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"in"</span><span class="p">,</span>
+    <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hi, this is a test of the transcription feature."</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:05:15.100000Z"</span>
 <span class="p">}</span>
 </pre></div>
 </div>

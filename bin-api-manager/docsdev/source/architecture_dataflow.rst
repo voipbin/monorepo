@@ -249,7 +249,7 @@ WebSocket connections provide real-time updates to clients:
        |                  |                    |                      |
        |<-----------------+                    |                      |
        | 8. Push Event    |                    |                      |
-       | {"event":"call_created",...}          |                      |
+       | {"event_type":"call_created",...}     |                      |
        |                  |                    |                      |
 
 **Topic Matching:**

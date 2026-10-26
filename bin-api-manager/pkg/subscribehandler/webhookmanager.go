@@ -1,6 +1,7 @@
 package subscribehandler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -146,14 +147,43 @@ func (h *subscribeHandler) processEventWebhookManagerRoutingKeyedEvent(ctx conte
 	}
 	log.Debugf("Created topics. topics: %s", topics)
 
+	// tell the websocket client which event this frame is. The same payload is published
+	// to every topic of the event.
+	data := string(injectEventType(m.Data, m.Type))
+
 	for _, topic := range topics {
-		if errPub := h.pubHandler.Publish(topic, string(m.Data)); errPub != nil {
+		if errPub := h.pubHandler.Publish(topic, data); errPub != nil {
 			log.Errorf("Could not publish the event. err: %v", errPub)
 			return errPub
 		}
 	}
 
 	return nil
+}
+
+// injectEventType adds the additive "event_type" key to the JSON object payload.
+// The other keys are kept as they are. If the payload is not a JSON object
+// (including null), it is returned unchanged.
+func injectEventType(data []byte, eventType string) []byte {
+	var obj map[string]json.RawMessage
+	if err := json.Unmarshal(data, &obj); err != nil || obj == nil {
+		return data
+	}
+
+	tmpType, err := json.Marshal(eventType)
+	if err != nil {
+		return data
+	}
+	obj["event_type"] = tmpType
+
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(obj); err != nil {
+		return data
+	}
+
+	return bytes.TrimSuffix(buf.Bytes(), []byte("\n"))
 }
 
 // createTopics generates the topics. d carries only the resource-agnostic

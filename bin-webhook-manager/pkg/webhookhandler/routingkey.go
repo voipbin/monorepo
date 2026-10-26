@@ -1,12 +1,15 @@
 package webhookhandler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"monorepo/bin-webhook-manager/models/webhook"
 
@@ -21,8 +24,9 @@ import (
 type webhookOwnerData struct {
 	commonidentity.Identity
 	commonidentity.Owner
-	AIcallID uuid.UUID `json:"aicall_id"`
-	ChatID   uuid.UUID `json:"chat_id"`
+	AIcallID       uuid.UUID `json:"aicall_id"`
+	ChatID         uuid.UUID `json:"chat_id"`
+	ConversationID uuid.UUID `json:"conversation_id"`
 }
 
 // parseWebhookOwnerData unmarshals the event data payload to extract customer_id/owner_id/
@@ -95,6 +99,75 @@ func (h *webhookHandler) createRoutingKeysForChat(ctx context.Context, d *webhoo
 	return res
 }
 
+// conversationMessageEventPrefix is the event type prefix of the conversation message events
+// (conversation_message_created/updated/deleted). Their resource segment is "conversation", the
+// same as the conversation events, so they need the prefix to be told apart.
+const conversationMessageEventPrefix = "conversation_message_"
+
+// resolveConversationMessageOwner looks up the owner of the conversation the message belongs to.
+// The message payload carries no owner, so without this the agent routing key and the agent
+// topic of api-manager are never created for a message. It returns false (customer-scoped keys
+// only) when the conversation_id is absent, the lookup fails (including the RPC timeout), the conversation
+// belongs to another customer, or it is not owned by an agent.
+func (h *webhookHandler) resolveConversationMessageOwner(ctx context.Context, d *webhookOwnerData) (commonidentity.Owner, bool) {
+	log := logrus.WithFields(logrus.Fields{"func": "resolveConversationMessageOwner"})
+
+	if d.ConversationID == uuid.Nil {
+		return commonidentity.Owner{}, false
+	}
+
+	cv, err := h.reqHandler.ConversationV1ConversationGet(ctx, d.ConversationID)
+	if err != nil {
+		if errors.Is(err, requesthandler.ErrNotFound) {
+			log.Warnf("The conversation of the message does not exist, publishing customer-scoped keys only. err: %v", err)
+		} else {
+			log.Errorf("Could not get the conversation of the message, publishing customer-scoped keys only. err: %v", err)
+		}
+		return commonidentity.Owner{}, false
+	}
+
+	if cv.CustomerID != d.CustomerID {
+		log.Errorf("The conversation belongs to another customer, publishing customer-scoped keys only.")
+		return commonidentity.Owner{}, false
+	}
+
+	if cv.OwnerType != commonidentity.OwnerTypeAgent || cv.OwnerID == uuid.Nil {
+		return commonidentity.Owner{}, false
+	}
+
+	return cv.Owner, true
+}
+
+// injectOwner adds owner_type and owner_id to the JSON object payload so that api-manager, which
+// sees only the payload and not the routing key, creates the agent topics too. The other keys are
+// kept as they are. It returns the payload unchanged when it is not a JSON object.
+func injectOwner(data json.RawMessage, owner commonidentity.Owner) json.RawMessage {
+	var obj map[string]json.RawMessage
+	if err := json.Unmarshal(data, &obj); err != nil || obj == nil {
+		return data
+	}
+
+	tmpType, err := json.Marshal(owner.OwnerType)
+	if err != nil {
+		return data
+	}
+	tmpID, err := json.Marshal(owner.OwnerID)
+	if err != nil {
+		return data
+	}
+	obj["owner_type"] = tmpType
+	obj["owner_id"] = tmpID
+
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(obj); err != nil {
+		return data
+	}
+
+	return json.RawMessage(bytes.TrimSuffix(buf.Bytes(), []byte("\n")))
+}
+
 // publishRoutingKeyedEvent computes routing keys for the given event data and publishes to the
 // topic exchange with each key. Best-effort: logs and returns on parse/RPC failure without
 // blocking the caller (the customer webhook HTTP delivery, dispatched separately via goroutine
@@ -118,6 +191,11 @@ func (h *webhookHandler) createRoutingKeysForChat(ctx context.Context, d *webhoo
 // now deleted) did this unwrap correctly: unmarshal into webhook.Data{Type, Data}, use .Type as
 // the message type, and parse owner fields from .Data (not from the outer envelope). This
 // function now does the same.
+//
+// Besides the chat family, conversation message events (conversation_message_*) also issue one
+// synchronous reqHandler RPC: the conversation lookup that supplies the owner (see
+// resolveConversationMessageOwner). The payload is the only thing that changes for them, and only
+// on the topic exchange: the customer HTTP delivery keeps the original data.
 //
 // NOT universal, however (round-1 review finding, 2026-07-15): SendWebhookToURI is ALSO reached
 // via a second, unrelated path -- the flow-designer's webhook_send action
@@ -170,15 +248,28 @@ func (h *webhookHandler) publishRoutingKeyedEvent(ctx context.Context, _ string,
 	}
 	resource := tmps[0]
 
+	// payload is published as it is, except for the conversation message events below.
+	payload := envelope.Data
+
 	var keys []string
-	switch resource {
-	case "chat", "chatmessage", "chatparticipant":
+	switch {
+	case resource == "chat" || resource == "chatmessage" || resource == "chatparticipant":
 		keys = h.createRoutingKeysForChat(ctx, d, eventType)
+
+	case strings.HasPrefix(eventType, conversationMessageEventPrefix):
+		// the message payload has no owner. The owner of its conversation decides the agent key.
+		// The owner is injected once, so every key of the event carries the same payload.
+		if owner, ok := h.resolveConversationMessageOwner(ctx, d); ok {
+			d.Owner = owner
+			payload = injectOwner(payload, owner)
+		}
+		keys = createRoutingKeys(d, resource, eventType)
+
 	default:
 		keys = createRoutingKeys(d, resource, eventType)
 	}
 
 	for _, key := range keys {
-		h.topicNotifyHandler.PublishEventWithRoutingKey(ctx, eventType, key, envelope.Data)
+		h.topicNotifyHandler.PublishEventWithRoutingKey(ctx, eventType, key, payload)
 	}
 }

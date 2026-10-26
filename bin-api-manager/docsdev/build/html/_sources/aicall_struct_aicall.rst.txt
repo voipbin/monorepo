@@ -108,6 +108,14 @@ task           The AI call is running as a background task
 contact_case   The AI call is attached to a contact-manager Case (Insight AI / Case Insight Assistant)
 ============== ===========
 
+When creating an AI call with ``POST /aicalls`` or ``POST /service_agents/aicalls``, ``reference_type``
+must be ``call``, ``conversation``, ``contact_case``, or an empty string (no reference; ``reference_id``
+is then ignored). ``task`` is used internally and is not accepted. Any other value returns
+``400 INVALID_ARGUMENT``. For ``call``, ``conversation`` and ``contact_case`` the referenced resource
+must belong to the same customer as the assistance (the caller's own customer on
+``POST /service_agents/aicalls``); a reference that does not exist or does not belong to the
+customer returns ``404 RESOURCE_NOT_FOUND``.
+
 .. _aicall-struct-aicall-status:
 
 Status
@@ -163,8 +171,9 @@ Service Agent Endpoint Behavior
 ``assistance_type=ai`` and ``reference_type=contact_case`` — the
 customer's own ``type=insight`` AI is resolved automatically. Returns
 ``404 RESOURCE_NOT_FOUND`` if the customer has no Insight AI configured.
-Returns ``403 PERMISSION_DENIED`` if, for ``reference_type=contact_case``,
-``reference_id`` does not belong to the caller's own customer.
+Returns ``404 RESOURCE_NOT_FOUND`` if ``reference_id`` does not exist or does not belong to the
+caller's own customer, and ``400 INVALID_ARGUMENT`` if ``reference_type`` is not one of the
+accepted values (see :ref:`Reference Type <aicall-struct-aicall-reference-type>`).
 
 ``POST /service_agents/aimessages``: may be rejected with a cooldown
 error if called again on the same ``aicall_id`` within a short window of

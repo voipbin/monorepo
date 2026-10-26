@@ -25,9 +25,9 @@ WebSocket communication uses JSON messages for all operations.
 
     Server -> Client:
     +-----------------------------------------------------------------------+
-    | (unwrapped webhook payload) | Real-time event notification. Pushed as |
-    |                             | the raw resource payload with no        |
-    |                             | envelope -- see "Event Message          |
+    | (resource payload with      | Real-time event notification. Pushed as |
+    | event_type key)             | the resource payload with one added     |
+    |                             | key, event_type -- see "Event Message   |
     |                             | Structure" below.                       |
     +-----------------------------------------------------------------------+
 
@@ -205,6 +205,8 @@ Topics follow a consistent format for event filtering.
      - agent_created, agent_updated, agent_status_updated
    * - chat
      - chat_created, chatmessage_created, chatparticipant_added
+   * - conversation
+     - conversation_created, conversation_updated, conversation_deleted, conversation_message_created
 
 **Matching All Resources of a Type**
 
@@ -230,43 +232,30 @@ Topics follow a consistent format for event filtering.
 
 Event Message Structure
 -----------------------
-Events are pushed from the server when subscribed resources change. The pushed text frame is **not** wrapped in a topic/timestamp envelope. The platform is currently mid-migration to a new event-routing path, so two payload shapes coexist on the same topic until the migration completes -- see :ref:`Event Message Format <websocket-overview>` for the full explanation. In short:
+Events are pushed from the server when subscribed resources change. The pushed text frame is the resource payload itself (the same fields as the corresponding webhook ``data``) with one added top-level key, ``event_type``, naming the event. There is no ``topic``/``timestamp`` envelope and no ``data`` wrapper. See :ref:`Event Message Format <websocket-overview>`.
 
-* **Wrapped (legacy)** -- the classic webhook envelope from :ref:`Webhook Struct <webhook-struct-webhook>`: an object with a ``type`` field naming the event and a ``data`` field holding the resource.
-* **Unwrapped (new)** -- just the raw resource object, with no ``type``/``data`` wrapper and no event-action indicator.
-
-**Wrapped structure**
+**Structure**
 
 .. code::
 
     {
-        "type": "<event-type>",
-        "data": {
-            // Resource-specific payload, e.g. the Call struct for call_* events
-        }
+        "event_type": "<event-type>",
+        // Resource-specific payload fields at the top level, e.g. the Call struct fields for call_* events
     }
 
-**Unwrapped structure**
+**Fields**
 
-.. code::
-
-    {
-        // Resource-specific payload directly at the top level, e.g. the Call struct itself for call_* events
-    }
-
-**Fields (wrapped shape)**
-
-* ``type`` (enum string): The webhook event type (e.g., ``"call_created"``, ``"call_updated"``). See :ref:`Webhook Struct <webhook-struct-webhook>` for the full list.
-* ``data`` (Object): Resource-specific data payload. Structure varies by ``type`` and corresponds to the relevant resource struct (e.g., :ref:`Call <call-struct-call>` for ``call_*`` events).
+* ``event_type`` (enum string): The event type (e.g., ``"call_created"``, ``"chatparticipant_removed"``, ``"conversation_message_created"``). See :ref:`Webhook Struct <webhook-struct-webhook>` for the full list.
+* All other keys: the resource's own fields. A resource field named ``type`` is a resource field, not the event type.
 
 .. note:: **AI Implementation Hint**
 
-   Check for a top-level ``type`` field first to distinguish the two shapes: if present, unwrap ``data`` as above; if absent, treat the whole message as the raw resource. Neither shape has a separate ``event_type``, ``topic``, or ``timestamp`` field -- use the resource's own ``tm_create``/``tm_update`` fields for timing, and its own ``id``/``customer_id``/``owner_id`` fields to correlate the event. This dual-shape behavior is a temporary migration state, not a stable contract.
+   Branch on ``event_type``, not on the shape of the payload. Frames do not carry a ``topic`` or ``timestamp`` field -- use the resource's own ``tm_create``/``tm_update`` fields for timing, and its own ``id``/``customer_id``/``owner_id`` fields to correlate the event. A client that subscribes with an overlapping prefix (for example both ``customer_id:<id>:chat`` and ``agent_id:<id>:chat``) can receive the same event more than once, so make event handlers idempotent by resource ``id``.
 
 
 Event Type Reference
 --------------------
-The wrapped WebSocket event payloads are identical to the corresponding webhook payloads. Below is one representative example per resource type (wrapped shape); see :ref:`Webhook Struct <webhook-struct-webhook>` for the complete, authoritative list of event types and full field sets.
+The WebSocket event payloads contain the same fields as the corresponding webhook ``data`` plus ``event_type``. Below is one representative example per resource type; see :ref:`Webhook Struct <webhook-struct-webhook>` for the complete, authoritative list of event types and full field sets.
 
 **Call Events**
 
@@ -274,27 +263,23 @@ The wrapped WebSocket event payloads are identical to the corresponding webhook 
 
     // call_created
     {
-        "type": "call_created",
-        "data": {
-            "id": "5371e9db-d035-4db6-a8d6-0994d33e744e",
-            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-            "status": "ringing",
-            "direction": "incoming",
-            "tm_create": "2022-04-11 00:23:53.636000",
-            "tm_update": "9999-01-01 00:00:00.000000"
-        }
+        "event_type": "call_created",
+        "id": "5371e9db-d035-4db6-a8d6-0994d33e744e",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "status": "ringing",
+        "direction": "incoming",
+        "tm_create": "2022-04-11 00:23:53.636000",
+        "tm_update": "9999-01-01 00:00:00.000000"
     }
 
     // call_hangup
     {
-        "type": "call_hangup",
-        "data": {
-            "id": "5371e9db-d035-4db6-a8d6-0994d33e744e",
-            "status": "terminated",
-            "hangup_by": "remote",
-            "hangup_reason": "normal",
-            "tm_hangup": "2022-04-11 00:25:10.000000"
-        }
+        "event_type": "call_hangup",
+        "id": "5371e9db-d035-4db6-a8d6-0994d33e744e",
+        "status": "terminated",
+        "hangup_by": "remote",
+        "hangup_reason": "normal",
+        "tm_hangup": "2022-04-11 00:25:10.000000"
     }
 
 **Activeflow Events**
@@ -303,12 +288,10 @@ The wrapped WebSocket event payloads are identical to the corresponding webhook 
 
     // activeflow_updated
     {
-        "type": "activeflow_updated",
-        "data": {
-            "id": "flow789",
-            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-            "tm_update": "2024-01-15 10:30:00.000000"
-        }
+        "event_type": "activeflow_updated",
+        "id": "flow789",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "tm_update": "2024-01-15 10:30:00.000000"
     }
 
 **Queue Events**
@@ -317,14 +300,12 @@ The wrapped WebSocket event payloads are identical to the corresponding webhook 
 
     // queuecall_created
     {
-        "type": "queuecall_created",
-        "data": {
-            "id": "queuecall789",
-            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-            "queue_id": "queue789",
-            "reference_id": "call456",
-            "tm_create": "2024-01-15 10:30:00.000000"
-        }
+        "event_type": "queuecall_created",
+        "id": "queuecall789",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "queue_id": "queue789",
+        "reference_id": "call456",
+        "tm_create": "2024-01-15 10:30:00.000000"
     }
 
 **Agent Events**
@@ -333,13 +314,11 @@ The wrapped WebSocket event payloads are identical to the corresponding webhook 
 
     // agent_status_updated
     {
-        "type": "agent_status_updated",
-        "data": {
-            "id": "agent123",
-            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-            "status": "available",
-            "tm_update": "2024-01-15 10:30:00.000000"
-        }
+        "event_type": "agent_status_updated",
+        "id": "agent123",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "status": "available",
+        "tm_update": "2024-01-15 10:30:00.000000"
     }
 
 **Talk (Chat) Events**
@@ -348,14 +327,12 @@ The wrapped WebSocket event payloads are identical to the corresponding webhook 
 
     // chatmessage_created
     {
-        "type": "chatmessage_created",
-        "data": {
-            "id": "a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f",
-            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-            "chat_id": "e8b2e976-f043-44c8-bb89-e214e225e813",
-            "text": "Hello team!",
-            "tm_create": "2024-01-17 10:32:00.000000"
-        }
+        "event_type": "chatmessage_created",
+        "id": "a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "chat_id": "e8b2e976-f043-44c8-bb89-e214e225e813",
+        "text": "Hello team!",
+        "tm_create": "2024-01-17 10:32:00.000000"
     }
 
 
@@ -368,7 +345,7 @@ If a subscribed topic fails permission validation (e.g., a ``customer_id`` that 
 
 Message Handling Examples
 -------------------------
-Code examples for processing WebSocket messages. Since server-pushed events reuse the ``type``/``data`` shape but with resource event-type values (not ``"ack"``/``"error"``, which do not exist), a simple switch on ``type`` is enough to distinguish them from client-sent message echoes (which a well-behaved client should not receive back, since the server never echoes ``subscribe``/``unsubscribe`` messages).
+Code examples for processing WebSocket messages. Server-pushed events are the resource payload plus an ``event_type`` key, so a switch on ``event_type`` distinguishes them. The server never echoes ``subscribe``/``unsubscribe`` messages.
 
 **JavaScript**
 
@@ -377,21 +354,21 @@ Code examples for processing WebSocket messages. Since server-pushed events reus
     ws.onmessage = function(event) {
         const message = JSON.parse(event.data);
 
-        switch(message.type) {
+        switch(message.event_type) {
             case 'call_created':
             case 'call_ringing':
             case 'call_progressing':
             case 'call_updated':
             case 'call_hangup':
-                handleCallEvent(message.type, message.data);
+                handleCallEvent(message.event_type, message);
                 break;
 
             case 'message_created':
-                handleMessage(message.data);
+                handleMessage(message);
                 break;
 
             default:
-                console.log('Received:', message.type, message.data);
+                console.log('Received:', message.event_type, message);
         }
     };
 
@@ -402,13 +379,13 @@ Code examples for processing WebSocket messages. Since server-pushed events reus
     def on_message(ws, raw_message):
         message = json.loads(raw_message)
 
-        msg_type = message.get('type')
+        msg_type = message.get('event_type')
 
         if msg_type and msg_type.startswith('call_'):
-            handle_call_event(msg_type, message['data'])
+            handle_call_event(msg_type, message)
 
         elif msg_type == 'message_created':
-            handle_message(message['data'])
+            handle_message(message)
 
         else:
             print(f"Received: {msg_type}")

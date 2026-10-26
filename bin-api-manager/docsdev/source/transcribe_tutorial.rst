@@ -281,20 +281,18 @@ Topics follow the pattern ``customer_id:<your-customer-id>:<resource>:<resource-
 
 **3. Receive Real-Time Transcripts:**
 
-Real-time events delivered over the WebSocket use the same envelope as webhooks: a ``type`` field (the event type) and a ``data`` field (the resource payload).
+Real-time events delivered over the WebSocket are the resource payload with one added top-level key, ``event_type`` (the event type). There is no ``data`` wrapper.
 
 .. code::
 
     {
-        "type": "transcript_created",
-        "data": {
-            "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
-            "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
-            "direction": "out",
-            "message": "Hello, this is a transcribe test call.",
-            "offset_ms": 8991,
-            "tm_create": "2024-04-04 07:15:59.233415"
-        }
+        "event_type": "transcript_created",
+        "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
+        "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
+        "direction": "out",
+        "message": "Hello, this is a transcribe test call.",
+        "offset_ms": 8991,
+        "tm_create": "2024-04-04 07:15:59.233415"
     }
 
 **Python WebSocket Example:**
@@ -307,10 +305,9 @@ Real-time events delivered over the WebSocket use the same envelope as webhooks:
     def on_message(ws, message):
         data = json.loads(message)
 
-        if data.get('type') == 'transcript_created':
-            transcript = data['data']
-            direction = transcript['direction']
-            text = transcript['message']
+        if data.get('event_type') == 'transcript_created':
+            direction = data['direction']
+            text = data['message']
 
             print(f"[{direction}] {text}")
 

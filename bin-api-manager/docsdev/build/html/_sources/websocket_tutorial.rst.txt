@@ -90,8 +90,8 @@ Using the ``websocket-client`` library:
     def on_message(ws, message):
         """Handle incoming WebSocket messages"""
         data = json.loads(message)
-        event_type = data.get('type')
-        resource_data = data.get('data')
+        event_type = data.get('event_type')
+        resource_data = data
 
         print(f"Received event: {event_type}")
 
@@ -178,19 +178,19 @@ Using the ``websocket-client`` library:
 
     ws.onmessage = function(event) {
         const data = JSON.parse(event.data);
-        const eventType = data.type;
+        const eventType = data.event_type;
 
         console.log(`Received event: ${eventType}`);
 
         switch(eventType) {
             case 'call_updated':
-                handleCallStatus(data.data);
+                handleCallStatus(data);
                 break;
             case 'message_created':
-                handleMessageReceived(data.data);
+                handleMessageReceived(data);
                 break;
             case 'activeflow_updated':
-                handleActiveflowUpdate(data.data);
+                handleActiveflowUpdate(data);
                 break;
             default:
                 console.log('Unknown event type:', eventType);
@@ -263,26 +263,26 @@ Using the ``ws`` library:
 
     ws.on('message', function(data) {
         const message = JSON.parse(data);
-        const eventType = message.type;
+        const eventType = message.event_type;
 
         console.log(`Received event: ${eventType}`);
 
         // Process events
         switch(eventType) {
             case 'call_updated':
-                console.log(`Call ${message.data.id}: ${message.data.status}`);
+                console.log(`Call ${message.id}: ${message.status}`);
                 break;
 
             case 'queuecall_created':
-                console.log(`Caller ${message.data.call_id} joined queue ${message.data.queue_id}`);
+                console.log(`Caller ${message.call_id} joined queue ${message.queue_id}`);
                 // Notify agents
-                notifyAgents(message.data);
+                notifyAgents(message);
                 break;
 
             case 'message_created':
-                console.log(`Message: ${message.data.text}`);
+                console.log(`Message: ${message.text}`);
                 // Process message
-                processIncomingMessage(message.data);
+                processIncomingMessage(message);
                 break;
         }
     });
@@ -388,20 +388,22 @@ Only the owner of the agent can subscribe:
 Event Message Format
 --------------------
 
-All WebSocket events follow this structure -- the exact same payload as the corresponding webhook (see :ref:`Webhook Struct <webhook-struct-webhook>`), with no extra topic/timestamp envelope:
+All WebSocket events are the resource payload itself -- the same fields as the corresponding webhook ``data`` (see :ref:`Webhook Struct <webhook-struct-webhook>`) -- plus one additional top-level key, ``event_type``, naming the event. There is no ``topic``/``timestamp`` envelope and no ``data`` wrapper:
 
 .. code::
 
     {
-        "type": "call_updated",
-        "data": {
-            // Event-specific resource data
-        }
+        "event_type": "call_updated",
+        // Resource fields at the top level (the Call struct for call_* events)
+        "id": "5371e9db-d035-4db6-a8d6-0994d33e744e",
+        "status": "answered",
+        ...
     }
 
 **Fields:**
-- ``type``: The webhook event type (e.g., ``call_updated``, ``message_created``) -- see :ref:`Webhook Struct <webhook-struct-webhook>`
-- ``data``: Resource-specific data (call, message, activeflow, etc.)
+
+- ``event_type`` (String): The event type (e.g., ``call_updated``, ``chatmessage_created``, ``conversation_message_created``) -- see :ref:`Webhook Struct <webhook-struct-webhook>`
+- All other keys: the resource's own fields. A resource field named ``type`` (for example the type of a chat or conversation) is a resource field, not the event type.
 
 Common Use Cases
 ----------------
@@ -416,8 +418,8 @@ Monitor all active calls in real-time:
     def on_message(ws, message):
         data = json.loads(message)
 
-        if data['type'] == 'call_updated':
-            call = data['data']
+        if data['event_type'] == 'call_updated':
+            call = data
 
             if call['status'] == 'answered':
                 print(f"Call {call['id']} answered - Duration tracking started")
@@ -438,16 +440,16 @@ Update agent status and queue information in real-time:
     ws.onmessage = function(event) {
         const data = JSON.parse(event.data);
 
-        if (data.type === 'queuecall_created') {
+        if (data.event_type === 'queuecall_created') {
             // Update queue count
-            updateQueueCount(data.data.queue_id, '+1');
+            updateQueueCount(data.queue_id, '+1');
             // Show notification to agents
             notifyAgents(`New caller in queue`);
         }
 
-        if (data.type === 'agent_status_updated') {
+        if (data.event_type === 'agent_status_updated') {
             // Update agent availability display
-            updateAgentStatus(data.data.agent_id, data.data.status);
+            updateAgentStatus(data.agent_id, data.status);
         }
     };
 
@@ -461,8 +463,8 @@ Visualize flow execution in real-time:
     ws.on('message', function(data) {
         const message = JSON.parse(data);
 
-        if (message.type === 'activeflow_updated') {
-            const activeflow = message.data;
+        if (message.event_type === 'activeflow_updated') {
+            const activeflow = message;
 
             // Update flow diagram
             highlightCurrentAction(
@@ -485,8 +487,8 @@ Respond to messages immediately when received:
     def on_message(ws, message):
         data = json.loads(message)
 
-        if data['type'] == 'message_created':
-            msg = data['data']
+        if data['event_type'] == 'message_created':
+            msg = data
 
             # Auto-reply logic
             if 'help' in msg['text'].lower():
