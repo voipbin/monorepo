@@ -6940,7 +6940,7 @@ type NumberManagerNumberProvider struct {
 	// UpdatedBy The agent who last changed `enabled`, `priority` or `config`. The agent ID returned from the `GET /agents` response. Omitted when never changed.
 	UpdatedBy *string `json:"updated_by,omitempty"`
 
-	// Usable Whether the provider can currently serve (enabled, with a usable credential and, for a stored secret, its required `config`). It does not mean the provider can purchase numbers.
+	// Usable Whether the provider can currently serve (enabled, with a usable credential and its required `config`; Twilio needs `sid` and `trunk_sid`, which the environment credentials cannot give). An enabled and usable provider takes part in number purchase.
 	Usable *bool `json:"usable,omitempty"`
 }
 
@@ -6961,7 +6961,7 @@ type NumberManagerNumberProviderSecretRequest struct {
 // NumberManagerNumberProviderUpdateRequest The fields to change. At least one field is required; omitted fields keep their current value.
 type NumberManagerNumberProviderUpdateRequest struct {
 	// Config The non-secret settings, merged key by key. A key with an empty string value is removed.
-	// At most 8 keys, key up to 32 bytes and value up to 256 bytes. Only the keys the provider allows are accepted (Telnyx: `connection_id`, `profile_id`; Twilio: `sid`).
+	// At most 8 keys, key up to 32 bytes and value up to 256 bytes. Only the keys the provider allows are accepted (Telnyx: `connection_id`, `profile_id`; Twilio: `sid`, `trunk_sid`).
 	Config *map[string]string `json:"config,omitempty"`
 
 	// Enabled Whether the provider takes part in the number purchase.

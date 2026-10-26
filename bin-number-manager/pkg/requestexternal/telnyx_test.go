@@ -35,6 +35,9 @@ var failClosedTransport = roundTripFunc(func(req *http.Request) (*http.Response,
 
 func TestMain(m *testing.M) {
 	telnyxHTTPClient.Transport = failClosedTransport
+
+	// a twilio test that forgets to install its server must never reach the real twilio
+	twilioBaseURL = "http://127.0.0.1:0"
 	os.Exit(m.Run())
 }
 

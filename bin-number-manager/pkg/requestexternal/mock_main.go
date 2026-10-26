@@ -11,6 +11,7 @@ package requestexternal
 
 import (
 	telnyx "monorepo/bin-number-manager/pkg/requestexternal/models/telnyx"
+	twilio "monorepo/bin-number-manager/pkg/requestexternal/models/twilio"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -143,4 +144,48 @@ func (m *MockRequestExternal) TelnyxPhoneNumbersIDUpdate(token, id string, data 
 func (mr *MockRequestExternalMockRecorder) TelnyxPhoneNumbersIDUpdate(token, id, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxPhoneNumbersIDUpdate", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxPhoneNumbersIDUpdate), token, id, data)
+}
+
+// TwilioAvailableNumberGets mocks base method.
+func (m *MockRequestExternal) TwilioAvailableNumberGets(sid, token, countryCode string, limit uint) ([]*twilio.AvailableNumber, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TwilioAvailableNumberGets", sid, token, countryCode, limit)
+	ret0, _ := ret[0].([]*twilio.AvailableNumber)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TwilioAvailableNumberGets indicates an expected call of TwilioAvailableNumberGets.
+func (mr *MockRequestExternalMockRecorder) TwilioAvailableNumberGets(sid, token, countryCode, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TwilioAvailableNumberGets", reflect.TypeOf((*MockRequestExternal)(nil).TwilioAvailableNumberGets), sid, token, countryCode, limit)
+}
+
+// TwilioIncomingPhoneNumbersIDDelete mocks base method.
+func (m *MockRequestExternal) TwilioIncomingPhoneNumbersIDDelete(sid, token, id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TwilioIncomingPhoneNumbersIDDelete", sid, token, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TwilioIncomingPhoneNumbersIDDelete indicates an expected call of TwilioIncomingPhoneNumbersIDDelete.
+func (mr *MockRequestExternalMockRecorder) TwilioIncomingPhoneNumbersIDDelete(sid, token, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TwilioIncomingPhoneNumbersIDDelete", reflect.TypeOf((*MockRequestExternal)(nil).TwilioIncomingPhoneNumbersIDDelete), sid, token, id)
+}
+
+// TwilioIncomingPhoneNumbersPost mocks base method.
+func (m *MockRequestExternal) TwilioIncomingPhoneNumbersPost(sid, token, num, trunkSID string) (*twilio.IncomingPhoneNumber, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TwilioIncomingPhoneNumbersPost", sid, token, num, trunkSID)
+	ret0, _ := ret[0].(*twilio.IncomingPhoneNumber)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TwilioIncomingPhoneNumbersPost indicates an expected call of TwilioIncomingPhoneNumbersPost.
+func (mr *MockRequestExternalMockRecorder) TwilioIncomingPhoneNumbersPost(sid, token, num, trunkSID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TwilioIncomingPhoneNumbersPost", reflect.TypeOf((*MockRequestExternal)(nil).TwilioIncomingPhoneNumbersPost), sid, token, num, trunkSID)
 }

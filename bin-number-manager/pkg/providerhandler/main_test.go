@@ -271,7 +271,7 @@ func Test_PurchaseCandidates(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("deploy default: telnyx alone from the env credentials", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), "", NewEnvCredentials("c", "p", "t", "sid", "twilio-token"))
+		h := newTestHandler(t, newFakeDB(), "", NewEnvCredentials("c", "p", "t", testTwilioSID, "twilio-token"))
 
 		res, err := h.PurchaseCandidates(ctx)
 		if err != nil || len(res) != 1 || res[0].Name != number.ProviderNameTelnyx {
@@ -288,10 +288,11 @@ func Test_PurchaseCandidates(t *testing.T) {
 		}
 	})
 
-	t.Run("an enabled twilio is not purchasable", func(t *testing.T) {
+	t.Run("an enabled twilio with the environment credential only is not a candidate", func(t *testing.T) {
+		// the environment has no trunk_sid, so a purchase could not route the calls of the number
 		db := newFakeDB()
 		db.rows[number.ProviderNameTwilio] = &provider.Provider{ProviderName: number.ProviderNameTwilio, Enabled: true, Priority: 1}
-		h := newTestHandler(t, db, "", NewEnvCredentials("c", "p", "t", "sid", "twilio-token"))
+		h := newTestHandler(t, db, "", NewEnvCredentials("c", "p", "t", testTwilioSID, "twilio-token"))
 
 		res, _ := h.PurchaseCandidates(ctx)
 		for _, c := range res {
@@ -390,27 +391,6 @@ func Test_ForRelease(t *testing.T) {
 
 		if _, err := h.ForRelease(ctx, "nope"); !errors.Is(err, dbhandler.ErrNotFound) {
 			t.Errorf("Wrong match. expect: not found, got: %v", err)
-		}
-	})
-
-	t.Run("twilio search and release are not implemented", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), "", NewEnvCredentials("", "", "", "sid", "twilio-token"))
-
-		p, err := h.ForRelease(ctx, number.ProviderNameTwilio)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if _, err := p.GetAvailableNumbers("US", 1); !errors.Is(err, provider.ErrNotImplemented) {
-			t.Errorf("Wrong match. expect: not implemented, got: %v", err)
-		}
-		if _, err := p.NumberPurchase("+1"); !errors.Is(err, provider.ErrNotImplemented) {
-			t.Errorf("Wrong match. expect: not implemented, got: %v", err)
-		}
-		if err := p.NumberRelease(ctx, &number.Number{}); !errors.Is(err, provider.ErrNotImplemented) {
-			t.Errorf("Wrong match. expect: not implemented, got: %v", err)
-		}
-		if err := p.NumberUpdateTags(ctx, &number.Number{}, nil); !errors.Is(err, provider.ErrNotImplemented) {
-			t.Errorf("Wrong match. expect: not implemented, got: %v", err)
 		}
 	})
 }

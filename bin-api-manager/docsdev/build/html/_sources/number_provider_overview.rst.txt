@@ -31,7 +31,7 @@ A fallback is useful only when the next carrier holds the same number. The avail
 
 .. note:: **AI Implementation Hint**
 
-   Only ``telnyx`` can purchase numbers today. ``twilio`` is listed with ``enabled`` false and cannot purchase; even when it is enabled and ``usable`` is true, it is never used for purchase.
+   ``telnyx`` and ``twilio`` can purchase numbers. ``twilio`` is listed with ``enabled`` false and takes part in a purchase only after an administrator enters its ``config`` (``sid`` and ``trunk_sid``) and secret, and enables it. Enter the ``config`` before the secret; the secret is refused until both keys exist. The environment credentials of ``twilio`` can release numbers but never purchase, so ``usable`` is false for them.
 
 
 Credentials

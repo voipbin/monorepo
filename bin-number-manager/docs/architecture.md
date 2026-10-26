@@ -9,7 +9,7 @@ cmd/number-manager/main.go
     ├── migrations                  (embedded golang-migrate SQL files — service-owned schema of number_numbers)
     ├── pkg/cachehandler            (Redis — number lookups)
     ├── pkg/dbhandler               (MySQL — number records)
-    ├── pkg/requestexternal         (HTTP clients for Telnyx/Twilio APIs)
+    ├── pkg/requestexternal         (HTTP clients for the Telnyx and Twilio APIs; Twilio over plain HTTP with basic auth, no SDK)
     ├── pkg/providerhandler         (provider registry, credential resolution, purchase candidates, admin settings)
     ├── pkg/secretcrypto            (AES-256-GCM encryption of the provider secrets, versioned keys)
     ├── pkg/numberhandlertelnyx     (Telnyx provider implementation)
@@ -33,7 +33,7 @@ Supporting binary:
 | Provider | `pkg/numberhandlertelnyx` | Telnyx API: purchase, release, list available numbers |
 | Provider registry | `pkg/providerhandler` | Known providers, priority order, credentials (DB secret or environment), admin settings |
 | Secret crypto | `pkg/secretcrypto` | Encrypts and decrypts the provider secrets stored in `number_providers` |
-| Provider | `pkg/numberhandlertwilio` | Twilio API: purchase, release, list available numbers |
+| Provider | `pkg/numberhandlertwilio` | Twilio API: purchase, release, list available numbers (tag update is a no-op) |
 | External | `pkg/requestexternal` | HTTP client wrapper for provider APIs |
 | Data | `pkg/dbhandler` | MySQL queries for numbers |
 | Cache | `pkg/cachehandler` | Redis cache for number lookups |
