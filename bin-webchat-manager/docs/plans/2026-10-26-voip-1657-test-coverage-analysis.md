@@ -23,7 +23,7 @@ Valid. Measured on origin/main (`GOFLAGS=-mod=mod go test -count=1 -coverprofile
 
 - Handler packages (widget, session, message): database error returns of `Get`, `List`, `Update`, `Delete`, `End`, `Create`, the orphan-direct cleanup of widget creation, the failed second read after a write, and the `NewXxxHandler` constructors. All reachable with the existing gomock mocks and no signature change.
 - `pkg/dbhandler`: exec and query failures, row scan failures, cache-hit returns, empty `fields` returns, `NewHandler`. Reachable with a second, private in-memory SQLite database (no tables for exec and query failures, a table with a non-numeric value in a numeric column for scan failures) and the existing `MockCacheHandler`.
-- `pkg/listenhandler`: the typed-error and not-found mappings in `processRequest` are reachable. The response marshal-failure returns are not (plain structs cannot fail to marshal).
+- `pkg/listenhandler`: the remaining uncovered statements are response marshal-failure returns (plain structs cannot fail to marshal) and the typed-error and not-found lines of the `processRequest` error switch, which no handler reaches because every handler turns its errors into a response itself. Nothing is planned here.
 - `cmd/webchat-control`: `initCommand` builds the command tree without any connection and is testable. `main` is not.
 - `cmd/webchat-manager`: `runListen` (with a mock sock handler) and `initSignal` (fed through the package channels) are testable. `main`, `runDaemon`, `run` and the metrics server goroutine need external connections or a listening server and are left out.
 - `pkg/cachehandler`: needs a Redis stand-in. A test-only module (miniredis) would be needed; it is only used if the measured total is short of the target.
@@ -31,7 +31,7 @@ Valid. Measured on origin/main (`GOFLAGS=-mod=mod go test -count=1 -coverprofile
 
 ## 4. Reachable ceiling
 
-Handlers (about 64 statements), `dbhandler` (about 40), `listenhandler` (2), `cmd` helpers (about 15) add up to about 120 statements, i.e. about 83.6%, without any new module. The ceiling is above 80%, so work continues without escalation. Target: 80.5% or more, with the priority on error paths, then boundaries.
+Handlers (about 56 statements of 64 uncovered), `dbhandler` (about 40), `cmd` helpers (about 18) add up to about 114 statements, i.e. about 83%, without any new module. The ceiling is above 80%, so work continues without escalation. Target: 80.5% or more, with the priority on error paths, then boundaries.
 
 ## 5. Constraints
 
