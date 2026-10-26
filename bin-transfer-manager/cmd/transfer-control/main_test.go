@@ -3,10 +3,14 @@ package main
 import (
 	"errors"
 	"io"
+	"net"
 	"os"
+	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/gofrs/uuid"
@@ -418,4 +422,175 @@ func Test_initCache(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 	})
+}
+
+// startFakeDatabase serves a minimal database protocol on a unix socket. It
+// reports "closed" once a client that completed the handshake and a ping has
+// terminated its connection. Anything unexpected is reported as a message.
+func startFakeDatabase(t *testing.T) (string, <-chan string) {
+	t.Helper()
+
+	dir, err := os.MkdirTemp("", "tc")
+	if err != nil {
+		t.Fatalf("could not create a temp dir: %v", err)
+	}
+	// Unix socket paths are limited in length, so fall back to a short base dir.
+	if len(dir) > 60 {
+		_ = os.RemoveAll(dir)
+		if dir, err = os.MkdirTemp("/tmp", "tc"); err != nil {
+			t.Fatalf("could not create a temp dir: %v", err)
+		}
+	}
+	t.Cleanup(func() { _ = os.RemoveAll(dir) })
+
+	sock := filepath.Join(dir, "s.sock")
+	l, err := net.Listen("unix", sock)
+	if err != nil {
+		t.Fatalf("could not listen: %v", err)
+	}
+
+	result := make(chan string, 4)
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	var conns []net.Conn
+	t.Cleanup(func() {
+		_ = l.Close()
+		mu.Lock()
+		for _, c := range conns {
+			_ = c.Close()
+		}
+		mu.Unlock()
+		wg.Wait()
+	})
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		first := true
+		for {
+			conn, errAccept := l.Accept()
+			if errAccept != nil {
+				return
+			}
+			if !first {
+				result <- "unexpected extra connection"
+				_ = conn.Close()
+				continue
+			}
+			first = false
+
+			mu.Lock()
+			conns = append(conns, conn)
+			mu.Unlock()
+
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				defer func() { _ = conn.Close() }()
+				result <- serveFakeDatabase(conn)
+			}()
+		}
+	}()
+
+	return sock, result
+}
+
+func readFakePacket(conn net.Conn) ([]byte, error) {
+	head := make([]byte, 4)
+	if _, err := io.ReadFull(conn, head); err != nil {
+		return nil, err
+	}
+	body := make([]byte, int(head[0])|int(head[1])<<8|int(head[2])<<16)
+	if _, err := io.ReadFull(conn, body); err != nil {
+		return nil, err
+	}
+	return body, nil
+}
+
+func writeFakePacket(conn net.Conn, seq byte, body []byte) error {
+	buf := append([]byte{byte(len(body)), byte(len(body) >> 8), byte(len(body) >> 16), seq}, body...)
+	_, err := conn.Write(buf)
+	return err
+}
+
+func serveFakeDatabase(conn net.Conn) string {
+	hello := []byte{10}
+	hello = append(hello, []byte("5.7.0-fake\x00")...)
+	hello = append(hello, 1, 0, 0, 0)                    // connection id
+	hello = append(hello, []byte("abcdefgh\x00")...)     // auth data part 1
+	hello = append(hello, 0x00, 0x82)                    // capabilities (lower): PROTOCOL_41, SECURE_CONNECTION
+	hello = append(hello, 33, 2, 0)                      // charset, status
+	hello = append(hello, 0x08, 0x00, 21)                // capabilities (upper): PLUGIN_AUTH, auth data length
+	hello = append(hello, make([]byte, 10)...)           // reserved
+	hello = append(hello, []byte("ijklmnopqrst\x00")...) // auth data part 2
+	hello = append(hello, []byte("mysql_native_password\x00")...)
+	if err := writeFakePacket(conn, 0, hello); err != nil {
+		return "handshake write failed"
+	}
+	if _, err := readFakePacket(conn); err != nil {
+		return "handshake response missing"
+	}
+	ok := []byte{0, 0, 0, 2, 0, 0, 0}
+	if err := writeFakePacket(conn, 2, ok); err != nil {
+		return "authentication write failed"
+	}
+
+	pinged := false
+	for {
+		body, err := readFakePacket(conn)
+		if err != nil {
+			if pinged {
+				return "closed"
+			}
+			return "closed before ping"
+		}
+		switch body[0] {
+		case 0x0e:
+			pinged = true
+			if err := writeFakePacket(conn, 1, ok); err != nil {
+				return "ping write failed"
+			}
+		case 0x01:
+			if pinged {
+				return "closed"
+			}
+			return "closed before ping"
+		default:
+			return "unexpected command"
+		}
+	}
+}
+
+func Test_initHandler_cacheFailure(t *testing.T) {
+	sock, result := startFakeDatabase(t)
+
+	mr := miniredis.RunT(t)
+	addr := mr.Addr()
+	mr.Close()
+	setConfig(t, config.Config{
+		DatabaseDSN:  "tester@unix(" + sock + ")/test",
+		RedisAddress: addr,
+	})
+
+	res, err := initHandler()
+	if err == nil {
+		t.Fatalf("expected an error, got nil")
+	}
+	if res != nil {
+		t.Errorf("expected no handler on error, got: %v", res)
+	}
+	if !strings.HasPrefix(err.Error(), "could not initialize the cache") ||
+		!strings.Contains(err.Error(), "could not connect to the cache") {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	select {
+	case got := <-result:
+		if got != "closed" {
+			t.Errorf("expected the database connection to be closed after a ping, got: %s", got)
+		}
+	case <-time.After(5 * time.Second):
+		t.Errorf("the database connection was not closed after the initialization failed")
+	}
 }
