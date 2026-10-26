@@ -30,7 +30,7 @@ func Test_startIncomingDomainTypeSIPDirectFlow_covB(t *testing.T) {
 		cause   ari.ChannelCause
 	}{
 		{"flow get error", fmt.Errorf("err"), ari.ChannelCauseNoRouteDestination},
-		{"customer not active", nil, ari.ChannelCauseNetworkOutOfOrder},
+		{"customer not active", nil, ari.ChannelCauseCallRejected},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

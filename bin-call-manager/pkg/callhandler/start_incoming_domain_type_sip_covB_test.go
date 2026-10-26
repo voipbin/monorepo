@@ -35,7 +35,7 @@ func Test_startIncomingDomainTypeSIPDirectConference_covB(t *testing.T) {
 	}{
 		{"conference get error", fmt.Errorf("err"), nil, ari.ChannelCauseNoRouteDestination},
 		{"flow create error", nil, fmt.Errorf("err"), ari.ChannelCauseNetworkOutOfOrder},
-		{"customer not active after flow created", nil, nil, ari.ChannelCauseNetworkOutOfOrder},
+		{"customer not active after flow created", nil, nil, ari.ChannelCauseCallRejected},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

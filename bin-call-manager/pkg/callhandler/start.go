@@ -631,7 +631,7 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 	cs, validStatus := h.ValidateCustomerStatusIncoming(ctx, customerID)
 	if !validStatus {
 		log.Errorf("Customer account is not active. Rejecting incoming call. customer_id: %s", customerID)
-		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseCallRejected) // return 403. policy rejection
 		return
 	}
 	log.WithField("customer_id", customerID).Debugf("Retrieved customer info. customer_id: %s", customerID)
