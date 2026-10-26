@@ -82,15 +82,3 @@ func (h *handler) ConferencecallSet(ctx context.Context, data *conferencecall.Co
 
 	return nil
 }
-
-// ConferencecallGetByReferenceID returns cached conferencecall info of the given reference id.
-func (h *handler) ConferencecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
-	key := fmt.Sprintf("conference:conferencecall:reference_id:%s", referenceID)
-
-	var res conferencecall.Conferencecall
-	if err := h.getSerialize(ctx, key, &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}

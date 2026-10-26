@@ -159,11 +159,6 @@ func (h *handler) ConferencecallGet(ctx context.Context, id uuid.UUID) (*confere
 // ConferencecallGetByReferenceID gets conferencecall of the given reference_id.
 func (h *handler) ConferencecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
 
-	tmp, err := h.cache.ConferencecallGetByReferenceID(ctx, referenceID)
-	if err == nil {
-		return tmp, nil
-	}
-
 	fields := commondatabasehandler.GetDBFields(&conferencecall.Conferencecall{})
 	query, args, err := squirrel.
 		Select(fields...).

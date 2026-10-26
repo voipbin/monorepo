@@ -138,7 +138,7 @@ func (h *listenHandler) processV1ConferencesIDDelete(ctx context.Context, m *soc
 	tmp, err := json.Marshal(cf)
 	if err != nil {
 		log.Errorf("Could not marshal the conference. err: %v", err)
-		return simpleResponse(400), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -223,7 +223,7 @@ func (h *listenHandler) processV1ConferencesIDGet(ctx context.Context, m *sock.R
 	tmp, err := json.Marshal(cf)
 	if err != nil {
 		log.Errorf("Could not marshal the conference info. err: %v", err)
-		return simpleResponse(400), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -264,7 +264,7 @@ func (h *listenHandler) processV1ConferencesIDRecordingIDPut(ctx context.Context
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
-		return simpleResponse(400), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -305,7 +305,7 @@ func (h *listenHandler) processV1ConferencesIDRecordingStartPost(ctx context.Con
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
-		return simpleResponse(400), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -340,7 +340,7 @@ func (h *listenHandler) processV1ConferencesIDRecordingStopPost(ctx context.Cont
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
-		return simpleResponse(400), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -381,7 +381,7 @@ func (h *listenHandler) processV1ConferencesIDTranscribeStartPost(ctx context.Co
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
-		return simpleResponse(400), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -416,7 +416,7 @@ func (h *listenHandler) processV1ConferencesIDTranscribeStopPost(ctx context.Con
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
-		return simpleResponse(400), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -451,7 +451,7 @@ func (h *listenHandler) processV1ConferencesIDStopPost(ctx context.Context, m *s
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
-		return simpleResponse(400), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{

@@ -92,7 +92,7 @@ func (h *listenHandler) processV1ConferencecallsIDGet(ctx context.Context, m *so
 	tmp, err := json.Marshal(cc)
 	if err != nil {
 		log.Errorf("Could not marshal the conferencecall. err: %v", err)
-		return simpleResponse(400), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -127,7 +127,7 @@ func (h *listenHandler) processV1ConferencecallsIDDelete(ctx context.Context, m 
 	tmp, err := json.Marshal(cc)
 	if err != nil {
 		log.Errorf("Could not marshal the conferencecall. err: %v", err)
-		return simpleResponse(400), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{

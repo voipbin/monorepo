@@ -11,7 +11,7 @@
 - cmd/conference-control 에서 제품 코드 변경 없이 테스트할 수 있는 것: 12개 `cmd*` 생성자(flag 정의), `initCommand`, `resolveUUID`, `printJSON`(직렬화 불가 값으로 오류 경로 도달), `runCreate` 의 입력 검증(핸들러 초기화 이전), 각 `run*` 의 `initHandler` 실패 전파. `initHandler` 가 성공해야 도달하는 본문(DB, Redis, RabbitMQ 연결)은 단위 테스트 대상이 아닙니다.
 - cmd/conference-manager(162)는 `runMain` 이 외부 연결을 직접 맺는 구조라 제외합니다.
 - 함정: `config.Get()` 은 `LoadGlobalConfig()` 이전에 호출하면 panic 이고 `cfg` 는 비공개이며 `sync.Once` 라 프로세스당 한 번만 값이 고정됩니다. 형식이 잘못된 DSN 은 mysql 드라이버가 `sql.Open` 에서 파싱 오류로 끝내 접속을 시도하지 않지만, 빈 DSN 과 기본 DSN 은 로컬 포트로 Ping 하므로 사용하지 않습니다.
-- 도달 가능한 cmd 외 미커버: dbhandler 의 `PrepareFields` 실패(맵 값 안에 chan 을 넣어 직렬화 불가로 만듦)와 `NotEq{Value: <Value() 가 오류인 값>}` 로 만드는 `ToSql` 실패, listenhandler 의 `json.Marshal` 실패(`Conference.Data` 에 chan). 인자가 고정된 `ToSql` 실패와 conferencecalls, count 의 Marshal 실패는 도달 불가입니다.
+- 도달 가능한 cmd 외 미커버: dbhandler 의 `PrepareFields` 실패(맵 값 안에 chan 을 넣어 직렬화 불가로 만듦)와 `NotEq{Value: <Value() 가 오류인 값>}` 로 만드는 `ToSql` 실패, listenhandler 의 `json.Marshal` 실패(`Conference.Data` 에 chan). 인자가 고정된 `ToSql` 실패와 count 의 Marshal 실패는 도달 불가이고, conferencecalls 의 Marshal 실패는 `TMCreate` 에 연도 범위를 벗어난 시각을 넣어 만듭니다.
 
 ## 2. 설계
 
@@ -35,7 +35,7 @@
 
 ### 2.3 pkg/listenhandler (`response_serialization_test.go`)
 
-`Conference.Data` 에 chan 을 가진 응답을 gomock 핸들러가 반환하게 해 conferences 11개 라우트와 direct-hash 1개의 `json.Marshal` 실패 응답 코드를 라우트별로 단언합니다. 현재 응답 코드는 500(list, post, put, direct-hash)과 400(그 외)이며 현재 동작을 그대로 기록하는 특성 테스트입니다.
+`Conference.Data` 에 chan 을 가진 응답을 gomock 핸들러가 반환하게 해 conferences 12개 라우트(direct-hash regenerate 포함)의 `json.Marshal` 실패 응답 코드를 라우트별로 단언합니다. conferencecalls 2개 라우트(ID GET, ID DELETE)는 `TMCreate` 에 연도 10000 의 시각을 넣어 직렬화 실패를 만들어 같은 방식으로 단언합니다. 모든 라우트의 기대 응답 코드는 500 입니다.
 
 ### 2.4 verify
 

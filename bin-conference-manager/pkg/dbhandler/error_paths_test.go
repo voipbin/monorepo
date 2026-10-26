@@ -41,7 +41,6 @@ func newSQLMockHandler(t *testing.T) (*handler, sqlmock.Sqlmock, *cachehandler.M
 	// every cache read misses so that the database is consulted.
 	mockCache.EXPECT().ConferenceGet(gomock.Any(), gomock.Any()).Return(nil, errors.New("cache miss")).AnyTimes()
 	mockCache.EXPECT().ConferencecallGet(gomock.Any(), gomock.Any()).Return(nil, errors.New("cache miss")).AnyTimes()
-	mockCache.EXPECT().ConferencecallGetByReferenceID(gomock.Any(), gomock.Any()).Return(nil, errors.New("cache miss")).AnyTimes()
 
 	return &handler{db: db, cache: mockCache, utilHandler: mockUtil}, mock, mockCache
 }

@@ -3,7 +3,6 @@ package dbhandler
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -90,7 +89,6 @@ func Test_RowsErr_NotMisreported(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			mockCache.EXPECT().ConferencecallGetByReferenceID(gomock.Any(), id).Return(nil, fmt.Errorf("not found")).AnyTimes()
 
 			h := &handler{db: db, cache: mockCache, utilHandler: utilhandler.NewMockUtilHandler(mc)}
 
@@ -165,5 +163,32 @@ func Test_ExecContext_Canceled(t *testing.T) {
 				t.Errorf("expected a context canceled error. err: %v", err)
 			}
 		})
+	}
+}
+
+// Test_ConferencecallGetByReferenceID_queriesDBOnly verifies that the lookup by
+// reference id goes straight to the database. The cache mock has no expectation,
+// so any cache call fails the test.
+func Test_ConferencecallGetByReferenceID_queriesDBOnly(t *testing.T) {
+	id := uuid.FromStringOrNil("9a0f3c4e-1b2d-11f1-8a5e-0b3f6c1d2e78")
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("could not create sqlmock: %v", err)
+	}
+	defer func() { _ = db.Close() }()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h := &handler{db: db, cache: cachehandler.NewMockCacheHandler(mc), utilHandler: utilhandler.NewMockUtilHandler(mc)}
+
+	mock.ExpectQuery("SELECT").WillReturnError(errRowsBroken)
+
+	if _, err := h.ConferencecallGetByReferenceID(context.Background(), id); !errors.Is(err, errRowsBroken) {
+		t.Errorf("Wrong match. expect: %v, got: %v", errRowsBroken, err)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 }
