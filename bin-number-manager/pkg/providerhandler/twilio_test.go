@@ -159,18 +159,14 @@ func Test_Twilio_purchaseCandidates(t *testing.T) {
 		}
 	})
 
-	t.Run("a malformed trunk_sid stays a candidate and the purchase refuses it before any request", func(t *testing.T) {
+	t.Run("a malformed trunk_sid stays a candidate (the purchase itself refuses it, see the numberhandlertwilio tests)", func(t *testing.T) {
 		db := newFakeDB()
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, true, 1, map[string]string{"sid": testTwilioSID, "trunk_sid": "bad"})
 		h := newTestHandler(t, db, testKeys(1), envTelnyx())
 
 		res, _ := h.PurchaseCandidates(ctx)
 		if got := candidateNames(res); len(got) != 2 || got[0] != number.ProviderNameTwilio {
-			t.Fatalf("Wrong match. expect: twilio then telnyx, got: %v", got)
-		}
-		// the real handler refuses before it touches the network
-		if _, err := res[0].Provider.NumberPurchase("+15550000001"); !errors.Is(err, provider.ErrPurchaseRejected) {
-			t.Errorf("Wrong match. expect: rejected, got: %v", err)
+			t.Errorf("Wrong match. expect: twilio then telnyx, got: %v", got)
 		}
 	})
 }

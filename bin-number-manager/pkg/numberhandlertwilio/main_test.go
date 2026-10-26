@@ -72,6 +72,7 @@ func Test_ValidateSID(t *testing.T) {
 		{"AC0000", false},
 		{"SK00000000000000000000000000000000", false},
 		{testSID + "x", false},
+		{"x" + testSID, false},
 		{"AC0000000000000000000000000000000g", false},
 		{"AC00000000000000000000000000000000/../x", false},
 	}
@@ -163,6 +164,10 @@ func Test_NumberPurchase(t *testing.T) {
 		{name: "blank trunk_sid is rejected without a request", num: testNumber, trunkSID: "  ", expectErrKind: provider.ErrPurchaseRejected},
 		{name: "malformed trunk_sid is rejected without a request", num: testNumber, trunkSID: "TK123", expectErrKind: provider.ErrPurchaseRejected},
 		{name: "malformed number is rejected without a request", num: "155****0001", trunkSID: testTrunkSID, expectErrKind: provider.ErrPurchaseRejected},
+		{name: "a prefix before the number is rejected without a request", num: "x" + testNumber, trunkSID: testTrunkSID, expectErrKind: provider.ErrPurchaseRejected},
+		{name: "a suffix after the number is rejected without a request", num: testNumber + "x", trunkSID: testTrunkSID, expectErrKind: provider.ErrPurchaseRejected},
+		{name: "a suffix after the trunk_sid is rejected without a request", num: testNumber, trunkSID: testTrunkSID + "x", expectErrKind: provider.ErrPurchaseRejected},
+		{name: "a prefix before the trunk_sid is rejected without a request", num: testNumber, trunkSID: "x" + testTrunkSID, expectErrKind: provider.ErrPurchaseRejected},
 		{name: "empty number is rejected without a request", num: "", trunkSID: testTrunkSID, expectErrKind: provider.ErrPurchaseRejected},
 		{name: "a leading zero is rejected without a request", num: "+01234567", trunkSID: testTrunkSID, expectErrKind: provider.ErrPurchaseRejected},
 		{name: "6 digits is too short", num: "+123456", trunkSID: testTrunkSID, expectErrKind: provider.ErrPurchaseRejected},
@@ -230,6 +235,8 @@ func Test_NumberRelease(t *testing.T) {
 		{name: "empty reference id makes no request", refID: "", expectErr: true},
 		{name: "a telnyx style id makes no request", refID: "1579827332531618841", expectErr: true},
 		{name: "a path like id makes no request", refID: "../Accounts/x", expectErr: true},
+		{name: "a suffix after the sid makes no request", refID: testNumSID + "x", expectErr: true},
+		{name: "a prefix before the sid makes no request", refID: "x" + testNumSID, expectErr: true},
 	}
 
 	for _, tt := range tests {
@@ -329,6 +336,10 @@ func Test_noCredentialInLogs(t *testing.T) {
 
 	mockExternal.EXPECT().TwilioIncomingPhoneNumbersIDDelete(gomock.Any(), gomock.Any(), gomock.Any()).Return(&requestexternal.HTTPStatusError{StatusCode: 500})
 	_ = h.NumberRelease(ctx, &number.Number{ProviderReferenceID: testNumSID})
+
+	// an answer without a number sid
+	mockExternal.EXPECT().TwilioIncomingPhoneNumbersPost(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&twilio.IncomingPhoneNumber{}, nil)
+	_, _ = h.NumberPurchase(testNumber)
 
 	// the paths that refuse a purchase before any request
 	_, _ = h.NumberPurchase("not-a-number")
