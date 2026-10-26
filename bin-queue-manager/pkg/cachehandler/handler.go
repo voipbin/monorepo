@@ -80,11 +80,6 @@ func (h *handler) QueuecallSet(ctx context.Context, data *queuecall.Queuecall) e
 		return err
 	}
 
-	keyWithReferenceID := fmt.Sprintf("queue:queuecall:reference_id:%s", data.ID)
-	if err := h.setSerialize(ctx, keyWithReferenceID, data); err != nil {
-		return err
-	}
-
 	return nil
 }
 

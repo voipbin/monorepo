@@ -122,6 +122,11 @@ func Test_QueuecallSetGet(t *testing.T) {
 	if res.ID.String() != "2b3c4d5e-0003-11f1-9a00-000000000003" || res.ReferenceID.String() != "2b3c4d5e-0004-11f1-9a00-000000000004" || res.Status != queuecall.StatusWaiting {
 		t.Errorf("Wrong match. got: %+v", res)
 	}
+
+	keys := mr.Keys()
+	if len(keys) != 1 || keys[0] != key {
+		t.Errorf("Wrong match. expect: only %s, got: %v", key, keys)
+	}
 }
 
 func Test_QueuecallGet_error(t *testing.T) {
