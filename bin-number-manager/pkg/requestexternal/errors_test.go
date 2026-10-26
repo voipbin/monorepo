@@ -48,3 +48,12 @@ func Test_TelnyxPhoneNumbersGetByNumber_noAuthorizationInLogs(t *testing.T) {
 		}
 	}
 }
+
+func Test_HTTPStatusError_message(t *testing.T) {
+	if got := (&HTTPStatusError{StatusCode: 404}).Error(); got != "could not get correct response. status: 404" {
+		t.Errorf("Wrong message. got: %s", got)
+	}
+	if got := (&HTTPStatusError{StatusCode: 400, ErrorCode: 21422}).Error(); got != "could not get correct response. status: 400, code: 21422" {
+		t.Errorf("Wrong message. got: %s", got)
+	}
+}

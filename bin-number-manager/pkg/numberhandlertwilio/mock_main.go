@@ -13,9 +13,9 @@ import (
 	context "context"
 	availablenumber "monorepo/bin-number-manager/models/availablenumber"
 	number "monorepo/bin-number-manager/models/number"
+	providernumber "monorepo/bin-number-manager/models/providernumber"
 	reflect "reflect"
 
-	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -43,46 +43,60 @@ func (m *MockNumberHandlerTwilio) EXPECT() *MockNumberHandlerTwilioMockRecorder 
 	return m.recorder
 }
 
-// CreateNumber mocks base method.
-func (m *MockNumberHandlerTwilio) CreateNumber(customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNumber", customerID, num, flowID, name, detail)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateNumber indicates an expected call of CreateNumber.
-func (mr *MockNumberHandlerTwilioMockRecorder) CreateNumber(customerID, num, flowID, name, detail any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumber", reflect.TypeOf((*MockNumberHandlerTwilio)(nil).CreateNumber), customerID, num, flowID, name, detail)
-}
-
 // GetAvailableNumbers mocks base method.
-func (m *MockNumberHandlerTwilio) GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {
+func (m *MockNumberHandlerTwilio) GetAvailableNumbers(countryCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAvailableNumbers", countyCode, limit)
+	ret := m.ctrl.Call(m, "GetAvailableNumbers", countryCode, limit)
 	ret0, _ := ret[0].([]*availablenumber.AvailableNumber)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAvailableNumbers indicates an expected call of GetAvailableNumbers.
-func (mr *MockNumberHandlerTwilioMockRecorder) GetAvailableNumbers(countyCode, limit any) *gomock.Call {
+func (mr *MockNumberHandlerTwilioMockRecorder) GetAvailableNumbers(countryCode, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableNumbers", reflect.TypeOf((*MockNumberHandlerTwilio)(nil).GetAvailableNumbers), countyCode, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableNumbers", reflect.TypeOf((*MockNumberHandlerTwilio)(nil).GetAvailableNumbers), countryCode, limit)
 }
 
-// ReleaseNumber mocks base method.
-func (m *MockNumberHandlerTwilio) ReleaseNumber(ctx context.Context, num *number.Number) error {
+// NumberPurchase mocks base method.
+func (m *MockNumberHandlerTwilio) NumberPurchase(num string) (*providernumber.ProviderNumber, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReleaseNumber", ctx, num)
+	ret := m.ctrl.Call(m, "NumberPurchase", num)
+	ret0, _ := ret[0].(*providernumber.ProviderNumber)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberPurchase indicates an expected call of NumberPurchase.
+func (mr *MockNumberHandlerTwilioMockRecorder) NumberPurchase(num any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberPurchase", reflect.TypeOf((*MockNumberHandlerTwilio)(nil).NumberPurchase), num)
+}
+
+// NumberRelease mocks base method.
+func (m *MockNumberHandlerTwilio) NumberRelease(ctx context.Context, num *number.Number) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberRelease", ctx, num)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ReleaseNumber indicates an expected call of ReleaseNumber.
-func (mr *MockNumberHandlerTwilioMockRecorder) ReleaseNumber(ctx, num any) *gomock.Call {
+// NumberRelease indicates an expected call of NumberRelease.
+func (mr *MockNumberHandlerTwilioMockRecorder) NumberRelease(ctx, num any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseNumber", reflect.TypeOf((*MockNumberHandlerTwilio)(nil).ReleaseNumber), ctx, num)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberRelease", reflect.TypeOf((*MockNumberHandlerTwilio)(nil).NumberRelease), ctx, num)
+}
+
+// NumberUpdateTags mocks base method.
+func (m *MockNumberHandlerTwilio) NumberUpdateTags(ctx context.Context, num *number.Number, tags []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberUpdateTags", ctx, num, tags)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NumberUpdateTags indicates an expected call of NumberUpdateTags.
+func (mr *MockNumberHandlerTwilioMockRecorder) NumberUpdateTags(ctx, num, tags any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateTags", reflect.TypeOf((*MockNumberHandlerTwilio)(nil).NumberUpdateTags), ctx, num, tags)
 }

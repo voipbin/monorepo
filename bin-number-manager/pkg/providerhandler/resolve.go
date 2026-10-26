@@ -123,6 +123,15 @@ func (h *providerHandler) resolve(ctx context.Context, name number.ProviderName)
 	res.source = provider.CredentialSourceEnv
 	res.creds = env
 	res.hasSecret = true
+
+	if key, missing := requiredConfigMissing(Descriptor{RequiredConfig: desc.RequiredEnvConfig}, env.Config); missing {
+		// release and search still work with the secret; only the purchase needs the key
+		log.Debugf("The environment credential misses a required config. key: %s", key)
+		res.usable = false
+		h.observeUnusable(res, "required_config")
+		return res, nil
+	}
+
 	res.usable = res.enabled
 
 	return res, nil
@@ -167,6 +176,7 @@ func (h *providerHandler) PurchaseCandidates(ctx context.Context) ([]*Candidate,
 		if err != nil {
 			// one provider that cannot be created must not stop the purchase at the others
 			logrus.WithField("provider_name", r.name).Errorf("Could not create the provider. err: %v", err)
+			h.observeUnusable(r, "factory")
 			continue
 		}
 		res = append(res, &Candidate{Name: r.name, Provider: p})

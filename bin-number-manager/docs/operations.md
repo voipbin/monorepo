@@ -110,8 +110,8 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `telnyx_token` | `TELNYX_TOKEN` | required if Telnyx used and not stored in the DB | Telnyx API authentication token |
 | `telnyx_connection_id` | `TELNYX_CONNECTION_ID` | required if Telnyx used | Telnyx connection ID for call routing |
 | `telnyx_profile_id` | `TELNYX_PROFILE_ID` | required if Telnyx used | Telnyx messaging profile ID |
-| `twilio_sid` | `TWILIO_SID` | required if Twilio used | Twilio account SID |
-| `twilio_token` | `TWILIO_TOKEN` | required if Twilio used | Twilio auth token |
+| `twilio_sid` | `TWILIO_SID` | required for Twilio release | Twilio account SID. The environment credential can release numbers but never purchase (see Provider Credentials) |
+| `twilio_token` | `TWILIO_TOKEN` | required for Twilio release | Twilio auth token. The surrounding whitespace is removed |
 | `number_secret_encryption_keys` | `NUMBER_SECRET_ENCRYPTION_KEYS` | `""` | Keys that encrypt the provider secrets stored in the DB: `<version>:<base64 of 32 bytes>` entries separated by commas. The highest version encrypts, the version of the row decrypts. Empty means no key: secrets cannot be stored and the environment credentials are used |
 
 ## Prometheus Metrics
@@ -124,11 +124,11 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `number_create_total` | Counter | — | Total number purchase operations |
 | `telnyx_number_create_total` | Counter | — | Telnyx-specific number purchases |
 | `twilio_number_create_total` | Counter | — | Twilio-specific number purchases |
-| `provider_unusable_total` | Counter | `provider`, `reason` | Resolutions of an enabled provider that could not be used (`no_secret`, `db_undecryptable`, `required_config`) |
+| `provider_unusable_total` | Counter | `provider`, `reason` | Resolutions of an enabled provider that could not be used (`no_secret`, `db_undecryptable`, `required_config`, `factory`) |
 | `provider_purchase_total` | Counter | `provider`, `result` | Purchase attempts (`success`, `rejected`, `unconfirmed`) |
 
 **Alert guidance:**
-- `provider_unusable_total` increasing for an enabled provider → it cannot be used (`no_secret`, `db_undecryptable` or `required_config`); check the provider view and the key list.
+- `provider_unusable_total` increasing for an enabled provider → it cannot be used (`no_secret`, `db_undecryptable`, `required_config` or `factory`); check the provider view and the key list.
 - `provider_purchase_total{result="unconfirmed"}` increasing → purchases stop without a fallback because the order result is unknown; check the provider for the orders.
 - `telnyx_number_create_total` or `twilio_number_create_total` dropping while `number_create_total` stays constant → provider-specific failures; check provider API credentials.
 - `request_external_process_time` p99 > 5s → provider API latency; purchases will time out.
@@ -141,7 +141,10 @@ A provider uses one credential source at a time: with a stored secret in `number
 - **A malformed key list** does not stop the service (other services depend on it). The error is logged without the key material and the service starts as if no key were configured: stored secrets cannot be decrypted (the provider is `db_undecryptable`, no fallback to the environment) and new secrets are refused. `number-control` refuses to start instead. Run `number-control migrate up` before the other `number-control` commands on a database the service has not migrated yet.
 - **Key rotation**: (1) add the new version to `NUMBER_SECRET_ENCRYPTION_KEYS`, keep the old one, deploy; (2) enter the secret of each provider again (it is re-encrypted with the newest version; check `key_version` in the provider view); (3) when every provider shows the newest `key_version`, remove the old version. Removing a version first makes the rows of that version undecryptable. There is no re-encryption batch: the rows are few and the secrets are external values the admin holds.
 - **Recovery** of a provider that is `db_undecryptable`: restore the missing key version, or delete the stored secret (`DELETE /v1/number_providers/{name}/secret`), which returns the provider to the environment credentials.
-- **Do not change the account** of a provider that still has numbers (a different token for the same provider, by replacing or deleting the stored secret): releasing a number needs the account it was bought on. Moving the same account's token into the DB is fine.
+- **Do not change the account** of a provider that still has numbers (a different token or, for Twilio, a different `sid` for the same provider, by replacing or deleting the stored secret): releasing a number needs the account it was bought on. Moving the same account's token into the DB is fine.
+- **Twilio** (disabled by default): the admin enters the config first (`sid` = the account SID, `trunk_sid` = the Elastic SIP Trunk that receives the calls of the numbers), then the secret (the account auth token); the secret is refused until both config keys exist. Twilio purchases use the stored credential only (`credential_source: db`); the environment `TWILIO_SID`/`TWILIO_TOKEN` can release numbers but never purchase, and then the provider shows `usable: false`. An enabled Twilio on the environment credential makes the `required_config` counter rise at every resolution of the provider (a purchase, a release, an admin change). API key SIDs (`SK...`) are not supported. A malformed `sid` makes release and search fail, and makes purchases skip Twilio (`provider_unusable_total{reason="factory"}` rises at a purchase while Twilio is enabled); a malformed `trunk_sid` only refuses purchases (`PROVIDER_CONFIG_INVALID`). A Twilio number is delivered to the trunk only when the trunk is set, so do not enable Twilio before the trunk routes to this platform.
+- **Twilio failures to watch**: `PROVIDER_AUTH_REJECTED` (HTTP 401, 403 or 404 on a purchase: the account setting is wrong, and the purchase falls back to the next provider so it would otherwise stay hidden), `PURCHASE_UNCONFIRMED` (an unclear answer: check the Twilio console for a number that was bought without a record, since Twilio bills it monthly and a retry does not find it), `ROLLBACK_RELEASE_FAILED`. A 429 (concurrency limit) stops the purchase without a fallback.
+- **Before an image rollback** of this service, disable Twilio and check that no Twilio number is held: an older image cannot release Twilio numbers, so their records and the monthly charge would stay.
 - Concurrent changes of the same provider's `config` by two admins are last write wins.
 - The `tm_update` of a row changes with every change of the row, including a secret change; `secret_updated_by` and `tm_secret_update` tell the secret changes.
 - A change of the `config` and a change of the secret of the same provider made at the same time can leave a DB-secret row without a required config key (for Telnyx `connection_id`). The provider then shows `credential_source: db` and `usable: false` and is left out of the purchases. Set the config key again, or delete the stored secret.

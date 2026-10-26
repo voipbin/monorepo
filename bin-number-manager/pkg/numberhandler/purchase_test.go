@@ -266,3 +266,123 @@ func Test_Delete_providerResolution(t *testing.T) {
 		}
 	})
 }
+
+// the search is telnyx only, so the number a customer picked is a telnyx stock. A twilio that
+// holds no such number refuses the purchase, which is the normal case and falls back.
+func Test_Create_twilioFirstCandidate(t *testing.T) {
+	ctx := context.Background()
+
+	twilioNumber := &providernumber.ProviderNumber{ID: "PN00000000000000000000000000000000", Status: number.StatusActive}
+	telnyxNumber := &providernumber.ProviderNumber{ID: "telnyx-id-1", Status: number.StatusActive}
+	created := &number.Number{
+		Identity:     commonidentity.Identity{ID: errTestNumberID, CustomerID: errTestCustomerID},
+		Number:       errTestNumber,
+		ProviderName: number.ProviderNameTelnyx,
+	}
+
+	expectBefore := func(m *errTestMocks, twilio, telnyx providerhandler.Provider) {
+		m.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, errTestCustomerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
+		m.db.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: errTestNumber}).Return([]*number.Number{}, nil)
+		m.provider.EXPECT().PurchaseCandidates(ctx).Return([]*providerhandler.Candidate{
+			{Name: number.ProviderNameTwilio, Provider: twilio},
+			{Name: number.ProviderNameTelnyx, Provider: telnyx},
+		}, nil)
+	}
+
+	t.Run("twilio without the number rejects and telnyx sells it", func(t *testing.T) {
+		h, m, twilio, telnyx := newPurchaseMocks(t)
+		expectBefore(m, twilio, telnyx)
+
+		twilio.EXPECT().NumberPurchase(errTestNumber).Return(nil, fmt.Errorf("%w: not available", provider.ErrPurchaseRejected))
+		telnyx.EXPECT().NumberPurchase(errTestNumber).Return(telnyxNumber, nil)
+
+		m.db.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: errTestNumber}).Return([]*number.Number{}, nil)
+		m.util.EXPECT().UUIDCreate().Return(errTestNumberID)
+		m.db.EXPECT().NumberCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, n *number.Number) error {
+			if n.ProviderName != number.ProviderNameTelnyx || n.ProviderReferenceID != "telnyx-id-1" {
+				t.Errorf("Wrong match. expect: telnyx, got: %s %s", n.ProviderName, n.ProviderReferenceID)
+			}
+			return nil
+		})
+		m.db.EXPECT().NumberGet(ctx, errTestNumberID).Return(created, nil)
+		m.notify.EXPECT().PublishWebhookEvent(ctx, errTestCustomerID, number.EventTypeNumberCreated, created)
+		telnyx.EXPECT().NumberUpdateTags(ctx, created, gomock.Any()).Return(nil)
+
+		if res, err := h.Create(ctx, errTestCustomerID, errTestNumber, uuid.Nil, uuid.Nil, "", ""); err != nil || res != created {
+			t.Errorf("Wrong match. expect: created, got: %v, %v", res, err)
+		}
+	})
+
+	t.Run("an unconfirmed twilio purchase never reaches telnyx", func(t *testing.T) {
+		h, m, twilio, telnyx := newPurchaseMocks(t)
+		expectBefore(m, twilio, telnyx)
+
+		// telnyx has no expectation: a call fails the test
+		twilio.EXPECT().NumberPurchase(errTestNumber).Return(nil, fmt.Errorf("%w: http 503", provider.ErrPurchaseUnconfirmed))
+
+		if res, err := h.Create(ctx, errTestCustomerID, errTestNumber, uuid.Nil, uuid.Nil, "", ""); res != nil || !errors.Is(err, provider.ErrPurchaseUnconfirmed) {
+			t.Errorf("Wrong match. expect: unconfirmed, got: %v, %v", res, err)
+		}
+	})
+
+	t.Run("a twilio sale is recorded as twilio and a failed registration releases it at twilio", func(t *testing.T) {
+		h, m, twilio, telnyx := newPurchaseMocks(t)
+		m.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, errTestCustomerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
+		m.provider.EXPECT().PurchaseCandidates(ctx).Return([]*providerhandler.Candidate{
+			{Name: number.ProviderNameTwilio, Provider: twilio},
+			{Name: number.ProviderNameTelnyx, Provider: telnyx},
+		}, nil)
+
+		filter := map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: errTestNumber}
+		gomock.InOrder(
+			m.db.EXPECT().NumberList(ctx, uint64(1), "", filter).Return([]*number.Number{}, nil),
+			m.db.EXPECT().NumberList(ctx, uint64(1), "", filter).Return(nil, errTestDBFailure),
+		)
+		twilio.EXPECT().NumberPurchase(errTestNumber).Return(twilioNumber, nil)
+		twilio.EXPECT().NumberRelease(ctx, &number.Number{ProviderName: number.ProviderNameTwilio, ProviderReferenceID: twilioNumber.ID}).Return(nil)
+
+		if res, err := h.Create(ctx, errTestCustomerID, errTestNumber, uuid.Nil, uuid.Nil, "", ""); res != nil || !errors.Is(err, errTestDBFailure) {
+			t.Errorf("Wrong match. expect: db failure, got: %v, %v", res, err)
+		}
+	})
+}
+
+func Test_Delete_twilioNumber(t *testing.T) {
+	ctx := context.Background()
+	n := &number.Number{
+		Identity:            commonidentity.Identity{ID: errTestNumberID, CustomerID: errTestCustomerID},
+		ProviderName:        number.ProviderNameTwilio,
+		ProviderReferenceID: "PN00000000000000000000000000000000",
+	}
+
+	// a twilio number is released through the twilio provider even when twilio is disabled
+	h, m, twilio, _ := newPurchaseMocks(t)
+	m.db.EXPECT().NumberGet(ctx, errTestNumberID).Return(n, nil).Times(2)
+	m.provider.EXPECT().ForRelease(ctx, number.ProviderNameTwilio).Return(twilio, nil)
+	twilio.EXPECT().NumberRelease(ctx, n).Return(nil)
+	m.db.EXPECT().NumberDelete(ctx, errTestNumberID).Return(nil)
+	m.notify.EXPECT().PublishWebhookEvent(ctx, errTestCustomerID, number.EventTypeNumberDeleted, n)
+
+	if _, err := h.Delete(ctx, errTestNumberID); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+func Test_Delete_twilioReleaseFailureKeepsTheRecord(t *testing.T) {
+	ctx := context.Background()
+	n := &number.Number{
+		Identity:            commonidentity.Identity{ID: errTestNumberID, CustomerID: errTestCustomerID},
+		ProviderName:        number.ProviderNameTwilio,
+		ProviderReferenceID: "PN00000000000000000000000000000000",
+	}
+
+	h, m, twilio, _ := newPurchaseMocks(t)
+	m.db.EXPECT().NumberGet(ctx, errTestNumberID).Return(n, nil)
+	m.provider.EXPECT().ForRelease(ctx, number.ProviderNameTwilio).Return(twilio, nil)
+	twilio.EXPECT().NumberRelease(ctx, n).Return(fmt.Errorf("release failed"))
+	// NumberDelete has no expectation: the record stays
+
+	if res, err := h.Delete(ctx, errTestNumberID); res != nil || err == nil {
+		t.Errorf("Wrong match. expect: error, got: %v, %v", res, err)
+	}
+}

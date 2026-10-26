@@ -6,6 +6,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-number-manager/pkg/requestexternal/models/telnyx"
+	"monorepo/bin-number-manager/pkg/requestexternal/models/twilio"
 )
 
 var (
@@ -41,6 +42,11 @@ type RequestExternal interface {
 	TelnyxPhoneNumbersIDGet(token, id string) (*telnyx.PhoneNumber, error)
 	TelnyxPhoneNumbersIDDelete(token, id string) (*telnyx.PhoneNumber, error)
 	TelnyxPhoneNumbersIDUpdate(token, id string, data map[string]interface{}) (*telnyx.PhoneNumber, error)
+
+	// twilio
+	TwilioAvailableNumberGets(sid, token, countryCode string, limit uint) ([]*twilio.AvailableNumber, error)
+	TwilioIncomingPhoneNumbersPost(sid, token, num, trunkSID string) (*twilio.IncomingPhoneNumber, error)
+	TwilioIncomingPhoneNumbersIDDelete(sid, token, id string) error
 }
 
 type requestExternal struct{}

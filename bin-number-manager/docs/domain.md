@@ -44,12 +44,24 @@ Internal mapping between a Number (by UUID) and the provider's own reference for
 
 ### Provider Strategy
 
-The code knows a fixed set of providers (`providerhandler` registry: `telnyx`, `twilio`). A provider has a row in `number_providers` only after an admin changed it; without a row it uses the registry defaults (telnyx: enabled, priority 10; twilio: disabled, priority 20, and it cannot purchase) and the environment credentials. Adding a provider means adding a registry entry and an implementation of the provider interface (search, purchase, release, tag update); no migration is needed.
+The code knows a fixed set of providers (`providerhandler` registry: `telnyx`, `twilio`). A provider has a row in `number_providers` only after an admin changed it; without a row it uses the registry defaults (telnyx: enabled, priority 10; twilio: disabled, priority 20) and the environment credentials. Adding a provider means adding a registry entry and an implementation of the provider interface (search, purchase, release, tag update); no migration is needed.
+
+Provider capabilities:
+
+| | Telnyx | Twilio |
+|---|---|---|
+| Search | yes (the only provider used for the customer search) | implemented (local numbers that need no address) but not used by the search |
+| Purchase | order, then a lookup of the number | one `POST` that answers with the number sid; needs `sid` and `trunk_sid` in the config |
+| Release | by the provider reference id | by the number sid (`PN...`) |
+| Tag update | tags | none (a no-op; Twilio has no tags) |
+| Purchase environment credential | token alone | never a candidate: the `trunk_sid` has no environment variable, so Twilio purchases need the DB secret and config |
+
+Twilio is disabled by default. Twilio numbers carry the account `sid` in the API path, so release and search need a well formed `sid` too (`AC` and 32 hex digits).
 
 Purchase (`POST /v1/numbers`) after the balance check:
-1. The usable providers that can purchase are tried in ascending `priority` (ties by name). A provider is usable when it is enabled and has a secret; for a DB secret the required `config` keys must exist too.
-2. Fallback to the next provider happens only when the provider definitively refused the order (`ErrPurchaseRejected`: for Telnyx HTTP 400, 401, 403, 404, 422 or an order whose status is `failure`). Any other failure (network error, timeout, 408, 409, 429, 5xx, a failed lookup after the order) may have created an order, so the purchase stops with `ErrPurchaseUnconfirmed` and the log carries `PURCHASE_UNCONFIRMED`. An operator checks the provider, and may disable the provider to route around it.
-3. A fallback only helps when the next provider holds the same number; the available number search is Telnyx only.
+1. The usable providers that can purchase are tried in ascending `priority` (ties by name). A provider is usable when it is enabled and has a secret; for a DB secret the required `config` keys must exist too, and for the environment credential the keys the provider lists as environment-required (Twilio: `sid` and `trunk_sid`) must exist.
+2. Fallback to the next provider happens only when the provider definitively refused the order (`ErrPurchaseRejected`: for Telnyx and Twilio HTTP 400, 401, 403, 404, 422; for Telnyx also an order whose status is `failure`; for Twilio also a request that was not sent because the number or the `trunk_sid` is malformed). Any other failure (network error, timeout, 408, 409, 429, 5xx, a redirect, a success answer that cannot be read or has no valid number sid, a failed lookup after the order) may have created an order, so the purchase stops with `ErrPurchaseUnconfirmed` and the log carries `PURCHASE_UNCONFIRMED`. An operator checks the provider, and may disable the provider to route around it.
+3. A fallback only helps when the next provider holds the same number; the available number search is Telnyx only. The number a customer picked is a Telnyx stock, so an enabled Twilio with priority 1 usually refuses (Twilio error 21422, HTTP 400) and the purchase falls back to Telnyx at the cost of one more request. A Twilio number needing an address or a bundle (errors 21631, 21649) is refused the same way.
 4. The number is recorded with the provider that sold it. If the registration fails, the number is released at that provider (`ROLLBACK_RELEASE_FAILED` in the log when the release fails too).
 
 Release (`DELETE /v1/numbers/{uuid}`, renewal without balance, customer deletion) uses the number's own `provider_name`, whether or not that provider is enabled. A provider that has no usable credential makes the release fail and keeps the record. During a renewal run, a number that could not be released is left out of the rest of that run.

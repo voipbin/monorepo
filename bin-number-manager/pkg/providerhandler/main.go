@@ -4,6 +4,7 @@ package providerhandler
 
 import (
 	"context"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -41,7 +42,14 @@ type Descriptor struct {
 	AllowedConfig []string
 
 	// RequiredConfig is the list of config keys a row needs when its credential source is the DB.
+	// The environment credential is checked against RequiredEnvConfig instead.
 	RequiredConfig []string
+
+	// RequiredEnvConfig is the list of config keys the environment credential needs. A provider
+	// whose environment credential lacks one is not usable (so never a purchase candidate), while
+	// it can still serve release and search. It is empty for a provider that works with the
+	// environment token alone.
+	RequiredEnvConfig []string
 
 	// Purchasable is false when the provider cannot buy numbers (it is never a purchase candidate).
 	Purchasable bool
@@ -161,12 +169,20 @@ func newRegistry(r requesthandler.RequestHandler, db dbhandler.DBHandler) map[nu
 		},
 		number.ProviderNameTwilio: {
 			Factory: func(c provider.Credentials) (Provider, error) {
-				return &twilioProvider{h: numberhandlertwilio.NewNumberHandler(r, db, c.Config[configSID], c.Secret)}, nil
+				// the sid is a part of every API path of the twilio, so it is checked here for release and
+				// search too. The trunk_sid is only used by a purchase, which checks it before any request.
+				// (the handler removes the surrounding whitespace of the stored values)
+				if err := numberhandlertwilio.ValidateSID(strings.TrimSpace(c.Config[configSID])); err != nil {
+					return nil, err
+				}
+				return numberhandlertwilio.NewNumberHandler(r, db, c.Config[configSID], c.Config[configTrunkSID], c.Secret), nil
 			},
-			AllowedConfig:   []string{configSID},
-			Purchasable:     false,
-			DefaultEnabled:  false,
-			DefaultPriority: 20,
+			AllowedConfig:     []string{configSID, configTrunkSID},
+			RequiredConfig:    []string{configSID, configTrunkSID},
+			RequiredEnvConfig: []string{configSID, configTrunkSID},
+			Purchasable:       true,
+			DefaultEnabled:    false,
+			DefaultPriority:   20,
 		},
 	}
 }
@@ -181,9 +197,10 @@ func NewEnvCredentials(telnyxConnectionID, telnyxProfileID, telnyxToken, twilioS
 				configProfileID:    telnyxProfileID,
 			},
 		},
+		// the surrounding whitespace is removed: a newline in the token breaks the basic auth header
 		number.ProviderNameTwilio: {
-			Secret: twilioToken,
-			Config: map[string]string{configSID: twilioSID},
+			Secret: strings.TrimSpace(twilioToken),
+			Config: map[string]string{configSID: strings.TrimSpace(twilioSID)},
 		},
 	}
 }
@@ -193,4 +210,5 @@ const (
 	configConnectionID = "connection_id"
 	configProfileID    = "profile_id"
 	configSID          = "sid"
+	configTrunkSID     = "trunk_sid"
 )

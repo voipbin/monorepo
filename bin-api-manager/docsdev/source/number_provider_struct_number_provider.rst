@@ -34,7 +34,7 @@ Number Provider
 * ``has_secret`` (Boolean): Whether a secret is stored through the API. The secret itself is never returned.
 * ``key_version`` (Integer): The version of the encryption key that encrypted the stored secret. 0 when no secret is stored.
 * ``credential_source`` (enum string): Where the credentials come from. See :ref:`Credential Source <number-provider-struct-number-provider-credential-source>`.
-* ``usable`` (Boolean): Whether the carrier can currently serve: it is enabled, has a credential, and (for a stored secret) has the ``config`` keys it requires. The flag does not mean the carrier can purchase: ``twilio`` cannot purchase numbers and is never used for purchase.
+* ``usable`` (Boolean): Whether the carrier can currently serve: it is enabled, has a credential, and has the ``config`` keys it requires (``twilio`` needs ``sid`` and ``trunk_sid`` for a stored secret and for the environment credentials alike, and the environment has no ``trunk_sid``). A carrier that is usable and enabled takes part in the purchase.
 * ``updated_by`` (UUID): The agent who last changed ``enabled``, ``priority`` or ``config``. Returned from ``GET /agents``. Omitted when never changed.
 * ``secret_updated_by`` (UUID): The agent who last changed the secret. Returned from ``GET /agents``. Omitted when never changed.
 * ``tm_update`` (String, ISO 8601): The time of the last change of the setting, including a secret change. Omitted when never changed.
@@ -94,7 +94,7 @@ Update request
 
 * ``enabled`` (Boolean, optional): Whether the carrier takes part in number purchase.
 * ``priority`` (Integer, optional): 0 to 1000000. A lower value is tried first.
-* ``config`` (Object, optional): Merged key by key. A key with an empty string value is removed. At most 8 keys, a key up to 32 bytes and a value up to 256 bytes. Telnyx accepts ``connection_id`` and ``profile_id``; Twilio accepts ``sid``.
+* ``config`` (Object, optional): Merged key by key. A key with an empty string value is removed. At most 8 keys, a key up to 32 bytes and a value up to 256 bytes. Telnyx accepts ``connection_id`` and ``profile_id``; Twilio accepts ``sid`` (the account SID) and ``trunk_sid`` (the Elastic SIP Trunk that receives the calls of the purchased numbers); both are required before its secret can be stored.
 
 At least one field is required. Omitted fields keep their current value.
 

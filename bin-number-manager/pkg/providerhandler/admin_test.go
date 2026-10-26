@@ -223,11 +223,12 @@ func Test_UpdateSecret(t *testing.T) {
 		}
 	})
 
-	t.Run("a provider without required config accepts the secret directly and can be disabled", func(t *testing.T) {
+	t.Run("a provider without required config accepts the secret directly", func(t *testing.T) {
 		db := newFakeDB()
-		h := newTestHandler(t, db, testKeys(1), NewEnvCredentials("", "", "", "sid", ""))
+		h := newTestHandler(t, db, testKeys(1), NewEnvCredentials("", "", "", testTwilioSID, ""))
+		addPlain(h)
 
-		info, err := h.UpdateSecret(ctx, number.ProviderNameTwilio, testActor, "fake-twilio")
+		info, err := h.UpdateSecret(ctx, plainProvider, testActor, "fake-twilio")
 		if err != nil || !info.HasSecret || info.Enabled {
 			t.Errorf("Wrong match. got: %+v, %v", info, err)
 		}
@@ -379,12 +380,13 @@ func Test_Update_boundaries(t *testing.T) {
 	})
 
 	t.Run("the secret length is limited at 1024 bytes", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), testKeys(1), NewEnvCredentials("", "", "", "sid", ""))
+		h := newTestHandler(t, newFakeDB(), testKeys(1), NewEnvCredentials("", "", "", testTwilioSID, ""))
+		addPlain(h)
 
-		if _, err := h.UpdateSecret(ctx, number.ProviderNameTwilio, testActor, strings.Repeat("a", 1024)); err != nil {
+		if _, err := h.UpdateSecret(ctx, plainProvider, testActor, strings.Repeat("a", 1024)); err != nil {
 			t.Errorf("1024 bytes must be accepted, got: %v", err)
 		}
-		if _, err := h.UpdateSecret(ctx, number.ProviderNameTwilio, testActor, strings.Repeat("a", 1025)); !errors.Is(err, provider.ErrInvalidArgument) {
+		if _, err := h.UpdateSecret(ctx, plainProvider, testActor, strings.Repeat("a", 1025)); !errors.Is(err, provider.ErrInvalidArgument) {
 			t.Errorf("1025 bytes must be rejected, got: %v", err)
 		}
 	})
@@ -412,17 +414,29 @@ func Test_DeleteSecret_audit(t *testing.T) {
 func Test_UpdateSecret_trimsWhitespace(t *testing.T) {
 	ctx := context.Background()
 	db := newFakeDB()
-	h := newTestHandler(t, db, testKeys(1), NewEnvCredentials("", "", "", "sid", ""))
+	h := newTestHandler(t, db, testKeys(1), NewEnvCredentials("", "", "", testTwilioSID, ""))
+	addPlain(h)
 
-	if _, err := h.UpdateSecret(ctx, number.ProviderNameTwilio, testActor, "  fake-token\n"); err != nil {
+	if _, err := h.UpdateSecret(ctx, plainProvider, testActor, "  fake-token\n"); err != nil {
 		t.Fatal(err)
 	}
-	r, _ := h.resolve(ctx, number.ProviderNameTwilio)
+	r, _ := h.resolve(ctx, plainProvider)
 	if r.creds.Secret != "fake-token" {
 		t.Errorf("The stored secret keeps the surrounding whitespace")
 	}
 
-	if _, err := h.UpdateSecret(ctx, number.ProviderNameTwilio, testActor, " \n\t "); !errors.Is(err, provider.ErrInvalidArgument) {
+	if _, err := h.UpdateSecret(ctx, plainProvider, testActor, " \n\t "); !errors.Is(err, provider.ErrInvalidArgument) {
 		t.Errorf("a blank secret must be rejected, got: %v", err)
+	}
+}
+
+// plainProvider is a test only provider without any required config.
+const plainProvider = number.ProviderName("plain")
+
+func addPlain(h *providerHandler) {
+	h.registry[plainProvider] = Descriptor{
+		Factory:         h.registry[number.ProviderNameTelnyx].Factory,
+		AllowedConfig:   []string{"k"},
+		DefaultPriority: 50,
 	}
 }
