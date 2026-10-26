@@ -165,6 +165,21 @@ func (mr *MockAIcallHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockAIcallHandler)(nil).Get), ctx, id)
 }
 
+// GetByCustomerIDAndReferenceID mocks base method.
+func (m *MockAIcallHandler) GetByCustomerIDAndReferenceID(ctx context.Context, customerID, referenceID uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByCustomerIDAndReferenceID", ctx, customerID, referenceID)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByCustomerIDAndReferenceID indicates an expected call of GetByCustomerIDAndReferenceID.
+func (mr *MockAIcallHandlerMockRecorder) GetByCustomerIDAndReferenceID(ctx, customerID, referenceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCustomerIDAndReferenceID", reflect.TypeOf((*MockAIcallHandler)(nil).GetByCustomerIDAndReferenceID), ctx, customerID, referenceID)
+}
+
 // GetByReferenceID mocks base method.
 func (m *MockAIcallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()

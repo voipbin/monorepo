@@ -27,7 +27,13 @@ get:
 
 post:
   summary: Create a new aicall.
-  description: Creates a new aicall and returns the created aicall's details.
+  description: >-
+    Creates a new aicall and returns the created aicall's details.
+    `reference_type` must be one of `call`, `conversation`, `contact_case`, or
+    an empty string (no reference; `reference_id` is then ignored). For the
+    other types the referenced resource must belong to the same customer as the
+    assistance. An unsupported `reference_type` returns `400`; a reference that
+    does not exist or does not belong to the customer returns `404`.
   tags:
     - AI
   requestBody:
@@ -61,5 +67,7 @@ post:
       $ref: '#/components/responses/BadRequest'
     '401':
       $ref: '#/components/responses/Unauthenticated'
+    '404':
+      $ref: '#/components/responses/NotFound'
     '500':
       $ref: '#/components/responses/InternalError'

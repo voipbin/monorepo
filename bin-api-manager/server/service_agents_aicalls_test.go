@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -304,6 +305,49 @@ func Test_PostServiceAgentsAicalls(t *testing.T) {
 
 			if w.Body.String() != tt.expectRes {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}
+
+// Test_PostServiceAgentsAicalls_referenceErrors pins the HTTP status the reference validation errors map to.
+func Test_PostServiceAgentsAicalls_referenceErrors(t *testing.T) {
+	tests := []struct {
+		name         string
+		serviceErr   error
+		expectStatus int
+	}{
+		{name: "unsupported reference type", serviceErr: serviceerrors.ErrInvalidArgument, expectStatus: http.StatusBadRequest},
+		{name: "reference not available", serviceErr: serviceerrors.ErrNotFound, expectStatus: http.StatusNotFound},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{serviceHandler: mockSvc}
+
+			agent := auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87")},
+			})
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", "/service_agents/aicalls", bytes.NewBuffer([]byte(`{"assistance_type":"ai","assistance_id":"3fc2c1b0-efaa-11ef-84bb-a7e8fba38e46","reference_type":"call","reference_id":"4ecc56ec-8285-11ed-9958-8b0a60b665bf"}`)))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().ServiceAgentAIcallCreate(req.Context(), agent, amaicall.AssistanceTypeAI, uuid.FromStringOrNil("3fc2c1b0-efaa-11ef-84bb-a7e8fba38e46"), amaicall.ReferenceTypeCall, uuid.FromStringOrNil("4ecc56ec-8285-11ed-9958-8b0a60b665bf")).Return(nil, tt.serviceErr)
+
+			r.ServeHTTP(w, req)
+			if w.Code != tt.expectStatus {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectStatus, w.Code)
 			}
 		})
 	}

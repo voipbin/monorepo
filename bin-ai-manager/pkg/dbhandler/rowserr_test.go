@@ -85,6 +85,7 @@ func Test_RowsErr_NotMisreported(t *testing.T) {
 		{"get aiaudit", func() error { _, err := h.aiauditGetFromDB(ctx, id); return err }},
 		{"get aicall", func() error { _, err := h.aicallGetFromDB(ctx, id); return err }},
 		{"get aicall by reference id", func() error { _, err := h.AIcallGetByReferenceID(ctx, id); return err }},
+		{"get aicall by customer id and reference id", func() error { _, err := h.AIcallGetByCustomerIDAndReferenceID(ctx, id, id); return err }},
 		{"get aiprompthistory", func() error { _, err := h.aiPromptHistoryGetFromDB(ctx, id); return err }},
 		{"get aipromptproposal", func() error { _, err := h.aipromptproposalGetFromDB(ctx, id); return err }},
 		{"get message", func() error { _, err := h.messageGetFromDB(ctx, id); return err }},

@@ -240,7 +240,7 @@ func Test_Start_callerSpecifiedID_nonNoneReferenceIsNotRemapped(t *testing.T) {
 
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("99990000-0000-0000-0000-000000000009")).AnyTimes()
 	mockUtil.EXPECT().TimeGetCurTime().Return("2026-09-09T00:00:00.000000Z").AnyTimes()
-	mockDB.EXPECT().AIcallGetByReferenceID(gomock.Any(), referenceID).Return(nil, dbhandler.ErrNotFound).AnyTimes()
+	mockDB.EXPECT().AIcallGetByCustomerIDAndReferenceID(gomock.Any(), gomock.Any(), referenceID).Return(nil, dbhandler.ErrNotFound).AnyTimes()
 
 	// The conversation path has two gates before the insert. Both must be
 	// satisfied or the test passes for the wrong reason: an earlier revision

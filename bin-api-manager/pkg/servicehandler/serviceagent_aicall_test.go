@@ -296,7 +296,7 @@ func Test_ServiceAgentAIcallCreate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("70000000-9999-11f0-1111-000000000001"), // NOT the caller's customer
 			},
 
-			expectErr: serviceerrors.ErrPermissionDenied,
+			expectErr: serviceerrors.ErrNotFound,
 		},
 		{
 			name: "contact_case lookup fails -- returns lookup error, not ErrPermissionDenied",
@@ -458,13 +458,13 @@ func Test_ServiceAgentAIcallCreate(t *testing.T) {
 				return
 			}
 
-			if tt.expectErr == serviceerrors.ErrPermissionDenied && tt.responseCase.CustomerID != tt.agent.CustomerID {
+			if tt.expectErr == serviceerrors.ErrNotFound && tt.responseCase.CustomerID != tt.agent.CustomerID {
 				_, err := h.ServiceAgentAIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID)
 				if err == nil {
 					t.Errorf("Wrong match. expect: err, got: ok")
 				}
-				if !errors.Is(err, serviceerrors.ErrPermissionDenied) {
-					t.Errorf("Wrong match. expect: ErrPermissionDenied, got: %v", err)
+				if !errors.Is(err, serviceerrors.ErrNotFound) {
+					t.Errorf("Wrong match. expect: ErrNotFound, got: %v", err)
 				}
 				return
 			}

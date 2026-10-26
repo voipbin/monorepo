@@ -767,6 +767,13 @@ usable whitelisted server).</p>
 </tbody>
 </table>
 </div>
+<p>When creating an AI call with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/aicalls</span></code> or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/aicalls</span></code>, <code class="docutils literal notranslate"><span class="pre">reference_type</span></code>
+must be <code class="docutils literal notranslate"><span class="pre">call</span></code>, <code class="docutils literal notranslate"><span class="pre">conversation</span></code>, <code class="docutils literal notranslate"><span class="pre">contact_case</span></code>, or an empty string (no reference; <code class="docutils literal notranslate"><span class="pre">reference_id</span></code>
+is then ignored). <code class="docutils literal notranslate"><span class="pre">task</span></code> is used internally and is not accepted. Any other value returns
+<code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">INVALID_ARGUMENT</span></code>. For <code class="docutils literal notranslate"><span class="pre">call</span></code>, <code class="docutils literal notranslate"><span class="pre">conversation</span></code> and <code class="docutils literal notranslate"><span class="pre">contact_case</span></code> the referenced resource
+must belong to the same customer as the assistance (the caller’s own customer on
+<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/aicalls</span></code>); a reference that does not exist or does not belong to the
+customer returns <code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">RESOURCE_NOT_FOUND</span></code>.</p>
 </section>
 <section id="status">
 <span id="aicall-struct-aicall-status"></span><h2>Status<a class="headerlink" href="#status" title="Link to this heading">¶</a></h2>
@@ -836,8 +843,9 @@ usable whitelisted server).</p>
 <code class="docutils literal notranslate"><span class="pre">assistance_type=ai</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_type=contact_case</span></code> — the
 customer’s own <code class="docutils literal notranslate"><span class="pre">type=insight</span></code> AI is resolved automatically. Returns
 <code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">RESOURCE_NOT_FOUND</span></code> if the customer has no Insight AI configured.
-Returns <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">PERMISSION_DENIED</span></code> if, for <code class="docutils literal notranslate"><span class="pre">reference_type=contact_case</span></code>,
-<code class="docutils literal notranslate"><span class="pre">reference_id</span></code> does not belong to the caller’s own customer.</p>
+Returns <code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">RESOURCE_NOT_FOUND</span></code> if <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> does not exist or does not belong to the
+caller’s own customer, and <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">INVALID_ARGUMENT</span></code> if <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> is not one of the
+accepted values (see <a class="reference internal" href="#aicall-struct-aicall-reference-type"><span class="std std-ref">Reference Type</span></a>).</p>
 <p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/aimessages</span></code>: may be rejected with a cooldown
 error if called again on the same <code class="docutils literal notranslate"><span class="pre">aicall_id</span></code> within a short window of
 the previous send (default 3 seconds).</p>

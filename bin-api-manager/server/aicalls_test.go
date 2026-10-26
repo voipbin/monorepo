@@ -475,3 +475,46 @@ func Test_aicallsIDTerminate(t *testing.T) {
 		})
 	}
 }
+
+// Test_PostAicalls_referenceErrors pins the HTTP status the reference validation errors map to.
+func Test_PostAicalls_referenceErrors(t *testing.T) {
+	tests := []struct {
+		name         string
+		serviceErr   error
+		expectStatus int
+	}{
+		{name: "unsupported reference type", serviceErr: serviceerrors.ErrInvalidArgument, expectStatus: http.StatusBadRequest},
+		{name: "reference not available", serviceErr: serviceerrors.ErrNotFound, expectStatus: http.StatusNotFound},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{serviceHandler: mockSvc}
+
+			agent := auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87")},
+			})
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", "/aicalls", bytes.NewBuffer([]byte(`{"assistance_type":"ai","assistance_id":"d9e18e8c-efac-11ef-903a-9710c6837217","reference_type":"call","reference_id":"da12e23e-efac-11ef-aa18-172cb9693b33"}`)))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().AIcallCreate(req.Context(), agent, amaicall.AssistanceTypeAI, uuid.FromStringOrNil("d9e18e8c-efac-11ef-903a-9710c6837217"), amaicall.ReferenceTypeCall, uuid.FromStringOrNil("da12e23e-efac-11ef-aa18-172cb9693b33")).Return(nil, tt.serviceErr)
+
+			r.ServeHTTP(w, req)
+			if w.Code != tt.expectStatus {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectStatus, w.Code)
+			}
+		})
+	}
+}
