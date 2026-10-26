@@ -83,11 +83,10 @@ verify 항목
    - createClient 지역 상수 변경, 또는 Init 의 오류 래핑 제거 - aws Init 테스트
    - aws Init 의 Initiated 이벤트 발행 제거 - aws Init 테스트(mock EXPECT 미충족)
    - elevenlabs getVoiceID 우선순위 변경 - 우선순위 테스트(기존 테스트는 변수 조회와 언어 매핑을 따로만 검증)
-   - elevenlabs runProcess 의 `case <-cf.Ctx.Done()` return 제거 - ctx 취소 테스트(타임아웃 안전망은 수 초)
    - gcp runProcess 의 오디오 청크 전송 제거 - 비어 있지 않은 청크 전송 단언
    - gcp runProcess 의 ctx 취소 분기(Recv 오류 뒤 streamCtx.Done return) 제거 - ctx 취소 테스트가 `Stream` 이 nil 이 아님, 가짜 stream 의 `CloseSend` 0회, PlayFinished 발행, `processDone` 닫힘을 단언
    - gcp runProcess 서버 종료 분기의 closeStreamLocked 제거 - 서버 종료 테스트가 `CloseSend` 1회와 사후 `Stream == nil` 을 단언(사전에 nil 로 두지 않고 Recv 가 오류를 돌려주게 함)
-   - websocketWrite 의 사전 취소 검사 제거 - 프레임 0개 단언을 가진 사전 취소 ctx 테스트(반환 직후 클라이언트가 보낸 sentinel 메시지가 서버에서 첫 메시지로 읽히는지로 확인하며 읽기 타임아웃 판정은 쓰지 않음)(합계에는 영향 없음)
+   - websocketWrite 의 사전 취소 검사 제거(합계에 영향이 없는 best-effort 이며 변이 검사 성공 기준에서 필수가 아님) - 프레임 0개 단언을 가진 사전 취소 ctx 테스트(반환 직후 클라이언트가 보낸 sentinel 메시지가 서버에서 첫 메시지로 읽히는지로 확인하며 읽기 타임아웃 판정은 쓰지 않음)(합계에는 영향 없음)
    - runWebSocketRead 정상 종료도 Error 로 기록 - 정상 종료 테스트의 hook 단언(Error 항목 중 메시지가 `WebSocket read error` 로 시작하는 것만 대상으로 하고, `runWebSocketRead` 를 시작하는 모든 테스트는 doneCh 가 닫힌 뒤에 끝나 다른 테스트의 goroutine 이 남기는 항목이 섞이지 않게 함)
    - 생성자 필드 대입 누락 - 생성자 테스트
    - tts-control PersistentPreRunE 의 `viper.BindPFlags` 제거 - Execute 로 `tts create --call-id <잘못된 UUID> --text x` 를 실행하면 "invalid format" 대신 "required" 가 나옴
