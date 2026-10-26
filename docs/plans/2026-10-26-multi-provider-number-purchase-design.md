@@ -190,7 +190,7 @@ PR2: (RPC 비밀 본문이 내부 RabbitMQ를 평문으로 통과하는 점은 P
 
 ### 12.3 변경 범위
 
-- `numberhandlertwilio.NewNumberHandler(r, db, sid, trunkSID, token)`로 시그니처가 바뀌고 Factory가 `c.Config["trunk_sid"]`를 전달합니다. Factory는 sid와 trunk_sid의 앞뒤 공백을 제거한 값을 씁니다(config 저장 시 공백을 정리하지 않으므로). Twilio API 키 SID(`SK`)는 지원하지 않으며(account sid + auth token만) 비범위입니다.
+- `numberhandlertwilio.NewNumberHandler(r, db, sid, trunkSID, token)`로 시그니처가 바뀌고 Factory가 `c.Config["trunk_sid"]`를 전달합니다. `NewNumberHandler`는 sid와 trunk_sid의 앞뒤 공백을 제거해 보관합니다(config 저장 시 공백을 정리하지 않으므로). Factory는 제거한 sid로 형식을 검증합니다. Twilio API 키 SID(`SK`)는 지원하지 않으며(account sid + auth token만) 비범위입니다.
 - `requestexternal`: `TwilioAvailableNumberGets(sid, token, countryCode, limit)`, `TwilioIncomingPhoneNumbersPost(sid, token, num, trunkSID)`, `TwilioIncomingPhoneNumbersIDDelete(sid, token, id)`와 응답 모델(`models/twilio`). 기본 URL은 패키지 변수 `twilioBaseURL`이고 HTTP 클라이언트는 `twilioHTTPClient`(30초, `CheckRedirect=http.ErrUseLastResponse`)로, 테스트는 `twilioBaseURL`과 클라이언트의 `Transport`만 교체합니다(리다이렉트 비추종 설정은 실제 클라이언트로 검증)(실제 Twilio 호출 없음). 인증은 Basic(sid, token) 헤더. 오류 응답 본문은 `io.LimitReader`(4KiB)로만 읽고 파싱 실패는 무시합니다(테스트 포함). `HTTPStatusError`에 선택 필드 `ErrorCode`(Twilio `code`, 로그용)를 추가합니다(기존 호출은 영향 없음).
 - `numberhandlertwilio`: 인터페이스를 `Provider`와 같은 네 메서드(`GetAvailableNumbers`, `NumberPurchase`, `NumberRelease`, `NumberUpdateTags`)로 바꾸고(미사용이던 `CreateNumber`/`ReleaseNumber` 시그니처 제거), `providerhandler/twilio.go` 어댑터를 삭제하여 Factory가 핸들러를 바로 반환합니다(Telnyx와 동일).
 - 레지스트리 Twilio: `Purchasable=true`, `DefaultEnabled=false`(변경 없음), `DefaultPriority=20`(변경 없음), `AllowedConfig=sid, trunk_sid`, `RequiredConfig=sid, trunk_sid`, `RequiredEnvConfig=sid, trunk_sid`(12.4).

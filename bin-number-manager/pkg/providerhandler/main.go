@@ -171,11 +171,11 @@ func newRegistry(r requesthandler.RequestHandler, db dbhandler.DBHandler) map[nu
 			Factory: func(c provider.Credentials) (Provider, error) {
 				// the sid is a part of every API path of the twilio, so it is checked here for release and
 				// search too. The trunk_sid is only used by a purchase, which checks it before any request.
-				sid := strings.TrimSpace(c.Config[configSID])
-				if err := numberhandlertwilio.ValidateSID(sid); err != nil {
+				// (the handler removes the surrounding whitespace of the stored values)
+				if err := numberhandlertwilio.ValidateSID(strings.TrimSpace(c.Config[configSID])); err != nil {
 					return nil, err
 				}
-				return numberhandlertwilio.NewNumberHandler(r, db, sid, strings.TrimSpace(c.Config[configTrunkSID]), c.Secret), nil
+				return numberhandlertwilio.NewNumberHandler(r, db, c.Config[configSID], c.Config[configTrunkSID], c.Secret), nil
 			},
 			AllowedConfig:     []string{configSID, configTrunkSID},
 			RequiredConfig:    []string{configSID, configTrunkSID},

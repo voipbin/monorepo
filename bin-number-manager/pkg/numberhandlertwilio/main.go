@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -85,8 +86,8 @@ func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, s
 		reqHandler: r,
 		db:         db,
 
-		sid:      sid,
-		trunkSID: trunkSID,
+		sid:      strings.TrimSpace(sid),
+		trunkSID: strings.TrimSpace(trunkSID),
 		token:    token,
 
 		requestExternal: reqExternal,

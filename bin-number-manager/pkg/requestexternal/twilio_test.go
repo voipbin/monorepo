@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 )
 
 const (
@@ -150,14 +151,27 @@ func Test_TwilioIncomingPhoneNumbersPost_statusError(t *testing.T) {
 }
 
 func Test_TwilioIncomingPhoneNumbersPost_errorBodyIsBounded(t *testing.T) {
-	big := `{"code":21422,"pad":"` + strings.Repeat("a", 3*maxTwilioErrorBody) + `"}`
-	installTwilio(t, reply(http.StatusBadRequest, big))
+	// the code comes after more bytes than the limit, so it is not read
+	late := `{"pad":"` + strings.Repeat("a", 8000) + `","code":21422}`
+	installTwilio(t, reply(http.StatusBadRequest, late))
 
 	_, err := NewRequestExternal().TwilioIncomingPhoneNumbersPost(testTwilioSID, testTwilioToken, "+15550000001", "")
 
 	var statusErr *HTTPStatusError
 	if !errors.As(err, &statusErr) || statusErr.StatusCode != http.StatusBadRequest || statusErr.ErrorCode != 0 {
-		t.Errorf("Wrong error. a body over the limit must not be parsed. got: %v", err)
+		t.Errorf("Wrong error. a code behind the limit must not be read. got: %v", err)
+	}
+
+	// the same code within the limit is read
+	early := `{"code":21422,"pad":"` + strings.Repeat("a", 100) + `"}`
+	installTwilio(t, reply(http.StatusBadRequest, early))
+
+	_, err = NewRequestExternal().TwilioIncomingPhoneNumbersPost(testTwilioSID, testTwilioToken, "+15550000001", "")
+	if !errors.As(err, &statusErr) || statusErr.ErrorCode != 21422 {
+		t.Errorf("Wrong error. got: %v", err)
+	}
+	if strings.Contains(statusErr.Error(), "Accounts") || strings.Contains(statusErr.Error(), testTwilioSID) {
+		t.Errorf("The status error leaks the URL. got: %v", statusErr)
 	}
 }
 
@@ -283,13 +297,51 @@ func Test_TwilioAvailableNumberGets(t *testing.T) {
 }
 
 func Test_TwilioIncomingPhoneNumbersPost_successBodyIsBounded(t *testing.T) {
-	big := `{"sid":"` + testNumberSID + `","pad":"` + strings.Repeat("a", maxTwilioBody) + `"}`
+	// the sid comes first but the body is longer than the limit: it is cut, cannot be parsed
+	// and the purchase stays unconfirmed
+	big := `{"sid":"` + testNumberSID + `","pad":"` + strings.Repeat("a", 2<<20) + `"}`
 	installTwilio(t, reply(http.StatusCreated, big))
 
-	// the body is cut at the limit, so it cannot be parsed and the purchase stays unconfirmed
 	_, err := NewRequestExternal().TwilioIncomingPhoneNumbersPost(testTwilioSID, testTwilioToken, "+15550000001", "")
 	var statusErr *HTTPStatusError
 	if err == nil || errors.As(err, &statusErr) {
 		t.Errorf("Wrong error. expect: a parse error, got: %v", err)
+	}
+}
+
+func Test_TwilioAvailableNumberGets_limitBoundaries(t *testing.T) {
+	for limit, want := range map[uint]string{1: "1", 10: "10", 11: "10"} {
+		seen := installTwilio(t, reply(http.StatusOK, `{"available_phone_numbers":[]}`))
+
+		if _, err := NewRequestExternal().TwilioAvailableNumberGets(testTwilioSID, testTwilioToken, "US", limit); err != nil {
+			t.Fatal(err)
+		}
+		q, _ := url.ParseQuery((*seen)[0].rawQuery)
+		if q.Get("PageSize") != want {
+			t.Errorf("Wrong page size. limit: %d, expect: %s, got: %s", limit, want, q.Get("PageSize"))
+		}
+	}
+}
+
+func Test_Twilio_pathValuesAreEscaped(t *testing.T) {
+	seen := installTwilio(t, reply(http.StatusOK, `{"available_phone_numbers":[]}`))
+
+	_, _ = NewRequestExternal().TwilioAvailableNumberGets("AC/../x", testTwilioToken, "U/S", 1)
+
+	got := (*seen)[0].path
+	if strings.Contains(got, "/../") || strings.Contains(got, "U/S") || !strings.Contains(got, "AC%2F..%2Fx") || !strings.Contains(got, "U%2FS") {
+		t.Errorf("The sid and the country must stay inside their path segments. got: %s", got)
+	}
+}
+
+func Test_twilioHTTPClient_settings(t *testing.T) {
+	if twilioHTTPClient.Timeout != 30*time.Second {
+		t.Errorf("Wrong timeout. got: %v", twilioHTTPClient.Timeout)
+	}
+	if twilioHTTPClient.CheckRedirect == nil {
+		t.Fatalf("Wrong match. the client must not follow a redirect")
+	}
+	if err := twilioHTTPClient.CheckRedirect(nil, nil); !errors.Is(err, http.ErrUseLastResponse) {
+		t.Errorf("Wrong match. expect: use last response, got: %v", err)
 	}
 }

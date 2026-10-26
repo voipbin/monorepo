@@ -52,6 +52,15 @@ func Test_NewNumberHandler(t *testing.T) {
 	}
 }
 
+func Test_NewNumberHandler_trimsTheStoredValues(t *testing.T) {
+	h := NewNumberHandler(nil, nil, " "+testSID+"\n", "\t"+testTrunkSID+" ", testToken)
+
+	res := h.(*numberHandlerTwilio)
+	if res.sid != testSID || res.trunkSID != testTrunkSID || res.token != testToken {
+		t.Errorf("Wrong match. the sid and the trunk_sid must be trimmed and the token kept as it is.")
+	}
+}
+
 func Test_ValidateSID(t *testing.T) {
 	tests := []struct {
 		sid    string
@@ -155,6 +164,11 @@ func Test_NumberPurchase(t *testing.T) {
 		{name: "malformed trunk_sid is rejected without a request", num: testNumber, trunkSID: "TK123", expectErrKind: provider.ErrPurchaseRejected},
 		{name: "malformed number is rejected without a request", num: "155****0001", trunkSID: testTrunkSID, expectErrKind: provider.ErrPurchaseRejected},
 		{name: "empty number is rejected without a request", num: "", trunkSID: testTrunkSID, expectErrKind: provider.ErrPurchaseRejected},
+		{name: "a leading zero is rejected without a request", num: "+01234567", trunkSID: testTrunkSID, expectErrKind: provider.ErrPurchaseRejected},
+		{name: "6 digits is too short", num: "+123456", trunkSID: testTrunkSID, expectErrKind: provider.ErrPurchaseRejected},
+		{name: "16 digits is too long", num: "+1234567890123456", trunkSID: testTrunkSID, expectErrKind: provider.ErrPurchaseRejected},
+		{name: "7 digits is accepted", num: "+1234567", trunkSID: testTrunkSID, responseCall: true, responseRes: &twilio.IncomingPhoneNumber{SID: testNumSID}, expectRes: &providernumber.ProviderNumber{ID: testNumSID, Status: number.StatusActive}},
+		{name: "15 digits is accepted", num: "+123456789012345", trunkSID: testTrunkSID, responseCall: true, responseRes: &twilio.IncomingPhoneNumber{SID: testNumSID}, expectRes: &providernumber.ProviderNumber{ID: testNumSID, Status: number.StatusActive}},
 	}
 
 	for _, tt := range tests {
@@ -316,6 +330,12 @@ func Test_noCredentialInLogs(t *testing.T) {
 	mockExternal.EXPECT().TwilioIncomingPhoneNumbersIDDelete(gomock.Any(), gomock.Any(), gomock.Any()).Return(&requestexternal.HTTPStatusError{StatusCode: 500})
 	_ = h.NumberRelease(ctx, &number.Number{ProviderReferenceID: testNumSID})
 
+	// the paths that refuse a purchase before any request
+	_, _ = h.NumberPurchase("not-a-number")
+	h.trunkSID = "bad-" + testTrunkSID
+	_, _ = h.NumberPurchase(testNumber)
+	h.trunkSID = testTrunkSID
+
 	mockExternal.EXPECT().TwilioAvailableNumberGets(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 	_, _ = h.GetAvailableNumbers("US", 1)
 
@@ -327,7 +347,7 @@ func Test_noCredentialInLogs(t *testing.T) {
 
 	for _, e := range hook.AllEntries() {
 		line := fmt.Sprintf("%s %v", e.Message, e.Data)
-		if strings.Contains(line, testToken) || strings.Contains(line, testSID) {
+		if strings.Contains(line, testToken) || strings.Contains(line, testSID) || strings.Contains(line, testTrunkSID) {
 			t.Errorf("A log entry holds a credential: %s", line)
 		}
 	}
@@ -365,6 +385,7 @@ func Test_NumberPurchase_logMarkers(t *testing.T) {
 		trunkSID    string
 		responseErr error
 		call        bool
+		noSID       bool
 		marker      string
 		absent      string
 	}{
@@ -372,6 +393,7 @@ func Test_NumberPurchase_logMarkers(t *testing.T) {
 		{name: "403 is an auth rejection", trunkSID: testTrunkSID, call: true, responseErr: &requestexternal.HTTPStatusError{StatusCode: 403}, marker: "PROVIDER_AUTH_REJECTED"},
 		{name: "404 is an auth rejection", trunkSID: testTrunkSID, call: true, responseErr: &requestexternal.HTTPStatusError{StatusCode: 404}, marker: "PROVIDER_AUTH_REJECTED"},
 		{name: "400 is not an auth rejection", trunkSID: testTrunkSID, call: true, responseErr: &requestexternal.HTTPStatusError{StatusCode: 400}, absent: "PROVIDER_AUTH_REJECTED"},
+		{name: "an answer without a number sid is unconfirmed", trunkSID: testTrunkSID, call: true, noSID: true, marker: "PURCHASE_UNCONFIRMED"},
 		{name: "no trunk_sid is a config error", trunkSID: "", marker: "PROVIDER_CONFIG_INVALID"},
 		{name: "a malformed trunk_sid is a config error", trunkSID: "TK1", marker: "PROVIDER_CONFIG_INVALID"},
 	}
@@ -387,7 +409,9 @@ func Test_NumberPurchase_logMarkers(t *testing.T) {
 			h := newTestHandler(mockExternal)
 			h.trunkSID = tt.trunkSID
 
-			if tt.call {
+			if tt.call && tt.noSID {
+				mockExternal.EXPECT().TwilioIncomingPhoneNumbersPost(testSID, testToken, testNumber, tt.trunkSID).Return(&twilio.IncomingPhoneNumber{}, nil)
+			} else if tt.call {
 				mockExternal.EXPECT().TwilioIncomingPhoneNumbersPost(testSID, testToken, testNumber, tt.trunkSID).Return(nil, tt.responseErr)
 			}
 
