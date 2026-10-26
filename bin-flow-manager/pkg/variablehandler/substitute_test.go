@@ -436,6 +436,27 @@ func Test_substituteParseFromOther(t *testing.T) {
 			expectedRes: `{"id":"dfb89132-c05f-11f0-a2ad-8beb167b2ddd","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null}}`,
 		},
 		{
+			name: "reference type is call with groupcall id",
+
+			variableName: "voipbin.flow.reference_data",
+			v: &variable.Variable{
+				ID: uuid.FromStringOrNil("2b7e91a4-d1a4-11f0-a5d2-9f3c6b1e0a47"),
+			},
+
+			responseActiveflow: &activeflow.Activeflow{
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("6f1c2a52-d1a4-11f0-8b3e-5f0c1d9a7e21"),
+			},
+			responseCall: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6f1c2a52-d1a4-11f0-8b3e-5f0c1d9a7e21"),
+				},
+				GroupcallID: uuid.FromStringOrNil("a9d4e7c0-d1a4-11f0-9c61-b3a2f0e45d18"),
+			},
+
+			expectedRes: `{"id":"6f1c2a52-d1a4-11f0-8b3e-5f0c1d9a7e21","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"a9d4e7c0-d1a4-11f0-9c61-b3a2f0e45d18","source":{},"destination":{},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null}}`,
+		},
+		{
 			name: "reference type is conversation",
 
 			variableName: "voipbin.flow.reference_data",
