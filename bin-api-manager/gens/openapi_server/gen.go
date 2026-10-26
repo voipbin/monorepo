@@ -27517,6 +27517,20 @@ func (response PostAicalls401JSONResponse) VisitPostAicallsResponse(w http.Respo
 	return err
 }
 
+type PostAicalls404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostAicalls404JSONResponse) VisitPostAicallsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type PostAicalls500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PostAicalls500JSONResponse) VisitPostAicallsResponse(w http.ResponseWriter) error {
@@ -50227,6 +50241,20 @@ func (response PostServiceAgentsAicalls401JSONResponse) VisitPostServiceAgentsAi
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsAicalls404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostServiceAgentsAicalls404JSONResponse) VisitPostServiceAgentsAicallsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
 	_, err := buf.WriteTo(w)
 	return err
 }

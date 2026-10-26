@@ -261,6 +261,16 @@ func (h *aicallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.U
 	return res, nil
 }
 
+// GetByCustomerIDAndReferenceID returns the newest aicall of the customer by the reference_id.
+func (h *aicallHandler) GetByCustomerIDAndReferenceID(ctx context.Context, customerID uuid.UUID, referenceID uuid.UUID) (*aicall.AIcall, error) {
+	res, err := h.db.AIcallGetByCustomerIDAndReferenceID(ctx, customerID, referenceID)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // List returns list of aicalls.
 func (h *aicallHandler) List(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{

@@ -47,6 +47,7 @@ type DBHandler interface {
 	AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	AIcallGetSkipCache(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)
+	AIcallGetByCustomerIDAndReferenceID(ctx context.Context, customerID uuid.UUID, referenceID uuid.UUID) (*aicall.AIcall, error)
 	AIcallList(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error)
 	AIcallUpdate(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) error
 	AIcallUpdateNoTouchTMUpdate(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) error

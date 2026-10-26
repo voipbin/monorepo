@@ -98,6 +98,13 @@ func (h *serviceHandler) AIcallCreate(
 		referenceID = uuid.Nil
 	}
 
+	// validate the reference before anything is created. The reference must
+	// belong to the same customer as the assistance.
+	referenceID, err := h.aicallReferenceValidate(ctx, customerID, referenceType, referenceID)
+	if err != nil {
+		return nil, err
+	}
+
 	// create activeflow for the aicall
 	af, err := h.reqHandler.FlowV1ActiveflowCreate(
 		ctx,

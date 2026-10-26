@@ -186,6 +186,45 @@ func (h *handler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.U
 	return res, nil
 }
 
+// AIcallGetByCustomerIDAndReferenceID gets the newest aicall of the given
+// customer and reference_id. It queries the database directly and does not use
+// the cache: the reference_id cache key does not carry the customer.
+func (h *handler) AIcallGetByCustomerIDAndReferenceID(ctx context.Context, customerID uuid.UUID, referenceID uuid.UUID) (*aicall.AIcall, error) {
+	cols := commondatabasehandler.GetDBFields(aicall.AIcall{})
+
+	query, args, err := sq.Select(cols...).
+		From(aicallTable).
+		Where(sq.Eq{
+			"customer_id":  customerID.Bytes(),
+			"reference_id": referenceID.Bytes(),
+		}).
+		OrderBy("tm_create desc").
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("AIcallGetByCustomerIDAndReferenceID: could not build query. err: %w", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("AIcallGetByCustomerIDAndReferenceID: could not query. err: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	if !rows.Next() {
+		if errRows := rows.Err(); errRows != nil {
+			return nil, fmt.Errorf("AIcallGetByCustomerIDAndReferenceID: could not iterate rows. err: %w", errRows)
+		}
+		return nil, ErrNotFound
+	}
+
+	res := &aicall.AIcall{}
+	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
+		return nil, fmt.Errorf("AIcallGetByCustomerIDAndReferenceID: could not scan row. err: %w", err)
+	}
+
+	return res, nil
+}
+
 // AIcallDelete deletes the aicall.
 func (h *handler) AIcallDelete(ctx context.Context, id uuid.UUID) error {
 	ts := h.utilHandler.TimeNow()

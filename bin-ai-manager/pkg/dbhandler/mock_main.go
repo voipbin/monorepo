@@ -449,6 +449,21 @@ func (mr *MockDBHandlerMockRecorder) AIcallGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGet", reflect.TypeOf((*MockDBHandler)(nil).AIcallGet), ctx, id)
 }
 
+// AIcallGetByCustomerIDAndReferenceID mocks base method.
+func (m *MockDBHandler) AIcallGetByCustomerIDAndReferenceID(ctx context.Context, customerID, referenceID uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIcallGetByCustomerIDAndReferenceID", ctx, customerID, referenceID)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIcallGetByCustomerIDAndReferenceID indicates an expected call of AIcallGetByCustomerIDAndReferenceID.
+func (mr *MockDBHandlerMockRecorder) AIcallGetByCustomerIDAndReferenceID(ctx, customerID, referenceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetByCustomerIDAndReferenceID", reflect.TypeOf((*MockDBHandler)(nil).AIcallGetByCustomerIDAndReferenceID), ctx, customerID, referenceID)
+}
+
 // AIcallGetByReferenceID mocks base method.
 func (m *MockDBHandler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()

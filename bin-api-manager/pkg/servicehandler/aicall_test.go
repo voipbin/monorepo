@@ -13,6 +13,7 @@ import (
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amteam "monorepo/bin-ai-manager/models/team"
+	cmcall "monorepo/bin-call-manager/models/call"
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
@@ -38,6 +39,7 @@ func Test_AIcallCreate(t *testing.T) {
 
 		responseAI         *amai.AI
 		responseTeam       *amteam.Team
+		responseCall       *cmcall.Call
 		responseActiveflow *fmactiveflow.Activeflow
 		responseAIcall     *amaicall.AIcall
 
@@ -69,6 +71,12 @@ func Test_AIcallCreate(t *testing.T) {
 			responseAI: &amai.AI{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3fc2c1b0-efaa-11ef-84bb-a7e8fba38e46"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+			responseCall: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
@@ -109,6 +117,12 @@ func Test_AIcallCreate(t *testing.T) {
 			responseTeam: &amteam.Team{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b1c2d3e4-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+			responseCall: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
@@ -156,6 +170,8 @@ func Test_AIcallCreate(t *testing.T) {
 			case amaicall.AssistanceTypeTeam:
 				mockReq.EXPECT().AIV1TeamGet(ctx, tt.assistanceID).Return(tt.responseTeam, nil)
 			}
+
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 
 			mockReq.EXPECT().FlowV1ActiveflowCreate(
 				ctx,

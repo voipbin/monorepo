@@ -402,7 +402,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 
 			mockAI.EXPECT().Get(ctx, tt.assistanceID).Return(tt.responseAI, nil)
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseFlowVariable, nil)
-			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseAIcall, nil)
+			mockDB.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), tt.referenceID).Return(tt.responseAIcall, nil)
 
 			// interruptPreviousPipecatcall: best-effort. Get fails -> ping/terminate skipped.
 			mockReq.EXPECT().PipecatV1PipecatcallGet(gomock.Any(), tt.responseAIcall.PipecatcallID).Return(nil, fmt.Errorf("not found"))

@@ -572,7 +572,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				}, nil)
 
 				// GetByReferenceID returns existing reusable AIcall
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, gomock.Any()).Return(existing, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), gomock.Any()).Return(existing, nil)
 
 				// interruptPreviousPipecatcall: get -> ping ok -> terminate
 				m.req.EXPECT().PipecatV1PipecatcallGet(gomock.Any(), oldPCC).Return(pipecatcall, nil)
@@ -675,7 +675,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 					},
 				}, nil)
 
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, gomock.Any()).Return(existing, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), gomock.Any()).Return(existing, nil)
 
 				// interruptPreviousPipecatcall: get -> ping fails -> NO terminate
 				m.req.EXPECT().PipecatV1PipecatcallGet(gomock.Any(), oldPCC).Return(pipecatcall, nil)
@@ -765,7 +765,115 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 					},
 				}, nil)
 
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, gomock.Any()).Return(nil, errors.New("not found"))
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), gomock.Any()).Return(nil, errors.New("not found"))
+
+				// startAIcallByMessaging internal calls: pipecatcall id + create
+				m.util.EXPECT().UUIDCreate().Return(newPCC)
+				m.util.EXPECT().UUIDCreate().Return(newAIcallID)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, newAIcallID).Return(createdAIcall, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+
+				// setActiveflowVariables
+				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
+
+				// startInitMessages — system prompt only (no init prompt set)
+				m.message.EXPECT().Create(ctx, uuid.Nil, createdAIcall.CustomerID, createdAIcall.ID, createdAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+
+				// UpdateStatus -> Progressing
+				m.db.EXPECT().AIcallUpdate(ctx, newAIcallID, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, newAIcallID).Return(progressingAIcall, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressingAIcall.CustomerID, aicall.EventTypeStatusProgressing, progressingAIcall)
+
+				// conversation message create
+				m.message.EXPECT().Create(ctx, uuid.Nil, progressingAIcall.CustomerID, progressingAIcall.ID, progressingAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "fresh user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
+
+				// startPipecatcall
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
+				m.req.EXPECT().PipecatV1PipecatcallStart(
+					ctx,
+					progressingAIcall.PipecatcallID,
+					progressingAIcall.CustomerID,
+					progressingAIcall.ActiveflowID,
+					pmpipecatcall.ReferenceTypeAICall,
+					progressingAIcall.ID,
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(responsePC, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
+			},
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cccccccc-0002-11f0-cccc-cccccccccccc"),
+					CustomerID: uuid.FromStringOrNil("cdbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("c15ae476-30dd-11f0-87af-67d3c47111a7"),
+				AIEngineModel: ai.EngineModelOpenaiGPT5,
+				Status:        aicall.StatusProgressing,
+			},
+		},
+		{
+			name: "guard: existing aicall of another customer is ignored, not touched, fresh one is created",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
+					CustomerID: uuid.FromStringOrNil("cdbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+				STTLanguage: "en-US",
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("c0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
+			activeflowID:   uuid.FromStringOrNil("c15ae476-30dd-11f0-87af-67d3c47111a7"),
+			referenceID:    uuid.FromStringOrNil("c184c87c-30dd-11f0-8bbf-d773a2d31d73"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				newPCC := uuid.FromStringOrNil("cccccccc-0001-11f0-cccc-cccccccccccc")
+				newAIcallID := uuid.FromStringOrNil("cccccccc-0002-11f0-cccc-cccccccccccc")
+				createdAIcall := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         newAIcallID,
+						CustomerID: uuid.FromStringOrNil("cdbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
+					},
+					ActiveflowID:  uuid.FromStringOrNil("c15ae476-30dd-11f0-87af-67d3c47111a7"),
+					AIEngineModel: ai.EngineModelOpenaiGPT5,
+					Status:        aicall.StatusInitiating,
+				}
+				progressingAIcall := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         newAIcallID,
+						CustomerID: uuid.FromStringOrNil("cdbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
+					},
+					ActiveflowID:  uuid.FromStringOrNil("c15ae476-30dd-11f0-87af-67d3c47111a7"),
+					AIEngineModel: ai.EngineModelOpenaiGPT5,
+					Status:        aicall.StatusProgressing,
+				}
+				responsePC := &pmpipecatcall.Pipecatcall{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5f97dd3a-b663-11f0-b2ae-0b46e18cb363"),
+					},
+				}
+
+				m.req.EXPECT().FlowV1VariableGet(ctx, gomock.Any()).Return(&fmvariable.Variable{
+					Variables: map[string]string{
+						"voipbin.conversation_message.text": "fresh user message.",
+					},
+				}, nil)
+
+				foreignIdle := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("cccccccc-0099-11f0-cccc-cccccccccccc"),
+						CustomerID: uuid.FromStringOrNil("cdbecf3a-0000-11ef-bb0a-bfec64e31a47"),
+					},
+					Status:        aicall.StatusProgressing,
+					TMUpdate:      &expiredTM,
+					PipecatcallID: uuid.FromStringOrNil("cccccccc-0098-11f0-cccc-cccccccccccc"),
+				}
+				// The lookup is scoped to the AI's customer. A row of another
+				// customer is not reused and, although idle-expired, is not
+				// terminated: no UpdateStatus / interrupt expectation exists for it.
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, uuid.FromStringOrNil("cdbecf3a-f06f-11ef-bb0a-bfec64e31a47"), gomock.Any()).Return(foreignIdle, nil)
 
 				// startAIcallByMessaging internal calls: pipecatcall id + create
 				m.util.EXPECT().UUIDCreate().Return(newPCC)
@@ -858,7 +966,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 					},
 				}, nil)
 
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, gomock.Any()).Return(nil, errors.New("not found"))
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), gomock.Any()).Return(nil, errors.New("not found"))
 
 				// startAIcallByMessaging internal calls
 				m.util.EXPECT().UUIDCreate().Return(newPCC)
@@ -965,7 +1073,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				}, nil)
 
 				// GetByReferenceID returns terminated AIcall
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, gomock.Any()).Return(existingTerminated, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), gomock.Any()).Return(existingTerminated, nil)
 
 				// NO interruptPreviousPipecatcall (idle-expiry branch is short-circuited because status is already StatusTerminated)
 				// NO UpdateStatus(StatusTerminated) on the old AIcall
@@ -1075,7 +1183,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 					},
 				}, nil)
 
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, gomock.Any()).Return(existingIdle, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), gomock.Any()).Return(existingIdle, nil)
 
 				// idle-expiry branch: UpdateStatus(StatusTerminated) on the OLD AIcall
 				m.util.EXPECT().TimeNow().DoAndReturn(func() *time.Time { now := time.Now(); return &now })
@@ -1181,7 +1289,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 					},
 				}, nil)
 
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, gomock.Any()).Return(existing, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), gomock.Any()).Return(existing, nil)
 
 				// interruptPreviousPipecatcall: alive
 				m.req.EXPECT().PipecatV1PipecatcallGet(gomock.Any(), oldPCC).Return(pipecatcall, nil)
@@ -1363,7 +1471,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 						"voipbin.conversation_message.text": "degraded user message.",
 					},
 				}, nil)
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, gomock.Any()).Return(existing, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), gomock.Any()).Return(existing, nil)
 
 				m.req.EXPECT().PipecatV1PipecatcallGet(gomock.Any(), oldPCC).Return(pipecatcall, nil)
 				m.req.EXPECT().PipecatV1Ping(gomock.Any(), "host-degraded").Return(nil)
@@ -1444,7 +1552,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 
 			mockSetup: func(ctx context.Context, m *mocks) {
 				// Single FlowV1VariableGet expectation that fails. NO downstream
-				// calls of any kind: no AIcallGetByReferenceID, no message Create,
+				// calls of any kind: no AIcallGetByCustomerIDAndReferenceID, no message Create,
 				// no PipecatcallStart, no UpdateStatus, etc.
 				m.req.EXPECT().FlowV1VariableGet(ctx, gomock.Any()).Return(nil, errors.New("flow rpc error"))
 			},
@@ -1548,7 +1656,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				}, nil)
 
 				// GetByReferenceID returns the StatusTerminating AIcall.
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, gomock.Any()).Return(existingTerminating, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), gomock.Any()).Return(existingTerminating, nil)
 
 				// NO interruptPreviousPipecatcall (only happens on reuse path).
 				// NO idle-expiry branch — short-circuited by Status == StatusTerminating.
@@ -4325,7 +4433,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 		m.util.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("b1000000-0009-11f0-9999-000000000001"))
 		m.util.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("b1000000-000a-11f0-9999-000000000001"))
 		m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
-		m.db.EXPECT().AIcallGetByReferenceID(ctx, insightReferenceID).Return(existing, nil)
+		m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), insightReferenceID).Return(existing, nil)
 	}
 
 	// insightAI is what aiHandler.Get returns to the REFRESH. The caller's own
@@ -4480,7 +4588,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
 				m.util.EXPECT().UUIDCreate().Return(aicallID)
 				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("20000000-0004-11f0-bbbb-000000000001")).Return(existingActive, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), uuid.FromStringOrNil("20000000-0004-11f0-bbbb-000000000001")).Return(existingActive, nil)
 			},
 
 			expectRes: &aicall.AIcall{
@@ -4536,7 +4644,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID1)
 				m.util.EXPECT().UUIDCreate().Return(aicallID1)
 				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("30000000-0004-11f0-cccc-000000000001")).Return(existingTerminated, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), uuid.FromStringOrNil("30000000-0004-11f0-cccc-000000000001")).Return(existingTerminated, nil)
 
 				// attempt 1: create succeeds
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID2)
@@ -4600,7 +4708,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 					m.util.EXPECT().UUIDCreate().Return(pcc)
 					m.util.EXPECT().UUIDCreate().Return(acID)
 					m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
-					m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("40000000-0004-11f0-dddd-000000000001")).Return(existingTerminated, nil)
+					m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), uuid.FromStringOrNil("40000000-0004-11f0-dddd-000000000001")).Return(existingTerminated, nil)
 				}
 			},
 
@@ -4681,7 +4789,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
 				m.util.EXPECT().UUIDCreate().Return(aicallID)
 				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("60000000-0004-11f0-ffff-000000000001")).Return(existingTerminated, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), uuid.FromStringOrNil("60000000-0004-11f0-ffff-000000000001")).Return(existingTerminated, nil)
 			},
 
 			expectErr: true,
@@ -4740,7 +4848,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID1)
 				m.util.EXPECT().UUIDCreate().Return(aicallID1)
 				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("70000000-0004-11f0-1111-000000000001")).Return(existingTerminated, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), uuid.FromStringOrNil("70000000-0004-11f0-1111-000000000001")).Return(existingTerminated, nil)
 
 				// attempt 1: create succeeds
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID2)
@@ -4817,7 +4925,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID1)
 				m.util.EXPECT().UUIDCreate().Return(aicallID1)
 				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("80000000-0004-11f0-2222-000000000001")).Return(existingTerminated, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), uuid.FromStringOrNil("80000000-0004-11f0-2222-000000000001")).Return(existingTerminated, nil)
 
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID2)
 				m.util.EXPECT().UUIDCreate().Return(aicallID2)
@@ -5070,7 +5178,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
 				m.util.EXPECT().UUIDCreate().Return(aicallID)
 				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001")).Return(existingInitiating, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001")).Return(existingInitiating, nil)
 
 				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(existingInitiating.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(existingInitiating.ID)).Return([]*message.Message{}, nil)
@@ -5128,7 +5236,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID1)
 				m.util.EXPECT().UUIDCreate().Return(aicallID1)
 				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("55000000-0004-11f0-eeee-000000000001")).Return(existingIdle, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), uuid.FromStringOrNil("55000000-0004-11f0-eeee-000000000001")).Return(existingIdle, nil)
 
 				// terminate the idle row -- NO recreate-rate-limit check on this path.
 				// UpdateStatus(StatusTerminated) also sets FieldTMEnd via utilHandler.TimeNow()
@@ -5215,7 +5323,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID1)
 				m.util.EXPECT().UUIDCreate().Return(aicallID1)
 				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("56000000-0004-11f0-eeee-000000000001")).Return(existingIdle, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), uuid.FromStringOrNil("56000000-0004-11f0-eeee-000000000001")).Return(existingIdle, nil)
 
 				// terminate the idle row -- NO recreate-rate-limit check on this path.
 				// UpdateStatus(StatusTerminated) also sets FieldTMEnd via utilHandler.TimeNow()
@@ -5314,7 +5422,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID1)
 				m.util.EXPECT().UUIDCreate().Return(aicallID1)
 				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("93000000-0004-11f0-6666-000000000001")).Return(existingStuckAndIdle, nil)
+				m.db.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, gomock.Any(), uuid.FromStringOrNil("93000000-0004-11f0-6666-000000000001")).Return(existingStuckAndIdle, nil)
 
 				// idle-expiry wins: terminate the existing row -- NO
 				// startPipecatcall / PipecatV1PipecatcallStart call is ever made

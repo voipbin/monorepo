@@ -361,6 +361,38 @@ func Test_GetByReferenceID(t *testing.T) {
 	}
 }
 
+func Test_GetByCustomerIDAndReferenceID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &aicallHandler{db: mockDB}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("a665825e-a709-11ed-967e-538651691d21")
+	referenceID := uuid.FromStringOrNil("a665825e-a709-11ed-967e-538651691d20")
+	response := &aicall.AIcall{
+		Identity: identity.Identity{
+			ID:         uuid.FromStringOrNil("a964a98a-a709-11ed-ad69-3ff036631417"),
+			CustomerID: customerID,
+		},
+	}
+
+	mockDB.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, customerID, referenceID).Return(response, nil)
+	res, err := h.GetByCustomerIDAndReferenceID(ctx, customerID, referenceID)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+	if !reflect.DeepEqual(res, response) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", response, res)
+	}
+
+	mockDB.EXPECT().AIcallGetByCustomerIDAndReferenceID(ctx, customerID, referenceID).Return(nil, dbhandler.ErrNotFound)
+	if _, err := h.GetByCustomerIDAndReferenceID(ctx, customerID, referenceID); err == nil {
+		t.Errorf("Wrong match. expect: error, got: ok")
+	}
+}
+
 func Test_Delete(t *testing.T) {
 
 	tests := []struct {

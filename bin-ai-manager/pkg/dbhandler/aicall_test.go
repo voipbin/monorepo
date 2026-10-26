@@ -2,6 +2,7 @@ package dbhandler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	reflect "reflect"
 	"testing"
@@ -144,6 +145,90 @@ func Test_AIcallCreate(t *testing.T) {
 
 			if !reflect.DeepEqual(tt.expectRes, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_AIcallGetByCustomerIDAndReferenceID(t *testing.T) {
+	resetTestDB(t)
+
+	referenceID := uuid.FromStringOrNil("b8ebd744-a5e2-11ed-bc18-d3a88a0f1ffa")
+	customerA := uuid.FromStringOrNil("b0000000-0001-11ed-8000-000000000001")
+	customerB := uuid.FromStringOrNil("b0000000-0002-11ed-8000-000000000001")
+	customerNone := uuid.FromStringOrNil("b0000000-0003-11ed-8000-000000000001")
+
+	timeOld := time.Date(2023, 1, 3, 21, 35, 2, 0, time.UTC)
+	timeMid := time.Date(2023, 1, 3, 21, 36, 2, 0, time.UTC)
+	timeNew := time.Date(2023, 1, 3, 21, 37, 2, 0, time.UTC)
+
+	rows := []struct {
+		id       string
+		customer uuid.UUID
+		tm       time.Time
+		status   aicall.Status
+	}{
+		// only one active row per customer and reference may exist
+		{"b8b26464-a5e2-11ed-bce7-83b475b0c501", customerA, timeOld, aicall.StatusTerminated},
+		{"b8b26464-a5e2-11ed-bce7-83b475b0c502", customerB, timeNew, aicall.StatusProgressing},
+		{"b8b26464-a5e2-11ed-bce7-83b475b0c503", customerA, timeMid, aicall.StatusProgressing},
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	for _, r := range rows {
+		tm := r.tm
+		mockUtil.EXPECT().TimeNow().Return(&tm)
+		mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
+		err := h.AIcallCreate(ctx, &aicall.AIcall{
+			Identity:      identity.Identity{ID: uuid.FromStringOrNil(r.id), CustomerID: r.customer},
+			ReferenceType: aicall.ReferenceTypeContactCase,
+			ReferenceID:   referenceID,
+			Status:        r.status,
+		})
+		if err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
+	}
+
+	// The lookup must not touch the cache: no further mockCache expectation
+	// is registered, so any cache call fails the test.
+	tests := []struct {
+		name       string
+		customerID uuid.UUID
+		expectID   string
+		expectErr  error
+	}{
+		{"customer A gets its own newest row", customerA, "b8b26464-a5e2-11ed-bce7-83b475b0c503", nil},
+		{"customer B gets its own row", customerB, "b8b26464-a5e2-11ed-bce7-83b475b0c502", nil},
+		{"customer without a row", customerNone, "", ErrNotFound},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := h.AIcallGetByCustomerIDAndReferenceID(ctx, tt.customerID, referenceID)
+			if tt.expectErr != nil {
+				if !errors.Is(err, tt.expectErr) {
+					t.Fatalf("Wrong match. expect: %v, got: %v", tt.expectErr, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res.ID != uuid.FromStringOrNil(tt.expectID) || res.CustomerID != tt.customerID {
+				t.Errorf("Wrong match. expect: %s of %s, got: %s of %s", tt.expectID, tt.customerID, res.ID, res.CustomerID)
 			}
 		})
 	}

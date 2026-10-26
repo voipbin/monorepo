@@ -69,7 +69,12 @@ post:
   description: >-
     Creates a new AI call for the service agent's customer and returns the
     created aicall's details. An activeflow is automatically created and
-    associated with the new AI call.
+    associated with the new AI call. `reference_type` must be one of `call`,
+    `conversation`, `contact_case`, or an empty string (no reference;
+    `reference_id` is then ignored). For the other types the referenced
+    resource must belong to the caller's customer. An unsupported
+    `reference_type` returns `400`; a reference that does not exist or does not
+    belong to the caller's customer returns `404`.
   tags:
     - Service Agent
   requestBody:
@@ -114,5 +119,7 @@ post:
       $ref: '#/components/responses/BadRequest'
     '401':
       $ref: '#/components/responses/Unauthenticated'
+    '404':
+      $ref: '#/components/responses/NotFound'
     '500':
       $ref: '#/components/responses/InternalError'

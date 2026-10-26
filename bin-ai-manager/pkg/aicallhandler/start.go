@@ -315,8 +315,15 @@ func (h *aicallHandler) startReferenceTypeConversation(
 		return nil, errors.New("could not get the conversation message text from the activeflow variables")
 	}
 
-	// get existing aicall info — decide reuse or create fresh
-	res, err := h.GetByReferenceID(ctx, referenceID)
+	// get existing aicall info — decide reuse or create fresh. The lookup is
+	// scoped to the AI's customer; the explicit comparison below is an
+	// invariant check that keeps a row of another customer from being reused
+	// or touched even if the lookup is ever replaced by an unscoped one.
+	res, err := h.GetByCustomerIDAndReferenceID(ctx, a.CustomerID, referenceID)
+	if err == nil && res.CustomerID != a.CustomerID {
+		log.Errorf("The existing aicall belongs to another customer. Ignoring it. aicall_id: %s", res.ID)
+		res, err = nil, dbhandler.ErrNotFound
+	}
 	reusable := err == nil && h.isAIcallReusable(res)
 
 	if !reusable {
@@ -526,9 +533,13 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 		// duplicate key: another creator won the race for this
 		// (customer_id, reference_type, reference_id) tuple. Re-fetch and decide
 		// whether to reuse it or retry the create.
-		existing, errGet := h.GetByReferenceID(ctx, referenceID)
+		existing, errGet := h.GetByCustomerIDAndReferenceID(ctx, a.CustomerID, referenceID)
 		if errGet != nil {
 			return nil, errors.Wrapf(errGet, "could not get existing aicall after duplicate key conflict. reference_id: %s", referenceID)
+		}
+		if existing.CustomerID != a.CustomerID {
+			// Invariant check: the lookup is scoped to the AI's customer.
+			return nil, fmt.Errorf("the existing aicall does not belong to the customer. reference_id: %s", referenceID)
 		}
 
 		if existing.Status == aicall.StatusTerminated || existing.Status == aicall.StatusTerminating {

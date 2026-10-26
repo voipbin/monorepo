@@ -204,21 +204,11 @@ func (h *serviceHandler) ServiceAgentAIcallCreate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	// Case-ownership check (contact_case only). Rejects before touching
-	// anything else if the referenced Case doesn't belong to the caller's
-	// own customer -- fail-fast; tool_insight.go already fails closed on
-	// this independently, so this is a UX/hygiene guard, not the last line
-	// of defense.
-	if referenceType == amaicall.ReferenceTypeContactCase {
-		kase, errCase := h.reqHandler.ContactV1CaseGet(ctx, a.CustomerID, referenceID)
-		if errCase != nil {
-			return nil, errors.Wrapf(errCase, "could not get case info")
-		}
-
-		if kase.CustomerID != a.CustomerID {
-			log.Info("The referenced case does not belong to the agent's customer.")
-			return nil, serviceerrors.ErrPermissionDenied
-		}
+	// Validate the reference (type allowlist and ownership) before touching
+	// anything else; a refusal creates nothing.
+	referenceID, err := h.aicallReferenceValidate(ctx, a.CustomerID, referenceType, referenceID)
+	if err != nil {
+		return nil, err
 	}
 
 	// Server-side Insight AI resolution: assistance_id may be omitted for
