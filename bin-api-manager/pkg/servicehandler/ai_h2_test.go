@@ -230,11 +230,11 @@ func Test_AIUpdate_h2(t *testing.T) {
 	tools := []amtool.ToolName{}
 	call := func(ragID uuid.UUID) func(ctx context.Context, h *serviceHandler, a *auth.AuthIdentity) (any, error) {
 		return func(ctx context.Context, h *serviceHandler, a *auth.AuthIdentity) (any, error) {
-			return h.AIUpdate(ctx, a, h2AIID, "nm", "dt", amai.TypeNormal, amai.EngineModel("openai.gpt-4o"), map[string]any{"k": "v"}, "key", "", nil, ragID, "prompt", amai.TTSType("none"), "voice", amai.STTType("none"), "en-US", tools, nil, true)
+			return h.AIUpdate(ctx, a, h2AIID, "nm", "dt", amai.TypeNormal, amai.EngineModel("openai.gpt-4o"), map[string]any{"k": "v"}, stringPtr("key"), "", nil, ragID, "prompt", amai.TTSType("none"), "voice", amai.STTType("none"), "en-US", tools, nil, true)
 		}
 	}
 	rpc := h2AIRPC(func(ctx context.Context, req *requesthandler.MockRequestHandler, res *amai.AI, err error) {
-		req.EXPECT().AIV1AIUpdate(ctx, h2AIID, "nm", "dt", amai.TypeNormal, amai.EngineModel("openai.gpt-4o"), map[string]any{"k": "v"}, "key", "", (*string)(nil), uuid.Nil, "prompt", amai.TTSType("none"), "voice", amai.STTType("none"), "en-US", tools, (*[]uuid.UUID)(nil), true).Return(res, err)
+		req.EXPECT().AIV1AIUpdate(ctx, h2AIID, "nm", "dt", amai.TypeNormal, amai.EngineModel("openai.gpt-4o"), map[string]any{"k": "v"}, stringPtr("key"), "", (*string)(nil), uuid.Nil, "prompt", amai.TTSType("none"), "voice", amai.STTType("none"), "en-US", tools, (*[]uuid.UUID)(nil), true).Return(res, err)
 	})
 	h2RunCases(t, h2StdCases(call(uuid.Nil), h2AILookup, rpc, h2AI(h2CustomerID).ConvertWebhookMessage()))
 
@@ -267,7 +267,7 @@ func Test_AIUpdate_h2(t *testing.T) {
 			setup: func(ctx context.Context, req *requesthandler.MockRequestHandler, _ *utilhandler.MockUtilHandler, _ *dbhandler.MockDBHandler) {
 				h2AILookup(ctx, req, h2CustomerID, false)
 				req.EXPECT().RagV1RagGet(ctx, h2RagID).Return(&rmrag.Rag{ID: h2RagID, CustomerID: h2CustomerID}, nil)
-				req.EXPECT().AIV1AIUpdate(ctx, h2AIID, "nm", "dt", amai.TypeNormal, amai.EngineModel("openai.gpt-4o"), map[string]any{"k": "v"}, "key", "", (*string)(nil), h2RagID, "prompt", amai.TTSType("none"), "voice", amai.STTType("none"), "en-US", tools, (*[]uuid.UUID)(nil), true).Return(h2AI(h2CustomerID), nil)
+				req.EXPECT().AIV1AIUpdate(ctx, h2AIID, "nm", "dt", amai.TypeNormal, amai.EngineModel("openai.gpt-4o"), map[string]any{"k": "v"}, stringPtr("key"), "", (*string)(nil), h2RagID, "prompt", amai.TTSType("none"), "voice", amai.STTType("none"), "en-US", tools, (*[]uuid.UUID)(nil), true).Return(h2AI(h2CustomerID), nil)
 			},
 			call: func(ctx context.Context, h *serviceHandler) (any, error) {
 				return call(h2RagID)(ctx, h, admin)

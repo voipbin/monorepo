@@ -454,7 +454,7 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIPromptProposalReject(ctx, custom
 }
 
 // AIV1AIUpdate mocks base method.
-func (m *MockRequestHandler) AIV1AIUpdate(ctx context.Context, aiID uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey, engineBaseURL string, engineBaseKey *string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, mcpServerIDs *[]uuid.UUID, autoAICallAuditEnabled bool) (*ai.AI, error) {
+func (m *MockRequestHandler) AIV1AIUpdate(ctx context.Context, aiID uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey *string, engineBaseURL string, engineBaseKey *string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, mcpServerIDs *[]uuid.UUID, autoAICallAuditEnabled bool) (*ai.AI, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1AIUpdate", ctx, aiID, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 	ret0, _ := ret[0].(*ai.AI)

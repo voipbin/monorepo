@@ -65,7 +65,7 @@ func Test_processV1AIsPostPut_EndpointFields(t *testing.T) {
 					req.Data = []byte(tt.body)
 					mockAI.EXPECT().Update(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 						gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-						DoAndReturn(func(_ context.Context, _ uuid.UUID, _, _ string, _ ai.Type, _ ai.EngineModel, _ map[string]any, _ string, url string, key *string,
+						DoAndReturn(func(_ context.Context, _ uuid.UUID, _, _ string, _ ai.Type, _ ai.EngineModel, _ map[string]any, _ *string, url string, key *string,
 							_ uuid.UUID, _ string, _ ai.TTSType, _ string, _ ai.STTType, _ string, _ []tool.ToolName, _ *ai.VADConfig, _, _ bool) (*ai.AI, error) {
 							capture(url, key)
 							return response, nil

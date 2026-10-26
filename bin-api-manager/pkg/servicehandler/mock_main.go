@@ -523,7 +523,7 @@ func (mr *MockServiceHandlerMockRecorder) AISummaryRegenerate(ctx, a, id, langua
 }
 
 // AIUpdate mocks base method.
-func (m *MockServiceHandler) AIUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey, engineBaseURL string, engineBaseKey *string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, mcpServerIDs *[]uuid.UUID, autoAICallAuditEnabled bool) (*ai.WebhookMessage, error) {
+func (m *MockServiceHandler) AIUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey *string, engineBaseURL string, engineBaseKey *string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, mcpServerIDs *[]uuid.UUID, autoAICallAuditEnabled bool) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIUpdate", ctx, a, id, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 	ret0, _ := ret[0].(*ai.WebhookMessage)

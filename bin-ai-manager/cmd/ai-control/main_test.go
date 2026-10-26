@@ -86,7 +86,7 @@ func Test_validateEngineModelUpdate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := &fakeAIGetter{res: &ai.AI{EngineModel: tt.stored}, err: tt.getErr}
-			err := validateEngineModelUpdate(context.Background(), g, uuid.Must(uuid.NewV4()), tt.requested, tt.key)
+			err := validateEngineModelUpdate(context.Background(), g, uuid.Must(uuid.NewV4()), tt.requested, keyArg(tt.key))
 			if (err != nil) != tt.wantError {
 				t.Errorf("error = %v, wantError %v", err, tt.wantError)
 			}
@@ -147,5 +147,42 @@ func Test_printJSON_HidesEndpointCiphertext(t *testing.T) {
 	}
 	if !strings.Contains(string(out), "https://llm.example.com") {
 		t.Errorf("the url must be printed: %s", out)
+	}
+}
+
+// keyArg maps the table's empty key to an omitted flag, like the update command does.
+func keyArg(s string) *string { return engineKeyFlag(s) }
+
+func Test_engineKeyFlag(t *testing.T) {
+	if got := engineKeyFlag(""); got != nil {
+		t.Errorf("an empty flag must be an omitted key, got: %q", *got)
+	}
+	if got := engineKeyFlag("dummy-key"); got == nil || *got != "dummy-key" {
+		t.Errorf("a value must be passed as is, got: %v", got)
+	}
+}
+
+func Test_validateEngineModelUpdate_mergesStoredKey(t *testing.T) {
+	tests := []struct {
+		name      string
+		stored    ai.EngineModel
+		storedKey string
+		requested ai.EngineModel
+		key       *string
+		wantError bool
+	}{
+		{"omitted_key_uses_stored_key_for_custom_model", "openrouter.vendor/model-a", "dummy-stored-key", "openrouter.vendor/model-a", nil, false},
+		{"omitted_key_without_stored_key_fails", "openrouter.vendor/model-a", "", "openrouter.vendor/model-a", nil, true},
+		{"vendor_change_drops_stored_key", "openai.gpt-5", "dummy-stored-key", "openrouter.vendor/model-a", nil, true},
+		{"explicit_value_wins", "openrouter.vendor/model-a", "", "openrouter.vendor/model-a", keyArg("dummy-new-key"), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &fakeAIGetter{res: &ai.AI{EngineModel: tt.stored, EngineKey: tt.storedKey}}
+			err := validateEngineModelUpdate(context.Background(), g, uuid.Must(uuid.NewV4()), tt.requested, tt.key)
+			if (err != nil) != tt.wantError {
+				t.Errorf("error = %v, wantError %v", err, tt.wantError)
+			}
+		})
 	}
 }

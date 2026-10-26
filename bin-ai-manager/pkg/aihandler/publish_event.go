@@ -12,6 +12,7 @@ import (
 // Only a copy is stripped; the caller's value keeps its key.
 func (h *aiHandler) publishAIEvent(ctx context.Context, eventType string, a *ai.AI) {
 	c := *a
+	c.HasEngineKey = a.EngineKey != "" || a.HasEngineKey
 	c.EngineKey = ""
 	c.EngineBaseKey = ""
 	c.EngineBaseKeyEnc = nil

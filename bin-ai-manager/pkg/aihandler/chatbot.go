@@ -223,7 +223,7 @@ func (h *aiHandler) Update(
 	aiType ai.Type,
 	engineModel ai.EngineModel,
 	parameter map[string]any,
-	engineKey string,
+	engineKey *string,
 	engineBaseURL string,
 	engineBaseKey *string,
 	ragID uuid.UUID,
@@ -256,9 +256,12 @@ func (h *aiHandler) Update(
 		return nil, errors.Wrapf(errGet, "could not get current ai for update")
 	}
 
+	// engineKey is nil when the request omitted it (keep the stored key). keyWrite is the value to
+	// store (nil: the column is not written) and finalKey is what the AI holds afterwards.
 	// Only a changed engine model is validated for validity, so an unchanged legacy value keeps saving.
 	// The final key state is always checked: a custom model with an empty key is rejected.
-	if err := ai.ValidateEngine(engineModel, engineKey, engineModel != preUpdateAI.EngineModel); err != nil {
+	keyWrite, finalKey := ai.MergeEngineKey(preUpdateAI, engineModel, engineKey)
+	if err := ai.ValidateEngine(engineModel, finalKey, engineModel != preUpdateAI.EngineModel); err != nil {
 		return nil, engineValidationError(engineModel, err)
 	}
 
@@ -304,7 +307,7 @@ func (h *aiHandler) Update(
 	switch {
 	case promptChanged:
 		historyID := h.utilHandler.UUIDCreate()
-		fields := h.buildUpdateFields(name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt,
+		fields := h.buildUpdateFields(name, detail, aiType, engineModel, parameter, keyWrite, ragID, initPrompt,
 			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled, ep)
 		fields[ai.FieldCurrentPromptHistoryID] = historyID
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
@@ -328,7 +331,7 @@ func (h *aiHandler) Update(
 		return res, nil
 
 	case promptCleared:
-		fields := h.buildUpdateFields(name, detail, aiType, engineModel, parameter, engineKey, ragID, "",
+		fields := h.buildUpdateFields(name, detail, aiType, engineModel, parameter, keyWrite, ragID, "",
 			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled, ep)
 		fields[ai.FieldCurrentPromptHistoryID] = uuid.Nil
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
@@ -342,7 +345,7 @@ func (h *aiHandler) Update(
 		return res, nil
 
 	default: // prompt unchanged
-		return h.dbUpdate(ctx, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt,
+		return h.dbUpdate(ctx, id, name, detail, aiType, engineModel, parameter, keyWrite, ragID, initPrompt,
 			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled, ep)
 	}
 }

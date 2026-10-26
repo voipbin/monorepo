@@ -396,7 +396,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 				gomock.Any(), // aiType
 				tt.expectEngineModel,
 				tt.expectParameter,
-				tt.expectEngineKey,
+				&tt.expectEngineKey,
 				"", (*string)(nil),
 				gomock.Any(), // ragID
 				tt.expectInitPrompt,
@@ -571,7 +571,7 @@ func Test_processV1AIsIDPut_McpServerIDsEmptyArrayClears(t *testing.T) {
 	// AI is mutated, and a PUT body carries no customer id.
 	mockAI.EXPECT().Get(gomock.Any(), id).Return(preUpdate, nil)
 	mockAI.EXPECT().Update(
-		gomock.Any(), id, "", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), "",
+		gomock.Any(), id, "", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), (*string)(nil),
 		"", (*string)(nil),
 		uuid.Nil, "", ai.TTSType(""), "", ai.STTType(""), "", []tool.ToolName(nil), (*ai.VADConfig)(nil), false, false,
 	).Return(preUpdate, nil)
@@ -614,7 +614,7 @@ func Test_processV1AIsIDPut_McpServerIDsOmittedLeavesUntouched(t *testing.T) {
 	}
 
 	mockAI.EXPECT().Update(
-		gomock.Any(), id, "renamed", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), "",
+		gomock.Any(), id, "renamed", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), (*string)(nil),
 		"", (*string)(nil),
 		uuid.Nil, "", ai.TTSType(""), "", ai.STTType(""), "", []tool.ToolName(nil), (*ai.VADConfig)(nil), false, false,
 	).Return(&ai.AI{Identity: identity.Identity{ID: id}}, nil)
@@ -776,7 +776,7 @@ func Test_processV1AIsIDPut_McpServerIDsPassesStoredWhitelist(t *testing.T) {
 	).Return(nil)
 
 	mockAI.EXPECT().Update(
-		gomock.Any(), id, "", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), "",
+		gomock.Any(), id, "", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), (*string)(nil),
 		"", (*string)(nil),
 		uuid.Nil, "", ai.TTSType(""), "", ai.STTType(""), "", []tool.ToolName(nil), (*ai.VADConfig)(nil), false, false,
 	).Return(preUpdate, nil)

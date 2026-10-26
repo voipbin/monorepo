@@ -7,7 +7,7 @@ The AI Models endpoint returns the catalog of LLM models that can be used as the
 
 .. note:: **AI Implementation Hint**
 
-   Always read the model ``id`` from ``GET /ai_models`` response rather than hard-coding it. The catalog can change over time. An ``id`` that is not in the list (and does not use the ``openai.``, ``gemini.``, or ``grok.`` prefix, or the ``openrouter.<author>/<slug>`` custom form) is rejected with ``HTTP 400 INVALID_ENGINE_MODEL`` when you create or update an AI. A custom OpenRouter model without an ``engine_key`` is rejected with ``HTTP 400 ENGINE_KEY_REQUIRED``. A ``customendpoint.<model-id>`` model without ``engine_base_url`` is rejected with ``HTTP 400 ENGINE_BASE_URL_REQUIRED``.
+   Always read the model ``id`` from ``GET /ai_models`` response rather than hard-coding it. The catalog can change over time. An ``id`` that is not in the list (and does not use the ``openai.``, ``gemini.``, or ``grok.`` prefix, or the ``openrouter.<author>/<slug>`` custom form) is rejected with ``HTTP 400 INVALID_ENGINE_MODEL`` when you create or update an AI. A custom OpenRouter model without an engine key (none sent and none stored) is rejected with ``HTTP 400 ENGINE_KEY_REQUIRED``. A ``customendpoint.<model-id>`` model without ``engine_base_url`` is rejected with ``HTTP 400 ENGINE_BASE_URL_REQUIRED``.
 
 .. _ai-models-get:
 
@@ -74,8 +74,8 @@ Model
 * ``recommended`` (Boolean): ``true`` when the platform recommends this model as a starting point.
 * ``tags`` (Array of String): Model tags: ``low-cost``, and ``tool-calling`` for a local model whose operator marked it as supporting tool calling. The tags are informational and are not enforced.
 * ``description`` (String): A short description of the model.
-* ``platform_managed`` (Boolean): ``true`` when the platform supplies the credentials for this model. It does not mean the model is served by a particular provider or routing. The ``engine_key`` of the AI is not needed: send an empty string and any value you send is ignored. ``false`` means you must provide your own provider key in ``engine_key``. Prefer ``key_mode``, which is more precise.
-* ``key_mode`` (String): How ``engine_key`` is handled. ``platform``: the platform supplies access and ``engine_key`` is ignored. ``own_or_default``: your ``engine_key`` is used, or the platform default key when it is empty. ``own_required``: ``engine_key`` is mandatory.
+* ``platform_managed`` (Boolean): ``true`` when the platform supplies the credentials for this model. It does not mean the model is served by a particular provider or routing. The ``engine_key`` of the AI is not needed: on create send an empty string, on update you may omit it (a stored key is kept but not used), and any value you send is ignored. ``false`` means you must provide your own provider key in ``engine_key``. Prefer ``key_mode``, which is more precise.
+* ``key_mode`` (String): How ``engine_key`` is handled. ``platform``: the platform supplies access and ``engine_key`` is ignored. ``own_or_default``: your ``engine_key`` is used, or the platform default key when it is empty. ``own_required``: ``engine_key`` is mandatory (on update the stored key counts when you omit it).
 * ``model_id_prefix`` (String, Optional): Present only for the entry where you type the model ID yourself (the custom OpenRouter entry, prefix ``openrouter.``). Send ``engine_model`` as this prefix followed by the model ID, for example ``openrouter.mistralai/mistral-large-2411``. The ``id`` of this entry (``custom.openrouter``) cannot be used as ``engine_model`` directly.
 
 See :ref:`Engine Model <ai-struct-ai-engine_model>` for the provider prefixes and validation rules.
@@ -83,7 +83,7 @@ See :ref:`Engine Model <ai-struct-ai-engine_model>` for the provider prefixes an
 Local models
 ------------
 
-When the platform operator has registered self-hosted OpenAI-compatible models, they appear in the list with ``vendor`` ``Local``, ``key_mode`` ``platform`` and an ``id`` of the form ``local.<endpoint>.<model>``. The server address is never shown. ``engine_key`` is ignored for these models. When the operator has marked one local model as the default, it is the only model with ``recommended`` set to ``true``. If no local model is registered, none is listed.
+When the platform operator has registered self-hosted OpenAI-compatible models, they appear in the list with ``vendor`` ``Local``, ``key_mode`` ``platform`` and an ``id`` of the form ``local.<endpoint>.<model>``. The server address is never shown. ``engine_key`` is ignored for these models (on update you may omit it). When the operator has marked one local model as the default, it is the only model with ``recommended`` set to ``true``. If no local model is registered, none is listed.
 
 Custom endpoint models
 ----------------------

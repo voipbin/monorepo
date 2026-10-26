@@ -27,7 +27,12 @@ type WebhookMessage struct {
 	EngineModel EngineModel    `json:"engine_model,omitempty"`
 	Parameter   map[string]any `json:"parameter,omitempty"`
 	EngineKey   string         `json:"engine_key,omitempty"`
-	RagID       uuid.UUID      `json:"rag_id,omitempty"`
+
+	// HasEngineKey reports whether the AI holds an engine key. It has no omitempty so that false is
+	// distinguishable from an absent field.
+	HasEngineKey bool `json:"has_engine_key"`
+
+	RagID uuid.UUID `json:"rag_id,omitempty"`
 
 	// EngineBaseURL is not a secret. The endpoint key, its ciphertext and its plaintext are never here.
 	EngineBaseURL string `json:"engine_base_url,omitempty"`
@@ -71,7 +76,11 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		EngineModel: h.EngineModel,
 		Parameter:   h.Parameter,
 		EngineKey:   h.EngineKey,
-		RagID:       h.RagID,
+
+		// The event copy has EngineKey cleared and carries the hint instead.
+		HasEngineKey: h.EngineKey != "" || h.HasEngineKey,
+
+		RagID: h.RagID,
 
 		EngineBaseURL: h.EngineBaseURL,
 

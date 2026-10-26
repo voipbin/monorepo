@@ -371,7 +371,7 @@ func Test_Update_KeyTable(t *testing.T) {
 				u := newUpdateHarness(t, pre)
 
 				// the harness registers AIGet/AIUpdate for pre.ID, so call with it
-				_, err := u.h.Update(context.Background(), pre.ID, "n", "", ai.TypeNormal, tt.model, nil, "", tt.url, tt.key, uuid.Nil, prompt,
+				_, err := u.h.Update(context.Background(), pre.ID, "n", "", ai.TypeNormal, tt.model, nil, strPtr(""), tt.url, tt.key, uuid.Nil, prompt,
 					ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 
 				if tt.expectErr != "" {
@@ -453,7 +453,7 @@ func Test_Update_DNSOnlyWhenURLChanges(t *testing.T) {
 			})
 			defer restore()
 
-			if _, err := u.h.Update(context.Background(), pre.ID, "n", "", ai.TypeNormal, testCustomModel, nil, "", tt.url, tt.key, uuid.Nil, "",
+			if _, err := u.h.Update(context.Background(), pre.ID, "n", "", ai.TypeNormal, testCustomModel, nil, strPtr(""), tt.url, tt.key, uuid.Nil, "",
 				ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false); err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -476,7 +476,7 @@ func Test_Update_PrivateHostRejectedWithoutWrite(t *testing.T) {
 	})
 	defer restore()
 
-	_, err := u.h.Update(context.Background(), pre.ID, "n", "", ai.TypeNormal, testCustomModel, nil, "", testURLA, strPtr(testKeyPlain), uuid.Nil, "",
+	_, err := u.h.Update(context.Background(), pre.ID, "n", "", ai.TypeNormal, testCustomModel, nil, strPtr(""), testURLA, strPtr(testKeyPlain), uuid.Nil, "",
 		ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	assertReason(t, err, "ENGINE_BASE_URL_REJECTED")
 	if u.called {
@@ -493,7 +493,7 @@ func Test_Update_NoCryptoFailsWithoutLeak(t *testing.T) {
 	u.h.crypto = nil
 	hook := newSecretLogHook(t)
 
-	_, err := u.h.Update(context.Background(), pre.ID, "n", "", ai.TypeNormal, testCustomModel, nil, "", testURLA, strPtr(testKeyPlain), uuid.Nil, "",
+	_, err := u.h.Update(context.Background(), pre.ID, "n", "", ai.TypeNormal, testCustomModel, nil, strPtr(""), testURLA, strPtr(testKeyPlain), uuid.Nil, "",
 		ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	if err == nil || u.called {
 		t.Fatalf("expect an error and no write. got: %v", err)
@@ -646,7 +646,7 @@ func Test_Create_Update_LogsCarryNoSecret(t *testing.T) {
 
 	pre := &ai.AI{Identity: commonidentity.Identity{ID: uuid.Must(uuid.NewV4())}, EngineModel: testCustomModel, EngineBaseURL: url}
 	u := newUpdateHarness(t, pre)
-	if _, err := u.h.Update(context.Background(), pre.ID, "n", "", ai.TypeNormal, testCustomModel, nil, "", url, strPtr(testKeyPlain), uuid.Nil, "new prompt",
+	if _, err := u.h.Update(context.Background(), pre.ID, "n", "", ai.TypeNormal, testCustomModel, nil, strPtr(""), url, strPtr(testKeyPlain), uuid.Nil, "new prompt",
 		ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

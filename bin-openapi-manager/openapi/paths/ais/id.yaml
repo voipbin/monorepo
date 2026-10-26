@@ -94,7 +94,8 @@ put:
               description: Data associated with the ai's engine, can be dynamic and vary based on the engine type.
             engine_key:
               type: string
-              description: "API key or credential for the AI engine. Required when engine_model starts with openrouter. (400 ENGINE_KEY_REQUIRED if empty)."
+              nullable: true
+              description: "API key or credential for the AI engine. Omitted or null keeps the stored key (null is the same as omitting the field); an empty string deletes the stored key; a value replaces it. An omitted key is not kept when the service prefix of `engine_model` (the part before the first dot) changes to a model whose `key_mode` is not `platform` in `GET /ai_models`; the stored key is then deleted, so a key is never carried over to another provider. Required when engine_model starts with openrouter. (400 ENGINE_KEY_REQUIRED if no key is stored or sent)."
             engine_base_url:
               type: string
               description: "Base URL of the customer-hosted OpenAI-compatible server. Required when engine_model starts with `customendpoint.` (400 ENGINE_BASE_URL_REQUIRED if empty); not allowed for any other model (400 ENGINE_BASE_URL_NOT_ALLOWED). Only https is accepted. Do not put credentials, tokens or other secrets in the URL; the URL is not secret and is returned in responses, events and webhooks. Send the key in `engine_base_key` instead. A call that is already running keeps the URL and key it read when it started; a changed URL or key applies from the next call or turn. A client that sends PUT for an existing `customendpoint.` AI without this field gets 400 ENGINE_BASE_URL_REQUIRED."
@@ -159,7 +160,6 @@ put:
             - detail
             - engine_model
             - parameter
-            - engine_key
             - init_prompt
             - tts_type
             - tts_voice_id

@@ -59,3 +59,19 @@ func Test_aiEventsPublishOnlyThroughHelper(t *testing.T) {
 		t.Errorf("expected 8 publishAIEvent call sites, found %d", sites)
 	}
 }
+
+// Test_publishAIEvent_hintBeforeClear guards the order inside the helper: has_engine_key is
+// computed from the real key before the key is cleared, otherwise masked events would report false.
+func Test_publishAIEvent_hintBeforeClear(t *testing.T) {
+	body, err := os.ReadFile("publish_event.go")
+	if err != nil {
+		t.Fatalf("read failed: %v", err)
+	}
+
+	src := string(body)
+	hint := strings.Index(src, "c.HasEngineKey = ")
+	cleared := strings.Index(src, `c.EngineKey = ""`)
+	if hint < 0 || cleared < 0 || hint > cleared {
+		t.Errorf("the has_engine_key hint must be set before the engine key is cleared. hint: %d, clear: %d", hint, cleared)
+	}
+}

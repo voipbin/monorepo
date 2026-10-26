@@ -164,7 +164,7 @@ func cmdUpdate() *cobra.Command {
 	flags.String("name", "", "AI name")
 	flags.String("detail", "", "AI detail")
 	flags.String("engine-model", "", "Engine model (e.g., gemini.gemini-pro-latest, openai.gpt-5)")
-	flags.String("engine-key", "", "Engine API key")
+	flags.String("engine-key", "", "Engine API key (empty keeps the stored key)")
 	flags.String("init-prompt", "", "Initial system prompt")
 	flags.String("tts-type", "", "TTS type (e.g., openai, elevenlabs, cartesia)")
 	flags.String("tts-voice-id", "", "TTS voice ID")
@@ -329,7 +329,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	name := viper.GetString("name")
 	detail := viper.GetString("detail")
 	engineModel := ai.EngineModel(viper.GetString("engine-model"))
-	engineKey := viper.GetString("engine-key")
+	engineKey := engineKeyFlag(viper.GetString("engine-key"))
 	initPrompt := viper.GetString("init-prompt")
 	ttsType := ai.TTSType(viper.GetString("tts-type"))
 	ttsVoiceID := viper.GetString("tts-voice-id")
@@ -455,7 +455,7 @@ func validateEngineModelCreate(engineModel ai.EngineModel, engineKey string) err
 // validateEngineModelUpdate validates a non-empty engine model and its key on update. The model
 // is checked for validity only when it differs from the stored value, so an unchanged legacy
 // value keeps saving.
-func validateEngineModelUpdate(ctx context.Context, getter aiGetter, id uuid.UUID, engineModel ai.EngineModel, engineKey string) error {
+func validateEngineModelUpdate(ctx context.Context, getter aiGetter, id uuid.UUID, engineModel ai.EngineModel, engineKey *string) error {
 	if engineModel == "" {
 		return nil
 	}
@@ -465,10 +465,21 @@ func validateEngineModelUpdate(ctx context.Context, getter aiGetter, id uuid.UUI
 		return errors.Wrap(err, "could not get the current AI")
 	}
 
-	if err := ai.ValidateEngine(engineModel, engineKey, engineModel != stored.EngineModel); err != nil {
+	_, finalKey := ai.MergeEngineKey(stored, engineModel, engineKey)
+	if err := ai.ValidateEngine(engineModel, finalKey, engineModel != stored.EngineModel); err != nil {
 		return engineCheckError(engineModel, err)
 	}
 	return nil
+}
+
+// engineKeyFlag maps the engine-key flag of the update command to the engine key of the handler:
+// an empty flag is an omitted key (the stored key is kept); the CLI cannot delete a key.
+func engineKeyFlag(v string) *string {
+	if v == "" {
+		return nil
+	}
+
+	return &v
 }
 
 func initHandler() (aihandler.AIHandler, error) {

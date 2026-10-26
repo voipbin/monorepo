@@ -80,7 +80,7 @@ func Test_PostAis(t *testing.T) {
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
-			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "with tool_names",
@@ -113,7 +113,7 @@ func Test_PostAis(t *testing.T) {
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   []amtool.ToolName{amtool.ToolNameConnectCall, amtool.ToolNameSendEmail},
-			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "with all tools enabled",
@@ -146,7 +146,7 @@ func Test_PostAis(t *testing.T) {
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   []amtool.ToolName{amtool.ToolNameAll},
-			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "with valid rag_id",
@@ -179,7 +179,7 @@ func Test_PostAis(t *testing.T) {
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
 			expectedToolNames:   nil,
-			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "with empty rag_id",
@@ -212,7 +212,7 @@ func Test_PostAis(t *testing.T) {
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
-			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "with stt_language",
@@ -245,7 +245,7 @@ func Test_PostAis(t *testing.T) {
 			expectedSTTLanguage: "ko-KR",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
-			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -346,7 +346,7 @@ func Test_PutAisId_McpServerIDsEmptyArrayClears(t *testing.T) {
 		amai.Type(""),
 		amai.EngineModel(""),
 		map[string]any(nil),
-		"",
+		(*string)(nil),
 		"",
 		(*string)(nil),
 		uuid.Nil,
@@ -405,7 +405,7 @@ func Test_PutAisId_McpServerIDsOmittedLeavesUntouched(t *testing.T) {
 		amai.Type(""),
 		amai.EngineModel(""),
 		map[string]any(nil),
-		"",
+		(*string)(nil),
 		"",
 		(*string)(nil),
 		uuid.Nil,
@@ -461,7 +461,7 @@ func Test_GetAis(t *testing.T) {
 			},
 			expectedPageSize:  10,
 			expectedPageToken: "2020-09-20T03:23:20.995000Z",
-			expectedRes:       `{"result":[{"id":"4a918c83-50b9-4fb4-8a22-afd1a1fd2dc6","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectedRes:       `{"result":[{"id":"4a918c83-50b9-4fb4-8a22-afd1a1fd2dc6","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -496,7 +496,7 @@ func Test_GetAis(t *testing.T) {
 
 			expectedPageSize:  10,
 			expectedPageToken: "2020-09-20T03:23:20.995000Z",
-			expectedRes:       `{"result":[{"id":"6a812daf-6ca6-4c34-892f-6e83dfd976f2","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"aff6883a-b24f-4d93-ba09-32a276cedcb7","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"e9a4b1e2-100a-4433-a854-e4fb9b668681","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
+			expectedRes:       `{"result":[{"id":"6a812daf-6ca6-4c34-892f-6e83dfd976f2","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"aff6883a-b24f-4d93-ba09-32a276cedcb7","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"e9a4b1e2-100a-4433-a854-e4fb9b668681","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -564,7 +564,7 @@ func Test_GetAisId(t *testing.T) {
 			},
 
 			expectAIID: uuid.FromStringOrNil("07f52215-8366-4060-902f-a86857243351"),
-			expectRes:  `{"id":"07f52215-8366-4060-902f-a86857243351","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:  `{"id":"07f52215-8366-4060-902f-a86857243351","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -632,7 +632,7 @@ func Test_DeleteAisId(t *testing.T) {
 			},
 
 			expectAIID: uuid.FromStringOrNil("ab6f6c84-b9c2-4350-9978-4336b677603c"),
-			expectRes:  `{"id":"ab6f6c84-b9c2-4350-9978-4336b677603c","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:  `{"id":"ab6f6c84-b9c2-4350-9978-4336b677603c","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -687,7 +687,7 @@ func Test_PutAisId(t *testing.T) {
 		expectedAIType      amai.Type
 		epxectedEngineModel amai.EngineModel
 		expectedParameter   map[string]any
-		expectedEngineKey   string
+		expectedEngineKey   *string
 		expectedInitPrompt  string
 		expectedTTSType     amai.TTSType
 		expectedTTSVoiceID  string
@@ -721,7 +721,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedParameter: map[string]any{
 				"key1": "val1",
 			},
-			expectedEngineKey:   "test engine key",
+			expectedEngineKey:   aiTestStrPtr("test engine key"),
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
@@ -729,7 +729,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
-			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "with tool_names",
@@ -755,7 +755,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedParameter: map[string]any{
 				"key1": "val1",
 			},
-			expectedEngineKey:   "test engine key",
+			expectedEngineKey:   aiTestStrPtr("test engine key"),
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
@@ -763,7 +763,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   []amtool.ToolName{amtool.ToolNameConnectCall, amtool.ToolNameSendEmail},
-			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "with valid rag_id",
@@ -789,7 +789,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedParameter: map[string]any{
 				"key1": "val1",
 			},
-			expectedEngineKey:   "test engine key",
+			expectedEngineKey:   aiTestStrPtr("test engine key"),
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
@@ -797,7 +797,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
 			expectedToolNames:   nil,
-			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "with empty rag_id",
@@ -823,7 +823,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedParameter: map[string]any{
 				"key1": "val1",
 			},
-			expectedEngineKey:   "test engine key",
+			expectedEngineKey:   aiTestStrPtr("test engine key"),
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
@@ -831,7 +831,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
-			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "with stt_language",
@@ -857,7 +857,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedParameter: map[string]any{
 				"key1": "val1",
 			},
-			expectedEngineKey:   "test engine key",
+			expectedEngineKey:   aiTestStrPtr("test engine key"),
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
@@ -865,7 +865,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedSTTLanguage: "ko-KR",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
-			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","is_insight_active":false,"has_engine_key":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -1106,7 +1106,7 @@ func Test_PutAisId_EngineBase(t *testing.T) {
 				gomock.Any(),
 				gomock.Any(),
 				gomock.Any(),
-			).DoAndReturn(func(_ context.Context, _ *auth.AuthIdentity, _ uuid.UUID, _, _ string, _ amai.Type, _ amai.EngineModel, _ map[string]any, _ string, url string, key *string, _ uuid.UUID, _ string, _ amai.TTSType, _ string, _ amai.STTType, _ string, _ []amtool.ToolName, _ *[]uuid.UUID, _ bool) (*amai.WebhookMessage, error) {
+			).DoAndReturn(func(_ context.Context, _ *auth.AuthIdentity, _ uuid.UUID, _, _ string, _ amai.Type, _ amai.EngineModel, _ map[string]any, _ *string, url string, key *string, _ uuid.UUID, _ string, _ amai.TTSType, _ string, _ amai.STTType, _ string, _ []amtool.ToolName, _ *[]uuid.UUID, _ bool) (*amai.WebhookMessage, error) {
 				gotURL, gotKey = url, key
 				return ret, nil
 			})
@@ -1193,6 +1193,73 @@ func Test_PostAis_EngineBase(t *testing.T) {
 
 			if gotURL != "https://a.example.com" {
 				t.Errorf("Wrong url. got: %q", gotURL)
+			}
+			if (gotKey == nil) != (tt.expectKey == nil) || (gotKey != nil && *gotKey != *tt.expectKey) {
+				t.Errorf("Wrong key. expect: %v, got: %v", tt.expectKey, gotKey)
+			}
+		})
+	}
+}
+
+func aiTestStrPtr(s string) *string { return &s }
+
+// Test_PutAisId_EngineKey pins the three states of engine_key on update: omitted and null reach the
+// service handler as nil (keep the stored key), "" as a pointer to "" (delete) and a value as is.
+func Test_PutAisId_EngineKey(t *testing.T) {
+	tests := []struct {
+		name      string
+		body      string
+		expectKey *string
+	}{
+		{"omitted", `{"name":"x"}`, nil},
+		{"null", `{"name":"x","engine_key":null}`, nil},
+		{"empty string", `{"name":"x","engine_key":""}`, aiTestStrPtr("")},
+		{"value", `{"name":"x","engine_key":"dummy-key"}`, aiTestStrPtr("dummy-key")},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{serviceHandler: mockSvc}
+
+			agent := auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")},
+			})
+			id := uuid.FromStringOrNil("dbceb866-4506-4e86-9851-a82d4d3ced88")
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+			r.Use(func(c *gin.Context) { c.Set("auth_identity", agent) })
+			openapi_server.RegisterHandlers(r, h)
+
+			var gotKey *string
+			called := false
+			ret := &amai.WebhookMessage{Identity: commonidentity.Identity{ID: id}, HasEngineKey: true}
+			mockSvc.EXPECT().AIUpdate(
+				gomock.Any(), agent, id,
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).DoAndReturn(func(_ context.Context, _ *auth.AuthIdentity, _ uuid.UUID, _, _ string, _ amai.Type, _ amai.EngineModel, _ map[string]any, key *string, _ string, _ *string,
+				_ uuid.UUID, _ string, _ amai.TTSType, _ string, _ amai.STTType, _ string, _ []amtool.ToolName, _ *[]uuid.UUID, _ bool) (*amai.WebhookMessage, error) {
+				gotKey, called = key, true
+				return ret, nil
+			})
+
+			req, _ := http.NewRequest("PUT", "/ais/"+id.String(), bytes.NewBufferString(tt.body))
+			req.Header.Set("Content-Type", "application/json")
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Fatalf("Wrong code. got: %d, body: %s", w.Code, w.Body.String())
+			}
+
+			if !called {
+				t.Fatalf("AIUpdate was not called")
+			}
+			if !strings.Contains(w.Body.String(), `"has_engine_key":true`) {
+				t.Errorf("the response must carry has_engine_key. body: %s", w.Body.String())
 			}
 			if (gotKey == nil) != (tt.expectKey == nil) || (gotKey != nil && *gotKey != *tt.expectKey) {
 				t.Errorf("Wrong key. expect: %v, got: %v", tt.expectKey, gotKey)

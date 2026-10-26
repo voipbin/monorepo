@@ -287,7 +287,7 @@ func Test_Ais_Matrix(t *testing.T) {
 		badIDPath: bad, badIDReason: "INVALID_ID",
 		call: func(m *servicehandler.MockServiceHandler, a *auth.AuthIdentity) *gomock.Call {
 			return m.EXPECT().AIUpdate(gomock.Any(), a, s4UUID(s4ID1), "ai-1", "ai detail", amai.Type("normal"), amai.EngineModel("model-x"), param,
-				"ek", "https://example.com/v1", &bk, s4UUID(s4ID2), "hello", amai.TTSType("tts-a"), "voice-1",
+				aiTestStrPtr("ek"), "https://example.com/v1", &bk, s4UUID(s4ID2), "hello", amai.TTSType("tts-a"), "voice-1",
 				amai.STTType("stt-a"), "en-US", tools, &mcpIDs, true)
 		},
 		ret: ret, okStatus: 200,
@@ -297,7 +297,7 @@ func Test_Ais_Matrix(t *testing.T) {
 		body: `{"name":"min"}`,
 		setup: func(m *servicehandler.MockServiceHandler, a *auth.AuthIdentity) {
 			m.EXPECT().AIUpdate(gomock.Any(), a, s4UUID(s4ID1), "min", "", amai.Type(""), amai.EngineModel(""), map[string]any(nil),
-				"", "", (*string)(nil), uuid.Nil, "", amai.TTSType(""), "",
+				(*string)(nil), "", (*string)(nil), uuid.Nil, "", amai.TTSType(""), "",
 				amai.STTType(""), "", []amtool.ToolName(nil), (*[]uuid.UUID)(nil), false).Return(ret, nil)
 		},
 		wantStatus: 200, wantBody: ret,

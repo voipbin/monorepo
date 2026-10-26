@@ -64,8 +64,10 @@ type V1DataAIsIDPut struct {
 
 	EngineModel ai.EngineModel `json:"engine_model,omitempty"`
 	Parameter   map[string]any `json:"parameter,omitempty"`
-	EngineKey   string         `json:"engine_key,omitempty"`
-	RagID       uuid.UUID      `json:"rag_id,omitempty"`
+	// EngineKey is a pointer so that omitted (keep the stored key) and "" (delete) stay apart end
+	// to end.
+	EngineKey *string   `json:"engine_key,omitempty"`
+	RagID     uuid.UUID `json:"rag_id,omitempty"`
 
 	// EngineBaseURL is the customer specified base URL of a customendpoint. model.
 	EngineBaseURL string `json:"engine_base_url,omitempty"`
