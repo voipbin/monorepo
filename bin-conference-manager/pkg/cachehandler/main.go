@@ -29,7 +29,6 @@ type CacheHandler interface {
 
 	ConferencecallGet(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
 	ConferencecallSet(ctx context.Context, conference *conferencecall.Conferencecall) error
-	ConferencecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error)
 }
 
 // NewHandler creates DBHandler

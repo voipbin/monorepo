@@ -254,28 +254,6 @@ func Test_ConferencecallSetGet(t *testing.T) {
 	}
 }
 
-func Test_ConferencecallGetByReferenceID(t *testing.T) {
-	h, mr := newTestHandler(t)
-	ctx := context.Background()
-
-	cc := newTestConferencecall()
-	raw, err := json.Marshal(cc)
-	if err != nil {
-		t.Fatalf("Could not marshal the fixture. err: %v", err)
-	}
-	if errSet := mr.Set("conference:conferencecall:reference_id:"+testReferenceID, string(raw)); errSet != nil {
-		t.Fatalf("Could not seed the key. err: %v", errSet)
-	}
-
-	res, err := h.ConferencecallGetByReferenceID(ctx, uuid.FromStringOrNil(testReferenceID))
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	if !reflect.DeepEqual(res, cc) {
-		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", cc, res)
-	}
-}
-
 func Test_Get_notFound(t *testing.T) {
 	h, _ := newTestHandler(t)
 	ctx := context.Background()
@@ -287,7 +265,6 @@ func Test_Get_notFound(t *testing.T) {
 	}{
 		{"conference", func() (any, error) { return h.ConferenceGet(ctx, id) }},
 		{"conferencecall", func() (any, error) { return h.ConferencecallGet(ctx, id) }},
-		{"conferencecall by reference id", func() (any, error) { return h.ConferencecallGetByReferenceID(ctx, id) }},
 	}
 
 	for _, tt := range tests {
@@ -316,7 +293,6 @@ func Test_Get_invalidJSON(t *testing.T) {
 	}{
 		{"conference", "conference:conference:" + testConferenceID, func() (any, error) { return h.ConferenceGet(ctx, id) }},
 		{"conferencecall", "conference:conferencecall:" + testConferenceID, func() (any, error) { return h.ConferencecallGet(ctx, id) }},
-		{"conferencecall by reference id", "conference:conferencecall:reference_id:" + testConferenceID, func() (any, error) { return h.ConferencecallGetByReferenceID(ctx, id) }},
 	}
 
 	for _, tt := range tests {
