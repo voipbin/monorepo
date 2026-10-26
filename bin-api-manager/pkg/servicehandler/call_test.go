@@ -156,6 +156,76 @@ func Test_callGet_error(t *testing.T) {
 	}
 }
 
+func Test_CallGet(t *testing.T) {
+
+	tests := []struct {
+		name   string
+		agent  *auth.AuthIdentity
+		callID uuid.UUID
+
+		responseCall *cmcall.Call
+		expectRes    *cmcall.WebhookMessage
+	}{
+		{
+			"call with groupcall id",
+			auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			uuid.FromStringOrNil("5b0d2a4c-2f5e-4c53-9a43-0d1f6b7f4a11"),
+
+			&cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5b0d2a4c-2f5e-4c53-9a43-0d1f6b7f4a11"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				GroupcallID: uuid.FromStringOrNil("7c1e9f3a-6d2b-4e84-b5a7-3f0c8d9e2b66"),
+			},
+			&cmcall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5b0d2a4c-2f5e-4c53-9a43-0d1f6b7f4a11"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				GroupcallID: uuid.FromStringOrNil("7c1e9f3a-6d2b-4e84-b5a7-3f0c8d9e2b66"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
+
+			res, err := h.CallGet(ctx, tt.agent, tt.callID)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.GroupcallID != tt.expectRes.GroupcallID {
+				t.Errorf("Wrong match. expect groupcall id: %s, got: %s", tt.expectRes.GroupcallID, res.GroupcallID)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_CallCreate(t *testing.T) {
 
 	tests := []struct {
@@ -838,6 +908,40 @@ func Test_CallList(t *testing.T) {
 		expectRes     []*cmcall.WebhookMessage
 	}{
 		{
+			"call with groupcall id",
+			auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+
+			"2021-03-01T01:00:00.995000Z",
+			10,
+
+			[]cmcall.Call{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5b0d2a4c-2f5e-4c53-9a43-0d1f6b7f4a11"),
+					},
+					GroupcallID: uuid.FromStringOrNil("7c1e9f3a-6d2b-4e84-b5a7-3f0c8d9e2b66"),
+				},
+			},
+			map[cmcall.Field]any{
+				cmcall.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				cmcall.FieldDeleted:    false,
+			},
+			[]*cmcall.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5b0d2a4c-2f5e-4c53-9a43-0d1f6b7f4a11"),
+					},
+					GroupcallID: uuid.FromStringOrNil("7c1e9f3a-6d2b-4e84-b5a7-3f0c8d9e2b66"),
+				},
+			},
+		},
+		{
 			"normal",
 			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
@@ -890,6 +994,14 @@ func Test_CallList(t *testing.T) {
 			res, err := h.CallList(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if len(res) != len(tt.expectRes) {
+				t.Fatalf("Wrong match. expect len: %d, got len: %d", len(tt.expectRes), len(res))
+			}
+
+			if res[0].GroupcallID != tt.expectRes[0].GroupcallID {
+				t.Errorf("Wrong match. expect groupcall id: %s, got: %s", tt.expectRes[0].GroupcallID, res[0].GroupcallID)
 			}
 
 			if !reflect.DeepEqual(res[0], tt.expectRes[0]) {
