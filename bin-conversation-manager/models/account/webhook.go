@@ -58,3 +58,14 @@ func (h *Account) CreateWebhookEvent() ([]byte, error) {
 
 	return m, nil
 }
+
+// CreateWebhookEvent generates the WebhookEvent of the already converted message.
+// It only marshals the receiver, so the internal event carries the same fields as the customer webhook.
+func (h *WebhookMessage) CreateWebhookEvent() ([]byte, error) {
+	m, err := json.Marshal(h)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}

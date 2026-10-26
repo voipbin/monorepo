@@ -17,16 +17,18 @@ import (
 func (h *conversationHandler) Hook(ctx context.Context, uri string, method string, signature string, data []byte) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Hook",
-		"uri":  uri,
 		"data": data,
 	})
-	log.Debugf("Hook detail. uri: %s", uri)
 
 	// "https://hook.voipbin.net/v1.0/conversation/accounts/<account_id>",
 	u, err := url.Parse(uri)
 	if err != nil {
-		return err
+		// the url.Error carries the whole uri, which can include a verify token. Do not wrap it.
+		log.Debugf("Could not parse the hook uri.")
+		return fmt.Errorf("could not parse the hook uri")
 	}
+	log = log.WithField("uri_path", u.Path)
+	log.Debugf("Hook detail. uri_path: %s", u.Path)
 
 	// /v1.0/conversation/accounts/<account_id>
 	tmpVals := strings.Split(u.Path, "/")
@@ -107,18 +109,20 @@ func (h *conversationHandler) hookWhatsApp(ctx context.Context, ac *account.Acco
 func (h *conversationHandler) HookVerify(ctx context.Context, uri string, mode string, verifyToken string, challenge string) (string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "HookVerify",
-		"uri":  uri,
 	})
 
 	// Parse account_id from URI path: /v1.0/conversation/accounts/<account_id>
 	u, err := url.Parse(uri)
 	if err != nil {
-		return "", err
+		// the url.Error carries the whole uri, which includes hub.verify_token. Do not wrap it.
+		log.Debugf("Could not parse the hook verify uri.")
+		return "", fmt.Errorf("could not parse the hook verify uri")
 	}
+	log = log.WithField("uri_path", u.Path)
 	tmpVals := strings.Split(u.Path, "/")
 	if len(tmpVals) < 5 {
 		log.Debugf("Wrong hook verify request. Could not get accountID.")
-		return "", fmt.Errorf("could not parse account_id from uri: %s", uri)
+		return "", fmt.Errorf("could not parse account_id from uri path: %s", u.Path)
 	}
 	accountID := uuid.FromStringOrNil(tmpVals[4])
 

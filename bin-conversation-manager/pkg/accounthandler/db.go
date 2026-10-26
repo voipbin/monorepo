@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	stderrors "errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -91,7 +92,7 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, accou
 		log.Errorf("Could not get created confbridge info. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, account.EventTypeAccountCreated, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, account.EventTypeAccountCreated, res.ConvertWebhookMessage())
 
 	return res, nil
 }
@@ -115,7 +116,7 @@ func (h *accountHandler) Get(ctx context.Context, id uuid.UUID) (*account.Accoun
 		}
 		return nil, errors.Wrap(err, "could not get account info")
 	}
-	log.WithField("account", res).Debugf("Retrieved account info. account_id: %s", id)
+	log.Debugf("Retrieved account info. account_id: %s", id)
 
 	return res, nil
 }
@@ -123,8 +124,8 @@ func (h *accountHandler) Get(ctx context.Context, id uuid.UUID) (*account.Accoun
 // List returns list of accounts of the given filters
 func (h *accountHandler) List(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "List",
-		"filters": filters,
+		"func":          "List",
+		"filter_fields": fieldNames(filters),
 	})
 
 	res, err := h.db.AccountList(ctx, pageSize, pageToken, filters)
@@ -132,7 +133,7 @@ func (h *accountHandler) List(ctx context.Context, pageToken string, pageSize ui
 		log.Errorf("Could not get messages. err: %v", err)
 		return nil, err
 	}
-	log.WithField("accounts", res).Debugf("Retrieved account list. count: %d", len(res))
+	log.Debugf("Retrieved account list. count: %d", len(res))
 
 	return res, nil
 }
@@ -140,9 +141,9 @@ func (h *accountHandler) List(ctx context.Context, pageToken string, pageSize ui
 // Update updates account and return a updated account.
 func (h *accountHandler) Update(ctx context.Context, id uuid.UUID, fields map[account.Field]any) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":   "Update",
-		"id":     id,
-		"fields": fields,
+		"func":          "Update",
+		"id":            id,
+		"update_fields": fieldNames(fields),
 	})
 	log.Debugf("Updating account. account_id: %s", id)
 
@@ -159,7 +160,7 @@ func (h *accountHandler) Update(ctx context.Context, id uuid.UUID, fields map[ac
 		log.Errorf("Could not setup the account. err: %v", errSetup)
 		return nil, errors.Wrap(errSetup, "could not setup the account")
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, account.EventTypeAccountUpdated, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, account.EventTypeAccountUpdated, res.ConvertWebhookMessage())
 
 	return res, nil
 }
@@ -191,7 +192,18 @@ func (h *accountHandler) Delete(ctx context.Context, id uuid.UUID) (*account.Acc
 		log.Errorf("Could not get deleted account info")
 		return nil, errors.Wrap(err, "could not get deleted account info")
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, account.EventTypeAccountDeleted, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, account.EventTypeAccountDeleted, res.ConvertWebhookMessage())
 
 	return res, nil
+}
+
+// fieldNames returns the names of the given fields. The values are not returned because they can carry credentials.
+func fieldNames(fields map[account.Field]any) []string {
+	res := make([]string, 0, len(fields))
+	for k := range fields {
+		res = append(res, string(k))
+	}
+	sort.Strings(res)
+
+	return res
 }

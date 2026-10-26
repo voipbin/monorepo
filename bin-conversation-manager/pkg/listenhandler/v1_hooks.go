@@ -15,8 +15,9 @@ import (
 // processV1HooksGet handles GET /v1/hooks (Meta hub challenge verification).
 func (h *listenHandler) processV1HooksGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1HooksGet",
-		"request": m,
+		"func":   "processV1HooksGet",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
 
 	// V1DataHooksPost is shared for both GET and POST: the hook-manager packs all hook
@@ -32,7 +33,8 @@ func (h *listenHandler) processV1HooksGet(ctx context.Context, m *sock.Request) 
 	// NOT in m.URI (the internal RPC path "/v1/hooks").
 	u, err := url.Parse(req.ReceivedURI)
 	if err != nil {
-		log.Debugf("Could not parse ReceivedURI. err: %v", err)
+		// the url.Error carries the whole uri (hub.verify_token included), so only its type is logged.
+		log.Debugf("Could not parse ReceivedURI. err_type: %T", err)
 		return simpleResponse(400), nil
 	}
 
@@ -58,16 +60,17 @@ func (h *listenHandler) processV1HooksGet(ctx context.Context, m *sock.Request) 
 // POST /v1/hooks request
 func (h *listenHandler) processV1HooksPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1HooksPost",
-		"request": m,
+		"func":   "processV1HooksPost",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
 
 	var req request.V1DataHooksPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. err: %v", err)
 		return simpleResponse(400), nil
 	}
-	log.WithField("request", req).Debugf("Received hook request. request_uri: %s", req.ReceivedURI)
+	log.WithField("received_method", req.ReceivedMethod).Debugf("Received hook request. received_path: %s", uriPath(req.ReceivedURI))
 
 	// Always respond 200 to the caller regardless of Hook() outcome. Meta (and other
 	// platforms) interpret non-200 as "not delivered" and will retry. On HMAC or
@@ -83,4 +86,15 @@ func (h *listenHandler) processV1HooksPost(ctx context.Context, m *sock.Request)
 	}
 
 	return res, nil
+}
+
+// uriPath returns the path of the given uri.
+// The query of a hook uri can carry hub.verify_token, so only the path is logged.
+func uriPath(uri string) string {
+	u, err := url.Parse(uri)
+	if err != nil {
+		return ""
+	}
+
+	return u.Path
 }

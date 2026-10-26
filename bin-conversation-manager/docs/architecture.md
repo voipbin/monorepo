@@ -98,7 +98,7 @@ Both `cmd/conversation-manager` and `cmd/conversation-control` construct their N
 
 Because `conversation_message_*` splits into resource `conversation` + action `message_*`, and `*message.Message` overrides its subscription address to the parent `ConversationID`, the conversation lifecycle events and every message of that conversation share one key space: `conversation-manager.conversation.<conversation-id>.#` follows a whole conversation. Accounts stay in their own `conversation-manager.account.<account-id>.#` namespace. See [docs/domain.md](domain.md) and the monorepo design docs `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` / `...-voip-1405-topic-publisher-rollout-design.md`.
 
-Note: account events carry `secret`/`token` in their payloads today, exactly as they did on the retired fanout exchange. The audience is unchanged (broker access requires internal credentials), but the discovery barrier is lower on a single global exchange — a payload secret-stripping follow-up is registered as a priority item (1405 §6.3/§7).
+Note: account events (`account_created`, `account_updated`, `account_deleted`) publish the stripped `account.WebhookMessage`, the same fields as the customer webhook, so the payload carries no `secret` or `token`. The subscription address is still the account id. `provider_data` is part of the message and still carries the WhatsApp `app_secret`. Service logs and error strings never print an account object, a request body or a hook URI query (`hub.verify_token`); they carry ids, the request method and the URI path.
 
 ## Inbound Dispatch: Execute Mode
 
