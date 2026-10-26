@@ -24,7 +24,7 @@ Valid. Measured on origin/main (`GOFLAGS=-mod=mod go test -count=1 -coverprofile
 - Handler packages (widget, session, message): database error returns of `Get`, `List`, `Update`, `Delete`, `End`, `Create`, the orphan-direct cleanup of widget creation, the failed second read after a write, and the `NewXxxHandler` constructors. All reachable with the existing gomock mocks and no signature change.
 - `pkg/dbhandler`: exec and query failures, row scan failures, cache-hit returns, empty `fields` returns, `NewHandler`. Reachable with a second, private in-memory SQLite database (no tables for exec and query failures, a table with a non-numeric value in a numeric column for scan failures) and the existing `MockCacheHandler`.
 - `pkg/listenhandler`: the remaining uncovered statements are response marshal-failure returns (plain structs cannot fail to marshal) and the typed-error and not-found lines of the `processRequest` error switch, which no handler reaches because every handler turns its errors into a response itself. Nothing is planned here.
-- `cmd/webchat-control`: `initCommand` builds the command tree without any connection and is testable. `main` is not.
+- `cmd/webchat-control`: `initCommand` builds the command tree without any connection and `PersistentPreRunE` only binds flags and loads the config, so both are testable; `main` and the `migrate` subcommand (database connection) are not.
 - `cmd/webchat-manager`: `runListen` (with a mock sock handler) and `initSignal` (fed through the package channels) are testable. `main`, `runDaemon`, `run` and the metrics server goroutine need external connections or a listening server and are left out.
 - `pkg/cachehandler`: needs a Redis stand-in. A test-only module (miniredis) would be needed; it is only used if the measured total is short of the target.
 - Not reachable without a signature change: configuration binding errors, marshal errors of constant-shaped values, query builder errors, field preparation errors.
@@ -43,4 +43,4 @@ Tests only, inside bin-webchat-manager. No product code change, no signature or 
 - `initSignal` registers process-wide signal handling: call it once, drive it through `chSigs` (no real signal), drain `chDone`, and call `signal.Stop(chSigs)` in cleanup.
 - `initCommand` uses the global viper: reset it after the test.
 - `widgethandler` and `sessionhandler` use the real UUID generator unless a mock is injected into the `utilHandler` field; expectations use the injected mock or `gomock.Any()` for generated ids.
-- Measured at origin/main 161e9748bb4d94228deb71fab41f734fb5e1307c.
+- Measured at origin/main 161e9748bb4d94228deb71fab41f734fb5e1307c; later commits on this branch change only docs/plans of this service.
