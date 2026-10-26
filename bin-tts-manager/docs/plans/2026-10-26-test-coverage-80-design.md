@@ -90,7 +90,7 @@ verify 항목
    - websocketWrite 의 사전 취소 검사 제거 - 프레임 0개 단언을 가진 사전 취소 ctx 테스트(합계에는 영향 없음)
    - runWebSocketRead 정상 종료도 Error 로 기록 - 정상 종료 테스트의 hook 단언
    - 생성자 필드 대입 누락 - 생성자 테스트
-   - tts-control PersistentPreRunE 의 `viper.BindPFlags` 제거 - Execute 로 `tts create --call-id <잘못된 UUID> --text x` 를 실행하면 \"invalid format\" 대신 \"required\" 가 나옴
+   - tts-control PersistentPreRunE 의 `viper.BindPFlags` 제거 - Execute 로 `tts create --call-id <잘못된 UUID> --text x` 를 실행하면 "invalid format" 대신 "required" 가 나옴
    - tts-control `cmdSub.AddCommand(cmdCreate())` 제거, `cmdRoot.AddCommand(cmdSub)` 제거 - 하위 명령 구성 테스트
    - errCh 가득 참 테스트는 blocking send 로 바뀌면 멈추므로 수 초 타임아웃 안전망을 둡니다.
 5. `go mod tidy` 후 go.mod, go.sum 변경 없음. golangci-lint 통과.
