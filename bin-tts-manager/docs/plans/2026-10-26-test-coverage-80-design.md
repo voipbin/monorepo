@@ -28,7 +28,7 @@
 
 ## 3. 도달 가능 상한
 
-외부 연결(GCP 클라이언트 생성, ElevenLabs 상수 호스트 접속, RabbitMQ, DB, Redis)이 필요한 생성자와 main, json.Marshal 및 squirrel 빌드 오류, PrepareFields 오류는 제외합니다. 시그니처 변경 없이 테스트 가능한 분기만 합산한 추정 상한은 아래 표의 합 약 117개(독립 재계산 117~147, 키프얼라이브 등 보충 항목 별도)로, 필요한 101개를 넘으므로 block 없이 진행합니다.
+외부 연결(GCP 클라이언트 생성, ElevenLabs 상수 호스트 접속, RabbitMQ, DB, Redis)이 필요한 생성자와 main, json.Marshal 및 squirrel 빌드 오류, PrepareFields 오류는 제외합니다. 시그니처 변경 없이 테스트 가능한 분기만 합산한 추정 상한은 아래 표의 합 약 119개(독립 재계산 117~147, 키프얼라이브 등 보충 항목 별도)로, 필요한 101개를 넘으므로 block 없이 진행합니다.
 
 ## 4. 추가할 테스트 (모두 로컬 전용, 외부 네트워크 없음)
 
@@ -40,7 +40,7 @@
 | streaminghandler `NewStreamingHandler`, `NewAWSHandler`, `NewGCPHandler`, `NewElevenlabsHandler` | 생성자가 만든 핸들러 필드 검증 | 12 |
 | streaminghandler aws `Init`, `createClient` | 정적 합성 자격, 네트워크 호출 없음(호스트의 AWS_* 환경변수와 설정 파일 경로는 t.Setenv 로 격리). 이벤트 발행 mock 검증 | 25 |
 | streaminghandler elevenlabs `getVoiceID` 분기 | 명시 voice, 변수 조회 오류, 변수 없음, 길이 불일치, 언어 중립 대체 | 5 |
-| streaminghandler elevenlabs `runProcess`, `readConnWebsock` | `readConnWebsock` 를 직접 호출. 읽기 오류 전달, errCh 용량 1 을 미리 채운 가득 참 분기(350)와, 로컬 WebSocket 으로 `ReadMessage` 가 블록된 상태에서 `cf.Ctx` 를 취소해 `runProcess` 가 반환하고 PlayFinished 가 발행되는 경로(272)를 결정적으로 도달. 테스트 cleanup 에서 연결을 close 해 읽기 goroutine 누수를 막음. 메시지 드롭 분기(360-361)는 ctx 취소 시점이 비결정적이므로 대상에서 제외 | 2 |
+| streaminghandler elevenlabs `runProcess`, `readConnWebsock` | `readConnWebsock` 를 직접 호출. 읽기 오류 전달, errCh 용량 1 을 미리 채운 가득 참 분기(350)를 결정적으로 도달. `runProcess` 의 ctx 취소 분기(272)는 reader goroutine 이 `ReadMessage` 에 진입한 시점을 보장하는 동기화가 번거롭고 1 stmt 이므로 대상에서 제외 메시지 드롭 분기(360-361)는 ctx 취소 시점이 비결정적이므로 대상에서 제외 | 1 |
 | streaminghandler gcp `runProcess` | 가짜 stream. 비어 있지 않은 청크 전송, 서버 측 종료 시 stream 정리, ctx 취소 종료, websocket 쓰기 오류 | 14 |
 | streaminghandler websocket `websocketWrite` 사전 취소 ctx | 로컬 WebSocket, 이미 취소된 ctx 를 넘기면 프레임 0개 전송과 ctx 오류 반환을 단언(페이싱 select 의 ctx 분기는 ticker 와 경합하므로 best-effort 이며 합계에서 제외) | 0 |
 | audiohandler `awsGetClient` 오류 분기(존재하지 않는 `AWS_PROFILE`, 보충)와 `savePCMAsWAV` 쓰기 오류 | 쓰기가 실패하는 대상(Linux 의 /dev/full) | 2 |
@@ -55,7 +55,7 @@
 - 각 테스트는 시작 시 `viper.Reset` 을 호출하고 cleanup 에서도 호출합니다.
 - 기존 함수 이름과 mock 패턴을 따르며 테스트 이름은 `Test_` 로 시작하고 gomock 컨트롤러 변수는 `mc` 입니다. 합성 값만 쓰고 자격 값은 의미 없는 문자열을 주소와 다른 문장에서 대입합니다. 같은 규칙을 테스트 주석과 PR 본문에도 적용합니다.
 - sleep 에 의존한 판정을 하지 않고 채널과 컨텍스트로 동기화합니다. 타임아웃은 안전망으로만 씁니다.
-- 전역 상태는 cleanup 으로 복구합니다: viper 는 `viper.Reset`, logrus 의 formatter, level, hook 은 원래 값으로, `chSigs`/`chDone` 는 아래 규칙, 환경 변수는 `t.Setenv` 로 관련 키(DATABASE_DSN, RABBITMQ_ADDRESS 등)를 비웁니다. `config.LoadGlobalConfig` 는 once 이므로 프로세스 첫 호출의 값이 고정됩니다. runDaemon 테스트는 `config.Get()` 의 필드를 직접 설정하고 defer 로 원복합니다.
+- 전역 상태는 cleanup 으로 복구합니다: viper 는 `viper.Reset`, logrus 의 formatter, level 은 원래 값으로, hook 은 `logrus.StandardLogger().Hooks` 를 깊은 복사로 저장했다가 `ReplaceHooks` 로, `chSigs`/`chDone` 는 아래 규칙, 환경 변수는 `t.Setenv` 로 관련 키(DATABASE_DSN, RABBITMQ_ADDRESS 등)를 비웁니다. `config.LoadGlobalConfig` 는 once 이므로 프로세스 첫 호출의 값이 고정됩니다. runDaemon 테스트는 `config.Get()` 의 필드를 직접 설정하고 defer 로 원복합니다.
 
 항목별 규칙
 
@@ -65,7 +65,7 @@
 - initProm: `DefaultServeMux` 에 등록 해제 수단이 없고 같은 패턴 재등록은 panic 이므로 등록 호출을 한 건으로 최소화하고 endpoint 에 원자 카운터를 붙여 `-count` 반복마다 고유하게 합니다. ListenAndServe 오류는 잘못된 listen 주소(예: 포트 누락)로 즉시 발생시키며 logrus test hook 을 채널로 기다려 관측하고 cleanup 에서 hook 을 복구합니다.
 - runDaemon: 잘못된 DSN 이 `sql.Open` 단계에서 실패하는 경로만 사용하고 네트워크 접속 경로는 쓰지 않습니다.
 - aws Init/createClient: `t.Setenv` 로 `AWS_PROFILE`, `AWS_CONFIG_FILE`, `AWS_SHARED_CREDENTIALS_FILE`(임시 빈 파일), `AWS_EC2_METADATA_DISABLED=true`, `AWS_ENDPOINT_URL*` 를 지정해 호스트 설정을 차단합니다. 오류 분기는 존재하지 않는 `AWS_PROFILE` 로 유도해 Init 의 오류 래핑을 확인하고, 성공 경로에서는 `client.Options().Region` 이 `eu-central-1` 임을 단언하고 만든 `AWSConfig` 의 `Cancel` 은 cleanup 에서 호출합니다.
-- gcp runProcess: 가짜 `StreamingSynthesizeClient` 의 `Recv` 는 채널 기반이고 ctx 취소로 풀립니다. `CloseSend` 를 구현해 호출 여부를 기록하고 `Client` 는 nil 로 둡니다. `GCPConfig` 의 `Ctx`, `StreamCtx`, `StreamCancel`, `processDone` 를 모두 초기화합니다. PlayStarted 와 PlayFinished 이벤트를 mock 으로 EXPECT 하고 끝에서 `processDone` 이 닫혔는지 채널로 기다립니다. 서버 종료 케이스는 서버 종료 케이스는 사후 `Stream == nil` 과 `CloseSend` 1회를, ctx 취소 케이스는 가짜 `Recv` 가 호출에 진입했음을 알리는 채널로 동기화한 뒤 취소하고(루프 상단 검사로 빠지지 않게), websocket 쓰기 오류는 닫힌 로컬 연결로 유도합니다.
+- gcp runProcess: 가짜 `StreamingSynthesizeClient` 의 `Recv` 는 채널 기반이고 ctx 취소로 풀립니다. `CloseSend` 를 구현해 호출 여부를 기록하고 `Client` 는 nil 로 둡니다. `GCPConfig` 의 `Ctx`, `StreamCtx`, `StreamCancel`, `processDone` 를 모두 초기화합니다. PlayStarted 와 PlayFinished 이벤트를 mock 으로 EXPECT 하고 끝에서 `processDone` 이 닫혔는지 채널로 기다립니다. 서버 종료 케이스는 사후 `Stream == nil` 과 `CloseSend` 1회를, ctx 취소 케이스는 가짜 `Recv` 가 호출에 진입했음을 알리는 채널로 동기화한 뒤 취소하고(루프 상단 검사로 빠지지 않게), websocket 쓰기 오류는 닫힌 로컬 연결로 유도합니다.
 - savePCMAsWAV 쓰기 오류: `/dev/full` 이 없거나 열 수 없으면 `t.Skip` 합니다(1 stmt 이므로 80.5% 에 영향 없음).
 - 생성자 테스트: 반환 타입을 단언한 뒤 주입한 의존성, podID, 자격 값이 필드에 들어갔는지와 `mapStreaming` 이 nil 이 아닌 빈 맵인지 단언합니다.
 
@@ -87,10 +87,12 @@ verify 항목
    - gcp runProcess 의 오디오 청크 전송 제거 - 비어 있지 않은 청크 전송 단언
    - gcp runProcess 의 ctx 취소 분기(Recv 오류 뒤 streamCtx.Done return) 제거 - ctx 취소 테스트가 `Stream` 이 nil 이 아님, 가짜 stream 의 `CloseSend` 0회, PlayFinished 발행, `processDone` 닫힘을 단언
    - gcp runProcess 서버 종료 분기의 closeStreamLocked 제거 - 서버 종료 테스트가 `CloseSend` 1회와 사후 `Stream == nil` 을 단언(사전에 nil 로 두지 않고 Recv 가 오류를 돌려주게 함)
-   - websocketWrite 의 사전 취소 검사 제거 - 프레임 0개 단언을 가진 사전 취소 ctx 테스트(합계에는 영향 없음)
-   - runWebSocketRead 정상 종료도 Error 로 기록 - 정상 종료 테스트의 hook 단언
+   - websocketWrite 의 사전 취소 검사 제거 - 프레임 0개 단언을 가진 사전 취소 ctx 테스트(반환 직후 클라이언트가 보낸 sentinel 메시지가 서버에서 첫 메시지로 읽히는지로 확인하며 읽기 타임아웃 판정은 쓰지 않음)(합계에는 영향 없음)
+   - runWebSocketRead 정상 종료도 Error 로 기록 - 정상 종료 테스트의 hook 단언(Error 항목 중 메시지가 `WebSocket read error` 로 시작하는 것만 대상으로 하고, `runWebSocketRead` 를 시작하는 모든 테스트는 doneCh 가 닫힌 뒤에 끝나 다른 테스트의 goroutine 이 남기는 항목이 섞이지 않게 함)
    - 생성자 필드 대입 누락 - 생성자 테스트
    - tts-control PersistentPreRunE 의 `viper.BindPFlags` 제거 - Execute 로 `tts create --call-id <잘못된 UUID> --text x` 를 실행하면 "invalid format" 대신 "required" 가 나옴
    - tts-control `cmdSub.AddCommand(cmdCreate())` 제거, `cmdRoot.AddCommand(cmdSub)` 제거 - 하위 명령 구성 테스트
    - errCh 가득 참 테스트는 blocking send 로 바뀌면 멈추므로 수 초 타임아웃 안전망을 둡니다.
 5. `go mod tidy` 후 go.mod, go.sum 변경 없음. golangci-lint 통과.
+
+참고: 기존 `Test_awsHandler_SayAdd_stopsWhenCancelledWhileTheAudioQueueIsFull` 가 `-race` 반복에서 드물게 실패하는 것이 관찰되었습니다. 이 PR 의 변경과 무관하며 반복 검증에서 실패하면 신규 테스트 탓으로 오인하지 않도록 PR 본문에 한 줄 적습니다. 또 gcp.go 의 일부 기존 블록은 실행마다 커버 여부가 달라질 수 있어 신규 gcp runProcess 테스트가 결정적으로 커버하도록 둡니다.
