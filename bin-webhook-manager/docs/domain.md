@@ -48,6 +48,10 @@ The per-activeflow destination is cached in Redis under `webhook:activeflow:{id}
 
 **Atomic monotonic writes (resurrection guard)**: events for the same activeflow can be processed out of order (per-event goroutines, no RabbitMQ ordering guarantee), so a late `created` must not resurrect a deleted destination. Each entry stores its source `tm` (unix-nano). Cache writes use a Redis Lua compare-and-set that reads the stored `tm` and only overwrites when the incoming `tm` is not older (single round trip, no read-modify-write race). `activeflow_deleted` writes a negative tombstone carrying `tm_delete` rather than a bare delete.
 
+## Topic exchange payload of conversation message events
+
+The payload published on the topic exchange for `conversation_message_*` events can carry `owner_type` and `owner_id` (the owner of the message's conversation), injected by `bin-webhook-manager` when the owner is an agent of the same customer. The customer-facing webhook body does not contain them. See `docs/architecture.md`.
+
 ## Cache Invalidation
 
 `pkg/accounthandler` caches customer webhook configs in Redis to avoid repeated RPC calls to `bin-customer-manager`. The cache must be invalidated when:

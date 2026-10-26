@@ -721,15 +721,94 @@ func Test_processEventWebhookManagerRoutingKeyedEvent(t *testing.T) {
 	expectedOldFormatCustomerTopic := fmt.Sprintf("customer_id:%s:call:%s", customerID, callID)
 	expectedOldFormatOwnerTopic := fmt.Sprintf("agent_id:%s:call:%s", ownerID, callID)
 
-	mockPub.EXPECT().Publish(expectedOldFormatCustomerTopic, string(data)).Return(nil)
-	mockPub.EXPECT().Publish(expectedOldFormatOwnerTopic, string(data)).Return(nil)
+	// every published payload carries the additive event_type key.
+	wantData := fmt.Sprintf(
+		`{"customer_id":"%s","event_type":"call_created","id":"%s","owner_id":"%s","owner_type":"agent"}`,
+		customerID, callID, ownerID,
+	)
+
+	mockPub.EXPECT().Publish(expectedOldFormatCustomerTopic, wantData).Return(nil)
+	mockPub.EXPECT().Publish(expectedOldFormatOwnerTopic, wantData).Return(nil)
 	// NEW format topics also get published (createTopics always emits both) -- accept any
 	// remaining Publish calls for those, this test's focus is the OLD-FORMAT compatibility.
-	mockPub.EXPECT().Publish(gomock.Any(), string(data)).Return(nil).AnyTimes()
+	mockPub.EXPECT().Publish(gomock.Any(), wantData).Return(nil).AnyTimes()
 
 	err := h.processEventWebhookManagerRoutingKeyedEvent(context.Background(), event)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
+	}
+}
+
+func Test_processEventWebhookManagerRoutingKeyedEvent_conversationMessage(t *testing.T) {
+	customerID := uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b")
+	ownerID := uuid.FromStringOrNil("62005165-7592-4ff7-9076-55bf491023f2")
+	messageID := uuid.FromStringOrNil("d499c4f4-2f07-488b-a5f7-4b49c00e9a2a")
+
+	// webhook-manager injects owner_id/owner_type for a conversation message owned by an agent.
+	data := json.RawMessage(fmt.Sprintf(
+		`{"id":"%s","customer_id":"%s","owner_id":"%s","owner_type":"agent","text":"a<b&c"}`,
+		messageID, customerID, ownerID,
+	))
+	event := &sock.Event{
+		Type:      "conversation_message_created",
+		Publisher: "webhook-manager",
+		DataType:  "application/json",
+		Data:      data,
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockPub := pubsubhandler.NewMockPubHandler(mc)
+	h := &subscribeHandler{pubHandler: mockPub}
+
+	wantData := fmt.Sprintf(
+		`{"customer_id":"%s","event_type":"conversation_message_created","id":"%s","owner_id":"%s","owner_type":"agent","text":"a<b&c"}`,
+		customerID, messageID, ownerID,
+	)
+
+	// a client subscribing to the prefix "agent_id:<me>:conversation" must receive the frame.
+	wantTopics := []string{
+		fmt.Sprintf("customer_id:%s:conversation:%s", customerID, messageID),
+		fmt.Sprintf("agent_id:%s:conversation:%s", ownerID, messageID),
+		fmt.Sprintf("customer_id:%s:conversation:conversation_message_created:%s", customerID, messageID),
+		fmt.Sprintf("agent_id:%s:conversation:conversation_message_created:%s", ownerID, messageID),
+	}
+	for _, topic := range wantTopics {
+		mockPub.EXPECT().Publish(topic, wantData).Return(nil).Times(1)
+	}
+
+	if err := h.processEventWebhookManagerRoutingKeyedEvent(context.Background(), event); err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+}
+
+func Test_injectEventType(t *testing.T) {
+	tests := []struct {
+		name      string
+		data      string
+		eventType string
+		expect    string
+	}{
+		{"object", `{"id":"a","n":12345678901234567890}`, "call_created", `{"event_type":"call_created","id":"a","n":12345678901234567890}`},
+		{"empty object", `{}`, "call_created", `{"event_type":"call_created"}`},
+		{"overwrites an existing key", `{"event_type":"x","id":"a"}`, "call_created", `{"event_type":"call_created","id":"a"}`},
+		{"keeps html and non-ascii characters", `{"text":"<a>&é"}`, "chat_created", `{"event_type":"chat_created","text":"<a>&é"}`},
+		{"keeps nested type key", `{"type":"normal","medias":[{"type":"x"}]}`, "chat_created", `{"event_type":"chat_created","medias":[{"type":"x"}],"type":"normal"}`},
+		{"null is unchanged", `null`, "call_created", `null`},
+		{"array is unchanged", `[1,2]`, "call_created", `[1,2]`},
+		{"scalar is unchanged", `"abc"`, "call_created", `"abc"`},
+		{"empty input is unchanged", ``, "call_created", ``},
+		{"invalid json is unchanged", `{"id":`, "call_created", `{"id":`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := string(injectEventType([]byte(tt.data), tt.eventType))
+			if got != tt.expect {
+				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expect, got)
+			}
+		})
 	}
 }
 

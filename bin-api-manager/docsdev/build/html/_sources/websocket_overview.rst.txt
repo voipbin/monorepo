@@ -129,6 +129,8 @@ Topics define which events a client receives.
     | customer_id:abc123:call:xyz789      | Specific call                   |
     | customer_id:abc123:message          | All messages for customer       |
     | agent_id:agent123:queue             | All queues for agent            |
+    | agent_id:agent123:conversation      | All conversation events of the  |
+    |                                     | agent's own conversations       |
     +-----------------------------------------------------------------------+
 
     Matching all resources of a type:
@@ -223,39 +225,24 @@ WebSocket connections follow a defined lifecycle.
 
 Event Message Format
 --------------------
-Server-pushed events are **not** wrapped in a ``topic``/``timestamp`` envelope. However, the platform is mid-migration to a new event-routing path (backend "Task 4.6" cutover), and two different payload shapes currently coexist on the same topic:
+A server-pushed event is the resource payload itself -- the same fields as the corresponding webhook ``data`` documented in :ref:`Webhook Struct <webhook-struct-webhook>` -- with one added top-level key, ``event_type``, naming the event (e.g. ``"call_created"``). There is no ``topic``/``timestamp`` envelope and no ``data`` wrapper.
 
-* **Wrapped (legacy fanout path)** -- the classic webhook envelope documented in :ref:`Webhook Struct <webhook-struct-webhook>`: a top-level ``type`` field naming the event (e.g. ``"call_created"``) plus a ``data`` field holding the resource.
-* **Unwrapped (new routing-keyed path)** -- the raw resource object only, with **no** top-level ``type``/``data`` wrapper at all. There is no event-action indicator (created/updated/deleted) in this shape; only the resource's own fields (``id``, ``customer_id``, etc.) are present.
-
-Until the migration completes, treat both as possible: check for a top-level ``type`` field first -- if present, unwrap ``data`` per the Webhook Struct docs; if absent, the entire message is the raw resource object for whatever topic you subscribed to.
-
-**Wrapped example**
+**Example**
 
 ::
 
     {
-        "type": "call_created",
-        "data": {
-            "id": "xyz789",
-            "customer_id": "abc123",
-            ...
-        }
-    }
-
-**Unwrapped example**
-
-::
-
-    {
+        "event_type": "call_created",
         "id": "xyz789",
         "customer_id": "abc123",
         ...
     }
 
+``event_type`` is the only key added to the resource payload; the resource's own keys are unchanged. Some resources have their own field named ``type`` (for example chats and conversations); that field belongs to the resource and is not the event type.
+
 .. note:: **AI Implementation Hint**
 
-   Because neither shape includes a ``topic`` field, correlate an incoming event to the subscription that produced it using the resource fields in the payload itself (``id``, ``customer_id``, ``owner_id``), not by comparing against the topic string you subscribed with. This dual-shape behavior is a temporary migration state, not a stable contract -- expect it to collapse to a single shape once the backend cutover completes.
+   Branch on ``event_type`` to tell events of the same resource apart (for example ``chatmessage_created`` vs ``chatmessage_deleted``, or ``chatparticipant_added`` vs ``chatparticipant_removed``). Frames carry no ``topic`` field, so correlate an event to the subscription that produced it using the resource fields in the payload itself (``id``, ``customer_id``, ``owner_id``). Subscribing with overlapping prefixes (for example ``customer_id:<id>:chat`` and ``agent_id:<id>:chat``) can deliver the same event more than once; make handlers idempotent by resource ``id``.
 
 **Common Event Types**
 
@@ -294,6 +281,10 @@ The webhook event type strings below use the same underscored naming as :ref:`We
      - Call connected to an agent
    * - agent_status_updated
      - Agent availability changed
+   * - conversation_created, conversation_updated, conversation_deleted
+     - Conversation created or updated (including owner changes)
+   * - conversation_message_created, conversation_message_updated, conversation_message_deleted
+     - Conversation message events. When the conversation is owned by an agent, these frames also carry ``owner_id`` and ``owner_type``, which are the owner of the conversation the message belongs to (not of the message itself). An agent subscribed to ``agent_id:<agent-id>:conversation`` receives these for the conversations it owns.
 
 See :ref:`Webhook Struct <webhook-struct-webhook>` for the full list of event types and their exact payload shapes.
 

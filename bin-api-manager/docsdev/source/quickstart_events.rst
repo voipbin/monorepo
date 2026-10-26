@@ -66,9 +66,8 @@ The wildcard ``*`` subscribes to events from all resources of that type under yo
         event_type = data.get("event_type")
         if event_type:
             if "transcript" in event_type:
-                transcript = data["data"]
-                direction = transcript.get("direction", "?")
-                text = transcript.get("message", "")
+                direction = data.get("direction", "?")
+                text = data.get("message", "")
                 print(f"[TRANSCRIBE {direction}] {text}")
             else:
                 print(f"[EVENT] {event_type}")

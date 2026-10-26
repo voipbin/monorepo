@@ -71,6 +71,10 @@ Exchange: `bin-manager.webhook-manager.event`
 |-------|---------|
 | `webhook_published` | After successfully queuing a webhook for delivery (both send modes) |
 
+### Conversation message routing keys
+
+`conversation_message_created/updated/deleted` payloads carry no owner. For these events `publishRoutingKeyedEvent` looks up the conversation (`ConversationV1ConversationGet`, bounded by the RPC timeout) and, when the conversation belongs to the same customer and is owned by an agent, also publishes the `agent_id.<owner>.conversation.<event>.<message id>` key and injects `owner_type` and `owner_id` into the payload sent on the topic exchange (the same payload for every key of the event). Otherwise (lookup failure, other customer, no owner, owner not an agent) only the customer key is published with the original payload. The customer HTTP webhook body is never changed.
+
 ## Request Flow
 
 ```

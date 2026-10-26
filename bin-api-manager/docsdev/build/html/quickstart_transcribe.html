@@ -827,9 +827,8 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"event_type"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"transcript_created"</span><span class="p">:</span>
-        <span class="n">transcript</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s2">"direction"</span><span class="p">]</span>  <span class="c1"># "in" = caller, "out" = VoIPBin TTS</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s2">"message"</span><span class="p">]</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"direction"</span><span class="p">]</span>  <span class="c1"># "in" = caller, "out" = VoIPBin TTS</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"message"</span><span class="p">]</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
@@ -905,25 +904,21 @@
 <p><strong>Example WebSocket event:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"transcript_created"</span><span class="p">,</span>
-    <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2026-02-18T10:02:05.000000Z"</span><span class="p">,</span>
-    <span class="s2">"topic"</span><span class="p">:</span> <span class="s2">"customer_id:&lt;your-customer-id&gt;:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9d59e7f0-7bdc-4c52-bb8c-bab718952050"</span><span class="p">,</span>
-        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
-        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now."</span><span class="p">,</span>
-        <span class="s2">"offset_ms"</span><span class="p">:</span> <span class="mi">8991</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-18 10:02:05.233415"</span>
-    <span class="p">}</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9d59e7f0-7bdc-4c52-bb8c-bab718952050"</span><span class="p">,</span>
+    <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
+    <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now."</span><span class="p">,</span>
+    <span class="s2">"offset_ms"</span><span class="p">:</span> <span class="mi">8991</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-18 10:02:05.233415"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Fields:</strong></p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">event_type</span></code> (String): Always <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> for new transcript segments.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">data.transcribe_id</span></code> (UUID): The transcription session ID. Use this to query all transcripts for this session via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcripts?transcribe_id=&lt;transcribe_id&gt;</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">data.direction</span></code> (enum string): <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> = audio from VoIPBin to the caller (TTS output). <code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> = audio from the caller to VoIPBin (caller speech).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">data.message</span></code> (String): The transcribed text.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> (UUID): The transcription session ID. Use this to query all transcripts for this session via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcripts?transcribe_id=&lt;transcribe_id&gt;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> = audio from VoIPBin to the caller (TTS output). <code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> = audio from the caller to VoIPBin (caller speech).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">message</span></code> (String): The transcribed text.</p></li>
 </ul>
 <p>If you run the Python WebSocket example from Step 3, you will see output like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Subscribed</span> <span class="n">to</span> <span class="n">transcribe</span> <span class="n">events</span><span class="o">.</span> <span class="n">Waiting</span> <span class="k">for</span> <span class="n">transcripts</span><span class="o">...</span>

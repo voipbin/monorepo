@@ -723,13 +723,11 @@ Transcribe call in real-time for live captioning or analysis:
 
     Received events:
     {
-        "type": "transcript_created",
-        "data": {
-            "transcribe_id": "transcribe-uuid",
-            "direction": "in",
-            "message": "I need help with my order",
-            "offset_ms": 5123
-        }
+        "event_type": "transcript_created",
+        "transcribe_id": "transcribe-uuid",
+        "direction": "in",
+        "message": "I need help with my order",
+        "offset_ms": 5123
     }
 
 .. note:: **AI Implementation Hint**

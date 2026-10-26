@@ -204,9 +204,8 @@ The wildcard ``*`` subscribes to events from all transcriptions under your accou
     def on_message(ws, message):
         data = json.loads(message)
         if data.get("event_type") == "transcript_created":
-            transcript = data["data"]
-            direction = transcript["direction"]  # "in" = caller, "out" = VoIPBin TTS
-            text = transcript["message"]
+            direction = data["direction"]  # "in" = caller, "out" = VoIPBin TTS
+            text = data["message"]
             print(f"[{direction}] {text}")
 
     def on_open(ws):
@@ -286,24 +285,20 @@ Within seconds of the call being answered, the WebSocket begins delivering ``tra
 
     {
         "event_type": "transcript_created",
-        "timestamp": "2026-02-18T10:02:05.000000Z",
-        "topic": "customer_id:<your-customer-id>:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
-        "data": {
-            "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
-            "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
-            "direction": "out",
-            "message": "Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.",
-            "offset_ms": 8991,
-            "tm_create": "2026-02-18 10:02:05.233415"
-        }
+        "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
+        "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
+        "direction": "out",
+        "message": "Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.",
+        "offset_ms": 8991,
+        "tm_create": "2026-02-18 10:02:05.233415"
     }
 
 **Fields:**
 
 - ``event_type`` (String): Always ``transcript_created`` for new transcript segments.
-- ``data.transcribe_id`` (UUID): The transcription session ID. Use this to query all transcripts for this session via ``GET /transcripts?transcribe_id=<transcribe_id>``.
-- ``data.direction`` (enum string): ``"out"`` = audio from VoIPBin to the caller (TTS output). ``"in"`` = audio from the caller to VoIPBin (caller speech).
-- ``data.message`` (String): The transcribed text.
+- ``transcribe_id`` (UUID): The transcription session ID. Use this to query all transcripts for this session via ``GET /transcripts?transcribe_id=<transcribe_id>``.
+- ``direction`` (enum string): ``"out"`` = audio from VoIPBin to the caller (TTS output). ``"in"`` = audio from the caller to VoIPBin (caller speech).
+- ``message`` (String): The transcribed text.
 
 If you run the Python WebSocket example from Step 3, you will see output like:
 

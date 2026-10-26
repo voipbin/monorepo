@@ -664,9 +664,9 @@
 
 <span class="n">Server</span> <span class="o">-&gt;</span> <span class="n">Client</span><span class="p">:</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="p">(</span><span class="n">unwrapped</span> <span class="n">webhook</span> <span class="n">payload</span><span class="p">)</span> <span class="o">|</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">event</span> <span class="n">notification</span><span class="o">.</span> <span class="n">Pushed</span> <span class="k">as</span> <span class="o">|</span>
-<span class="o">|</span>                             <span class="o">|</span> <span class="n">the</span> <span class="n">raw</span> <span class="n">resource</span> <span class="n">payload</span> <span class="k">with</span> <span class="n">no</span>        <span class="o">|</span>
-<span class="o">|</span>                             <span class="o">|</span> <span class="n">envelope</span> <span class="o">--</span> <span class="n">see</span> <span class="s2">"Event Message          |</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">resource</span> <span class="n">payload</span> <span class="k">with</span>      <span class="o">|</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">event</span> <span class="n">notification</span><span class="o">.</span> <span class="n">Pushed</span> <span class="k">as</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">event_type</span> <span class="n">key</span><span class="p">)</span>             <span class="o">|</span> <span class="n">the</span> <span class="n">resource</span> <span class="n">payload</span> <span class="k">with</span> <span class="n">one</span> <span class="n">added</span>     <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span> <span class="n">key</span><span class="p">,</span> <span class="n">event_type</span> <span class="o">--</span> <span class="n">see</span> <span class="s2">"Event Message   |</span>
 <span class="o">|</span>                             <span class="o">|</span> <span class="n">Structure</span><span class="s2">" below.                       |</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 </pre></div>
@@ -841,6 +841,9 @@
 <tr class="row-even"><td><p>chat</p></td>
 <td><p>chat_created, chatmessage_created, chatparticipant_added</p></td>
 </tr>
+<tr class="row-odd"><td><p>conversation</p></td>
+<td><p>conversation_created, conversation_updated, conversation_deleted, conversation_message_created</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -866,117 +869,93 @@
 </section>
 <section id="event-message-structure">
 <h2>Event Message Structure<a class="headerlink" href="#event-message-structure" title="Link to this heading">¶</a></h2>
-<p>Events are pushed from the server when subscribed resources change. The pushed text frame is <strong>not</strong> wrapped in a topic/timestamp envelope. The platform is currently mid-migration to a new event-routing path, so two payload shapes coexist on the same topic until the migration completes – see <a class="reference internal" href="websocket_overview.html#websocket-overview"><span class="std std-ref">Event Message Format</span></a> for the full explanation. In short:</p>
-<ul class="simple">
-<li><p><strong>Wrapped (legacy)</strong> – the classic webhook envelope from <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Struct</span></a>: an object with a <code class="docutils literal notranslate"><span class="pre">type</span></code> field naming the event and a <code class="docutils literal notranslate"><span class="pre">data</span></code> field holding the resource.</p></li>
-<li><p><strong>Unwrapped (new)</strong> – just the raw resource object, with no <code class="docutils literal notranslate"><span class="pre">type</span></code>/<code class="docutils literal notranslate"><span class="pre">data</span></code> wrapper and no event-action indicator.</p></li>
-</ul>
-<p><strong>Wrapped structure</strong></p>
+<p>Events are pushed from the server when subscribed resources change. The pushed text frame is the resource payload itself (the same fields as the corresponding webhook <code class="docutils literal notranslate"><span class="pre">data</span></code>) with one added top-level key, <code class="docutils literal notranslate"><span class="pre">event_type</span></code>, naming the event. There is no <code class="docutils literal notranslate"><span class="pre">topic</span></code>/<code class="docutils literal notranslate"><span class="pre">timestamp</span></code> envelope and no <code class="docutils literal notranslate"><span class="pre">data</span></code> wrapper. See <a class="reference internal" href="websocket_overview.html#websocket-overview"><span class="std std-ref">Event Message Format</span></a>.</p>
+<p><strong>Structure</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"&lt;event-type&gt;"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="o">//</span> <span class="n">Resource</span><span class="o">-</span><span class="n">specific</span> <span class="n">payload</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">the</span> <span class="n">Call</span> <span class="n">struct</span> <span class="k">for</span> <span class="n">call_</span><span class="o">*</span> <span class="n">events</span>
-    <span class="p">}</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"&lt;event-type&gt;"</span><span class="p">,</span>
+    <span class="o">//</span> <span class="n">Resource</span><span class="o">-</span><span class="n">specific</span> <span class="n">payload</span> <span class="n">fields</span> <span class="n">at</span> <span class="n">the</span> <span class="n">top</span> <span class="n">level</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">the</span> <span class="n">Call</span> <span class="n">struct</span> <span class="n">fields</span> <span class="k">for</span> <span class="n">call_</span><span class="o">*</span> <span class="n">events</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p><strong>Unwrapped structure</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="o">//</span> <span class="n">Resource</span><span class="o">-</span><span class="n">specific</span> <span class="n">payload</span> <span class="n">directly</span> <span class="n">at</span> <span class="n">the</span> <span class="n">top</span> <span class="n">level</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">the</span> <span class="n">Call</span> <span class="n">struct</span> <span class="n">itself</span> <span class="k">for</span> <span class="n">call_</span><span class="o">*</span> <span class="n">events</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p><strong>Fields (wrapped shape)</strong></p>
+<p><strong>Fields</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook event type (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;call_created&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;call_updated&quot;</span></code>). See <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Struct</span></a> for the full list.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): Resource-specific data payload. Structure varies by <code class="docutils literal notranslate"><span class="pre">type</span></code> and corresponds to the relevant resource struct (e.g., <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">Call</span></a> for <code class="docutils literal notranslate"><span class="pre">call_*</span></code> events).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">event_type</span></code> (enum string): The event type (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;call_created&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;chatparticipant_removed&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;conversation_message_created&quot;</span></code>). See <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Struct</span></a> for the full list.</p></li>
+<li><p>All other keys: the resource’s own fields. A resource field named <code class="docutils literal notranslate"><span class="pre">type</span></code> is a resource field, not the event type.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Check for a top-level <code class="docutils literal notranslate"><span class="pre">type</span></code> field first to distinguish the two shapes: if present, unwrap <code class="docutils literal notranslate"><span class="pre">data</span></code> as above; if absent, treat the whole message as the raw resource. Neither shape has a separate <code class="docutils literal notranslate"><span class="pre">event_type</span></code>, <code class="docutils literal notranslate"><span class="pre">topic</span></code>, or <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> field – use the resource’s own <code class="docutils literal notranslate"><span class="pre">tm_create</span></code>/<code class="docutils literal notranslate"><span class="pre">tm_update</span></code> fields for timing, and its own <code class="docutils literal notranslate"><span class="pre">id</span></code>/<code class="docutils literal notranslate"><span class="pre">customer_id</span></code>/<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> fields to correlate the event. This dual-shape behavior is a temporary migration state, not a stable contract.</p>
+<p>Branch on <code class="docutils literal notranslate"><span class="pre">event_type</span></code>, not on the shape of the payload. Frames do not carry a <code class="docutils literal notranslate"><span class="pre">topic</span></code> or <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> field – use the resource’s own <code class="docutils literal notranslate"><span class="pre">tm_create</span></code>/<code class="docutils literal notranslate"><span class="pre">tm_update</span></code> fields for timing, and its own <code class="docutils literal notranslate"><span class="pre">id</span></code>/<code class="docutils literal notranslate"><span class="pre">customer_id</span></code>/<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> fields to correlate the event. A client that subscribes with an overlapping prefix (for example both <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;id&gt;:chat</span></code> and <code class="docutils literal notranslate"><span class="pre">agent_id:&lt;id&gt;:chat</span></code>) can receive the same event more than once, so make event handlers idempotent by resource <code class="docutils literal notranslate"><span class="pre">id</span></code>.</p>
 </div>
 </section>
 <section id="event-type-reference">
 <h2>Event Type Reference<a class="headerlink" href="#event-type-reference" title="Link to this heading">¶</a></h2>
-<p>The wrapped WebSocket event payloads are identical to the corresponding webhook payloads. Below is one representative example per resource type (wrapped shape); see <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Struct</span></a> for the complete, authoritative list of event types and full field sets.</p>
+<p>The WebSocket event payloads contain the same fields as the corresponding webhook <code class="docutils literal notranslate"><span class="pre">data</span></code> plus <code class="docutils literal notranslate"><span class="pre">event_type</span></code>. Below is one representative example per resource type; see <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Struct</span></a> for the complete, authoritative list of event types and full field sets.</p>
 <p><strong>Call Events</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">call_created</span>
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"call_created"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"5371e9db-d035-4db6-a8d6-0994d33e744e"</span><span class="p">,</span>
-        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ringing"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"incoming"</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2022-04-11 00:23:53.636000"</span><span class="p">,</span>
-        <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"9999-01-01 00:00:00.000000"</span>
-    <span class="p">}</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"call_created"</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"5371e9db-d035-4db6-a8d6-0994d33e744e"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ringing"</span><span class="p">,</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"incoming"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2022-04-11 00:23:53.636000"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"9999-01-01 00:00:00.000000"</span>
 <span class="p">}</span>
 
 <span class="o">//</span> <span class="n">call_hangup</span>
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"call_hangup"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"5371e9db-d035-4db6-a8d6-0994d33e744e"</span><span class="p">,</span>
-        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"terminated"</span><span class="p">,</span>
-        <span class="s2">"hangup_by"</span><span class="p">:</span> <span class="s2">"remote"</span><span class="p">,</span>
-        <span class="s2">"hangup_reason"</span><span class="p">:</span> <span class="s2">"normal"</span><span class="p">,</span>
-        <span class="s2">"tm_hangup"</span><span class="p">:</span> <span class="s2">"2022-04-11 00:25:10.000000"</span>
-    <span class="p">}</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"call_hangup"</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"5371e9db-d035-4db6-a8d6-0994d33e744e"</span><span class="p">,</span>
+    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"terminated"</span><span class="p">,</span>
+    <span class="s2">"hangup_by"</span><span class="p">:</span> <span class="s2">"remote"</span><span class="p">,</span>
+    <span class="s2">"hangup_reason"</span><span class="p">:</span> <span class="s2">"normal"</span><span class="p">,</span>
+    <span class="s2">"tm_hangup"</span><span class="p">:</span> <span class="s2">"2022-04-11 00:25:10.000000"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Activeflow Events</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">activeflow_updated</span>
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"activeflow_updated"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"flow789"</span><span class="p">,</span>
-        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-        <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2024-01-15 10:30:00.000000"</span>
-    <span class="p">}</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"activeflow_updated"</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"flow789"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2024-01-15 10:30:00.000000"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Queue Events</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">queuecall_created</span>
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"queuecall_created"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"queuecall789"</span><span class="p">,</span>
-        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-        <span class="s2">"queue_id"</span><span class="p">:</span> <span class="s2">"queue789"</span><span class="p">,</span>
-        <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"call456"</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-15 10:30:00.000000"</span>
-    <span class="p">}</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"queuecall_created"</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"queuecall789"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+    <span class="s2">"queue_id"</span><span class="p">:</span> <span class="s2">"queue789"</span><span class="p">,</span>
+    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"call456"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-15 10:30:00.000000"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Agent Events</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">agent_status_updated</span>
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"agent_status_updated"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"agent123"</span><span class="p">,</span>
-        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"available"</span><span class="p">,</span>
-        <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2024-01-15 10:30:00.000000"</span>
-    <span class="p">}</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"agent_status_updated"</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"agent123"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"available"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2024-01-15 10:30:00.000000"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Talk (Chat) Events</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">chatmessage_created</span>
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"chatmessage_created"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f"</span><span class="p">,</span>
-        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-        <span class="s2">"chat_id"</span><span class="p">:</span> <span class="s2">"e8b2e976-f043-44c8-bb89-e214e225e813"</span><span class="p">,</span>
-        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Hello team!"</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-17 10:32:00.000000"</span>
-    <span class="p">}</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"chatmessage_created"</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+    <span class="s2">"chat_id"</span><span class="p">:</span> <span class="s2">"e8b2e976-f043-44c8-bb89-e214e225e813"</span><span class="p">,</span>
+    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Hello team!"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-17 10:32:00.000000"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -988,26 +967,26 @@
 </section>
 <section id="message-handling-examples">
 <h2>Message Handling Examples<a class="headerlink" href="#message-handling-examples" title="Link to this heading">¶</a></h2>
-<p>Code examples for processing WebSocket messages. Since server-pushed events reuse the <code class="docutils literal notranslate"><span class="pre">type</span></code>/<code class="docutils literal notranslate"><span class="pre">data</span></code> shape but with resource event-type values (not <code class="docutils literal notranslate"><span class="pre">&quot;ack&quot;</span></code>/<code class="docutils literal notranslate"><span class="pre">&quot;error&quot;</span></code>, which do not exist), a simple switch on <code class="docutils literal notranslate"><span class="pre">type</span></code> is enough to distinguish them from client-sent message echoes (which a well-behaved client should not receive back, since the server never echoes <code class="docutils literal notranslate"><span class="pre">subscribe</span></code>/<code class="docutils literal notranslate"><span class="pre">unsubscribe</span></code> messages).</p>
+<p>Code examples for processing WebSocket messages. Server-pushed events are the resource payload plus an <code class="docutils literal notranslate"><span class="pre">event_type</span></code> key, so a switch on <code class="docutils literal notranslate"><span class="pre">event_type</span></code> distinguishes them. The server never echoes <code class="docutils literal notranslate"><span class="pre">subscribe</span></code>/<code class="docutils literal notranslate"><span class="pre">unsubscribe</span></code> messages.</p>
 <p><strong>JavaScript</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span><span class="o">.</span><span class="n">onmessage</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">event</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">const</span> <span class="n">message</span> <span class="o">=</span> <span class="n">JSON</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
 
-    <span class="n">switch</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">switch</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">event_type</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">case</span> <span class="s1">'call_created'</span><span class="p">:</span>
         <span class="k">case</span> <span class="s1">'call_ringing'</span><span class="p">:</span>
         <span class="k">case</span> <span class="s1">'call_progressing'</span><span class="p">:</span>
         <span class="k">case</span> <span class="s1">'call_updated'</span><span class="p">:</span>
         <span class="k">case</span> <span class="s1">'call_hangup'</span><span class="p">:</span>
-            <span class="n">handleCallEvent</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
+            <span class="n">handleCallEvent</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">event_type</span><span class="p">,</span> <span class="n">message</span><span class="p">);</span>
             <span class="k">break</span><span class="p">;</span>
 
         <span class="k">case</span> <span class="s1">'message_created'</span><span class="p">:</span>
-            <span class="n">handleMessage</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
+            <span class="n">handleMessage</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
             <span class="k">break</span><span class="p">;</span>
 
         <span class="n">default</span><span class="p">:</span>
-            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">'Received:'</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">'Received:'</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">event_type</span><span class="p">,</span> <span class="n">message</span><span class="p">);</span>
     <span class="p">}</span>
 <span class="p">};</span>
 </pre></div>
@@ -1016,13 +995,13 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">raw_message</span><span class="p">):</span>
     <span class="n">message</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">raw_message</span><span class="p">)</span>
 
-    <span class="n">msg_type</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'type'</span><span class="p">)</span>
+    <span class="n">msg_type</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'event_type'</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">msg_type</span> <span class="ow">and</span> <span class="n">msg_type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'call_'</span><span class="p">):</span>
-        <span class="n">handle_call_event</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
+        <span class="n">handle_call_event</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">msg_type</span> <span class="o">==</span> <span class="s1">'message_created'</span><span class="p">:</span>
-        <span class="n">handle_message</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
+        <span class="n">handle_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Received: </span><span class="si">{</span><span class="n">msg_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>

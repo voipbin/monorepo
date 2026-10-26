@@ -14,7 +14,7 @@ All resolved via `replace` directives in `go.mod`.
 | `bin-ai-manager` | AI models (indirect) |
 | `bin-campaign-manager` | Campaign models (indirect) |
 | `bin-conference-manager` | Conference models (indirect) |
-| `bin-conversation-manager` | Conversation models (indirect) |
+| `bin-conversation-manager` | Conversation models (conversation owner lookup in `pkg/webhookhandler`) |
 | `bin-direct-manager` | Direct channel models (indirect) |
 | `bin-contact-manager` | Contact models (indirect) |
 | `bin-email-manager` | Email models (indirect) |

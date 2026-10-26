@@ -113,7 +113,7 @@ Save the call ``id`` (UUID) from ``calls[0].id`` in the response — you will ne
 
 Observe real-time transcription
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-After answering the call on Linphone, you receive transcription events via your configured event subscription (WebSocket or customer webhook). The examples below show WebSocket event payloads.
+After answering the call on Linphone, you receive transcription events via your configured event subscription (WebSocket or customer webhook). The examples below show WebSocket event payloads: the resource fields at the top level plus an ``event_type`` key.
 
 **The TTS greeting appears first** (``direction: "out"`` — VoIPBin to caller):
 
@@ -121,22 +121,18 @@ After answering the call on Linphone, you receive transcription events via your 
 
     {
         "event_type": "transcript_created",
-        "timestamp": "2026-02-21T10:05:02.000000Z",
-        "topic": "customer_id:<your-customer-id>:transcribe:<transcribe-id>",
-        "data": {
-            "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
-            "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
-            "direction": "out",
-            "message": "Hello. This is the VoIPBin real-time voice interaction test. You can speak now and your speech will be transcribed.",
-            "tm_create": "2026-02-21T10:05:02.233415Z"
-        }
+        "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
+        "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
+        "direction": "out",
+        "message": "Hello. This is the VoIPBin real-time voice interaction test. You can speak now and your speech will be transcribed.",
+        "tm_create": "2026-02-21T10:05:02.233415Z"
     }
 
 **Transcript event fields:**
 
-- ``data.transcribe_id`` (UUID): The transcription session ID, generated internally when the ``transcribe_start`` action executes. Query all transcripts for this session via ``GET /transcripts?transcribe_id=<transcribe_id>``. Transcripts are paginated; see the :ref:`Transcribe tutorial <transcribe-tutorial>`.
-- ``data.direction`` (enum String): ``"in"`` — speech from the caller to VoIPBin. ``"out"`` — speech from VoIPBin to the caller (TTS output).
-- ``data.message`` (String): The transcribed text.
+- ``transcribe_id`` (UUID): The transcription session ID, generated internally when the ``transcribe_start`` action executes. Query all transcripts for this session via ``GET /transcripts?transcribe_id=<transcribe_id>``. Transcripts are paginated; see the :ref:`Transcribe tutorial <transcribe-tutorial>`.
+- ``direction`` (enum String): ``"in"`` — speech from the caller to VoIPBin. ``"out"`` — speech from VoIPBin to the caller (TTS output).
+- ``message`` (String): The transcribed text.
 
 **When you speak into Linphone**, your speech appears as ``direction: "in"`` (caller to VoIPBin):
 
@@ -144,12 +140,10 @@ After answering the call on Linphone, you receive transcription events via your 
 
     {
         "event_type": "transcript_created",
-        "data": {
-            "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
-            "direction": "in",
-            "message": "Hi, this is a test of the transcription feature.",
-            "tm_create": "2026-02-21T10:05:15.100000Z"
-        }
+        "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
+        "direction": "in",
+        "message": "Hi, this is a test of the transcription feature.",
+        "tm_create": "2026-02-21T10:05:15.100000Z"
     }
 
 If you run the Python WebSocket example from :ref:`Receiving Events <quickstart-events>`, you will see output like:
