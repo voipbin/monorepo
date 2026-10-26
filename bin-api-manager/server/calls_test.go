@@ -271,6 +271,26 @@ func Test_CallsIDGET(t *testing.T) {
 
 			expectRes: `{"id":"395518ca-830a-11eb-badc-b3582bc51917","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"tm_create":"2020-09-20T03:23:21.995Z"}`,
 		},
+		{
+			name: "call with groupcall id",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
+			}),
+
+			reqQuery: "/calls/5b0d2a4c-2f5e-4c53-9a43-0d1f6b7f4a11",
+
+			responseCall: &cmcall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5b0d2a4c-2f5e-4c53-9a43-0d1f6b7f4a11"),
+				},
+				GroupcallID: uuid.FromStringOrNil("7c1e9f3a-6d2b-4e84-b5a7-3f0c8d9e2b66"),
+				TMCreate:    timePtr("2020-09-20T03:23:21.995000Z"),
+			},
+
+			expectRes: `{"id":"5b0d2a4c-2f5e-4c53-9a43-0d1f6b7f4a11","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"7c1e9f3a-6d2b-4e84-b5a7-3f0c8d9e2b66","source":{},"destination":{},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"tm_create":"2020-09-20T03:23:21.995Z"}`,
+		},
 	}
 
 	for _, tt := range tests {
