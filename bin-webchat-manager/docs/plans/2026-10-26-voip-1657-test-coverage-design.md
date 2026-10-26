@@ -1,0 +1,21 @@
+# VOIP-1657 bin-webchat-manager test coverage: plan
+
+Scope: add `_test.go` files only inside bin-webchat-manager. No product code change, no signature or visibility change, no new module. Analysis: `2026-10-26-voip-1657-test-coverage-analysis.md`. Target: hand-written total 80.5% or more (realistic range 81 to 84%).
+
+## Test units (priority order)
+
+1. `pkg/widgethandler`: database error returns of `Get`, `List`, `UpdateBasicInfo` (update fails, re-read fails), `Delete` (first read fails, `DirectV1DirectDelete` fails but deletion continues, delete fails, re-read fails), `DirectHashRegenerate` (first read, regenerate RPC, update and re-read failures); `Create` (direct creation fails and nothing is stored, store fails and the orphan direct is deleted, orphan cleanup failure is tolerated, re-read fails, non-positive idle timeout falls back to the default); `NewWidgetHandler` returns a non-nil handler holding the given dependencies. Mocks are strict, so a call after a failure fails the test; generated ids come from an injected `MockUtilHandler`.
+2. `pkg/sessionhandler`: `Get`, `List`, `Delete`, `End` error returns and the wrapped error identity (`errors.Is`); `Create` store failure (not duplicate), re-read failure, flow trigger failure and `SessionUpdate` failure that still return the session; `NewSessionHandler`.
+3. `pkg/messagehandler`: `Get`, `List`, `Delete` error returns; `Create` session read failure, store failure, re-read failure, nil notify handler; `NewMessageHandler`.
+4. `pkg/dbhandler`: with a private in-memory SQLite database (no `cache=shared`, `SetMaxOpenConns(1)`), closed so that exec and query fail: create, update and delete return errors for the three entities, get and list return errors, and the cache is not written after a failed write (strict `MockCacheHandler`); a table with a non-numeric value in a numeric column makes the row scan fail for get and list; cache hit returns without touching the database; empty `fields` update returns nil without any call; get of an absent id returns `ErrNotFound`; `NewHandler` returns a handler holding its arguments. `rows.Err()` branches are skipped (not producible with SQLite).
+5. `pkg/listenhandler/main_test.go`: `processRequest` maps a typed `VoipbinError` and a wrapped `dbhandler.ErrNotFound` from a handler to their status codes, and an untyped error to 400, with exact status assertions.
+6. `cmd/webchat-control`: `initCommand` returns the root command named `webchat-control` with a `migrate` subcommand and the infrastructure flags registered; global viper reset and config restored after the test; the `migrate` subcommand is never run (it would connect to a database). Environment values set with `t.Setenv` are obviously fake.
+7. `cmd/webchat-manager`: `runListen` with a mock sock handler: queue creation failure still returns nil and `ConsumeRPC` is not called; success path calls `ConsumeRPC` once, synchronized with a channel signalled in `DoAndReturn` and a 2 second timeout; `initSignal` called once, driven by sending to `chSigs`, with `signal.Stop(chSigs)` and `chDone` drained in cleanup. `main`, `runDaemon`, `run`, `initProm` are left out (external connections, process exit, duplicate route registration).
+
+## Verify
+
+- Hand-written total >= 80.5% by the stated method (exclude `mock_*.go`, `gens/`, DO NOT EDIT headers, duplicates merged by max count); before and after table per package in the PR.
+- `go test -race -count=1 ./...` repeated 5 times with no failure, `golangci-lint run -v --timeout 5m`, `go mod tidy` leaves no diff, `bash scripts/check-test-conventions.sh` (Test_ naming, gomock controller named `mc`, no testify) after commit with `origin/main` fetched.
+- Mutation sampling in a scratch copy, one at a time, each must fail some new test: drop the orphan direct cleanup, swallow the re-read error in `Create`, return nil instead of the wrapped error in `Get`, skip the empty `fields` return, write the cache after a failed exec, change a status code in the `processRequest` error mapping.
+- Expected values are literals, no value is built from the code under test, no empty-call tests.
+- `git diff --stat origin/main...HEAD` lists only bin-webchat-manager `_test.go` files and docs/plans files.
