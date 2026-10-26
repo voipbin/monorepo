@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
+	"sync"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -14,7 +15,11 @@ import (
 	"monorepo/bin-talk-manager/models/participant"
 )
 
-var errIterate = errors.New("injected iteration error")
+var (
+	errIterate = errors.New("injected iteration error")
+
+	registerFailingRowsOnce sync.Once
+)
 
 // failingRowsDriver is a database/sql driver whose queries return a result set that fails
 // on the first Next, like a connection lost while the rows are read.
@@ -39,7 +44,7 @@ func (failingRows) Close() error              { return nil }
 func (failingRows) Next([]driver.Value) error { return errIterate }
 
 func Test_rowsErrIsReturned(t *testing.T) {
-	sql.Register("talk_failing_rows", failingRowsDriver{})
+	registerFailingRowsOnce.Do(func() { sql.Register("talk_failing_rows", failingRowsDriver{}) })
 	db, err := sql.Open("talk_failing_rows", "")
 	if err != nil {
 		t.Fatalf("could not open the db: %v", err)
