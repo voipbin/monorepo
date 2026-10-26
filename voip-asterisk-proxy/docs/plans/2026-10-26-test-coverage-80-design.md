@@ -1,0 +1,35 @@
+# voip-asterisk-proxy: raise hand-written unit test coverage toward 80%
+
+## Goal and baseline
+
+Raise hand-written statement coverage (excluding `mock_*.go` and `Code generated ... DO NOT EDIT` files, duplicate blocks merged by max count) from 77.34% (802/1037) as far as tests alone can reach without product code changes. Only test files are added; no `go.mod` or `go.sum` change (miniredis is already a test dependency of this module).
+
+| package | before |
+|---|---|
+| cmd/asterisk-proxy | 71.3% (543/762) |
+| pkg/eventhandler | 87.5% (56/64) |
+| pkg/listenhandler | 96.6% (140/145) |
+| pkg/servicehandler | 95.5% (63/66) |
+
+The remaining reachable branches are few. What remains reachable without a signature change is the flag binding error path of `initVariable` (44 statements) plus a small set of error paths (15 statements), so the expected figure is about 83.0% (861/1037). `main()` itself is not exercised because it needs a live broker connection.
+
+## Planned tests
+
+All new tests are safe under `-count=3`: names, endpoints and ids that end up in process-wide state are unique per run, background goroutines that cannot be stopped are made harmless, and log capture goes through one test helper: it swaps the standard logger's hook set for a new empty one (`ReplaceHooks`, because `AddHook` mutates the live map) before adding a mutex protected collecting hook, and restores the original set in `t.Cleanup`; entries are read as copies.
+
+1. `eventhandler`: `Run()` against its own httptest server (the existing helper always upgrades) whose first request gets HTTP 503 (atomic request counter) and whose later requests are upgraded and then held open without sending anything until test cleanup, so nothing is published after the mock controller finishes and no reconnect happens. The loop must log the failure, sleep one second, retry and reach a websocket upgrade, observed through a channel with a deadline of 5 seconds or more. Asserts, from the request counter and the upgrade signal (not from log text), that the first attempt failed and a later one was upgraded. The held connection is never closed by the test, so the endless loop has no reason to reconnect to a closed port.
+2. `listenhandler`: `ariSendRequestToAsterisk` against a server that hijacks the connection, writes and flushes a header announcing a longer body than it sends, and closes. Asserts `errors.Is(err, io.ErrUnexpectedEOF)`, status 0 and a nil body (status 0 is what distinguishes the error return from a partial success).
+3. `servicehandler`: with `STORAGE_EMULATOR_HOST` cleared by `t.Setenv`, `NewServiceHandler` with a malformed credential JSON returns a `*serviceHandler` whose `client` is nil (that the JSON really makes `storage.NewClient` fail is checked first). The nil-client behaviour of `RecordingFileMove` is already tested elsewhere and is not repeated. `recordingFileUpload` on a literal handler with a nil client and a file name that does not exist in a `t.TempDir()` returns an error that names the source path and satisfies `errors.Is(err, fs.ErrNotExist)`.
+4. `cmd/asterisk-proxy`:
+   - `initVariable` flag binding: `pflag.CommandLine` is replaced by a fresh flag set whose normalize function renames one flag name only after `Parsed()` is true (definition time keeps the real name), so `pflag.Lookup` returns nil and `viper.BindPFlag` fails. `initVariable` must panic with an error whose text is exactly `flag for "<name>" is nil`. One subtest per flag name; names are collected from a first successful run of `initVariable` on a fresh flag set, and the test asserts that exactly 22 names were collected so the table cannot silently shrink. The same first run is a success-path test: with `ARI_ADDRESS` and `REDIS_DATABASE` set through `t.Setenv`, those two package variables take the values (no other default is asserted). `os.Args` is set to the program name only. Saved and restored in `t.Cleanup`: `pflag.CommandLine`, `os.Args` and all 22 package variables that `initVariable` assigns (one per flag, including `redisDatabase` and `kubernetesDisabled`), held in one snapshot struct. The success-path test is a regression guard for env override and adds no coverage because `init()` already runs `initVariable` once. viper has no snapshot, so `viper.Reset()` in cleanup also drops the automatic env setting made by `init()`; no other test in this package uses viper or pflag.
+   - `connectAMI` error handler: wait for the connection, install the hook, then drop the fake AMI connections with a new `dropConns()` helper in the test fake (the existing `close()` also closes the listener, which would make reconnecting impossible); the event is emitted asynchronously, so the hook is polled with a deadline of 5 seconds for an entry whose message starts with `AMI error: ` and contains `AMI TCP ERROR`. Before `Close()` the test waits for the client to reconnect (`waitConnected`) so `Close` does not race with the client's reconnect bookkeeping.
+   - `setProxyInfoRedis` against a just-closed loopback address (a negligible port reuse risk, as in the existing AMI tests): the asterisk id and internal address are unique per run, and the hook entry is matched on those two fields plus the message prefix `Could not set internal address`; polled with a deadline of 5 seconds.
+   - `initProm` on an already occupied loopback address with an endpoint that is unique per run (the default mux cannot unregister handlers and `init()` already registered `/metrics`): the hook must see `Could not start prometheus listener`. The log line carries no address, and `init()` may itself be retrying on its own port, so the log alone cannot prove this test's goroutine ran: the occupying listener is closed only after the hook has seen the message, then the test requests the unique endpoint over loopback (deadline 5 seconds) and expects HTTP 200 (client with a timeout), which proves this call's goroutine retried, bound the port and now serves. The endpoint is unique per run through a package counter.
+
+## Verify
+
+- Assertions check observable values (error text, status code, logged message, number of attempts), never constants compared to themselves.
+- No fixed ports (loopback port 0 only), no external network, no dependence on wall clock beyond bounded polling with deadlines. Test values are synthetic (`203.0.113.x`, fake credentials).
+- Mutation sample in a scratch copy only: remove the `panic` after a bind error, drop the retry `continue` in the ARI loop (the failure mode, panic or assertion, is noted), remove the ReadAll error return, change the AMI error log prefix, change the redis error log text. Each must fail a test.
+- Gates: `go mod tidy && go mod vendor && go generate ./... && go test -race -count=3 ./... && golangci-lint run`, `bash scripts/check-test-conventions.sh` from the repo root, `git diff --stat origin/main...HEAD` limited to `voip-asterisk-proxy/`.
+- Final number measured with `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...`, then `mock_*.go` and `DO NOT EDIT` files dropped and duplicate blocks merged by max count.
