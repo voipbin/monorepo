@@ -42,9 +42,9 @@
 | streaminghandler elevenlabs `getVoiceID` 분기 | 명시 voice, 변수 조회 오류, 변수 없음, 길이 불일치, 언어 중립 대체 | 5 |
 | streaminghandler elevenlabs `runProcess`, `readConnWebsock` | 로컬 WebSocket 서버. ctx 취소, 읽기 오류 전달, 메시지 드롭 | 4 |
 | streaminghandler gcp `runProcess` | 가짜 stream. 빈 오디오 건너뜀, 서버 측 종료 시 stream 정리, ctx 취소 종료, websocket 쓰기 오류 | 14 |
-| streaminghandler websocket `websocketWrite` ctx 취소 | 로컬 WebSocket, 취소된 ctx | 1 |
+| streaminghandler websocket `websocketWrite` 사전 취소 ctx | 로컬 WebSocket, 이미 취소된 ctx 를 넘기면 프레임 0개 전송과 ctx 오류 반환을 단언(페이싱 select 의 ctx 분기는 ticker 와 경합하므로 best-effort 이며 합계에서 제외) | 0 |
 | audiohandler `savePCMAsWAV` 쓰기 오류 | 쓰기가 실패하는 대상(Linux 의 /dev/full) | 1 |
-| streaminghandler `runWebSocketRead` 정상 종료 분기 | 로컬 WebSocket 서버가 정상 종료 close 프레임을 보냄 | 1 |
+| streaminghandler `runWebSocketRead` 정상 종료 분기 | 로컬 WebSocket 서버가 정상 종료 close 프레임을 보냄. logrus test hook 으로 Error 항목이 없음과 doneCh 닫힘을 단언 | 1 |
 
 중단 기준: 각 묶음 뒤에 합계를 측정하고 80.5% 에 못 미치면 gcp `runKeepalive` 틱 분기(4초 간격 상수, 실제 대기 약 4초)와 aws SayFlush ctx 분기, start.go 성공 반환, listenhandler Run 의 ConsumeRPC 오류 분기를 추가합니다.
 
@@ -63,7 +63,7 @@
 - initSignal: 호출마다 goroutine 하나와 `signal.Notify` 가 남으므로 호출 1회당 `chSigs` 에 정확히 1개를 주입하고 `chDone` 을 소비하며 cleanup 에서 `signal.Stop(chSigs)` 를 호출합니다. 실제 OS 시그널은 보내지 않습니다. runDaemon 오류 경로도 initSignal 을 부르므로 같은 규칙을 씁니다.
 - initProm: `DefaultServeMux` 에 등록 해제 수단이 없고 같은 패턴 재등록은 panic 이므로 등록 호출을 한 건으로 최소화하고 endpoint 에 원자 카운터를 붙여 `-count` 반복마다 고유하게 합니다. ListenAndServe 오류는 잘못된 listen 주소(예: 포트 누락)로 즉시 발생시키며 logrus test hook 을 채널로 기다려 관측하고 cleanup 에서 hook 을 복구합니다.
 - runDaemon: 잘못된 DSN 이 `sql.Open` 단계에서 실패하는 경로만 사용하고 네트워크 접속 경로는 쓰지 않습니다.
-- aws Init/createClient: `t.Setenv` 로 `AWS_PROFILE`, `AWS_CONFIG_FILE`, `AWS_SHARED_CREDENTIALS_FILE`(임시 빈 파일), `AWS_EC2_METADATA_DISABLED=true`, `AWS_ENDPOINT_URL*` 를 지정해 호스트 설정을 차단합니다. 오류 분기는 존재하지 않는 `AWS_PROFILE` 로 유도해 Init 의 오류 래핑을 확인하고, 성공 경로에서 만든 `AWSConfig` 의 `Cancel` 은 cleanup 에서 호출합니다.
+- aws Init/createClient: `t.Setenv` 로 `AWS_PROFILE`, `AWS_CONFIG_FILE`, `AWS_SHARED_CREDENTIALS_FILE`(임시 빈 파일), `AWS_EC2_METADATA_DISABLED=true`, `AWS_ENDPOINT_URL*` 를 지정해 호스트 설정을 차단합니다. 오류 분기는 존재하지 않는 `AWS_PROFILE` 로 유도해 Init 의 오류 래핑을 확인하고, 성공 경로에서는 `client.Options().Region` 이 `eu-central-1` 임을 단언하고 만든 `AWSConfig` 의 `Cancel` 은 cleanup 에서 호출합니다.
 - gcp runProcess: 가짜 `StreamingSynthesizeClient` 의 `Recv` 는 채널 기반이고 ctx 취소로 풀립니다. `CloseSend` 를 구현해 호출 여부를 기록하고 `Client` 는 nil 로 둡니다. `GCPConfig` 의 `Ctx`, `StreamCtx`, `StreamCancel`, `processDone` 를 모두 초기화합니다. PlayStarted 와 PlayFinished 이벤트를 mock 으로 EXPECT 하고 끝에서 `processDone` 이 닫혔는지 채널로 기다립니다. 서버 종료 케이스는 `Stream == nil` 을, websocket 쓰기 오류는 닫힌 로컬 연결로 유도합니다.
 - savePCMAsWAV 쓰기 오류: `/dev/full` 이 없거나 열 수 없으면 `t.Skip` 합니다(1 stmt 이므로 80.5% 에 영향 없음).
 - 생성자 테스트: 반환 타입을 단언한 뒤 주입한 의존성, podID, 자격 값이 필드에 들어갔는지와 `mapStreaming` 이 nil 이 아닌 빈 맵인지 단언합니다.
@@ -73,5 +73,5 @@ verify 항목
 1. 수기 합계 80.5% 이상. 측정은 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` 후 gens/, mock_*.go, DO NOT EDIT 파일을 빼고 같은 블록은 최대 count 로 병합하는 고정 스크립트로 계산하며 묶음마다 반복합니다.
 2. 변경 파일이 bin-tts-manager/ 안에만 있음, 저장소 루트에서 `git fetch origin main` 후 `bash scripts/check-test-conventions.sh` 통과.
 3. `go test -race -count=5 -shuffle=on ./cmd/... ./pkg/streaminghandler/ ./pkg/audiohandler/` 반복 통과.
-4. 변이 검사(각각 대응 테스트가 실패해야 함): runListenNormal 큐 이름 변경 - runListen 큐 이름 테스트, initSignal 의 chDone 전달 제거 - initSignal 테스트, initProm 오류 분기 로그 제거 - initProm 오류 테스트, createClient 지역 상수 변경 또는 오류 래핑 제거 - aws Init 테스트, elevenlabs getVoiceID 우선순위 변경 - 우선순위 테스트, gcp runProcess 의 빈 오디오 건너뜀 반전 - gcp runProcess 테스트, runListenPod 큐 이름 변경 - pod 큐 테스트, tts-control provider 검증 분기 변경 - 검증 오류 테스트, readConnWebsock 의 드롭 분기 제거 - 드롭 테스트, 생성자 필드 대입 누락 - 생성자 테스트, websocketWrite 의 ctx 분기 제거 - ctx 취소 테스트, gcp runProcess 서버 종료 분기의 Stream 정리 제거 - 서버 종료 테스트, aws Init 의 Initiated 이벤트 발행 제거 - aws Init 테스트, tts-control 의 call-id 와 text 검증 제거 - 검증 오류 테스트.
+4. 변이 검사(각각 대응 테스트가 실패해야 함): runListenNormal 큐 이름 변경 - runListen 큐 이름 테스트, initSignal 의 chDone 전달 제거 - initSignal 테스트, initProm 오류 분기 로그 제거 - initProm 오류 테스트, createClient 지역 상수 변경 또는 오류 래핑 제거 - aws Init 테스트, elevenlabs getVoiceID 우선순위 변경 - 우선순위 테스트, gcp runProcess 의 빈 오디오 건너뜀 반전 - gcp runProcess 테스트, runListenPod 큐 이름 변경 - pod 큐 테스트, tts-control provider 검증 분기 변경 - 검증 오류 테스트, readConnWebsock 의 드롭 분기 제거 - 드롭 테스트, 생성자 필드 대입 누락 - 생성자 테스트, websocketWrite 의 사전 취소 검사(ctx.Err() 반환) 제거 - 사전 취소 ctx 테스트, runWebSocketRead 정상 종료도 Error 로 기록 - 정상 종료 테스트, gcp runProcess 서버 종료 분기의 Stream 정리 제거 - 서버 종료 테스트, aws Init 의 Initiated 이벤트 발행 제거 - aws Init 테스트, tts-control 의 call-id 와 text 검증 제거 - 검증 오류 테스트.
 5. `go mod tidy` 후 go.mod, go.sum 변경 없음. golangci-lint 통과.
