@@ -7,6 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"cloud.google.com/go/storage"
+	"google.golang.org/api/option"
 )
 
 // Test_NewServiceHandler_malformedCredential_keepsConfigWithoutClient checks that
@@ -15,6 +18,12 @@ import (
 func Test_NewServiceHandler_malformedCredential_keepsConfigWithoutClient(t *testing.T) {
 	// a storage emulator would let the client be built without parsing the credential.
 	t.Setenv("STORAGE_EMULATOR_HOST", "")
+
+	// precondition: the credential really is rejected by the storage client, so the
+	// nil client below is caused by it and not by something else.
+	if _, errClient := storage.NewClient(context.Background(), option.WithAuthCredentialsJSON(option.ServiceAccount, []byte("{not json"))); errClient == nil {
+		t.Fatalf("Wrong precondition. expect: the storage client to reject the malformed credential, got: nil")
+	}
 
 	got := NewServiceHandler("{not json", "test-bucket", "/test/asterisk", "test-bucket-dir")
 

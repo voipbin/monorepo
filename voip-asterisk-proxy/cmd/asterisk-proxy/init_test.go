@@ -150,7 +150,8 @@ func Test_initVariable_flagBindingError(t *testing.T) {
 	})
 	sort.Strings(names)
 
-	// one flag per variable in the snapshot; a smaller table would hide
+	// one flag per variable in initVarsSnapshot. A new flag in initVariable
+	// needs this count and the snapshot updated; a smaller table would hide
 	// flags that are not checked.
 	if len(names) != 22 {
 		t.Fatalf("Wrong flag count. expect: 22, got: %d (%v)", len(names), names)
