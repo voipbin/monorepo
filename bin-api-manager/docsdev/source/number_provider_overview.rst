@@ -23,7 +23,7 @@ With the Number Provider API you can:
 
 How Providers Are Chosen
 ------------------------
-When a number is purchased, VoIPBin tries the carriers that are *usable* in ascending ``priority`` (ties are ordered by ``provider_name``). A carrier is usable when it is enabled, has a credential, and (for a stored credential) has all the ``config`` keys it requires.
+When a number is purchased, VoIPBin tries the carriers that are *usable* in ascending ``priority`` (ties are ordered by ``provider_name``). A carrier is usable when it is enabled, has a credential, and has all the ``config`` keys it requires (``twilio`` needs ``sid`` and ``trunk_sid``, which the environment credential cannot give).
 
 VoIPBin falls back to the next carrier only when the current carrier definitively refused the order. If the outcome of an order is unknown (for example a timeout), the purchase stops instead of ordering from another carrier, so a number is never bought twice. To route around a failing carrier, disable it.
 
@@ -47,7 +47,7 @@ The secret is write-only. It is never returned, logged or sent in an event. A re
 
 .. warning:: **Changing the account**
 
-   Numbers are released through the account that purchased them. Replacing the stored secret with the token of another account, or deleting the stored secret so the environment account is used, makes the release of the numbers bought through the previous account fail. Change the account only when no number of that provider remains, or when the new secret belongs to the same account.
+   Numbers are released through the account that purchased them. Replacing the stored secret with the token of another account (or, for ``twilio``, the ``sid`` of another account), or deleting the stored secret so the environment account is used, makes the release of the numbers bought through the previous account fail. Change the account only when no number of that provider remains, or when the new secret belongs to the same account.
 
 Storing a secret needs the encryption key to be configured on the platform. Without it the request is answered with ``503 Service Unavailable``.
 

@@ -236,7 +236,7 @@ PR2: (RPC 비밀 본문이 내부 RabbitMQ를 평문으로 통과하는 점은 P
 
 ### 12.8 비밀값 노출 점검
 
-- Authorization 헤더, URL의 sid, 응답 본문 전체를 로그에 남기지 않습니다(로그는 resource, method, status, Twilio code만). 전송 오류는 `url.Error`가 URL(sid 포함)을 포함하므로 내부 `Err`만 감싸 반환합니다.
+- Authorization 헤더, URL의 sid, 응답 본문 전체를 로그에 남기지 않습니다(로그는 number, number_id, status, Twilio code만. requestexternal 자체에는 로그 호출이 없음). 전송 오류는 `url.Error`가 URL(sid 포함)을 포함하므로 내부 `Err`만 감싸 반환합니다.
 - `numberhandlertwilio`는 sid/token을 필드로 갖지만 로그 필드에 핸들러나 Credentials를 넣지 않습니다. 구입, 반환, 검색, 태그 갱신을 실행하며 캡처한 로그 hook 출력에 token과 sid와 Authorization 값이 없음을 테스트로 단언합니다. `provider.Credentials`의 `%v`/`%+v`/`%#v` 마스킹은 기존 테스트가 단언합니다.
 - 테스트 sid/token은 `AC000...0`, `TK000...0`처럼 명백한 가짜 값만 쓰고, 운영 값은 설계 문서와 PR 본문에 적지 않습니다.
 
