@@ -312,23 +312,27 @@ func Test_Delete_errorPaths(t *testing.T) {
 		expectDirectDelete bool
 		expectDelete       bool
 		expectSecondGet    bool
+		expectErr          error
 	}{
 		{
 			name:        "first read fails and nothing is deleted",
 			firstGetErr: errTestDB,
+			expectErr:   errTestDB,
 		},
 		{
-			name:               "direct delete failure does not block the deletion",
+			name:               "direct delete failure does not block the deletion and does not leak",
 			directDeleteErr:    errTestDirect,
 			expectDirectDelete: true,
 			expectDelete:       true,
 			deleteErr:          errTestDB,
+			expectErr:          errTestDB,
 		},
 		{
 			name:               "delete fails",
 			expectDirectDelete: true,
 			expectDelete:       true,
 			deleteErr:          errTestDB,
+			expectErr:          errTestDB,
 		},
 		{
 			name:               "re-read fails",
@@ -336,6 +340,7 @@ func Test_Delete_errorPaths(t *testing.T) {
 			expectDelete:       true,
 			expectSecondGet:    true,
 			secondGetErr:       errTestDB,
+			expectErr:          errTestDB,
 		},
 	}
 
@@ -363,8 +368,11 @@ func Test_Delete_errorPaths(t *testing.T) {
 			}
 
 			res, err := h.Delete(ctx, testWidgetID)
-			if err == nil {
-				t.Errorf("Wrong match. expect: error, got: nil")
+			if !errors.Is(err, tt.expectErr) {
+				t.Errorf("Wrong error. expect: %v, got: %v", tt.expectErr, err)
+			}
+			if errors.Is(err, errTestDirect) {
+				t.Errorf("The direct delete failure must not reach the caller. got: %v", err)
 			}
 			if res != nil {
 				t.Errorf("Wrong result. expect: nil, got: %v", res)
@@ -387,11 +395,12 @@ func Test_DirectHashRegenerate_errorPaths(t *testing.T) {
 		expectRegen     bool
 		expectUpdate    bool
 		expectSecondGet bool
+		expectErr       error
 	}{
-		{name: "first read fails", firstGetErr: errTestDB},
-		{name: "regenerate rpc fails", regenerateErr: errTestDirect, expectRegen: true},
-		{name: "hash update fails", expectRegen: true, expectUpdate: true, updateErr: errTestDB},
-		{name: "re-read fails", expectRegen: true, expectUpdate: true, expectSecondGet: true, secondGetErr: errTestDB},
+		{name: "first read fails", firstGetErr: errTestDB, expectErr: errTestDB},
+		{name: "regenerate rpc fails", regenerateErr: errTestDirect, expectRegen: true, expectErr: errTestDirect},
+		{name: "hash update fails", expectRegen: true, expectUpdate: true, updateErr: errTestDB, expectErr: errTestDB},
+		{name: "re-read fails", expectRegen: true, expectUpdate: true, expectSecondGet: true, secondGetErr: errTestDB, expectErr: errTestDB},
 	}
 
 	for _, tt := range tests {
@@ -422,8 +431,8 @@ func Test_DirectHashRegenerate_errorPaths(t *testing.T) {
 			}
 
 			res, err := h.DirectHashRegenerate(ctx, testWidgetID)
-			if err == nil {
-				t.Errorf("Wrong match. expect: error, got: nil")
+			if !errors.Is(err, tt.expectErr) {
+				t.Errorf("Wrong error. expect: %v, got: %v", tt.expectErr, err)
 			}
 			if res != nil {
 				t.Errorf("Wrong result. expect: nil, got: %v", res)
