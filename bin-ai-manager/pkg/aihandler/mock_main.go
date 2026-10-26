@@ -148,7 +148,7 @@ func (mr *MockAIHandlerMockRecorder) List(ctx, size, token, filters any) *gomock
 }
 
 // Update mocks base method.
-func (m *MockAIHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey, engineBaseURL string, engineBaseKey *string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoice string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, vadConfig *ai.VADConfig, smartTurnEnabled, autoAICallAuditEnabled bool) (*ai.AI, error) {
+func (m *MockAIHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey *string, engineBaseURL string, engineBaseKey *string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoice string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, vadConfig *ai.VADConfig, smartTurnEnabled, autoAICallAuditEnabled bool) (*ai.AI, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, aiType, engineModel, parameter, engineKey, engineBaseURL, engineBaseKey, ragID, initPrompt, ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 	ret0, _ := ret[0].(*ai.AI)

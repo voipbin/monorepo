@@ -837,8 +837,9 @@ func Test_processEventWebhookManagerRoutingKeyedEvent_WrongEventTypeFormat(t *te
 }
 
 // Test_processEvent_DoesNotLogEventPayload pins that the event receive path never writes the event
-// body to the log. ai_created and ai_updated webhooks carry the internal engine_key, so the full
-// event, and the marshaled data, must stay out of every log entry on both webhook-manager paths.
+// body to the log. ai-manager masks the engine key of its ai events before publishing them, but this
+// receive path must not rely on that: a payload field such as engine_key (the sentinel below), the
+// full event and the marshaled data must stay out of every log entry on both webhook-manager paths.
 func Test_processEvent_DoesNotLogEventPayload(t *testing.T) {
 	hook := logtest.NewGlobal()
 	defer hook.Reset()

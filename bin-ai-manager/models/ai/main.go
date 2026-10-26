@@ -68,6 +68,11 @@ type AI struct {
 	EngineKey   string         `json:"engine_key,omitempty" db:"engine_key"` // ai(llm) service api key
 	RagID       uuid.UUID      `json:"rag_id,omitempty" db:"rag_id,uuid"`
 
+	// HasEngineKey is a transport hint, never stored or cached (db:"-"). publishAIEvent sets it on
+	// the event copy before it clears EngineKey, so a consumer that only sees the masked event
+	// still reports whether a key is held.
+	HasEngineKey bool `json:"has_engine_key,omitempty" db:"-"`
+
 	// Customer specified OpenAI compatible endpoint (customendpoint. models only).
 	// EngineBaseKeyEnc is the packed ciphertext of the endpoint key and is cached with the row.
 	// EngineBaseKey is the plaintext and is filled only by the get-by-id response; it is never

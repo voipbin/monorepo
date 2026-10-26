@@ -140,3 +140,16 @@ var catalog = []ModelEntry{
 	// customer-keyed OpenRouter entry (the customer types the model ID)
 	{ID: "custom.openrouter", Label: "OpenRouter model (your OpenRouter key)", Vendor: "OpenRouter", Route: RouteCustomOpenRouter, CustomPrefix: EngineModelPrefixCustomOpenRouter, Description: "Enter any model supported by OpenRouter."},
 }
+
+// IsPlatformModel reports whether the catalog entry that matches m exactly has key_mode platform
+// (local models by their current registration). Any other value, such as a customendpoint. or a
+// custom openrouter. model, is not a platform model.
+func IsPlatformModel(m EngineModel) bool {
+	for _, e := range CatalogView() {
+		if e.ID == m {
+			return e.KeyMode == KeyModePlatform
+		}
+	}
+
+	return false
+}

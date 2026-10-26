@@ -55,7 +55,7 @@ func Test_AIV1AI_EngineBaseKeyWire(t *testing.T) {
 					_, err = h.AIV1AICreate(context.Background(), uuid.Nil, "n", "d", amai.TypeNone, "customendpoint.m", nil, "", "https://a.example.com/v1", tt.key,
 						uuid.Nil, "", "", "", "", "", nil, nil, false)
 				} else {
-					_, err = h.AIV1AIUpdate(context.Background(), uuid.Nil, "n", "d", amai.TypeNone, "customendpoint.m", nil, "", "https://a.example.com/v1", tt.key,
+					_, err = h.AIV1AIUpdate(context.Background(), uuid.Nil, "n", "d", amai.TypeNone, "customendpoint.m", nil, ptrStr(""), "https://a.example.com/v1", tt.key,
 						uuid.Nil, "", "", "", "", "", nil, nil, false)
 				}
 				if err != nil {

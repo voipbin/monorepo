@@ -106,7 +106,7 @@ func Test_AIUpdate_EngineBaseKeyStatesRoundTrip(t *testing.T) {
 			}
 
 			_, err := h.AIUpdate(context.Background(), engineBaseAgent(), uuid.FromStringOrNil(engineBaseTestAID),
-				"", "", "", amai.EngineModel("customendpoint.m1"), nil, "", engineBaseTestURL, req.EngineBaseKey,
+				"", "", "", amai.EngineModel("customendpoint.m1"), nil, stringPtr(""), engineBaseTestURL, req.EngineBaseKey,
 				uuid.Nil, "", "", "", "", "", nil, nil, false)
 			if err != nil {
 				t.Fatalf("AIUpdate failed: %v", err)
@@ -194,7 +194,7 @@ func Test_AIWrite_EngineBaseNotLogged(t *testing.T) {
 		uuid.Nil, "", "", "", "", "", nil, nil, false); err != nil {
 		t.Fatalf("AICreate failed: %v", err)
 	}
-	if _, err := h.AIUpdate(ctx, engineBaseAgent(), uuid.FromStringOrNil(engineBaseTestAID), "n", "d", "", model, nil, "", engineBaseTestURL, &key,
+	if _, err := h.AIUpdate(ctx, engineBaseAgent(), uuid.FromStringOrNil(engineBaseTestAID), "n", "d", "", model, nil, stringPtr(""), engineBaseTestURL, &key,
 		uuid.Nil, "", "", "", "", "", nil, nil, false); err != nil {
 		t.Fatalf("AIUpdate failed: %v", err)
 	}

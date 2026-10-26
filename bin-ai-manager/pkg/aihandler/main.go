@@ -52,7 +52,7 @@ type AIHandler interface {
 		aiType ai.Type,
 		engineModel ai.EngineModel,
 		parameter map[string]any,
-		engineKey string,
+		engineKey *string,
 		engineBaseURL string,
 		engineBaseKey *string,
 		ragID uuid.UUID,

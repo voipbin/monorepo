@@ -387,7 +387,7 @@ func TestUpdate(t *testing.T) {
 				ai.TypeNormal,
 				tt.engineModel,
 				nil,
-				"updated-key",
+				strPtr("updated-key"),
 				"", nil,
 				uuid.Nil,
 				"Updated prompt",
@@ -558,7 +558,7 @@ func TestUpdate_NewPrompt_RecordsHistory(t *testing.T) {
 		ai.TypeNormal,
 		ai.EngineModelOpenaiGPT5,
 		nil,
-		"key",
+		strPtr("key"),
 		"", nil,
 		uuid.Nil,
 		"new prompt",
@@ -614,7 +614,7 @@ func TestUpdate_SamePrompt_NoHistory(t *testing.T) {
 		ai.TypeNormal,
 		ai.EngineModelOpenaiGPT5,
 		nil,
-		"key",
+		strPtr("key"),
 		"", nil,
 		uuid.Nil,
 		"same prompt",
@@ -665,7 +665,7 @@ func TestUpdate_EmptyPrompt_AlreadyEmpty_NoHistory(t *testing.T) {
 		ai.TypeNormal,
 		ai.EngineModelOpenaiGPT5,
 		nil,
-		"key",
+		strPtr("key"),
 		"", nil,
 		uuid.Nil,
 		"",
@@ -891,7 +891,7 @@ func TestUpdate_promptChangedCreatesHistoryAndSetsID(t *testing.T) {
 		notifyHandler: mockNotify,
 		utilHandler:   mockUtil,
 	}
-	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, "", "", nil, uuid.Nil,
+	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, strPtr(""), "", nil, uuid.Nil,
 		"new prompt", ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -935,7 +935,7 @@ func TestUpdate_promptClearedResetsID(t *testing.T) {
 		notifyHandler: mockNotify,
 		utilHandler:   mockUtil,
 	}
-	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, "", "", nil, uuid.Nil,
+	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, strPtr(""), "", nil, uuid.Nil,
 		"", ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -969,7 +969,7 @@ func TestUpdate_promptUnchangedDoesNotCreateHistory(t *testing.T) {
 		notifyHandler: mockNotify,
 		utilHandler:   mockUtil,
 	}
-	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, "", "", nil, uuid.Nil,
+	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, strPtr(""), "", nil, uuid.Nil,
 		same, ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -1206,7 +1206,7 @@ func TestUpdate_RejectsInsightAIWithNormalTools(t *testing.T) {
 		ai.TypeNone, // omitted -- resolves to the existing Insight type
 		ai.EngineModelOpenaiGPT5,
 		nil,
-		"test-key",
+		strPtr("test-key"),
 		"", nil,
 		uuid.Nil,
 		"",

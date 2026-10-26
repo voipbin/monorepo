@@ -401,7 +401,7 @@ func Test_Update(t *testing.T) {
 				ai.TypeNormal,
 				tt.engineModel,
 				tt.parameter,
-				tt.engineKey,
+				strPtr(tt.engineKey),
 				"", nil,
 				uuid.Nil,
 				tt.initPrompt,

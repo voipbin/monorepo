@@ -213,7 +213,7 @@ func (r *requestHandler) AIV1AIUpdate(
 	aiType amai.Type,
 	engineModel amai.EngineModel,
 	parameter map[string]any,
-	engineKey string,
+	engineKey *string,
 	engineBaseURL string,
 	engineBaseKey *string,
 	ragID uuid.UUID,

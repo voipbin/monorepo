@@ -20,6 +20,7 @@ AI
         "engine_model": "<string>",
         "parameter": "<object>",
         "engine_key": "<string>",
+        "has_engine_key": <boolean>,
         "engine_base_url": "<string>",
         "rag_id": "<string>",
         "init_prompt": "<string>",
@@ -52,7 +53,8 @@ AI
 * ``is_insight_active`` (Boolean): Whether this is the customer's **active** Insight AI (the one the Case Insight Assistant panel auto-attaches to a Case). Only meaningful when ``type`` is ``insight``; always ``false`` for ``type=normal`` AIs. A customer may keep any number of Insight AIs (e.g. to prepare a new prompt or model before switching to it), but at most one may be active at a time. Newly created Insight AIs are always inactive. Activate one with ``POST /ais/{id}/activate_insight``. When a customer has no active Insight AI, the most recently created one is used. See :ref:`Insight AI activation <ai-struct-ai-is_insight_active>`.
 * ``engine_model`` (String, Required): The LLM provider and model. Format: ``<provider>.<model>`` (e.g., ``openai.gpt-5-mini``, ``gemini.gemini-2.5-flash``). Use an ``id`` returned by ``GET /ai_models``. See :ref:`Engine Models <ai-struct-ai-engine_model>` and :ref:`AI Models <ai-models>`.
 * ``parameter`` (Object, Optional): Custom key-value parameter data for the AI configuration. Supports flow variable substitution at runtime. Typically left as ``{}``.
-* ``engine_key`` (String, Required): The API key for the LLM provider. Must be a valid key from the provider's dashboard. For models whose ``platform_managed`` field in ``GET /ai_models`` is ``true`` (OpenRouter models and local models), the platform supplies the credentials: send an empty string, and any value you send is ignored. For a custom OpenRouter model (``engine_model`` starts with ``openrouter.``), your OpenRouter API key is required: an empty value is rejected with ``400 ENGINE_KEY_REQUIRED``. ``PUT /ais/{id}`` replaces the whole configuration, so omitting ``engine_key`` is treated as an empty value. When you update an ``openrouter.<model-id>`` AI, send the key again even if you do not want to change it.
+* ``engine_key`` (String, Required on ``POST /ais``, optional on ``PUT /ais/{id}``): The API key for the LLM provider. Must be a valid key from the provider's dashboard. For models whose ``platform_managed`` field in ``GET /ai_models`` is ``true`` (OpenRouter models and local models), the platform supplies the credentials: send an empty string, and any value you send is ignored. For a custom OpenRouter model (``engine_model`` starts with ``openrouter.``), your OpenRouter API key is required: when no key is stored or sent, the request is rejected with ``400 ENGINE_KEY_REQUIRED``. On ``PUT /ais/{id}`` the key has three states: omit the field (or send ``null``) to keep the stored key, send an empty string to delete the stored key, or send a value to replace it. An omitted key is not kept when the provider prefix of ``engine_model`` (the part before the first dot) changes to a model whose ``key_mode`` is not ``platform``: the stored key is deleted, so a key is never carried over to another provider. Moving to a ``platform`` model keeps the stored key, which is not used while that model is selected; moving on to a model with a different prefix that is not ``platform`` deletes it, and only an explicit empty string deletes it otherwise. The key is still returned in responses in this version (see ``has_engine_key``) and is planned to be removed from them.
+* ``has_engine_key`` (Boolean): Whether the AI holds an ``engine_key``. It does not describe ``engine_base_key`` of ``customendpoint.`` models. A key that is kept on a ``platform`` model also counts, although it is not used. Use it instead of reading ``engine_key``.
 * ``engine_base_url`` (String, Optional): The base URL of an OpenAI-compatible language model server that you host. Required when ``engine_model`` starts with ``customendpoint.`` (``400 ENGINE_BASE_URL_REQUIRED`` if empty), and not allowed for any other model (``400 ENGINE_BASE_URL_NOT_ALLOWED``). Only ``https`` is accepted. Do not put credentials or other secrets in the URL: the URL is not secret and is returned in API responses, events and webhooks. Send the key in ``engine_base_key`` instead. See :ref:`Custom endpoint models <ai-struct-ai-custom-endpoint>`.
 * ``engine_base_key`` (String, Optional, request only): The API key for the server at ``engine_base_url``. Write-only: it is accepted on ``POST /ais`` and ``PUT /ais/{id}`` and is **never returned** by any response, event or webhook, so it does not appear in the structure above. See :ref:`Custom endpoint models <ai-struct-ai-custom-endpoint>` for what omitting the field, ``null``, an empty string and a value mean.
 * ``rag_id`` (UUID, Optional): The knowledge base ID for the ``search_knowledge`` tool. Obtained from the ``id`` field of ``GET https://api.voipbin.net/v1.0/rags``. When set, the AI assistant can search this knowledge base during voice calls. Set to ``00000000-0000-0000-0000-000000000000`` or omit to disable.
@@ -77,7 +79,7 @@ AI
 
 .. note:: **AI Implementation Hint**
 
-   The ``engine_key`` field contains the LLM provider's API key. This key is write-only: it is accepted on ``POST /ais`` and ``PUT /ais`` but is **never returned** in ``GET`` responses for security. If you need to change the key, send a full ``PUT`` update with the new key.
+   The ``engine_key`` field contains the LLM provider's API key and is accepted on ``POST /ais`` and ``PUT /ais/{id}``. It is a secret: do not log or store it, and use ``has_engine_key`` to find out whether a key is held. This version still returns ``engine_key`` in responses for compatibility; it is planned to be removed from them. To change the key, send the new value in a ``PUT``. A ``PUT`` that omits ``engine_key`` keeps the stored key, and an empty string deletes it, so a client that sends back a full response body unchanged must drop ``engine_key`` or the empty value will delete the key.
 
 .. note:: **AI Implementation Hint**
 
@@ -102,6 +104,7 @@ Example
         "engine_model": "openai.gpt-5-mini",
         "parameter": {},
         "engine_key": "sk-...",
+        "has_engine_key": true,
         "rag_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "init_prompt": "You are a friendly sales assistant. Help customers find the right products.",
         "tts_type": "elevenlabs",
@@ -181,7 +184,7 @@ Status / reason                         Cause
 ======================================= ============================================================
 ``400 AI_NOT_INSIGHT_TYPE``             The target AI is not ``type=insight``. Only Insight AIs can be activated.
 ``400 INVALID_ENGINE_MODEL``            The ``engine_model`` is not returned by ``GET /ai_models`` (this includes a ``local.`` model that the operator has not registered), does not use an allowed provider prefix (``openai``, ``gemini``, ``grok``), and is not a valid ``openrouter.<author>/<slug>`` custom model. The OpenRouter model ID must have exactly one ``/`` and use only letters, digits, ``.``, ``_`` and ``-``. Variant suffixes such as ``:free`` and router IDs such as ``openrouter/auto`` are not supported. Returned on create and update.
-``400 ENGINE_KEY_REQUIRED``             The ``engine_model`` is a custom OpenRouter model and ``engine_key`` is empty. Returned on create and update, including an update that does not change the model.
+``400 ENGINE_KEY_REQUIRED``             The ``engine_model`` is a custom OpenRouter model and no engine key is stored or sent (an omitted ``engine_key`` on update counts as the stored key). Returned on create and update, including an update that does not change the model.
 ``400 ENGINE_BASE_URL_REQUIRED``        The ``engine_model`` starts with ``customendpoint.`` and ``engine_base_url`` is empty. Returned on create and update, including a ``PUT`` from a client that does not send ``engine_base_url`` for an existing custom endpoint AI. Nothing is changed in that case.
 ``400 ENGINE_BASE_URL_NOT_ALLOWED``     ``engine_base_url`` is set but ``engine_model`` does not start with ``customendpoint.``.
 ``400 INVALID_ENGINE_BASE_URL``         ``engine_base_url`` breaks the format rules (see :ref:`Custom endpoint models <ai-struct-ai-custom-endpoint>`). The message states the rules and does not repeat the value.
@@ -215,11 +218,11 @@ Qwen                     ``qwen.<model>``                 qwen.qwen3-235b-a22b-2
 Mistral                  ``mistral.<model>``              mistral.mistral-small-3.2-24b-instruct     Not required
 ======================== ================================ ========================================== ==========================
 
-Models listed as "Not required" are managed by the platform (``key_mode`` is ``platform`` in ``GET /ai_models``). Send an empty ``engine_key`` for them.
+Models listed as "Not required" are managed by the platform (``key_mode`` is ``platform`` in ``GET /ai_models``). On create send an empty ``engine_key``; on update you may omit it (a stored key is kept) or send an empty string (a stored key is deleted).
 
 **Local models**
 
-When the platform operator registers self-hosted models, they are listed in ``GET /ai_models`` with the format ``local.<endpoint>.<model>`` and ``key_mode`` ``platform``. Send an empty ``engine_key``. The server address is not shown, and a ``local.`` value that is not in the list is rejected.
+When the platform operator registers self-hosted models, they are listed in ``GET /ai_models`` with the format ``local.<endpoint>.<model>`` and ``key_mode`` ``platform``. On create send an empty ``engine_key``; on update you may omit it. The server address is not shown, and a ``local.`` value that is not in the list is rejected.
 
 **Custom endpoint models**
 
@@ -238,7 +241,7 @@ To use any other model offered by OpenRouter, set ``engine_model`` to ``openrout
 * On ``POST /ais``, ``engine_model`` must be an ``id`` from ``GET /ai_models``. Models that use the ``openai.``, ``gemini.``, or ``grok.`` prefix and are not in the list are also accepted and run with your own ``engine_key``. A value in the form ``openrouter.<author>/<slug>`` is also accepted and requires your OpenRouter ``engine_key``.
 * A value in the form ``customendpoint.<model-id>`` is also accepted and requires ``engine_base_url``.
 * Any other value (for example an ``anthropic.`` model that is not in the list) is rejected.
-* On ``PUT /ais/{id}``, the model check runs only when ``engine_model`` changes, so an existing AI that already stores an older value can still be updated without touching the model. The ``engine_key`` requirement for custom OpenRouter models is checked on every update.
+* On ``PUT /ais/{id}``, the model check runs only when ``engine_model`` changes, so an existing AI that already stores an older value can still be updated without touching the model. The ``engine_key`` requirement for custom OpenRouter models is checked on every update, against the key that results from the request (the stored key when ``engine_key`` is omitted).
 
 .. _ai-struct-ai-custom-endpoint:
 
@@ -269,7 +272,7 @@ Model changed to a non custom model       ``engine_base_url`` and the stored key
 
 The key is stored encrypted and is never returned. A key is 1 to 512 printable ASCII characters. The legacy ``engine_key`` is never sent to your server: use ``engine_base_key``.
 
-``PUT /ais/{id}`` replaces the whole configuration, so send ``engine_base_url`` again on every update of a ``customendpoint.`` AI. A client that does not know the field and omits it receives ``400 ENGINE_BASE_URL_REQUIRED``, and the stored settings are not changed.
+``PUT /ais/{id}`` replaces the whole configuration (except that an omitted ``engine_key`` or ``engine_base_key`` keeps the stored key), so send ``engine_base_url`` again on every update of a ``customendpoint.`` AI. A client that does not know the field and omits it receives ``400 ENGINE_BASE_URL_REQUIRED``, and the stored settings are not changed.
 
 **When a change takes effect**
 

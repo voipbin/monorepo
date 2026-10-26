@@ -183,7 +183,7 @@ func (h *aiHandler) dbUpdate(
 	aiType ai.Type,
 	engineModel ai.EngineModel,
 	parameter map[string]any,
-	engineKey string,
+	engineKey *string,
 	ragID uuid.UUID,
 	initPrompt string,
 	ttsType ai.TTSType,
@@ -265,7 +265,7 @@ func (h *aiHandler) buildUpdateFields(
 	aiType ai.Type,
 	engineModel ai.EngineModel,
 	parameter map[string]any,
-	engineKey string,
+	engineKey *string,
 	ragID uuid.UUID,
 	initPrompt string,
 	ttsType ai.TTSType,
@@ -284,7 +284,6 @@ func (h *aiHandler) buildUpdateFields(
 		ai.FieldType:                   aiType,
 		ai.FieldEngineModel:            engineModel,
 		ai.FieldParameter:              parameter,
-		ai.FieldEngineKey:              engineKey,
 		ai.FieldRagID:                  ragID,
 		ai.FieldInitPrompt:             initPrompt,
 		ai.FieldTTSType:                ttsType,
@@ -295,6 +294,12 @@ func (h *aiHandler) buildUpdateFields(
 		ai.FieldVADConfig:              vadConfig,
 		ai.FieldSmartTurnEnabled:       smartTurnEnabled,
 		ai.FieldAutoAICallAuditEnabled: autoAICallAuditEnabled,
+	}
+
+	// engineKey is nil when the stored key is kept: the column is then not written, so a concurrent
+	// change of the key cannot be overwritten with a value read earlier.
+	if engineKey != nil {
+		res[ai.FieldEngineKey] = *engineKey
 	}
 
 	// The endpoint URL and its ciphertext are added here and nowhere else (section 3.4). A nil

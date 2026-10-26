@@ -114,7 +114,7 @@ func Test_Update_EngineModelValidatedOnlyOnChange(t *testing.T) {
 
 			h := &aiHandler{db: mockDB, notifyHandler: mockNotify, utilHandler: utilhandler.NewUtilHandler()}
 
-			_, err := h.Update(context.Background(), stored.ID, "n", "", ai.TypeNormal, tt.requested, nil, tt.engineKey, "", nil, uuid.Nil, "prompt",
+			_, err := h.Update(context.Background(), stored.ID, "n", "", ai.TypeNormal, tt.requested, nil, strPtr(tt.engineKey), "", nil, uuid.Nil, "prompt",
 				ai.TTSTypeNone, "", ai.STTTypeNone, "", []tool.ToolName{}, nil, false, false)
 			if (err != nil) != tt.wantError {
 				t.Errorf("Update() error = %v, wantError %v", err, tt.wantError)

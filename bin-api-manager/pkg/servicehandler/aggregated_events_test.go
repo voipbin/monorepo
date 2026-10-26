@@ -721,3 +721,44 @@ func Test_convertAggregatedEventData_UnsupportedType(t *testing.T) {
 		t.Error("Expected error for unsupported event type, got nil")
 	}
 }
+
+// Test_convertAggregatedEventData_AIHasEngineKey: the stored (masked) ai event carries the
+// has_engine_key hint and no key, and the re-conversion reports the hint without any key.
+func Test_convertAggregatedEventData_AIHasEngineKey(t *testing.T) {
+	tests := []struct {
+		name   string
+		data   string
+		expect bool
+	}{
+		{"masked event of an AI with a key", `{"id":"550e8400-e29b-41d4-a716-446655440000","has_engine_key":true}`, true},
+		{"masked event of an AI without a key", `{"id":"550e8400-e29b-41d4-a716-446655440000"}`, false},
+		{"event stored before the masking", `{"id":"550e8400-e29b-41d4-a716-446655440000","engine_key":"dummy-key-value"}`, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			event := &tmevent.Event{
+				Timestamp: time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC),
+				EventType: "ai_updated",
+				Data:      json.RawMessage(tt.data),
+			}
+
+			result, err := convertAggregatedEventData(event)
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			b, err := json.Marshal(result.Data)
+			if err != nil {
+				t.Fatalf("marshal: %v", err)
+			}
+			var got map[string]any
+			if err := json.Unmarshal(b, &got); err != nil {
+				t.Fatalf("unmarshal: %v", err)
+			}
+			if got["has_engine_key"] != tt.expect {
+				t.Errorf("has_engine_key. expect: %v, got: %v", tt.expect, got["has_engine_key"])
+			}
+		})
+	}
+}

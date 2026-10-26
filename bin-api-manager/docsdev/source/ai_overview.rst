@@ -823,7 +823,7 @@ Troubleshooting
 **Common HTTP Errors**
 
 * **400 Bad Request:**
-    * **Cause:** Invalid ``engine_model`` (reason ``INVALID_ENGINE_MODEL``). The value must be returned by ``GET /ai_models``, use an allowed provider prefix (``openai``, ``gemini``, ``grok``), or be a valid ``openrouter.<author>/<slug>`` custom model, for example ``openai.gpt-5-mini``. A custom OpenRouter model without an ``engine_key`` is rejected with reason ``ENGINE_KEY_REQUIRED``. A ``customendpoint.`` model without ``engine_base_url`` is rejected with reason ``ENGINE_BASE_URL_REQUIRED``, and an address that does not resolve to a public address with reason ``ENGINE_BASE_URL_REJECTED``.
+    * **Cause:** Invalid ``engine_model`` (reason ``INVALID_ENGINE_MODEL``). The value must be returned by ``GET /ai_models``, use an allowed provider prefix (``openai``, ``gemini``, ``grok``), or be a valid ``openrouter.<author>/<slug>`` custom model, for example ``openai.gpt-5-mini``. A custom OpenRouter model without an engine key (none sent and none stored) is rejected with reason ``ENGINE_KEY_REQUIRED``. A ``customendpoint.`` model without ``engine_base_url`` is rejected with reason ``ENGINE_BASE_URL_REQUIRED``, and an address that does not resolve to a public address with reason ``ENGINE_BASE_URL_REJECTED``.
     * **Fix:** Pick an ``id`` from ``GET /ai_models`` (see :ref:`AI Models <ai-models>`) and check the provider table in :ref:`Engine Models <ai-struct-ai-engine_model>`.
 
 * **402 Payment Required:**

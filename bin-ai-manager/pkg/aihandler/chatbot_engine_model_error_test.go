@@ -87,7 +87,7 @@ func Test_Update_invalidEngineModelIsTyped(t *testing.T) {
 	}
 
 	_, err := h.Update(context.Background(), uuid.Must(uuid.NewV4()), "n", "d", ai.TypeNormal,
-		ai.EngineModel("unknown.invalid"), nil, "", "", nil, uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
+		ai.EngineModel("unknown.invalid"), nil, strPtr(""), "", nil, uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
 		[]tool.ToolName{}, nil, false, false)
 	assertInvalidEngineModel(t, err)
 }
@@ -215,7 +215,7 @@ func Test_Update_customModelErrors(t *testing.T) {
 			}
 
 			_, err := h.Update(context.Background(), uuid.Must(uuid.NewV4()), "n", "d", ai.TypeNormal,
-				tt.engineModel, nil, tt.engineKey, "", nil, uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
+				tt.engineModel, nil, strPtr(tt.engineKey), "", nil, uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
 				[]tool.ToolName{}, nil, false, false)
 			if tt.expectKey {
 				assertEngineKeyRequired(t, err)

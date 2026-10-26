@@ -67,7 +67,7 @@ func Test_errorResponse_invalidEngineModel(t *testing.T) {
 	t.Run("update", func(t *testing.T) {
 		mockDB.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(&ai.AI{EngineModel: ai.EngineModelOpenaiGPT5}, nil).Times(1)
 		_, err := h.Update(context.Background(), uuid.Must(uuid.NewV4()), "n", "d", ai.TypeNormal,
-			ai.EngineModel("unknown.invalid"), nil, "", "", nil, uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
+			ai.EngineModel("unknown.invalid"), nil, nil, "", nil, uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
 			[]tool.ToolName{}, nil, false, false)
 		assertEngineModel400(t, err)
 	})
