@@ -39,7 +39,7 @@
 | cmd/tts-manager `initSignal`, `initProm`(고유 endpoint, 로컬 listen), `runDaemon` 연결 오류 | `chSigs` 에 직접 신호 주입, initProm 은 잘못된 listen 주소로 ListenAndServe 오류 분기까지 결정적으로 도달, 잘못된 DSN(sql.Open 파싱 오류, 네트워크 없음) | 22 |
 | streaminghandler `NewStreamingHandler`, `NewAWSHandler`, `NewGCPHandler`, `NewElevenlabsHandler` | 생성자가 만든 핸들러 필드 검증 | 12 |
 | streaminghandler aws `Init`, `createClient` | 정적 합성 자격, 네트워크 호출 없음(호스트의 AWS_* 환경변수와 설정 파일 경로는 t.Setenv 로 격리). 이벤트 발행 mock 검증 | 25 |
-| streaminghandler elevenlabs `getVoiceID` 분기 | 명시 voice, 변수 조회 오류, 변수 없음, 길이 불일치, 언어 중립 대체 | 5 |
+| streaminghandler elevenlabs `getVoiceID` 분기 (프로파일상 미커버 블록 481-482, 504-505, 509-510, 514-515, 536-537 각 1 stmt. cp.out 에서 count 0 확인) | 명시 voice, 변수 조회 오류, 변수 없음, 길이 불일치, 언어 중립 대체 | 5 |
 | streaminghandler elevenlabs `runProcess`, `readConnWebsock` | `readConnWebsock` 를 직접 호출. 읽기 오류 전달, errCh 용량 1 을 미리 채운 가득 참 분기(350)를 결정적으로 도달. `runProcess` 의 ctx 취소 분기(272)는 reader goroutine 이 `ReadMessage` 에 진입한 시점을 보장하는 동기화가 번거롭고 1 stmt 이므로 대상에서 제외 메시지 드롭 분기(360-361)는 ctx 취소 시점이 비결정적이므로 대상에서 제외 | 1 |
 | streaminghandler gcp `runProcess` | 가짜 stream. 비어 있지 않은 청크 전송, 서버 측 종료 시 stream 정리, ctx 취소 종료, websocket 쓰기 오류 | 14 |
 | streaminghandler websocket `websocketWrite` 사전 취소 ctx | 로컬 WebSocket, 이미 취소된 ctx 를 넘기면 프레임 0개 전송과 ctx 오류 반환을 단언(페이싱 select 의 ctx 분기는 ticker 와 경합하므로 best-effort 이며 합계에서 제외) | 0 |
@@ -54,6 +54,7 @@
 
 - 각 테스트는 시작 시 `viper.Reset` 을 호출하고 cleanup 에서도 호출합니다.
 - 기존 함수 이름과 mock 패턴을 따르며 테스트 이름은 `Test_` 로 시작하고 gomock 컨트롤러 변수는 `mc` 입니다. 합성 값만 쓰고 자격 값은 의미 없는 문자열을 주소와 다른 문장에서 대입합니다. 같은 규칙을 테스트 주석과 PR 본문에도 적용합니다.
+- 비교는 `reflect.DeepEqual` 과 `t.Errorf` 를 쓰고 testify 는 쓰지 않습니다(`scripts/check-test-conventions.sh` 규칙).
 - sleep 에 의존한 판정을 하지 않고 채널과 컨텍스트로 동기화합니다. 타임아웃은 안전망으로만 씁니다.
 - 전역 상태는 cleanup 으로 복구합니다: viper 는 `viper.Reset`, logrus 의 formatter, level 은 원래 값으로, hook 은 `logrus.StandardLogger().Hooks` 를 깊은 복사로 저장했다가 `ReplaceHooks` 로, `chSigs`/`chDone` 는 아래 규칙, 환경 변수는 `t.Setenv` 로 관련 키(DATABASE_DSN, RABBITMQ_ADDRESS 등)를 비웁니다. `config.LoadGlobalConfig` 는 once 이므로 프로세스 첫 호출의 값이 고정됩니다. runDaemon 테스트는 `config.Get()` 의 필드를 직접 설정하고 defer 로 원복합니다.
 
@@ -89,6 +90,7 @@ verify 항목
    - websocketWrite 의 사전 취소 검사 제거(합계에 영향이 없는 best-effort 이며 변이 검사 성공 기준에서 필수가 아님) - 프레임 0개 단언을 가진 사전 취소 ctx 테스트(반환 직후 클라이언트가 보낸 sentinel 메시지가 서버에서 첫 메시지로 읽히는지로 확인하며 읽기 타임아웃 판정은 쓰지 않음)(합계에는 영향 없음)
    - runWebSocketRead 정상 종료도 Error 로 기록 - 정상 종료 테스트의 hook 단언(Error 항목 중 메시지가 `WebSocket read error` 로 시작하는 것만 대상으로 하고, `runWebSocketRead` 를 시작하는 모든 테스트는 doneCh 가 닫힌 뒤에 끝나 다른 테스트의 goroutine 이 남기는 항목이 섞이지 않게 함)
    - 생성자 필드 대입 누락 - 생성자 테스트
+   - audiohandler awsGetClient 의 오류 래핑 제거 - 오류 분기 테스트, savePCMAsWAV 의 헤더 쓰기 오류 반환 제거 - /dev/full 쓰기 오류 테스트(없으면 skip)
    - tts-control PersistentPreRunE 의 `viper.BindPFlags` 제거 - Execute 로 `tts create --call-id <잘못된 UUID> --text x` 를 실행하면 "invalid format" 대신 "required" 가 나옴
    - tts-control `cmdSub.AddCommand(cmdCreate())` 제거, `cmdRoot.AddCommand(cmdSub)` 제거 - 하위 명령 구성 테스트
    - errCh 가득 참 테스트는 blocking send 로 바뀌면 멈추므로 수 초 타임아웃 안전망을 둡니다.
