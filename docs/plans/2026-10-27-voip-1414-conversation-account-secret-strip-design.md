@@ -44,7 +44,7 @@ grep -rnE '(Debug|Info|Warn|Error)f?\(.*(m\.Data|ReceivedURI|, (tmps?|ac|res|req
 grep -rnE '"(account|accounts|filters|fields|uri)": ' $F | grep -vE "$X"
 grep -rnE 'WithField\("(request|account|accounts|filters|fields|uri)",' $F | grep -vE "$X"
 ```
-Intentionally remaining after the change: `dbhandler/conversation.go` `filters` (conversation filters, no account data), `listenhandler/main.go` `"uri": m.URI` (internal RPC path), the `message: %v, tmp` marshal-failure logs of v1_conversations.go and v1_messages.go (conversation/message objects), and the raw hook `data` fields.
+Intentionally remaining after the change: `dbhandler/conversation.go` `filters` (conversation filters, no account data), `listenhandler/main.go` `"uri": m.URI` (internal RPC path), the `v1_hooks.go` logs of the received method, the path and the `err_type`, the `message: %v, tmp` marshal-failure logs of v1_conversations.go and v1_messages.go (conversation/message objects), and the raw hook `data` fields.
 
 The sweep over `pkg` and `cmd` (tests and mocks excluded) for log/Errorf/panic output of `ac`, `res`, `tmp`, `tmps`, `m`, `m.Data`, `req`, `uri`, `ReceivedURI`, `ReceivedData`, `fields`, `filters` is covered by the lines in section 3; after the change the command above must print nothing except the intentionally kept ones (raw hook `data`, listed in section 3). Reviewed and left unchanged: `whatsapphandler` (errors carry no credential; token is only in the Authorization header), `linehandler/setup.go`, `teardown.go` (SDK errors), `dbhandler` (errors wrap driver messages without values).
 
