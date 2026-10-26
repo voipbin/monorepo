@@ -28,20 +28,20 @@
 
 ## 3. 도달 가능 상한
 
-외부 연결(GCP 클라이언트 생성, ElevenLabs 상수 호스트 접속, RabbitMQ, DB, Redis)이 필요한 생성자와 main, json.Marshal 및 squirrel 빌드 오류, PrepareFields 오류는 제외합니다. 시그니처 변경 없이 테스트 가능한 분기만 합산한 추정 상한은 아래 표의 합 약 122개(독립 재계산 122~147, 키프얼라이브 등 보충 항목 별도)로, 필요한 101개를 넘으므로 block 없이 진행합니다.
+외부 연결(GCP 클라이언트 생성, ElevenLabs 상수 호스트 접속, RabbitMQ, DB, Redis)이 필요한 생성자와 main, json.Marshal 및 squirrel 빌드 오류, PrepareFields 오류는 제외합니다. 시그니처 변경 없이 테스트 가능한 분기만 합산한 추정 상한은 아래 표의 합 약 117개(독립 재계산 117~147, 키프얼라이브 등 보충 항목 별도)로, 필요한 101개를 넘으므로 block 없이 진행합니다.
 
 ## 4. 추가할 테스트 (모두 로컬 전용, 외부 네트워크 없음)
 
 | 항목 | 방법 | 추정 stmt |
 |---|---|---|
-| cmd/tts-control `initCommand` | 하위 명령 구성, `PersistentPreRunE` 실행, `tts create` 입력 검증 오류가 Execute 를 통해 전달됨 | 21 |
+| cmd/tts-control `initCommand` | 하위 명령 구성, `PersistentPreRunE` 실행, `tts create` 입력 검증 오류가 Execute 를 통해 전달됨 | 18 |
 | cmd/tts-manager `runListenNormal`, `runListenPod`, `runListen` | mock sockhandler. QueueCreate 성공과 실패, 큐 이름 검증, 실패 시 panic | 18 |
 | cmd/tts-manager `initSignal`, `initProm`(고유 endpoint, 로컬 listen), `runDaemon` 연결 오류 | `chSigs` 에 직접 신호 주입, initProm 은 잘못된 listen 주소로 ListenAndServe 오류 분기까지 결정적으로 도달, 잘못된 DSN(sql.Open 파싱 오류, 네트워크 없음) | 22 |
 | streaminghandler `NewStreamingHandler`, `NewAWSHandler`, `NewGCPHandler`, `NewElevenlabsHandler` | 생성자가 만든 핸들러 필드 검증 | 12 |
 | streaminghandler aws `Init`, `createClient` | 정적 합성 자격, 네트워크 호출 없음(호스트의 AWS_* 환경변수와 설정 파일 경로는 t.Setenv 로 격리). 이벤트 발행 mock 검증 | 25 |
 | streaminghandler elevenlabs `getVoiceID` 분기 | 명시 voice, 변수 조회 오류, 변수 없음, 길이 불일치, 언어 중립 대체 | 5 |
-| streaminghandler elevenlabs `runProcess`, `readConnWebsock` | 로컬 WebSocket 서버. ctx 취소, 읽기 오류 전달, 메시지 드롭 | 4 |
-| streaminghandler gcp `runProcess` | 가짜 stream. 빈 오디오 건너뜀, 서버 측 종료 시 stream 정리, ctx 취소 종료, websocket 쓰기 오류 | 14 |
+| streaminghandler elevenlabs `runProcess`, `readConnWebsock` | `readConnWebsock` 를 직접 호출. 읽기 오류 전달, errCh 용량 1 을 미리 채운 가득 참 분기(350)와 `runProcess` 의 conn nil 조기 반환(272)을 결정적으로 도달. 메시지 드롭 분기(360-361)는 ctx 취소 시점이 비결정적이므로 대상에서 제외 | 2 |
+| streaminghandler gcp `runProcess` | 가짜 stream. 비어 있지 않은 청크 전송, 서버 측 종료 시 stream 정리, ctx 취소 종료, websocket 쓰기 오류 | 14 |
 | streaminghandler websocket `websocketWrite` 사전 취소 ctx | 로컬 WebSocket, 이미 취소된 ctx 를 넘기면 프레임 0개 전송과 ctx 오류 반환을 단언(페이싱 select 의 ctx 분기는 ticker 와 경합하므로 best-effort 이며 합계에서 제외) | 0 |
 | audiohandler `savePCMAsWAV` 쓰기 오류 | 쓰기가 실패하는 대상(Linux 의 /dev/full) | 1 |
 | streaminghandler `runWebSocketRead` 정상 종료 분기 | 로컬 WebSocket 서버가 정상 종료 close 프레임을 보냄. logrus test hook 으로 Error 항목이 없음과 doneCh 닫힘을 단언 | 1 |
@@ -73,5 +73,5 @@ verify 항목
 1. 수기 합계 80.5% 이상. 측정은 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...` 후 gens/, mock_*.go, DO NOT EDIT 파일을 빼고 같은 블록은 최대 count 로 병합하는 고정 스크립트로 계산하며 묶음마다 반복합니다.
 2. 변경 파일이 bin-tts-manager/ 안에만 있음, 저장소 루트에서 `git fetch origin main` 후 `bash scripts/check-test-conventions.sh` 통과.
 3. `go test -race -count=5 -shuffle=on ./cmd/... ./pkg/streaminghandler/ ./pkg/audiohandler/` 반복 통과.
-4. 변이 검사(각각 대응 테스트가 실패해야 함): runListenNormal 큐 이름 변경 - runListen 큐 이름 테스트, initSignal 의 chDone 전달 제거 - initSignal 테스트, initProm 오류 분기 로그 제거 - initProm 오류 테스트, createClient 지역 상수 변경 또는 오류 래핑 제거 - aws Init 테스트, elevenlabs getVoiceID 우선순위 변경 - 우선순위 테스트, gcp runProcess 의 빈 오디오 건너뜀 반전 - gcp runProcess 테스트, runListenPod 큐 이름 변경 - pod 큐 테스트, tts-control provider 검증 분기 변경 - 검증 오류 테스트, readConnWebsock 의 드롭 분기 제거 - 드롭 테스트, 생성자 필드 대입 누락 - 생성자 테스트, websocketWrite 의 사전 취소 검사(ctx.Err() 반환) 제거 - 사전 취소 ctx 테스트, runWebSocketRead 정상 종료도 Error 로 기록 - 정상 종료 테스트, gcp runProcess 서버 종료 분기의 Stream 정리 제거 - 서버 종료 테스트, aws Init 의 Initiated 이벤트 발행 제거 - aws Init 테스트, tts-control 의 call-id 와 text 검증 제거 - 검증 오류 테스트.
+4. 변이 검사(각각 대응 테스트가 실패해야 함): runListenNormal 큐 이름 변경 - runListen 큐 이름 테스트, initSignal 의 chDone 전달 제거 - initSignal 테스트, initProm 오류 분기 로그 제거 - initProm 오류 테스트, createClient 지역 상수 변경 또는 오류 래핑 제거 - aws Init 테스트, elevenlabs getVoiceID 우선순위 변경 - 우선순위 테스트, gcp runProcess 의 오디오 청크 전송 제거 - 비어 있지 않은 청크 전송 단언, runListenPod 큐 이름 변경 - pod 큐 테스트, tts-control provider 검증 분기 변경 - 검증 오류 테스트, readConnWebsock 의 오류 전달 분기 제거 - 읽기 오류 전달 테스트, 생성자 필드 대입 누락 - 생성자 테스트, websocketWrite 의 사전 취소 검사(ctx.Err() 반환) 제거 - 프레임 0개 단언을 가진 사전 취소 ctx 테스트, runWebSocketRead 정상 종료도 Error 로 기록 - 정상 종료 테스트, gcp runProcess 서버 종료 분기의 Stream 정리 제거 - 서버 종료 테스트, aws Init 의 Initiated 이벤트 발행 제거 - aws Init 테스트, tts-control 의 call-id 와 text 검증 제거 - 검증 오류 테스트.
 5. `go mod tidy` 후 go.mod, go.sum 변경 없음. golangci-lint 통과.
