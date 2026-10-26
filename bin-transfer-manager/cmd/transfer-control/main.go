@@ -41,6 +41,7 @@ func initHandler() (transferhandler.TransferHandler, error) {
 
 	cache, err := initCache()
 	if err != nil {
+		commondatabasehandler.Close(db)
 		return nil, errors.Wrapf(err, "could not initialize the cache")
 	}
 
