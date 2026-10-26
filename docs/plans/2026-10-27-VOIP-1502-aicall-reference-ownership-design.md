@@ -1,11 +1,11 @@
 # VOIP-1502: aicall reference_type allowlist and reference ownership
 
-## 1. Problem
+## 1. Goal
 
-`POST /aicalls` and `POST /service_agents/aicalls` accept `reference_type` and
-`reference_id` and forward them to ai-manager without validating the type or
-checking that the referenced resource belongs to the caller's customer.
-ai-manager looks up an existing aicall by `reference_id` alone.
+`POST /aicalls` and `POST /service_agents/aicalls` take `reference_type` and
+`reference_id`. They validate the type against an allowlist and check that the
+referenced resource belongs to the customer before anything is created, and
+ai-manager looks up an existing aicall by customer and reference id.
 
 ## 2. Behavior after this change
 
@@ -94,8 +94,8 @@ Gomock enforces that no activeflow is created on any refusal. Existing tests
 changed: `Test_AIcallCreate` rows with call references (add `CallV1CallGet`),
 `Test_ServiceAgentAIcallCreate` (mismatch row becomes not-found, harness
 rewritten), tenant isolation test; `Test_AIcallCreate_direct_bindsAndForcesReference`
-unchanged plus one unknown-type row. Direct tokens never reach the helper (no reference lookups are expected in the
-existing direct test). Also: a typed non-not-found error is propagated, type
+unchanged plus one unknown-type row. Direct tokens are forced to none before the helper, so no reference lookup
+happens for them (the existing direct test expects none). Also: a typed non-not-found error is propagated, type
 none with the assistance id omitted keeps the existing 400. Server handler tests: one row each for 400
 and 404 mapping.
 
