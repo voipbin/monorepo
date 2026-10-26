@@ -160,3 +160,15 @@ func (f *fakeAMI) waitAction(t *testing.T) map[string]string {
 		return nil
 	}
 }
+
+// dropConns closes every accepted connection but keeps the listener, so the
+// client can reconnect. The existing close() also closes the listener.
+func (f *fakeAMI) dropConns() {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	for _, c := range f.conns {
+		_ = c.Close()
+	}
+	f.conns = nil
+}
