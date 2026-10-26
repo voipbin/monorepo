@@ -136,7 +136,7 @@ PR2: (RPC 비밀 본문이 내부 RabbitMQ를 평문으로 통과하는 점은 P
 
 ## 8. 환경변수와 배포 선언
 
-신규 환경변수 이름: `NUMBER_SECRET_ENCRYPTION_KEYS` (flag `number_secret_encryption_keys`). `bin-number-manager/komodo/docker-compose.yml`에 `NUMBER_SECRET_ENCRYPTION_KEYS=[[BIN_MANAGER__NUMBER_SECRET_ENCRYPTION_KEYS]]`, `k8s/deployment.yml`에 secret 참조(`optional: true`로 하여 값 주입 전에도 기동)를 선언합니다. 값은 넣지 않습니다. 주의: Komodo 변수 `BIN_MANAGER__NUMBER_SECRET_ENCRYPTION_KEYS`가 배포 전에 만들어져 있지 않으면 compose 치환이 실패할 수 있으므로 변수 생성(빈 값)이 이 PR의 배포 선행 조건입니다(배포 선행 조건으로 PR 본문에 명시). 값이 비어 있어도 기동하며 배포 직후 동작은 환경변수 자격의 Telnyx 단독으로 현재와 같습니다. 운영 값 주입은 infra 범위입니다.
+신규 환경변수 이름: `NUMBER_SECRET_ENCRYPTION_KEYS` (flag `number_secret_encryption_keys`). `bin-number-manager/komodo/docker-compose.yml`에 `NUMBER_SECRET_ENCRYPTION_KEYS=[[BIN_MANAGER__NUMBER_MANAGER_SECRET_ENCRYPTION_KEYS]]`, `k8s/deployment.yml`에 secret 참조(`optional: true`로 하여 값 주입 전에도 기동)를 선언합니다. 값은 넣지 않습니다. 주의: Komodo 변수 `BIN_MANAGER__NUMBER_MANAGER_SECRET_ENCRYPTION_KEYS`가 배포 전에 만들어져 있지 않으면 compose 치환이 실패할 수 있으므로 변수 생성(빈 값)이 이 PR의 배포 선행 조건입니다(배포 선행 조건으로 PR 본문에 명시). 값이 비어 있어도 기동하며 배포 직후 동작은 환경변수 자격의 Telnyx 단독으로 현재와 같습니다. 운영 값 주입은 infra 범위입니다.
 
 ## 9. 보안 점검 항목 (credential 노출 스윕)
 
