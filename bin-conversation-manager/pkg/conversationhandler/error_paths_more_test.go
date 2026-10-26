@@ -3,6 +3,7 @@ package conversationhandler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -32,6 +33,9 @@ import (
 	nmnumber "monorepo/bin-number-manager/models/number"
 	wcwidget "monorepo/bin-webchat-manager/models/widget"
 )
+
+// errDBDown is the injected database failure used to assert that the cause is propagated.
+var errDBDown = errors.New("db down")
 
 // fullMocks bundles the mocks used by the error path tests of this file.
 type fullMocks struct {
@@ -282,6 +286,7 @@ func Test_runExecuteModeFlow_activeflowFailure(t *testing.T) {
 	custID := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 	widgetID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
 	target := "+15550001111"
+	waAccountID := uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc")
 
 	m1 := &message.Message{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), CustomerID: custID}, ConversationID: convID}
 
@@ -310,10 +315,10 @@ func Test_runExecuteModeFlow_activeflowFailure(t *testing.T) {
 			cv: &conversation.Conversation{
 				Identity:  commonidentity.Identity{ID: convID, CustomerID: custID},
 				Type:      conversation.TypeWhatsApp,
-				AccountID: uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+				AccountID: waAccountID,
 			},
 			setup: func(ctx context.Context, m *fullMocks) {
-				m.account.EXPECT().Get(ctx, gomock.Any()).Return(&account.Account{MessageFlowID: flowID}, nil)
+				m.account.EXPECT().Get(ctx, waAccountID).Return(&account.Account{MessageFlowID: flowID}, nil)
 			},
 			expectContains: "could not execute activeflow. account_id",
 		},
@@ -399,11 +404,11 @@ func Test_dbBacked_errors(t *testing.T) {
 		h, m := newFullMocks(mc)
 		ctx := context.Background()
 
-		m.db.EXPECT().ConversationList(ctx, uint64(10), "token", gomock.Any()).Return(nil, fmt.Errorf("db down"))
+		m.db.EXPECT().ConversationList(ctx, uint64(10), "token", gomock.Any()).Return(nil, errDBDown)
 
 		res, err := h.List(ctx, "token", 10, nil)
-		if err == nil || res != nil {
-			t.Errorf("Wrong match. expect: error and nil result, got: %v, %v", res, err)
+		if !errors.Is(err, errDBDown) || res != nil {
+			t.Errorf("Wrong match. expect: the db error and nil result, got: %v, %v", res, err)
 		}
 	})
 
@@ -415,12 +420,12 @@ func Test_dbBacked_errors(t *testing.T) {
 
 		m.util.EXPECT().UUIDCreate().Return(id)
 		m.db.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(nil)
-		m.db.EXPECT().ConversationGet(ctx, id).Return(nil, fmt.Errorf("db down"))
+		m.db.EXPECT().ConversationGet(ctx, id).Return(nil, errDBDown)
 
 		// no webhook event may be published for a conversation that could not be read back.
 		res, err := h.Create(ctx, custID, "n", "d", conversation.TypeMessage, "", self, peer)
-		if err == nil || res != nil {
-			t.Errorf("Wrong match. expect: error and nil result, got: %v, %v", res, err)
+		if !errors.Is(err, errDBDown) || res != nil {
+			t.Errorf("Wrong match. expect: the db error and nil result, got: %v, %v", res, err)
 		}
 	})
 
@@ -431,11 +436,11 @@ func Test_dbBacked_errors(t *testing.T) {
 		ctx := context.Background()
 
 		fields := map[conversation.Field]any{conversation.FieldName: "new name"}
-		m.db.EXPECT().ConversationUpdate(ctx, id, fields).Return(fmt.Errorf("db down"))
+		m.db.EXPECT().ConversationUpdate(ctx, id, fields).Return(errDBDown)
 
 		res, err := h.Update(ctx, id, fields)
-		if err == nil || res != nil {
-			t.Errorf("Wrong match. expect: error and nil result, got: %v, %v", res, err)
+		if !errors.Is(err, errDBDown) || res != nil {
+			t.Errorf("Wrong match. expect: the db error and nil result, got: %v, %v", res, err)
 		}
 	})
 
@@ -447,11 +452,11 @@ func Test_dbBacked_errors(t *testing.T) {
 
 		fields := map[conversation.Field]any{conversation.FieldName: "new name"}
 		m.db.EXPECT().ConversationUpdate(ctx, id, fields).Return(nil)
-		m.db.EXPECT().ConversationGet(ctx, id).Return(nil, fmt.Errorf("db down"))
+		m.db.EXPECT().ConversationGet(ctx, id).Return(nil, errDBDown)
 
 		res, err := h.Update(ctx, id, fields)
-		if err == nil || res != nil {
-			t.Errorf("Wrong match. expect: error and nil result, got: %v, %v", res, err)
+		if !errors.Is(err, errDBDown) || res != nil {
+			t.Errorf("Wrong match. expect: the db error and nil result, got: %v, %v", res, err)
 		}
 	})
 
@@ -461,11 +466,11 @@ func Test_dbBacked_errors(t *testing.T) {
 		h, m := newFullMocks(mc)
 		ctx := context.Background()
 
-		m.db.EXPECT().ConversationUpdate(ctx, id, gomock.Any()).Return(fmt.Errorf("db down"))
+		m.db.EXPECT().ConversationUpdate(ctx, id, gomock.Any()).Return(errDBDown)
 
 		res, err := h.UpdateMetadata(ctx, id, conversation.Metadata{})
-		if err == nil || res != nil {
-			t.Errorf("Wrong match. expect: error and nil result, got: %v, %v", res, err)
+		if !errors.Is(err, errDBDown) || res != nil {
+			t.Errorf("Wrong match. expect: the db error and nil result, got: %v, %v", res, err)
 		}
 	})
 
@@ -476,11 +481,11 @@ func Test_dbBacked_errors(t *testing.T) {
 		ctx := context.Background()
 
 		m.db.EXPECT().ConversationUpdate(ctx, id, gomock.Any()).Return(nil)
-		m.db.EXPECT().ConversationGet(ctx, id).Return(nil, fmt.Errorf("db down"))
+		m.db.EXPECT().ConversationGet(ctx, id).Return(nil, errDBDown)
 
 		res, err := h.UpdateMetadata(ctx, id, conversation.Metadata{})
-		if err == nil || res != nil {
-			t.Errorf("Wrong match. expect: error and nil result, got: %v, %v", res, err)
+		if !errors.Is(err, errDBDown) || res != nil {
+			t.Errorf("Wrong match. expect: the db error and nil result, got: %v, %v", res, err)
 		}
 	})
 }
@@ -501,11 +506,11 @@ func Test_CreateAndExecuteFlow_errors(t *testing.T) {
 		ctx := context.Background()
 
 		m.util.EXPECT().UUIDCreate().Return(id)
-		m.db.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(fmt.Errorf("db down"))
+		m.db.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(errDBDown)
 
 		res, err := h.CreateAndExecuteFlow(ctx, custID, flowID, conversation.TypeWebchat, "", self, peer)
-		if err == nil || res != nil {
-			t.Errorf("Wrong match. expect: error and nil result, got: %v, %v", res, err)
+		if !errors.Is(err, errDBDown) || res != nil {
+			t.Errorf("Wrong match. expect: the db error and nil result, got: %v, %v", res, err)
 		}
 	})
 
@@ -517,11 +522,11 @@ func Test_CreateAndExecuteFlow_errors(t *testing.T) {
 
 		m.util.EXPECT().UUIDCreate().Return(id)
 		m.db.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(nil)
-		m.db.EXPECT().ConversationGet(ctx, id).Return(nil, fmt.Errorf("db down"))
+		m.db.EXPECT().ConversationGet(ctx, id).Return(nil, errDBDown)
 
 		res, err := h.CreateAndExecuteFlow(ctx, custID, flowID, conversation.TypeWebchat, "", self, peer)
-		if err == nil || res != nil {
-			t.Errorf("Wrong match. expect: error and nil result, got: %v, %v", res, err)
+		if !errors.Is(err, errDBDown) || res != nil {
+			t.Errorf("Wrong match. expect: the db error and nil result, got: %v, %v", res, err)
 		}
 	})
 
@@ -558,6 +563,18 @@ func Test_Email_errors(t *testing.T) {
 		Status:       emmemail.StatusDelivered,
 	}
 
+	// the dedup key and the conversation addresses are derived from the normalized targets.
+	normalized := func(a commonaddress.Address) commonaddress.Address {
+		a.Target, _ = commonaddress.NormalizeTarget(a.Type, a.Target)
+		return a
+	}
+	txIDOf := func(dst commonaddress.Address) string {
+		return e.ID.String() + ":" + normalized(dst).Target
+	}
+	self := normalized(*e.Source)
+	dstA, dstB := normalized(e.Destinations[0]), normalized(e.Destinations[1])
+	txA, txB := txIDOf(e.Destinations[0]), txIDOf(e.Destinations[1])
+
 	t.Run("sent: duplicate lookup failure does not stop the other destination", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
@@ -565,13 +582,13 @@ func Test_Email_errors(t *testing.T) {
 		ctx := context.Background()
 
 		gomock.InOrder(
-			m.db.EXPECT().MessageGetsByTransactionID(ctx, gomock.Any(), "", uint64(1)).Return(nil, fmt.Errorf("db down")),
+			m.db.EXPECT().MessageGetsByTransactionID(ctx, txA, "", uint64(1)).Return(nil, errDBDown),
 			// the second destination is already materialized, so it is skipped without a create.
-			m.db.EXPECT().MessageGetsByTransactionID(ctx, gomock.Any(), "", uint64(1)).Return([]*message.Message{{}}, nil),
+			m.db.EXPECT().MessageGetsByTransactionID(ctx, txB, "", uint64(1)).Return([]*message.Message{{}}, nil),
 		)
 
 		err := h.EmailEventSent(ctx, e)
-		if err == nil || !strings.Contains(err.Error(), "could not check existing message") {
+		if !errors.Is(err, errDBDown) || !strings.Contains(err.Error(), "could not check existing message") {
 			t.Errorf("Wrong match. expect: lookup error, got: %v", err)
 		}
 	})
@@ -582,8 +599,10 @@ func Test_Email_errors(t *testing.T) {
 		h, m := newFullMocks(mc)
 		ctx := context.Background()
 
-		m.db.EXPECT().MessageGetsByTransactionID(ctx, gomock.Any(), "", uint64(1)).Return(nil, nil).Times(2)
-		m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("not found")).Times(2)
+		m.db.EXPECT().MessageGetsByTransactionID(ctx, txA, "", uint64(1)).Return(nil, nil)
+		m.db.EXPECT().MessageGetsByTransactionID(ctx, txB, "", uint64(1)).Return(nil, nil)
+		m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, self, dstA).Return(nil, fmt.Errorf("not found"))
+		m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, self, dstB).Return(nil, fmt.Errorf("not found"))
 		m.util.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")).Times(2)
 		m.db.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(fmt.Errorf("create failed")).Times(2)
 
@@ -602,11 +621,10 @@ func Test_Email_errors(t *testing.T) {
 		cvA := &conversation.Conversation{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000001")}}
 		cvB := &conversation.Conversation{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000002")}}
 
-		m.db.EXPECT().MessageGetsByTransactionID(ctx, gomock.Any(), "", uint64(1)).Return(nil, nil).Times(2)
-		gomock.InOrder(
-			m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(cvA, nil),
-			m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, gomock.Any(), gomock.Any()).Return(cvB, nil),
-		)
+		m.db.EXPECT().MessageGetsByTransactionID(ctx, txA, "", uint64(1)).Return(nil, nil)
+		m.db.EXPECT().MessageGetsByTransactionID(ctx, txB, "", uint64(1)).Return(nil, nil)
+		m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, self, dstA).Return(cvA, nil)
+		m.db.EXPECT().ConversationGetBySelfAndPeer(ctx, self, dstB).Return(cvB, nil)
 		// both creates fail; the second destination must still be attempted and the first error is returned.
 		gomock.InOrder(
 			m.message.EXPECT().Create(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, args messagehandler.MessageCreateArgs) (*message.Message, error) {
@@ -635,10 +653,11 @@ func Test_Email_errors(t *testing.T) {
 		h, m := newFullMocks(mc)
 		ctx := context.Background()
 
-		m.db.EXPECT().MessageGetsByTransactionID(ctx, gomock.Any(), "", uint64(1)).Return(nil, fmt.Errorf("db down")).Times(2)
+		m.db.EXPECT().MessageGetsByTransactionID(ctx, txA, "", uint64(1)).Return(nil, errDBDown)
+		m.db.EXPECT().MessageGetsByTransactionID(ctx, txB, "", uint64(1)).Return(nil, errDBDown)
 
 		err := h.EmailEventUpdated(ctx, e)
-		if err == nil || !strings.Contains(err.Error(), "could not find the message") {
+		if !errors.Is(err, errDBDown) || !strings.Contains(err.Error(), "could not find the message") {
 			t.Errorf("Wrong match. expect: lookup error, got: %v", err)
 		}
 	})
