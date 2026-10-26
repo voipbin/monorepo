@@ -67,6 +67,7 @@ func (h *Call) ConvertWebhookMessage() *WebhookMessage {
 		ChainedCallIDs: h.ChainedCallIDs,
 		RecordingID:    h.RecordingID,
 		RecordingIDs:   h.RecordingIDs,
+		GroupcallID:    h.GroupcallID,
 
 		Source:      h.Source,
 		Destination: h.Destination,
