@@ -97,7 +97,7 @@ func Test_Create(t *testing.T) {
 			mockLine.EXPECT().Setup(gomock.Any(), tt.expectAccount).Return(nil)
 			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount).Return(nil)
 			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAccount.CustomerID, account.EventTypeAccountCreated, tt.responseAccount)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAccount.CustomerID, account.EventTypeAccountCreated, tt.responseAccount.ConvertWebhookMessage())
 
 			res, err := h.Create(ctx, tt.customerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token, tt.messageFlowID, json.RawMessage(nil))
 			if err != nil {
@@ -344,7 +344,7 @@ func Test_Update(t *testing.T) {
 			mockDB.EXPECT().AccountUpdate(ctx, tt.id, tt.fields).Return(nil)
 			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
 			mockLine.EXPECT().Setup(ctx, tt.responseAccount).Return(nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAccount.CustomerID, account.EventTypeAccountUpdated, tt.responseAccount)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAccount.CustomerID, account.EventTypeAccountUpdated, tt.responseAccount.ConvertWebhookMessage())
 
 			res, err := h.Update(ctx, tt.id, tt.fields)
 			if err != nil {
@@ -440,7 +440,7 @@ func Test_Delete(t *testing.T) {
 			// Get after delete
 			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
 			// Publish
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAccount.CustomerID, account.EventTypeAccountDeleted, tt.responseAccount)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAccount.CustomerID, account.EventTypeAccountDeleted, tt.responseAccount.ConvertWebhookMessage())
 
 			res, err := h.Delete(ctx, tt.id)
 			if err != nil {

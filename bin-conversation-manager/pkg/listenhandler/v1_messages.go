@@ -18,13 +18,14 @@ import (
 // POST /v1/messages request
 func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1MessagesPost",
-		"request": m,
+		"func":   "processV1MessagesPost",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
 
 	var req request.V1DataMessagesPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
@@ -53,10 +54,11 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 // /v1/messages GET
 func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1MessagesGet",
-		"request": m,
+		"func":   "processV1MessagesGet",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
-	log.WithField("request", m).Debug("Received request.")
+	log.Debug("Received request.")
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -105,13 +107,14 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 // POST /v1/messages/create request
 func (h *listenHandler) processV1MessagesCreatePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1MessagesCreatePost",
-		"request": m,
+		"func":   "processV1MessagesCreatePost",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
 
 	var req request.V1DataMessagesCreatePost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. err: %v", err)
 		return simpleResponse(400), nil
 	}
 

@@ -74,9 +74,9 @@ func (h *lineHandler) hookEventHandle(ctx context.Context, ac *account.Account, 
 	}
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "hookEventHandle",
-		"customer_id": ac,
-		"event":       e,
+		"func":       "hookEventHandle",
+		"account_id": ac.ID,
+		"event":      e,
 	})
 
 	switch e.Type {
@@ -104,9 +104,9 @@ func (h *lineHandler) hookEventHandle(ctx context.Context, ac *account.Account, 
 // hookEventTypeFollow handles line's follow event.
 func (h *lineHandler) hookEventTypeFollow(ctx context.Context, ac *account.Account, e *linebot.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "hookEventTypeFollow",
-		"customer_id": ac,
-		"event":       e,
+		"func":       "hookEventTypeFollow",
+		"account_id": ac.ID,
+		"event":      e,
 	})
 	log.Debugf("Handleing the Line follow.")
 
@@ -150,9 +150,9 @@ func (h *lineHandler) hookEventTypeFollow(ctx context.Context, ac *account.Accou
 // hookEventTypeMessage handles line's message type event.
 func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Account, e *linebot.Event) (*HookResult, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "hookEventTypeMessage",
-		"customer_id": ac,
-		"event":       e,
+		"func":       "hookEventTypeMessage",
+		"account_id": ac.ID,
+		"event":      e,
 	})
 	log.WithField("event", e).Debugf("Handleing the Line message.")
 
@@ -241,9 +241,9 @@ func (h *lineHandler) getDialogID(e *linebot.Event) string {
 // GetPeer returns a participant
 func (h *lineHandler) GetPeer(ctx context.Context, ac *account.Account, userID string) (*commonaddress.Address, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "getParticipant",
-		"customer_id": ac,
-		"user_id":     userID,
+		"func":       "getParticipant",
+		"account_id": ac.ID,
+		"user_id":    userID,
 	})
 	log.Debug("Getting the participant info.")
 

@@ -21,8 +21,9 @@ import (
 // /v1/conversations GET
 func (h *listenHandler) processV1ConversationsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1ConversationsGet",
-		"request": m,
+		"func":   "processV1ConversationsGet",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
 
 	u, err := url.Parse(m.URI)
@@ -89,13 +90,14 @@ func (h *listenHandler) processV1ConversationsGet(ctx context.Context, m *sock.R
 // POST /v1/conversations request
 func (h *listenHandler) processV1ConversationsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1ConversationsPost",
-		"request": m,
+		"func":   "processV1ConversationsPost",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
 
 	var req request.V1DataConversationsPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
@@ -169,8 +171,9 @@ func (h *listenHandler) processV1ConversationsIDGet(ctx context.Context, req *so
 // /v1/conversations/{id} PUT
 func (h *listenHandler) processV1ConversationsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1ConversationsIDPut",
-		"request": m,
+		"func":   "processV1ConversationsIDPut",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -237,13 +240,14 @@ func (h *listenHandler) processV1ConversationsIDPut(ctx context.Context, m *sock
 // resulting Conversation.
 func (h *listenHandler) processV1ConversationsGetOrCreateBySelfAndPeerPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1ConversationsGetOrCreateBySelfAndPeerPost",
-		"request": m,
+		"func":   "processV1ConversationsGetOrCreateBySelfAndPeerPost",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
 
 	var req request.V1DataConversationsGetOrCreateBySelfAndPeerPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
@@ -280,13 +284,14 @@ func (h *listenHandler) processV1ConversationsGetOrCreateBySelfAndPeerPost(ctx c
 // this always creates a new Conversation rather than deduping.
 func (h *listenHandler) processV1ConversationsCreateAndExecuteFlowPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1ConversationsCreateAndExecuteFlowPost",
-		"request": m,
+		"func":   "processV1ConversationsCreateAndExecuteFlowPost",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
 
 	var req request.V1DataConversationsCreateAndExecuteFlowPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
@@ -333,7 +338,7 @@ func (h *listenHandler) processV1ConversationsIDMetadataPut(ctx context.Context,
 
 	var req request.V1DataConversationsIDMetadataPut
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. err: %v", err)
 		return simpleResponse(400), nil
 	}
 

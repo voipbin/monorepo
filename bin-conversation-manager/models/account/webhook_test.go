@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/gofrs/uuid"
 )
 
 func TestConvertWebhookMessage(t *testing.T) {
@@ -120,5 +122,47 @@ func TestCreateWebhookEvent(t *testing.T) {
 				t.Errorf("provider_data in JSON: got %v, want %v. JSON: %s", hasProviderData, tt.expectProviderDataInJSON, b)
 			}
 		})
+	}
+}
+
+func Test_WebhookMessage_CreateWebhookEvent(t *testing.T) {
+	ac := &Account{
+		Type:   TypeWhatsApp,
+		Name:   "WhatsApp Support",
+		Secret: "SENTINELsecret123",
+		Token:  "SENTINELtoken456",
+	}
+	ac.ID = uuid.FromStringOrNil("5c1d3a52-5d7e-4e0c-9f6a-0a1b2c3d4e5f")
+
+	b, err := ac.ConvertWebhookMessage().CreateWebhookEvent()
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	var raw map[string]any
+	if errUnmarshal := json.Unmarshal(b, &raw); errUnmarshal != nil {
+		t.Fatalf("Could not unmarshal the event: %v", errUnmarshal)
+	}
+	for _, key := range []string{"secret", "token"} {
+		if _, ok := raw[key]; ok {
+			t.Errorf("The event must not contain %q. JSON: %s", key, b)
+		}
+	}
+	if strings.Contains(string(b), "SENTINEL") {
+		t.Errorf("The event carries a credential value. JSON: %s", b)
+	}
+
+	// the customer webhook body is the same bytes as before
+	expect, err := ac.CreateWebhookEvent()
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if !bytes.Equal(b, expect) {
+		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", expect, b)
+	}
+
+	// the subscription address is the account id
+	if res := ac.ConvertWebhookMessage().EventSubscriptionID(); res != ac.ID.String() {
+		t.Errorf("Wrong subscription id. expect: %s, got: %s", ac.ID, res)
 	}
 }

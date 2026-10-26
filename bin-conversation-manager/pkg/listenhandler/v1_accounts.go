@@ -22,8 +22,9 @@ import (
 // /v1/accounts GET
 func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AccountsGet",
-		"request": m,
+		"func":   "processV1AccountsGet",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
 
 	u, err := url.Parse(m.URI)
@@ -61,7 +62,7 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Reques
 
 	data, err := json.Marshal(webhookMessages)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmps, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -78,13 +79,14 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Reques
 // POST /v1/accounts request
 func (h *listenHandler) processV1AccountsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AccountsPost",
-		"request": m,
+		"func":   "processV1AccountsPost",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
 
 	var req request.V1DataAccountsPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
@@ -96,7 +98,7 @@ func (h *listenHandler) processV1AccountsPost(ctx context.Context, m *sock.Reque
 
 	data, err := json.Marshal(tmp.ConvertWebhookMessage())
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -132,7 +134,7 @@ func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, req *sock.Re
 
 	data, err := json.Marshal(tmp.ConvertWebhookMessage())
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -149,8 +151,9 @@ func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, req *sock.Re
 // /v1/accounts/{id} PUT
 func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AccountsIDPut",
-		"request": m,
+		"func":   "processV1AccountsIDPut",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -212,7 +215,7 @@ func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *sock.Requ
 
 	data, err := json.Marshal(tmp.ConvertWebhookMessage())
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -229,8 +232,9 @@ func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *sock.Requ
 // /v1/accounts/{id} DELETE
 func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AccountsIDDelete",
-		"request": m,
+		"func":   "processV1AccountsIDDelete",
+		"uri":    m.URI,
+		"method": m.Method,
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -249,7 +253,7 @@ func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *sock.R
 
 	data, err := json.Marshal(tmp.ConvertWebhookMessage())
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
