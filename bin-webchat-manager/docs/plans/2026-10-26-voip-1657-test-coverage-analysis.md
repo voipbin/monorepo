@@ -36,3 +36,11 @@ Handlers (about 64 statements), `dbhandler` (about 40), `listenhandler` (2), `cm
 ## 5. Constraints
 
 Tests only, inside bin-webchat-manager. No product code change, no signature or visibility change. Synthetic data, no network, no time dependence.
+
+## 6. Isolation notes
+
+- A second SQLite database must be a private one (`:memory:` without `cache=shared`) with `SetMaxOpenConns(1)`; the shared one used by the existing tests is never modified. A closed `*sql.DB` is the simplest way to make exec and query fail. A scan failure needs the same columns as `scripts/database_scripts_test` with a non-numeric text value in a numeric column.
+- `initSignal` registers process-wide signal handling: call it once, drive it through `chSigs` (no real signal), drain `chDone`, and call `signal.Stop(chSigs)` in cleanup.
+- `initCommand` uses the global viper: reset it after the test.
+- `widgethandler` and `sessionhandler` use the real UUID generator unless a mock is injected into the `utilHandler` field; expectations use the injected mock or `gomock.Any()` for generated ids.
+- Measured at origin/main 161e9748bb4d94228deb71fab41f734fb5e1307c.
