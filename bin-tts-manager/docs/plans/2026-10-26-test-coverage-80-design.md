@@ -28,7 +28,7 @@
 
 ## 3. 도달 가능 상한
 
-외부 연결(GCP 클라이언트 생성, ElevenLabs 상수 호스트 접속, RabbitMQ, DB, Redis)이 필요한 생성자와 main, json.Marshal 및 squirrel 빌드 오류, PrepareFields 오류는 제외합니다. 시그니처 변경 없이 테스트 가능한 분기만 합산한 추정 상한은 아래 표의 합 약 119개(독립 재계산 117~147, 키프얼라이브 등 보충 항목 별도)로, 필요한 101개를 넘으므로 block 없이 진행합니다.
+외부 연결(GCP 클라이언트 생성, ElevenLabs 상수 호스트 접속, RabbitMQ, DB, Redis)이 필요한 생성자와 main, json.Marshal 및 squirrel 빌드 오류, PrepareFields 오류는 제외합니다. 시그니처 변경 없이 테스트 가능한 분기만 합산한 추정 상한은 아래 표의 합 약 118개(독립 재계산 117~147, 키프얼라이브 등 보충 항목 별도)로, 필요한 101개를 넘으므로 block 없이 진행합니다.
 
 ## 4. 추가할 테스트 (모두 로컬 전용, 외부 네트워크 없음)
 
@@ -60,10 +60,10 @@
 항목별 규칙
 
 - tts-control initCommand: `SetArgs`, `SetOut`, `SetErr`, `SilenceUsage` 를 쓰고 `tts create` 는 검증 오류(call-id 누락, 잘못된 UUID, text 누락, 잘못된 provider)로만 종료시킵니다. 유효 입력은 initHandler 가 RabbitMQ 에 연결하므로 금지이고 `migrate` 하위 명령은 실행하지 않으며 `cobra.CheckErr` 와 `log.Fatalf` 가 `os.Exit` 를 부르는 경로는 피합니다. viper `AutomaticEnv` 로 호스트의 TEXT, PROVIDER, LANG 같은 환경 변수가 검증 경로에 새지 않도록 `t.Setenv` 로 비웁니다.
-- tts-manager runListen*: 큐 이름은 `gomock.Any` 가 아닌 정확한 값(일반 큐 이름과 `%s.%s` pod 큐. `QueueCreate` 의 첫 인자로 단언하며 지연 큐 인자는 `Run` 이 쓰지 않으므로 대상이 아닙니다)으로 매칭합니다. `Run` 은 QueueCreate 성공 뒤 `go ConsumeRPC(...)` 를 띄우므로 ConsumeRPC 의 `DoAndReturn` 에서 채널로 동기화하고 normal 과 pod 두 번 모두 기다립니다. runListen 의 panic 은 recover 로 잡아 메시지를 단언합니다.
+- tts-manager runListen*: 큐 이름은 `gomock.Any` 가 아닌 정확한 값(일반 큐 이름과 `%s.%s` pod 큐. `QueueCreate` 의 첫 인자로 단언하며 지연 큐 인자는 `Run` 이 쓰지 않으므로 대상이 아닙니다)으로 매칭합니다. `Run` 은 QueueCreate 성공 뒤 `go ConsumeRPC(...)` 를 띄우므로 ConsumeRPC 의 `DoAndReturn` 에서 채널로 동기화하고 normal 과 pod 두 번 모두 기다립니다. runListen 의 panic 은 recover 로 잡아 메시지를 단언하며, normal 큐가 성공하고 pod 큐가 실패하는 케이스에서도 normal 의 `ConsumeRPC` goroutine 을 기다린 뒤 끝냅니다.
 - initSignal: 호출마다 goroutine 하나와 `signal.Notify` 가 남으므로 호출 1회당 `chSigs` 에 정확히 1개를 주입하고 `chDone` 을 소비하며 cleanup 에서 `signal.Stop(chSigs)` 를 호출합니다. 실제 OS 시그널은 보내지 않습니다. runDaemon 오류 경로도 initSignal 을 부르므로 같은 규칙을 씁니다.
 - initProm: `DefaultServeMux` 에 등록 해제 수단이 없고 같은 패턴 재등록은 panic 이므로 등록 호출을 한 건으로 최소화하고 endpoint 에 원자 카운터를 붙여 `-count` 반복마다 고유하게 합니다. ListenAndServe 오류는 잘못된 listen 주소(예: 포트 누락)로 즉시 발생시키며 logrus test hook 을 채널로 기다려 관측하고 cleanup 에서 hook 을 복구합니다.
-- runDaemon: 잘못된 DSN 이 `sql.Open` 단계에서 실패하는 경로만 사용하고 네트워크 접속 경로는 쓰지 않습니다.
+- runDaemon: `config.Get().PrometheusEndpoint` 와 `PrometheusListenAddress` 는 빈 값으로 두어 initProm 이 비활성 분기로 가게 합니다(값이 있으면 `DefaultServeMux` 에 등록됨). 잘못된 DSN 이 `sql.Open` 단계에서 실패하는 경로만 사용하고 네트워크 접속 경로는 쓰지 않습니다.
 - aws Init/createClient: `t.Setenv` 로 `AWS_PROFILE`, `AWS_CONFIG_FILE`, `AWS_SHARED_CREDENTIALS_FILE`(임시 빈 파일), `AWS_EC2_METADATA_DISABLED=true`, `AWS_ENDPOINT_URL*` 를 지정해 호스트 설정을 차단합니다. 오류 분기는 존재하지 않는 `AWS_PROFILE` 로 유도해 Init 의 오류 래핑을 확인하고, 성공 경로에서는 `client.Options().Region` 이 `eu-central-1` 임을 단언하고 만든 `AWSConfig` 의 `Cancel` 은 cleanup 에서 호출합니다.
 - gcp runProcess: 가짜 `StreamingSynthesizeClient` 의 `Recv` 는 채널 기반이고 ctx 취소로 풀립니다. `CloseSend` 를 구현해 호출 여부를 기록하고 `Client` 는 nil 로 둡니다. `GCPConfig` 의 `Ctx`, `StreamCtx`, `StreamCancel`, `processDone` 를 모두 초기화합니다. PlayStarted 와 PlayFinished 이벤트를 mock 으로 EXPECT 하고 끝에서 `processDone` 이 닫혔는지 채널로 기다립니다. 서버 종료 케이스는 사후 `Stream == nil` 과 `CloseSend` 1회를, ctx 취소 케이스는 가짜 `Recv` 가 호출에 진입했음을 알리는 채널로 동기화한 뒤 취소하고(루프 상단 검사로 빠지지 않게), websocket 쓰기 오류는 닫힌 로컬 연결로 유도합니다.
 - savePCMAsWAV 쓰기 오류: `/dev/full` 이 없거나 열 수 없으면 `t.Skip` 합니다(1 stmt 이므로 80.5% 에 영향 없음).
