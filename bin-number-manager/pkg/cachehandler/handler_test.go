@@ -293,3 +293,15 @@ func Test_NumberSet_second_key_failure(t *testing.T) {
 		t.Errorf("Wrong match. expect: number key missing, got: exists")
 	}
 }
+
+func Test_setSerialize_unencodable(t *testing.T) {
+	h, mr := newTestHandler(t)
+
+	err := h.setSerialize(context.Background(), "unencodable-key", make(chan int))
+	if err == nil {
+		t.Errorf("Wrong match. expect: an error, got: nil")
+	}
+	if mr.Exists("unencodable-key") {
+		t.Errorf("Wrong match. expect: nothing stored for the key")
+	}
+}
