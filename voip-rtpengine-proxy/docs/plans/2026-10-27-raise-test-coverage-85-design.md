@@ -13,7 +13,7 @@ Measured with `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...`; du
 
 ## Tests
 
-1. `cmd/rtpengine-proxy/main_test.go`
+1. `cmd/rtpengine-proxy/main_run_test.go`
    - `Test_main_unknownInterface`: set `interfaceName` to a missing interface (restored in `t.Cleanup`), run `main()` in a goroutine, require it to return within a deadline, assert the "Could not get proxy ID" error log and no "Proxy ID:" info log.
    - `Test_initProm_listenerBusy`: keep a loopback listener in a package variable and never close it (closing lets the retry goroutine bind the port); call `initProm` with an endpoint made unique by a counter (a duplicate pattern panics) and wait for "Could not start prometheus listener" with that listener address in the entry (earlier `-count` iterations leave retry goroutines logging the same text). The retry goroutine leak is intentional; the test is safe with `-count=3`.
 2. `pkg/ngclient`: `Test_newNGClient_dialError` dials `[fe80::1]:1` (a link-local address without zone fails with `invalid argument`), asserts the "dial RTPEngine NG" error prefix, and fails (no skip) if the dial succeeds.
@@ -22,7 +22,7 @@ Measured with `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...`; du
    - `Test_scanAndProcess_processingRetryFails`: an invalid `.processing` file is retried by the scan; assert the retry-failure log.
    - `Test_processProcessingFile_cleanupFailures`: inside the `Upload` mock replace the pcap path (case 1) or the `.processing` path (case 2) with a non-empty directory so `os.Remove` fails with `ENOTEMPTY` regardless of uid; assert nil return, one upload and the matching warning log.
    - `Test_Run_metadataDirRemoved`: the startup scan's `Upload` mock removes the metadata dir so `fsWatcher.Add` fails; assert the "could not watch metadata dir" error.
-   - `Test_Run_processFailureWarning`: `Run` in a goroutine; because there is no readiness signal, create a directory in the metadata dir repeatedly (read fails) until the exact "failed to process metadata file" warning (not the `... on scan` variant) appears or a 5s deadline passes; on exit cancel the context and wait for `Run` to return before the temp dir is removed.
+   - `Test_Run_processFailureWarning`: `Run` in a goroutine; because there is no readiness signal, create a directory in the metadata dir repeatedly (read fails) until the exact "failed to process metadata file" warning (not the `... on scan` variant) appears or a 10s deadline passes; on exit cancel the context and wait for `Run` to return before the temp dir is removed.
 5. `pkg/processmanager` (fake tcpdump and the `TestMain` `/tmp` lock are reused)
    - safety timeout kill failure: `Exec` with `time.Hour`, take `m.mu`, delete the entry, then `tracked.timer.Reset(1ms)`; assert the "Safety timeout kill failed for <id>" log; the detached process is killed and waited, and `/tmp/<id>.pcap` removed, in `t.Cleanup`.
    - SIGTERM failure: inject a `trackedProcess` with a command that has already finished (`cmd.Run()`) and a non-nil `time.AfterFunc(time.Hour, ...)` timer (`killAndUpload` always stops it); assert the "Could not send SIGTERM" log and the returned pcap path.
