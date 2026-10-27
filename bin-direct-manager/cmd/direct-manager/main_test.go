@@ -107,7 +107,8 @@ func Test_runSubscribe(t *testing.T) {
 // with `go signalHandler()` consumes it and reports on chDone. The test never calls
 // signalHandler itself, because that would race with the init goroutine for the same
 // value, and it assumes -count=1 because the init goroutine consumes only one value per
-// process. No other test in this package may use chSigs or chDone.
+// process. No other test in this package may use chSigs; the run tests use chDone only
+// through run itself and drain it afterwards, and never run in parallel.
 func Test_signalHandler_viaInit(t *testing.T) {
 	chSigs <- syscall.SIGTERM
 
