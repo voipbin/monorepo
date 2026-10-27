@@ -709,3 +709,15 @@ func Test_delErrors(t *testing.T) {
 		})
 	}
 }
+
+func Test_setSerializeWithExpiration_unencodableValue(t *testing.T) {
+	h, mr := setupHandler(t)
+
+	err := h.setSerializeWithExpiration(context.Background(), "case_key", map[string]any{"case": make(chan int)}, time.Minute)
+	if err == nil {
+		t.Fatalf("Wrong match. expect an encoding error, got: nil")
+	}
+	if mr.Exists("case_key") {
+		t.Errorf("Wrong match. nothing must be stored when the value cannot be encoded")
+	}
+}

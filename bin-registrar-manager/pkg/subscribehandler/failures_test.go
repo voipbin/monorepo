@@ -167,3 +167,37 @@ func Test_processEventRun_dispatchesAsynchronously(t *testing.T) {
 		t.Fatalf("Wrong match. the handler was never called")
 	}
 }
+
+// Test_Run_consumeFailureIsLogged verifies that a failure of the asynchronous consumer is
+// logged by the goroutine that started it (Run itself has already returned nil).
+func Test_Run_consumeFailureIsLogged(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	queueName := string(commonoutline.QueueNameRegistrarSubscribe)
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil)
+	mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil)
+	mockSock.EXPECT().QueueBind(queueName, gomock.Any(), string(commonoutline.QueueNameEvent), false, nil).Return(nil).MinTimes(1)
+	mockSock.EXPECT().ConsumeMessage(gomock.Any(), queueName, string(commonoutline.ServiceNameRegistrarManager), false, false, false, 10, gomock.Any()).Return(errInjectedSubscribe)
+
+	oldHooks := logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+	hook := logrustest.NewGlobal()
+	t.Cleanup(func() { logrus.StandardLogger().ReplaceHooks(oldHooks) })
+
+	h := NewSubscribeHandler(mockSock, queueName, nil, nil, nil)
+	if err := h.Run(); err != nil {
+		t.Fatalf("Wrong match. expect: nil, got: %v", err)
+	}
+
+	deadline := time.Now().Add(5 * time.Second)
+	for time.Now().Before(deadline) {
+		for _, entry := range hook.AllEntries() {
+			if strings.Contains(entry.Message, "Could not consume the request message correctly") && strings.Contains(entry.Message, errInjectedSubscribe.Error()) {
+				return
+			}
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Errorf("Wrong match. expect: the consumer failure to be logged with its cause")
+}
