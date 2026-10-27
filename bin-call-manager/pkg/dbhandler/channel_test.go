@@ -19,6 +19,7 @@ import (
 )
 
 func Test_ChannelCreate(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -171,6 +172,7 @@ func Test_ChannelCreate(t *testing.T) {
 }
 
 func Test_ChannelGet(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -242,6 +244,8 @@ func Test_ChannelGet(t *testing.T) {
 }
 
 func Test_ChannelEndAndDelete(t *testing.T) {
+	resetTestDB(t)
+
 	type test struct {
 		name string
 
@@ -322,6 +326,7 @@ func Test_ChannelEndAndDelete(t *testing.T) {
 }
 
 func Test_ChannelSetStateAnswer(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -408,6 +413,7 @@ func Test_ChannelSetStateAnswer(t *testing.T) {
 }
 
 func Test_ChannelSetStateRinging(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -521,6 +527,7 @@ func Test_ChannelSetStateRinging(t *testing.T) {
 }
 
 func Test_ChannelSetStasis(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -605,6 +612,7 @@ func Test_ChannelSetStasis(t *testing.T) {
 }
 
 func Test_ChannelSetType(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -769,6 +777,7 @@ func Test_ChannelSetType(t *testing.T) {
 }
 
 func Test_ChannelSetData(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -885,6 +894,7 @@ func Test_ChannelSetData(t *testing.T) {
 }
 
 func Test_ChannelSetStasisInfo(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name    string
@@ -1009,6 +1019,7 @@ func Test_ChannelSetStasisInfo(t *testing.T) {
 }
 
 func Test_ChannelSetBridgeID(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -1121,6 +1132,7 @@ func Test_ChannelSetBridgeID(t *testing.T) {
 }
 
 func Test_ChannelSetSIPTransport(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -1321,6 +1333,7 @@ func Test_ChannelSetSIPTransport(t *testing.T) {
 }
 
 func Test_ChannelSetSIPCallID(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -1408,6 +1421,7 @@ func Test_ChannelSetSIPCallID(t *testing.T) {
 }
 
 func Test_ChannelSetDirection(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -1550,6 +1564,7 @@ func Test_ChannelSetDirection(t *testing.T) {
 }
 
 func Test_ChannelSetMuteDirection(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -1633,6 +1648,7 @@ func Test_ChannelSetMuteDirection(t *testing.T) {
 }
 
 func Test_ChannelList(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name     string
@@ -1745,13 +1761,14 @@ func Test_ChannelList(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", describeList(tt.expectRes), describeList(res))
 			}
 		})
 	}
 }
 
 func Test_ChannelListForRecovery(t *testing.T) {
+	resetTestDB(t)
 
 	type testChannel struct {
 		channel  *channel.Channel

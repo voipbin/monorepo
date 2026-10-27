@@ -16,6 +16,8 @@ import (
 )
 
 func Test_OwnershipPeriodsLockAndResolveTx_Failures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	customerID := uuid.FromStringOrNil("da000000-0000-0000-0000-000000000001")
 	contactID := uuid.FromStringOrNil("da000000-0000-0000-0000-000000000002")
@@ -146,6 +148,8 @@ func Test_OwnershipPeriodsLockAndResolveTx_Failures(t *testing.T) {
 }
 
 func Test_OwnershipPeriodsLockAndResolveTx_ForUpdateSuffix(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	customerID := uuid.FromStringOrNil("da000000-0000-0000-0000-000000000011")
 	contactID := uuid.FromStringOrNil("da000000-0000-0000-0000-000000000012")
@@ -171,6 +175,8 @@ func Test_OwnershipPeriodsLockAndResolveTx_ForUpdateSuffix(t *testing.T) {
 // A closed period of another contact without a start time counts as an
 // intervening owner, so the contact gets a new period instead of a reopen.
 func Test_OwnershipPeriodsLockAndResolveTx_InterveningWithoutStart(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	customerID := uuid.FromStringOrNil("da000000-0000-0000-0000-000000000021")
 	contactID := uuid.FromStringOrNil("da000000-0000-0000-0000-000000000022")
@@ -199,6 +205,8 @@ func Test_OwnershipPeriodsLockAndResolveTx_InterveningWithoutStart(t *testing.T)
 }
 
 func Test_ownershipAgreementHoldsTx_Results(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	customerID := uuid.FromStringOrNil("da000000-0000-0000-0000-000000000031")
 	blockingID := uuid.FromStringOrNil("da000000-0000-0000-0000-000000000032")
@@ -288,6 +296,8 @@ func Test_ownershipAgreementHoldsTx_Results(t *testing.T) {
 }
 
 func Test_ownershipPeriodWrites_Failures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	customerID := uuid.FromStringOrNil("da000000-0000-0000-0000-000000000041")
 	contactID := uuid.FromStringOrNil("da000000-0000-0000-0000-000000000042")
@@ -351,6 +361,8 @@ func Test_ownershipPeriodWrites_Failures(t *testing.T) {
 }
 
 func Test_ownershipPeriodLatestClosedValidTo_SkipsOpenPeriods(t *testing.T) {
+	resetTestDB(t)
+
 	early := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
 	late := time.Date(2026, 10, 5, 0, 0, 0, 0, time.UTC)
 
@@ -371,6 +383,8 @@ func Test_ownershipPeriodLatestClosedValidTo_SkipsOpenPeriods(t *testing.T) {
 }
 
 func Test_applyOpenResolutionTx_Branches(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	customerID := uuid.FromStringOrNil("da000000-0000-0000-0000-000000000051")
 	contactID := uuid.FromStringOrNil("da000000-0000-0000-0000-000000000052")

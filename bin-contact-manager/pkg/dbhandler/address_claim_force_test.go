@@ -26,6 +26,8 @@ import (
 // weirdness is introduced. This is the baseline regression guard for
 // DESIGN.md §8's "force 없음/false: 기존 계약 100% 유지" bullet.
 func Test_AddressClaim_Force_False_UnresolvedTarget_Unaffected(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 7, 26, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -61,6 +63,8 @@ func Test_AddressClaim_Force_False_UnresolvedTarget_Unaffected(t *testing.T) {
 // (force absent/false) contract is unchanged: claiming an address already
 // owned by a DIFFERENT, live contact returns ErrConflict.
 func Test_AddressClaim_Force_False_LiveOwner_Conflict(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 7, 26, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -99,6 +103,8 @@ func Test_AddressClaim_Force_False_LiveOwner_Conflict(t *testing.T) {
 // an unresolved address is a harmless no-op path -- it behaves the same as
 // force=false (DESIGN.md §8: "force가 무해한 no-op으로 동작하는지").
 func Test_AddressClaim_Force_True_Unresolved_NoOp(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 7, 26, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -137,6 +143,8 @@ func Test_AddressClaim_Force_True_Unresolved_NoOp(t *testing.T) {
 // table with the previous owner's period CLOSED and the new owner's
 // period OPEN (DESIGN.md §8's "DB 레벨로 직접 검증" requirement).
 func Test_AddressClaim_Force_True_LiveOwner_ReassignsAndClosesPeriod(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 7, 26, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -197,6 +205,8 @@ func Test_AddressClaim_Force_True_LiveOwner_ReassignsAndClosesPeriod(t *testing.
 // code paths using staleRowRepairTx vs closeOwnOpenPeriodTx). Both
 // force=true and force=false must behave identically here.
 func Test_AddressClaim_Force_True_TombstonedOwner_SameAsBefore(t *testing.T) {
+	resetTestDB(t)
+
 	for i, force := range []bool{true, false} {
 		t.Run(boolLabel(force), func(t *testing.T) {
 			h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 7, 26, 0, 0, 0, 0, time.UTC)))
@@ -250,6 +260,8 @@ func boolLabel(b bool) string {
 // filter on AddressList -- an exact match on the target column, using the
 // same filters-map pattern as the existing `type` filter.
 func Test_AddressList_TargetFilter(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

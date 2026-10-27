@@ -25,6 +25,7 @@ import (
 )
 
 func Test_CallCreate(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name            string
@@ -238,6 +239,7 @@ func Test_CallCreate(t *testing.T) {
 }
 
 func Test_CallList(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name  string
@@ -369,6 +371,7 @@ func Test_CallList(t *testing.T) {
 }
 
 func Test_CallList_delete(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name  string
@@ -481,6 +484,8 @@ func Test_CallList_delete(t *testing.T) {
 }
 
 func Test_CallSetBridgeID(t *testing.T) {
+	resetTestDB(t)
+
 	type test struct {
 		name string
 
@@ -577,6 +582,8 @@ func Test_CallSetBridgeID(t *testing.T) {
 }
 
 func Test_CallSetStatus(t *testing.T) {
+	resetTestDB(t)
+
 	type test struct {
 		name string
 
@@ -681,6 +688,7 @@ func Test_CallSetStatus(t *testing.T) {
 }
 
 func Test_CallGetByChannelID(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -823,6 +831,7 @@ func Test_CallGetByChannelID(t *testing.T) {
 }
 
 func Test_CallSetHangup(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -936,6 +945,7 @@ func Test_CallSetHangup(t *testing.T) {
 }
 
 func Test_CallSetFlowID(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -1028,6 +1038,7 @@ func Test_CallSetFlowID(t *testing.T) {
 }
 
 func Test_CallSetConfbridgeID(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -1118,6 +1129,7 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 }
 
 func Test_CallSetActionAndActionNextHold(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -1298,6 +1310,7 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 }
 
 func Test_CallSetMasterCallID(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name         string
@@ -1421,6 +1434,7 @@ func Test_CallSetMasterCallID(t *testing.T) {
 }
 
 func Test_CallSetRecordingID(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name     string
@@ -1551,6 +1565,7 @@ func Test_CallSetRecordingID(t *testing.T) {
 // CallAddChainedCallID/CallRemoveChainedCallID also have no unit tests.
 
 func Test_CallSetForRouteFailover(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -1648,6 +1663,7 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 }
 
 func Test_CallSetActionNextHold(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -1767,6 +1783,7 @@ func Test_CallSetActionNextHold(t *testing.T) {
 }
 
 func Test_CallDelete(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -1859,6 +1876,8 @@ func Test_CallDelete(t *testing.T) {
 }
 
 func Test_CallSetData(t *testing.T) {
+	resetTestDB(t)
+
 	type test struct {
 		name string
 		call *call.Call
@@ -1956,6 +1975,8 @@ func Test_CallSetData(t *testing.T) {
 }
 
 func Test_CallSetMuteDirection(t *testing.T) {
+	resetTestDB(t)
+
 	type test struct {
 		name string
 		call *call.Call

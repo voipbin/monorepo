@@ -14,6 +14,8 @@ import (
 )
 
 func Test_Channel_cov2_singleGetFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	cols := commondatabasehandler.GetDBFields(&channel.Channel{})
 	id := "channel-cov2-1"
@@ -40,6 +42,8 @@ func Test_Channel_cov2_singleGetFailures(t *testing.T) {
 }
 
 func Test_Channel_cov2_ChannelGet_cacheHit(t *testing.T) {
+	resetTestDB(t)
+
 	id := "channel-cov2-2"
 	want := &channel.Channel{}
 	want.ID = id
@@ -60,6 +64,8 @@ func Test_Channel_cov2_ChannelGet_cacheHit(t *testing.T) {
 }
 
 func Test_Channel_cov2_listFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	cols := commondatabasehandler.GetDBFields(&channel.Channel{})
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -87,6 +93,8 @@ func Test_Channel_cov2_listFailures(t *testing.T) {
 }
 
 func Test_Channel_cov2_updateToCache(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	cols := commondatabasehandler.GetDBFields(&channel.Channel{})
 
@@ -100,6 +108,8 @@ func Test_Channel_cov2_updateToCache(t *testing.T) {
 }
 
 func Test_Channel_cov2_writeFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	ts := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
 
@@ -134,6 +144,8 @@ func Test_Channel_cov2_writeFailures(t *testing.T) {
 }
 
 func Test_Channel_cov2_channelUpdate_emptyFields(t *testing.T) {
+	resetTestDB(t)
+
 	e := newCov2Env(t)
 
 	if err := e.h.channelUpdate(context.Background(), "channel-cov2-6", map[channel.Field]any{}); err != nil {

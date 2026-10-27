@@ -13,6 +13,8 @@ import (
 )
 
 func Test_ExternalMediaGet(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name            string
 		externalMediaID uuid.UUID
@@ -67,6 +69,8 @@ func Test_ExternalMediaGet(t *testing.T) {
 }
 
 func Test_ExternalMediaGetByReferenceID(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name        string
 		referenceID uuid.UUID
@@ -121,6 +125,8 @@ func Test_ExternalMediaGetByReferenceID(t *testing.T) {
 }
 
 func Test_ExternalMediaSet(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name      string
 		data      *externalmedia.ExternalMedia
@@ -170,6 +176,8 @@ func Test_ExternalMediaSet(t *testing.T) {
 }
 
 func Test_ExternalMediaDelete(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name            string
 		externalMediaID uuid.UUID

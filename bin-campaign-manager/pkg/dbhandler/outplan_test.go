@@ -19,6 +19,8 @@ import (
 )
 
 func Test_OutplanCreate(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		outplan *outplan.Outplan
@@ -118,6 +120,7 @@ func Test_OutplanCreate(t *testing.T) {
 }
 
 func Test_OutplanDelete(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name    string
@@ -224,6 +227,8 @@ func Test_OutplanDelete(t *testing.T) {
 }
 
 func Test_OutplanListByCustomerID(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name     string
 		outplans []*outplan.Outplan
@@ -446,6 +451,8 @@ func Test_OutplanListByCustomerID(t *testing.T) {
 }
 
 func Test_OutplanUpdateBasicInfo(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		outplan *outplan.Outplan
@@ -555,6 +562,8 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 }
 
 func Test_OutplanUpdateDialInfo(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		outplan *outplan.Outplan

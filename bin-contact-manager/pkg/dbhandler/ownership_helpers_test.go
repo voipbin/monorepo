@@ -69,6 +69,8 @@ func ownershipHelperCalls(ctx context.Context) []struct {
 }
 
 func Test_OwnershipHelpers_QueryAndScanFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 
 	for _, tt := range ownershipHelperCalls(ctx) {
@@ -122,6 +124,8 @@ func Test_OwnershipHelpers_QueryAndScanFailures(t *testing.T) {
 }
 
 func Test_staleRowByTargetTx_Results(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	customerID := uuid.Must(uuid.NewV4())
 	rowID := uuid.Must(uuid.NewV4())
@@ -205,6 +209,8 @@ func Test_staleRowByTargetTx_Results(t *testing.T) {
 }
 
 func Test_contactTombstoneTx_Results(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	contactID := uuid.Must(uuid.NewV4())
 	deleted := time.Date(2026, 10, 24, 8, 0, 0, 0, time.UTC)
@@ -261,6 +267,8 @@ func Test_contactTombstoneTx_Results(t *testing.T) {
 }
 
 func Test_addressTypeTargetContactByID_Failures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.Must(uuid.NewV4())
 	contactID := uuid.Must(uuid.NewV4())

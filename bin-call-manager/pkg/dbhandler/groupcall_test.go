@@ -20,6 +20,7 @@ import (
 )
 
 func Test_GroupcallCreate(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name string
@@ -166,6 +167,7 @@ func Test_GroupcallCreate(t *testing.T) {
 }
 
 func Test_GroupcallSetAnswerCallID(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name string
@@ -290,6 +292,7 @@ func Test_GroupcallSetAnswerCallID(t *testing.T) {
 }
 
 func Test_GroupcallSetAnswerGroupcallID(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name string
@@ -385,6 +388,7 @@ func Test_GroupcallSetAnswerGroupcallID(t *testing.T) {
 }
 
 func Test_GroupcallDecreaseCallCount(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name string
@@ -471,6 +475,7 @@ func Test_GroupcallDecreaseCallCount(t *testing.T) {
 }
 
 func Test_GroupcallDecreaseGroupcallCount(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name string
@@ -557,6 +562,7 @@ func Test_GroupcallDecreaseGroupcallCount(t *testing.T) {
 }
 
 func Test_GroupcallSetStatus(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name string
@@ -640,6 +646,7 @@ func Test_GroupcallSetStatus(t *testing.T) {
 }
 
 func Test_GroupcallSetCallIDsAndCallCountAndDialIndex(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name string
@@ -735,6 +742,7 @@ func Test_GroupcallSetCallIDsAndCallCountAndDialIndex(t *testing.T) {
 }
 
 func Test_GroupcallList(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name       string

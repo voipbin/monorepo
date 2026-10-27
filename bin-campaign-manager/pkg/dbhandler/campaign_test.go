@@ -23,6 +23,8 @@ var curTime = time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
 var curTime2 = time.Date(2020, 4, 18, 3, 22, 18, 995000000, time.UTC)
 
 func Test_CampaignCreate(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name     string
 		campaign *campaign.Campaign
@@ -183,6 +185,7 @@ func Test_CampaignCreate(t *testing.T) {
 }
 
 func Test_CampaignDelete(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name     string
@@ -243,6 +246,8 @@ func Test_CampaignDelete(t *testing.T) {
 }
 
 func Test_CampaignListByCustomerID(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name      string
 		campaigns []*campaign.Campaign
@@ -415,13 +420,15 @@ func Test_CampaignListByCustomerID(t *testing.T) {
 			t.Logf("Created outdial. outdial: %v", res)
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", describeList(tt.expectRes), describeList(res))
 			}
 		})
 	}
 }
 
 func Test_CampaignUpdateBasicInfo(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name string
 		data *campaign.Campaign
@@ -523,6 +530,8 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 }
 
 func Test_CampaignUpdateResourceInfo(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name     string
 		campaign *campaign.Campaign
@@ -619,6 +628,8 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 }
 
 func Test_CampaignUpdateNextCampaignID(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name     string
 		campaign *campaign.Campaign
@@ -708,6 +719,8 @@ func Test_CampaignUpdateNextCampaignID(t *testing.T) {
 }
 
 func Test_CampaignUpdateStatus(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name     string
 		campaign *campaign.Campaign
@@ -802,6 +815,8 @@ func Test_CampaignUpdateStatus(t *testing.T) {
 }
 
 func Test_CampaignUpdateStatusAndExecute(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name     string
 		campaign *campaign.Campaign
@@ -897,6 +912,8 @@ func Test_CampaignUpdateStatusAndExecute(t *testing.T) {
 }
 
 func Test_CampaignUpdateExecute(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name     string
 		campaign *campaign.Campaign
@@ -990,6 +1007,8 @@ func Test_CampaignUpdateExecute(t *testing.T) {
 }
 
 func Test_OutplanUpdateServiceLevel(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name     string
 		campaign *campaign.Campaign
@@ -1081,6 +1100,8 @@ func Test_OutplanUpdateServiceLevel(t *testing.T) {
 }
 
 func Test_OutplanUpdateEndHandle(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name     string
 		campaign *campaign.Campaign
@@ -1174,6 +1195,8 @@ func Test_OutplanUpdateEndHandle(t *testing.T) {
 }
 
 func Test_CampaignUpdateActions(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name     string
 		campaign *campaign.Campaign
@@ -1278,6 +1301,8 @@ func Test_CampaignUpdateActions(t *testing.T) {
 }
 
 func Test_OutplanUpdateType(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name     string
 		campaign *campaign.Campaign

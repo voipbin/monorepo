@@ -32,6 +32,8 @@ func twoColumnRow() *sqlmock.Rows {
 }
 
 func Test_Contact_QueryFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 
 	tests := []struct {
@@ -283,6 +285,8 @@ func Test_Contact_QueryFailures(t *testing.T) {
 }
 
 func Test_TagAssignment_QueryFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	tagID := uuid.FromStringOrNil("d8000000-0000-0000-0000-000000000003")
 
@@ -361,6 +365,8 @@ func columnsOf(names ...string) *sqlmock.Rows {
 }
 
 func Test_CaseNote_QueryFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	caseID := uuid.FromStringOrNil("d8000000-0000-0000-0000-000000000004")
 	noteID := uuid.FromStringOrNil("d8000000-0000-0000-0000-000000000005")

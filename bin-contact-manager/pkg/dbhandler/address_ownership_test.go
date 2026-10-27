@@ -90,6 +90,8 @@ func ownershipPeriodsForTarget(t *testing.T, ctx context.Context, h *handler, cu
 // period row exists at all for the target -- first-ever registration,
 // valid_from=NULL.
 func Test_OwnershipPeriods_Step5_FirstRegistration(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -119,6 +121,8 @@ func Test_OwnershipPeriods_Step5_FirstRegistration(t *testing.T) {
 // Test_OwnershipPeriods_Step1_LiveConflict covers §4 Step 1: another
 // contact's live, agreement-verified open period blocks this contact.
 func Test_OwnershipPeriods_Step1_LiveConflict(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -158,6 +162,8 @@ func Test_OwnershipPeriods_Step1_LiveConflict(t *testing.T) {
 // tombstoned (soft-deleted) -- the orphan is closed, not treated as a
 // live conflict.
 func Test_OwnershipPeriods_Step1_OrphanClose(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -223,6 +229,8 @@ func Test_OwnershipPeriods_Step1_OrphanClose(t *testing.T) {
 // Test_OwnershipPeriods_Step2_OpenReuse covers §4 Step 2: this contact
 // already owns an open period for this target -- reuse, no write needed.
 func Test_OwnershipPeriods_Step2_OpenReuse(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -263,6 +271,8 @@ func Test_OwnershipPeriods_Step2_OpenReuse(t *testing.T) {
 // released, with no one else having held it in the interim -- the
 // closed period is reopened, not a new one inserted.
 func Test_OwnershipPeriods_Step3_Reopen(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -323,6 +333,8 @@ func Test_OwnershipPeriods_Step3_Reopen(t *testing.T) {
 // reopened (that would overlap B's era); a NEW period must be inserted
 // instead.
 func Test_OwnershipPeriods_Step3_InsertAfterIntervening(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -413,6 +425,8 @@ func Test_OwnershipPeriods_Step3_InsertAfterIntervening(t *testing.T) {
 // this contact, with valid_from=NOW() (not NULL) so history does not
 // leak from the old owner to the new one.
 func Test_OwnershipPeriods_Step4_Reassignment(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -477,6 +491,8 @@ func Test_OwnershipPeriods_Step4_Reassignment(t *testing.T) {
 // GREATEST(latest valid_to, stale row's tm_create) ending at the
 // tombstone time, vacate the slot), and succeed on retry.
 func Test_StaleRowRepair_TombstonedOwner_AddressCreate(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -559,6 +575,8 @@ func Test_StaleRowRepair_TombstonedOwner_AddressCreate(t *testing.T) {
 // staleRowRepairTx must NOT repair -- the caller sees the ordinary
 // ErrDuplicateTarget collision, not a silently stolen target.
 func Test_StaleRowRepair_LiveOwner_StaysErrDuplicateTarget(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -609,6 +627,8 @@ func Test_StaleRowRepair_LiveOwner_StaysErrDuplicateTarget(t *testing.T) {
 // permanently rejected -- it should detect the tombstoned owner, reset
 // the row to unresolved in-place, and complete the claim.
 func Test_StaleRowRepair_TombstonedOwner_AddressClaim(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -676,6 +696,8 @@ func Test_StaleRowRepair_TombstonedOwner_AddressClaim(t *testing.T) {
 // completely empty (no period ever existed for this target -- a
 // rolling-deploy version-skew artifact), AddressDelete must NOT error.
 func Test_AddressDeleteTx_Skew_NotAnError(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -700,6 +722,8 @@ func Test_AddressDeleteTx_Skew_NotAnError(t *testing.T) {
 // is non-empty (a period DOES exist for this target) but no row is open
 // for this contact -- e.g. a concurrent operation already closed it.
 func Test_AddressDeleteTx_GenuineConflict_ErrConflict(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -751,6 +775,8 @@ func Test_AddressDeleteTx_GenuineConflict_ErrConflict(t *testing.T) {
 // never treated as version skew (the period being compensated for was
 // just inserted moments earlier by the SAME request).
 func Test_AddressDeleteCompensating_NoSkewExemption(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -773,6 +799,8 @@ func Test_AddressDeleteCompensating_NoSkewExemption(t *testing.T) {
 // same target is a genuinely fresh Step 5 registration, not a Step 4
 // reassignment against a ghost's leftover closed period.
 func Test_AddressDeleteCompensating_HardDeletes(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -829,6 +857,8 @@ func Test_AddressDeleteCompensating_HardDeletes(t *testing.T) {
 // attributes exactly the gap since the immediately-prior era to the
 // claimer.
 func Test_AddressClaimTx_ValidFromIsLatestClosed(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -900,6 +930,8 @@ func Test_AddressClaimTx_ValidFromIsLatestClosed(t *testing.T) {
 // public AddressDelete/AddressCreate API (not the internal Tx
 // functions directly), across two independent request-shaped calls.
 func Test_Scenario_SameOwnerReleaseAndReacquire(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -959,6 +991,8 @@ func Test_Scenario_SameOwnerReleaseAndReacquire(t *testing.T) {
 // one) with B's era sandwiched between them, and that valid_from/valid_to
 // boundaries are all correct and non-overlapping.
 func Test_Scenario_ABAReassignmentCycle(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -1051,6 +1085,8 @@ func Test_Scenario_ABAReassignmentCycle(t *testing.T) {
 // target gets Step 5 (first registration), not Step 4 (reassignment
 // against a ghost's leftover history) -- i.e. no ghost period survives.
 func Test_Scenario_ContactCreatePartialFailureCompensation(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()
@@ -1125,6 +1161,8 @@ func Test_Scenario_ContactCreatePartialFailureCompensation(t *testing.T) {
 // agreement-verified open period and is rejected with ErrConflict
 // (design §4 Step 1), never silently overwriting or duplicating.
 func Test_Scenario_SequentialConcurrentCreateAttempts(t *testing.T) {
+	resetTestDB(t)
+
 	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)))
 	defer mc.Finish()
 	ctx := context.Background()

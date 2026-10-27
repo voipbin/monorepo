@@ -249,6 +249,8 @@ func runCov2UpdateToCache(t *testing.T, table string, cols []string, expectSetEr
 }
 
 func Test_Call_cov2_singleGetFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2a00001-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&call.Call{})
@@ -300,6 +302,8 @@ func Test_Call_cov2_singleGetFailures(t *testing.T) {
 }
 
 func Test_Call_cov2_CallGet_cacheHit(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2a00002-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	want := &call.Call{}
@@ -321,6 +325,8 @@ func Test_Call_cov2_CallGet_cacheHit(t *testing.T) {
 }
 
 func Test_Call_cov2_CallGet_dbHitSetsCache(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2a00003-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&call.Call{})
@@ -346,6 +352,8 @@ func Test_Call_cov2_CallGet_dbHitSetsCache(t *testing.T) {
 }
 
 func Test_Call_cov2_CallList_failures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	cols := commondatabasehandler.GetDBFields(&call.Call{})
 
@@ -359,6 +367,8 @@ func Test_Call_cov2_CallList_failures(t *testing.T) {
 }
 
 func Test_Call_cov2_updateToCache(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2a00004-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&call.Call{})
@@ -373,6 +383,8 @@ func Test_Call_cov2_updateToCache(t *testing.T) {
 }
 
 func Test_Call_cov2_writeFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2a00005-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	ts := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
@@ -426,6 +438,8 @@ func Test_Call_cov2_writeFailures(t *testing.T) {
 }
 
 func Test_Call_cov2_CallUpdate_emptyFields(t *testing.T) {
+	resetTestDB(t)
+
 	e := newCov2Env(t)
 
 	if err := e.h.CallUpdate(context.Background(), uuid.Nil, map[call.Field]any{}); err != nil {
@@ -437,6 +451,8 @@ func Test_Call_cov2_CallUpdate_emptyFields(t *testing.T) {
 }
 
 func Test_Call_cov2_callUpdateWhere_rowsAffectedError(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2a00006-1b2d-11f1-8a5e-0b3f6c1d2e01")
 

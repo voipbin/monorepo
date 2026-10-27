@@ -27,6 +27,8 @@ import (
 // after adding a primary tel address and resetting, then adding an email address,
 // only the email should be primary.
 func Test_AddressMigration_CrossTypeSinglePrimary(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

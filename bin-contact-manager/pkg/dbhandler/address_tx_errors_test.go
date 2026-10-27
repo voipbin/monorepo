@@ -41,6 +41,8 @@ func duplicateTargetErr() error {
 }
 
 func Test_AddressUpdateTx(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 
 	// expectLockEmpty queues the ownership lock query that finds no period.
@@ -214,6 +216,8 @@ func Test_AddressUpdateTx(t *testing.T) {
 // The new target period of a moved address starts now when another contact
 // already used the target, which is the reassignment case.
 func Test_addressUpdateOpenNewTargetTx(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	closedAt := time.Date(2026, 10, 2, 0, 0, 0, 0, time.UTC).Format(repairTimeLayout)
 
@@ -251,6 +255,8 @@ func Test_addressUpdateOpenNewTargetTx(t *testing.T) {
 }
 
 func Test_AddressDeleteTx_Failures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 
 	tests := []struct {
@@ -326,6 +332,8 @@ func Test_AddressDeleteTx_Failures(t *testing.T) {
 }
 
 func Test_AddressClaimTx_Failures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	closedAt := time.Date(2026, 10, 2, 0, 0, 0, 0, time.UTC).Format(repairTimeLayout)
 
@@ -398,6 +406,8 @@ func Test_AddressClaimTx_Failures(t *testing.T) {
 }
 
 func Test_AddressResetPrimaryTx_Failures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 
 	t.Run("deadlock is the bare sentinel", func(t *testing.T) {
@@ -426,6 +436,8 @@ func Test_AddressResetPrimaryTx_Failures(t *testing.T) {
 }
 
 func Test_AddressDeleteCompensating_Failures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	openPeriod := func() *sqlmock.Rows {
 		return sqlmock.NewRows(periodColumns).AddRow(txTestPeriodID.Bytes(), txTestContactID.Bytes(), nil, nil)
@@ -562,6 +574,8 @@ func Test_AddressDeleteCompensating_Failures(t *testing.T) {
 }
 
 func Test_attemptStaleRowRepairNewTx(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	staleCols := []string{"id", "contact_id", "tm_create"}
 
@@ -632,6 +646,8 @@ func Test_attemptStaleRowRepairNewTx(t *testing.T) {
 }
 
 func Test_AddressCreateTx_LockFailure(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	h, mock, _ := newCtxRowsHandler(t)
 	tx := openTestTx(t, h, mock)

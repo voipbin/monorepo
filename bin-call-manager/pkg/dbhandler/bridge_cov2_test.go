@@ -13,6 +13,8 @@ import (
 )
 
 func Test_Bridge_cov2_singleGetFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	cols := commondatabasehandler.GetDBFields(&bridge.Bridge{})
 	id := "bridge-cov2-1"
@@ -39,6 +41,8 @@ func Test_Bridge_cov2_singleGetFailures(t *testing.T) {
 }
 
 func Test_Bridge_cov2_BridgeGet_cacheHit(t *testing.T) {
+	resetTestDB(t)
+
 	id := "bridge-cov2-2"
 	want := &bridge.Bridge{}
 	want.ID = id
@@ -59,6 +63,8 @@ func Test_Bridge_cov2_BridgeGet_cacheHit(t *testing.T) {
 }
 
 func Test_Bridge_cov2_BridgeGet_dbHitNormalizesNull(t *testing.T) {
+	resetTestDB(t)
+
 	id := "bridge-cov2-3"
 	cols := commondatabasehandler.GetDBFields(&bridge.Bridge{})
 
@@ -80,6 +86,8 @@ func Test_Bridge_cov2_BridgeGet_dbHitNormalizesNull(t *testing.T) {
 }
 
 func Test_Bridge_cov2_updateToCache(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	cols := commondatabasehandler.GetDBFields(&bridge.Bridge{})
 
@@ -93,6 +101,8 @@ func Test_Bridge_cov2_updateToCache(t *testing.T) {
 }
 
 func Test_Bridge_cov2_writeFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 
 	tests := []struct {

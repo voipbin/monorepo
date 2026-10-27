@@ -57,6 +57,8 @@ func mustToSQL(t *testing.T, sq interface{ ToSql() (string, []any, error) }) (st
 }
 
 func Test_goldenBridgeJSONExpr(t *testing.T) {
+	resetTestDB(t)
+
 	tmUpdate := "2026-08-04 01:02:03.000000"
 	channelID := "1b2f5f9e-0000-11f0-9e2b-0242ac110002"
 	bridgeID := "8a0c2c1a-0000-11f0-9e2b-0242ac110002"
@@ -95,6 +97,8 @@ func Test_goldenBridgeJSONExpr(t *testing.T) {
 }
 
 func Test_goldenGroupcallDecreaseCountExpr(t *testing.T) {
+	resetTestDB(t)
+
 	tmUpdate := "2026-08-04 01:02:03.000000"
 	id := uuid.FromStringOrNil("2a3b4c5d-0000-11f0-9e2b-0242ac110002")
 
@@ -130,6 +134,8 @@ func Test_goldenGroupcallDecreaseCountExpr(t *testing.T) {
 }
 
 func Test_goldenCallJSONExpr(t *testing.T) {
+	resetTestDB(t)
+
 	tmUpdate := "2026-08-04 01:02:03.000000"
 	id := uuid.FromStringOrNil("3a3b4c5d-0000-11f0-9e2b-0242ac110002")
 	other := uuid.FromStringOrNil("4a3b4c5d-0000-11f0-9e2b-0242ac110002")
@@ -182,6 +188,8 @@ func Test_goldenCallJSONExpr(t *testing.T) {
 }
 
 func Test_goldenConfbridgeJSONExpr(t *testing.T) {
+	resetTestDB(t)
+
 	tmUpdate := "2026-08-04 01:02:03.000000"
 	id := uuid.FromStringOrNil("5a3b4c5d-0000-11f0-9e2b-0242ac110002")
 	other := uuid.FromStringOrNil("6a3b4c5d-0000-11f0-9e2b-0242ac110002")
@@ -233,6 +241,8 @@ func Test_goldenConfbridgeJSONExpr(t *testing.T) {
 }
 
 func Test_goldenChannelSetDataItemExpr(t *testing.T) {
+	resetTestDB(t)
+
 	tmUpdate := "2026-08-04 01:02:03.000000"
 	id := "channel-xyz"
 

@@ -21,6 +21,7 @@ import (
 // Test_CallSetChannelIDAndBridgeIDIfOwned checks the recovery switch is applied only to a progressing call that is
 // still owned by the old channel (VOIP-1556).
 func Test_CallSetChannelIDAndBridgeIDIfOwned(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name string
@@ -150,6 +151,7 @@ func Test_CallSetChannelIDAndBridgeIDIfOwned(t *testing.T) {
 // Test_CallSetHangupIfChannel checks the hangup is recorded only while the call is owned by the given channel
 // (VOIP-1556).
 func Test_CallSetHangupIfChannel(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name string
@@ -277,6 +279,7 @@ func Test_CallSetHangupIfChannel(t *testing.T) {
 
 // Test_CallRecoveryClaim checks the claim is passed through to the cache.
 func Test_CallRecoveryClaim(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name string

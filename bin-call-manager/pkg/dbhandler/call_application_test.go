@@ -13,6 +13,8 @@ import (
 )
 
 func Test_CallApplicationAMDGet(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name        string
 		channelID   string
@@ -69,6 +71,8 @@ func Test_CallApplicationAMDGet(t *testing.T) {
 }
 
 func Test_CallApplicationAMDSet(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name      string
 		channelID string

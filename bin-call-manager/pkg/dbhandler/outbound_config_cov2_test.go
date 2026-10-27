@@ -14,6 +14,8 @@ import (
 )
 
 func Test_OutboundConfig_cov2_getFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2e00001-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&outboundconfig.OutboundConfig{})
@@ -69,6 +71,8 @@ func Test_OutboundConfig_cov2_getFailures(t *testing.T) {
 }
 
 func Test_OutboundConfig_cov2_listFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	customerID := uuid.FromStringOrNil("c2e00002-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&outboundconfig.OutboundConfig{})
@@ -84,6 +88,8 @@ func Test_OutboundConfig_cov2_listFailures(t *testing.T) {
 }
 
 func Test_OutboundConfig_cov2_listPageTokenArgument(t *testing.T) {
+	resetTestDB(t)
+
 	customerID := uuid.FromStringOrNil("c2e00003-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&outboundconfig.OutboundConfig{})
 	token := "2026-01-02 03:04:05.000000"
@@ -106,6 +112,8 @@ func Test_OutboundConfig_cov2_listPageTokenArgument(t *testing.T) {
 }
 
 func Test_OutboundConfig_cov2_writeFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2e00004-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	detail := "detail-cov2"
