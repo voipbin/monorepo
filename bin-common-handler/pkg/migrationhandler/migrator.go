@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"os"
 	"strconv"
+	"sync/atomic"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
@@ -27,7 +28,7 @@ const lockWaitTimeoutSeconds = 10
 // Migrator applies the migrations through a dedicated connection pool, separate from the
 // service pool.
 type Migrator struct {
-	m          *migrate.Migrate
+	m          Engine
 	maxVersion uint
 }
 
@@ -37,20 +38,66 @@ type Migrator struct {
 // The DSN is parsed by the go-sql-driver and never re-encoded into a URL, so passwords that
 // contain characters such as % or + are used as they are.
 func New(dsn string, fsys fs.FS, versionTable string) (*Migrator, error) {
-	cfg, err := newConfig(dsn)
+	e, maxVersion, err := (*engineFunc.Load())(dsn, fsys, versionTable)
 	if err != nil {
 		return nil, err
 	}
 
+	return &Migrator{m: e, maxVersion: maxVersion}, nil
+}
+
+// Engine is the part of the golang-migrate runner that Migrator uses. Close releases both the
+// migration source and the database connection and returns their errors separately. It is exported
+// so that a test can provide a fake through SetEngineFunc.
+type Engine interface {
+	Version() (version uint, dirty bool, err error)
+	Up() error
+	Steps(n int) error
+	Force(version int) error
+	Close() (source error, database error)
+}
+
+// engineFunc creates the engine and returns the highest migration version found. Tests replace it
+// with SetEngineFunc.
+var engineFunc atomic.Pointer[func(dsn string, fsys fs.FS, versionTable string) (Engine, uint, error)]
+
+func init() {
+	SetEngineFunc(nil)
+}
+
+// SetEngineFunc replaces the function that New uses to open the engine and returns a function that
+// puts the previous one back. A nil f installs the default. The function returns the engine and the
+// highest migration version; the engine must not be nil when the error is nil.
+// It is meant for tests: call the returned function with defer or t.Cleanup, in reverse order of
+// the calls, and do not run such a test in parallel with a test that expects the default.
+func SetEngineFunc(f func(dsn string, fsys fs.FS, versionTable string) (Engine, uint, error)) (restore func()) {
+	if f == nil {
+		f = defaultEngine
+	}
+
+	prev := engineFunc.Swap(&f)
+	return func() {
+		engineFunc.Store(prev)
+	}
+}
+
+// defaultEngine opens a dedicated database connection from the service DSN and prepares the
+// migrations found at the root of fsys. Every error path returns an untyped nil engine.
+func defaultEngine(dsn string, fsys fs.FS, versionTable string) (Engine, uint, error) {
+	cfg, err := newConfig(dsn)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	src, maxVersion, err := newSource(fsys)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	connector, err := mysql.NewConnector(cfg)
 	if err != nil {
 		_ = src.Close()
-		return nil, fmt.Errorf("could not create the database connector: %w", err)
+		return nil, 0, fmt.Errorf("could not create the database connector: %w", err)
 	}
 	db := sql.OpenDB(connector)
 
@@ -61,17 +108,17 @@ func New(dsn string, fsys fs.FS, versionTable string) (*Migrator, error) {
 	if err != nil {
 		_ = src.Close()
 		_ = db.Close()
-		return nil, fmt.Errorf("could not initialize the migration database driver: %w", err)
+		return nil, 0, fmt.Errorf("could not initialize the migration database driver: %w", err)
 	}
 
 	m, err := migrate.NewWithInstance("iofs", src, "mysql", drv)
 	if err != nil {
 		_ = src.Close()
 		_ = db.Close()
-		return nil, fmt.Errorf("could not initialize migrate: %w", err)
+		return nil, 0, fmt.Errorf("could not initialize migrate: %w", err)
 	}
 
-	return &Migrator{m: m, maxVersion: maxVersion}, nil
+	return m, maxVersion, nil
 }
 
 // newConfig derives the migration connection settings from the service DSN.

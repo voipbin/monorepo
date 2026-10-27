@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync/atomic"
 
 	"github.com/Masterminds/squirrel"
 	_ "github.com/go-sql-driver/mysql"
@@ -14,7 +15,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func Connect(dsn string) (*sql.DB, error) {
+// connectFunc opens the database connection. Tests replace it with SetConnectFunc.
+var connectFunc atomic.Pointer[func(dsn string) (*sql.DB, error)]
+
+func init() {
+	SetConnectFunc(nil)
+}
+
+func defaultConnect(dsn string) (*sql.DB, error) {
 	res, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, errors.Wrap(err, "database open error")
@@ -25,6 +33,25 @@ func Connect(dsn string) (*sql.DB, error) {
 	}
 
 	return res, nil
+}
+
+// SetConnectFunc replaces the function that Connect uses to open the connection and returns a
+// function that puts the previous one back. A nil f installs the default.
+// It is meant for tests: call the returned function with defer or t.Cleanup, in reverse order of
+// the calls, and do not run such a test in parallel with a test that expects the default.
+func SetConnectFunc(f func(dsn string) (*sql.DB, error)) (restore func()) {
+	if f == nil {
+		f = defaultConnect
+	}
+
+	prev := connectFunc.Swap(&f)
+	return func() {
+		connectFunc.Store(prev)
+	}
+}
+
+func Connect(dsn string) (*sql.DB, error) {
+	return (*connectFunc.Load())(dsn)
 }
 
 func Close(db *sql.DB) {
