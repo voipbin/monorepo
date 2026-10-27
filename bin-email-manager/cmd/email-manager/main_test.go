@@ -6,6 +6,8 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"os/signal"
 	"strings"
 	"sync/atomic"
 	"syscall"
@@ -200,5 +202,40 @@ func Test_runListen(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func Test_initSignal(t *testing.T) {
+	initSignal()
+	t.Cleanup(func() { signal.Reset(syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM) })
+
+	if errKill := syscall.Kill(os.Getpid(), syscall.SIGHUP); errKill != nil {
+		t.Fatalf("could not send the signal. err: %v", errKill)
+	}
+
+	select {
+	case done := <-chDone:
+		if !done {
+			t.Errorf("Expected true on the done channel")
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatalf("The done channel was not signalled")
+	}
+}
+
+func Test_runService_databaseUnavailable(t *testing.T) {
+	cfg := config.Get()
+	saved := *cfg
+	t.Cleanup(func() { *cfg = saved })
+
+	// the prometheus server stays disabled and the database address is refused
+	cfg.PrometheusEndpoint = ""
+	cfg.PrometheusListenAddress = ""
+	cfg.DatabaseDSN = fmt.Sprintf("user@tcp(%s)/db", closedLoopbackAddr(t))
+	t.Cleanup(func() { signal.Reset(syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM) })
+
+	err := runService()
+	if err == nil || !strings.Contains(err.Error(), "database ping error") {
+		t.Errorf("Wrong match. expect a ping error, got: %v", err)
 	}
 }
