@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -16,10 +17,26 @@ import (
 const invalidDSN = "not-a-valid-dsn"
 
 func TestMain(m *testing.M) {
+	// the config is loaded once, so the stand-in cache server address is set before the first load.
+	// viper.Set wins over flags and environment variables.
+	testRedis = miniredis.NewMiniRedis()
+	if err := testRedis.Start(); err != nil {
+		panic(err)
+	}
+
 	viper.Set("database_dsn", invalidDSN)
+	viper.Set("rabbitmq_address", "amqp://localhost")
+	viper.Set("prometheus_endpoint", "/metrics")
+	viper.Set("prometheus_listen_address", "127.0.0.1:0")
+	viper.Set("redis_address", testRedis.Addr())
+	viper.Set("redis_password", "")
+	viper.Set("redis_database", 1)
 	config.LoadGlobalConfig()
 
-	os.Exit(m.Run())
+	code := m.Run()
+	close(parkWebhooks)
+	testRedis.Close()
+	os.Exit(code)
 }
 
 // setViper sets the given viper keys for the test and restores the previous values afterwards.
