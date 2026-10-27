@@ -85,7 +85,26 @@ func Test_GetAction_boundary(t *testing.T) {
 			expectedRemain:  []uuid.UUID{stack.IDMain},
 		},
 		{
-			name: "return stack loops to itself without releasing exceeds the stack count",
+			name: "start action id of a sub stack does not shortcut to the main stack",
+			stackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID:      stack.IDMain,
+					Actions: []action.Action{{ID: testBoundaryActionA, Type: action.TypeAnswer}},
+				},
+				testBoundarySubID: {
+					ID:            testBoundarySubID,
+					Actions:       []action.Action{{ID: testBoundaryActionB, Type: action.TypeHangup}},
+					ReturnStackID: stack.IDMain,
+				},
+			},
+			startStackID:    testBoundarySubID,
+			targetActionID:  action.IDStart,
+			expectedErrPart: "no more stack left",
+			expectedStackID: stack.IDEmpty,
+			expectedRemain:  []uuid.UUID{stack.IDMain, testBoundarySubID},
+		},
+		{
+			name: "return stack loops to itself without releasing",
 			stackMap: map[uuid.UUID]*stack.Stack{
 				testBoundarySubID: {
 					ID:            testBoundarySubID,
@@ -217,7 +236,7 @@ func Test_GetNextAction_boundary(t *testing.T) {
 			expectedStackID: stack.IDEmpty,
 		},
 		{
-			name: "return address loops to the last action of the same stack exceeds the stack count",
+			name: "return address loops to the last action of the same stack",
 			stackMap: map[uuid.UUID]*stack.Stack{
 				testBoundarySubID: {
 					ID: testBoundarySubID,
