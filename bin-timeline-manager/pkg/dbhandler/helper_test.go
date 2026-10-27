@@ -10,6 +10,9 @@ import (
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
 )
 
+// ctxKeyTest is the context key used to check that callers' contexts are passed through.
+type ctxKeyTest struct{}
+
 // fakeConn is a minimal ClickHouse connection double. It embeds the driver
 // interface so only Query and PrepareBatch need an implementation; any other
 // method would panic on the nil embedded value, which keeps accidental use loud.

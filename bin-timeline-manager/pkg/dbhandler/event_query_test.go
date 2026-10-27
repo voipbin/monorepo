@@ -291,5 +291,3 @@ func Test_AggregatedEventList(t *testing.T) {
 		})
 	}
 }
-
-type ctxKeyTest struct{}
