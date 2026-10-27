@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"monorepo/bin-billing-manager/models/account"
@@ -204,5 +205,24 @@ func Test_NewPaddleHandler(t *testing.T) {
 				t.Errorf("baseURL = %s, expected = %s", ph.baseURL, defaultPaddleBaseURL)
 			}
 		})
+	}
+}
+
+// Test_CreatePortalSession_requestFails verifies that a request which cannot be sent is reported
+// as a failed call. The scheme is not supported by the HTTP client, so nothing leaves the process.
+func Test_CreatePortalSession_requestFails(t *testing.T) {
+	h := &paddleHandler{
+		apiKey:     "test-key",
+		baseURL:    "unsupported://paddle.invalid",
+		httpClient: http.DefaultClient,
+		priceMap:   map[string]account.PlanType{},
+	}
+
+	url, err := h.CreatePortalSession(context.Background(), "ctm_abc123")
+	if err == nil || !strings.Contains(err.Error(), "paddle API request failed") {
+		t.Errorf("wrong error. expect the request failure, got: %v", err)
+	}
+	if url != "" {
+		t.Errorf("no url may be returned on failure. got: %s", url)
 	}
 }

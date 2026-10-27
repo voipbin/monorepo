@@ -3,6 +3,7 @@ package cachehandler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"reflect"
 	"testing"
 	"time"
@@ -312,5 +313,81 @@ func Test_NewHandler(t *testing.T) {
 	}
 	if got := tmp.Cache.Options().DB; got != 3 {
 		t.Errorf("Wrong match. expect client db: 3, got: %d", got)
+	}
+}
+
+// failNthSetHook makes the nth SET command sent through the client fail before it is sent.
+type failNthSetHook struct {
+	n    int
+	seen int
+}
+
+var errInjectedSet = errors.New("injected set failure")
+
+func (k *failNthSetHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
+	if cmd.Name() != "set" {
+		return ctx, nil
+	}
+	k.seen++
+	if k.seen == k.n {
+		return ctx, errInjectedSet
+	}
+	return ctx, nil
+}
+
+func (k *failNthSetHook) AfterProcess(_ context.Context, _ redis.Cmder) error { return nil }
+
+func (k *failNthSetHook) BeforeProcessPipeline(ctx context.Context, _ []redis.Cmder) (context.Context, error) {
+	return ctx, nil
+}
+
+func (k *failNthSetHook) AfterProcessPipeline(_ context.Context, _ []redis.Cmder) error { return nil }
+
+// Test_Set_secondKeyFails verifies that a failure while writing the lookup key is reported, after
+// the primary key has already been written.
+func Test_Set_secondKeyFails(t *testing.T) {
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+
+	tests := []struct {
+		name          string
+		call          func(h *handler) error
+		expectPrimary string
+		expectSecond  string
+	}{
+		{
+			"account",
+			func(h *handler) error {
+				return h.AccountSet(ctx, &account.Account{Identity: commonidentity.Identity{ID: id}})
+			},
+			"billing:account:" + id.String(),
+			"billing:account-customer_id:" + id.String(),
+		},
+		{
+			"billing",
+			func(h *handler) error {
+				return h.BillingSet(ctx, &billing.Billing{Identity: commonidentity.Identity{ID: id}, ReferenceID: id})
+			},
+			"billing:billing:" + id.String(),
+			"billing:billing-reference_id:" + id.String(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h, s := newTestHandler(t)
+			h.Cache.AddHook(&failNthSetHook{n: 2})
+
+			err := tt.call(h)
+			if !errors.Is(err, errInjectedSet) {
+				t.Fatalf("Wrong match. expect: %v, got: %v", errInjectedSet, err)
+			}
+			if !s.Exists(tt.expectPrimary) {
+				t.Errorf("Wrong match. the primary key must have been written before the failure")
+			}
+			if s.Exists(tt.expectSecond) {
+				t.Errorf("Wrong match. the failed lookup key must not exist")
+			}
+		})
 	}
 }

@@ -1,8 +1,14 @@
 package config
 
 import (
+	"fmt"
+	"net/http"
+	"strings"
 	"testing"
+	"time"
 
+	"github.com/sirupsen/logrus"
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/spf13/cobra"
 )
 
@@ -115,4 +121,55 @@ func TestInitPrometheus_DisabledWhenPartiallyConfigured(t *testing.T) {
 			InitPrometheus()
 		})
 	}
+}
+
+// Test_InitPrometheus_listenFailureIsLogged verifies that the metrics endpoint is registered and that
+// a listener which cannot start is reported instead of stopping the process. The listen address is
+// out of the valid port range, so nothing is bound.
+func Test_InitPrometheus_listenFailureIsLogged(t *testing.T) {
+	saved := globalConfig
+	hook := logrustest.NewGlobal()
+	t.Cleanup(func() {
+		globalConfig = saved
+		hook.Reset()
+		logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+	})
+
+	// the default mux keeps every registered pattern, so each run needs its own endpoint
+	endpoint := fmt.Sprintf("/metrics-listen-failure-test-%d", time.Now().UnixNano())
+	globalConfig = Config{
+		PrometheusEndpoint:      endpoint,
+		PrometheusListenAddress: "127.0.0.1:99999",
+	}
+
+	InitPrometheus()
+
+	reported := func() bool {
+		for _, entry := range hook.AllEntries() {
+			if entry.Level == logrus.ErrorLevel && strings.Contains(entry.Message, "Prometheus server error") {
+				return true
+			}
+		}
+		return false
+	}
+	for deadline := time.Now().Add(5 * time.Second); !reported(); time.Sleep(5 * time.Millisecond) {
+		if time.Now().After(deadline) {
+			t.Fatalf("the listen failure was not reported")
+		}
+	}
+
+	// the endpoint handler is registered on the default mux
+	if _, pattern := http.DefaultServeMux.Handler(mustRequest(t, endpoint)); pattern == "" {
+		t.Errorf("the metrics endpoint must be registered")
+	}
+}
+
+func mustRequest(t *testing.T, path string) *http.Request {
+	t.Helper()
+
+	req, err := http.NewRequest(http.MethodGet, path, nil)
+	if err != nil {
+		t.Fatalf("could not create the request: %v", err)
+	}
+	return req
 }
