@@ -1,11 +1,8 @@
 package main
 
 import (
-	"net/http"
 	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 	"testing"
 	"time"
 
@@ -16,23 +13,11 @@ import (
 const unreachableDSN = "tcp(127.0.0.1:1)/db"
 
 func Test_runMain_databaseFailure(t *testing.T) {
-	// the configuration is loaded once per process from the environment, so the values are injected before the first call
-	t.Setenv("DATABASE_DSN", unreachableDSN)
-	t.Setenv("PROMETHEUS_LISTEN_ADDRESS", "127.0.0.1:0")
-
-	// the global configuration is locked after the first load. Any other value means the environment
-	// was not applied and the run could reach a real database.
-	if dsn := config.Get().DatabaseDSN; dsn != "" && dsn != unreachableDSN {
-		t.Fatalf("the global configuration is already loaded with another database address")
-	}
-
-	// initProm registers the metrics handler on the default mux, which panics on a second registration
-	prevMux := http.DefaultServeMux
-	http.DefaultServeMux = http.NewServeMux()
-	t.Cleanup(func() {
-		http.DefaultServeMux = prevMux
-		signal.Reset(syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-	})
+	// the global configuration is loaded once per process, so the values are set on it directly
+	// and restored, which does not depend on the order of the tests
+	seamGlobals(t)
+	config.Get().DatabaseDSN = unreachableDSN
+	seamRegistry(t)
 
 	err := runMain(rootCmd, nil)
 	if err == nil {
