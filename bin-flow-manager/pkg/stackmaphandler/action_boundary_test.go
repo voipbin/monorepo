@@ -295,7 +295,7 @@ func Test_AddActions_boundary(t *testing.T) {
 	}
 }
 
-func Test_NewStackmapHandler_pushStackGeneratesID(t *testing.T) {
+func Test_PushStackByActions_generatesStackID(t *testing.T) {
 	h := NewStackmapHandler()
 	stackMap := map[uuid.UUID]*stack.Stack{}
 
