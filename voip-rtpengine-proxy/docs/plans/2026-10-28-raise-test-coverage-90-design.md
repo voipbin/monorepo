@@ -30,7 +30,7 @@ All new tests use the `Test_` prefix and no `t.Parallel()` (they replace process
 
 Scenarios 1 to 4 and 8 (those reaching `CleanOrphans`) take the same `/tmp` lock file as the `pkg/processmanager` tests (`flock` polling, up to 120 seconds; the processmanager `TestMain` holds it for its whole run, about 6 seconds, and the packages run in parallel in CI). The foreign uuid pcap check runs after the lock is taken and before the orphan is planted; the orphan is removed in cleanup. The same-path constant is duplicated on purpose, and a lock file owned by another user cannot be opened (`fs.protected_regular`), the same known limit as the processmanager tests.
 
-Skips: no non-loopback IPv4 interface skips with a logged reason, also in CI (an executor without a network cannot satisfy it; the CI result is checked for the number). A lock that cannot be taken or opened, or a foreign pcap file, skips locally and fails when `CI` or `CIRCLECI` is set. The 5 minute Redis refresh goroutine and its client cannot be stopped and are harmless for the lifetime of the test binary; the closed-port race for the Redis failure scenario is accepted as in the existing unreachable-Redis test.
+Skips: every precondition (non-loopback IPv4 interface, lock taken and opened, no foreign uuid pcap file) skips locally with a logged reason and fails when `CI` or `CIRCLECI` is set, so CI cannot pass silently with a lower number. The 5 minute Redis refresh goroutine and its client cannot be stopped and are harmless for the lifetime of the test binary; the closed-port race for the Redis failure scenario is accepted as in the existing unreachable-Redis test.
 
 ## Verify
 
