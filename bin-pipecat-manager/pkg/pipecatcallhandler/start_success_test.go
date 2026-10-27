@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -22,6 +23,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -50,6 +53,46 @@ func newLoopbackConn(t *testing.T) *websocket.Conn {
 	t.Cleanup(srv.Close)
 
 	return dialTestServer(t, srv)
+}
+
+// watchGoroutineEnds attaches a log hook to the standard logger and returns a function that waits
+// until the runner goroutine and the terminate goroutine of a started pipecatcall have written their
+// last log line. Both goroutines outlive the python runner stop call, and a later test that reads the
+// shared logger would otherwise race with their log writes. The hook and the level are restored when
+// the test ends.
+func watchGoroutineEnds(t *testing.T) func() {
+	t.Helper()
+
+	hook := logrustest.NewLocal(logrus.StandardLogger())
+	prev := logrus.GetLevel()
+	logrus.SetLevel(logrus.DebugLevel)
+	t.Cleanup(func() {
+		logrus.SetLevel(prev)
+		logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+	})
+
+	return func() {
+		t.Helper()
+
+		wants := []string{"Pipecat runner script finished.", "Pipecatcall terminated."}
+		deadline := time.Now().Add(startSuccessWait)
+		for time.Now().Before(deadline) {
+			found := 0
+			for _, want := range wants {
+				for _, e := range hook.AllEntries() {
+					if strings.HasPrefix(e.Message, want) {
+						found++
+						break
+					}
+				}
+			}
+			if found == len(wants) {
+				return
+			}
+			time.Sleep(time.Millisecond)
+		}
+		t.Errorf("the runner and terminate goroutines did not finish")
+	}
 }
 
 // expectAsteriskMediaLifecycle makes the websocket mock answer like an Asterisk media channel:
@@ -94,7 +137,7 @@ func expectPythonStartStop(mockPython *MockPythonRunner, pcID uuid.UUID) (<-chan
 
 // assertStartedAndTerminated waits until the python runner was started and stopped and checks
 // the outcome of the lifecycle: the session is gone and its Asterisk connection was closed.
-func assertStartedAndTerminated(t *testing.T, h *pipecatcallHandler, pcID uuid.UUID, conn *websocket.Conn, ctxCh <-chan context.Context, stopCh <-chan struct{}) {
+func assertStartedAndTerminated(t *testing.T, h *pipecatcallHandler, pcID uuid.UUID, conn *websocket.Conn, ctxCh <-chan context.Context, stopCh <-chan struct{}, waitEnds func()) {
 	t.Helper()
 
 	select {
@@ -120,11 +163,15 @@ func assertStartedAndTerminated(t *testing.T, h *pipecatcallHandler, pcID uuid.U
 	if err := conn.WriteMessage(websocket.TextMessage, []byte("x")); err == nil {
 		t.Errorf("the Asterisk connection must be closed after the termination")
 	}
+
+	waitEnds()
 }
 
 func Test_startReferenceTypeCall_asteriskConnected(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
+
+	waitEnds := watchGoroutineEnds(t)
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockWS := NewMockWebsocketHandler(mc)
@@ -178,12 +225,14 @@ func Test_startReferenceTypeCall_asteriskConnected(t *testing.T) {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 
-	assertStartedAndTerminated(t, h, pcID, conn, ctxCh, stopCh)
+	assertStartedAndTerminated(t, h, pcID, conn, ctxCh, stopCh, waitEnds)
 }
 
 func Test_startReferenceTypeAIcall_callBranchAsteriskConnected(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
+
+	waitEnds := watchGoroutineEnds(t)
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockWS := NewMockWebsocketHandler(mc)
@@ -249,5 +298,5 @@ func Test_startReferenceTypeAIcall_callBranchAsteriskConnected(t *testing.T) {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 
-	assertStartedAndTerminated(t, h, pcID, conn, ctxCh, stopCh)
+	assertStartedAndTerminated(t, h, pcID, conn, ctxCh, stopCh, waitEnds)
 }

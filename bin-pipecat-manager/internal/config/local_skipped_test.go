@@ -1,14 +1,14 @@
 package config
 
 import (
-	"strings"
 	"testing"
 
+	"github.com/sirupsen/logrus"
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	amai "monorepo/bin-ai-manager/models/ai"
-	"monorepo/bin-pipecat-manager/internal/logtest"
 )
 
 func Test_ConfigureLocalModelsSkipsInvalidEntries(t *testing.T) {
@@ -21,7 +21,8 @@ func Test_ConfigureLocalModelsSkipsInvalidEntries(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	logs := logtest.New(t)
+	hook := logrustest.NewLocal(logrus.StandardLogger())
+	t.Cleanup(func() { logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks)) })
 	ConfigureLocalModels()
 
 	if !amai.IsValidEngineModel("local.a.m") {
@@ -30,7 +31,15 @@ func Test_ConfigureLocalModelsSkipsInvalidEntries(t *testing.T) {
 	if amai.IsValidEngineModel("local.B.n") {
 		t.Error("the invalid entry must not be registered")
 	}
-	if dump := logs.Dump(); !strings.Contains(dump, "Some local llm model entries were skipped.") {
-		t.Errorf("Wrong log. expect: the skipped entries error, got: %q", dump)
+
+	// skipped entries are reported at the error level, once.
+	var errors []string
+	for _, e := range hook.AllEntries() {
+		if e.Level == logrus.ErrorLevel {
+			errors = append(errors, e.Message)
+		}
+	}
+	if len(errors) != 1 || errors[0] != "Some local llm model entries were skipped." {
+		t.Errorf("Wrong log. expect: one skipped entries error, got: %v", errors)
 	}
 }
