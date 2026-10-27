@@ -31,7 +31,7 @@ The 85% target is reachable without product code changes (see section 2).
 | pkg/listenhandler, models webhook | response marshal failure through a time field with a year above 9999 (v1_transcribes.go:47, 99, 134, 168, 203, v1_transcripts.go:56) and `CreateWebhookEvent` marshal error (streaming, transcribe, transcript webhook.go) | about 14 |
 | Single statements | subscribehandler/main.go:139, streaminghandler/streaming.go:65, gcp.go:18, models/transcribe/transcribe.go:120, cachehandler/handler.go:33, transcribe-control main.go:110 | 6 |
 
-The sum is about 105 against the 52 needed. A conservative sum without `runDaemon` and without the single statements is still about 86.
+The sum is 58 + 12 + 4 + 25 + 14 + 6 = 119 against the 52 needed. A conservative sum without `runDaemon` (19) and without the single statements is 39 + 12 + 4 + 25 + 14 = 94.
 
 Not tested because unreachable without product code changes: squirrel `ToSql` errors, `PrepareFields(t)` and delete-path `PrepareFields` errors, config binding errors, `processRequest` typed-error and not-found branches (the handlers convert them to responses first), the `in|out` direction `default` branch (regex only captures those two), start.go:109 (an earlier reference check filters it), `run()` and `main` of transcribe-manager (the broker connect retries forever), transcribe-control `initTranscribeHandler`, the `run*` bodies after `initHandler` and the success path of `initHandler` (they need a live database, cache and broker), and the AWS stream code (`awsRun` after init, `awsProcessMedia`), which needs a live event-stream endpoint and is not attempted.
 
