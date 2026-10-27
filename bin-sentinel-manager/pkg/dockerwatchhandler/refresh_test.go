@@ -762,3 +762,39 @@ func Test_refreshOnce_idConflictIsCounted(t *testing.T) {
 		t.Errorf("Wrong match. expect: 3e:50:6b:43:bb:32, got: %q", entry.AsteriskID)
 	}
 }
+
+// Test_refreshOnce_entryDisappearsDuringPass pins the race between the die handler and the
+// refresh pass: the container is removed after the entries were listed but before the id is
+// resolved, and the pass must neither resurrect the entry nor fail.
+func Test_refreshOnce_entryDisappearsDuringPass(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h, mockCache := newRefreshTestHandler(t, mc, []seededEntry{
+		{containerName: "voip-asterisk-call-docker-1", service: container.ServiceAsteriskCall, ip: "203.0.113.21"},
+	})
+
+	mockCache.EXPECT().AsteriskAddressInternalScan(gomock.Any()).DoAndReturn(
+		func(context.Context) ([]*asteriskaddress.AsteriskAddress, error) {
+			// the die handler consumes the entry while the scan is in flight.
+			if _, ok := h.state.Delete("voip-asterisk-call-docker-1"); !ok {
+				t.Errorf("Wrong match. expect: the entry to exist before the delete, got: missing")
+			}
+
+			return []*asteriskaddress.AsteriskAddress{
+				{ID: "3e:50:6b:43:bb:32", Address: "203.0.113.21", TTL: asteriskaddress.TTL},
+			}, nil
+		},
+	)
+
+	if err := h.refreshOnce(context.Background()); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if _, ok := h.state.Get("voip-asterisk-call-docker-1"); ok {
+		t.Errorf("Wrong match. expect: the removed entry to stay removed, got: present")
+	}
+	if h.state.Len() != 0 {
+		t.Errorf("Wrong match. expect: an empty table, got: %d entries", h.state.Len())
+	}
+}
