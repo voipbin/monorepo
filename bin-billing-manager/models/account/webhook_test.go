@@ -186,3 +186,17 @@ func TestAccount_CreateWebhookEvent(t *testing.T) {
 		})
 	}
 }
+
+func Test_CreateWebhookEvent_timestampOutOfRange(t *testing.T) {
+	// the JSON encoder rejects timestamps outside the year range 0 to 9999
+	outOfRange := time.Date(10000, 1, 1, 0, 0, 0, 0, time.UTC)
+	a := &Account{TMCreate: &outOfRange}
+
+	res, err := a.CreateWebhookEvent()
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+	if res != nil {
+		t.Errorf("Wrong match. expect: no payload, got: %s", res)
+	}
+}

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -356,6 +357,79 @@ func Test_printJSON(t *testing.T) {
 		}
 		if out != "" {
 			t.Errorf("nothing may be printed on failure. got: %q", out)
+		}
+	})
+}
+
+// Test_initCommand_execute runs the assembled command tree the way the binary does and verifies
+// that the flags of the root command reach the configuration and the subcommand runs.
+func Test_initCommand_execute(t *testing.T) {
+	tests := []struct {
+		name         string
+		args         []string
+		expectErrSub string
+	}{
+		{"top-up run stops at the unreachable database", []string{"topup", "run", "--database_dsn", unreachableDSN}, "failed to initialize database: could not connect to the database: database ping error: dial unix /nonexistent/billing-test.sock"},
+		{"migrate status stops at the unreachable database", []string{"migrate", "status", "--database_dsn", unreachableDSN}, "dial unix /nonexistent/billing-test.sock"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			origFormatter := logrus.StandardLogger().Formatter
+			origLevel := logrus.GetLevel()
+			t.Cleanup(func() {
+				logrus.SetFormatter(origFormatter)
+				logrus.SetLevel(origLevel)
+			})
+			useUnreachableDatabase(t)
+
+			root := initCommand()
+			root.SetArgs(tt.args)
+			root.SilenceUsage = true
+			root.SilenceErrors = true
+			root.SetOut(io.Discard)
+			root.SetErr(io.Discard)
+
+			err := root.Execute()
+			if err == nil {
+				t.Fatalf("expected an error, got nil")
+			}
+			if tt.expectErrSub != "" && !strings.Contains(err.Error(), tt.expectErrSub) {
+				t.Errorf("wrong error. expect to contain: %q, got: %v", tt.expectErrSub, err)
+			}
+			if got := viper.GetString("database_dsn"); got != unreachableDSN {
+				t.Errorf("the flag value must reach the configuration source. expect: %s, got: %s", unreachableDSN, got)
+			}
+		})
+	}
+}
+
+func Test_initCache(t *testing.T) {
+	t.Run("server reachable", func(t *testing.T) {
+		saved := *config.Get()
+		t.Cleanup(func() { *config.Get() = saved })
+
+		s := miniredis.RunT(t)
+		*config.Get() = config.Config{RedisAddress: s.Addr()}
+
+		res, err := initCache()
+		if err != nil || res == nil {
+			t.Errorf("expected a connected cache, got: %v, %v", res, err)
+		}
+	})
+
+	t.Run("server down", func(t *testing.T) {
+		saved := *config.Get()
+		t.Cleanup(func() { *config.Get() = saved })
+
+		s := miniredis.RunT(t)
+		addr := s.Addr()
+		s.Close()
+		*config.Get() = config.Config{RedisAddress: addr}
+
+		res, err := initCache()
+		if err == nil || res != nil {
+			t.Errorf("expected the connection failure without a handler, got: %v, %v", res, err)
 		}
 	})
 }

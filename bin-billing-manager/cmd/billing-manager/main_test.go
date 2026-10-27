@@ -4,9 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"os/signal"
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -14,6 +18,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 
+	"monorepo/bin-billing-manager/internal/config"
 	"monorepo/bin-billing-manager/models/failedevent"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 	"monorepo/bin-billing-manager/pkg/subscribehandler"
@@ -181,4 +186,58 @@ func Test_buildFailedEventHandler(t *testing.T) {
 	if err := cb(event); err != nil {
 		t.Errorf("a saved failed event must be acknowledged. got: %v", err)
 	}
+}
+
+// unreachableDSN points at a unix socket that does not exist, so a connection attempt fails at once
+// without any network access.
+const unreachableDSN = "unix(/nonexistent/billing-test.sock)/billing_test?timeout=1s"
+
+// Test_runDaemon_databaseUnavailable verifies that the daemon stops with the connection failure
+// before it touches the migrations, the cache, or the message broker.
+func Test_runDaemon_databaseUnavailable(t *testing.T) {
+	origSigs, origDone := chSigs, chDone
+	savedConfig := *config.Get()
+	chSigs = make(chan os.Signal, 1)
+	chDone = make(chan bool, 1)
+	testSigs, testDone := chSigs, chDone
+	t.Cleanup(func() {
+		signal.Stop(testSigs)
+		chSigs, chDone = origSigs, origDone
+		*config.Get() = savedConfig
+	})
+
+	*config.Get() = config.Config{DatabaseDSN: unreachableDSN}
+
+	err := runDaemon()
+	if err == nil {
+		t.Fatalf("expected the connection failure, got nil")
+	}
+
+	// the signal goroutine started by the daemon must still react to its channel
+	testSigs <- syscall.SIGTERM
+	select {
+	case _, ok := <-testDone:
+		if ok {
+			t.Errorf("the done channel must be closed, not written to")
+		}
+	case <-time.After(waitLimit):
+		t.Errorf("the signal goroutine did not close the done channel")
+	}
+}
+
+// Test_main_help runs the binary entry point with the help flag, which finishes without starting
+// the daemon.
+func Test_main_help(t *testing.T) {
+	origArgs := os.Args
+	origFormatter := logrus.StandardLogger().Formatter
+	origLevel := logrus.GetLevel()
+	t.Cleanup(func() {
+		os.Args = origArgs
+		logrus.SetFormatter(origFormatter)
+		logrus.SetLevel(origLevel)
+		viper.Reset()
+	})
+
+	os.Args = []string{"billing-manager", "--help"}
+	main()
 }
