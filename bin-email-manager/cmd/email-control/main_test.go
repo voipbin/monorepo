@@ -10,6 +10,7 @@ import (
 
 	"monorepo/bin-email-manager/internal/config"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -279,6 +280,79 @@ func Test_run_initializationFails(t *testing.T) {
 			err := tt.run()
 			if err == nil || !strings.HasPrefix(err.Error(), "failed to initialize handlers: could not connect to the database: ") {
 				t.Errorf("Wrong match. expect an initialization error, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_initCache_connected(t *testing.T) {
+	mr := miniredis.RunT(t)
+
+	cfg := config.Get()
+	saved := *cfg
+	t.Cleanup(func() { *cfg = saved })
+
+	cfg.RedisAddress = mr.Addr()
+	cfg.RedisPassword = ""
+	cfg.RedisDatabase = 0
+
+	cache, err := initCache()
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if cache == nil {
+		t.Errorf("Expected a cache handler. got nil")
+	}
+}
+
+// Test_initCommand_execute runs the subcommands through the root command, so the
+// pre-run hook and the migrator constructor run against a refused database address.
+func Test_initCommand_execute(t *testing.T) {
+	savedFormatter := logrus.StandardLogger().Formatter
+	savedLevel := logrus.GetLevel()
+	cfg := config.Get()
+	savedCfg := *cfg
+	t.Cleanup(func() {
+		logrus.SetFormatter(savedFormatter)
+		logrus.SetLevel(savedLevel)
+		*cfg = savedCfg
+	})
+	resetViper(t)
+
+	dsn := fmt.Sprintf("user@tcp(%s)/db", closedLoopbackAddr(t))
+	redisAddr := closedLoopbackAddr(t)
+
+	tests := []struct {
+		name string
+
+		args      []string
+		expectErr string
+	}{
+		{
+			name:      "migrate_status_database_unreachable",
+			args:      []string{"migrate", "status", "--database_dsn", dsn},
+			expectErr: "",
+		},
+		{
+			name:      "email_get_database_unreachable",
+			args:      []string{"email", "get", "--database_dsn", dsn, "--redis_address", redisAddr},
+			expectErr: "failed to initialize handlers: could not connect to the database",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := initCommand()
+			root.SilenceUsage = true
+			root.SilenceErrors = true
+			root.SetArgs(tt.args)
+
+			err := root.Execute()
+			if err == nil {
+				t.Fatalf("Wrong match. expect an error, got nil")
+			}
+			if tt.expectErr != "" && !strings.Contains(err.Error(), tt.expectErr) {
+				t.Errorf("Wrong match. expect: %q, got: %v", tt.expectErr, err)
 			}
 		})
 	}
