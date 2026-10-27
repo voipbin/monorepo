@@ -21,8 +21,8 @@ All new tests use the `Test_` prefix and no `t.Parallel()` (they replace process
 |---|---|---|
 | Start with watcher: recording dir `t.TempDir()`, bucket set, GCS emulator | Redis `SET rtpengine.<ip>.address-internal` where `<ip>` is in the set from `ifaceIPv4s`; `QueueCreate` with the configured permanent name and `normal`, with `rtpengine.<ip>.request` and `volatile`; both `ConsumeRPC`; logs "pcap watcher enabled" and "pcap watcher started"; `metadata` dir exists; after the signal a "pcap watcher stopping" log; an uuid-named orphan pcap planted under the lock is gone | key or queue names, queue types, enable condition, `CleanOrphans` call removed |
 | Recording dir set, bucket empty (no uploader) | "pcap watcher disabled" log, no watcher log | `&&` changed to `||` |
-| Recording dir empty, bucket set (emulator) | uploader created, "pcap watcher disabled" log, no watcher log | `&&` changed to `||` |
-| Invalid NG timeout | warning log with the value, startup continues | fallback warning removed |
+| Recording dir empty, bucket set (emulator) | no GCS error log, queues reached, "pcap watcher disabled" log, no watcher log | `&&` changed to `||` |
+| Invalid NG timeout (run together with recording dir and bucket both empty) | warning log with the value, startup continues, "pcap watcher disabled" log | fallback warning removed |
 | Redis unreachable (closed loopback port) | "Could not register proxy in Redis" log, no sock factory call | early return removed |
 | Invalid NG address `bad` (no DNS) | "Could not create NG client" log | early return removed |
 | GCS client creation fails (`STORAGE_EMULATOR_HOST` empty, `GOOGLE_APPLICATION_CREDENTIALS` to a missing file) | "Could not create GCS uploader" log, no `QueueCreate` | early return removed |
