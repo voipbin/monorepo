@@ -12,22 +12,30 @@
 
 ## 2. 설계 (테스트 계획, 제품 코드 변경 없음)
 
-우선순위는 미커버가 큰 패키지의 오류 전파와 경계 입력이다. 빈 호출 테스트와 자기비교 테스트는 쓰지 않는다. 기존 테스트 파일은 고치지 않고 신규 `_test.go` 파일만 추가한다(기존 파일 일부에 time.Sleep 이 있다). 기존 strict mock 헬퍼 `newExecuteErrorTestHandler`, `newExecuteErrorTestActiveflow` 를 재사용한다.
+우선순위는 미커버가 큰 패키지의 오류 전파와 경계 입력이다. 빈 호출 테스트와 자기비교 테스트는 쓰지 않는다. 기존 테스트 파일은 고치지 않고 신규 `_test.go` 파일만 추가한다(기존 파일 일부에 time.Sleep 이 있다). 기존 strict mock 헬퍼 `newExecuteErrorTestHandler`, `newExecuteErrorTestActiveflow` 를 재사용한다. 기존 `Test_executeAction_invalidOption` 등이 이미 커버한 유형은 신규 표에서 제외하며 프로파일 비교로 확인한다.
 
-- pkg/activeflowhandler (목표 추가 약 70 statement): 신규 `actionhandle_dependency_error_test.go`. 표 기반으로 하위 의존성 오류가 호출자에게 원인과 함께 전파되는지 확인한다. 대상은 goto, fetch_flow, condition_call_digits, condition_call_status, condition_datetime, condition_variable, conference_join, connect, hangup relay 구간, transcribe_recording 의 stackmap GetAction 오류, updateStackProgress 오류, PushStack 오류, reqHandler(CallV1CallGetDigits, CallV1CallGet, ConferenceV1ServiceTypeConferencecallStart, CallV1ConfbridgeCreate, FlowV1FlowCreate, CallV1CallsCreate) 오류, 참조 유형 불일치, 호출 결과가 비어 있는 경우다. 조건 분기의 불일치(weekday, minute) 경로와 ParseFloat 실패 경로도 포함한다. 비동기 goroutine 안의 호출과 json.Marshal 실패 분기는 제외한다.
-- pkg/flowhandler (목표 약 25): 신규 `db_dependency_error_test.go`. Get 의 ErrNotFound 매핑과 일반 오류, Create 의 GenerateFlowActions 오류, 캐시 생성 오류, 생성 후 조회 오류, direct 정리 실패, List/Update/UpdateActions/Delete 의 하위 DB 오류와 액션 생성 오류. 오류는 센티널 또는 원인으로 비교한다.
-- pkg/stackmaphandler (목표 약 15): 신규 `action_boundary_test.go`. GetAction/AddActions 의 빈 stack id, 빈 action id, 존재하지 않는 스택, 빈 Actions(메인 스택과 서브 스택 구분), 최대 스택 횟수 초과, GetNextAction/PopStack 계열의 스택 없음과 액션 없음 경계.
-- pkg/activeflowhandler/execute.go (목표 약 15): 신규 파일에서 executeAction 분기 중 도달 가능한 오류와 핸들러 미지원 유형 경로.
-- 부족하면 pkg/subscribehandler(72.9%), cmd/flow-control 의 형식 오류 DSN 초기화 오류 경로, pkg/dbhandler 의 DB 닫힘 오류 경로로 보충한다.
+파일별 목표(미커버 statement 는 기준 프로파일의 수치, 목표는 추가 커버 statement 수):
 
-목표 추가 약 125 statement(권장선 69, 최소선 48). 하한을 넘기면 남은 항목은 생략한다.
+| 신규 테스트 파일 | 대상 | 미커버 | 목표 |
+|---|---|---|---|
+| pkg/activeflowhandler/actionhandle_dependency_error_test.go | actionhandle.go, execute.go | 107 + 40 | 80 |
+| pkg/flowhandler/db_dependency_error_test.go | db.go | 31 | 25 |
+| pkg/stackmaphandler/action_boundary_test.go | action.go, stack.go | 19 + 5 | 15 |
+| 보충(부족할 때만) | subscribehandler, dbhandler, cmd/flow-control 초기화 오류 | 16 + 61 + 141 | 필요량 |
+
+- activeflowhandler: execute.go 의 dispatch 줄(`return nil, errHandle`)은 `executeAction` 을 통해서만 도달하므로, 각 action 유형은 `executeAction` 한 번의 호출로 dispatch 줄과 핸들러 오류 분기를 함께 커버한다(두 목표를 이중 계산하지 않는다). 표 기반으로 stackmap GetAction 오류, updateStackProgress 오류, PushStack 오류, reqHandler(CallV1CallGetDigits, CallV1CallGet, ConferenceV1ServiceTypeConferencecallStart, CallV1ConfbridgeCreate, FlowV1FlowCreate, CallV1CallsCreate) 오류, 참조 유형 불일치, 호출 결과가 비어 있는 경우를 확인한다. condition_datetime 은 실행 시각에 의존하지 않도록 항상 불일치하는 입력(weekday 는 0~6 밖의 값, minute 은 compareCondition 의 연산자 의미를 확인해 0~59 밖의 값)만 쓰고 일치 경로는 제외한다. 제외: 비동기 goroutine 안의 호출, json.Marshal 실패 분기, 코드가 직접 Marshal 한 값을 되읽는 Unmarshal 실패 분기(hangup relay). PushStack 오류는 별도 항목으로 남긴다.
+- flowhandler: Get 의 ErrNotFound 는 `errors.As` 로 `*cerrors.VoipbinError` 를, `errors.Is` 로 `dbhandler.ErrNotFound` 를 둘 다 확인한다. Create 의 GenerateFlowActions 오류, 캐시 생성 오류, 생성 후 조회 오류, direct 정리 실패 로그 경로, List/Update/UpdateActions/Delete 의 하위 DB 오류와 액션 생성 오류.
+- stackmaphandler: 실제 구현을 쓰는 순수 로직이므로 mock 이 없다. 반환 stack id 와 action 값을 정확히 단언한다. GetAction/AddActions 의 빈 stack id, 빈 action id, 존재하지 않는 스택, 빈 Actions(메인과 서브 스택 구분), 최대 스택 횟수 초과(ReturnStackID 가 자기 자신을 가리키는 순환 스택, releaseStack=false 고정. true 이면 순환이 스택을 삭제해 다른 오류로 바뀐다), GetNextAction/PopStack 계열의 스택 없음과 액션 없음.
+
+목표 합계 120 statement(권장선 69, 최소선 48). 하한을 넘기면 남은 항목은 생략하고, 부족하면 보충 행을 쓴다.
 
 ## 3. Verify 항목
 
 - 완료 기준은 수기 합계 85.5% 이상(covered 3636 이상). 최소선 85.0%(3615). 기존 테스트 전부 통과, golangci-lint 통과, go.mod/go.sum diff 없음.
+- 측정: 서비스 디렉터리에서 `GOFLAGS=-mod=mod go test -count=1 -coverprofile=cp.out ./...`(covermode set, 대상 `./...`). `-race` 실행은 별도로 하고 커버 측정에는 쓰지 않는다. 수기 합계는 mock_*.go 와 `Code generated ... DO NOT EDIT` 헤더 파일을 빼고 같은 블록은 최대 count 로 합친 값이며 원본 합계도 PR 본문에 함께 적는다.
+- 목표 블록 확인: 기준 프로파일과 새 프로파일을 (파일, 범위) 단위로 비교해 위 표의 파일별 목표 범위가 실제로 커버됐는지, 목표 밖 블록이 의도치 않게 바뀌지 않았는지 확인한다.
 - 단언 강도: 오류 테스트는 반환 오류가 주입한 센티널과 `errors.Is` 로 연결되거나 래핑 메시지를 포함하는지, 반환 값이 nil 인지, 호출되면 안 되는 하위 호출은 기대를 등록하지 않아 컨트롤러가 실패하는지를 확인한다. `err != nil` 만 보는 테스트와 `gomock.Any()` 일색의 기대를 쓰지 않는다.
-- 격리: time.Sleep 과 실제 시간, 네트워크, 환경 변수에 의존하지 않는다. 신규 테스트는 t.Parallel 을 쓰지 않고 `-race -count=3` 과 `-shuffle=on` 으로 확인한다.
-- 새 테스트 전후 프로파일을 (파일, 범위) 단위로 비교해 목표 블록이 실제로 커버됐는지 확인한다.
-- 변이 검사(scratch 복사본에서만): 패키지마다 오류 전파 제거 1건과 조건 반전 1건을 적용해 새 테스트가 실패함을 기록한다.
+- 격리: time.Sleep 과 실제 시간, 네트워크, 환경 변수에 의존하지 않는다. t.Parallel 을 쓰지 않는다. 변경 패키지를 `-race -count=3 -shuffle=on` 으로, 신규 파일의 테스트는 `-count=20` 으로 반복 실행해 순서 의존(전역 지표 등)을 확인한다.
+- 변이 검사(scratch 복사본에서만): 패키지마다 오류 전파 제거 1건과 조건 반전 1건을 적용해 새 테스트가 실패함을 기록한다. condition_datetime 의 불일치 분기와 flowhandler 의 ErrNotFound 매핑도 변이 대상에 넣는다.
 - 최종 검증은 루트 CLAUDE.md 5단계와 `bash scripts/check-test-conventions.sh`. 컨벤션은 gomock, 표 기반, `Test_` 접두, 컨트롤러 변수 `mc`, `reflect.DeepEqual` + `t.Errorf`.
-- 테스트 값은 합성값만 쓴다. PR 파일 목록은 bin-flow-manager/ 안의 _test.go 와 이 문서뿐이다. 측정은 mock 과 DO NOT EDIT 파일을 제외한 수기 합계(저장소 밖 스크립트)이며 원본 합계도 함께 기록한다.
+- 테스트 값은 합성값만 쓴다. PR 파일 목록은 bin-flow-manager/ 안의 _test.go 와 이 문서뿐이다.
