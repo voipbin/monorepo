@@ -30,4 +30,4 @@ The manager `runDaemon` function is not attempted, because it registers on the d
 
 ## Risks of shared global state
 
-viper, the config value, logrus settings, `os.Args` and `os.Stdout` are saved and restored in cleanup. `Bootstrap` rewrites the config value on every call while `LoadGlobalConfig` loads once per binary, so tests of the commands set the environment, not the config value. The deferred `runDaemon` item is excluded for the reasons above.
+viper, the config value, logrus settings, `os.Args` and `os.Stdout` are saved and restored in cleanup. `Bootstrap` rewrites the config value on every call while `LoadGlobalConfig` loads once per binary, so tests of the commands set the environment, not the config value. The manager `runDaemon` function is excluded for the reasons above.
