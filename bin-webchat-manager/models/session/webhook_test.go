@@ -91,3 +91,22 @@ func Test_CreateWebhookEvent(t *testing.T) {
 		t.Errorf("Wrong values. got: %v", got)
 	}
 }
+
+// A timestamp outside the year range 0 to 9999 cannot be encoded, so the event
+// payload is not produced.
+func Test_CreateWebhookEvent_encodeFailure(t *testing.T) {
+	tmCreate := time.Date(10000, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	m := &Session{
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("11111111-aaaa-bbbb-cccc-000000000001")},
+		TMCreate: &tmCreate,
+	}
+
+	res, err := m.CreateWebhookEvent()
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+	if res != nil {
+		t.Errorf("Wrong match. expect: nil, got: %s", res)
+	}
+}
