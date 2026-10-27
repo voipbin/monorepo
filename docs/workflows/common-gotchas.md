@@ -76,6 +76,14 @@ ServiceEventTotal = prometheus.NewCounterVec(
 
 **Before adding metrics to a service's `metricshandler`:** Check `bin-common-handler/pkg/requesthandler/main.go` `initPrometheus()` for existing metric names to avoid collisions.
 
+### Calling `NewRequestHandler` twice in one process (tests)
+
+`requesthandler.NewRequestHandler` creates new metric objects and registers them on the default Prometheus registry on every call, and `circuitbreakerhandler.NewCircuitBreakerHandler` (called from it) does the same. A second call with the same service name (metric namespace) in the same process therefore panics with `duplicate metrics collector registration attempted`. This is not a production defect, because service entrypoints under `cmd/` construct the handler once per process run (the `*-control` CLIs have several construction sites, but each subcommand runs only one of them). It shows up in tests: constructing the real handler per test case or per subtest, or running `go test -count=N` with N greater than 1 when the constructor is called inside a test function (the repetitions share one process), panics from the second construction onward. The notify handler constructors are not affected, because `notifyhandler` guards its registration per namespace.
+
+In tests:
+- Prefer `requesthandler.NewMockRequestHandler(ctrl)` and never call the real constructor.
+- If a test needs the real handler (for example with a stub `sockhandler.SockHandler`), build it once per test binary and share it (behind a `sync.Once` or in `TestMain`). `bin-api-manager/pkg/servicehandler/ai_engine_base_test.go` does this with a `sync.Once` and a stub `sockhandler.SockHandler`. Keep per-test state out of the shared instance (for example, swap a package-level stub function per test) and do not combine it with `t.Parallel()`. The circuit breaker inside the real handler is shared too, so repeated failure responses can open it for later tests.
+
 ## UUID Fields and DB Tags
 
 **CRITICAL: UUID fields MUST use the `,uuid` db tag for proper type conversion.**
