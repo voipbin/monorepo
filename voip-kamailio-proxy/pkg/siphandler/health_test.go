@@ -85,3 +85,52 @@ func Test_SendOptionsCheck_dialFailure(t *testing.T) {
 		t.Errorf("Resolution unexpectedly failed for %s", hostname)
 	}
 }
+
+// Test_SendOptionsCheck_writeFailure verifies that a failure to send the
+// request is reported as unhealthy without an error. A negative timeout makes
+// the socket deadline already expired, so the write fails locally and no
+// packet is sent.
+func Test_SendOptionsCheck_writeFailure(t *testing.T) {
+	logger := logrus.StandardLogger()
+	oldLevel := logger.GetLevel()
+	oldHooks := logger.ReplaceHooks(make(logrus.LevelHooks))
+	logger.SetLevel(logrus.DebugLevel)
+	t.Cleanup(func() {
+		logger.SetLevel(oldLevel)
+		logger.ReplaceHooks(oldHooks)
+	})
+	hook := logrustest.NewGlobal()
+
+	const hostname = "127.0.0.1"
+	result, err := SendOptionsCheck(context.Background(), hostname, -time.Second)
+	if err != nil {
+		t.Fatalf("Expected nil error, got: %v", err)
+	}
+	if result.Healthy {
+		t.Errorf("Expected unhealthy when the write fails, got healthy")
+	}
+	if result.ResponseCode != "timeout" {
+		t.Errorf("Expected 'timeout' response code, got: %s", result.ResponseCode)
+	}
+
+	// The write failure must be the reason for the result, not an earlier step
+	// or the read timeout.
+	var writeLogged bool
+	for _, e := range hook.AllEntries() {
+		if e.Data["hostname"] != hostname {
+			continue
+		}
+		switch {
+		case strings.HasPrefix(e.Message, "Could not send SIP OPTIONS"):
+			writeLogged = true
+		case strings.HasPrefix(e.Message, "Could not resolve UDP"),
+			strings.HasPrefix(e.Message, "Could not dial UDP"),
+			strings.HasPrefix(e.Message, "Could not set deadline"),
+			strings.HasPrefix(e.Message, "No SIP response received"):
+			t.Errorf("Unexpected failure before the write: %s", e.Message)
+		}
+	}
+	if !writeLogged {
+		t.Errorf("Expected a 'Could not send SIP OPTIONS' log for %s, got %d entries", hostname, len(hook.AllEntries()))
+	}
+}
