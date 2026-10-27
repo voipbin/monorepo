@@ -313,8 +313,12 @@ func (r *mainRun) expectRegistration() string {
 
 	got := map[string]string{}
 	for i := 0; i < 2; i++ {
-		q := <-r.queues
-		got[q[0]] = q[1]
+		select {
+		case q := <-r.queues:
+			got[q[0]] = q[1]
+		case <-time.After(10 * time.Second):
+			r.t.Fatal("timed out waiting for a queue registration")
+		}
 	}
 	expect := map[string]string{
 		"test.queue.listen":                          "normal",
