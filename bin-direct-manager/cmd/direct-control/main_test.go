@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"io"
 	"os"
 	"strings"
@@ -269,4 +270,115 @@ func Test_initCache(t *testing.T) {
 			t.Errorf("initCache() = %v, %v, want nil and the connect context", res, err)
 		}
 	})
+}
+
+// invalidDSN is rejected by the database driver while the connection is opened, so the
+// tests below fail at the connect step without any network access.
+const invalidDSN = "not-a-dsn"
+
+func Test_run_initHandlerFailure(t *testing.T) {
+	validCustomer := "92883d56-7fe3-11ec-8931-37d08180a2b9"
+	validResource := "c31676f0-4e69-11ec-afe3-77ba49fae527"
+
+	tests := []struct {
+		name string
+
+		run func(cmd *cobra.Command, args []string) error
+	}{
+		{"create", runCreate},
+		{"get", runGet},
+		{"list", runList},
+		{"delete", runDelete},
+		{"regenerate", runRegenerate},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resetState(t)
+			*config.Get() = config.Config{DatabaseDSN: invalidDSN}
+
+			// runCreate validates these before it connects; the other commands connect first
+			viper.Set("customer-id", validCustomer)
+			viper.Set("resource-type", "extension")
+			viper.Set("resource-id", validResource)
+
+			var err error
+			out := captureStdout(t, func() {
+				err = tt.run(&cobra.Command{}, nil)
+			})
+
+			if err == nil {
+				t.Fatalf("run() error = nil, want the connect failure")
+			}
+			for _, want := range []string{"failed to initialize handlers", "could not connect to the database", "database open error"} {
+				if !strings.Contains(err.Error(), want) {
+					t.Errorf("run() error = %q, want it to contain %q", err.Error(), want)
+				}
+			}
+			if out != "" {
+				t.Errorf("run() wrote %q, want nothing", out)
+			}
+		})
+	}
+}
+
+func Test_initCommand_execute(t *testing.T) {
+	validCustomer := "92883d56-7fe3-11ec-8931-37d08180a2b9"
+	validResource := "c31676f0-4e69-11ec-afe3-77ba49fae527"
+
+	tests := []struct {
+		name string
+
+		args []string
+
+		expectErr string
+	}{
+		{
+			// runCreate reads its values from viper before it connects, so this only reaches the
+			// connect step when the pre-run hook has bound the flags
+			name: "direct create binds the flags before the run",
+			args: []string{
+				"direct", "create",
+				"--customer-id", validCustomer,
+				"--resource-type", "extension",
+				"--resource-id", validResource,
+				"--database_dsn", invalidDSN,
+			},
+			expectErr: "could not connect to the database",
+		},
+		{
+			name:      "migrate reports the unparsable dsn from the migrator",
+			args:      []string{"migrate", "status", "--database_dsn", invalidDSN},
+			expectErr: "could not parse the database dsn",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resetState(t)
+			// the config load of the pre-run hook happens once per process, so the invalid dsn is
+			// set here as well as in the arguments; it is invalid in either state
+			*config.Get() = config.Config{DatabaseDSN: invalidDSN}
+
+			root := initCommand()
+			root.SilenceUsage = true
+			root.SilenceErrors = true
+			buf := &bytes.Buffer{}
+			root.SetOut(buf)
+			root.SetErr(buf)
+			root.SetArgs(tt.args)
+
+			var err error
+			out := captureStdout(t, func() {
+				err = root.Execute()
+			})
+
+			if err == nil || !strings.Contains(err.Error(), tt.expectErr) {
+				t.Errorf("Execute() error = %v, want it to contain %q", err, tt.expectErr)
+			}
+			if out != "" || buf.Len() != 0 {
+				t.Errorf("Execute() printed stdout %q and command output %q, want nothing", out, buf.String())
+			}
+		})
+	}
 }
