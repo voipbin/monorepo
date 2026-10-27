@@ -70,6 +70,7 @@ Event publishing and webhook delivery:
 
 ### pkg/sockhandler
 Abstract message-broker interface. Currently backed by RabbitMQ. Consumer services receive this as a dependency injection and should not depend on `rabbitmqhandler` directly.
+- `SetRabbitFactory(f)` — test seam of `NewSockHandler`: replaces the RabbitMQ handler factory and returns a restore function (nil installs the default)
 
 ### pkg/rabbitmqhandler
 Low-level RabbitMQ connection management, channel lifecycle, queue declarations. Used internally by `sockhandler`. Not intended for direct use by consumer services.
@@ -87,11 +88,13 @@ DB helper utilities:
 - `PrepareFields` — generates `?` placeholders for SQL INSERT/UPDATE
 - `GetDBFields` — reflects struct db tags into column name lists
 - `ScanRow` — scans sql.Row/sql.Rows results into structs
+- `SetConnectFunc(f)` — test seam of `Connect`: replaces the connection function and returns a restore function (nil installs the default)
 
 ### pkg/migrationhandler
 Schema migrations for a service that owns its tables (see [docs/workflows/service-owned-migrations.md](../../docs/workflows/service-owned-migrations.md)):
 - `Run(dsn, fsys, versionTable)` — applies the pending migrations of the embedded files (`New`, `Up`, `Close`)
 - `Migrator` — `New`, `Up`, `Down`, `Status`, `MaxVersion`, `Force`, `Close`; a dedicated connection with `lock_wait_timeout=10`, serialized by a MySQL named lock; a database version ahead of the image is skipped with a warning, a dirty database is refused
+- `SetEngineFunc(f)` / `Engine` — test seam of `New` (and so of `Run` and the `open` of the recovery command): replaces the factory of the migration engine and returns a restore function (nil installs the default)
 - `NewMigrateCommand(use, open)` — cobra command `status`, `up`, `down`, `force <version>` for the service control binary
 - `migrationcheck.Check(fsys, opt)` — structure check of the migration files (pairs, contiguous numbers, one statement per file, baseline rules, table option allow list, declared column charsets)
 

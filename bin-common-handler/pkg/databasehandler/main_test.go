@@ -1,6 +1,8 @@
 package databasehandler
 
 import (
+	"database/sql"
+	"errors"
 	"strings"
 	"testing"
 
@@ -402,5 +404,98 @@ func Test_ApplyFields_NotEq(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func Test_SetConnectFunc(t *testing.T) {
+	tests := []struct {
+		name string
+		run  func(t *testing.T)
+	}{
+		{"Connect uses the replaced function", func(t *testing.T) {
+			var gotDSN string
+			fakeDB := &sql.DB{}
+			restore := SetConnectFunc(func(dsn string) (*sql.DB, error) {
+				gotDSN = dsn
+				return fakeDB, nil
+			})
+			defer restore()
+
+			db, err := Connect("dsn-a")
+			if err != nil || db != fakeDB || gotDSN != "dsn-a" {
+				t.Errorf("Wrong match. expect: the fake db, got: %v, %v, %q", db, err, gotDSN)
+			}
+		}},
+
+		{"Connect returns the function error", func(t *testing.T) {
+			errConn := errors.New("conn failed")
+			restore := SetConnectFunc(func(string) (*sql.DB, error) { return nil, errConn })
+			defer restore()
+
+			if db, err := Connect("dsn"); db != nil || !errors.Is(err, errConn) {
+				t.Errorf("Wrong match. expect: nil and the error, got: %v, %v", db, err)
+			}
+		}},
+
+		{"restore, nested restore and nil return the previous function", func(t *testing.T) {
+			var called []string
+			restoreFirst := SetConnectFunc(func(string) (*sql.DB, error) { called = append(called, "first"); return nil, nil })
+			restoreSecond := SetConnectFunc(func(string) (*sql.DB, error) { called = append(called, "second"); return nil, nil })
+
+			_, _ = Connect("")
+			restoreSecond()
+			_, _ = Connect("")
+
+			// The default is back: a closed port fails the ping.
+			restoreNil := SetConnectFunc(nil)
+			if db, err := Connect("u:p@tcp(127.0.0.1:1)/db?timeout=1s"); db != nil || err == nil {
+				t.Errorf("Wrong match. expect: the default ping error, got: %v, %v", db, err)
+			}
+			restoreNil()
+			_, _ = Connect("")
+			restoreFirst()
+
+			if got := strings.Join(called, ","); got != "second,first,first" {
+				t.Errorf("Wrong match. expect: second,first,first, got: %s", got)
+			}
+
+			if db, err := Connect("u:p@tcp(127.0.0.1:1)/db?timeout=1s"); db != nil || err == nil {
+				t.Errorf("Wrong match. expect: the default ping error after the last restore, got: %v, %v", db, err)
+			}
+		}},
+
+		{"the default reports an open error", func(t *testing.T) {
+			if db, err := Connect("not a dsn"); db != nil || err == nil || !strings.Contains(err.Error(), "database") {
+				t.Errorf("Wrong match. expect: a database error, got: %v, %v", db, err)
+			}
+		}},
+
+		{"a factory may call the setter and read concurrently", func(t *testing.T) {
+			var inner func()
+			restore := SetConnectFunc(func(string) (*sql.DB, error) {
+				inner = SetConnectFunc(func(string) (*sql.DB, error) { return nil, nil })
+				return nil, nil
+			})
+			defer restore()
+
+			_, _ = Connect("")
+			defer inner()
+
+			done := make(chan struct{})
+			go func() {
+				defer close(done)
+				for i := 0; i < 200; i++ {
+					SetConnectFunc(func(string) (*sql.DB, error) { return nil, nil })()
+				}
+			}()
+			for i := 0; i < 200; i++ {
+				_, _ = Connect("")
+			}
+			<-done
+		}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.run)
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"context"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"sync/atomic"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -32,12 +33,38 @@ type SockHandler interface {
 	QueueUnbind(name, key, exchange string, args amqp.Table) error            // NEW, Task 1.3
 }
 
+// rabbitFactory creates the RabbitMQ sock handler. Tests replace it with SetRabbitFactory.
+var rabbitFactory atomic.Pointer[func(serverURI string) SockHandler]
+
+func init() {
+	SetRabbitFactory(nil)
+}
+
+func defaultRabbitFactory(serverURI string) SockHandler {
+	return rabbitmqhandler.NewRabbit(serverURI)
+}
+
+// SetRabbitFactory replaces the function that NewSockHandler uses to create the RabbitMQ handler
+// and returns a function that puts the previous one back. A nil f installs the default.
+// It is meant for tests: call the returned function with defer or t.Cleanup, in reverse order of
+// the calls, and do not run such a test in parallel with a test that expects the default.
+func SetRabbitFactory(f func(serverURI string) SockHandler) (restore func()) {
+	if f == nil {
+		f = defaultRabbitFactory
+	}
+
+	prev := rabbitFactory.Swap(&f)
+	return func() {
+		rabbitFactory.Store(prev)
+	}
+}
+
 func NewSockHandler(sockType sock.Type, serverURI string) SockHandler {
 
 	switch sockType {
 
 	case sock.TypeRabbitMQ:
-		return rabbitmqhandler.NewRabbit(serverURI)
+		return (*rabbitFactory.Load())(serverURI)
 
 	default:
 		return nil
