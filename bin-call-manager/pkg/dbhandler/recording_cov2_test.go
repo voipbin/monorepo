@@ -15,6 +15,8 @@ import (
 )
 
 func Test_Recording_cov2_singleGetFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2c00001-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&recording.Recording{})
@@ -48,6 +50,8 @@ func Test_Recording_cov2_singleGetFailures(t *testing.T) {
 }
 
 func Test_Recording_cov2_RecordingGet_cacheHit(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("c2c00002-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	want := &recording.Recording{}
 	want.ID = id
@@ -68,6 +72,8 @@ func Test_Recording_cov2_RecordingGet_cacheHit(t *testing.T) {
 }
 
 func Test_Recording_cov2_RecordingGet_dbHitNormalizesNull(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("c2c00003-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&recording.Recording{})
 
@@ -92,6 +98,8 @@ func Test_Recording_cov2_RecordingGet_dbHitNormalizesNull(t *testing.T) {
 }
 
 func Test_Recording_cov2_RecordingList_failures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	cols := commondatabasehandler.GetDBFields(&recording.Recording{})
 
@@ -105,6 +113,8 @@ func Test_Recording_cov2_RecordingList_failures(t *testing.T) {
 }
 
 func Test_Recording_cov2_updateToCache(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2c00004-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&recording.Recording{})
@@ -119,6 +129,8 @@ func Test_Recording_cov2_updateToCache(t *testing.T) {
 }
 
 func Test_Recording_cov2_writeFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2c00005-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	ts := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
@@ -154,6 +166,8 @@ func Test_Recording_cov2_writeFailures(t *testing.T) {
 }
 
 func Test_Recording_cov2_RecordingUpdate_emptyFields(t *testing.T) {
+	resetTestDB(t)
+
 	e := newCov2Env(t)
 
 	if err := e.h.RecordingUpdate(context.Background(), uuid.Nil, map[recording.Field]any{}); err != nil {

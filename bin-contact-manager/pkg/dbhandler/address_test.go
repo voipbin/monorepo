@@ -36,6 +36,8 @@ func insertTestAddress(t *testing.T, db *sql.DB, id, customerID, contactID uuid.
 }
 
 func Test_AddressListByContactID(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -132,6 +134,8 @@ func Test_AddressListByContactID(t *testing.T) {
 }
 
 func Test_AddressGet(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -193,6 +197,8 @@ func Test_AddressGet(t *testing.T) {
 }
 
 func Test_AddressCreate(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -266,6 +272,8 @@ func Test_AddressCreate(t *testing.T) {
 // issue #1044 (POST /v1/contacts/{id}/addresses returned bare 500 on
 // duplicate address instead of a distinguishable conflict status).
 func Test_AddressCreate_Duplicate(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -362,6 +370,8 @@ func Test_AddressCreate_Duplicate(t *testing.T) {
 // (409), which is materially wrong for what is actually a different
 // constraint being violated.
 func Test_AddressCreate_PrimaryIndexCollision_NotMisclassified(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -429,6 +439,8 @@ func Test_AddressCreate_PrimaryIndexCollision_NotMisclassified(t *testing.T) {
 }
 
 func Test_AddressUpdate(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -497,6 +509,8 @@ func Test_AddressUpdate(t *testing.T) {
 }
 
 func Test_AddressDelete(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -564,6 +578,8 @@ func Test_AddressDelete(t *testing.T) {
 // NULL for contact_id when a.ContactID == uuid.Nil (not the all-zero-byte
 // uuid.Nil.Bytes()), and does not call contactUpdateToCache in that case.
 func Test_AddressCreate_Unresolved(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -619,6 +635,8 @@ func Test_AddressCreate_Unresolved(t *testing.T) {
 // Test_AddressList_Unresolved verifies AddressList's unresolved filter only
 // returns rows where contact_id IS NULL.
 func Test_AddressList_Unresolved(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -710,6 +728,8 @@ func Test_AddressList_Unresolved(t *testing.T) {
 // self-contradictory `contact_id = ? AND contact_id IS NULL` clause that
 // always returned zero rows regardless of what was actually in the table.
 func Test_AddressList_UnresolvedWinsOverContactID(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -782,6 +802,8 @@ func Test_AddressList_UnresolvedWinsOverContactID(t *testing.T) {
 // different contact, and idempotent success on re-claiming the same
 // contact.
 func Test_AddressClaim(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

@@ -48,6 +48,8 @@ func beginTestTx(t *testing.T, h DBHandler) *sql.Tx {
 // transaction open reads through the transaction only, and reads through
 // h.db only after Commit or Rollback.
 func Test_CaseInsertTx_CommitAndRollback(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 	ctx := context.Background()
 	customerID := uuid.Must(uuid.NewV4())
@@ -103,6 +105,8 @@ func Test_CaseInsertTx_CommitAndRollback(t *testing.T) {
 }
 
 func Test_CaseGetByIDTx_NotFound(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 	ctx := context.Background()
 
@@ -115,6 +119,8 @@ func Test_CaseGetByIDTx_NotFound(t *testing.T) {
 }
 
 func Test_CaseUpdateContactIDTx_And_ClearContactIDTx(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 	ctx := context.Background()
 	customerID := uuid.Must(uuid.NewV4())
@@ -208,6 +214,8 @@ func Test_CaseUpdateContactIDTx_And_ClearContactIDTx(t *testing.T) {
 }
 
 func Test_CaseListAll_SpansCustomers(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 	ctx := context.Background()
 
@@ -238,6 +246,8 @@ func Test_CaseListAll_SpansCustomers(t *testing.T) {
 }
 
 func Test_BeginTx_Success(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 
 	tx, err := h.BeginTx(context.Background())

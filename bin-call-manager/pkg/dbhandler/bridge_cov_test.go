@@ -7,6 +7,8 @@ import (
 )
 
 func Test_BridgeJSONFunctions_cov(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := "d1f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e01"
 	channelID := "d1f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e02"

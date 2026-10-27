@@ -42,6 +42,8 @@ func newTXTestHandler(t *testing.T) (*handler, sqlmock.Sqlmock, *cachehandler.Mo
 }
 
 func Test_CallTXStart_rowsErr(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("9a0f3c4e-1b2d-11f1-8a5e-0b3f6c1d2e77")
 
 	h, mock, _ := newTXTestHandler(t)
@@ -72,6 +74,8 @@ func Test_CallTXStart_rowsErr(t *testing.T) {
 }
 
 func Test_CallTXStart_notFound(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("9a0f3c4e-1b2d-11f1-8a5e-0b3f6c1d2e77")
 
 	h, mock, _ := newTXTestHandler(t)
@@ -89,6 +93,8 @@ func Test_CallTXStart_notFound(t *testing.T) {
 }
 
 func Test_CallTXStart_found(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("9a0f3c4e-1b2d-11f1-8a5e-0b3f6c1d2e77")
 
 	h, mock, _ := newTXTestHandler(t)
@@ -117,6 +123,8 @@ func Test_CallTXStart_found(t *testing.T) {
 // Test_CallTXStart_cancelBeforeBegin verifies that the context reaches
 // BeginTx: a cancelled context never reaches the driver.
 func Test_CallTXStart_cancelBeforeBegin(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("9a0f3c4e-1b2d-11f1-8a5e-0b3f6c1d2e77")
 
 	h, _, _ := newTXTestHandler(t)
@@ -134,6 +142,8 @@ func Test_CallTXStart_cancelBeforeBegin(t *testing.T) {
 // FOR UPDATE query: cancelling while the query waits aborts it instead of
 // waiting for it to finish.
 func Test_CallTXStart_cancelDuringQuery(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("9a0f3c4e-1b2d-11f1-8a5e-0b3f6c1d2e77")
 	delay := 2 * time.Second
 
@@ -164,6 +174,8 @@ func Test_CallTXStart_cancelDuringQuery(t *testing.T) {
 // statements of a running transaction and that nothing is written to the
 // cache when the statement is aborted.
 func Test_CallTXChainedCallID_cancelled(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("9a0f3c4e-1b2d-11f1-8a5e-0b3f6c1d2e77")
 	chainedCallID := uuid.FromStringOrNil("9a0f3c4e-1b2d-11f1-8a5e-0b3f6c1d2e78")
 
@@ -208,6 +220,8 @@ func Test_CallTXChainedCallID_cancelled(t *testing.T) {
 // refresh before the commit uses the passed context: cancelling while the
 // refresh reads the call aborts it instead of waiting for it.
 func Test_CallTXChainedCallID_cacheRefreshCancelled(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("9a0f3c4e-1b2d-11f1-8a5e-0b3f6c1d2e77")
 	chainedCallID := uuid.FromStringOrNil("9a0f3c4e-1b2d-11f1-8a5e-0b3f6c1d2e78")
 	delay := 2 * time.Second
@@ -253,6 +267,8 @@ func Test_CallTXChainedCallID_cacheRefreshCancelled(t *testing.T) {
 }
 
 func Test_CallTXFinish_commitError(t *testing.T) {
+	resetTestDB(t)
+
 	h, mock, _ := newTXTestHandler(t)
 
 	mock.ExpectBegin()
@@ -284,6 +300,8 @@ func Test_CallTXFinish_commitError(t *testing.T) {
 }
 
 func Test_CallTXFinish_noLogOnSuccessOrRollback(t *testing.T) {
+	resetTestDB(t)
+
 	h, mock, _ := newTXTestHandler(t)
 
 	hook := logrustest.NewGlobal()

@@ -41,6 +41,8 @@ func openTestTx(t *testing.T, h *handler, mock sqlmock.Sqlmock) *sql.Tx {
 }
 
 func Test_staleRowRepairTx(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	customerID := uuid.FromStringOrNil("d9000000-0000-0000-0000-000000000001")
 	rowID := uuid.FromStringOrNil("d9000000-0000-0000-0000-000000000002")

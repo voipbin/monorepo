@@ -39,6 +39,8 @@ func newOutboundConfigTestHandler(t *testing.T) (*handler, *utilhandler.MockUtil
 // ---------------------------------------------------------------------------
 
 func Test_OutboundConfigCreate_uuidColumnsStoredAs16Bytes(t *testing.T) {
+	resetTestDB(t)
+
 	h, mockUtil, mc := newOutboundConfigTestHandler(t)
 	defer mc.Finish()
 	ctx := context.Background()
@@ -68,6 +70,8 @@ func Test_OutboundConfigCreate_uuidColumnsStoredAs16Bytes(t *testing.T) {
 }
 
 func Test_OutboundConfigUpdate_uuidStoredAs16Bytes(t *testing.T) {
+	resetTestDB(t)
+
 	h, mockUtil, mc := newOutboundConfigTestHandler(t)
 	defer mc.Finish()
 	ctx := context.Background()
@@ -111,6 +115,8 @@ func Test_OutboundConfigUpdate_uuidStoredAs16Bytes(t *testing.T) {
 // then hits a BINARY(16) column. That is silent truncation under permissive
 // MySQL mode and a "Data too long for column" write error under strict mode.
 func Test_outboundConfigUpdate_pointerUUIDCorruptionMechanism(t *testing.T) {
+	resetTestDB(t)
+
 	numberID := uuid.FromStringOrNil("c3000000-0000-11f0-9e2b-0242ac110002")
 
 	// The WRONG way: a raw *uuid.UUID.
@@ -163,6 +169,8 @@ func Test_outboundConfigUpdate_pointerUUIDCorruptionMechanism(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 func Test_OutboundConfigCreate_destinationWhitelistThreeWay(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name      string
 		whitelist []string
@@ -227,6 +235,8 @@ func Test_OutboundConfigCreate_destinationWhitelistThreeWay(t *testing.T) {
 }
 
 func Test_OutboundConfigUpdate_destinationWhitelistThreeWay(t *testing.T) {
+	resetTestDB(t)
+
 	nilSlice := []string(nil)
 	emptySlice := []string{}
 	fullSlice := []string{"us"}
@@ -304,6 +314,8 @@ func Test_OutboundConfigUpdate_destinationWhitelistThreeWay(t *testing.T) {
 // empty destination_whitelist. ScanRow's copyJSON skips NULL/empty and leaves
 // the field nil instead, which is not an error.
 func Test_OutboundConfig_destinationWhitelistNullRead(t *testing.T) {
+	resetTestDB(t)
+
 	h, _, mc := newOutboundConfigTestHandler(t)
 	defer mc.Finish()
 	ctx := context.Background()
@@ -337,6 +349,8 @@ func Test_OutboundConfig_destinationWhitelistNullRead(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 func Test_OutboundConfigCreate_timestamps(t *testing.T) {
+	resetTestDB(t)
+
 	h, mockUtil, mc := newOutboundConfigTestHandler(t)
 	defer mc.Finish()
 	ctx := context.Background()
@@ -371,6 +385,8 @@ func Test_OutboundConfigCreate_timestamps(t *testing.T) {
 }
 
 func Test_OutboundConfigUpdate_timestamps(t *testing.T) {
+	resetTestDB(t)
+
 	h, mockUtil, mc := newOutboundConfigTestHandler(t)
 	defer mc.Finish()
 	ctx := context.Background()
@@ -412,6 +428,8 @@ func Test_OutboundConfigUpdate_timestamps(t *testing.T) {
 // unlike recording.go's RecordingGet, which has no such filter — which is why
 // the GetByID-based assertion pattern works there but not here.)
 func Test_OutboundConfigDelete_setsTMDelete(t *testing.T) {
+	resetTestDB(t)
+
 	h, mockUtil, mc := newOutboundConfigTestHandler(t)
 	defer mc.Finish()
 	ctx := context.Background()
@@ -450,6 +468,8 @@ func Test_OutboundConfigDelete_setsTMDelete(t *testing.T) {
 // Test_OutboundConfigGetByCustomerID covers the customer lookup path, including
 // that the ,uuid read conversion round-trips through the BINARY(16) fixture.
 func Test_OutboundConfigGetByCustomerID(t *testing.T) {
+	resetTestDB(t)
+
 	h, mockUtil, mc := newOutboundConfigTestHandler(t)
 	defer mc.Finish()
 	ctx := context.Background()
@@ -486,6 +506,8 @@ func Test_OutboundConfigGetByCustomerID(t *testing.T) {
 }
 
 func Test_OutboundConfigList(t *testing.T) {
+	resetTestDB(t)
+
 	h, mockUtil, mc := newOutboundConfigTestHandler(t)
 	defer mc.Finish()
 	ctx := context.Background()

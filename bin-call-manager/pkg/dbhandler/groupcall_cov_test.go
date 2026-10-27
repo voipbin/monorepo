@@ -16,6 +16,8 @@ import (
 )
 
 func Test_GroupcallDelete_cov(t *testing.T) {
+	resetTestDB(t)
+
 	g := &groupcall.Groupcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("a3f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e01")}}
 
 	mc := gomock.NewController(t)

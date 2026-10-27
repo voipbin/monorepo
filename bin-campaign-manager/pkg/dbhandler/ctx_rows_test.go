@@ -25,6 +25,8 @@ var errRowsBroken = errors.New("simulated failure while reading rows")
 // is returned as an error: a single-row get must not report it as ErrNotFound
 // and a list must not return a partial (here empty) result as a success.
 func Test_RowsErr_NotMisreported(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("9a0f3c4e-1b2d-11f1-8a5e-0b3f6c1d2e77")
 	ctx := context.Background()
 
@@ -102,6 +104,8 @@ func Test_RowsErr_NotMisreported(t *testing.T) {
 // instead of the statement running to completion. The id does not exist, so
 // the test does not depend on (or change) the shared database state.
 func Test_ContextCancel_UpdateAborted(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

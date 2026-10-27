@@ -194,6 +194,8 @@ func toAnySlice[T any](in []*T) []any {
 }
 
 func Test_entities_writeFailures(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("d8000001-0000-4000-8000-000000000001")
 	now := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
 
@@ -230,6 +232,8 @@ func Test_entities_writeFailures(t *testing.T) {
 }
 
 func Test_entities_readFailures(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("d8000002-0000-4000-8000-000000000001")
 
 	for _, ops := range entityOpsList() {
@@ -293,6 +297,8 @@ func Test_entities_readFailures(t *testing.T) {
 }
 
 func Test_entities_listFailures(t *testing.T) {
+	resetTestDB(t)
+
 	for _, ops := range entityOpsList() {
 		t.Run(ops.name+" query failure", func(t *testing.T) {
 			m := newMockedHandler(t)
@@ -330,6 +336,8 @@ func Test_entities_listFailures(t *testing.T) {
 }
 
 func Test_CampaignListDeletedSince_failures(t *testing.T) {
+	resetTestDB(t)
+
 	since := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	t.Run("query failure", func(t *testing.T) {
@@ -354,6 +362,8 @@ func Test_CampaignListDeletedSince_failures(t *testing.T) {
 }
 
 func Test_GetCurTimeAdd(t *testing.T) {
+	resetTestDB(t)
+
 	const layout = "2006-01-02 15:04:05.999999999"
 
 	tests := []struct {

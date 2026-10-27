@@ -44,6 +44,8 @@ import (
 // does not consume budget, and the retried INSERT is given its own
 // (unbudgeted) attempt and succeeds.
 func Test_AddressCreate_DeadlockBudget_RepairDoesNotConsumeIt(t *testing.T) {
+	resetTestDB(t)
+
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("could not create sqlmock: %v", err)

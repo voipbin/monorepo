@@ -22,6 +22,8 @@ import (
 // ContactLookupByPhone/ByEmail (tel/email specific), Case's peer_type can
 // be any commonaddress.Type (call reference_type today, others later).
 func Test_AddressLookupContactIDByTypeTarget(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

@@ -15,6 +15,8 @@ import (
 )
 
 func Test_Confbridge_cov2_singleGetFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2b00001-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&confbridge.Confbridge{})
@@ -48,6 +50,8 @@ func Test_Confbridge_cov2_singleGetFailures(t *testing.T) {
 }
 
 func Test_Confbridge_cov2_ConfbridgeGet_cacheHit(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("c2b00002-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	want := &confbridge.Confbridge{}
 	want.ID = id
@@ -68,6 +72,8 @@ func Test_Confbridge_cov2_ConfbridgeGet_cacheHit(t *testing.T) {
 }
 
 func Test_Confbridge_cov2_ConfbridgeGet_dbHitNormalizesNull(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("c2b00003-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&confbridge.Confbridge{})
 
@@ -99,6 +105,8 @@ func Test_Confbridge_cov2_ConfbridgeGet_dbHitNormalizesNull(t *testing.T) {
 }
 
 func Test_Confbridge_cov2_ConfbridgeList_failures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	cols := commondatabasehandler.GetDBFields(&confbridge.Confbridge{})
 
@@ -112,6 +120,8 @@ func Test_Confbridge_cov2_ConfbridgeList_failures(t *testing.T) {
 }
 
 func Test_Confbridge_cov2_updateToCache(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2b00004-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&confbridge.Confbridge{})
@@ -126,6 +136,8 @@ func Test_Confbridge_cov2_updateToCache(t *testing.T) {
 }
 
 func Test_Confbridge_cov2_writeFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2b00005-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	ts := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
@@ -161,6 +173,8 @@ func Test_Confbridge_cov2_writeFailures(t *testing.T) {
 }
 
 func Test_Confbridge_cov2_ConfbridgeUpdate_emptyFields(t *testing.T) {
+	resetTestDB(t)
+
 	e := newCov2Env(t)
 
 	if err := e.h.ConfbridgeUpdate(context.Background(), uuid.Nil, map[confbridge.Field]any{}); err != nil {

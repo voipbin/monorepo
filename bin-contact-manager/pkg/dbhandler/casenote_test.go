@@ -18,6 +18,8 @@ import (
 // + list (design §3.5). Active notes (tm_delete IS NULL) are ordered by
 // tm_create.
 func Test_CaseNoteCreate_And_CaseNoteListByCase(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -71,6 +73,8 @@ func Test_CaseNoteCreate_And_CaseNoteListByCase(t *testing.T) {
 // contact_resolutions' retraction pattern): a deleted note is excluded
 // from CaseNoteListByCase.
 func Test_CaseNoteDelete_SoftDeletesAndExcludesFromList(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -111,6 +115,8 @@ func Test_CaseNoteDelete_SoftDeletesAndExcludesFromList(t *testing.T) {
 // Test_CaseNoteDelete_NotFound verifies deleting a non-existent (or
 // already-deleted, or cross-tenant) note returns ErrNotFound.
 func Test_CaseNoteDelete_NotFound(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

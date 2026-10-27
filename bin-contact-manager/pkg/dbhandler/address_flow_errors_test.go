@@ -89,6 +89,8 @@ func fullAddressRows(contactID uuid.UUID, target string) *sqlmock.Rows {
 }
 
 func Test_AddressCreate_Flow(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	unresolved := func() *contact.Address {
 		return &contact.Address{
@@ -188,6 +190,8 @@ func Test_AddressCreate_Flow(t *testing.T) {
 }
 
 func Test_AddressClaim_Flow(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	claimer := txTestContactID
 	owner := txTestOtherID
@@ -352,6 +356,8 @@ func Test_AddressClaim_Flow(t *testing.T) {
 }
 
 func Test_AddressUpdate_Flow(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	update := func(fields map[string]any) func(h *handler) error {
 		return func(h *handler) error {
@@ -546,6 +552,8 @@ func Test_AddressUpdate_Flow(t *testing.T) {
 }
 
 func Test_AddressDelete_Flow(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	del := func(h *handler) error { return h.AddressDelete(ctx, txTestAddressID) }
 	prelude := func(mock sqlmock.Sqlmock) {
@@ -626,6 +634,8 @@ func Test_AddressDelete_Flow(t *testing.T) {
 }
 
 func Test_AddressResetPrimary_Flow(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	reset := func(h *handler) error { return h.AddressResetPrimary(ctx, txTestContactID) }
 

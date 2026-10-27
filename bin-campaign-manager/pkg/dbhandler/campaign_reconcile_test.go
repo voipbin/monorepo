@@ -19,6 +19,8 @@ import (
 // order, and the NULL-comparison exclusion of live campaigns, against the
 // real SQLite test-schema harness (see main_test.go).
 func Test_CampaignListDeletedSince(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

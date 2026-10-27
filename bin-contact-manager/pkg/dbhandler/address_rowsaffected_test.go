@@ -37,6 +37,8 @@ import (
 // success); after the fix it returns ErrStaleTarget, which the outer
 // retry loop treats as retry-eligible.
 func Test_AddressUpdate_ConcurrentDeleteRace_ZeroRowsAffected(t *testing.T) {
+	resetTestDB(t)
+
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("could not create sqlmock: %v", err)
@@ -94,6 +96,8 @@ func Test_AddressUpdate_ConcurrentDeleteRace_ZeroRowsAffected(t *testing.T) {
 // same TOCTOU race on the delete path: a concurrent delete/re-target
 // already removed the row by the time this DELETE executes.
 func Test_AddressDelete_ConcurrentDeleteRace_ZeroRowsAffected(t *testing.T) {
+	resetTestDB(t)
+
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("could not create sqlmock: %v", err)

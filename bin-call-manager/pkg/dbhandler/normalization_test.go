@@ -41,6 +41,8 @@ func selectRawColumn(t *testing.T, query string, arg any) string {
 }
 
 func Test_normalization_ConfbridgeSetFlags_nilStoresEmptyArray(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -74,6 +76,8 @@ func Test_normalization_ConfbridgeSetFlags_nilStoresEmptyArray(t *testing.T) {
 }
 
 func Test_normalization_GroupcallSetCallIDs_nilStoresEmptyArray(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -106,6 +110,8 @@ func Test_normalization_GroupcallSetCallIDs_nilStoresEmptyArray(t *testing.T) {
 }
 
 func Test_normalization_GroupcallSetGroupcallIDs_nilStoresEmptyArray(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

@@ -16,6 +16,8 @@ import (
 )
 
 func Test_ChannelSetDataItem_cov(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := "e1f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e01"
 	sel := `SELECT .* FROM call_channels WHERE id = \?`
@@ -59,6 +61,8 @@ func covChannelHandler(t *testing.T, ch *channel.Channel) (*handler, *utilhandle
 }
 
 func Test_ChannelSetSIPData_cov(t *testing.T) {
+	resetTestDB(t)
+
 	ch := &channel.Channel{AsteriskID: "3e:50:6b:43:bb:30", ID: "e2f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e01"}
 	h, mockUtil, mockCache := covChannelHandler(t, ch)
 	ctx := context.Background()
@@ -81,6 +85,8 @@ func Test_ChannelSetSIPData_cov(t *testing.T) {
 }
 
 func Test_ChannelSetPlaybackID_cov(t *testing.T) {
+	resetTestDB(t)
+
 	ch := &channel.Channel{AsteriskID: "3e:50:6b:43:bb:30", ID: "e2f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e02"}
 	h, mockUtil, mockCache := covChannelHandler(t, ch)
 	ctx := context.Background()

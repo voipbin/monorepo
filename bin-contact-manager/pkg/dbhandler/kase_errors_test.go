@@ -39,6 +39,8 @@ func assertWrappedErr(t *testing.T, err error, wantText string, wantIs error) {
 }
 
 func Test_BeginTx_Failure(t *testing.T) {
+	resetTestDB(t)
+
 	h, mock, _ := newCtxRowsHandler(t)
 
 	mock.ExpectBegin().WillReturnError(errCaseBoom)
@@ -54,6 +56,8 @@ func Test_BeginTx_Failure(t *testing.T) {
 }
 
 func Test_CaseInsert_ErrorClassification(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	customerID := uuid.Must(uuid.NewV4())
 
@@ -105,6 +109,8 @@ func Test_CaseInsert_ErrorClassification(t *testing.T) {
 }
 
 func Test_CaseGetOpenByPeer_ErrorClassification(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 
 	tests := []struct {
@@ -173,6 +179,8 @@ func Test_CaseGetOpenByPeer_ErrorClassification(t *testing.T) {
 }
 
 func Test_CaseUpdateStatusClosed_ErrorClassification(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	closedAt := time.Date(2026, 10, 25, 11, 0, 0, 0, time.UTC)
 
@@ -229,6 +237,8 @@ func Test_CaseUpdateStatusClosed_ErrorClassification(t *testing.T) {
 }
 
 func Test_CaseWrites_ExecFailure(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	customerID := uuid.Must(uuid.NewV4())
 	caseID := uuid.Must(uuid.NewV4())
@@ -304,6 +314,8 @@ func Test_CaseWrites_ExecFailure(t *testing.T) {
 }
 
 func Test_CaseReads_QueryFailure(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	customerID := uuid.Must(uuid.NewV4())
 	caseID := uuid.Must(uuid.NewV4())
@@ -399,6 +411,8 @@ func Test_CaseReads_QueryFailure(t *testing.T) {
 }
 
 func Test_ListReads_ScanAndRowIterationFailure(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	customerID := uuid.Must(uuid.NewV4())
 	ownerID := uuid.Must(uuid.NewV4())
@@ -498,6 +512,8 @@ func Test_ListReads_ScanAndRowIterationFailure(t *testing.T) {
 }
 
 func Test_CaseList_InvalidPageToken(t *testing.T) {
+	resetTestDB(t)
+
 	h, mock, _ := newCtxRowsHandler(t)
 
 	got, err := h.CaseList(context.Background(), uuid.Must(uuid.NewV4()), 10, "not-a-timestamp", "", "", uuid.Nil, uuid.Nil, "")

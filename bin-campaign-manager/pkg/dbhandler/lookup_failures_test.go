@@ -21,6 +21,8 @@ import (
 )
 
 func Test_CampaigncallLookup_failures(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("d8000003-0000-4000-8000-000000000001")
 
 	lookups := []struct {
@@ -79,6 +81,8 @@ func Test_CampaigncallLookup_failures(t *testing.T) {
 }
 
 func Test_CampaigncallListOngoingByCampaignID_failures(t *testing.T) {
+	resetTestDB(t)
+
 	campaignID := uuid.FromStringOrNil("d8000004-0000-4000-8000-000000000001")
 
 	t.Run("query failure", func(t *testing.T) {
@@ -117,6 +121,8 @@ func Test_CampaigncallListOngoingByCampaignID_failures(t *testing.T) {
 // Test_list_unsupportedFilter checks that a filter value of an unsupported type stops the list
 // before any query is sent (the sql mock has no expectation).
 func Test_list_unsupportedFilter(t *testing.T) {
+	resetTestDB(t)
+
 	unsupported := map[string]int{"a": 1}
 
 	tests := []struct {
@@ -150,6 +156,8 @@ func Test_list_unsupportedFilter(t *testing.T) {
 }
 
 func Test_update_execFailure(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("d8000005-0000-4000-8000-000000000001")
 	now := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
 
@@ -253,6 +261,8 @@ func cacheOpsList() []cacheOps {
 }
 
 func Test_cacheWrite_failures(t *testing.T) {
+	resetTestDB(t)
+
 	now := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
 
 	for _, ops := range cacheOpsList() {

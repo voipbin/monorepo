@@ -19,6 +19,7 @@ import (
 )
 
 func Test_ConfbridgeCreateAndGet(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name string
@@ -143,6 +144,7 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 }
 
 func Test_ConfbridgeGetByBridgeID(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -217,6 +219,7 @@ func Test_ConfbridgeGetByBridgeID(t *testing.T) {
 }
 
 func Test_ConfbridgeList(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name        string
@@ -336,6 +339,7 @@ func Test_ConfbridgeList(t *testing.T) {
 }
 
 func Test_ConfbridgeSetRecordingID(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name       string
@@ -421,6 +425,7 @@ func Test_ConfbridgeSetRecordingID(t *testing.T) {
 // pattern where CallAddChainedCallID/CallRemoveChainedCallID also have no unit tests.
 
 func Test_ConfbridgeSetFlags(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name       string
@@ -531,6 +536,7 @@ func Test_ConfbridgeSetFlags(t *testing.T) {
 }
 
 func Test_ConfbridgeSetStatus(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name       string

@@ -17,6 +17,8 @@ import (
 )
 
 func Test_ConfbridgeJSONFunctions_cov(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("f1f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	otherID := uuid.FromStringOrNil("f1f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e02")
@@ -87,6 +89,8 @@ func covConfbridgeHandler(t *testing.T, c *confbridge.Confbridge) (*handler, *ut
 }
 
 func Test_ConfbridgeSetBridgeID_cov(t *testing.T) {
+	resetTestDB(t)
+
 	c := &confbridge.Confbridge{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("f2f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e01")}}
 	h, mockUtil, mockCache := covConfbridgeHandler(t, c)
 	ctx := context.Background()
@@ -107,6 +111,8 @@ func Test_ConfbridgeSetBridgeID_cov(t *testing.T) {
 }
 
 func Test_ConfbridgeDelete_cov(t *testing.T) {
+	resetTestDB(t)
+
 	c := &confbridge.Confbridge{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("f2f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e02")}}
 	h, mockUtil, mockCache := covConfbridgeHandler(t, c)
 	ctx := context.Background()

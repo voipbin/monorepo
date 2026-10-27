@@ -75,6 +75,8 @@ func runCovSQLCases(t *testing.T, cases []covSQLCase) {
 }
 
 func Test_CallJSONFunctions_cov(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("b1f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	otherID := uuid.FromStringOrNil("b1f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e02")
@@ -127,6 +129,8 @@ func Test_CallJSONFunctions_cov(t *testing.T) {
 }
 
 func Test_CallSetStatusRinging_cov(t *testing.T) {
+	resetTestDB(t)
+
 	tm := testhelper.TimePtr("2020-04-18T03:22:17.995000Z")
 	c := &call.Call{
 		Identity:  commonidentity.Identity{ID: uuid.FromStringOrNil("c1f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e01")},
@@ -171,6 +175,8 @@ func Test_CallSetStatusRinging_cov(t *testing.T) {
 }
 
 func Test_CallSetStatusProgressing_cov(t *testing.T) {
+	resetTestDB(t)
+
 	tm := testhelper.TimePtr("2020-04-18T03:22:17.995000Z")
 	c := &call.Call{
 		Identity:  commonidentity.Identity{ID: uuid.FromStringOrNil("c1f0c4e2-1b2d-11f1-8a5e-0b3f6c1d2e02")},

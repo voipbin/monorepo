@@ -17,6 +17,8 @@ import (
 )
 
 func Test_Groupcall_cov2_singleGetFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2d00001-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&groupcall.Groupcall{})
@@ -43,6 +45,8 @@ func Test_Groupcall_cov2_singleGetFailures(t *testing.T) {
 }
 
 func Test_Groupcall_cov2_GroupcallGet_cacheHit(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("c2d00002-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	want := &groupcall.Groupcall{}
 	want.ID = id
@@ -63,6 +67,8 @@ func Test_Groupcall_cov2_GroupcallGet_cacheHit(t *testing.T) {
 }
 
 func Test_Groupcall_cov2_GroupcallGet_dbHitNormalizesNull(t *testing.T) {
+	resetTestDB(t)
+
 	id := uuid.FromStringOrNil("c2d00003-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&groupcall.Groupcall{})
 
@@ -93,6 +99,8 @@ func Test_Groupcall_cov2_GroupcallGet_dbHitNormalizesNull(t *testing.T) {
 }
 
 func Test_Groupcall_cov2_GroupcallList_failures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	cols := commondatabasehandler.GetDBFields(&groupcall.Groupcall{})
 
@@ -106,6 +114,8 @@ func Test_Groupcall_cov2_GroupcallList_failures(t *testing.T) {
 }
 
 func Test_Groupcall_cov2_updateToCache(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2d00004-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	cols := commondatabasehandler.GetDBFields(&groupcall.Groupcall{})
@@ -120,6 +130,8 @@ func Test_Groupcall_cov2_updateToCache(t *testing.T) {
 }
 
 func Test_Groupcall_cov2_writeFailures(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("c2d00005-1b2d-11f1-8a5e-0b3f6c1d2e01")
 	ts := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
@@ -162,6 +174,8 @@ func Test_Groupcall_cov2_writeFailures(t *testing.T) {
 }
 
 func Test_Groupcall_cov2_GroupcallUpdate_emptyFields(t *testing.T) {
+	resetTestDB(t)
+
 	e := newCov2Env(t)
 
 	if err := e.h.GroupcallUpdate(context.Background(), uuid.Nil, map[groupcall.Field]any{}); err != nil {

@@ -25,6 +25,8 @@ func insertTestAddressAt(t *testing.T, id, customerID, contactID uuid.UUID, addr
 }
 
 func Test_AddressListAllByContactID_IncludesEveryTypeOfThatContactOnly(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 	ctx := context.Background()
 
@@ -72,6 +74,8 @@ func Test_AddressListAllByContactID_IncludesEveryTypeOfThatContactOnly(t *testin
 }
 
 func Test_AddressList_Filters(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 	ctx := context.Background()
 

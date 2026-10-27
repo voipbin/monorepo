@@ -19,6 +19,8 @@ import (
 )
 
 func Test_CampaigncallCreate(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name         string
 		campaigncall *campaigncall.Campaigncall
@@ -124,6 +126,8 @@ func Test_CampaigncallCreate(t *testing.T) {
 }
 
 func Test_CampaigncallGetByReferenceID(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name         string
 		campaigncall *campaigncall.Campaigncall
@@ -225,6 +229,8 @@ func Test_CampaigncallGetByReferenceID(t *testing.T) {
 }
 
 func Test_CampaigncallGetByActiveflowID(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name         string
 		campaigncall *campaigncall.Campaigncall
@@ -327,6 +333,8 @@ func Test_CampaigncallGetByActiveflowID(t *testing.T) {
 }
 
 func Test_CampaigncallListByCustomerID(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name string
 		data []*campaigncall.Campaigncall
@@ -397,13 +405,15 @@ func Test_CampaigncallListByCustomerID(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", describeList(tt.expectRes), describeList(res))
 			}
 		})
 	}
 }
 
 func Test_CampaigncallListByCampaignID(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name          string
 		campaigncalls []*campaigncall.Campaigncall
@@ -631,13 +641,15 @@ func Test_CampaigncallListByCampaignID(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", describeList(tt.expectRes), describeList(res))
 			}
 		})
 	}
 }
 
 func Test_CampaigncallListByCampaignIDAndStatus(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name          string
 		campaigncalls []*campaigncall.Campaigncall
@@ -868,13 +880,15 @@ func Test_CampaigncallListByCampaignIDAndStatus(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", describeList(tt.expectRes), describeList(res))
 			}
 		})
 	}
 }
 
 func Test_CampaigncallListOngoingByCampaignID(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name          string
 		campaigncalls []*campaigncall.Campaigncall
@@ -1102,13 +1116,15 @@ func Test_CampaigncallListOngoingByCampaignID(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", describeList(tt.expectRes), describeList(res))
 			}
 		})
 	}
 }
 
 func Test_CampaigncallUpdateStatus(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name         string
 		campaigncall *campaigncall.Campaigncall
@@ -1222,6 +1238,8 @@ func Test_CampaigncallUpdateStatus(t *testing.T) {
 }
 
 func Test_CampaigncallUpdateStatusAndResult(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name         string
 		campaigncall *campaigncall.Campaigncall
@@ -1339,6 +1357,7 @@ func Test_CampaigncallUpdateStatusAndResult(t *testing.T) {
 }
 
 func Test_CampaigncallDelete(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name         string

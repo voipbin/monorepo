@@ -21,6 +21,8 @@ import (
 // round-trip for the Case entity (Task 3.2), against the real SQLite
 // in-memory contact_cases schema.
 func Test_CaseInsert_And_CaseGetByID(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -71,6 +73,8 @@ func Test_CaseInsert_And_CaseGetByID(t *testing.T) {
 // tags, an overwrite to a single different tag, and a clear back to an
 // empty slice -- each verified via a fresh CaseGetByID read.
 func Test_CaseUpdateTagIDs_SetOverwriteClear(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -151,6 +155,8 @@ func Test_CaseUpdateTagIDs_SetOverwriteClear(t *testing.T) {
 // caseUpdateContactIDExec's tenant-isolation shape): calling
 // CaseUpdateTagIDs with the wrong customerID must not modify the row.
 func Test_CaseUpdateTagIDs_CustomerScoped_WrongCustomerNoOp(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -201,6 +207,8 @@ func Test_CaseUpdateTagIDs_CustomerScoped_WrongCustomerNoOp(t *testing.T) {
 // first is still 'open' must fail with a detectable conflict error, not
 // silently succeed or panic.
 func Test_CaseInsert_DuplicateOpenPeer_ReturnsConflict(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -251,6 +259,8 @@ func Test_CaseInsert_DuplicateOpenPeer_ReturnsConflict(t *testing.T) {
 // support the "FOR UPDATE" locking clause -- same convention as
 // bin-billing-manager's accountAdjust*WithLedger tests.
 func Test_CaseGetOpenByPeer(t *testing.T) {
+	resetTestDB(t)
+
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("could not create sqlmock: %v", err)
@@ -323,6 +333,8 @@ func Test_CaseGetOpenByPeer(t *testing.T) {
 // guard (design §5.1): closing an already-closed Case is a no-op (idempotent
 // double-close), not an error.
 func Test_CaseUpdateStatusClosed(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -398,6 +410,8 @@ func Test_CaseUpdateStatusClosed(t *testing.T) {
 // Test_CaseUpdateContactID verifies the contact_id denormalized-cache
 // update helper (design §3.4).
 func Test_CaseUpdateContactID(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -443,6 +457,8 @@ func Test_CaseUpdateContactID(t *testing.T) {
 // equals commonidentity.OwnerTypeAgent, not merely that owner_id
 // changed.
 func Test_CaseUpdateOwner(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -490,6 +506,8 @@ func Test_CaseUpdateOwner(t *testing.T) {
 // customer_id mismatch affects 0 rows (defense-in-depth): the case's
 // owner fields are left untouched.
 func Test_CaseUpdateOwner_CrossTenant(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -534,6 +552,8 @@ func Test_CaseUpdateOwner_CrossTenant(t *testing.T) {
 // Test_CaseClearContactID verifies the contact_id revert-to-NULL
 // helper (design VOIP-1253).
 func Test_CaseClearContactID(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -582,6 +602,8 @@ func Test_CaseClearContactID(t *testing.T) {
 // non-matching customer_id is a scoped no-op (defense-in-depth): the
 // case's contact_id is left untouched.
 func Test_CaseClearContactID_CrossTenant(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -634,6 +656,8 @@ func Test_CaseClearContactID_CrossTenant(t *testing.T) {
 // Test_CaseListUnresolved verifies the idx_case_unresolved-backed list
 // (design §6): Cases with contact_id IS NULL, scoped to customer.
 func Test_CaseListUnresolved(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -702,6 +726,8 @@ func Test_CaseListUnresolved(t *testing.T) {
 // Test_CaseListByOwner verifies the idx_case_owner-backed "my cases" list
 // (design §7).
 func Test_CaseListByOwner(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

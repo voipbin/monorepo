@@ -19,6 +19,8 @@ import (
 
 // Test_AddressUpdate_IsPrimary tests updating the is_primary field of an address
 func Test_AddressUpdate_IsPrimary(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		contact *contact.Contact
@@ -106,6 +108,8 @@ func Test_AddressUpdate_IsPrimary(t *testing.T) {
 
 // Test_AddressResetPrimary tests resetting primary addresses
 func Test_AddressResetPrimary(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -174,6 +178,8 @@ func Test_AddressResetPrimary(t *testing.T) {
 
 // Test_AddressUpdate_Target tests updating the target field of an address
 func Test_AddressUpdate_Target(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		contact *contact.Contact
@@ -261,6 +267,8 @@ func Test_AddressUpdate_Target(t *testing.T) {
 
 // Test_AddressResetPrimary_Email tests resetting primary email-type addresses
 func Test_AddressResetPrimary_Email(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -329,6 +337,8 @@ func Test_AddressResetPrimary_Email(t *testing.T) {
 
 // Test_AddressGet_NotFound tests getting a non-existent address (tel type)
 func Test_AddressGet_NotFound_Tel(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -352,6 +362,8 @@ func Test_AddressGet_NotFound_Tel(t *testing.T) {
 
 // Test_AddressGet_NotFound_Email tests getting a non-existent address (email type)
 func Test_AddressGet_NotFound_Email(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -375,6 +387,8 @@ func Test_AddressGet_NotFound_Email(t *testing.T) {
 
 // Test_AddressUpdate_MultipleFields tests updating multiple address fields at once
 func Test_AddressUpdate_MultipleFields(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -452,6 +466,8 @@ func Test_AddressUpdate_MultipleFields(t *testing.T) {
 
 // Test_AddressUpdate_EmailTarget tests updating an email address's target field
 func Test_AddressUpdate_EmailTarget(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

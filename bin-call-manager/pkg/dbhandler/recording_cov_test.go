@@ -16,6 +16,8 @@ import (
 )
 
 func Test_RecordingSetStatus_cov(t *testing.T) {
+	resetTestDB(t)
+
 	created := testhelper.TimePtr("2020-04-18T03:22:17.995000Z")
 	changed := testhelper.TimePtr("2020-04-18T03:22:19.995000Z")
 

@@ -24,6 +24,8 @@ func timePtr(t time.Time) *time.Time {
 }
 
 func Test_ContactCreate(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		contact *contact.Contact
@@ -111,6 +113,8 @@ func Test_ContactCreate(t *testing.T) {
 // This functionality is tested via contacthandler tests using proper mocks
 
 func Test_ContactList_Empty(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -143,6 +147,8 @@ func Test_ContactList_Empty(t *testing.T) {
 }
 
 func Test_ContactUpdate(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		contact *contact.Contact
@@ -237,6 +243,8 @@ func Test_ContactUpdate(t *testing.T) {
 }
 
 func Test_ContactDelete(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		contact *contact.Contact
@@ -306,6 +314,8 @@ func Test_ContactDelete(t *testing.T) {
 }
 
 func Test_TagAssignmentCreate(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		contact *contact.Contact
@@ -378,6 +388,8 @@ func Test_TagAssignmentCreate(t *testing.T) {
 }
 
 func Test_TagAssignmentDelete(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		contact *contact.Contact
@@ -452,6 +464,8 @@ func Test_TagAssignmentDelete(t *testing.T) {
 }
 
 func Test_ContactDeleteByCustomerID(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name       string
 		contacts   []*contact.Contact
@@ -539,6 +553,8 @@ func Test_ContactDeleteByCustomerID(t *testing.T) {
 }
 
 func Test_ContactGet_FromCache(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -575,6 +591,8 @@ func Test_ContactGet_FromCache(t *testing.T) {
 }
 
 func Test_ContactGet_NotFound(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -599,6 +617,8 @@ func Test_ContactGet_NotFound(t *testing.T) {
 }
 
 func TestNewHandler(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -612,6 +632,8 @@ func TestNewHandler(t *testing.T) {
 
 // Test_PhoneNumberListByContactID tests listing phone numbers for a contact
 func Test_TagAssignmentListByContactID(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		contact *contact.Contact
@@ -684,6 +706,8 @@ func Test_TagAssignmentListByContactID(t *testing.T) {
 
 // Test_TagAssignmentListByContactID_Empty tests listing when no tags exist
 func Test_TagAssignmentListByContactID_Empty(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -713,6 +737,8 @@ func Test_TagAssignmentListByContactID_Empty(t *testing.T) {
 
 // Test_ContactUpdate_AllFields tests updating various contact fields
 func Test_ContactUpdate_AllFields(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		contact *contact.Contact
@@ -810,6 +836,8 @@ func Test_ContactUpdate_AllFields(t *testing.T) {
 
 // Test_ContactCreate_WithAllFields tests creating a contact with all fields populated
 func Test_ContactCreate_WithAllFields(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -878,6 +906,8 @@ func Test_ContactCreate_WithAllFields(t *testing.T) {
 
 // Test_ContactLookupByPhone tests looking up a contact by phone number
 func Test_ContactLookupByPhone(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		contact *contact.Contact
@@ -955,6 +985,8 @@ func Test_ContactLookupByPhone(t *testing.T) {
 
 // Test_ContactLookupByPhone_NotFound tests looking up a non-existent phone
 func Test_ContactLookupByPhone_NotFound(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -978,6 +1010,8 @@ func Test_ContactLookupByPhone_NotFound(t *testing.T) {
 
 // Test_ContactLookupByEmail tests looking up a contact by email
 func Test_ContactLookupByEmail(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		contact *contact.Contact
@@ -1055,6 +1089,8 @@ func Test_ContactLookupByEmail(t *testing.T) {
 
 // Test_ContactLookupByEmail_NotFound tests looking up a non-existent email
 func Test_ContactLookupByEmail_NotFound(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1088,6 +1124,8 @@ func Test_ContactLookupByEmail_NotFound(t *testing.T) {
 // (VOIP-1205). The contacts have no child rows, so the nested-load path does
 // not run.
 func Test_ContactList_ExcludesSoftDeleted(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1159,6 +1197,8 @@ func Test_ContactList_ExcludesSoftDeleted(t *testing.T) {
 // default tm_delete IS NULL clause (VOIP-1205). Regression guard for the
 // unsatisfiable-AND bug.
 func Test_ContactList_DeletedFilterReturnsDeleted(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1217,6 +1257,8 @@ func Test_ContactList_DeletedFilterReturnsDeleted(t *testing.T) {
 // instead of re-caching the tombstone (VOIP-1205, single choke-point
 // invariant). Driven via PhoneNumberCreate on a deleted contact.
 func Test_ContactUpdateToCache_TombstoneEvicts(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1272,6 +1314,8 @@ func Test_ContactUpdateToCache_TombstoneEvicts(t *testing.T) {
 
 // Test_ContactDeleteByCustomerID_NoMatches tests deleting when no contacts exist
 func Test_ContactDeleteByCustomerID_NoMatches(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1302,6 +1346,8 @@ func Test_ContactDeleteByCustomerID_NoMatches(t *testing.T) {
 // from the row itself, so a genuinely absent row is a real not-found
 // condition, matching AddressClaim's existing NotFound propagation.
 func Test_AddressDelete_NonExistent(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1323,6 +1369,8 @@ func Test_AddressDelete_NonExistent(t *testing.T) {
 
 // Test_TagAssignmentDelete_NonExistent tests deleting a non-existent tag assignment
 func Test_TagAssignmentDelete_NonExistent(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1345,6 +1393,8 @@ func Test_TagAssignmentDelete_NonExistent(t *testing.T) {
 
 // Test_ContactGet_CacheHit tests getting a contact from cache
 func Test_ContactGet_CacheHit(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1382,6 +1432,8 @@ func Test_ContactGet_CacheHit(t *testing.T) {
 
 // Test_Multiple_Addresses_ForSameContact tests creating multiple addresses (tel and email)
 func Test_Multiple_Addresses_ForSameContact(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1458,6 +1510,8 @@ func Test_Multiple_Addresses_ForSameContact(t *testing.T) {
 
 // Test_Multiple_Tags_ForSameContact tests creating multiple tags
 func Test_Multiple_Tags_ForSameContact(t *testing.T) {
+	resetTestDB(t)
+
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

@@ -19,6 +19,8 @@ import (
 )
 
 func Test_RecordingCreate(t *testing.T) {
+	resetTestDB(t)
+
 	type test struct {
 		name string
 
@@ -154,6 +156,7 @@ func Test_RecordingCreate(t *testing.T) {
 }
 
 func Test_RecordingList(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name string
@@ -269,6 +272,7 @@ func Test_RecordingList(t *testing.T) {
 }
 
 func Test_RecordingDelete(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name      string

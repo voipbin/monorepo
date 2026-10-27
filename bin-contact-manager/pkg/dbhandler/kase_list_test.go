@@ -20,6 +20,8 @@ import (
 // "no filter on this dimension"), but customer_id is always required
 // and always applied.
 func Test_CaseList_FiltersByCustomerStatusAndOwner(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 	ctx := context.Background()
 
@@ -177,6 +179,8 @@ func Test_CaseList_FiltersByCustomerStatusAndOwner(t *testing.T) {
 // finding: page_size was previously accepted but silently ignored, and
 // results had no deterministic order).
 func Test_CaseList_OrderedAndPaginated(t *testing.T) {
+	resetTestDB(t)
+
 	h := NewHandler(dbTest, nil)
 	ctx := context.Background()
 

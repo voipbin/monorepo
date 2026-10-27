@@ -36,6 +36,8 @@ import (
 // .String() form must succeed. Error strings are not asserted because the uuid
 // library wording differs across versions.
 func Test_recordingIDsCorruptedFormsFailUnmarshal(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name    string
 		raw     []byte

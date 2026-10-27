@@ -18,6 +18,7 @@ import (
 )
 
 func Test_BridgeCreate(t *testing.T) {
+	resetTestDB(t)
 
 	type test struct {
 		name   string
@@ -126,6 +127,7 @@ func Test_BridgeCreate(t *testing.T) {
 }
 
 func Test_BridgeEnd(t *testing.T) {
+	resetTestDB(t)
 
 	tests := []struct {
 		name   string

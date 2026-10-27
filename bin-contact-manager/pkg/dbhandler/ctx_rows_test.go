@@ -84,6 +84,8 @@ func assertRowsErr(t *testing.T, err error) {
 }
 
 func Test_SingleGetter_RowsErr(t *testing.T) {
+	resetTestDB(t)
+
 	tests := []struct {
 		name  string
 		setup func(mock sqlmock.Sqlmock, mockCache *cachehandler.MockCacheHandler)
@@ -185,6 +187,8 @@ func Test_SingleGetter_RowsErr(t *testing.T) {
 }
 
 func Test_TxSingleGetter_RowsErr(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 
 	tests := []struct {
@@ -265,6 +269,8 @@ func Test_TxSingleGetter_RowsErr(t *testing.T) {
 }
 
 func Test_TagAssignmentListByContactID_RowsErr(t *testing.T) {
+	resetTestDB(t)
+
 	h, mock, _ := newCtxRowsHandler(t)
 	mock.ExpectQuery("SELECT").WillReturnRows(rowErrRows(errCtxRowsBoom))
 
@@ -275,6 +281,8 @@ func Test_TagAssignmentListByContactID_RowsErr(t *testing.T) {
 }
 
 func Test_CancelledContext_StopsDBCalls(t *testing.T) {
+	resetTestDB(t)
+
 	cancelled, cancel := context.WithCancel(context.Background())
 	cancel()
 
@@ -389,6 +397,8 @@ func Test_CancelledContext_StopsDBCalls(t *testing.T) {
 // context. A cancellable (not cancelled) context is passed in, and the cache
 // receives a context that can never be cancelled (Done() == nil).
 func Test_ContactDelete_EvictsCacheWithoutCancel(t *testing.T) {
+	resetTestDB(t)
+
 	assertDetached := func(t *testing.T) func(ctx context.Context, id uuid.UUID) error {
 		return func(ctx context.Context, _ uuid.UUID) error {
 			if ctx.Done() != nil {
@@ -468,6 +478,8 @@ func newCtxRowsContactDB(t *testing.T) *sql.DB {
 // A failure while loading the addresses or tags must be returned, and the
 // incomplete contact must not be written to the cache.
 func Test_ContactRelatedDataError_IsReturnedAndNotCached(t *testing.T) {
+	resetTestDB(t)
+
 	ctx := context.Background()
 
 	calls := map[string]func(h *handler) error{
