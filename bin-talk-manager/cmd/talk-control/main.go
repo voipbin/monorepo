@@ -41,7 +41,8 @@ func main() {
 	}
 }
 
-func initHandlers() (chathandler.ChatHandler, messagehandler.MessageHandler, participanthandler.ParticipantHandler, reactionhandler.ReactionHandler, error) {
+// initHandlers is a variable so that tests can replace it.
+var initHandlers = func() (chathandler.ChatHandler, messagehandler.MessageHandler, participanthandler.ParticipantHandler, reactionhandler.ReactionHandler, error) {
 	db, err := databasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
 		return nil, nil, nil, nil, errors.Wrap(err, "could not connect to the database")
