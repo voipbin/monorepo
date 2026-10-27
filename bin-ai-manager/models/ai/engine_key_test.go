@@ -154,8 +154,15 @@ func Test_HasEngineKey_consistency(t *testing.T) {
 				t.Fatalf("unmarshal: %v", err)
 			}
 			re := back.ConvertWebhookMessage()
-			if re.HasEngineKey != tt.expect || re.EngineKey != "" {
-				t.Errorf("timeline. expect has_engine_key=%v and no key, got: %v %q", tt.expect, re.HasEngineKey, re.EngineKey)
+			if re.HasEngineKey != tt.expect {
+				t.Errorf("timeline. expect has_engine_key: %v, got: %v", tt.expect, re.HasEngineKey)
+			}
+			reJSON, err := json.Marshal(re)
+			if err != nil {
+				t.Fatalf("marshal: %v", err)
+			}
+			if strings.Contains(string(reJSON), `"engine_key"`) || strings.Contains(string(reJSON), "dummy-key-value") {
+				t.Errorf("the timeline conversion must not carry the key: %s", reJSON)
 			}
 		})
 	}

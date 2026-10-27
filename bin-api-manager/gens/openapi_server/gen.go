@@ -3870,13 +3870,10 @@ type AIManagerAI struct {
 	// EngineBaseUrl Base URL of the customer-hosted OpenAI-compatible server. Set only when engine_model starts with `customendpoint.`. The key for that server (`engine_base_key`) is write-only and is never returned.
 	EngineBaseUrl *string `json:"engine_base_url,omitempty"`
 
-	// EngineKey API key or authentication key for the AI engine. Deprecated, still returned in this version and planned to be removed from responses; use `has_engine_key` to find out whether a key is stored. To keep the stored key, omit `engine_key` in `PUT /ais/{id}`.
-	EngineKey *string `json:"engine_key,omitempty"`
-
 	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`. A value in the form `openrouter.<author>/<slug>` is also accepted (custom OpenRouter model, see `model_id_prefix` in `GET /ai_models`); in that case `engine_key` is required. A value in the form `customendpoint.<model-id>` selects an OpenAI-compatible server that you host; in that case `engine_base_url` is required and `engine_base_key` is optional. The `customendpoint.` model is not listed in `GET /ai_models`.
 	EngineModel *AIManagerAIEngineModel `json:"engine_model,omitempty"`
 
-	// HasEngineKey Whether the AI holds an engine key. A key kept on a `platform` model counts, although it is not used.
+	// HasEngineKey Whether the AI holds an engine key (`engine_key`). A key kept on a `platform` model counts, although it is not used. The key itself is write-only and is never returned in responses.
 	HasEngineKey *bool `json:"has_engine_key,omitempty"`
 
 	// Id The unique identifier of the AI.

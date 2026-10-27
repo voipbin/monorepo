@@ -756,6 +756,9 @@ func Test_convertAggregatedEventData_AIHasEngineKey(t *testing.T) {
 			if err := json.Unmarshal(b, &got); err != nil {
 				t.Fatalf("unmarshal: %v", err)
 			}
+			if _, ok := got["engine_key"]; ok {
+				t.Errorf("engine_key must not be present: %s", b)
+			}
 			if got["has_engine_key"] != tt.expect {
 				t.Errorf("has_engine_key. expect: %v, got: %v", tt.expect, got["has_engine_key"])
 			}
