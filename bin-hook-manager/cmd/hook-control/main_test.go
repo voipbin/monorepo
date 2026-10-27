@@ -10,8 +10,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-
-	"monorepo/bin-hook-manager/internal/config"
 )
 
 func resetViper(t *testing.T) {
@@ -199,8 +197,10 @@ func Test_initCommand(t *testing.T) {
 	if gotData != "payload-value" {
 		t.Errorf("local flag was not bound into viper. expect: payload-value, got: %q", gotData)
 	}
-	if config.Get().RabbitMQAddress != "amqp://rabbit-test" {
-		t.Errorf("config was not loaded from the flag. got: %s", config.Get().RabbitMQAddress)
+	// the config singleton keeps the value of the first load in the process, so the flag value is
+	// checked on the viper side, where this execution has just bound it.
+	if got := viper.GetString("rabbitmq_address"); got != "amqp://rabbit-test" {
+		t.Errorf("flag was not bound into viper. expect: amqp://rabbit-test, got: %s", got)
 	}
 }
 
