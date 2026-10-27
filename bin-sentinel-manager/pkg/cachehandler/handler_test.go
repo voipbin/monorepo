@@ -3,11 +3,14 @@ package cachehandler
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"sort"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/alicebob/miniredis/v2"
+	"github.com/alicebob/miniredis/v2/server"
 	"github.com/go-redis/redis/v8"
 
 	"monorepo/bin-sentinel-manager/models/asteriskaddress"
@@ -329,5 +332,111 @@ func Test_AsteriskAddressInternalScan_serverFailure(t *testing.T) {
 	}
 	if res != nil {
 		t.Errorf("Wrong match. expect: nil result on error, got: %+v", res)
+	}
+}
+
+// Test_AsteriskAddressInternalScan_perKeyReplies injects a reply for ONE command on ONE key, so
+// the scan sees the key in SCAN and then gets a null or an error for its GET or TTL, the way a
+// key that expires or a Redis that fails between the two calls would look.
+func Test_AsteriskAddressInternalScan_perKeyReplies(t *testing.T) {
+	const (
+		idBroken = "aa:aa:aa:aa:aa:aa"
+		idOK     = "bb:bb:bb:bb:bb:bb"
+	)
+
+	tests := []struct {
+		name string
+
+		// command and key select the single call the hook answers instead of miniredis.
+		command string
+		reply   func(c *server.Peer)
+
+		expectErr        bool
+		expectErrContain string
+		expectIDs        []string
+	}{
+		{
+			name: "a key that vanished before its GET is skipped",
+
+			command: "GET",
+			reply:   func(c *server.Peer) { c.WriteNull() },
+
+			expectIDs: []string{idOK},
+		},
+		{
+			name: "a GET error fails the scan and names the key",
+
+			command: "GET",
+			reply:   func(c *server.Peer) { c.WriteError("ERR synthetic get failure") },
+
+			expectErr:        true,
+			expectErrContain: "could not get the asterisk address. key: " + asteriskaddress.Key(idBroken),
+		},
+		{
+			name: "a key that vanished before its TTL read is skipped",
+
+			command: "TTL",
+			reply:   func(c *server.Peer) { c.WriteNull() },
+
+			expectIDs: []string{idOK},
+		},
+		{
+			name: "a TTL error fails the scan and names the key",
+
+			command: "TTL",
+			reply:   func(c *server.Peer) { c.WriteError("ERR synthetic ttl failure") },
+
+			expectErr:        true,
+			expectErrContain: "could not get the asterisk address ttl. key: " + asteriskaddress.Key(idBroken),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h, mr := newTestHandler(t)
+
+			for _, id := range []string{idBroken, idOK} {
+				if err := mr.Set(asteriskaddress.Key(id), "203.0.113.10"); err != nil {
+					t.Fatalf("Could not seed the key. err: %v", err)
+				}
+				mr.SetTTL(asteriskaddress.Key(id), asteriskaddress.TTL)
+			}
+
+			brokenKey := asteriskaddress.Key(idBroken)
+			mr.Server().SetPreHook(func(c *server.Peer, cmd string, args ...string) bool {
+				if strings.EqualFold(cmd, tt.command) && len(args) > 0 && args[0] == brokenKey {
+					tt.reply(c)
+					return true
+				}
+				return false
+			})
+
+			res, err := h.AsteriskAddressInternalScan(context.Background())
+
+			if tt.expectErr {
+				if err == nil {
+					t.Fatalf("Wrong match. expect: error, got: nil")
+				}
+				if !strings.Contains(err.Error(), tt.expectErrContain) {
+					t.Errorf("Wrong match. expect: %q in the error, got: %v", tt.expectErrContain, err)
+				}
+				if res != nil {
+					t.Errorf("Wrong match. expect: no partial result on error, got: %v", res)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			ids := []string{}
+			for _, a := range res {
+				ids = append(ids, a.ID)
+			}
+			if !reflect.DeepEqual(ids, tt.expectIDs) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectIDs, ids)
+			}
+		})
 	}
 }

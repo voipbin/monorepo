@@ -2,6 +2,7 @@ package dockerwatchhandler
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	dockerevents "github.com/docker/docker/api/types/events"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/testutil"
+	"github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -959,5 +961,189 @@ func Test_runEventLoop_repeatedLongLivedStreamsNeverExit(t *testing.T) {
 
 	if err := h.runEventLoop(ctx); err != nil {
 		t.Errorf("Wrong match. expect: nil after %d long-lived eventless streams, got: %v", rounds, err)
+	}
+}
+
+// cancelOnLogHook cancels a context from inside the logging call that matches, so a test can stop
+// the code at an exact point of its own control flow instead of racing a timer against it.
+type cancelOnLogHook struct {
+	contains string
+	cancel   context.CancelFunc
+}
+
+func (h *cancelOnLogHook) Levels() []logrus.Level { return logrus.AllLevels }
+
+func (h *cancelOnLogHook) Fire(entry *logrus.Entry) error {
+	if strings.Contains(entry.Message, h.contains) {
+		h.cancel()
+	}
+
+	return nil
+}
+
+// Test_Run_initialRefreshFailureIsNotFatal pins that a Redis outage at boot only costs the first
+// resolution pass: the entry stays unresolved and the event loop still starts.
+func Test_Run_initialRefreshFailureIsNotFatal(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDocker := NewMockdockerClient(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := &dockerWatchHandler{
+		notifyHandler:   notifyhandler.NewMockNotifyHandler(mc),
+		dockerClient:    mockDocker,
+		cacheHandler:    mockCache,
+		state:           newStateTable(),
+		flap:            newFlapTracker(flapWindow, flapThreshold),
+		refreshInterval: time.Hour,
+		reconnectDelay:  time.Hour,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	mockDocker.EXPECT().ContainerList(gomock.Any(), gomock.Any()).Return([]dockercontainer.Summary{
+		summaryOf("id-call-1", "voip-asterisk-call-docker-1"),
+	}, nil)
+	mockDocker.EXPECT().ContainerInspect(gomock.Any(), "id-call-1").Return(inspectWithIP("203.0.113.11"), nil)
+	mockCache.EXPECT().AsteriskAddressInternalScan(gomock.Any()).Return(nil, errors.New("redis unavailable")).MinTimes(1)
+
+	streamOpened := false
+	mockDocker.EXPECT().
+		Events(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(context.Context, dockerevents.ListOptions) (<-chan dockerevents.Message, <-chan error) {
+			streamOpened = true
+			cancel()
+			return make(chan dockerevents.Message), make(chan error)
+		})
+
+	if err := h.Run(ctx); err != nil {
+		t.Fatalf("Wrong match. expect: nil after a failed first refresh, got: %v", err)
+	}
+	if !streamOpened {
+		t.Errorf("Wrong match. expect: the event stream to be opened after the failed refresh, got: not opened")
+	}
+
+	entry, ok := h.state.Get("voip-asterisk-call-docker-1")
+	if !ok {
+		t.Fatalf("Wrong match. expect: the seeded entry to remain, got: missing")
+	}
+	if entry.AsteriskID != "" {
+		t.Errorf("Wrong match. expect: an unresolved entry, got: %q", entry.AsteriskID)
+	}
+}
+
+// Test_Run_eventLoopFailureIsReturned pins that the give-up error of the event loop leaves Run as
+// an error, which is what turns a blind sentinel into a visible crash-loop.
+func Test_Run_eventLoopFailureIsReturned(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDocker := NewMockdockerClient(mc)
+
+	h := &dockerWatchHandler{
+		notifyHandler:         notifyhandler.NewMockNotifyHandler(mc),
+		dockerClient:          mockDocker,
+		cacheHandler:          cachehandler.NewMockCacheHandler(mc),
+		state:                 newStateTable(),
+		flap:                  newFlapTracker(flapWindow, flapThreshold),
+		refreshInterval:       time.Hour,
+		reconnectDelay:        time.Millisecond,
+		healthyStreamLifetime: time.Hour,
+	}
+
+	// stops the background refresh loop once Run has returned.
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	mockDocker.EXPECT().ContainerList(gomock.Any(), gomock.Any()).Return(nil, nil)
+	mockDocker.EXPECT().
+		Events(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(context.Context, dockerevents.ListOptions) (<-chan dockerevents.Message, <-chan error) {
+			messages := make(chan dockerevents.Message)
+			close(messages)
+			return messages, make(chan error)
+		}).
+		Times(maxConsecutiveEmptyStreams)
+
+	err := h.Run(ctx)
+	if err == nil {
+		t.Fatalf("Wrong match. expect: error once the event stream cannot be established, got: nil")
+	}
+	if !strings.Contains(err.Error(), "the docker event loop stopped with an error") {
+		t.Errorf("Wrong match. expect: the event loop wrapper, got: %v", err)
+	}
+	if !strings.Contains(err.Error(), "could not be established") {
+		t.Errorf("Wrong match. expect: the give-up cause, got: %v", err)
+	}
+}
+
+// Test_runEventLoop_cancelledContextOpensNoStream pins that a context cancelled before the loop
+// starts is a clean stop that never touches the daemon (the strict mock has no Events expectation).
+func Test_runEventLoop_cancelledContextOpensNoStream(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h := &dockerWatchHandler{
+		notifyHandler:  notifyhandler.NewMockNotifyHandler(mc),
+		dockerClient:   NewMockdockerClient(mc),
+		state:          newStateTable(),
+		flap:           newFlapTracker(flapWindow, flapThreshold),
+		reconnectDelay: time.Millisecond,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	if err := h.runEventLoop(ctx); err != nil {
+		t.Errorf("Wrong match. expect: nil for a cancelled context, got: %v", err)
+	}
+}
+
+// Test_runEventLoop_cancelDuringReconnectWait pins that a shutdown that arrives while the loop is
+// waiting to reconnect ends it cleanly instead of sleeping out the delay. The cancel is issued
+// from the log call that immediately precedes the wait, so the wait is the first place the loop
+// can observe it, and the hour-long delay can never be what ends the test.
+func Test_runEventLoop_cancelDuringReconnectWait(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDocker := NewMockdockerClient(mc)
+
+	h := &dockerWatchHandler{
+		notifyHandler:  notifyhandler.NewMockNotifyHandler(mc),
+		dockerClient:   mockDocker,
+		state:          newStateTable(),
+		flap:           newFlapTracker(flapWindow, flapThreshold),
+		reconnectDelay: time.Hour,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	previous := logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+	t.Cleanup(func() { logrus.StandardLogger().ReplaceHooks(previous) })
+	logrus.AddHook(&cancelOnLogHook{contains: "ended immediately without delivering", cancel: cancel})
+
+	mockDocker.EXPECT().
+		Events(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(context.Context, dockerevents.ListOptions) (<-chan dockerevents.Message, <-chan error) {
+			messages := make(chan dockerevents.Message)
+			close(messages)
+			return messages, make(chan error)
+		}).
+		Times(1)
+
+	done := make(chan error, 1)
+	go func() { done <- h.runEventLoop(ctx) }()
+
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Errorf("Wrong match. expect: nil when cancelled during the wait, got: %v", err)
+		}
+	case <-time.After(30 * time.Second):
+		t.Fatalf("Wrong match. expect: the loop to stop on cancel, got: still waiting to reconnect")
 	}
 }

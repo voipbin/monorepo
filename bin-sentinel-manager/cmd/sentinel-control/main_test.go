@@ -458,3 +458,35 @@ func Test_printJSON(t *testing.T) {
 		}
 	})
 }
+
+func Test_runContainerGet_invalidHost(t *testing.T) {
+	// the address passes config validation (non-empty) and is rejected only when the docker
+	// client is constructed, so the failure must surface before any inspect request.
+	_, err := runCLI(t, "no-scheme", "docker", "container", "get", "--name", "voip-asterisk-call-docker-1")
+	if err == nil {
+		t.Fatalf("Wrong match. expect: error, got: nil")
+	}
+	if !strings.Contains(err.Error(), "failed to create docker client") {
+		t.Errorf("Wrong match. expect: a client construction error, got: %v", err)
+	}
+}
+
+func Test_main_helpPrintsUsage(t *testing.T) {
+	viper.Reset()
+	t.Cleanup(viper.Reset)
+
+	previousArgs := os.Args
+	os.Args = []string{"sentinel-control", "--help"}
+	t.Cleanup(func() { os.Args = previousArgs })
+
+	out, err := captureStdout(t, func() error {
+		main()
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if !strings.Contains(out, "Voipbin Sentinel Management CLI") {
+		t.Errorf("Wrong match. expect: the CLI description in the help output, got: %q", out)
+	}
+}
