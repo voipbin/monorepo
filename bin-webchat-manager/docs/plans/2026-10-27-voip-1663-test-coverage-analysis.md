@@ -17,7 +17,7 @@ Verdict: partially valid. The request is to raise the hand-written coverage (exc
 | pkg/listenhandler | 93.4% (451/483) |
 | pkg/messagehandler, sessionhandler, widgethandler | 100% |
 
-The reachable total without the deferred item is 50 statements, so the ceiling is about 92.6% and no block is needed. The deferred item is not attempted, because it registers on the default HTTP mux, adds a signal consumer goroutine and starts a listener goroutine, which cannot be isolated from other tests of the package. Product code, signatures and visibility stay unchanged.
+The manager `runDaemon` function is not attempted, because it registers on the default HTTP mux, adds a signal consumer goroutine and starts a listener goroutine, which cannot be isolated from other tests of the package. Product code, signatures and visibility stay unchanged.
 
 ## How each reachable item is reached (verified in a scratch copy)
 
