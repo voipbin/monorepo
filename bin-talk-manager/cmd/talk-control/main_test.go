@@ -28,7 +28,7 @@ func execute(t *testing.T, args ...string) error {
 	t.Helper()
 
 	// environment variables that viper.AutomaticEnv would otherwise map onto the flags
-	for _, key := range []string{"TYPE", "NAME", "DETAIL", "ID", "TOKEN", "CHAT_ID", "OWNER_TYPE", "OWNER_ID", "EMOJI"} {
+	for _, key := range []string{"TYPE", "NAME", "DETAIL", "ID", "TOKEN", "CHAT_ID", "OWNER_TYPE", "OWNER_ID", "EMOJI", "TEXT", "SIZE"} {
 		t.Setenv(key, "")
 	}
 
