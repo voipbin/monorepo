@@ -17,22 +17,6 @@ Verdict: partially valid. The request is to raise the hand-written coverage (exc
 | pkg/listenhandler | 93.4% (451/483) |
 | pkg/messagehandler, sessionhandler, widgethandler | 100% |
 
-## Classification of the 160 uncovered statements
-
-| Class | Statements |
-|---|---|
-| Not exercised: SQL builder and field preparation errors in dbhandler (18 in the create, get, list and delete paths, plus 2 in the update paths). Create, delete and get build their statements from fixed inputs; the remaining few are reachable only with contrived filter or field values and are left out on purpose | 20 |
-| Not reachable: listenhandler error mapping that no handler can trigger | 2 |
-| Not reachable: configuration binding errors (config 2, control 2) | 4 |
-| Not reachable: process exit paths (control 1, manager 3) and the daemon part that needs a live database, cache and broker (manager 56) | 60 |
-| Reachable: JSON encoding failure of a response whose timestamp is outside the year range 0 to 9999, in the listenhandler responses (30) and the models webhook event (3) | 33 |
-| Reachable: dbhandler row iteration errors (get 3, list 3) | 6 |
-| Reachable: dbhandler list with an unsupported filter value | 3 |
-| Reachable: dbhandler update with a field value that cannot be encoded (widget, session) | 2 |
-| Reachable: control `main` (2) and migrate subcommand (1) | 3 |
-| Reachable: manager `main` (3); the manager tests need their own restore of `os.Args`, `os.Stdout`, viper and logrus because the package has no shared reset helper | 3 |
-| Reachable but deferred: manager `runDaemon` up to the database failure and the metrics goroutine (19 + 5) | 24 |
-
 The reachable total without the deferred item is 50 statements, so the ceiling is about 92.6% and no block is needed. The deferred item is not attempted, because it registers on the default HTTP mux, adds a signal consumer goroutine and starts a listener goroutine, which cannot be isolated from other tests of the package. Product code, signatures and visibility stay unchanged.
 
 ## How each reachable item is reached (verified in a scratch copy)
