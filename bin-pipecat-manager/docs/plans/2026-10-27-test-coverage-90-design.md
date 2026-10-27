@@ -22,7 +22,7 @@ network, database or clock beyond bounded waits.
 |---|---|
 | pipecatcallhandler/start | Asterisk websocket connected path of both the call and the ai call (call reference) start: a mocked `DialContext` returns a loopback connection, `ReadMessage` returns the ready text message and later a normal close. All lookups of the ai call return the same success result on every call and the external media stop succeeds, so the terminate goroutine reaches the python runner stop. The test waits for the python runner start call of the runner goroutine and for the python runner stop call of the terminate goroutine, the last mock calls of both, before the controller finishes. |
 | pipecatcallhandler/session, models/pipecatcall | `SessionCreate` with a connection, `SessionStop` while the connection is not ready yet, close failure of the connection, `SetConnAst`. |
-| pipecatcallhandler/run | media handle with a done channel, an audio send failure, and a context cancelled by the read mock before it returns the ready text message (so the loop top check is hit deterministically). |
+| pipecatcallhandler/run | media handle with a done channel, an audio send failure, and a context cancelled by the read mock before it returns a text message (so the loop top check is hit deterministically). |
 | pipecatcallhandler/runner | team resolve failure, python start failure, resample failure, context cancelled while waiting for the Asterisk connection, websocket write failure. |
 | pipecatcallhandler/audiosocket | a one byte input at a valid rate and at a negative rate, which make the resampler library report an error. |
 | pipecatcallhandler/misc | constructors with field wiring assertions (including the frame handler), pythonrunner request build errors (a marshal failure through a non serializable llm message value, a request creation failure through a nil context held in a variable), error type default, not found mapping, valid message id. |
@@ -34,7 +34,7 @@ Writes to external resources are not needed. Tests that already exist are not ch
 
 ## Verify
 
-- every new test passes with `-race -shuffle=on -count=3`
+- every new test passes with `-race -shuffle=on -count=3` (`pkg/dbhandler` is run with `-count=1` because its existing tests share one in-memory database)
 - hand written total is at least 90.5% and the per package table is measured with the same flags
 - sampled mutations of the production code (guard removal, wrong error mapping, removing the connection
   hand-over or the terminate call in the start path) make the matching new test fail

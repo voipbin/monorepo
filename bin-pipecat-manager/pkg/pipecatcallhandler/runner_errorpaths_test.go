@@ -222,6 +222,9 @@ func Test_runLLMIntermediateFlush_contextCancelledWithBufferedTokens(t *testing.
 	default:
 		t.Fatalf("the done channel must be closed when the flush returns")
 	}
+	if got := se.LLMStopReason.Load(); got != int32(StopReasonContextCancel) {
+		t.Errorf("Wrong stop reason. expect: %d, got: %d", StopReasonContextCancel, got)
+	}
 	if finalText != want.String() {
 		t.Errorf("Wrong final text.\nexpect: %q\ngot: %q", want.String(), finalText)
 	}
