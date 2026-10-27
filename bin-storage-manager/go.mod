@@ -69,6 +69,7 @@ replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 require (
 	cloud.google.com/go/storage v1.61.3
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/alicebob/miniredis/v2 v2.36.1
 	github.com/go-redsync/redsync/v4 v4.15.0
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/gofrs/uuid v4.4.0+incompatible
@@ -141,6 +142,7 @@ require (
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.7.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	github.com/yuin/gopher-lua v1.1.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/detectors/gcp v1.44.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.64.0 // indirect
