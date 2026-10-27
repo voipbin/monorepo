@@ -25,7 +25,7 @@ network, database or clock beyond bounded waits.
 | pipecatcallhandler/run | media handle with a done channel, an audio send failure, and a context cancelled by the read mock before it returns the ready text message (so the loop top check is hit deterministically). |
 | pipecatcallhandler/runner | team resolve failure, python start failure, resample failure, context cancelled while waiting for the Asterisk connection, websocket write failure. |
 | pipecatcallhandler/audiosocket | a one byte input at a valid rate and at a negative rate, which make the resampler library report an error. |
-| pipecatcallhandler/misc | constructors with field wiring assertions (including the frame handler), pythonrunner request build errors (a marshal failure through a non serializable llm message value, a request creation failure through a nil context with a documented `nolint`), error type default, not found mapping, valid message id. |
+| pipecatcallhandler/misc | constructors with field wiring assertions (including the frame handler), pythonrunner request build errors (a marshal failure through a non serializable llm message value, a request creation failure through a nil context held in a variable), error type default, not found mapping, valid message id. |
 | listenhandler | response marshal failure through a non serializable value in the llm messages of a pipecatcall response, typed error response with non serializable details, consume error. |
 | dbhandler, cachehandler, logtest, config | marshal failure through a non serializable llm message value, skipped local model entries (the test restores the global model registry in `t.Cleanup`). |
 | cmd | `main` with the help argument for both commands. |

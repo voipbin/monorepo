@@ -80,6 +80,8 @@ func Test_SessionStop_connectionNotReady(t *testing.T) {
 	select {
 	case <-finished:
 	case <-time.After(startSuccessWait):
+		cancel()
+		_ = conn.Close()
 		t.Fatalf("SessionStop must not wait for a connection that is not ready")
 	}
 
