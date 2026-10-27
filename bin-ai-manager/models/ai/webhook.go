@@ -26,10 +26,9 @@ type WebhookMessage struct {
 
 	EngineModel EngineModel    `json:"engine_model,omitempty"`
 	Parameter   map[string]any `json:"parameter,omitempty"`
-	EngineKey   string         `json:"engine_key,omitempty"`
 
-	// HasEngineKey reports whether the AI holds an engine key. It has no omitempty so that false is
-	// distinguishable from an absent field.
+	// HasEngineKey reports whether the AI holds an engine key. The key itself is never returned. It has
+	// no omitempty so that false is distinguishable from an absent field.
 	HasEngineKey bool `json:"has_engine_key"`
 
 	RagID uuid.UUID `json:"rag_id,omitempty"`
@@ -75,7 +74,6 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 
 		EngineModel: h.EngineModel,
 		Parameter:   h.Parameter,
-		EngineKey:   h.EngineKey,
 
 		// The event copy has EngineKey cleared and carries the hint instead.
 		HasEngineKey: h.EngineKey != "" || h.HasEngineKey,

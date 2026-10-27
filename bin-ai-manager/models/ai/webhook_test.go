@@ -2,6 +2,7 @@ package ai
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -108,6 +109,109 @@ func TestConvertWebhookMessage_IsInsightActive(t *testing.T) {
 			}
 			if got != tt.active {
 				t.Errorf("is_insight_active in JSON: expect %v, got %v", tt.active, got)
+			}
+		})
+	}
+}
+
+func Test_ConvertWebhookMessage_EngineKeyNotExposed(t *testing.T) {
+	const dummyKey = "dummy-engine-key-value"
+
+	tests := []struct {
+		name          string
+		engineKey     string
+		wantHasKey    bool
+		wantHasKeyStr string
+	}{
+		{"key_set", dummyKey, true, `"has_engine_key":true`},
+		{"key_empty", "", false, `"has_engine_key":false`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &AI{
+				Identity:  commonidentity.Identity{ID: uuid.Must(uuid.NewV4())},
+				EngineKey: tt.engineKey,
+			}
+
+			msg := a.ConvertWebhookMessage()
+			if msg.HasEngineKey != tt.wantHasKey {
+				t.Errorf("HasEngineKey = %v, want %v", msg.HasEngineKey, tt.wantHasKey)
+			}
+
+			// ConvertWebhookMessage output and CreateWebhookEvent output must both be key free.
+			fromConvert, err := json.Marshal(msg)
+			if err != nil {
+				t.Fatalf("marshal: %v", err)
+			}
+			fromEvent, err := a.CreateWebhookEvent()
+			if err != nil {
+				t.Fatalf("CreateWebhookEvent: %v", err)
+			}
+
+			for name, b := range map[string][]byte{"convert": fromConvert, "event": fromEvent} {
+				s := string(b)
+				if strings.Contains(s, `"engine_key"`) || strings.Contains(s, dummyKey) {
+					t.Errorf("%s output must not carry the engine key: %s", name, s)
+				}
+				if !strings.Contains(s, tt.wantHasKeyStr) {
+					t.Errorf("%s output must contain %s: %s", name, tt.wantHasKeyStr, s)
+				}
+			}
+		})
+	}
+}
+
+// A stored event written before the event masking carries a plaintext engine_key. Unmarshalling it
+// into AI and converting again (the timeline replay path) must not bring the key back.
+func Test_ConvertWebhookMessage_LegacyEventWithPlaintextKey(t *testing.T) {
+	legacy := `{"id":"a1a1a1a1-0000-0000-0000-000000000001","engine_model":"openai.gpt-5","engine_key":"dummy-legacy-key"}`
+
+	var a AI
+	if err := json.Unmarshal([]byte(legacy), &a); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+
+	b, err := json.Marshal(a.ConvertWebhookMessage())
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if strings.Contains(string(b), "dummy-legacy-key") || strings.Contains(string(b), `"engine_key"`) {
+		t.Errorf("converted legacy event must not carry the key: %s", b)
+	}
+}
+
+// publishAIEvent clears the key and sets the HasEngineKey hint first. The converted message of that
+// event copy must report has_engine_key true and no key, so events, websocket and aggregated events
+// agree with the REST response.
+func Test_ConvertWebhookMessage_MaskedEventHint(t *testing.T) {
+	tests := []struct {
+		name       string
+		hint       bool
+		wantHasKey bool
+	}{
+		{"hint_set", true, true},
+		{"hint_unset", false, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &AI{
+				Identity:     commonidentity.Identity{ID: uuid.Must(uuid.NewV4())},
+				HasEngineKey: tt.hint,
+			}
+
+			msg := a.ConvertWebhookMessage()
+			if msg.HasEngineKey != tt.wantHasKey {
+				t.Errorf("HasEngineKey = %v, want %v", msg.HasEngineKey, tt.wantHasKey)
+			}
+
+			b, err := json.Marshal(msg)
+			if err != nil {
+				t.Fatalf("marshal: %v", err)
+			}
+			if strings.Contains(string(b), `"engine_key"`) {
+				t.Errorf("output must not carry engine_key: %s", b)
 			}
 		})
 	}
