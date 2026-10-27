@@ -21,7 +21,7 @@ All new tests use the `Test_` prefix and no `t.Parallel()` (they replace process
 |---|---|---|
 | Start with watcher: recording dir `t.TempDir()`, bucket set, GCS emulator | Redis `SET rtpengine.<ip>.address-internal` where `<ip>` is in the set from `ifaceIPv4s`; `QueueCreate` with the configured permanent name and `normal`, with `rtpengine.<ip>.request` and `volatile`; both `ConsumeRPC`; logs "pcap watcher enabled" and "pcap watcher started"; `metadata` dir exists; after the signal a "pcap watcher stopping" log; an uuid-named orphan pcap planted under the lock is gone | key or queue names, queue types, enable condition, `CleanOrphans` call removed |
 | Recording dir set, bucket empty (no uploader) | "pcap watcher disabled" log, no watcher log | `&&` changed to `||` |
-| Recording dir empty, bucket set (emulator) | no GCS error log, queues reached, "pcap watcher disabled" log, no watcher log | `&&` changed to `||` |
+| Recording dir empty, bucket set (emulator) | queues reached, "pcap watcher disabled" log, no watcher log | `&&` changed to `||` |
 | Invalid NG timeout (run together with recording dir and bucket both empty) | warning log with the value, startup continues, "pcap watcher disabled" log | fallback warning removed |
 | Redis unreachable (closed loopback port) | "Could not register proxy in Redis" log, no sock factory call | early return removed |
 | Invalid NG address `bad` (no DNS) | "Could not create NG client" log | early return removed |
@@ -37,6 +37,6 @@ Skips: every precondition (non-loopback IPv4 interface, lock taken and opened, n
 - Same measurement command; target 90% or more of hand-written statements, 90.5% recommended. The final PR body table uses the same flags (and `-race -shuffle=on` as an additional run) on the final HEAD.
 - Existing tests pass; `-race -shuffle=on -count=3` passes for `cmd/rtpengine-proxy`; `go test -v ./cmd/... ./pkg/processmanager/...` shows 0 `--- SKIP` on a host with a non-loopback IPv4 interface; parallel run of the two packages (`-p 8`) passes without skips.
 - `golangci-lint run` and `scripts/check-test-conventions.sh` pass.
-- Mutation spot checks must fail the new tests: change the Redis key or the queue name passed to `QueueCreate`, remove the `CleanOrphans` call, change the watcher enable `&&` to `||`, remove the fallback warning. The 5 second NG fallback value and the effect of `ng.Close` are not observable from the test and are not claimed.
+- Mutation spot checks must fail the new tests: change the Redis key or the queue name passed to `QueueCreate`, remove the `CleanOrphans` call, change the watcher enable `&&` to `||`, remove the fallback warning. The 5 second NG fallback value, the effect of `ng.Close` and the `procMgr.Shutdown()` call are not observable from the test and are not claimed.
 - Test data uses only `127.0.0.1`, `10.0.0.x` and `203.0.113.x` style values.
 - `git diff --stat origin/main...HEAD` lists only files under `voip-rtpengine-proxy/`; `go.mod`, `go.sum` and product code are unchanged.
