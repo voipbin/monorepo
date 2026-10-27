@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"strings"
 	"testing"
 )
 
@@ -113,5 +114,13 @@ func Test_isPrivateIP(t *testing.T) {
 				t.Errorf("isPrivateIP(%s) = %v, want %v", tt.ip, !tt.private, tt.private)
 			}
 		})
+	}
+}
+
+func Test_validateWebhookURL_unparsable(t *testing.T) {
+	// an unterminated IPv6 literal cannot be parsed
+	err := validateWebhookURL(context.Background(), "http://[::1")
+	if err == nil || !strings.Contains(err.Error(), "invalid URL") {
+		t.Errorf("Wrong match. expect error containing: invalid URL, got: %v", err)
 	}
 }
