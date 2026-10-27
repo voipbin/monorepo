@@ -61,3 +61,5 @@ Only new `_test.go` files are added (existing test files are not edited), named 
 Wherever several inputs exercise the same function they are rows of one table test (`docs/conventions/testing.md` 13.1); a single test function is used only when the setup differs.
 
 The BCP47 fallback test is a new file because existing test files are not edited; the PR body says so.
+
+The repeated run (`-count=3`) is used for the new tests only (`-run` of their names): the existing dbhandler tests insert fixed ids into a shared database and are not repeatable by design.
