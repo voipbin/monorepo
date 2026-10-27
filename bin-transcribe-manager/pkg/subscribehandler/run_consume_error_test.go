@@ -37,9 +37,10 @@ func Test_Run_consumeErrorIsLogged(t *testing.T) {
 	defer mc.Finish()
 
 	hook := &consumeErrorHook{match: "Could not consume the subscribed evnet message correctly", ch: make(chan struct{}, 2)}
+	origHooks := logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
 	logrus.AddHook(hook)
 	t.Cleanup(func() {
-		logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+		logrus.StandardLogger().ReplaceHooks(origHooks)
 	})
 
 	mockSock := sockhandler.NewMockSockHandler(mc)

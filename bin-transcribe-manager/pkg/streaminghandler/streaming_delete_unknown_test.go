@@ -5,18 +5,25 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"go.uber.org/mock/gomock"
+
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 
 	"monorepo/bin-transcribe-manager/models/streaming"
 )
 
 // Test_Delete_unknownID checks that deleting an unknown streaming neither changes the known ones
-// nor publishes anything (the handler has no notify handler, so a publish would panic).
+// nor publishes an event (the notify mock has no expectation, so any publish fails the test).
 func Test_Delete_unknownID(t *testing.T) {
 	knownID := uuid.FromStringOrNil("b3755cc4-e9da-11ef-812f-a73170810401")
 	unknownID := uuid.FromStringOrNil("b3755cc4-e9da-11ef-812f-a73170810402")
 
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
 	h := &streamingHandler{
-		mapStreaming: map[uuid.UUID]*streaming.Streaming{knownID: {}},
+		notifyHandler: notifyhandler.NewMockNotifyHandler(mc),
+		mapStreaming:  map[uuid.UUID]*streaming.Streaming{knownID: {}},
 	}
 
 	h.Delete(context.Background(), unknownID)

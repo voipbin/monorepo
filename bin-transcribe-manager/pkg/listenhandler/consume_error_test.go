@@ -44,9 +44,10 @@ func Test_Run_consumeErrorIsLogged(t *testing.T) {
 
 	// both goroutines write the same message, so the hook counts the matches
 	hook := &matchCountHook{match: "Could not consume the request message correctly", ch: make(chan struct{}, 4)}
+	origHooks := logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
 	logrus.AddHook(hook)
 	t.Cleanup(func() {
-		logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+		logrus.StandardLogger().ReplaceHooks(origHooks)
 	})
 
 	mockSock := sockhandler.NewMockSockHandler(mc)
