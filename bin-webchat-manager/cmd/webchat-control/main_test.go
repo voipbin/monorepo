@@ -1,6 +1,11 @@
 package main
 
 import (
+	"bytes"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -89,5 +94,81 @@ func Test_initCommand_persistentPreRun(t *testing.T) {
 	// the environment binding built by initCommand
 	if got := viper.GetString("database_dsn"); got != "fake-dsn-value" {
 		t.Errorf("Wrong value. expect: fake-dsn-value, got: %s", got)
+	}
+}
+
+// captureStdout returns a function that restores os.Stdout and gives back what
+// was written. The pipe is read in a goroutine so a large output can not block.
+func captureStdout(t *testing.T) func() string {
+	t.Helper()
+
+	orig := os.Stdout
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("could not create the pipe. err: %v", err)
+	}
+	os.Stdout = w
+
+	done := make(chan string, 1)
+	go func() {
+		var buf bytes.Buffer
+		_, _ = io.Copy(&buf, r)
+		done <- buf.String()
+	}()
+
+	restored := false
+	restore := func() string {
+		if restored {
+			return ""
+		}
+		restored = true
+
+		os.Stdout = orig
+		_ = w.Close()
+		return <-done
+	}
+	t.Cleanup(func() { _ = restore() })
+
+	return restore
+}
+
+func Test_main_help(t *testing.T) {
+	resetGlobals(t)
+
+	origArgs := os.Args
+	t.Cleanup(func() { os.Args = origArgs })
+	os.Args = []string{"webchat-control", "--help"}
+
+	restore := captureStdout(t)
+	main() // the help output returns without exiting the process
+	out := restore()
+
+	for _, expect := range []string{"webchat-control", "migrate", "--database_dsn"} {
+		if !strings.Contains(out, expect) {
+			t.Errorf("Wrong output. expect: containing %q, got: %s", expect, out)
+		}
+	}
+}
+
+// The migrate command opens only the database. The connection string points to
+// a unix socket that does not exist, so the failure is local and immediate, and
+// the message proves that the environment value was used.
+func Test_initCommand_migrateStatus_unreachableDatabase(t *testing.T) {
+	resetGlobals(t)
+
+	socketPath := filepath.Join(t.TempDir(), "missing.sock")
+	t.Setenv("DATABASE_DSN", "unix("+socketPath+")/synthetic")
+
+	cmd := initCommand()
+	cmd.SetOut(io.Discard)
+	cmd.SetErr(io.Discard)
+	cmd.SetArgs([]string{"migrate", "status"})
+
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatalf("Wrong match. expect: error, got: nil")
+	}
+	if !strings.Contains(err.Error(), socketPath) {
+		t.Errorf("Wrong error. expect: containing the socket path, got: %v", err)
 	}
 }
