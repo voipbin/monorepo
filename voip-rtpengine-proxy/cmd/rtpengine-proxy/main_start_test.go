@@ -109,7 +109,7 @@ type startCfg struct {
 	recordingDir   string
 	bucket         string
 	redisAddress   string // empty keeps the fake Redis
-	emulatorHost   string
+	emulatorHost   string // only read when the client is created; no scenario uploads
 	credentialFile string // value of GOOGLE_APPLICATION_CREDENTIALS, empty keeps unset
 }
 
@@ -131,8 +131,6 @@ type mainRun struct {
 func startMain(t *testing.T, cfg startCfg) *mainRun {
 	t.Helper()
 
-	// Cleanups run in reverse order: end main(), finish the mock controller,
-	// restore the globals, release the lock.
 	ifaceName, ips := testInterface(t)
 	orphan := ""
 	if cfg.lock {
@@ -202,8 +200,9 @@ func startMain(t *testing.T, cfg startCfg) *mainRun {
 	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", cfg.credentialFile)
 	chSigs = r.sigs
 
-	// Registered last, so it runs first: main() must be over before the mock
-	// controller finishes and the globals are restored.
+	// Cleanups run in reverse order: this one is registered last, so it runs
+	// first and ends main(); then the mock controller finishes, the globals
+	// are restored and the lock is released.
 	t.Cleanup(func() {
 		r.signal()
 		select {
