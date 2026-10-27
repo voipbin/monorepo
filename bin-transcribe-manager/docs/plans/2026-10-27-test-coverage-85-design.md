@@ -43,3 +43,15 @@ Not tested because unreachable without product code changes: squirrel `ToSql` er
 - Mutation sample: for at least 5 new tests, break the guarded product line in a scratch copy and confirm the test fails.
 - `GOFLAGS=-mod=mod go test -count=1 -race ./...`, `golangci-lint run`, hand-written total 85.5% or more, diff only under bin-transcribe-manager.
 - VOIP-1416 (packages below 80%) overlaps only on the two cmd packages (61.1% and 12.2%); this is stated in the PR body and not absorbed.
+
+## 4. Test plan (design)
+
+All new tests are additions to `_test.go` files, one new file per area, named after the code under test.
+
+- `cmd/transcribe-manager/main_run_test.go`: table tests of `runListen`, `runSubscribe`, `runStreaming` with `sockhandler.MockSockHandler`, `transcribehandler.MockTranscribeHandler`, `transcripthandler.MockTranscriptHandler`, `requesthandler.MockRequestHandler`, `streaminghandler.MockStreamingHandler`. `runListen`: queue create error, volatile queue create error, success with both `ConsumeRPC` calls signalled through a channel. `runSubscribe`: queue create, topic create, queue bind errors and success with `ConsumeMessage` signalled. `runStreaming`: `Run` error is wrapped, success. `runDaemon`: closed loopback DSN returns the wrapped connect error (empty Prometheus endpoint, config restored, `initSignal` goroutine ended in cleanup).
+- `pkg/transcribehandler/*_extra_test.go`: Start with a lookup error that is not not-found, recording and live start errors; HealthCheck on confbridge lookup error (reschedule or stop path asserted through the mock calls); event handler where one `Delete` fails and the next is still deleted; Delete where `Stop` succeeds; `getBCP47LanguageCode("zz-invalid")` equals `en-US`.
+- `pkg/listenhandler/*_extra_test.go`: `errorResponse` with a `VoipbinError` whose detail cannot be marshaled yields 500; consume error logged without panic (channel sync); each list/get/start/stop/delete handler returns 500 when the mocked result carries a year 10000 time stamp; `Run` error path of the volatile queue is already covered and is not repeated.
+- `pkg/dbhandler/*_extra_test.go`: list with empty token uses the current time (mock util handler), update with empty fields is a no-op, update-to-cache read error, unsupported filter type, update value conversion error, transcript cache hit, malformed stored rows on a private in-memory database for the scan error paths.
+- Single statements: one focused test each in the owning package.
+
+Test naming follows `Test_<function>` with a `name` field per table row; gomock controller variable is `mc` (CI gate `scripts/check-test-conventions.sh`). The gate script and `golangci-lint` run before push. No product file is edited.
