@@ -56,7 +56,7 @@ func waitFor(t *testing.T, deadline time.Duration, what string, cond func() bool
 }
 
 // Test_run covers the start of the service up to the database connection and the metrics listener.
-// initProm registers the endpoint on the default mux, so run must be called only once in the process.
+// initProm registers the endpoint on the default mux, so every run call needs its own endpoint.
 func Test_run(t *testing.T) {
 	// occupy the listen address so that the first attempt of the metrics listener fails
 	occupied, err := net.Listen("tcp", "127.0.0.1:0")
@@ -70,6 +70,10 @@ func Test_run(t *testing.T) {
 	orig := cfg.PrometheusListenAddress
 	t.Cleanup(func() { cfg.PrometheusListenAddress = orig })
 	cfg.PrometheusListenAddress = addr
+	// every run registers its endpoint on the default mux, so the endpoint is unique per call
+	origEndpoint := cfg.PrometheusEndpoint
+	t.Cleanup(func() { cfg.PrometheusEndpoint = origEndpoint })
+	cfg.PrometheusEndpoint = uniqueEndpoint()
 
 	hook := logrustest.NewGlobal()
 	t.Cleanup(func() { logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks)) })
