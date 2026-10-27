@@ -38,6 +38,7 @@ Shared Go library used by every `bin-*-manager` service in the monorepo. Provide
 - **`requesthandler` is the only correct RPC path.** All service-to-service calls must go through it. Bypassing it loses circuit breaker protection.
 - **Do not import `rabbitmqhandler` in consumers.** Use `sockhandler` instead.
 - **Do not register metrics with the same names that `requesthandler` already registers.** `prometheus.MustRegister` panics on duplicates.
+- **In tests, call `requesthandler.NewRequestHandler` at most once per process** (or use `NewMockRequestHandler`). A second call with the same service name panics on duplicate metric registration, including repeated runs with `go test -count=N` when the call is inside a test function. See [docs/workflows/common-gotchas.md](../docs/workflows/common-gotchas.md).
 - **UUID fields need `,uuid` db tag; JSON fields need `,json` db tag** on models.
 - **Use `models/outline` queue name constants** — no hardcoded queue strings in consumer services.
 

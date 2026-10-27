@@ -55,7 +55,9 @@ rh := requesthandler.NewRequestHandler(
 call, err := rh.CallV1CallGet(ctx, callID)
 ```
 
-`NewRequestHandler` takes no `context.Context` and returns a single `RequestHandler` value (no error) — construction cannot fail. All RPC methods go through `sendRequest()` in `pkg/requesthandler/send_request.go`. The circuit breaker is applied here automatically. Do not add another circuit breaker layer in the consumer.
+`NewRequestHandler` takes no `context.Context` and returns a single `RequestHandler` value (no error), though it can panic on duplicate metric registration (see below). All RPC methods go through `sendRequest()` in `pkg/requesthandler/send_request.go`. The circuit breaker is applied here automatically. Do not add another circuit breaker layer in the consumer.
+
+Call `NewRequestHandler` once per process, especially in tests. Each call registers Prometheus metrics on the default registry, so a second call with the same service name panics; in tests use `NewMockRequestHandler`, or share one real instance behind a `sync.Once`.
 
 ### Publishing events with NotifyHandler
 
