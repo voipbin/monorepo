@@ -332,7 +332,7 @@ func (h *campaignHandler) executeFlow(
 	if err != nil {
 		log.Errorf("Could not update the campaigncall status to progressing. err: %v", err)
 
-		_, _ = h.campaigncallHandler.Done(ctx, cc.ID, campaigncall.ResultFail)
+		_, _ = h.campaigncallHandler.Done(ctx, tmpCC.ID, campaigncall.ResultFail)
 		return nil, err
 	}
 

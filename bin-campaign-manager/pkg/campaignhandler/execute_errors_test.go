@@ -231,6 +231,22 @@ func Test_Execute_branches(t *testing.T) {
 			},
 		},
 		{
+			name: "flow type with progressing error marks the created campaigncall as fail",
+			setup: func(ctx context.Context, m *executeMocks) {
+				ccID := uuid.FromStringOrNil("a1000000-0000-4000-8000-0000000000e1")
+				afID := uuid.FromStringOrNil("a1000000-0000-4000-8000-0000000000e2")
+				created := &campaigncall.Campaigncall{Identity: commonidentity.Identity{ID: ccID}}
+				m.db.EXPECT().CampaignGet(ctx, id).Return(newCampaign(nil), nil)
+				expectPlanAndTarget(ctx, m, available, nil)
+				m.util.EXPECT().UUIDCreate().Return(afID)
+				m.campaigncall.EXPECT().Create(ctx, customerID, id, outplanID, outdialID, targetID, uuid.Nil,
+					afID, flowID, campaigncall.ReferenceTypeFlow, uuid.Nil, plan.Source, dest, 0, 1).Return(created, nil)
+				m.campaigncall.EXPECT().Progressing(ctx, ccID).Return(nil, errors.New("progressing error"))
+				m.campaigncall.EXPECT().Done(ctx, ccID, campaigncall.ResultFail).Return(nil, nil)
+				expectStopAbort(ctx, m, id)
+			},
+		},
+		{
 			name: "flow type with activeflow create error marks the campaigncall as fail",
 			setup: func(ctx context.Context, m *executeMocks) {
 				ccID := uuid.FromStringOrNil("a1000000-0000-4000-8000-0000000000b1")
