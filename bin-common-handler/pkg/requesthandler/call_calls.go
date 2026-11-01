@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
@@ -55,7 +56,8 @@ func (r *requestHandler) CallV1CallActionTimeout(ctx context.Context, id uuid.UU
 
 	var tmExecuteStr string
 	if a.TMExecute != nil {
-		tmExecuteStr = a.TMExecute.UTC().Format("2006-01-02T15:04:05.000000Z")
+		// keep nanosecond precision. the receiver compares it with the stored tm_execute using time.Equal.
+		tmExecuteStr = a.TMExecute.UTC().Format(time.RFC3339Nano)
 	}
 
 	m, err := json.Marshal(cmrequest.V1DataCallsIDActionTimeoutPost{

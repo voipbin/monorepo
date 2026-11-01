@@ -198,13 +198,13 @@ func Test_ActionTimeoutNext(t *testing.T) {
 				ChannelID: "12a05228-e3fd-11ea-b55f-afd68e7aa755",
 				Action: fmaction.Action{
 					ID:        uuid.FromStringOrNil("b44bae7a-e3fc-11ea-a908-374a03455628"),
-					TMExecute: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+					TMExecute: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 123456789, time.UTC); return &t }(),
 				},
 			},
 			&fmaction.Action{
 				ID:        uuid.FromStringOrNil("b44bae7a-e3fc-11ea-a908-374a03455628"),
 				Type:      fmaction.TypeAnswer,
-				TMExecute: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMExecute: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 123456789, time.UTC); return &t }(),
 			},
 			&channel.Channel{
 				ID: "12a05228-e3fd-11ea-b55f-afd68e7aa755",
