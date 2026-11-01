@@ -9,6 +9,9 @@ import (
 	"time"
 )
 
+// fakeAMIMissingChannel is the Channel value the fake answers with "Response: Error".
+const fakeAMIMissingChannel = "missing-channel"
+
 // fakeAMI is a loopback Asterisk Manager Interface stand-in that speaks just
 // enough of the protocol for the amigo client: a banner line, a login answer
 // and a blank line terminated answer per action.
@@ -101,6 +104,8 @@ func (f *fakeAMI) handle(c net.Conn) {
 		var answer string
 		if strings.EqualFold(msg["Action"], "Login") {
 			answer = "Response: Success\r\nMessage: Authentication accepted\r\n\r\n"
+		} else if msg["Channel"] == fakeAMIMissingChannel {
+			answer = "Response: Error\r\nActionID: " + msg["ActionID"] + "\r\nMessage: No such channel\r\n\r\n"
 		} else {
 			answer = "Response: Success\r\nActionID: " + msg["ActionID"] + "\r\nMessage: handled " + msg["Action"] + "\r\n\r\n"
 		}
