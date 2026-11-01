@@ -2,6 +2,7 @@ package requesthandler
 
 import (
 	"context"
+	"encoding/json"
 	"reflect"
 	"testing"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"monorepo/bin-call-manager/models/externalmedia"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	cmrecording "monorepo/bin-call-manager/models/recording"
+	cmrequest "monorepo/bin-call-manager/pkg/listenhandler/models/request"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -97,7 +99,7 @@ func Test_CallV1CallActionTimeout(t *testing.T) {
 			&fmaction.Action{
 				ID:        uuid.FromStringOrNil("eccec152-4c6e-11ec-bb47-d343ee142464"),
 				Type:      fmaction.TypeAnswer,
-				TMExecute: func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC); return &t }(),
+				TMExecute: func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 123456789, time.UTC); return &t }(),
 			},
 
 			"bin-manager.call-manager.request",
@@ -105,7 +107,7 @@ func Test_CallV1CallActionTimeout(t *testing.T) {
 				URI:      "/v1/calls/c8ab1794-4c6e-11ec-86bc-773d32f65e3b/action-timeout",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"action_id":"eccec152-4c6e-11ec-bb47-d343ee142464","action_type":"answer","tm_execute":"2020-09-20T03:23:20.995000Z"}`),
+				Data:     []byte(`{"action_id":"eccec152-4c6e-11ec-bb47-d343ee142464","action_type":"answer","tm_execute":"2020-09-20T03:23:20.123456789Z"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -1915,6 +1917,65 @@ func Test_CallV1CallSilenceOff(t *testing.T) {
 
 			if err := reqHandler.CallV1CallSilenceOff(ctx, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+// Test_CallV1CallActionTimeout_tmExecuteRoundTrip verifies that the tm_execute sent by
+// CallV1CallActionTimeout keeps sub-microsecond precision, so the receiver (which parses the value
+// with time.RFC3339Nano and compares it with time.Time.Equal against the stored value) accepts it.
+func Test_CallV1CallActionTimeout_tmExecuteRoundTrip(t *testing.T) {
+	tests := []struct {
+		name      string
+		tmExecute time.Time
+	}{
+		{"sub-microsecond nanoseconds", time.Date(2020, 9, 20, 3, 23, 20, 123456789, time.UTC)},
+		{"nanoseconds below one microsecond", time.Date(2020, 9, 20, 3, 23, 20, 999, time.UTC)},
+		{"microsecond aligned", time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC)},
+		{"trailing zeros trimmed", time.Date(2020, 9, 20, 3, 23, 20, 120000000, time.UTC)},
+		{"whole second", time.Date(2020, 9, 20, 3, 23, 20, 0, time.UTC)},
+		{"non-UTC location", time.Date(2020, 9, 20, 12, 23, 20, 123456789, time.FixedZone("KST", 9*3600))},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{sock: mockSock}
+
+			tm := tt.tmExecute
+			a := &fmaction.Action{
+				ID:        uuid.FromStringOrNil("eccec152-4c6e-11ec-bb47-d343ee142464"),
+				Type:      fmaction.TypeAnswer,
+				TMExecute: &tm,
+			}
+
+			var sent *sock.Request
+			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", gomock.Any()).
+				DoAndReturn(func(_ context.Context, _ string, req *sock.Request) (*sock.Response, error) {
+					sent = req
+					return &sock.Response{StatusCode: 200, DataType: "application/json"}, nil
+				})
+
+			if err := reqHandler.CallV1CallActionTimeout(context.Background(), uuid.FromStringOrNil("c8ab1794-4c6e-11ec-86bc-773d32f65e3b"), 0, a); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			var data cmrequest.V1DataCallsIDActionTimeoutPost
+			if err := json.Unmarshal(sent.Data, &data); err != nil {
+				t.Fatalf("Could not unmarshal the sent data. err: %v", err)
+			}
+
+			// same parsing as bin-call-manager listenhandler processV1CallsIDActionTimeoutPost
+			got, err := time.Parse(time.RFC3339Nano, data.TMExecute)
+			if err != nil {
+				t.Fatalf("Could not parse the sent tm_execute. value: %s, err: %v", data.TMExecute, err)
+			}
+			if !got.Equal(tt.tmExecute) {
+				t.Errorf("Wrong match. expect: %v, got: %v (sent: %s)", tt.tmExecute, got, data.TMExecute)
 			}
 		})
 	}

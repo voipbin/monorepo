@@ -253,12 +253,12 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 				URI:      "/v1/calls/1a94c1e6-982e-11ea-9298-43412daaf0da/action-timeout",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"action_id": "ec4c8192-994b-11ea-ab64-9b63b984b7c4", "action_type": "echo", "tm_execute": "2020-05-03T21:35:02.809Z"}`),
+				Data:     []byte(`{"action_id": "ec4c8192-994b-11ea-ab64-9b63b984b7c4", "action_type": "echo", "tm_execute": "2020-05-03T21:35:02.123456789Z"}`),
 			},
 			action: &fmaction.Action{
 				ID:        uuid.FromStringOrNil("ec4c8192-994b-11ea-ab64-9b63b984b7c4"),
 				Type:      fmaction.TypeEcho,
-				TMExecute: func() *time.Time { t := time.Date(2020, 5, 3, 21, 35, 2, 809000000, time.UTC); return &t }(),
+				TMExecute: func() *time.Time { t := time.Date(2020, 5, 3, 21, 35, 2, 123456789, time.UTC); return &t }(),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
