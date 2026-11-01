@@ -13,10 +13,7 @@ import (
 
 // processEventCMGroupcallProgressing handles the call-manager's groupcall_answered event.
 func (h *subscribeHandler) processEventCMGroupcallProgressing(ctx context.Context, m *sock.Event) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventCMGroupcallAnswered",
-		"event": m,
-	})
+	log := logrus.WithFields(eventLogFields(m)).WithField("func", "processEventCMGroupcallAnswered")
 
 	groupcall := &cmgroupcall.Groupcall{}
 	if err := json.Unmarshal([]byte(m.Data), &groupcall); err != nil {

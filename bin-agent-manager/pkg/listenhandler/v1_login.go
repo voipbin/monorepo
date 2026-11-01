@@ -26,7 +26,7 @@ func (h *listenHandler) processV1Login(ctx context.Context, m *sock.Request) (*s
 
 	var reqData request.V1DataLoginPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data_len: %d, err: %v", len(m.Data), err)
 		return simpleResponse(400), nil
 	}
 
@@ -38,7 +38,7 @@ func (h *listenHandler) processV1Login(ctx context.Context, m *sock.Request) (*s
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 	log.Debugf("Sending result: %v", data)

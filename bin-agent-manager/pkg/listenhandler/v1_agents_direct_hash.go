@@ -22,7 +22,7 @@ func (h *listenHandler) processV1AgentsIDDirectHashRegenerate(ctx context.Contex
 		"func":     "processV1AgentsIDDirectHashRegenerate",
 		"agent_id": id,
 	})
-	log.WithField("request", m).Debug("Received request.")
+	log.Debug("Received request.")
 
 	tmp, err := h.agentHandler.DirectHashRegenerate(ctx, id)
 	if err != nil {

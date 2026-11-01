@@ -20,10 +20,7 @@ type countByCustomerResponse struct {
 
 // processV1AgentsCountByCustomerGet handles GET /v1/agents/count_by_customer
 func (h *listenHandler) processV1AgentsCountByCustomerGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AgentsCountByCustomerGet",
-		"request": m,
-	})
+	log := logrus.WithFields(requestLogFields(m)).WithField("func", "processV1AgentsCountByCustomerGet")
 
 	var req countByCustomerRequest
 	if err := json.Unmarshal(m.Data, &req); err != nil {
