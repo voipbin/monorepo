@@ -133,8 +133,8 @@ ARI request
 AMI request
 ```json
 {
-  "uri": "/ami",
-  "method": "",
+  "uri": "/ami/action",
+  "method": "POST",
   "data": "{\"Action\": \"Ping\"}",
   "data_type": "text/plain"
 }
