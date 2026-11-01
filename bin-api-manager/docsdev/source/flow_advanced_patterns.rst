@@ -144,7 +144,9 @@ Business Hours Routing
 
 .. note:: **AI Implementation Hint**
 
-   The ``condition_datetime`` action checks against UTC time, not local time. To implement business hours for a specific timezone, calculate the UTC offset and adjust the ``hour`` values accordingly. For example, 9 AM EST = 14:00 UTC. Two ``condition_datetime`` actions are needed to define a range (one for opening, one for closing).
+   The ``condition_datetime`` action checks against UTC time, not local time. To implement business hours for a specific timezone, calculate the UTC offset and adjust the ``hour`` values accordingly. For example, 9 AM EST = 14:00 UTC. The UTC offset of a region that observes daylight saving time changes with the season, so the ``hour`` values must be adjusted when the offset changes. Two ``condition_datetime`` actions are needed to define a range (one for opening, one for closing).
+
+   The comparison is evaluated as ``configured value <op> current value``. The value you set is the left operand. To open at 09:00 UTC, use ``<=`` with ``hour`` ``9`` (``9 <= current hour``). To close at 17:00 UTC, use ``>`` with ``hour`` ``17`` (``17 > current hour``). Every field you set is evaluated independently with the same operator and all of them must be satisfied, so setting ``hour`` together with ``minute`` does not describe a time of day. Set ``minute`` to ``-1`` to ignore it, and always set ``hour`` and ``minute`` explicitly because omitted values are compared as ``0``.
 
 Route calls differently based on time of day:
 
@@ -157,8 +159,8 @@ Route calls differently based on time of day:
                                 v
                     +---------------------+
                     | condition_datetime  |
-                    | (9 AM - 5 PM,       |
-                    |  Mon-Fri)           |
+                    | (9 AM - 5 PM UTC)   |
+                    |                     |
                     +----------+----------+
                                |
               +----------------+----------------+
@@ -184,12 +186,11 @@ Route calls differently based on time of day:
           "id": "check-hours",
           "type": "condition_datetime",
           "option": {
-            "condition": ">=",
+            "condition": "<=",
             "hour": 9,
-            "minute": 0,
+            "minute": -1,
             "day": -1,
             "month": 0,
-            "weekdays": [1, 2, 3, 4, 5],
             "false_target_id": "after-hours"
           }
         },
@@ -197,12 +198,11 @@ Route calls differently based on time of day:
           "id": "check-closing",
           "type": "condition_datetime",
           "option": {
-            "condition": "<",
+            "condition": ">",
             "hour": 17,
-            "minute": 0,
+            "minute": -1,
             "day": -1,
             "month": 0,
-            "weekdays": [1, 2, 3, 4, 5],
             "false_target_id": "after-hours"
           }
         },
@@ -227,7 +227,7 @@ Route calls differently based on time of day:
           "id": "after-hours",
           "type": "talk",
           "option": {
-            "text": "Our office is currently closed. Our hours are Monday through Friday, 9 AM to 5 PM. Please leave a message after the tone.",
+            "text": "Our office is currently closed. Our hours are 9 AM to 5 PM UTC. Please leave a message after the tone.",
             "language": "en-US"
           }
         },
@@ -254,6 +254,15 @@ Route calls differently based on time of day:
         }
       ]
     }
+
+
+How the example works:
+
+* ``check-hours`` evaluates ``9 <= current hour``. It is true from 09:00 UTC onward. Otherwise the call moves to ``after-hours``.
+* ``check-closing`` evaluates ``17 > current hour``. It is true until 16:59 UTC. From 17:00 UTC onward the call moves to ``after-hours``.
+* Both actions set ``minute`` to ``-1``. If the closing action used ``minute`` ``0``, it would also require ``0 > current minute``, which is never true, and every call would go to ``after-hours``.
+
+.. note:: A single pair of ``condition_datetime`` actions cannot express a weekday restriction, a start or end time on a minute other than ``:00``, or a range that crosses UTC midnight. The ``weekdays`` option cannot be used at the moment: a non-empty array makes the action fail at execution time, so leave it out.
 
 
 Dynamic Flow with External Data

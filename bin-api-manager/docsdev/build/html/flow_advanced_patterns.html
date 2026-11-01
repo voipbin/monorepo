@@ -782,7 +782,8 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">condition_datetime</span></code> action checks against UTC time, not local time. To implement business hours for a specific timezone, calculate the UTC offset and adjust the <code class="docutils literal notranslate"><span class="pre">hour</span></code> values accordingly. For example, 9 AM EST = 14:00 UTC. Two <code class="docutils literal notranslate"><span class="pre">condition_datetime</span></code> actions are needed to define a range (one for opening, one for closing).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">condition_datetime</span></code> action checks against UTC time, not local time. To implement business hours for a specific timezone, calculate the UTC offset and adjust the <code class="docutils literal notranslate"><span class="pre">hour</span></code> values accordingly. For example, 9 AM EST = 14:00 UTC. The UTC offset of a region that observes daylight saving time changes with the season, so the <code class="docutils literal notranslate"><span class="pre">hour</span></code> values must be adjusted when the offset changes. Two <code class="docutils literal notranslate"><span class="pre">condition_datetime</span></code> actions are needed to define a range (one for opening, one for closing).</p>
+<p>The comparison is evaluated as <code class="docutils literal notranslate"><span class="pre">configured</span> <span class="pre">value</span> <span class="pre">&lt;op&gt;</span> <span class="pre">current</span> <span class="pre">value</span></code>. The value you set is the left operand. To open at 09:00 UTC, use <code class="docutils literal notranslate"><span class="pre">&lt;=</span></code> with <code class="docutils literal notranslate"><span class="pre">hour</span></code> <code class="docutils literal notranslate"><span class="pre">9</span></code> (<code class="docutils literal notranslate"><span class="pre">9</span> <span class="pre">&lt;=</span> <span class="pre">current</span> <span class="pre">hour</span></code>). To close at 17:00 UTC, use <code class="docutils literal notranslate"><span class="pre">&gt;</span></code> with <code class="docutils literal notranslate"><span class="pre">hour</span></code> <code class="docutils literal notranslate"><span class="pre">17</span></code> (<code class="docutils literal notranslate"><span class="pre">17</span> <span class="pre">&gt;</span> <span class="pre">current</span> <span class="pre">hour</span></code>). Every field you set is evaluated independently with the same operator and all of them must be satisfied, so setting <code class="docutils literal notranslate"><span class="pre">hour</span></code> together with <code class="docutils literal notranslate"><span class="pre">minute</span></code> does not describe a time of day. Set <code class="docutils literal notranslate"><span class="pre">minute</span></code> to <code class="docutils literal notranslate"><span class="pre">-1</span></code> to ignore it, and always set <code class="docutils literal notranslate"><span class="pre">hour</span></code> and <code class="docutils literal notranslate"><span class="pre">minute</span></code> explicitly because omitted values are compared as <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
 </div>
 <p>Route calls differently based on time of day:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Business</span> <span class="n">Hours</span> <span class="n">Flow</span><span class="p">:</span>
@@ -792,8 +793,8 @@
                             <span class="n">v</span>
                 <span class="o">+---------------------+</span>
                 <span class="o">|</span> <span class="n">condition_datetime</span>  <span class="o">|</span>
-                <span class="o">|</span> <span class="p">(</span><span class="mi">9</span> <span class="n">AM</span> <span class="o">-</span> <span class="mi">5</span> <span class="n">PM</span><span class="p">,</span>       <span class="o">|</span>
-                <span class="o">|</span>  <span class="n">Mon</span><span class="o">-</span><span class="n">Fri</span><span class="p">)</span>           <span class="o">|</span>
+                <span class="o">|</span> <span class="p">(</span><span class="mi">9</span> <span class="n">AM</span> <span class="o">-</span> <span class="mi">5</span> <span class="n">PM</span> <span class="n">UTC</span><span class="p">)</span>   <span class="o">|</span>
+                <span class="o">|</span>                     <span class="o">|</span>
                 <span class="o">+----------+----------+</span>
                            <span class="o">|</span>
           <span class="o">+----------------+----------------+</span>
@@ -817,12 +818,11 @@
       <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"check-hours"</span><span class="p">,</span>
       <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"condition_datetime"</span><span class="p">,</span>
       <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"condition"</span><span class="p">:</span> <span class="s2">"&gt;="</span><span class="p">,</span>
+        <span class="s2">"condition"</span><span class="p">:</span> <span class="s2">"&lt;="</span><span class="p">,</span>
         <span class="s2">"hour"</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
-        <span class="s2">"minute"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"minute"</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
         <span class="s2">"day"</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
         <span class="s2">"month"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">"weekdays"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
         <span class="s2">"false_target_id"</span><span class="p">:</span> <span class="s2">"after-hours"</span>
       <span class="p">}</span>
     <span class="p">},</span>
@@ -830,12 +830,11 @@
       <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"check-closing"</span><span class="p">,</span>
       <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"condition_datetime"</span><span class="p">,</span>
       <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"condition"</span><span class="p">:</span> <span class="s2">"&lt;"</span><span class="p">,</span>
+        <span class="s2">"condition"</span><span class="p">:</span> <span class="s2">"&gt;"</span><span class="p">,</span>
         <span class="s2">"hour"</span><span class="p">:</span> <span class="mi">17</span><span class="p">,</span>
-        <span class="s2">"minute"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"minute"</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
         <span class="s2">"day"</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
         <span class="s2">"month"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">"weekdays"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
         <span class="s2">"false_target_id"</span><span class="p">:</span> <span class="s2">"after-hours"</span>
       <span class="p">}</span>
     <span class="p">},</span>
@@ -860,7 +859,7 @@
       <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"after-hours"</span><span class="p">,</span>
       <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
       <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Our office is currently closed. Our hours are Monday through Friday, 9 AM to 5 PM. Please leave a message after the tone."</span><span class="p">,</span>
+        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Our office is currently closed. Our hours are 9 AM to 5 PM UTC. Please leave a message after the tone."</span><span class="p">,</span>
         <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
       <span class="p">}</span>
     <span class="p">},</span>
@@ -888,6 +887,16 @@
   <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
+</div>
+<p>How the example works:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">check-hours</span></code> evaluates <code class="docutils literal notranslate"><span class="pre">9</span> <span class="pre">&lt;=</span> <span class="pre">current</span> <span class="pre">hour</span></code>. It is true from 09:00 UTC onward. Otherwise the call moves to <code class="docutils literal notranslate"><span class="pre">after-hours</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">check-closing</span></code> evaluates <code class="docutils literal notranslate"><span class="pre">17</span> <span class="pre">&gt;</span> <span class="pre">current</span> <span class="pre">hour</span></code>. It is true until 16:59 UTC. From 17:00 UTC onward the call moves to <code class="docutils literal notranslate"><span class="pre">after-hours</span></code>.</p></li>
+<li><p>Both actions set <code class="docutils literal notranslate"><span class="pre">minute</span></code> to <code class="docutils literal notranslate"><span class="pre">-1</span></code>. If the closing action used <code class="docutils literal notranslate"><span class="pre">minute</span></code> <code class="docutils literal notranslate"><span class="pre">0</span></code>, it would also require <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">&gt;</span> <span class="pre">current</span> <span class="pre">minute</span></code>, which is never true, and every call would go to <code class="docutils literal notranslate"><span class="pre">after-hours</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A single pair of <code class="docutils literal notranslate"><span class="pre">condition_datetime</span></code> actions cannot express a weekday restriction, a start or end time on a minute other than <code class="docutils literal notranslate"><span class="pre">:00</span></code>, or a range that crosses UTC midnight. The <code class="docutils literal notranslate"><span class="pre">weekdays</span></code> option cannot be used at the moment: a non-empty array makes the action fail at execution time, so leave it out.</p>
 </div>
 </section>
 <section id="dynamic-flow-with-external-data">

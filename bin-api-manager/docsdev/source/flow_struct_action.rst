@@ -531,6 +531,10 @@ Condition Datetime
 Check the condition of the time.
 It checks the current time(UTC) and if it matched with condition then move to the next action. If not, move to the false_target_id.
 
+The comparison is evaluated as ``configured value <op> current value``. The value you set is the left operand and the current UTC value is the right operand. For example, ``condition`` ``<=`` with ``hour`` ``9`` means ``9 <= current hour``, which is true from 09:00 UTC onward. The same ``condition`` is applied to every field you set, each field is evaluated independently, and all of them must be satisfied. Because the fields are independent, setting both ``hour`` and ``minute`` does not describe a time of day. For example, ``hour`` ``9`` and ``minute`` ``30`` with ``<=`` means ``9 <= current hour`` AND ``30 <= current minute``, which is not "09:30 or later". To express a range of hours, set only ``hour`` and set ``minute`` to ``-1``.
+
+.. note:: A field that is left out is not skipped in every case. ``hour`` and ``minute`` that are omitted are compared as ``0``, so always set ``hour`` and ``minute`` explicitly (use ``-1`` to ignore them). ``day`` and ``month`` that are omitted or ``0`` are ignored.
+
 Parameters
 ++++++++++
 .. code::
@@ -544,22 +548,19 @@ Parameters
             "hour": <number>,
             "day": <number>,
             "month": <number>,
-            "weekdays": [
-                <number>,
-                ...
-            ],
+            "weekdays": [],
 
 
             "false_target_id": "<string>"
         }
     }
 
-* ``condition`` (enum string): Comparison operator. One of ``==``, ``!=``, ``>``, ``>=``, ``<``, ``<=``.
-* ``minute`` (Integer): Minute to match (0-59). Set to ``-1`` to match all minutes (wildcard).
-* ``hour`` (Integer): Hour to match (0-23, UTC). Set to ``-1`` to match all hours (wildcard).
-* ``day`` (Integer): Day of month to match (1-31). Set to ``-1`` to match all days (wildcard).
-* ``month`` (Integer): Month to match (1-12). Set to ``0`` to match all months (wildcard).
-* ``weekdays`` (Array of Integer): List of weekday numbers. Sunday: ``0``, Monday: ``1``, Tuesday: ``2``, Wednesday: ``3``, Thursday: ``4``, Friday: ``5``, Saturday: ``6``. Empty array matches all days.
+* ``condition`` (enum string): Comparison operator, applied as ``configured value <op> current value``. One of ``==``, ``!=``, ``>``, ``>=``, ``<``, ``<=``.
+* ``minute`` (Integer): Minute to compare (0-59). Set to ``-1`` to ignore the minute.
+* ``hour`` (Integer): Hour to compare (0-23, UTC). Set to ``-1`` to ignore the hour.
+* ``day`` (Integer): Day of month to compare (1-31). Set to ``-1`` (or ``0``) to ignore the day.
+* ``month`` (Integer): Month to compare (1-12). Set to ``0`` to ignore the month.
+* ``weekdays`` (Array of Integer): List of weekday numbers. Sunday: ``0``, Monday: ``1``, Tuesday: ``2``, Wednesday: ``3``, Thursday: ``4``, Friday: ``5``, Saturday: ``6``. Empty array matches all days. **Currently, do not set a non-empty array.** A non-empty ``weekdays`` array makes the action fail at execution time, so leave it empty or omit it.
 * ``false_target_id`` (UUID): Action ID to jump to when the condition is not met. Must reference an ``id`` of another action in the same flow.
 
 Example
@@ -569,8 +570,8 @@ Example
     {
         "type": "condition_datetime",
         "option": {
-            "condition": ">=",
-            "minute": 0,
+            "condition": "<=",
+            "minute": -1,
             "hour": 8,
             "day": -1,
             "month": 0,
@@ -578,6 +579,8 @@ Example
             "false_target_id": "d08582ee-1b3d-11ed-a43e-9379f27c3f7f"
         }
     }
+
+This example evaluates ``8 <= current hour``. It moves to the next action from 08:00 UTC onward, and moves to ``false_target_id`` before 08:00 UTC.
 
 .. _flow-struct-action-condition_variable:
 
