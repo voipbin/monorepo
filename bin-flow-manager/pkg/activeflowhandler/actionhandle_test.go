@@ -2889,6 +2889,117 @@ func Test_actionHandleConditionDatetime_unmatch(t *testing.T) {
 	}
 }
 
+// Test_actionHandleConditionDatetime_operandOrder pins the operand order of
+// condition_datetime: the configured value is the left operand and the current
+// UTC value is the right operand ("configured <op> current").
+//
+// The sentinel values are larger than any possible current value, so the result
+// does not depend on the wall clock. Only the field under test is set. The other
+// fields are neutral: month and day are ignored when 0, hour and minute are
+// ignored when -1.
+func Test_actionHandleConditionDatetime_operandOrder(t *testing.T) {
+
+	// configured value for each field, larger than any current value.
+	sentinels := []struct {
+		field string
+		set   func(opt *action.OptionConditionDatetime)
+	}{
+		{field: "month", set: func(opt *action.OptionConditionDatetime) { opt.Month = 13 }},
+		{field: "day", set: func(opt *action.OptionConditionDatetime) { opt.Day = 32 }},
+		{field: "hour", set: func(opt *action.OptionConditionDatetime) { opt.Hour = 24 }},
+		{field: "minute", set: func(opt *action.OptionConditionDatetime) { opt.Minute = 60 }},
+	}
+
+	// result of "configured <op> current" when configured is larger than current.
+	conditions := []struct {
+		condition   action.OptionConditionCommonCondition
+		expectMatch bool
+	}{
+		{condition: action.OptionConditionCommonConditionGreater, expectMatch: true},
+		{condition: action.OptionConditionCommonConditionGreaterEqual, expectMatch: true},
+		{condition: action.OptionConditionCommonConditionLess, expectMatch: false},
+		{condition: action.OptionConditionCommonConditionLessEqual, expectMatch: false},
+	}
+
+	falseTargetID := uuid.FromStringOrNil("7e3a1c1e-5c1f-4a53-9d0a-3f1f6a5b2c11")
+
+	for _, s := range sentinels {
+		for _, c := range conditions {
+			t.Run(s.field+"_"+string(c.condition), func(t *testing.T) {
+				mc := gomock.NewController(t)
+				defer mc.Finish()
+
+				mockDB := dbhandler.NewMockDBHandler(mc)
+				mockReq := requesthandler.NewMockRequestHandler(mc)
+				mockStack := stackmaphandler.NewMockStackmapHandler(mc)
+
+				h := &activeflowHandler{
+					db:              mockDB,
+					reqHandler:      mockReq,
+					stackmapHandler: mockStack,
+				}
+
+				af := &activeflow.Activeflow{
+					ReferenceID:    uuid.FromStringOrNil("1bd34ec7-f306-4c4b-af0e-0f446f5561b1"),
+					CurrentStackID: stack.IDMain,
+					CurrentAction: action.Action{
+						ID:   uuid.FromStringOrNil("177946a3-d1c3-4c5d-8468-739a1dd65d4c"),
+						Type: action.TypeConditionDatetime,
+					},
+
+					StackMap: map[uuid.UUID]*stack.Stack{
+						stack.IDMain: {
+							ID: stack.IDMain,
+							Actions: []action.Action{
+								{
+									ID:   uuid.FromStringOrNil("177946a3-d1c3-4c5d-8468-739a1dd65d4c"),
+									Type: action.TypeConditionDatetime,
+								},
+							},
+						},
+					},
+				}
+
+				ctx := context.Background()
+
+				opt := &action.OptionConditionDatetime{
+					Condition:     c.condition,
+					Hour:          -1,
+					Minute:        -1,
+					FalseTargetID: falseTargetID,
+				}
+				s.set(opt)
+
+				tmp, _ := json.Marshal(opt)
+				if errUnmarshal := json.Unmarshal(tmp, &af.CurrentAction.Option); errUnmarshal != nil {
+					t.Fatalf("Wrong match. could not set the option. err: %v", errUnmarshal)
+				}
+
+				if !c.expectMatch {
+					expectUpdateFields := map[activeflow.Field]any{
+						activeflow.FieldCurrentStackID: af.CurrentStackID,
+						activeflow.FieldCurrentAction:  af.CurrentAction,
+
+						activeflow.FieldForwardStackID:  af.ForwardStackID,
+						activeflow.FieldForwardActionID: af.ForwardActionID,
+
+						activeflow.FieldExecuteCount: af.ExecuteCount,
+
+						activeflow.FieldStackMap: af.StackMap,
+					}
+
+					mockStack.EXPECT().GetAction(af.StackMap, af.CurrentStackID, falseTargetID, false).Return(af.ForwardStackID, &action.Action{}, nil)
+					mockDB.EXPECT().ActiveflowUpdate(ctx, af.ID, expectUpdateFields).Return(nil)
+				}
+
+				if err := h.actionHandleConditionDatetime(ctx, af); err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			})
+		}
+	}
+}
+
 func Test_actionHandleConditionVariable_match(t *testing.T) {
 
 	tests := []struct {
