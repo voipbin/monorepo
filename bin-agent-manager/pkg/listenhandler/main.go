@@ -142,15 +142,25 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
+// requestLogFields returns the fields of a request that are safe to log. It is an allowlist:
+// the body is never logged because it can carry credentials such as passwords and tokens.
+func requestLogFields(m *sock.Request) logrus.Fields {
+	return logrus.Fields{
+		"uri":        m.URI,
+		"method":     m.Method,
+		"data_type":  m.DataType,
+		"request_id": m.RequestID,
+		"data_len":   len(m.Data),
+	}
+}
+
 func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
 	var requestType string
 	var err error
 	var response *sock.Response
 
 	ctx := context.Background()
-	log := logrus.WithFields(logrus.Fields{
-		"request": m,
-	})
+	log := logrus.WithFields(requestLogFields(m))
 	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	start := time.Now()

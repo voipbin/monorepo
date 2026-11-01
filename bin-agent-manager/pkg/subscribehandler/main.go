@@ -133,14 +133,23 @@ func (h *subscribeHandler) processEventRun(m *sock.Event) error {
 	return nil
 }
 
+// eventLogFields returns the fields of an event that are safe to log. It is an allowlist:
+// the data is never logged.
+func eventLogFields(m *sock.Event) logrus.Fields {
+	return logrus.Fields{
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
+	}
+}
+
 // processEvent processes the event message
 func (h *subscribeHandler) processEvent(m *sock.Event) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "processEvent",
-		"message": m,
-	})
+	// The event data is not logged: it can carry secrets, for example the webhook secret
+	// of a customer event.
+	log := logrus.WithFields(eventLogFields(m)).WithField("func", "processEvent")
 	ctx := context.Background()
-	log.WithField("event", m).Debugf("Received subscribed event. publisher: %s, type: %s", m.Publisher, m.Type)
+	log.Debugf("Received subscribed event. publisher: %s, type: %s", m.Publisher, m.Type)
 
 	var err error
 	start := time.Now()

@@ -63,7 +63,7 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *sock.Reques
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -103,7 +103,7 @@ func (h *listenHandler) processV1AgentsIDGet(ctx context.Context, m *sock.Reques
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -125,7 +125,7 @@ func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *sock.Request
 
 	var reqData request.V1DataAgentsPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data_len: %d, err: %v", len(m.Data), err)
 		return simpleResponse(400), nil
 	}
 	if len(reqData.Name) > agentNameMaxLength {
@@ -159,7 +159,7 @@ func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *sock.Request
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -199,7 +199,7 @@ func (h *listenHandler) processV1AgentsIDDelete(ctx context.Context, m *sock.Req
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -221,7 +221,7 @@ func (h *listenHandler) processV1AgentsGetByCustomerIDAddressPost(ctx context.Co
 
 	var reqData request.V1DataAgentsGetByCustomerIDAddressPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data_len: %d, err: %v", len(m.Data), err)
 		return simpleResponse(400), nil
 	}
 	log = log.WithFields(logrus.Fields{
@@ -243,7 +243,7 @@ func (h *listenHandler) processV1AgentsGetByCustomerIDAddressPost(ctx context.Co
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -272,7 +272,7 @@ func (h *listenHandler) processV1AgentsUsernameLogin(ctx context.Context, m *soc
 
 	var reqData request.V1DataAgentsUsernameLoginPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data_len: %d, err: %v", len(m.Data), err)
 		return simpleResponse(400), nil
 	}
 
@@ -284,7 +284,7 @@ func (h *listenHandler) processV1AgentsUsernameLogin(ctx context.Context, m *soc
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -313,7 +313,7 @@ func (h *listenHandler) processV1AgentsIDAddressesPut(ctx context.Context, m *so
 
 	var reqData request.V1DataAgentsIDAddressesPut
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data_len: %d, err: %v", len(m.Data), err)
 		return simpleResponse(400), nil
 	}
 
@@ -325,7 +325,7 @@ func (h *listenHandler) processV1AgentsIDAddressesPut(ctx context.Context, m *so
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -354,7 +354,7 @@ func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *sock.Reques
 
 	var reqData request.V1DataAgentsIDPut
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data_len: %d, err: %v", len(m.Data), err)
 		return simpleResponse(400), nil
 	}
 	if reqData.Name != nil && len(*reqData.Name) > agentNameMaxLength {
@@ -376,7 +376,7 @@ func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *sock.Reques
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -405,7 +405,7 @@ func (h *listenHandler) processV1AgentsIDStatusPut(ctx context.Context, m *sock.
 
 	var reqData request.V1DataAgentsIDStatusPut
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data_len: %d, err: %v", len(m.Data), err)
 		return simpleResponse(400), nil
 	}
 
@@ -417,7 +417,7 @@ func (h *listenHandler) processV1AgentsIDStatusPut(ctx context.Context, m *sock.
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -446,7 +446,7 @@ func (h *listenHandler) processV1AgentsIDPasswordPut(ctx context.Context, m *soc
 
 	var req request.V1DataAgentsIDPasswordPut
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data_len: %d, err: %v", len(m.Data), err)
 		return simpleResponse(400), nil
 	}
 
@@ -458,7 +458,7 @@ func (h *listenHandler) processV1AgentsIDPasswordPut(ctx context.Context, m *soc
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -487,7 +487,7 @@ func (h *listenHandler) processV1AgentsIDTagIDsPut(ctx context.Context, m *sock.
 
 	var reqData request.V1DataAgentsIDTagIDsPut
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data_len: %d, err: %v", len(m.Data), err)
 		return simpleResponse(400), nil
 	}
 
@@ -499,7 +499,7 @@ func (h *listenHandler) processV1AgentsIDTagIDsPut(ctx context.Context, m *sock.
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -528,7 +528,7 @@ func (h *listenHandler) processV1AgentsIDPermissionPut(ctx context.Context, m *s
 
 	var reqData request.V1DataAgentsIDPermissionPut
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data_len: %d, err: %v", len(m.Data), err)
 		return simpleResponse(400), nil
 	}
 
@@ -540,7 +540,7 @@ func (h *listenHandler) processV1AgentsIDPermissionPut(ctx context.Context, m *s
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -572,7 +572,7 @@ func (h *listenHandler) processV1AgentsIDReservePost(ctx context.Context, m *soc
 
 	var reqData request.V1DataAgentsIDReservePost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data_len: %d, err: %v", len(m.Data), err)
 		return simpleResponse(400), nil
 	}
 
@@ -616,7 +616,7 @@ func (h *listenHandler) processV1AgentsIDReserveReleasePost(ctx context.Context,
 
 	var reqData request.V1DataAgentsIDReserveReleasePost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data_len: %d, err: %v", len(m.Data), err)
 		return simpleResponse(400), nil
 	}
 

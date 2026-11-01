@@ -13,10 +13,7 @@ import (
 
 // processEventCMCustomerDeleted handles the customer-manager's customer_deleted event.
 func (h *subscribeHandler) processEventCMCustomerDeleted(ctx context.Context, m *sock.Event) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventCMCustomerDeleted",
-		"event": m,
-	})
+	log := logrus.WithFields(eventLogFields(m)).WithField("func", "processEventCMCustomerDeleted")
 
 	cu := &cmcustomer.Customer{}
 	if err := json.Unmarshal([]byte(m.Data), &cu); err != nil {
@@ -34,10 +31,7 @@ func (h *subscribeHandler) processEventCMCustomerDeleted(ctx context.Context, m 
 
 // processEventCMCustomerCreated handles the customer-manager's customer_created event.
 func (h *subscribeHandler) processEventCMCustomerCreated(ctx context.Context, m *sock.Event) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventCMCustomerCreated",
-		"event": m,
-	})
+	log := logrus.WithFields(eventLogFields(m)).WithField("func", "processEventCMCustomerCreated")
 
 	// Parse with headless field
 	var event struct {
