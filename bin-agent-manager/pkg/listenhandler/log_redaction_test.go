@@ -26,9 +26,9 @@ import (
 // The sentinels below are fake values. They go into the request only, never into a
 // response agent: the excluded "Sending result" line prints the agent JSON.
 const (
-	logSecretPassword = "PW-SENTINEL-MUST-NOT-LEAK-7c1d"
-	logSecretToken    = "TOKEN-SENTINEL-MUST-NOT-LEAK-52ab"
-	logSecretHash     = "HASH-SENTINEL-MUST-NOT-LEAK-91ef"
+	logSentinelA = "SENTINEL-A-MUST-NOT-LEAK-7c1d"
+	logSentinelB = "SENTINEL-B-MUST-NOT-LEAK-52ab"
+	logSentinelC = "SENTINEL-C-MUST-NOT-LEAK-91ef"
 
 	logTestAgentID    = "f1ba04b0-951e-11ee-a0a2-7b8600a1ee45"
 	logTestCustomerID = "5e4a0680-804e-11ec-8477-2fea5968d85b"
@@ -121,10 +121,10 @@ func Test_processRequest_logsDoNotContainBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/login",
 				Method: sock.RequestMethodPost,
-				Data:   []byte(`{"username":"user-a","password":"` + logSecretPassword + `"}`),
+				Data:   []byte(`{"username":"user-a","password":"` + logSentinelA + `"}`),
 			},
 			mockFunc: func(m *agenthandler.MockAgentHandler) {
-				m.EXPECT().Login(gomock.Any(), "user-a", logSecretPassword).Return(okAgent, nil)
+				m.EXPECT().Login(gomock.Any(), "user-a", logSentinelA).Return(okAgent, nil)
 			},
 			wantMsg: "Received request.",
 		},
@@ -133,10 +133,10 @@ func Test_processRequest_logsDoNotContainBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/login",
 				Method: sock.RequestMethodPost,
-				Data:   []byte(`{"username":"user-a","password":"` + logSecretPassword + `"}`),
+				Data:   []byte(`{"username":"user-a","password":"` + logSentinelA + `"}`),
 			},
 			mockFunc: func(m *agenthandler.MockAgentHandler) {
-				m.EXPECT().Login(gomock.Any(), "user-a", logSecretPassword).Return(nil, errBoom)
+				m.EXPECT().Login(gomock.Any(), "user-a", logSentinelA).Return(nil, errBoom)
 			},
 			wantMsg: "Sending response.",
 		},
@@ -145,10 +145,10 @@ func Test_processRequest_logsDoNotContainBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/agents/user-a/login",
 				Method: sock.RequestMethodPost,
-				Data:   []byte(`{"password":"` + logSecretPassword + `"}`),
+				Data:   []byte(`{"password":"` + logSentinelA + `"}`),
 			},
 			mockFunc: func(m *agenthandler.MockAgentHandler) {
-				m.EXPECT().Login(gomock.Any(), "user-a", logSecretPassword).Return(okAgent, nil)
+				m.EXPECT().Login(gomock.Any(), "user-a", logSentinelA).Return(okAgent, nil)
 			},
 			wantMsg: "Received request.",
 		},
@@ -157,10 +157,10 @@ func Test_processRequest_logsDoNotContainBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/agents",
 				Method: sock.RequestMethodPost,
-				Data:   []byte(`{"customer_id":"` + logTestCustomerID + `","username":"user-a","password":"` + logSecretPassword + `"}`),
+				Data:   []byte(`{"customer_id":"` + logTestCustomerID + `","username":"user-a","password":"` + logSentinelA + `"}`),
 			},
 			mockFunc: func(m *agenthandler.MockAgentHandler) {
-				m.EXPECT().Create(gomock.Any(), uuid.FromStringOrNil(logTestCustomerID), "user-a", logSecretPassword, "", "", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(okAgent, nil)
+				m.EXPECT().Create(gomock.Any(), uuid.FromStringOrNil(logTestCustomerID), "user-a", logSentinelA, "", "", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(okAgent, nil)
 			},
 			wantMsg: "Received request.",
 		},
@@ -169,10 +169,10 @@ func Test_processRequest_logsDoNotContainBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/agents/" + logTestAgentID + "/password",
 				Method: sock.RequestMethodPut,
-				Data:   []byte(`{"password":"` + logSecretPassword + `"}`),
+				Data:   []byte(`{"password":"` + logSentinelA + `"}`),
 			},
 			mockFunc: func(m *agenthandler.MockAgentHandler) {
-				m.EXPECT().UpdatePassword(gomock.Any(), uuid.FromStringOrNil(logTestAgentID), logSecretPassword).Return(okAgent, nil)
+				m.EXPECT().UpdatePassword(gomock.Any(), uuid.FromStringOrNil(logTestAgentID), logSentinelA).Return(okAgent, nil)
 			},
 			wantMsg: "Received request.",
 		},
@@ -181,10 +181,10 @@ func Test_processRequest_logsDoNotContainBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/password-reset",
 				Method: sock.RequestMethodPost,
-				Data:   []byte(`{"token":"` + logSecretToken + `","password":"` + logSecretPassword + `"}`),
+				Data:   []byte(`{"token":"` + logSentinelB + `","password":"` + logSentinelA + `"}`),
 			},
 			mockFunc: func(m *agenthandler.MockAgentHandler) {
-				m.EXPECT().PasswordReset(gomock.Any(), logSecretToken, logSecretPassword).Return(nil)
+				m.EXPECT().PasswordReset(gomock.Any(), logSentinelB, logSentinelA).Return(nil)
 			},
 			wantMsg: "Received request.",
 		},
@@ -193,7 +193,7 @@ func Test_processRequest_logsDoNotContainBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/agents/count_by_customer",
 				Method: sock.RequestMethodGet,
-				Data:   []byte(`{"customer_id":"` + logTestCustomerID + `","note":"` + logSecretPassword + `"}`),
+				Data:   []byte(`{"customer_id":"` + logTestCustomerID + `","note":"` + logSentinelA + `"}`),
 			},
 			mockFunc: func(m *agenthandler.MockAgentHandler) {
 				m.EXPECT().CountByCustomerID(gomock.Any(), uuid.FromStringOrNil(logTestCustomerID)).Return(0, errBoom)
@@ -205,7 +205,7 @@ func Test_processRequest_logsDoNotContainBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/agents/count_by_customer",
 				Method: sock.RequestMethodGet,
-				Data:   []byte(`[1,"` + logSecretPassword + `"]`),
+				Data:   []byte(`[1,"` + logSentinelA + `"]`),
 			},
 			mockFunc: func(m *agenthandler.MockAgentHandler) {},
 			wantMsg:  "Could not unmarshal the request data.",
@@ -215,7 +215,7 @@ func Test_processRequest_logsDoNotContainBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/agents/" + logTestAgentID + "/direct-hash-regenerate",
 				Method: sock.RequestMethodPost,
-				Data:   []byte(`{"note":"` + logSecretPassword + `"}`),
+				Data:   []byte(`{"note":"` + logSentinelA + `"}`),
 			},
 			mockFunc: func(m *agenthandler.MockAgentHandler) {
 				m.EXPECT().DirectHashRegenerate(gomock.Any(), uuid.FromStringOrNil(logTestAgentID)).Return(okAgent, nil)
@@ -227,7 +227,7 @@ func Test_processRequest_logsDoNotContainBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/unknown",
 				Method: sock.RequestMethodPost,
-				Data:   []byte(`{"password":"` + logSecretPassword + `"}`),
+				Data:   []byte(`{"password":"` + logSentinelA + `"}`),
 			},
 			mockFunc: func(m *agenthandler.MockAgentHandler) {},
 			wantMsg:  "Could not find corresponded message handler.",
@@ -237,7 +237,7 @@ func Test_processRequest_logsDoNotContainBody(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/%zz/v1/agents?a=1",
 				Method: sock.RequestMethodGet,
-				Data:   []byte(`{"password":"` + logSecretPassword + `"}`),
+				Data:   []byte(`{"password":"` + logSentinelA + `"}`),
 			},
 			mockFunc:       func(m *agenthandler.MockAgentHandler) {},
 			wantMsg:        "Could not find corresponded message handler.",
@@ -247,7 +247,7 @@ func Test_processRequest_logsDoNotContainBody(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if !bytes.Contains(tt.request.Data, []byte(logSecretPassword)) {
+			if !bytes.Contains(tt.request.Data, []byte(logSentinelA)) {
 				t.Fatalf("the request body must carry the sentinel")
 			}
 			if tt.expectParseErr {
@@ -268,7 +268,7 @@ func Test_processRequest_logsDoNotContainBody(t *testing.T) {
 				t.Fatalf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			assertNoSecretInEntries(t, hook, tt.wantMsg, logSecretPassword, logSecretToken)
+			assertNoSecretInEntries(t, hook, tt.wantMsg, logSentinelA, logSentinelB)
 		})
 	}
 }
@@ -280,13 +280,13 @@ func Test_processRequest_receivedRequestFields(t *testing.T) {
 	defer mc.Finish()
 
 	h, mockAgent := newLogRedactionHandler(mc)
-	mockAgent.EXPECT().Login(gomock.Any(), "user-a", logSecretPassword).Return(nil, errors.New("boom"))
+	mockAgent.EXPECT().Login(gomock.Any(), "user-a", logSentinelA).Return(nil, errors.New("boom"))
 
 	req := &sock.Request{
 		URI:       "/v1/login",
 		Method:    sock.RequestMethodPost,
 		DataType:  "application/json",
-		Data:      []byte(`{"username":"user-a","password":"` + logSecretPassword + `"}`),
+		Data:      []byte(`{"username":"user-a","password":"` + logSentinelA + `"}`),
 		RequestID: "req-1",
 	}
 	if _, err := h.processRequest(req); err != nil {
@@ -325,7 +325,7 @@ func Test_processRequest_receivedRequestFields(t *testing.T) {
 // body cannot be decoded. The body is valid JSON of the wrong shape so that the
 // unfixed log fields are still marshalable and a leak is the only possible failure.
 func Test_processRequest_unmarshalFailureLogsDoNotContainBody(t *testing.T) {
-	body := []byte(`[1,"` + logSecretPassword + `"]`)
+	body := []byte(`[1,"` + logSentinelA + `"]`)
 
 	tests := []struct {
 		name   string
@@ -365,7 +365,7 @@ func Test_processRequest_unmarshalFailureLogsDoNotContainBody(t *testing.T) {
 				t.Fatalf("Wrong status. the body must be rejected. expect: 400, got: %d", res.StatusCode)
 			}
 
-			assertNoSecretInEntries(t, hook, "Could not unmarshal the data.", logSecretPassword)
+			assertNoSecretInEntries(t, hook, "Could not unmarshal the data.", logSentinelA)
 		})
 	}
 }
@@ -487,7 +487,7 @@ func Test_processRequest_marshalFailureLogsDoNotContainPasswordHash(t *testing.T
 			h, mockAgent := newLogRedactionHandler(mc)
 			bad := &agent.Agent{
 				Identity:     commonidentity.Identity{ID: uuid.FromStringOrNil(logTestAgentID)},
-				PasswordHash: logSecretHash,
+				PasswordHash: logSentinelC,
 				TMCreate:     &outOfRange,
 			}
 			tt.expect(mockAgent, bad)
@@ -501,7 +501,7 @@ func Test_processRequest_marshalFailureLogsDoNotContainPasswordHash(t *testing.T
 				t.Fatalf("Wrong status. the marshal must fail. expect: 500, got: %d", res.StatusCode)
 			}
 
-			assertNoSecretInEntries(t, hook, "Could not marshal the response message.", logSecretHash)
+			assertNoSecretInEntries(t, hook, "Could not marshal the response message.", logSentinelC)
 		})
 	}
 }

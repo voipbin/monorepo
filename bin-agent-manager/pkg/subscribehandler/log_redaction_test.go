@@ -21,7 +21,7 @@ import (
 )
 
 // The sentinel is a fake value that stands for a customer webhook secret.
-const logSecretWebhook = "WHSECRET-SENTINEL-MUST-NOT-LEAK-3d8a"
+const logSentinelW = "SENTINEL-W-MUST-NOT-LEAK-3d8a"
 
 // newLogRedactionHook attaches a hook to the standard logger and enables the debug
 // level, because the event line is Debug and would otherwise be dropped, which would
@@ -81,8 +81,8 @@ func assertNoSecretInEntries(t *testing.T, hook *logrustest.Hook, wantMsg, secre
 func Test_processEvent_logsDoNotContainBody(t *testing.T) {
 	errBoom := errors.New("boom")
 
-	customerData := []byte(`{"id":"91aed1d4-7fe2-11ec-848d-97c8e986acfc","webhook_secret":"` + logSecretWebhook + `"}`)
-	brokenData := []byte(`[1,"` + logSecretWebhook + `"]`)
+	customerData := []byte(`{"id":"91aed1d4-7fe2-11ec-848d-97c8e986acfc","webhook_secret":"` + logSentinelW + `"}`)
+	brokenData := []byte(`[1,"` + logSentinelW + `"]`)
 
 	tests := []struct {
 		name string
@@ -145,7 +145,7 @@ func Test_processEvent_logsDoNotContainBody(t *testing.T) {
 			event: &sock.Event{
 				Publisher: string(commonoutline.ServiceNameCallManager),
 				Type:      string(cmgroupcall.EventTypeGroupcallProgressing),
-				Data:      []byte(`{"id":"69434cfa-79a4-11ec-a7b1-6ba5b7016d83","note":"` + logSecretWebhook + `"}`),
+				Data:      []byte(`{"id":"69434cfa-79a4-11ec-a7b1-6ba5b7016d83","note":"` + logSentinelW + `"}`),
 			},
 			mockFunc: func(m *agenthandler.MockAgentHandler) {
 				m.EXPECT().EventGroupcallProgressing(gomock.Any(), gomock.Any()).Return(errBoom)
@@ -186,7 +186,7 @@ func Test_processEvent_logsDoNotContainBody(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if !bytes.Contains(tt.event.Data, []byte(logSecretWebhook)) {
+			if !bytes.Contains(tt.event.Data, []byte(logSentinelW)) {
 				t.Fatalf("the event data must carry the sentinel")
 			}
 
@@ -202,7 +202,7 @@ func Test_processEvent_logsDoNotContainBody(t *testing.T) {
 			h.processEvent(tt.event)
 
 			for _, msg := range tt.wantMsgs {
-				assertNoSecretInEntries(t, hook, msg, logSecretWebhook)
+				assertNoSecretInEntries(t, hook, msg, logSentinelW)
 			}
 		})
 	}
@@ -222,7 +222,7 @@ func Test_processEvent_receivedEventFields(t *testing.T) {
 		Publisher: string(commonoutline.ServiceNameCustomerManager),
 		Type:      string(cmcustomer.EventTypeCustomerDeleted),
 		DataType:  "application/json",
-		Data:      []byte(`{"id":"91aed1d4-7fe2-11ec-848d-97c8e986acfc","webhook_secret":"` + logSecretWebhook + `"}`),
+		Data:      []byte(`{"id":"91aed1d4-7fe2-11ec-848d-97c8e986acfc","webhook_secret":"` + logSentinelW + `"}`),
 	})
 
 	var got *logrus.Entry
