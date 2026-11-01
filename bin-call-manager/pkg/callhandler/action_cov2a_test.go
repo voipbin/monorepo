@@ -709,6 +709,26 @@ func Test_ActionTimeout_cov2a(t *testing.T) {
 			},
 			wantErr: "boom",
 		},
+		{
+			// covers the non-nil tm_execute match (non-zero nanoseconds) followed by a successful redirect.
+			// The requested action holds a separate time value in another location, so the match must
+			// compare instants (Equal), not pointers or struct values.
+			name: "channel outside of the stasis is redirected with non-zero nanosecond tm_execute",
+			input: func(c *call.Call) *fmaction.Action {
+				// setup has already set c.Action.TMExecute. Use a separate value for the same instant.
+				a := c.Action
+				tmExecute := c.Action.TMExecute.In(time.FixedZone("test", 9*60*60))
+				a.TMExecute = &tmExecute
+				return &a
+			},
+			setup: func(m *cov2aMocks, c *call.Call) {
+				tmExecute := time.Date(2020, 4, 18, 3, 22, 17, 123456789, time.UTC)
+				c.Action.TMExecute = &tmExecute
+				m.db.EXPECT().CallGet(gomock.Any(), c.ID).Return(c, nil)
+				m.channel.EXPECT().Get(gomock.Any(), c.ChannelID).Return(&channel.Channel{ID: c.ChannelID}, nil)
+				m.channel.EXPECT().Redirect(gomock.Any(), c.ChannelID, "svc-stasis", "s", "1").Return(nil)
+			},
+		},
 	}
 
 	for _, tt := range tests {
