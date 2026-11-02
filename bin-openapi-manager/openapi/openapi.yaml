@@ -3956,6 +3956,28 @@ components:
           description: "Additional notes about this address."
           example: "Primary contact number"
 
+    CallManagerParticipantAddress:
+      type: object
+      description: "A colleague's extension to bring into a call. Used by `POST /service_agents/transfers`."
+      required:
+        - type
+        - target
+      properties:
+        type:
+          type: string
+          description: "Type of address. Only `extension` is accepted."
+          enum:
+            - extension
+          x-enum-varnames:
+            - CallManagerParticipantAddressTypeExtension
+          example: "extension"
+        target:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The extension ID of the colleague to reach. It is the `target` of the address of type `extension` returned from the `GET /service_agents/agents` response. The extension must belong to the calling agent's customer."
+          example: "c5e7f18c-fc5a-4520-8326-e534e2ca0b8f"
+
     CommonPagination:
       type: object
       properties:
@@ -9470,6 +9492,8 @@ paths:
     $ref: './paths/service_agents/talk_chats_id_participants.yaml'
   /service_agents/talk_chats/{id}/join:
     $ref: './paths/service_agents/talk_chats_id_join.yaml'
+  /service_agents/transfers:
+    $ref: './paths/service_agents/transfers.yaml'
   /service_agents/talk_chats/{id}:
     $ref: './paths/service_agents/talk_chats_id.yaml'
   /service_agents/talk_chats:

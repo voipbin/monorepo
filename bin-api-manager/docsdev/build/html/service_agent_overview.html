@@ -720,59 +720,63 @@
 <td><p>This page</p></td>
 <td><p><strong>New</strong> – the queue a call the agent owns was routed through. Returns <code class="docutils literal notranslate"><span class="pre">id</span></code> (queuecall), <code class="docutils literal notranslate"><span class="pre">queue_id</span></code>, <code class="docutils literal notranslate"><span class="pre">queue_name</span></code>, <code class="docutils literal notranslate"><span class="pre">status</span></code> and <code class="docutils literal notranslate"><span class="pre">tm_create</span></code>; <code class="docutils literal notranslate"><span class="pre">404</span></code> if the call has no queue entry handled by the calling agent</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST</span> <span class="pre">/service_agents/aicalls</span></code>, <code class="docutils literal notranslate"><span class="pre">/aimessages</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/transfers</span></code></p></td>
+<td><p><a class="reference internal" href="call_transfer.html#call-transfer"><span class="std std-ref">Transfer</span></a></p></td>
+<td><p><strong>New</strong> – blind or attended transfer of a call the agent owns to a colleague. <code class="docutils literal notranslate"><span class="pre">transferee_addresses</span></code> takes exactly one address of type <code class="docutils literal notranslate"><span class="pre">extension</span></code> whose <code class="docutils literal notranslate"><span class="pre">target</span></code> is the extension ID (the <code class="docutils literal notranslate"><span class="pre">target</span></code> of the extension address returned by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/agents</span></code>) of the same customer. The call must be in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status and bridged; other address types and unknown or foreign extensions return <code class="docutils literal notranslate"><span class="pre">400</span></code>. Cancelling an attended transfer is not available</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST</span> <span class="pre">/service_agents/aicalls</span></code>, <code class="docutils literal notranslate"><span class="pre">/aimessages</span></code></p></td>
 <td><p><a class="reference internal" href="ai.html#ai-main"><span class="std std-ref">AI</span></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST/PUT/DELETE</span> <span class="pre">/service_agents/contacts*</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST/PUT/DELETE</span> <span class="pre">/service_agents/contacts*</span></code></p></td>
 <td><p><a class="reference internal" href="contact.html#contact-main"><span class="std std-ref">Contact</span></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST/PUT/DELETE</span> <span class="pre">/service_agents/contact_addresses*</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST/PUT/DELETE</span> <span class="pre">/service_agents/contact_addresses*</span></code></p></td>
 <td><p><a class="reference internal" href="contact.html#contact-main"><span class="std std-ref">Contact</span></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/contact_interactions</span></code>, <code class="docutils literal notranslate"><span class="pre">/contact_peer_events</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/contact_interactions</span></code>, <code class="docutils literal notranslate"><span class="pre">/contact_peer_events</span></code></p></td>
 <td><p><a class="reference internal" href="contact_peer_event_overview.html#contact-peer-event-overview"><span class="std std-ref">Contact</span></a></p></td>
 <td><p>Agent-scoped equivalent of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/contact_interactions</span></code>/<code class="docutils literal notranslate"><span class="pre">/contact_peer_events</span></code> – identical response shape</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST/PUT/DELETE</span> <span class="pre">/service_agents/contact_cases*</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST/PUT/DELETE</span> <span class="pre">/service_agents/contact_cases*</span></code></p></td>
 <td><p><a class="reference internal" href="service_agent_case_overview.html#service-agent-case-overview"><span class="std std-ref">Case management</span></a></p></td>
 <td><p><strong>New</strong></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST</span> <span class="pre">/service_agents/conversations*</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST</span> <span class="pre">/service_agents/conversations*</span></code></p></td>
 <td><p><a class="reference internal" href="conversation.html#conversation-main"><span class="std std-ref">Conversation</span></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/customer</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/customer</span></code></p></td>
 <td><p><a class="reference internal" href="customer.html#customer-main"><span class="std std-ref">Customer</span></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/extensions*</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/extensions*</span></code></p></td>
 <td><p><a class="reference internal" href="extension.html#extension-main"><span class="std std-ref">Extension</span></a></p></td>
 <td><p>Customer-wide: returns every extension of the agent’s customer. <code class="docutils literal notranslate"><span class="pre">password</span></code> and <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> are filled in only for the extensions assigned to the calling agent (empty strings otherwise)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST/DELETE</span> <span class="pre">/service_agents/files*</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST/DELETE</span> <span class="pre">/service_agents/files*</span></code></p></td>
 <td><p><a class="reference internal" href="storage.html#storage-main"><span class="std std-ref">Storage</span></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/tags*</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/tags*</span></code></p></td>
 <td><p><a class="reference internal" href="tag.html#tag-main"><span class="std std-ref">Tag</span></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_channels</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_channels</span></code></p></td>
 <td><p>This page (below)</p></td>
 <td><p><strong>New</strong> – public channel discovery</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST/PUT/DELETE</span> <span class="pre">/service_agents/talk_chats*</span></code>, <code class="docutils literal notranslate"><span class="pre">/talk_messages*</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST/PUT/DELETE</span> <span class="pre">/service_agents/talk_chats*</span></code>, <code class="docutils literal notranslate"><span class="pre">/talk_messages*</span></code></p></td>
 <td><p><a class="reference internal" href="talk.html#talk-main"><span class="std std-ref">Talk</span></a></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">.../talk_chats/{id}/join</span></code> documented on this page (<strong>New</strong>)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST</span> <span class="pre">/service_agents/transcribes</span></code>, <code class="docutils literal notranslate"><span class="pre">/transcripts</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST</span> <span class="pre">/service_agents/transcribes</span></code>, <code class="docutils literal notranslate"><span class="pre">/transcripts</span></code></p></td>
 <td><p><a class="reference internal" href="transcribe.html#transcribe-main"><span class="std std-ref">Transcribe</span></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/ws</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/ws</span></code></p></td>
 <td><p><a class="reference internal" href="websocket.html#websocket-main"><span class="std std-ref">WebSocket</span></a></p></td>
 <td><p>Agent-scoped WebSocket connection (below)</p></td>
 </tr>
