@@ -96,6 +96,9 @@ Endpoints
    * - DELETE
      - ``/service_agents/contact_cases/{id}/notes/{note_id}``
      - Delete a note. Only the note's own author may delete it.
+   * - GET
+     - ``/service_agents/contacts/{id}/case_notes``
+     - List notes across all cases of a contact, newest first (paginated).
 
 See :ref:`Structures <service_agent-case-struct>` for the ``Case`` and ``CaseNote`` field reference.
 
@@ -114,6 +117,14 @@ Listing and Viewing Cases
 .. code::
 
     $ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_cases?contact_id=<contact-id>&page_size=50&token=<token>'
+
+**List the notes of a contact across all its cases**
+
+.. code::
+
+    $ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contacts/<contact-id>/case_notes?page_size=50&token=<token>'
+
+Returns the notes written on every case currently attributed to the contact, newest first, as a single paginated list. Each note carries the ``case_id`` of the case it was written on. Pass the returned ``next_page_token`` as ``page_token`` to fetch the next page. If a case is later attributed to a different contact, its notes follow the case. A contact that does not exist or belongs to another customer returns ``404``.
 
 **Get a case**
 

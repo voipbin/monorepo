@@ -496,6 +496,21 @@ func (mr *MockDBHandlerMockRecorder) CaseNoteListByCase(ctx, customerID, caseID 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteListByCase", reflect.TypeOf((*MockDBHandler)(nil).CaseNoteListByCase), ctx, customerID, caseID)
 }
 
+// CaseNoteListByContact mocks base method.
+func (m *MockDBHandler) CaseNoteListByContact(ctx context.Context, customerID, contactID uuid.UUID, size uint64, token string) ([]*casenote.CaseNote, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseNoteListByContact", ctx, customerID, contactID, size, token)
+	ret0, _ := ret[0].([]*casenote.CaseNote)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseNoteListByContact indicates an expected call of CaseNoteListByContact.
+func (mr *MockDBHandlerMockRecorder) CaseNoteListByContact(ctx, customerID, contactID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteListByContact", reflect.TypeOf((*MockDBHandler)(nil).CaseNoteListByContact), ctx, customerID, contactID, size, token)
+}
+
 // CaseUpdateContactID mocks base method.
 func (m *MockDBHandler) CaseUpdateContactID(ctx context.Context, customerID, id, contactID uuid.UUID) error {
 	m.ctrl.T.Helper()

@@ -2,11 +2,16 @@ package casehandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	"monorepo/bin-contact-manager/models/casenote"
+	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
 
 // CaseNoteCreate implements design §3.5: creates an internal, agent-
@@ -62,4 +67,56 @@ func (h *caseHandler) CaseNoteDelete(ctx context.Context, customerID, caseID, id
 // CaseNoteListByCase is a thin delegation to the dbhandler primitive.
 func (h *caseHandler) CaseNoteListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*casenote.CaseNote, error) {
 	return h.db.CaseNoteListByCase(ctx, customerID, caseID)
+}
+
+// CaseNoteListByContact lists the notes written on every case currently
+// attributed to the contact, newest first (VOIP-1673 A1). The contact must
+// belong to customerID and not be deleted; otherwise the same NotFound a
+// missing contact produces is returned, so another tenant's contact id
+// never reveals its existence. Pagination follows CaseList: size+1 rows
+// are read to detect a further page and the token is the tm_create of the
+// last returned note (empty when there is no further page).
+func (h *caseHandler) CaseNoteListByContact(ctx context.Context, customerID, contactID uuid.UUID, size uint64, token string) ([]*casenote.CaseNote, string, error) {
+	ct, err := h.db.ContactGet(ctx, contactID)
+	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, "", cerrors.NotFound(
+				commonoutline.ServiceNameContactManager,
+				"CONTACT_NOT_FOUND",
+				"The contact was not found.",
+			).Wrap(err)
+		}
+		return nil, "", fmt.Errorf("could not get contact. CaseNoteListByContact. err: %w", err)
+	}
+	if ct.CustomerID != customerID || ct.TMDelete != nil {
+		return nil, "", cerrors.NotFound(
+			commonoutline.ServiceNameContactManager,
+			"CONTACT_NOT_FOUND",
+			"The contact was not found.",
+		)
+	}
+
+	if size == 0 {
+		size = defaultCaseListSize
+	}
+
+	items, err := h.db.CaseNoteListByContact(ctx, customerID, contactID, size+1, token)
+	if err != nil {
+		return nil, "", err
+	}
+
+	hasMore := uint64(len(items)) > size
+	if hasMore {
+		items = items[:size]
+	}
+
+	var nextToken string
+	if hasMore && len(items) > 0 {
+		last := items[len(items)-1]
+		if last.TMCreate != nil {
+			nextToken = last.TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
+	}
+
+	return items, nextToken, nil
 }

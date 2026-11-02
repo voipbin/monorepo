@@ -9457,6 +9457,9 @@ paths:
   /service_agents/contacts/{id}/addresses/{address_id}:
     $ref: './paths/service_agents/contacts_id_addresses_id.yaml'
 
+  /service_agents/contacts/{id}/case_notes:
+    $ref: './paths/service_agents/contacts_id_case_notes.yaml'
+
   /service_agents/contacts/{id}/tags/{tag_id}:
     $ref: './paths/service_agents/contacts_id_tags_id.yaml'
   /service_agents/contacts/{id}/tags:

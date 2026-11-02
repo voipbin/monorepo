@@ -371,6 +371,47 @@ func (r *requestHandler) ContactV1CaseNoteList(ctx context.Context, customerID, 
 	return res, nil
 }
 
+// ContactV1ContactCaseNoteList lists the notes of every case attributed to a
+// contact from contact-manager, newest first. The next page token is the
+// tm_create of the last returned note (empty when the result is empty),
+// following ContactV1CaseList.
+func (r *requestHandler) ContactV1ContactCaseNoteList(ctx context.Context, customerID, contactID uuid.UUID, size uint64, token string) ([]*cmcasenote.CaseNote, string, error) {
+	u := url.Values{}
+	if size > 0 {
+		u.Set("page_size", fmt.Sprintf("%d", size))
+	}
+	if token != "" {
+		u.Set("page_token", token)
+	}
+
+	uri := fmt.Sprintf("/v1/contacts/%s/case_notes", contactID)
+	if len(u) > 0 {
+		uri += "?" + u.Encode()
+	}
+
+	m, err := json.Marshal(cmrequest.V1DataContactsIDCaseNotesGet{CustomerID: customerID})
+	if err != nil {
+		return nil, "", err
+	}
+
+	tmp, err := r.sendRequestContact(ctx, uri, sock.RequestMethodGet, "contact/contacts/<id>/case_notes", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, "", err
+	}
+
+	var res []*cmcasenote.CaseNote
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, "", errParse
+	}
+
+	nextToken := ""
+	if len(res) > 0 && res[len(res)-1].TMCreate != nil {
+		nextToken = res[len(res)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+	}
+
+	return res, nextToken, nil
+}
+
 // ContactV1CaseNoteCreate creates a note on a case in contact-manager.
 func (r *requestHandler) ContactV1CaseNoteCreate(
 	ctx context.Context,

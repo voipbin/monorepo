@@ -181,6 +181,13 @@ func Test_processRequest_RouteTable(t *testing.T) {
 			expectCode: 200, bodyHas: []string{caseID.String()},
 		},
 		{
+			name: "contacts case_notes list", method: sock.RequestMethodGet, uri: "/v1/contacts/" + contactID.String() + "/case_notes?page_size=3", data: custBody,
+			expect: func(c *contacthandler.MockContactHandler, k *casehandler.MockCaseHandler) {
+				k.EXPECT().CaseNoteListByContact(gomock.Any(), customerID, contactID, uint64(3), "").Return([]*casenote.CaseNote{{ID: subID, Text: "aggregated"}}, "", nil)
+			},
+			expectCode: 200, bodyHas: []string{"aggregated"},
+		},
+		{
 			name: "cases notes list", method: sock.RequestMethodGet, uri: "/v1/cases/" + caseID.String() + "/notes", data: custBody,
 			expect: func(c *contacthandler.MockContactHandler, k *casehandler.MockCaseHandler) {
 				k.EXPECT().CaseNoteListByCase(gomock.Any(), customerID, caseID).Return([]*casenote.CaseNote{{ID: subID, Text: "listed"}}, nil)

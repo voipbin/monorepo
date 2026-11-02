@@ -749,6 +749,10 @@
 <td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/contact_cases/{id}/notes/{note_id}</span></code></p></td>
 <td><p>Delete a note. Only the note’s own author may delete it.</p></td>
 </tr>
+<tr class="row-odd"><td><p>GET</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/contacts/{id}/case_notes</span></code></p></td>
+<td><p>List notes across all cases of a contact, newest first (paginated).</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -764,6 +768,11 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_cases?contact_id=&lt;contact-id&gt;&amp;page_size=50&amp;token=&lt;token&gt;'
 </pre></div>
 </div>
+<p><strong>List the notes of a contact across all its cases</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contacts/&lt;contact-id&gt;/case_notes?page_size=50&amp;token=&lt;token&gt;'
+</pre></div>
+</div>
+<p>Returns the notes written on every case currently attributed to the contact, newest first, as a single paginated list. Each note carries the <code class="docutils literal notranslate"><span class="pre">case_id</span></code> of the case it was written on. Pass the returned <code class="docutils literal notranslate"><span class="pre">next_page_token</span></code> as <code class="docutils literal notranslate"><span class="pre">page_token</span></code> to fetch the next page. If a case is later attributed to a different contact, its notes follow the case. A contact that does not exist or belongs to another customer returns <code class="docutils literal notranslate"><span class="pre">404</span></code>.</p>
 <p><strong>Get a case</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;?token=&lt;token&gt;'
 </pre></div>

@@ -1063,6 +1063,7 @@ type ServiceHandler interface {
 
 	// service_agent case note
 	ServiceAgentCaseNoteList(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID) ([]*cmcasenote.CaseNote, error)
+	ServiceAgentContactCaseNoteList(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, size uint64, token string) ([]*cmcasenote.CaseNote, string, error)
 	ServiceAgentCaseNoteCreate(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, text string) (*cmcasenote.CaseNote, error)
 	ServiceAgentCaseNoteDelete(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, noteID uuid.UUID) error
 
