@@ -233,7 +233,7 @@ func Test_Stop_referenceTypeCall(t *testing.T) {
 			for _, channelID := range tt.responseRecording.ChannelIDs {
 				mockChannel.EXPECT().HangingUpWithAsteriskID(ctx, tt.responseRecording.AsteriskID, channelID, ari.ChannelCauseNormalClearing).Return(nil)
 			}
-			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusStopping).Return(nil)
+			mockDB.EXPECT().RecordingSetStatusStoppingIfActive(ctx, tt.id).Return(true, nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
 
 			res, err := h.Stop(ctx, tt.id)
@@ -298,7 +298,7 @@ func Test_Stop_referenceTypeConference(t *testing.T) {
 
 			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
 			mockReq.EXPECT().AstRecordingStop(ctx, tt.responseRecording.AsteriskID, tt.expectRecordingName).Return(nil)
-			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusStopping).Return(nil)
+			mockDB.EXPECT().RecordingSetStatusStoppingIfActive(ctx, tt.id).Return(true, nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
 
 			res, err := h.Stop(ctx, tt.id)
@@ -310,5 +310,44 @@ func Test_Stop_referenceTypeConference(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseRecording, res)
 			}
 		})
+	}
+}
+
+func Test_Stop_alreadyEnded(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+	h := &recordingHandler{
+		reqHandler:     mockReq,
+		db:             mockDB,
+		channelHandler: mockChannel,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("86e34fd6-8ff1-11ed-84bc-cf71e0ea8a61")
+	ended := &recording.Recording{
+		Identity:      commonidentity.Identity{ID: id},
+		ReferenceType: recording.ReferenceTypeCall,
+		Status:        recording.StatusEnded,
+		AsteriskID:    "42:01:0a:a4:00:03",
+		ChannelIDs:    []string{"9ce319be-8ff1-11ed-a60d-e354dfcdff51"},
+	}
+
+	mockDB.EXPECT().RecordingGet(ctx, id).Return(ended, nil)
+	mockChannel.EXPECT().HangingUpWithAsteriskID(ctx, ended.AsteriskID, ended.ChannelIDs[0], ari.ChannelCauseNormalClearing).Return(nil)
+	// the conditional update reports that nothing was updated (already ended).
+	mockDB.EXPECT().RecordingSetStatusStoppingIfActive(ctx, id).Return(false, nil)
+	mockDB.EXPECT().RecordingGet(ctx, id).Return(ended, nil)
+
+	res, err := h.Stop(ctx, id)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res.Status != recording.StatusEnded {
+		t.Errorf("Wrong status. expect: %v, got: %v", recording.StatusEnded, res.Status)
 	}
 }

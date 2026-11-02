@@ -118,7 +118,7 @@ Every recording moves through a predictable set of states from creation to avail
 - States only move forward, never backward
 - A recording in ``ended`` state cannot be modified
 - If the call/conference ends, active recordings automatically stop
-- There is no fixed platform-wide maximum recording duration; pass the ``duration`` field to ``recording_start`` to cap a given recording, or leave it unset (``0``) for no automatic cap
+- There is no fixed platform-wide maximum recording duration; pass the ``duration`` field to ``recording_start`` to cap a given recording, or leave it unset (``0``) for no automatic cap. The agent API (``POST /service_agents/calls/{id}/recording_start``) is the exception: when ``duration`` is omitted it is limited to 7200 seconds, and it accepts values from 1 to 7200 only (``0`` is rejected)
 
 
 Starting and Stopping Recordings
@@ -305,7 +305,7 @@ Each entry in the response array contains:
    * - Retention Period
      - No automatic expiry/retention policy. Use ``DELETE /recordings/{id}`` to remove a recording explicitly when you no longer need it.
    * - Maximum Duration
-     - No fixed platform-wide cap. Optionally bounded per recording via the ``duration`` field on ``recording_start``.
+     - No fixed platform-wide cap. Optionally bounded per recording via the ``duration`` field on ``recording_start``. The agent API (``POST /service_agents/calls/{id}/recording_start``) limits the duration to 7200 seconds when ``duration`` is omitted and accepts 1 to 7200 only.
    * - File Size
      - ~1 MB per minute (8 kHz mono WAV)
 
@@ -448,6 +448,7 @@ Best Practices
 - **Consent**: Many jurisdictions require consent before recording. Always announce recordings.
 - **Retention**: Define clear retention policies. Delete recordings when no longer needed.
 - **Access Control**: Limit who can access recordings. Use VoIPBin's permission system.
+- **Agent-started recordings**: When an agent starts a recording with the agent API (``POST /service_agents/calls/{id}/recording_start``), the platform does not notify the other party that the call is being recorded. Announcing the recording is an operational rule of your organization; in a flow, play the announcement with the ``talk`` action.
 
 **2. Announcement Examples**
 

@@ -13010,6 +13010,29 @@ type GetServiceAgentsCallsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// PostServiceAgentsCallsIdRecordingStartJSONBody defines parameters for PostServiceAgentsCallsIdRecordingStart.
+type PostServiceAgentsCallsIdRecordingStartJSONBody struct {
+	// Duration The maximum duration of the recording (in seconds). If omitted, 7200 is used.
+	//
+	// Example: 3600
+	Duration *int `json:"duration,omitempty"`
+
+	// EndOfKey The DTMF key that stops the recording.
+	//
+	// Example: #
+	EndOfKey *string `json:"end_of_key,omitempty"`
+
+	// EndOfSilence The duration of silence (in seconds) after which the recording stops. 0 keeps recording regardless of silence.
+	//
+	// Example: 10
+	EndOfSilence *int `json:"end_of_silence,omitempty"`
+
+	// Format The format of the recording.
+	//
+	// Example: wav
+	Format *CallManagerRecordingFormat `json:"format,omitempty"`
+}
+
 // GetServiceAgentsContactAddressesParams defines parameters for GetServiceAgentsContactAddresses.
 type GetServiceAgentsContactAddressesParams struct {
 	// PageSize Number of results to return per page.
@@ -14362,6 +14385,9 @@ type PostServiceAgentsAicallsJSONRequestBody PostServiceAgentsAicallsJSONBody
 
 // PostServiceAgentsAimessagesJSONRequestBody defines body for PostServiceAgentsAimessages for application/json ContentType.
 type PostServiceAgentsAimessagesJSONRequestBody PostServiceAgentsAimessagesJSONBody
+
+// PostServiceAgentsCallsIdRecordingStartJSONRequestBody defines body for PostServiceAgentsCallsIdRecordingStart for application/json ContentType.
+type PostServiceAgentsCallsIdRecordingStartJSONRequestBody PostServiceAgentsCallsIdRecordingStartJSONBody
 
 // PostServiceAgentsContactAddressesJSONRequestBody defines body for PostServiceAgentsContactAddresses for application/json ContentType.
 type PostServiceAgentsContactAddressesJSONRequestBody PostServiceAgentsContactAddressesJSONBody

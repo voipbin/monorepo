@@ -9407,6 +9407,10 @@ paths:
     $ref: './paths/service_agents/calls_id.yaml'
   /service_agents/calls/{id}/queuecall:
     $ref: './paths/service_agents/calls_id_queuecall.yaml'
+  /service_agents/calls/{id}/recording_start:
+    $ref: './paths/service_agents/calls_id_recording_start.yaml'
+  /service_agents/calls/{id}/recording_stop:
+    $ref: './paths/service_agents/calls_id_recording_stop.yaml'
   /service_agents/calls:
     $ref: './paths/service_agents/calls.yaml'
 

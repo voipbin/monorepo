@@ -776,3 +776,49 @@ func (h *handler) callUpdateWhere(ctx context.Context, id uuid.UUID, fields map[
 	_ = h.callUpdateToCache(ctx, id)
 	return true, nil
 }
+
+// CallUnsetRecordingIDIfMatch clears the call's recording_id only when it still equals the
+// given recordingID. It returns false, without touching the row, when the call holds another
+// (or no) recording id, so a late event of an older recording cannot clear a newer one.
+func (h *handler) CallUnsetRecordingIDIfMatch(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (bool, error) {
+	if recordingID == uuid.Nil {
+		return false, nil
+	}
+
+	fields, err := commondatabasehandler.PrepareFields(map[call.Field]any{
+		call.FieldRecordingID: uuid.Nil,
+		call.FieldTMUpdate:    h.utilHandler.TimeNow(),
+	})
+	if err != nil {
+		return false, fmt.Errorf("CallUnsetRecordingIDIfMatch: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(callTable).
+		SetMap(fields).
+		Where(squirrel.And{
+			squirrel.Eq{string(call.FieldID): id.Bytes()},
+			squirrel.Eq{string(call.FieldRecordingID): recordingID.Bytes()},
+		}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return false, fmt.Errorf("CallUnsetRecordingIDIfMatch: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return false, fmt.Errorf("CallUnsetRecordingIDIfMatch: exec failed: %w", err)
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("CallUnsetRecordingIDIfMatch: could not get the affected rows: %w", err)
+	}
+	if affected == 0 {
+		return false, nil
+	}
+
+	_ = h.callUpdateToCache(ctx, id)
+	return true, nil
+}

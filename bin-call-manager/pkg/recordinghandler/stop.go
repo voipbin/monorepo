@@ -135,9 +135,16 @@ func (h *recordingHandler) Stop(ctx context.Context, id uuid.UUID) (*recording.R
 		return nil, err
 	}
 
-	if errStatus := h.db.RecordingSetStatus(ctx, r.ID, recording.StatusStopping); errStatus != nil {
+	// move to stopping only while the recording is still active. If the recording has already
+	// ended (the natural end or a Finished event that arrived first), the status stays as it is,
+	// because the status must never move backward.
+	updated, errStatus := h.db.RecordingSetStatusStoppingIfActive(ctx, r.ID)
+	if errStatus != nil {
 		log.Errorf("Could not update the status. err: %v", errStatus)
 		return nil, errStatus
+	}
+	if !updated {
+		log.Debugf("The recording is not active anymore. Keeping the current status. status: %s", r.Status)
 	}
 
 	res, err := h.db.RecordingGet(ctx, r.ID)

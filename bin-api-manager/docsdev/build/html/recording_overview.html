@@ -775,7 +775,7 @@ also contains the injected AI and text-to-speech speech.</p>
 <li><p>States only move forward, never backward</p></li>
 <li><p>A recording in <code class="docutils literal notranslate"><span class="pre">ended</span></code> state cannot be modified</p></li>
 <li><p>If the call/conference ends, active recordings automatically stop</p></li>
-<li><p>There is no fixed platform-wide maximum recording duration; pass the <code class="docutils literal notranslate"><span class="pre">duration</span></code> field to <code class="docutils literal notranslate"><span class="pre">recording_start</span></code> to cap a given recording, or leave it unset (<code class="docutils literal notranslate"><span class="pre">0</span></code>) for no automatic cap</p></li>
+<li><p>There is no fixed platform-wide maximum recording duration; pass the <code class="docutils literal notranslate"><span class="pre">duration</span></code> field to <code class="docutils literal notranslate"><span class="pre">recording_start</span></code> to cap a given recording, or leave it unset (<code class="docutils literal notranslate"><span class="pre">0</span></code>) for no automatic cap. The agent API (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/calls/{id}/recording_start</span></code>) is the exception: when <code class="docutils literal notranslate"><span class="pre">duration</span></code> is omitted it is limited to 7200 seconds, and it accepts values from 1 to 7200 only (<code class="docutils literal notranslate"><span class="pre">0</span></code> is rejected)</p></li>
 </ul>
 </section>
 <section id="starting-and-stopping-recordings">
@@ -949,7 +949,7 @@ also contains the injected AI and text-to-speech speech.</p>
 <td><p>No automatic expiry/retention policy. Use <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/recordings/{id}</span></code> to remove a recording explicitly when you no longer need it.</p></td>
 </tr>
 <tr class="row-even"><td><p>Maximum Duration</p></td>
-<td><p>No fixed platform-wide cap. Optionally bounded per recording via the <code class="docutils literal notranslate"><span class="pre">duration</span></code> field on <code class="docutils literal notranslate"><span class="pre">recording_start</span></code>.</p></td>
+<td><p>No fixed platform-wide cap. Optionally bounded per recording via the <code class="docutils literal notranslate"><span class="pre">duration</span></code> field on <code class="docutils literal notranslate"><span class="pre">recording_start</span></code>. The agent API (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/calls/{id}/recording_start</span></code>) limits the duration to 7200 seconds when <code class="docutils literal notranslate"><span class="pre">duration</span></code> is omitted and accepts 1 to 7200 only.</p></td>
 </tr>
 <tr class="row-odd"><td><p>File Size</p></td>
 <td><p>~1 MB per minute (8 kHz mono WAV)</p></td>
@@ -1078,6 +1078,7 @@ also contains the injected AI and text-to-speech speech.</p>
 <li><p><strong>Consent</strong>: Many jurisdictions require consent before recording. Always announce recordings.</p></li>
 <li><p><strong>Retention</strong>: Define clear retention policies. Delete recordings when no longer needed.</p></li>
 <li><p><strong>Access Control</strong>: Limit who can access recordings. Use VoIPBin’s permission system.</p></li>
+<li><p><strong>Agent-started recordings</strong>: When an agent starts a recording with the agent API (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/calls/{id}/recording_start</span></code>), the platform does not notify the other party that the call is being recorded. Announcing the recording is an operational rule of your organization; in a flow, play the announcement with the <code class="docutils literal notranslate"><span class="pre">talk</span></code> action.</p></li>
 </ul>
 <p><strong>2. Announcement Examples</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>

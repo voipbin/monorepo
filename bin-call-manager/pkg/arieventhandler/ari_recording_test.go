@@ -2,6 +2,7 @@ package arieventhandler
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -212,9 +213,100 @@ func Test_EventHandlerRecordingFinished_call(t *testing.T) {
 
 			mockRecording.EXPECT().GetByRecordingName(ctx, tt.expectRecordingName).Return(tt.responseRecording, nil)
 			mockRecording.EXPECT().Stopped(ctx, tt.responseRecording.ID).Return(tt.responseRecording, nil)
+			mockSvc.EXPECT().UnsetRecordingID(ctx, tt.responseRecording.ReferenceID, tt.responseRecording.ID).Return(nil)
 
 			if err := h.EventHandlerRecordingFinished(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_EventHandlerRecordingFinished_clearsCallRecordingID(t *testing.T) {
+
+	finished := &ari.RecordingFinished{
+		Event: ari.Event{
+			Type:        ari.EventTypeRecordingFinished,
+			Application: "voipbin",
+			Timestamp:   "2020-02-10T13:08:40.888Z",
+			AsteriskID:  "42:01:0a:84:00:12",
+		},
+		Recording: ari.RecordingLive{
+			Name:  "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z_in",
+			State: "done",
+		},
+	}
+	recordingName := "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z"
+	rec := func(refType recording.ReferenceType) *recording.Recording {
+		return &recording.Recording{
+			Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("4f367e2c-612c-11eb-b063-676ca5ee546a")},
+			ReferenceType: refType,
+			ReferenceID:   uuid.FromStringOrNil("3b16cef6-2b99-11eb-87eb-571ab4136611"),
+		}
+	}
+
+	tests := []struct {
+		name string
+
+		responseRecording *recording.Recording
+		responseStopped   error
+		responseUnset     error
+
+		expectUnset bool
+		expectErr   bool
+	}{
+		{
+			name:              "call recording: the id is cleared after Stopped",
+			responseRecording: rec(recording.ReferenceTypeCall),
+			expectUnset:       true,
+		},
+		{
+			name:              "call recording: Stopped fails - the id is still cleared and the error is returned",
+			responseRecording: rec(recording.ReferenceTypeCall),
+			responseStopped:   errors.New("could not store the recording files"),
+			expectUnset:       true,
+			expectErr:         true,
+		},
+		{
+			name:              "call recording: clearing fails - only logged, the event result is unchanged",
+			responseRecording: rec(recording.ReferenceTypeCall),
+			responseUnset:     errors.New("db failure"),
+			expectUnset:       true,
+		},
+		{
+			name:              "confbridge recording: the call is not touched",
+			responseRecording: rec(recording.ReferenceTypeConfbridge),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := callhandler.NewMockCallHandler(mc)
+			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
+
+			h := eventHandler{
+				callHandler:      mockSvc,
+				recordingHandler: mockRecording,
+			}
+
+			ctx := context.Background()
+
+			mockRecording.EXPECT().GetByRecordingName(ctx, recordingName).Return(tt.responseRecording, nil)
+			var stoppedRes *recording.Recording
+			if tt.responseStopped == nil {
+				stoppedRes = tt.responseRecording
+			}
+			mockRecording.EXPECT().Stopped(ctx, tt.responseRecording.ID).Return(stoppedRes, tt.responseStopped)
+			if tt.expectUnset {
+				mockSvc.EXPECT().UnsetRecordingID(ctx, tt.responseRecording.ReferenceID, tt.responseRecording.ID).Return(tt.responseUnset)
+			}
+
+			err := h.EventHandlerRecordingFinished(ctx, finished)
+			if (err != nil) != tt.expectErr {
+				t.Errorf("Wrong match. expect error: %v, got: %v", tt.expectErr, err)
 			}
 		})
 	}

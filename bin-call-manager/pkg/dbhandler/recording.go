@@ -332,3 +332,39 @@ func (h *handler) RecordingDelete(ctx context.Context, id uuid.UUID) error {
 		recording.FieldTMDelete: ts,
 	})
 }
+
+// RecordingSetStatusStoppingIfActive moves the recording to stopping only while it is still
+// initiating or recording. It returns false, without touching the row, when the recording
+// is in any other state (for example ended), so a stop can never move the status backward.
+// The condition is part of the UPDATE, so a Finished event racing the stop cannot be lost.
+func (h *handler) RecordingSetStatusStoppingIfActive(ctx context.Context, id uuid.UUID) (bool, error) {
+	q := squirrel.Update(recordingTable).
+		Set(string(recording.FieldStatus), recording.StatusStopping).
+		Set(string(recording.FieldTMUpdate), h.utilHandler.TimeNow()).
+		Where(squirrel.And{
+			squirrel.Eq{string(recording.FieldID): id.Bytes()},
+			squirrel.Eq{string(recording.FieldStatus): []recording.Status{recording.StatusInitiating, recording.StatusRecording}},
+		}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return false, fmt.Errorf("RecordingSetStatusStoppingIfActive: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return false, fmt.Errorf("RecordingSetStatusStoppingIfActive: exec failed: %w", err)
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("RecordingSetStatusStoppingIfActive: could not get the affected rows: %w", err)
+	}
+	if affected == 0 {
+		return false, nil
+	}
+
+	_ = h.recordingUpdateToCache(ctx, id)
+	return true, nil
+}

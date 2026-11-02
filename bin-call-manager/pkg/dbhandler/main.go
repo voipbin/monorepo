@@ -67,6 +67,7 @@ type DBHandler interface {
 	CallSetStatusProgressing(ctx context.Context, id uuid.UUID) error
 	CallSetStatusRinging(ctx context.Context, id uuid.UUID) error
 	CallSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
+	CallUnsetRecordingIDIfMatch(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (bool, error)
 	CallSetForRouteFailover(ctx context.Context, id uuid.UUID, channelID string, dialrouteID uuid.UUID) error
 	CallTXAddChainedCallID(ctx context.Context, tx *sql.Tx, id, chainedCallID uuid.UUID) error
 	CallTXFinish(tx *sql.Tx, commit bool)
@@ -146,6 +147,7 @@ type DBHandler interface {
 	RecordingList(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error)
 	RecordingUpdate(ctx context.Context, id uuid.UUID, fields map[recording.Field]any) error
 	RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status) error
+	RecordingSetStatusStoppingIfActive(ctx context.Context, id uuid.UUID) (bool, error)
 
 	// outbound configs
 	OutboundConfigCreate(ctx context.Context, c *outboundconfig.OutboundConfig) error

@@ -655,6 +655,20 @@ func (mr *MockCallHandlerMockRecorder) Talk(ctx, callID, runNext, text, language
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Talk", reflect.TypeOf((*MockCallHandler)(nil).Talk), ctx, callID, runNext, text, language, provider, voiceID)
 }
 
+// UnsetRecordingID mocks base method.
+func (m *MockCallHandler) UnsetRecordingID(ctx context.Context, id, recordingID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnsetRecordingID", ctx, id, recordingID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnsetRecordingID indicates an expected call of UnsetRecordingID.
+func (mr *MockCallHandlerMockRecorder) UnsetRecordingID(ctx, id, recordingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsetRecordingID", reflect.TypeOf((*MockCallHandler)(nil).UnsetRecordingID), ctx, id, recordingID)
+}
+
 // UpdateConfbridgeID mocks base method.
 func (m *MockCallHandler) UpdateConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
