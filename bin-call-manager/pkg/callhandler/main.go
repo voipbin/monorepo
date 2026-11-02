@@ -58,6 +58,7 @@ type CallHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status call.Status) (*call.Call, error)
 	UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*call.Call, error)
+	UnsetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
 	UpdateConfbridgeID(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) (*call.Call, error)
 
 	CreateCallsOutgoing(

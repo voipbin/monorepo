@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -117,6 +118,16 @@ func Test_RecordingStart(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			if tt.expectAnswer {
 				mockChannel.EXPECT().Answer(ctx, tt.responseCall.ChannelID).Return(nil)
+
+				// the status flips to progressing asynchronously: the first poll still sees
+				// ringing, the second sees progressing. The recording starts only after that.
+				stillRinging := *tt.responseCall
+				progressing := *tt.responseCall
+				progressing.Status = call.StatusProgressing
+				gomock.InOrder(
+					mockDB.EXPECT().CallGet(ctx, tt.id).Return(&stillRinging, nil),
+					mockDB.EXPECT().CallGet(ctx, tt.id).Return(&progressing, nil),
+				)
 			}
 			mockRecording.EXPECT().Start(ctx, tt.responseCall.ActiveflowID, recording.ReferenceTypeCall, tt.responseCall.ID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID).Return(tt.responseRecording, nil)
 			mockDB.EXPECT().CallSetRecordingID(ctx, tt.responseCall.ID, tt.responseRecording.ID).Return(nil)
@@ -151,6 +162,8 @@ func Test_RecordingStart_error(t *testing.T) {
 
 		expectAnswer      bool
 		responseAnswerErr error
+		staysRinging      bool
+		becomesStatus     call.Status
 	}{
 		{
 			name: "recording is already progressing - rejected before auto answer even when ringing",
@@ -194,6 +207,49 @@ func Test_RecordingStart_error(t *testing.T) {
 			expectAnswer:      true,
 			responseAnswerErr: errors.New("the channel has hungup already"),
 		},
+		{
+			name: "call is answered but never becomes progressing - no recording started",
+
+			id:           uuid.FromStringOrNil("e4c3f2cc-91f0-11f0-8f3c-9d5e7b4a1c99"),
+			format:       recording.FormatWAV,
+			endOfSilence: 10000,
+			endOfKey:     "#",
+			duration:     86400,
+			onEndFlowID:  uuid.FromStringOrNil("e4eb9d33-91f0-11f0-b04d-6f3c8e2b5daa"),
+
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e4c3f2cc-91f0-11f0-8f3c-9d5e7b4a1c99"),
+				},
+				ChannelID: "channel-never-progressing",
+				Status:    call.StatusRinging,
+			},
+
+			expectAnswer: true,
+			staysRinging: true,
+		},
+		{
+			name: "call is answered but is terminating - no recording started",
+
+			id:           uuid.FromStringOrNil("f5d4a3dd-91f0-11f0-8f3c-9d5e7b4a1caa"),
+			format:       recording.FormatWAV,
+			endOfSilence: 10000,
+			endOfKey:     "#",
+			duration:     86400,
+			onEndFlowID:  uuid.FromStringOrNil("f5fcae44-91f0-11f0-b04d-6f3c8e2b5dbb"),
+
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f5d4a3dd-91f0-11f0-8f3c-9d5e7b4a1caa"),
+				},
+				ChannelID: "channel-terminating",
+				Status:    call.StatusRinging,
+			},
+
+			expectAnswer:  true,
+			staysRinging:  true,
+			becomesStatus: call.StatusTerminating,
+		},
 	}
 
 	for _, tt := range tests {
@@ -221,6 +277,23 @@ func Test_RecordingStart_error(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			if tt.expectAnswer {
 				mockChannel.EXPECT().Answer(ctx, tt.responseCall.ChannelID).Return(tt.responseAnswerErr)
+			}
+			if tt.staysRinging {
+				// shorten the wait so the test does not sleep for the production timeout.
+				waitTimeout, waitInterval := recordingStartAnswerWaitTimeout, recordingStartAnswerWaitInterval
+				recordingStartAnswerWaitTimeout, recordingStartAnswerWaitInterval = 50*time.Millisecond, 10*time.Millisecond
+				defer func() {
+					recordingStartAnswerWaitTimeout, recordingStartAnswerWaitInterval = waitTimeout, waitInterval
+				}()
+
+				polled := *tt.responseCall
+				if tt.becomesStatus != "" {
+					// the call is ending: the wait fails at once instead of timing out.
+					polled.Status = tt.becomesStatus
+					mockDB.EXPECT().CallGet(ctx, tt.id).Return(&polled, nil).Times(1)
+				} else {
+					mockDB.EXPECT().CallGet(ctx, tt.id).Return(&polled, nil).MinTimes(1)
+				}
 			}
 			// recordingHandler.Start and the recording-id writes must NOT be reached on
 			// the reject/answer-failure paths (strict gomock fails on any unexpected call).
@@ -308,5 +381,142 @@ func Test_RecordingStop(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseCall, res)
 			}
 		})
+	}
+}
+
+func Test_RecordingStop_error(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id           uuid.UUID
+		responseCall *call.Call
+	}{
+		{
+			name: "no recording is progressing - an error is returned, not (nil, nil)",
+			id:   uuid.FromStringOrNil("a7e0d0a0-9317-11ed-b20d-374b334d2c01"),
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a7e0d0a0-9317-11ed-b20d-374b334d2c01"),
+				},
+				Status: call.StatusProgressing,
+			},
+		},
+		{
+			name: "call is not progressing",
+			id:   uuid.FromStringOrNil("a7e0d0a0-9317-11ed-b20d-374b334d2c02"),
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a7e0d0a0-9317-11ed-b20d-374b334d2c02"),
+				},
+				Status:      call.StatusRinging,
+				RecordingID: uuid.FromStringOrNil("a7e0d0a1-9317-11ed-9777-bbde3dec8802"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
+
+			h := &callHandler{
+				db:               mockDB,
+				recordingHandler: mockRecording,
+			}
+
+			ctx := context.Background()
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+
+			res, err := h.RecordingStop(ctx, tt.id)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil, got: %v", res)
+			}
+		})
+	}
+}
+
+func Test_UnsetRecordingID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id          uuid.UUID
+		recordingID uuid.UUID
+
+		responseUnset bool
+		responseErr   error
+
+		expectErr bool
+	}{
+		{
+			name:          "cleared",
+			id:            uuid.FromStringOrNil("b8f1e1b0-9317-11ed-b20d-374b334d2c01"),
+			recordingID:   uuid.FromStringOrNil("b8f1e1b1-9317-11ed-9777-bbde3dec8801"),
+			responseUnset: true,
+		},
+		{
+			name:          "recording id differs - nothing cleared, not an error",
+			id:            uuid.FromStringOrNil("b8f1e1b0-9317-11ed-b20d-374b334d2c02"),
+			recordingID:   uuid.FromStringOrNil("b8f1e1b1-9317-11ed-9777-bbde3dec8802"),
+			responseUnset: false,
+		},
+		{
+			name:        "db error",
+			id:          uuid.FromStringOrNil("b8f1e1b0-9317-11ed-b20d-374b334d2c03"),
+			recordingID: uuid.FromStringOrNil("b8f1e1b1-9317-11ed-9777-bbde3dec8803"),
+			responseErr: errors.New("db failure"),
+			expectErr:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := &callHandler{db: mockDB}
+
+			ctx := context.Background()
+			mockDB.EXPECT().CallUnsetRecordingIDIfMatch(ctx, tt.id, tt.recordingID).Return(tt.responseUnset, tt.responseErr)
+
+			err := h.UnsetRecordingID(ctx, tt.id, tt.recordingID)
+			if (err != nil) != tt.expectErr {
+				t.Errorf("Wrong match. expect error: %v, got: %v", tt.expectErr, err)
+			}
+		})
+	}
+}
+
+func Test_waitCallProgressing_contextCanceled(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &callHandler{db: mockDB}
+
+	id := uuid.FromStringOrNil("a9b8c7d6-91f0-11f0-8f3c-9d5e7b4a1cbb")
+	ringing := &call.Call{
+		Identity: commonidentity.Identity{ID: id},
+		Status:   call.StatusRinging,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	mockDB.EXPECT().CallGet(gomock.Any(), id).DoAndReturn(func(_ context.Context, _ uuid.UUID) (*call.Call, error) {
+		// the caller gives up while the call is still ringing.
+		cancel()
+		return ringing, nil
+	}).Times(1)
+
+	err := h.waitCallProgressing(ctx, id)
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("Wrong match. expect: context.Canceled, got: %v", err)
 	}
 }

@@ -19083,6 +19083,149 @@
         }
       }
     },
+    "/service_agents/calls/{id}/recording_start": {
+      "post": {
+        "summary": "Start recording a call",
+        "description": "Starts recording a call the calling agent owns.\nThe call must be owned by the calling agent, belong to the agent's customer, and be in progress (answered). A call that is still ringing is rejected with 400 and is not answered by this request. If the call is already being recorded, the response is 409.\nEvery field is optional. `duration` defaults to 7200 seconds (2 hours) and cannot be 0 or more than 7200 on this endpoint. A recording that ends on its own (silence, duration, or end key) clears the call's `recording_id`.\nThe platform does not announce the recording to the other party. Informing the other party is the organization's responsibility.",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The call ID returned from the `GET /service_agents/calls` response."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "format": {
+                    "$ref": "#/components/schemas/CallManagerRecordingFormat"
+                  },
+                  "end_of_silence": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 10,
+                    "description": "The duration of silence (in seconds) after which the recording stops. 0 keeps recording regardless of silence."
+                  },
+                  "end_of_key": {
+                    "type": "string",
+                    "example": "#",
+                    "description": "The DTMF key that stops the recording."
+                  },
+                  "duration": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 7200,
+                    "example": 3600,
+                    "description": "The maximum duration of the recording (in seconds). If omitted, 7200 is used."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The call, with the `recording_id` of the started recording.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallManagerCall"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/service_agents/calls/{id}/recording_stop": {
+      "post": {
+        "summary": "Stop recording a call",
+        "description": "Stops the ongoing recording of a call the calling agent owns. The agent can stop a recording regardless of who started it.\nIf the call has no ongoing recording, the response is 409.",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The call ID returned from the `GET /service_agents/calls` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The call, with an empty `recording_id`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallManagerCall"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
     "/service_agents/calls": {
       "get": {
         "summary": "Retrieve a list of calls for the given customer",

@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/recording"
 )
 
 // EventHandlerRecordingStarted handles RecordingStarted ARI event
@@ -82,10 +83,20 @@ func (h *eventHandler) EventHandlerRecordingFinished(ctx context.Context, evt in
 		})
 	log.WithField("recording", r).Debugf("Executing eventHandlerRecordingFinished event. recording_id: %s", r.ID)
 
-	tmp, err := h.recordingHandler.Stopped(ctx, r.ID)
-	if err != nil {
-		log.Errorf("Could not stopped the recording. err: %v", err)
-		return err
+	tmp, errStopped := h.recordingHandler.Stopped(ctx, r.ID)
+
+	// the recording is over whatever Stopped returned (for example the file storing can fail),
+	// so release the call's recording id regardless. A failure here is only logged: it must not
+	// make the event be processed again.
+	if r.ReferenceType == recording.ReferenceTypeCall {
+		if errUnset := h.callHandler.UnsetRecordingID(ctx, r.ReferenceID, r.ID); errUnset != nil {
+			log.Errorf("Could not unset the recording id of the call. err: %v", errUnset)
+		}
+	}
+
+	if errStopped != nil {
+		log.Errorf("Could not stopped the recording. err: %v", errStopped)
+		return errStopped
 	}
 	log.WithField("recording", tmp).Debugf("Updated recording info. recording_info: %s", tmp.ID)
 

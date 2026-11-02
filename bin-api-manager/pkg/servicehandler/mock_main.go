@@ -4864,6 +4864,36 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallQueuecallGet(ctx, a, c
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCallQueuecallGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCallQueuecallGet), ctx, a, callID)
 }
 
+// ServiceAgentCallRecordingStart mocks base method.
+func (m *MockServiceHandler) ServiceAgentCallRecordingStart(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID, format *recording.Format, endOfSilence *int, endOfKey *string, duration *int) (*call.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentCallRecordingStart", ctx, a, callID, format, endOfSilence, endOfKey, duration)
+	ret0, _ := ret[0].(*call.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentCallRecordingStart indicates an expected call of ServiceAgentCallRecordingStart.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallRecordingStart(ctx, a, callID, format, endOfSilence, endOfKey, duration any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCallRecordingStart", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCallRecordingStart), ctx, a, callID, format, endOfSilence, endOfKey, duration)
+}
+
+// ServiceAgentCallRecordingStop mocks base method.
+func (m *MockServiceHandler) ServiceAgentCallRecordingStop(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*call.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentCallRecordingStop", ctx, a, callID)
+	ret0, _ := ret[0].(*call.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentCallRecordingStop indicates an expected call of ServiceAgentCallRecordingStop.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallRecordingStop(ctx, a, callID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCallRecordingStop", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCallRecordingStop), ctx, a, callID)
+}
+
 // ServiceAgentCaseAssign mocks base method.
 func (m *MockServiceHandler) ServiceAgentCaseAssign(ctx context.Context, a *auth.AuthIdentity, id, ownerID uuid.UUID) (*kase.Case, error) {
 	m.ctrl.T.Helper()

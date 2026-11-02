@@ -609,6 +609,21 @@ func (mr *MockDBHandlerMockRecorder) CallTXStart(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallTXStart", reflect.TypeOf((*MockDBHandler)(nil).CallTXStart), ctx, id)
 }
 
+// CallUnsetRecordingIDIfMatch mocks base method.
+func (m *MockDBHandler) CallUnsetRecordingIDIfMatch(ctx context.Context, id, recordingID uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallUnsetRecordingIDIfMatch", ctx, id, recordingID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallUnsetRecordingIDIfMatch indicates an expected call of CallUnsetRecordingIDIfMatch.
+func (mr *MockDBHandlerMockRecorder) CallUnsetRecordingIDIfMatch(ctx, id, recordingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallUnsetRecordingIDIfMatch", reflect.TypeOf((*MockDBHandler)(nil).CallUnsetRecordingIDIfMatch), ctx, id, recordingID)
+}
+
 // CallUpdate mocks base method.
 func (m *MockDBHandler) CallUpdate(ctx context.Context, id uuid.UUID, fields map[call.Field]any) error {
 	m.ctrl.T.Helper()
@@ -1506,6 +1521,21 @@ func (m *MockDBHandler) RecordingSetStatus(ctx context.Context, id uuid.UUID, st
 func (mr *MockDBHandlerMockRecorder) RecordingSetStatus(ctx, id, status any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingSetStatus", reflect.TypeOf((*MockDBHandler)(nil).RecordingSetStatus), ctx, id, status)
+}
+
+// RecordingSetStatusStoppingIfActive mocks base method.
+func (m *MockDBHandler) RecordingSetStatusStoppingIfActive(ctx context.Context, id uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingSetStatusStoppingIfActive", ctx, id)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingSetStatusStoppingIfActive indicates an expected call of RecordingSetStatusStoppingIfActive.
+func (mr *MockDBHandlerMockRecorder) RecordingSetStatusStoppingIfActive(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingSetStatusStoppingIfActive", reflect.TypeOf((*MockDBHandler)(nil).RecordingSetStatusStoppingIfActive), ctx, id)
 }
 
 // RecordingUpdate mocks base method.

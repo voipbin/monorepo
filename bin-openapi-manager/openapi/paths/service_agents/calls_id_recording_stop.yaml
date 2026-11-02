@@ -1,0 +1,39 @@
+post:
+  summary: Stop recording a call
+  description: >-
+    Stops the ongoing recording of a call the calling agent owns. The agent can stop a
+    recording regardless of who started it.
+
+    If the call has no ongoing recording, the response is 409.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+      description: "The call ID returned from the `GET /service_agents/calls` response."
+  responses:
+    '200':
+      description: The call, with an empty `recording_id`.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallManagerCall'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '409':
+      $ref: '#/components/responses/Conflict'
+    '500':
+      $ref: '#/components/responses/InternalError'
+    '503':
+      $ref: '#/components/responses/Unavailable'

@@ -171,7 +171,7 @@ func Test_Stop_cov(t *testing.T) {
 				}
 			}
 			if tt.expectStatusSet {
-				mockDB.EXPECT().RecordingSetStatus(ctx, recID, recording.StatusStopping).Return(tt.setStatusErr)
+				mockDB.EXPECT().RecordingSetStatusStoppingIfActive(ctx, recID).Return(tt.setStatusErr == nil, tt.setStatusErr)
 			}
 			if tt.expectFinalGet {
 				mockDB.EXPECT().RecordingGet(ctx, recID).Return(tt.getRec, tt.finalGetErr)

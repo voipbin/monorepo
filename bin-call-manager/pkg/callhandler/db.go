@@ -522,3 +522,15 @@ func (h *callHandler) UpdateMuteDirection(ctx context.Context, id uuid.UUID, mut
 
 	return res, nil
 }
+
+// UnsetRecordingID clears the call's recording id when it still points to the given
+// recording. It is used when a recording ends on its own (end_of_silence, duration,
+// end_of_key), so that the call does not keep a stale recording id. Nothing is changed
+// when the call already holds another recording id or none.
+func (h *callHandler) UnsetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
+	if _, err := h.db.CallUnsetRecordingIDIfMatch(ctx, id, recordingID); err != nil {
+		return errors.Wrapf(err, "could not unset the recording id. call_id: %s, recording_id: %s", id, recordingID)
+	}
+
+	return nil
+}
