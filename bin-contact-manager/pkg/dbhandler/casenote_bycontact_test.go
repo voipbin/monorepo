@@ -84,6 +84,8 @@ func Test_CaseNoteListByContact(t *testing.T) {
 	nDeleted := insertNote("06", customerID, caseC, 6)
 	insertNote("07", customerID, caseOtherContact, 7)
 	insertNote("08", otherCustomerID, caseOtherCustomer, 8)
+	// a note of this customer attached to a case of the other customer (case side tenant check)
+	insertNote("09", customerID, caseOtherCustomer, 9)
 
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2026, 6, 3, 0, 0, 0, 0, time.UTC)))
 	if err := h.CaseNoteDelete(ctx, customerID, caseC, nDeleted); err != nil {
