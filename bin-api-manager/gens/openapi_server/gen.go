@@ -7199,6 +7199,24 @@ type QueueManagerQueuecallReferenceType string
 // QueueManagerQueuecallStatus defines model for QueueManagerQueuecallStatus.
 type QueueManagerQueuecallStatus string
 
+// QueueManagerQueuecallSummary The queue entry of a call, narrowed for the agent who handles it. Returned from the `GET /service_agents/calls/{id}/queuecall` response.
+type QueueManagerQueuecallSummary struct {
+	// Id The queuecall ID of the queue entry this call belongs to. Returned from the `GET /service_agents/calls/{id}/queuecall` response.
+	Id *string `json:"id,omitempty"`
+
+	// QueueId The queue ID. Returned as `id` of the `GET /queues` response for administrators.
+	QueueId *string `json:"queue_id,omitempty"`
+
+	// QueueName The queue name.
+	QueueName *string `json:"queue_name,omitempty"`
+
+	// Status The queue entry status.
+	Status *QueueManagerQueuecallStatus `json:"status,omitempty"`
+
+	// TmCreate When the call entered the queue.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+}
+
 // RagManagerRag defines model for RagManagerRag.
 type RagManagerRag struct {
 	// CustomerId The customer ID that owns this rag.
@@ -12651,6 +12669,9 @@ type ServerInterface interface {
 	// Retrieve detailed information of a specific call
 	// (GET /service_agents/calls/{id})
 	GetServiceAgentsCallsId(c *gin.Context, id string)
+	// Get the queue of a call
+	// (GET /service_agents/calls/{id}/queuecall)
+	GetServiceAgentsCallsIdQueuecall(c *gin.Context, id openapi_types.UUID)
 	// List contact addresses (service agent)
 	// (GET /service_agents/contact_addresses)
 	GetServiceAgentsContactAddresses(c *gin.Context, params GetServiceAgentsContactAddressesParams)
@@ -21088,6 +21109,31 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsCallsId(c *gin.Context) {
 	siw.Handler.GetServiceAgentsCallsId(c, id)
 }
 
+// GetServiceAgentsCallsIdQueuecall operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsCallsIdQueuecall(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsCallsIdQueuecall(c, id)
+}
+
 // GetServiceAgentsContactAddresses operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsContactAddresses(c *gin.Context) {
 
@@ -24964,6 +25010,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/service_agents/aimessages", wrapper.PostServiceAgentsAimessages)
 	router.GET(options.BaseURL+"/service_agents/calls", wrapper.GetServiceAgentsCalls)
 	router.GET(options.BaseURL+"/service_agents/calls/:id", wrapper.GetServiceAgentsCallsId)
+	router.GET(options.BaseURL+"/service_agents/calls/:id/queuecall", wrapper.GetServiceAgentsCallsIdQueuecall)
 	router.GET(options.BaseURL+"/service_agents/contact_addresses", wrapper.GetServiceAgentsContactAddresses)
 	router.POST(options.BaseURL+"/service_agents/contact_addresses", wrapper.PostServiceAgentsContactAddresses)
 	router.DELETE(options.BaseURL+"/service_agents/contact_addresses/:id", wrapper.DeleteServiceAgentsContactAddressesId)
@@ -50753,6 +50800,98 @@ func (response GetServiceAgentsCallsId500JSONResponse) VisitGetServiceAgentsCall
 	return err
 }
 
+type GetServiceAgentsCallsIdQueuecallRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetServiceAgentsCallsIdQueuecallResponseObject interface {
+	VisitGetServiceAgentsCallsIdQueuecallResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsCallsIdQueuecall200JSONResponse QueueManagerQueuecallSummary
+
+func (response GetServiceAgentsCallsIdQueuecall200JSONResponse) VisitGetServiceAgentsCallsIdQueuecallResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsCallsIdQueuecall400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsCallsIdQueuecall400JSONResponse) VisitGetServiceAgentsCallsIdQueuecallResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsCallsIdQueuecall401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsCallsIdQueuecall401JSONResponse) VisitGetServiceAgentsCallsIdQueuecallResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsCallsIdQueuecall403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsCallsIdQueuecall403JSONResponse) VisitGetServiceAgentsCallsIdQueuecallResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsCallsIdQueuecall404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetServiceAgentsCallsIdQueuecall404JSONResponse) VisitGetServiceAgentsCallsIdQueuecallResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsCallsIdQueuecall500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsCallsIdQueuecall500JSONResponse) VisitGetServiceAgentsCallsIdQueuecallResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetServiceAgentsContactAddressesRequestObject struct {
 	Params GetServiceAgentsContactAddressesParams
 }
@@ -62477,6 +62616,9 @@ type StrictServerInterface interface {
 	// Retrieve detailed information of a specific call
 	// (GET /service_agents/calls/{id})
 	GetServiceAgentsCallsId(ctx context.Context, request GetServiceAgentsCallsIdRequestObject) (GetServiceAgentsCallsIdResponseObject, error)
+	// Get the queue of a call
+	// (GET /service_agents/calls/{id}/queuecall)
+	GetServiceAgentsCallsIdQueuecall(ctx context.Context, request GetServiceAgentsCallsIdQueuecallRequestObject) (GetServiceAgentsCallsIdQueuecallResponseObject, error)
 	// List contact addresses (service agent)
 	// (GET /service_agents/contact_addresses)
 	GetServiceAgentsContactAddresses(ctx context.Context, request GetServiceAgentsContactAddressesRequestObject) (GetServiceAgentsContactAddressesResponseObject, error)
@@ -71716,6 +71858,32 @@ func (sh *strictHandler) GetServiceAgentsCallsId(ctx *gin.Context, id string) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(GetServiceAgentsCallsIdResponseObject); ok {
 		if err := validResponse.VisitGetServiceAgentsCallsIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsCallsIdQueuecall operation middleware
+func (sh *strictHandler) GetServiceAgentsCallsIdQueuecall(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetServiceAgentsCallsIdQueuecallRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsCallsIdQueuecall(ctx, request.(GetServiceAgentsCallsIdQueuecallRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsCallsIdQueuecall")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetServiceAgentsCallsIdQueuecallResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsCallsIdQueuecallResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

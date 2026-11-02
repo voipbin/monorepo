@@ -59,6 +59,9 @@ The table below groups every ``/service_agents/*`` path by the resource it front
    * - ``GET/POST /service_agents/calls``, ``/calls/{id}``
      - :ref:`Call <call-main>`
      -
+   * - ``GET /service_agents/calls/{id}/queuecall``
+     - This page
+     - **New** -- the queue a call the agent owns was routed through. Returns ``id`` (queuecall), ``queue_id``, ``queue_name``, ``status`` and ``tm_create``; ``404`` if the call has no queue entry handled by the calling agent
    * - ``GET/POST /service_agents/aicalls``, ``/aimessages``
      - :ref:`AI <ai-main>`
      -

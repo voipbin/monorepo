@@ -19034,6 +19034,55 @@
         }
       }
     },
+    "/service_agents/calls/{id}/queuecall": {
+      "get": {
+        "summary": "Get the queue of a call",
+        "description": "Returns the queue this call was routed through, for a call the agent owns.\nThe call must be one the calling agent owns. If the call did not come through a queue, or the queue entry was not handled by the calling agent, the response is 404.",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The call ID returned from the `GET /service_agents/calls` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The queue entry of the call, with the queue name.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueManagerQueuecallSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/service_agents/calls": {
       "get": {
         "summary": "Retrieve a list of calls for the given customer",
@@ -33394,6 +33443,45 @@
           "QueueManagerQueuecallStatusAbandoned"
         ],
         "example": "waiting"
+      },
+      "QueueManagerQueuecallSummary": {
+        "type": "object",
+        "description": "The queue entry of a call, narrowed for the agent who handles it. Returned from the `GET /service_agents/calls/{id}/queuecall` response.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The queuecall ID of the queue entry this call belongs to. Returned from the `GET /service_agents/calls/{id}/queuecall` response.",
+            "example": "3c8e1f20-7a4b-4d6e-9b1a-5f2c8d0e7a31"
+          },
+          "queue_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The queue ID. Returned as `id` of the `GET /queues` response for administrators.",
+            "example": "7d2a9f10-3b5c-4e8a-a6d1-1c4e7b9f2a05"
+          },
+          "queue_name": {
+            "type": "string",
+            "description": "The queue name.",
+            "example": "Support"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QueueManagerQueuecallStatus"
+              }
+            ],
+            "description": "The queue entry status."
+          },
+          "tm_create": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the call entered the queue.",
+            "example": "2026-11-02T09:10:00.000000Z"
+          }
+        }
       },
       "QueueManagerQueuecall": {
         "type": "object",
