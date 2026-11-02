@@ -10392,6 +10392,9 @@ type GetServiceAgentsContactCasesParams struct {
 	// ContactId Filter to cases attributed to this Contact.
 	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
 
+	// ReferenceId Filter to cases whose reference_id (the internal VoIPBin resource ID reference_type points at, e.g. a call ID) exactly matches this value. An empty value applies no filter.
+	ReferenceId *string `form:"reference_id,omitempty" json:"reference_id,omitempty"`
+
 	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
@@ -21229,6 +21232,14 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsContactCases(c *gin.Context) 
 	err = runtime.BindQueryParameterWithOptions("form", true, false, "contact_id", c.Request.URL.Query(), &params.ContactId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter contact_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "reference_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "reference_id", c.Request.URL.Query(), &params.ReferenceId, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter reference_id: %w", err), http.StatusBadRequest)
 		return
 	}
 

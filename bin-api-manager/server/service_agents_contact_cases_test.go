@@ -30,9 +30,10 @@ func Test_contactCasesGET(t *testing.T) {
 
 		responseCases []*cmkase.Case
 
-		expectPageToken string
-		expectPageSize  uint64
-		expectContactID uuid.UUID
+		expectPageToken   string
+		expectPageSize    uint64
+		expectContactID   uuid.UUID
+		expectReferenceID string
 	}{
 		{
 			name: "normal, no contact_id",
@@ -76,6 +77,65 @@ func Test_contactCasesGET(t *testing.T) {
 			expectPageSize:  5,
 			expectContactID: uuid.FromStringOrNil("9a9ec0ba-8004-11ec-aea5-439829c92a7c"),
 		},
+		{
+			// VOIP-1673: reference_id query param is parsed and threaded
+			// through to ServiceAgentCaseList.
+			name: "with reference_id filter",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6a6ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/service_agents/contact_cases?page_size=5&reference_id=1fe1356f-3f7f-4ff9-9d33-08136b38f506",
+
+			responseCases: []*cmkase.Case{
+				{
+					ID: uuid.FromStringOrNil("8a8ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			expectPageToken:   "",
+			expectPageSize:    5,
+			expectContactID:   uuid.Nil,
+			expectReferenceID: "1fe1356f-3f7f-4ff9-9d33-08136b38f506",
+		},
+		{
+			// VOIP-1673: an empty reference_id value is forwarded as an
+			// empty string, which contact-manager treats as no filter.
+			name: "with empty reference_id",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4a4ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/service_agents/contact_cases?page_size=5&reference_id=",
+
+			responseCases: []*cmkase.Case{},
+
+			expectPageToken:   "",
+			expectPageSize:    5,
+			expectContactID:   uuid.Nil,
+			expectReferenceID: "",
+		},
+		{
+			name: "with contact_id and reference_id filters",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7a7ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/service_agents/contact_cases?page_size=5&contact_id=9a9ec0ba-8004-11ec-aea5-439829c92a7c&reference_id=1fe1356f-3f7f-4ff9-9d33-08136b38f506",
+
+			responseCases: []*cmkase.Case{},
+
+			expectPageToken:   "",
+			expectPageSize:    5,
+			expectContactID:   uuid.FromStringOrNil("9a9ec0ba-8004-11ec-aea5-439829c92a7c"),
+			expectReferenceID: "1fe1356f-3f7f-4ff9-9d33-08136b38f506",
+		},
 	}
 
 	for _, tt := range tests {
@@ -97,7 +157,7 @@ func Test_contactCasesGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentCaseList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken, tt.expectContactID).Return(tt.responseCases, "", nil)
+			mockSvc.EXPECT().ServiceAgentCaseList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken, tt.expectContactID, tt.expectReferenceID).Return(tt.responseCases, "", nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

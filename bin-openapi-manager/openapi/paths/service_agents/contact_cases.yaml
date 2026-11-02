@@ -1,6 +1,6 @@
 get:
   summary: Get list of contact cases
-  description: Retrieves a paginated list of cases for the authenticated agent's customer, optionally filtered by contact_id.
+  description: Retrieves a paginated list of cases for the authenticated agent's customer, optionally filtered by contact_id and reference_id.
   tags:
     - Service Agent
   parameters:
@@ -11,6 +11,12 @@ get:
         type: string
         format: uuid
         example: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+    - name: reference_id
+      in: query
+      description: Filter to cases whose reference_id (the internal VoIPBin resource ID reference_type points at, e.g. a call ID) exactly matches this value. An empty value applies no filter.
+      schema:
+        type: string
+        example: "1fe1356f-3f7f-4ff9-9d33-08136b38f506"
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
   responses:
