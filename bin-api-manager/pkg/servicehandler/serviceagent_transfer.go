@@ -48,18 +48,11 @@ func (h *serviceHandler) ServiceAgentTransferStart(ctx context.Context, a *auth.
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	if transferType != tmtransfer.TypeBlind && transferType != tmtransfer.TypeAttended {
-		log.Info("Unsupported transfer type.")
-		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_TRANSFER_TYPE", "The transfer_type must be blind or attended.")
+	extensionID, errValidate := serviceAgentTransferValidateInput(transferType, transfereeAddresses)
+	if errValidate != nil {
+		log.Infof("Invalid transfer request. err: %v", errValidate)
+		return nil, errValidate
 	}
-
-	if len(transfereeAddresses) != 1 ||
-		transfereeAddresses[0].Type != commonaddress.TypeExtension ||
-		!isCanonicalExtensionTarget(transfereeAddresses[0].Target) {
-		log.Info("Invalid transferee addresses.")
-		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_TRANSFEREE_ADDRESS", "The transferee_addresses must have exactly one address of type extension, with the extension ID as the target.")
-	}
-	extensionID := uuid.FromStringOrNil(transfereeAddresses[0].Target)
 
 	c, err := h.callGet(ctx, transfererCallID)
 	if err != nil {
@@ -78,22 +71,10 @@ func (h *serviceHandler) ServiceAgentTransferStart(ctx context.Context, a *auth.
 		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "CALL_NOT_TRANSFERABLE", "The call is not transferable.")
 	}
 
-	ext, err := h.reqHandler.RegistrarV1ExtensionGet(ctx, extensionID)
-	if err != nil && !queuecallIsNotFound(err) {
-		log.Errorf("Could not get the transferee extension. err: %v", err)
+	addresses, err := h.serviceAgentTransferBuildAddresses(ctx, a, extensionID)
+	if err != nil {
+		log.Infof("Could not build the transferee address. err: %v", err)
 		return nil, err
-	}
-	if err != nil || ext == nil || ext.CustomerID != a.CustomerID || ext.TMDelete != nil {
-		log.Infof("The transferee extension is not usable. extension_id: %s, err: %v", extensionID, err)
-		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_TRANSFEREE_ADDRESS", "The transferee extension was not found.")
-	}
-
-	addresses := []commonaddress.Address{
-		{
-			Type:       commonaddress.TypeExtension,
-			Target:     ext.ID.String(),
-			TargetName: ext.Extension,
-		},
 	}
 
 	tmp, err := h.reqHandler.TransferV1TransferStart(ctx, transferType, transfererCallID, addresses)
@@ -103,4 +84,42 @@ func (h *serviceHandler) ServiceAgentTransferStart(ctx context.Context, a *auth.
 	}
 
 	return tmp.ConvertWebhookMessage(), nil
+}
+
+// serviceAgentTransferValidateInput checks the transfer type and the transferee addresses, which need no lookup.
+// It returns the extension id given as the target of the only transferee address.
+func serviceAgentTransferValidateInput(transferType tmtransfer.Type, transfereeAddresses []commonaddress.Address) (uuid.UUID, error) {
+	if transferType != tmtransfer.TypeBlind && transferType != tmtransfer.TypeAttended {
+		return uuid.Nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_TRANSFER_TYPE", "The transfer_type must be blind or attended.")
+	}
+
+	if len(transfereeAddresses) != 1 ||
+		transfereeAddresses[0].Type != commonaddress.TypeExtension ||
+		!isCanonicalExtensionTarget(transfereeAddresses[0].Target) {
+		return uuid.Nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_TRANSFEREE_ADDRESS", "The transferee_addresses must have exactly one address of type extension, with the extension ID as the target.")
+	}
+
+	return uuid.FromStringOrNil(transfereeAddresses[0].Target), nil
+}
+
+// serviceAgentTransferBuildAddresses looks up the given extension and builds the transferee address to pass on.
+//
+// An extension that does not exist, belongs to another customer or is deleted gets the very same error. Any other
+// lookup error is returned as it is, so a backend failure is not reported as a bad request.
+func (h *serviceHandler) serviceAgentTransferBuildAddresses(ctx context.Context, a *auth.AuthIdentity, extensionID uuid.UUID) ([]commonaddress.Address, error) {
+	ext, err := h.reqHandler.RegistrarV1ExtensionGet(ctx, extensionID)
+	if err != nil && !queuecallIsNotFound(err) {
+		return nil, err
+	}
+	if err != nil || ext == nil || ext.CustomerID != a.CustomerID || ext.TMDelete != nil {
+		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_TRANSFEREE_ADDRESS", "The transferee extension was not found.")
+	}
+
+	return []commonaddress.Address{
+		{
+			Type:       commonaddress.TypeExtension,
+			Target:     ext.ID.String(),
+			TargetName: ext.Extension,
+		},
+	}, nil
 }
