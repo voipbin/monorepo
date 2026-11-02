@@ -1036,6 +1036,7 @@ type ServiceHandler interface {
 	ServiceAgentCallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmcall.WebhookMessage, error)
 	ServiceAgentCallGet(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	ServiceAgentCallDelete(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmcall.WebhookMessage, error)
+	ServiceAgentCallQueuecallGet(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*openapi_server.QueueManagerQueuecallSummary, error)
 
 	// service_agent conversation
 	ServiceAgentConversationGet(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error)

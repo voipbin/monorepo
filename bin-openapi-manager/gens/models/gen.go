@@ -8997,6 +8997,32 @@ type QueueManagerQueuecallReferenceType string
 // QueueManagerQueuecallStatus Example: waiting
 type QueueManagerQueuecallStatus string
 
+// QueueManagerQueuecallSummary The queue entry of a call, narrowed for the agent who handles it. Returned from the `GET /service_agents/calls/{id}/queuecall` response.
+type QueueManagerQueuecallSummary struct {
+	// Id The queuecall ID of the queue entry this call belongs to. Returned from the `GET /service_agents/calls/{id}/queuecall` response.
+	//
+	// Example: 3c8e1f20-7a4b-4d6e-9b1a-5f2c8d0e7a31
+	Id *string `json:"id,omitempty"`
+
+	// QueueId The queue ID. Returned as `id` of the `GET /queues` response for administrators.
+	//
+	// Example: 7d2a9f10-3b5c-4e8a-a6d1-1c4e7b9f2a05
+	QueueId *string `json:"queue_id,omitempty"`
+
+	// QueueName The queue name.
+	//
+	// Example: Support
+	QueueName *string `json:"queue_name,omitempty"`
+
+	// Status The queue entry status.
+	Status *QueueManagerQueuecallStatus `json:"status,omitempty"`
+
+	// TmCreate When the call entered the queue.
+	//
+	// Example: 2026-11-02T09:10:00.000000Z
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+}
+
 // RagManagerRag defines model for RagManagerRag.
 type RagManagerRag struct {
 	// CustomerId The customer ID that owns this rag.

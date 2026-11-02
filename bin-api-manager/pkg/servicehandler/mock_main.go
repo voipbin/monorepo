@@ -4849,6 +4849,21 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallList(ctx, a, size, tok
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCallList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCallList), ctx, a, size, token)
 }
 
+// ServiceAgentCallQueuecallGet mocks base method.
+func (m *MockServiceHandler) ServiceAgentCallQueuecallGet(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*openapi_server.QueueManagerQueuecallSummary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentCallQueuecallGet", ctx, a, callID)
+	ret0, _ := ret[0].(*openapi_server.QueueManagerQueuecallSummary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentCallQueuecallGet indicates an expected call of ServiceAgentCallQueuecallGet.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallQueuecallGet(ctx, a, callID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCallQueuecallGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCallQueuecallGet), ctx, a, callID)
+}
+
 // ServiceAgentCaseAssign mocks base method.
 func (m *MockServiceHandler) ServiceAgentCaseAssign(ctx context.Context, a *auth.AuthIdentity, id, ownerID uuid.UUID) (*kase.Case, error) {
 	m.ctrl.T.Helper()

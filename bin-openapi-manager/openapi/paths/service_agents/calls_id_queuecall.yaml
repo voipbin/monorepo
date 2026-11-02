@@ -1,0 +1,36 @@
+get:
+  summary: Get the queue of a call
+  description: >-
+    Returns the queue this call was routed through, for a call the agent owns.
+
+    The call must be one the calling agent owns. If the call did not come
+    through a queue, or the queue entry was not handled by the calling agent,
+    the response is 404.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+      description: "The call ID returned from the `GET /service_agents/calls` response."
+  responses:
+    '200':
+      description: The queue entry of the call, with the queue name.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/QueueManagerQueuecallSummary'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
