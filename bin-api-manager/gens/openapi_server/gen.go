@@ -10560,6 +10560,15 @@ type PutServiceAgentsContactsIdAddressesAddressIdJSONBody struct {
 	Target *string `json:"target,omitempty"`
 }
 
+// GetServiceAgentsContactsIdCaseNotesParams defines parameters for GetServiceAgentsContactsIdCaseNotes.
+type GetServiceAgentsContactsIdCaseNotesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // PostServiceAgentsContactsIdTagsJSONBody defines parameters for PostServiceAgentsContactsIdTags.
 type PostServiceAgentsContactsIdTagsJSONBody struct {
 	TagId openapi_types.UUID `json:"tag_id"`
@@ -12675,6 +12684,9 @@ type ServerInterface interface {
 	// Update address on contact (service agent)
 	// (PUT /service_agents/contacts/{id}/addresses/{address_id})
 	PutServiceAgentsContactsIdAddressesAddressId(c *gin.Context, id openapi_types.UUID, addressId openapi_types.UUID)
+	// Get list of case notes of a contact
+	// (GET /service_agents/contacts/{id}/case_notes)
+	GetServiceAgentsContactsIdCaseNotes(c *gin.Context, id openapi_types.UUID, params GetServiceAgentsContactsIdCaseNotesParams)
 	// Add tag to contact
 	// (POST /service_agents/contacts/{id}/tags)
 	PostServiceAgentsContactsIdTags(c *gin.Context, id string)
@@ -21832,6 +21844,50 @@ func (siw *ServerInterfaceWrapper) PutServiceAgentsContactsIdAddressesAddressId(
 	siw.Handler.PutServiceAgentsContactsIdAddressesAddressId(c, id, addressId)
 }
 
+// GetServiceAgentsContactsIdCaseNotes operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsContactsIdCaseNotes(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceAgentsContactsIdCaseNotesParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsContactsIdCaseNotes(c, id, params)
+}
+
 // PostServiceAgentsContactsIdTags operation middleware
 func (siw *ServerInterfaceWrapper) PostServiceAgentsContactsIdTags(c *gin.Context) {
 
@@ -24881,6 +24937,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/service_agents/contacts/:id/addresses", wrapper.PostServiceAgentsContactsIdAddresses)
 	router.DELETE(options.BaseURL+"/service_agents/contacts/:id/addresses/:address_id", wrapper.DeleteServiceAgentsContactsIdAddressesAddressId)
 	router.PUT(options.BaseURL+"/service_agents/contacts/:id/addresses/:address_id", wrapper.PutServiceAgentsContactsIdAddressesAddressId)
+	router.GET(options.BaseURL+"/service_agents/contacts/:id/case_notes", wrapper.GetServiceAgentsContactsIdCaseNotes)
 	router.POST(options.BaseURL+"/service_agents/contacts/:id/tags", wrapper.PostServiceAgentsContactsIdTags)
 	router.DELETE(options.BaseURL+"/service_agents/contacts/:id/tags/:tag_id", wrapper.DeleteServiceAgentsContactsIdTagsTagId)
 	router.GET(options.BaseURL+"/service_agents/conversations", wrapper.GetServiceAgentsConversations)
@@ -52848,6 +52905,85 @@ func (response PutServiceAgentsContactsIdAddressesAddressId500JSONResponse) Visi
 	return err
 }
 
+type GetServiceAgentsContactsIdCaseNotesRequestObject struct {
+	Id     openapi_types.UUID `json:"id"`
+	Params GetServiceAgentsContactsIdCaseNotesParams
+}
+
+type GetServiceAgentsContactsIdCaseNotesResponseObject interface {
+	VisitGetServiceAgentsContactsIdCaseNotesResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsContactsIdCaseNotes200JSONResponse ContactManagerCaseNoteListResponse
+
+func (response GetServiceAgentsContactsIdCaseNotes200JSONResponse) VisitGetServiceAgentsContactsIdCaseNotesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsContactsIdCaseNotes401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsContactsIdCaseNotes401JSONResponse) VisitGetServiceAgentsContactsIdCaseNotesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsContactsIdCaseNotes403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsContactsIdCaseNotes403JSONResponse) VisitGetServiceAgentsContactsIdCaseNotesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsContactsIdCaseNotes404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetServiceAgentsContactsIdCaseNotes404JSONResponse) VisitGetServiceAgentsContactsIdCaseNotesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsContactsIdCaseNotes500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsContactsIdCaseNotes500JSONResponse) VisitGetServiceAgentsContactsIdCaseNotesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type PostServiceAgentsContactsIdTagsRequestObject struct {
 	Id   string `json:"id"`
 	Body *PostServiceAgentsContactsIdTagsJSONRequestBody
@@ -62365,6 +62501,9 @@ type StrictServerInterface interface {
 	// Update address on contact (service agent)
 	// (PUT /service_agents/contacts/{id}/addresses/{address_id})
 	PutServiceAgentsContactsIdAddressesAddressId(ctx context.Context, request PutServiceAgentsContactsIdAddressesAddressIdRequestObject) (PutServiceAgentsContactsIdAddressesAddressIdResponseObject, error)
+	// Get list of case notes of a contact
+	// (GET /service_agents/contacts/{id}/case_notes)
+	GetServiceAgentsContactsIdCaseNotes(ctx context.Context, request GetServiceAgentsContactsIdCaseNotesRequestObject) (GetServiceAgentsContactsIdCaseNotesResponseObject, error)
 	// Add tag to contact
 	// (POST /service_agents/contacts/{id}/tags)
 	PostServiceAgentsContactsIdTags(ctx context.Context, request PostServiceAgentsContactsIdTagsRequestObject) (PostServiceAgentsContactsIdTagsResponseObject, error)
@@ -72268,6 +72407,33 @@ func (sh *strictHandler) PutServiceAgentsContactsIdAddressesAddressId(ctx *gin.C
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(PutServiceAgentsContactsIdAddressesAddressIdResponseObject); ok {
 		if err := validResponse.VisitPutServiceAgentsContactsIdAddressesAddressIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsContactsIdCaseNotes operation middleware
+func (sh *strictHandler) GetServiceAgentsContactsIdCaseNotes(ctx *gin.Context, id openapi_types.UUID, params GetServiceAgentsContactsIdCaseNotesParams) {
+	var request GetServiceAgentsContactsIdCaseNotesRequestObject
+
+	request.Id = id
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsContactsIdCaseNotes(ctx, request.(GetServiceAgentsContactsIdCaseNotesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsContactsIdCaseNotes")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetServiceAgentsContactsIdCaseNotesResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsContactsIdCaseNotesResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

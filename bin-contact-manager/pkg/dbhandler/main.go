@@ -83,6 +83,7 @@ type DBHandler interface {
 	CaseNoteCreate(ctx context.Context, n *casenote.CaseNote) error
 	CaseNoteDelete(ctx context.Context, customerID, caseID, id uuid.UUID) error
 	CaseNoteListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*casenote.CaseNote, error)
+	CaseNoteListByContact(ctx context.Context, customerID, contactID uuid.UUID, size uint64, token string) ([]*casenote.CaseNote, error)
 
 	CaseListByOwner(ctx context.Context, customerID uuid.UUID, ownerType commonidentity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error)
 

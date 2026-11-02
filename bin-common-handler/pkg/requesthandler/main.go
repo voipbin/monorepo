@@ -994,6 +994,7 @@ type RequestHandler interface {
 	ContactV1CaseUnassign(ctx context.Context, customerID, id uuid.UUID) (*cmkase.Case, error)
 	ContactV1CaseContinue(ctx context.Context, customerID, id uuid.UUID, callerType string, callerID uuid.UUID, callerIsAdmin bool) (*cmkase.Case, error)
 	ContactV1CaseNoteList(ctx context.Context, customerID, caseID uuid.UUID) ([]*cmcasenote.CaseNote, error)
+	ContactV1ContactCaseNoteList(ctx context.Context, customerID, contactID uuid.UUID, size uint64, token string) ([]*cmcasenote.CaseNote, string, error)
 	ContactV1CaseNoteCreate(ctx context.Context, customerID, caseID uuid.UUID, authorType string, authorID *uuid.UUID, text string) (*cmcasenote.CaseNote, error)
 	ContactV1CaseNoteDelete(ctx context.Context, customerID, caseID, noteID uuid.UUID) error
 	ContactV1CaseTagList(ctx context.Context, customerID, caseID uuid.UUID) ([]uuid.UUID, error)

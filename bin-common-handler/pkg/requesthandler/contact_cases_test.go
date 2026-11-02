@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -725,6 +726,100 @@ func Test_ContactV1CaseNoteList(t *testing.T) {
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ContactV1ContactCaseNoteList(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		contactID  uuid.UUID
+		size       uint64
+		token      string
+
+		expectRequest *sock.Request
+		response      *sock.Response
+
+		expectRes       []*cmcasenote.CaseNote
+		expectNextToken string
+	}{
+		{
+			name: "normal with paging",
+
+			customerID: uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
+			contactID:  uuid.FromStringOrNil("5623e25e-2c74-11ee-87a6-bfa8ae34077f"),
+			size:       10,
+			token:      "2026-06-01T09:30:01.000000Z",
+
+			expectRequest: &sock.Request{
+				URI:      "/v1/contacts/5623e25e-2c74-11ee-87a6-bfa8ae34077f/case_notes?page_size=10&page_token=2026-06-01T09%3A30%3A01.000000Z",
+				Method:   sock.RequestMethodGet,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3"}`),
+			},
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"8fe6c136-2c75-11ee-a3a4-37400837e12e","case_id":"11111111-2c75-11ee-a3a4-37400837e12e","tm_create":"2026-06-01T09:00:00.123456Z"}]`),
+			},
+			expectRes: []*cmcasenote.CaseNote{
+				{
+					ID:       uuid.FromStringOrNil("8fe6c136-2c75-11ee-a3a4-37400837e12e"),
+					CaseID:   uuid.FromStringOrNil("11111111-2c75-11ee-a3a4-37400837e12e"),
+					TMCreate: func() *time.Time { v := time.Date(2026, 6, 1, 9, 0, 0, 123456000, time.UTC); return &v }(),
+				},
+			},
+			expectNextToken: "2026-06-01T09:00:00.123456Z",
+		},
+		{
+			name: "empty result has no token and no query",
+
+			customerID: uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
+			contactID:  uuid.FromStringOrNil("5623e25e-2c74-11ee-87a6-bfa8ae34077f"),
+
+			expectRequest: &sock.Request{
+				URI:      "/v1/contacts/5623e25e-2c74-11ee-87a6-bfa8ae34077f/case_notes",
+				Method:   sock.RequestMethodGet,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3"}`),
+			},
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[]`),
+			},
+			expectRes:       nil,
+			expectNextToken: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.contact-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			res, nextToken, err := reqHandler.ContactV1ContactCaseNoteList(ctx, tt.customerID, tt.contactID, tt.size, tt.token)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if len(res) != len(tt.expectRes) || (len(res) > 0 && !reflect.DeepEqual(tt.expectRes, res)) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+			if nextToken != tt.expectNextToken {
+				t.Errorf("Wrong next token. expect: %q, got: %q", tt.expectNextToken, nextToken)
 			}
 		})
 	}

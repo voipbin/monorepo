@@ -4082,6 +4082,22 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1ContactAddressUpdate(ctx, cus
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactAddressUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactAddressUpdate), ctx, customerID, contactID, addressID, fields)
 }
 
+// ContactV1ContactCaseNoteList mocks base method.
+func (m *MockRequestHandler) ContactV1ContactCaseNoteList(ctx context.Context, customerID, contactID uuid.UUID, size uint64, token string) ([]*casenote.CaseNote, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1ContactCaseNoteList", ctx, customerID, contactID, size, token)
+	ret0, _ := ret[0].([]*casenote.CaseNote)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ContactV1ContactCaseNoteList indicates an expected call of ContactV1ContactCaseNoteList.
+func (mr *MockRequestHandlerMockRecorder) ContactV1ContactCaseNoteList(ctx, customerID, contactID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactCaseNoteList", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactCaseNoteList), ctx, customerID, contactID, size, token)
+}
+
 // ContactV1ContactCreate mocks base method.
 func (m *MockRequestHandler) ContactV1ContactCreate(ctx context.Context, customerID uuid.UUID, firstName, lastName, displayName, company, jobTitle, source, externalID, notes string, addresses []contact.AddressInput, tagIDs []uuid.UUID) (*contact.Contact, error) {
 	m.ctrl.T.Helper()

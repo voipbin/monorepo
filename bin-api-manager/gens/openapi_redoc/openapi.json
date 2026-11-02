@@ -22072,6 +22072,58 @@
         }
       }
     },
+    "/service_agents/contacts/{id}/case_notes": {
+      "get": {
+        "summary": "Get list of case notes of a contact",
+        "description": "Notes written on the cases attributed to this contact, newest first,\nacross all of its cases. Each note carries the `case_id` of the case it\nwas written on. Notes are an internal, agent-facing annotation and never\nappear in any customer-facing webhook or response. A contact that does\nnot exist or belongs to another customer returns 404.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The contact ID returned from GET /service_agents/contacts.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerCaseNoteListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/service_agents/contacts/{id}/tags/{tag_id}": {
       "delete": {
         "summary": "Remove tag from contact",

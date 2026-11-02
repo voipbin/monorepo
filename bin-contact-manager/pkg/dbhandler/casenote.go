@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -110,6 +111,64 @@ func (h *handler) CaseNoteListByCase(ctx context.Context, customerID, caseID uui
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("row iteration error. CaseNoteListByCase. err: %w", err)
+	}
+
+	return res, nil
+}
+
+// CaseNoteListByContact returns active (tm_delete IS NULL) notes of every
+// Case currently attributed to contactID, newest first (tm_create DESC),
+// scoped to customerID on both the note and the case side. token is a
+// tm_create cursor (exclusive); size is the row limit. The case side is
+// matched on the current contact_id, so a re-attributed case moves its
+// notes to the new contact.
+func (h *handler) CaseNoteListByContact(ctx context.Context, customerID, contactID uuid.UUID, size uint64, token string) ([]*casenote.CaseNote, error) {
+	fields := commondatabasehandler.GetDBFields(&casenote.CaseNote{})
+	columns := make([]string, 0, len(fields))
+	for _, f := range fields {
+		columns = append(columns, "n."+f)
+	}
+
+	builder := sq.Select(columns...).
+		From(caseNoteTable + " n").
+		Join(caseTable + " c ON c.id = n.case_id AND c.customer_id = n.customer_id").
+		Where(sq.Eq{"n.customer_id": customerID.Bytes()}).
+		Where(sq.Eq{"c.contact_id": contactID.Bytes()}).
+		Where(sq.Eq{"n.tm_delete": nil})
+
+	if token != "" {
+		cursorTime, err := time.Parse("2006-01-02T15:04:05.000000Z", token)
+		if err != nil {
+			// Fallback to RFC3339Nano for forward compatibility.
+			cursorTime, err = time.Parse(time.RFC3339Nano, token)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("could not parse page token. CaseNoteListByContact. err: %w", err)
+		}
+		builder = builder.Where(sq.Lt{"n.tm_create": cursorTime.UTC()})
+	}
+
+	query, args, err := builder.OrderBy("n.tm_create DESC").Limit(size).ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. CaseNoteListByContact. err: %w", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CaseNoteListByContact. err: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	var res []*casenote.CaseNote
+	for rows.Next() {
+		item, scanErr := caseNoteGetFromRow(rows)
+		if scanErr != nil {
+			return nil, fmt.Errorf("could not scan the row. CaseNoteListByContact. err: %w", scanErr)
+		}
+		res = append(res, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error. CaseNoteListByContact. err: %w", err)
 	}
 
 	return res, nil

@@ -13245,6 +13245,15 @@ type PutServiceAgentsContactsIdAddressesAddressIdJSONBody struct {
 	Target *string `json:"target,omitempty"`
 }
 
+// GetServiceAgentsContactsIdCaseNotesParams defines parameters for GetServiceAgentsContactsIdCaseNotes.
+type GetServiceAgentsContactsIdCaseNotesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // PostServiceAgentsContactsIdTagsJSONBody defines parameters for PostServiceAgentsContactsIdTags.
 type PostServiceAgentsContactsIdTagsJSONBody struct {
 	TagId openapi_types.UUID `json:"tag_id"`

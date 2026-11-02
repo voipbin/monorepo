@@ -5119,6 +5119,22 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactAddressUpdateIndepe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactAddressUpdateIndependent", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactAddressUpdateIndependent), ctx, a, addressID, fields)
 }
 
+// ServiceAgentContactCaseNoteList mocks base method.
+func (m *MockServiceHandler) ServiceAgentContactCaseNoteList(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, size uint64, token string) ([]*casenote.CaseNote, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentContactCaseNoteList", ctx, a, contactID, size, token)
+	ret0, _ := ret[0].([]*casenote.CaseNote)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ServiceAgentContactCaseNoteList indicates an expected call of ServiceAgentContactCaseNoteList.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactCaseNoteList(ctx, a, contactID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactCaseNoteList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactCaseNoteList), ctx, a, contactID, size, token)
+}
+
 // ServiceAgentContactCreate mocks base method.
 func (m *MockServiceHandler) ServiceAgentContactCreate(ctx context.Context, a *auth.AuthIdentity, firstName, lastName, displayName, company, jobTitle, source, externalID, notes string, addresses []contact.AddressInput, tagIDs []uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()

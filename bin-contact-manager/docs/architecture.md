@@ -88,5 +88,6 @@ Requests arrive via RabbitMQ queue `bin-manager.contact-manager.request`. The `l
 | `/v1/contacts/{uuid}/emails/{uuid}$` | DELETE | Remove email |
 | `/v1/contacts/{uuid}/tags$` | POST | Assign tag to contact |
 | `/v1/contacts/{uuid}/tags/{uuid}$` | DELETE | Remove tag from contact |
+| `/v1/contacts/{uuid}/case_notes(\?.*)?$` | GET | List notes across the contact's cases, newest first (`page_size`, `page_token`) |
 
 Unmatched URIs return `404`. Mismatched HTTP methods return `405`.

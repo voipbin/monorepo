@@ -67,6 +67,9 @@ var (
 	regV1ContactsTags   = regexp.MustCompile("/v1/contacts/" + regUUID + "/tags$")
 	regV1ContactsTagsID = regexp.MustCompile("/v1/contacts/" + regUUID + "/tags/" + regUUID + "$")
 
+	// contact case notes (aggregated over the contact's cases)
+	regV1ContactsCaseNotes = regexp.MustCompile("/v1/contacts/" + regUUID + `/case_notes(\?.*)?$`)
+
 	// v1 interactions
 	regV1InteractionsGet = regexp.MustCompile(`/v1/interactions\?(.*)$`)
 
@@ -295,6 +298,15 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ContactsTagsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1ContactsTagsIDDelete(ctx, m)
 		requestType = "/v1/contacts/{id}/tags/{tag_id}"
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// v1 Contacts Case Notes
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// GET /contacts/{id}/case_notes?...
+	case regV1ContactsCaseNotes.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1ContactsIDCaseNotesGet(ctx, m)
+		requestType = "/v1/contacts/{id}/case_notes"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// v1 Interactions

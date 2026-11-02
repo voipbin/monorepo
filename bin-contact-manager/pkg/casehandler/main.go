@@ -64,6 +64,7 @@ type CaseHandler interface {
 	CaseNoteCreate(ctx context.Context, customerID, caseID uuid.UUID, authorType string, authorID *uuid.UUID, text string) (*casenote.CaseNote, error)
 	CaseNoteDelete(ctx context.Context, customerID, caseID, id uuid.UUID) error
 	CaseNoteListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*casenote.CaseNote, error)
+	CaseNoteListByContact(ctx context.Context, customerID, contactID uuid.UUID, size uint64, token string) ([]*casenote.CaseNote, string, error)
 
 	// CaseTagAdd / CaseTagRemove / CaseTagList implement design §7
 	// round-22: case-scoped tag assignment. CaseTagAdd validates tag_id
