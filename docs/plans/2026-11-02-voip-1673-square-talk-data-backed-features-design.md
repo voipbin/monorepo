@@ -1,9 +1,14 @@
 # VOIP-1673: square-talk 워크스페이스 데이터 기반 기능 백엔드 설계 (A, B, C)
 
-- 상태: 설계 (코드 변경 없음, 설계 문서만 포함하는 PR)
-- 기준: monorepo `77b29166d`, monorepo-javascript `c39bbacb`
+- 상태: 설계, 개정 1 반영 (코드 변경 없음, 설계 문서만 포함하는 PR)
+- 기준: monorepo `77b29166d`, monorepo-javascript `c39bbacb` (개정 1 의 1.5절과 3.10 의 call-manager 확인은 monorepo `242fa584e` 기준)
 - 범위: 클라이언트만으로 만들 수 없는 square-talk 워크스페이스 요소의 백엔드 설계. 구현은 이 설계가 확정된 뒤 별도 작업으로 진행합니다.
 - 제품 전제: 통화 중 Insight 는 케이스에 묶인 통화에서만 동작합니다. 이 전제를 넘는 범위 확대는 이 문서에 넣지 않았습니다.
+- 제품 전제 (개정 1 추가): square-talk 사용자는 회사 또는 그룹의 소속원이며 상식적인 조직 규율을 이해한다고 봅니다. 따라서 통화 중 녹음을 누를 때마다 녹음 동의를 요청하는 팝업이 필요하지 않습니다. 이 전제는 에이전트의 규율 준수에 대한 신뢰만 뜻하며, 테넌트 격리, 통화 소유자 검증, 고객 일치 검증, 외부 PSTN 비용 안전은 유지합니다.
+
+## 개정 이력
+
+개정 1: 위 전제 추가에 따라 C2 녹음 정책을 정리하고, 관련 주장을 코드로 다시 확인해 반영했습니다. (1) P1(녹음 고지)을 "조직 규율, 서버 강제 없음" 으로 결정하고 클라이언트 REC 표시를 의무에서 UX 권고로 낮췄으며, RST 한 줄 명시를 구현 범위에 추가했습니다. (2) P7(녹음 중지)에서 시작 주체 표식 논의와 "중지는 제공하지 않음" 선택지를 삭제하고 소유 에이전트의 start/stop 을 모두 허용하되 감사 로그만 남기게 했습니다. (3) `duration` 상한을 실제로 작동하게 고쳤고(0 은 무제한이라 `minimum: 1` 과 기본값 7200), `end_of_silence` 상한은 제거했습니다. (4) P2/P3 의 주소 유형 제한을 "보안 경계" 가 아닌 "단계적 출시 선택" 으로 다시 서술하고 (a) `extension` 만, (b) `tel` 포함 으로 정리해 남은 결정 사항으로 두었습니다. (5) 플로우 `recording_start` 와의 충돌을 새 위험으로 문서화했습니다(통화가 끊기는 것이 아니라 액션이 건너뛰어짐). (6) call-manager 기존 결함이 한 줄 수정 범위를 넘는 것을 확인해 3.10 의 수정 범위(B, C, D)와 규모를 재산정했습니다(C2 3일 -> 5일, C1 4일 -> 3일, C3 10일 -> 9일, 합계 동일). 영향받는 곳: 1.2, 1.5(신설), 2.1, 2.3, 2.4, 3.9, 3.10, 3.11, 3.13, 5, 6. 3.1~3.8(A1, A2, A4, A5, B1~B3)은 변경하지 않았습니다.
 
 ## 1. 이슈 확인과 분석
 
@@ -43,7 +48,7 @@
 | A5 | 아래 1.3 참조 | 매핑 가능, 읽기 API 신설 필요 |
 | B1~B3 | 1.2.2 참조. talk, contact 의 최신 마이그레이션 `000001`, talk 에 트랜잭션 헬퍼 없음 | 신규 테이블 필요 |
 | C1 | `bin-transfer-manager` 는 호출자/소유자/고객을 검증하지 않음(`pkg/transferhandler/transfer.go` 의 `transferInit` 은 call 만 조회). api-manager 검증이 유일한 방어선. 전제: transferer 통화에 `ConfbridgeID` 가 있어야 함(`transfer.go:63~66`, 없으면 실패) | 에이전트 경로 신설 |
-| C2 | `call-manager` 의 `RecordingStart/Stop` 존재. 녹음 고지/동의를 강제하는 서버 로직 없음(`CallRecordingStart` 부터 `callhandler.RecordingStart`, `recordinghandler` 까지 consent/announce/disclosure/notice 를 다루는 코드가 없음을 grep 으로 확인. 고지는 플로우의 `talk` 액션에 맡겨져 있고 `docsdev/source/recording_overview.rst` 는 권고만 함) | 에이전트 경로 신설 + 정책 결정 |
+| C2 | `call-manager` 의 `RecordingStart/Stop` 존재. 녹음 고지/동의를 강제하는 서버 로직 없음(`CallRecordingStart` 부터 `callhandler.RecordingStart`, `recordinghandler` 까지 consent/announce/disclosure/notice 를 다루는 코드가 없음을 grep 으로 확인. 고지는 플로우의 `talk` 액션에 맡겨져 있고 `docsdev/source/recording_overview.rst` 는 권고만 함) | 에이전트 경로 신설. 고지 정책은 개정 1 에서 결정됨(P1). call-manager 기존 결함은 1.5 |
 | C3 | 전용 API 없음. 2자 통화는 `connect` 액션으로 처음부터 confbridge 안에서 만들어짐. Insight listen 은 참가자 정확히 2명일 때만 시작(1.2.1) | 설계안 3개 비교 |
 | C4, C5 | 필드와 제품 정의 모두 없음 | 정의 초안 + 질문 목록 |
 
@@ -76,6 +81,26 @@
 - confbridge `connect` 타입에서 3번째 레그가 합류했을 때의 자동 종료, 링/응답 처리, 녹음 유지 동작(C3 스파이크 항목).
 - 에이전트가 webphone 으로 직접 건 발신 통화가 항상 confbridge 안에 들어가는지(C1 의 전제 조건이기도 함). registrar 경로가 `connect` 를 만드는 것까지만 확인했습니다(`start_incoming_domain_type_registrar.go`).
 
+### 1.5 개정 1: C2 기존 결함 확인과 전제 변경 영향 (코드로 확인)
+
+기준 커밋은 개정 시점의 origin/main(`242fa584e`)입니다. 아래는 모두 코드 읽기로 판정했고 실행 재현은 하지 않았습니다(Asterisk 필요).
+
+제품 전제의 추가: square-talk 사용자는 회사 또는 그룹의 소속원이며 상식적인 조직 규율을 이해한다고 봅니다. 이 전제는 에이전트의 규율 준수에 대한 신뢰만 뜻합니다. 테넌트 격리, 통화 소유자 검증, 고객 일치 검증, 외부 PSTN 비용 안전(잔액, 발신 검증)은 유지합니다.
+
+| 항목 | 확인한 사실 | 판정 |
+|---|---|---|
+| 고지 (P1) | `callhandler/recording.go:16-76`, `recordinghandler/recording.go:18-110` 에 고지/동의 로직 없음. `recording_overview.rst:446-452` 는 플로우 작성자 대상 권고. 에이전트 API 경로에서 서버가 고지하지 않는다는 문장이 RST 에 없음 | 서버 강제 없음으로 결정, RST 한 줄 추가 |
+| 주소 제한 (P2/P3) | 에이전트는 자기 `tel`/`sip` 주소를 바꿀 수 있음(`me_addresses.yaml`). 그러나 외부 발신은 `v1_calls.go:197` -> `outgoing_call.go:125` `CreateCallOutgoing` 을 거치며 `validate.go:121-151`(고객 활성, `tel` 은 본인확인)과 `outgoing_call.go:195`(잔액)가 걸림. `groupcallhandler/dial.go:172-173` 은 `tel`/`sip` 를 그대로 확장(가드는 `CreateCallOutgoing`). attended 의 발신자 번호는 transferer 통화의 Source(`transferhandler/attended.go:137`) | 제한은 보안 경계가 아니라 단계적 출시 선택 |
+| A: Answer 후 상태 가드 | `callhandler/recording.go:46-51` 이 `progressing` 이 아니면 `channelHandler.Answer` 후 곧바로 `recordinghandler.Start` 호출. `recordinghandler/recording.go:39,54-56` 은 `CallV1CallGet` 으로 읽은 상태가 `progressing` 이 아니면 "invalid status". 상태 전이는 ARI `ChannelStateChange` 로 비동기(`docs/plans/2026-09-15-voip-1525-recording-start-auto-answer-design.md`). 그 설계는 `callhandler` 의 가드만 풀고 `recordinghandler` 의 가드(2023 년부터 존재)를 남김 | 유효(타이밍 의존). ringing 통화의 start 는 응답만 되고 녹음 실패. 닿는 곳은 flow 액션과 admin `recording_start`, 에이전트 경로는 비해당(P8) |
+| B: 자연 종료 시 `call.RecordingID` | `UpdateRecordingID` 호출처는 `callhandler/recording.go:70`(set), `:104`(clear), `listenhandler/v1_calls.go:667`(PUT) 뿐. `arieventhandler/ari_recording.go:85` -> `recordinghandler/stop.go:17-42` `Stopped` 는 녹음 상태만 `ended` 로 바꾸고 call 을 갱신하지 않음. `call.recording_id` 는 외부 응답에 노출(`models/call/webhook.go:28`). 종료된 통화의 stale 값은 영향 없음(snoop 채널이 사라지고 Finished 가 와서 녹음은 정상 종료) | 유효. 자연 종료 뒤 start 가 "already progressing" 으로 막히고 REC 표시 기준이 부정확. confbridge 도 같은 결함(`confbridgehandler/recording.go:61,100`) |
+| C: 상태 덮어쓰기 | `stop.go:138` 의 `RecordingSetStatus(Stopping)` 은 현재 상태를 보지 않는 UPDATE(`dbhandler/recording.go:321-325`). (i) B 의 stale id 로 stop 호출 시 `ended` -> `stopping` 퇴행(Finished 는 이미 지나 영구 `stopping`). (ii) 정상 stop 에서도 hangup(`stop.go:162`)한 채널의 Finished 가 138행보다 먼저 처리되면 같은 퇴행 | 유효. RST 의 "상태는 앞으로만 간다" 위반 |
+| D: `(nil, nil)` | `callhandler/recording.go:91-92` 는 `err` 가 nil 인 채 `errors.Wrapf(err, ...)` 호출 -> `(nil, nil)` | 유효 |
+| 동시 start 경합 | `callhandler/recording.go:36`(검사)과 `:70`(설정)이 원자적이지 않고 `CallSetRecordingID` 는 무조건 덮어씀(`callhandler/db.go:340` 호출부, 덮어쓰는 쪽은 `dbhandler/call.go:457`) | 알려진 한계(3.10) |
+| Stop 의 hangup 실패 | `recordinghandler/stop.go:159-165` 가 snoop 채널 hangup 실패를 로그만 남기고 성공 처리, 이후 `callhandler/recording.go:104` 가 id 를 비움 | 알려진 한계(3.10) |
+| 플로우 `recording_start` 충돌 | 에이전트가 먼저 켠 레그에서 나중에 실행되면 `callhandler/recording.go:36-38` 오류. `action.go:147-148` 은 액션 오류 시 다음 액션으로 넘어감, 끊김은 `action.go:203-206`(다음 액션 요청 자체 실패) | 개정 전의 "통화가 끊길 수 있음" 추정은 틀림. 액션이 건너뛰어지는 위험(3.10) |
+
+`ari_recording.go` 는 `_in` 이름의 녹음만 처리하고 `_out` 은 무시(`ari_recording.go:21,62`)하므로 두 snoop 채널을 hangup 해도 `Stopped` 는 한 번만 실행됩니다.
+
 ## 2. 디자인 (결정 요약과 선택지 비교)
 
 ### 2.1 결정 요약
@@ -90,8 +115,8 @@
 | B1 Pinned | 에이전트별 pin 테이블 + `service_agents/talk_pins` | bin-talk-manager, bin-api-manager, bin-openapi-manager | talk-manager 다음 번호 (테이블 1개) | M |
 | B2 Starred | 에이전트별 star 테이블 + 연락처 별표 API + 목록 `starred` 필터 | bin-contact-manager, bin-api-manager, bin-openapi-manager | contact-manager 다음 번호 (테이블 1개) | M |
 | B3 Mentions | 저장 시 추출(서버 파싱) + 멘션 테이블 + `service_agents/talk_mentions` | bin-talk-manager, bin-api-manager, bin-openapi-manager | talk-manager 다음 번호 (테이블 1개) | M |
-| C1 Transfer | `POST /service_agents/transfers` (소유자, 상태, confbridge 검증은 api-manager) | bin-api-manager, bin-openapi-manager | 없음 | M |
-| C2 Record | `POST /service_agents/calls/{id}/recording_start`, `recording_stop` + 고지/중지 정책 결정 | bin-api-manager, bin-openapi-manager, bin-call-manager(한 줄 결함 수정) | 없음 | S |
+| C1 Transfer | `POST /service_agents/transfers` (소유자, 상태, confbridge 검증은 api-manager. 주소는 P2 (a) 권고에 따라 `extension` 만) | bin-api-manager, bin-openapi-manager | 없음 | S~M (약 3일, (b) 는 4일) |
+| C2 Record | `POST /service_agents/calls/{id}/recording_start`, `recording_stop`. 고지/중지 정책은 결정됨(P1, P7: 서버 강제 없음, 감사 로그만). call-manager 기존 결함 B, C, D 수정 포함 | bin-api-manager, bin-openapi-manager, bin-call-manager(기존 결함 수정, 3.10) | 없음 | M (약 5일) |
 | C3 Add | 설계안 Y: call-manager 에 "참가자 추가" RPC (기존 confbridge 재사용). 스파이크 선행 | bin-call-manager, bin-api-manager, bin-openapi-manager | 없음 | L |
 | C4 SLA, C5 우선순위 | 제품 정의 초안과 질문 목록. 데이터 모델 초안은 정의 확정 뒤 구현 | bin-contact-manager (케이스 필드) | 정의 확정 뒤 | 정의 필요 |
 
@@ -133,17 +158,18 @@
 | Y. call-manager "참가자 추가" (권고) | 진행 중 통화의 confbridge 에 제3자 발신 레그를 만들어 합류시킴(`confbridge_join` 하나짜리 flow + 발신). 기존 레그는 건드리지 않음 | `attendedExecute` 와 같은 구성에서 `attendedBlock` 과 transfer 레코드를 뺀 형태. L(스파이크 포함) | 채택, 스파이크 선행 |
 | Z. webphone 에서 SIP 로 직접 | 두 번째 INVITE, 로컬 믹싱 | webphone 은 모듈 전역 단일 세션(`webphone.js`)이고 두 번째 INVITE 는 486 으로 거절. 서버 측 녹음, 과금, 이벤트와 불일치 | 기각 |
 
-### 2.3 제품/정책 결정이 필요한 사항 (구현 착수 전 확정)
+### 2.3 제품/정책 결정이 필요한 사항 (구현 착수 전 확정; P1, P7 은 개정 1 에서 결정됨)
 
 | # | 사항 | 기본값 제안 | 근거 |
 |---|---|---|---|
-| P1 | C2 에이전트 수동 녹음의 고지/동의 | 에이전트가 소유한 통화에 한해 허용하되, 고지는 고객 플로우의 `talk` 액션 몫(현행 문서 지침)으로 두고 서버가 강제하지 않음. 클라이언트는 통화 중 REC 표시를 의무화. 서버 강제 고지(녹음 시작 전 고객 레그에 안내 재생)는 선택지로 보류 | 서버에는 고지를 강제하는 코드가 없고 현행 flow `recording_start` 액션도 동일. 서버 강제는 통화 중 음성 삽입이라 사용자 경험과 지연 비용이 큼 |
-| P2 | C1 transferee 주소 유형 v1 | `extension` 과, 주소 목록이 모두 `extension` 인 `agent` 만. `tel`, `sip` 와 외부 주소를 가진 `agent` 는 거부. 외부 번호로 전환하려면 call-manager 발신 검증(`ValidateCustomerBalance`, 발신 정책)에 닿는지 확인한 뒤 후속으로 연다 | `agent` 대상은 call-manager 가 그 에이전트의 `Addresses` 를 그대로 발신 대상으로 확장하고(`groupcallhandler/dial.go` 의 에이전트 분기 `return ag.Addresses`), 에이전트는 자기 `tel`/`sip` 주소를 직접 바꿀 수 있어 `tel` 만 막는 allowlist 는 우회됨. transfer-manager 는 호출자, 고객, 주소를 검증하지 않음(`transferInit`). 구현 검증은 실제 PSTN 발신 없이 mock 과 내부 extension 으로만 함 |
-| P3 | C3 제3자 주소 유형 v1 | P2 와 같음. 외부 번호는 P2 확인 후 후속 | 외부 PSTN 비용이 3자 통화 시간 동안 누적되므로 단계적으로 열기 |
+| P1 | C2 에이전트 수동 녹음의 고지/동의 | **결정됨(개정 1): 고지는 조직 규율이며 서버 강제 없음.** 에이전트가 소유한 통화에 한해 허용하고, 시작 때마다의 동의 팝업이나 서버 강제 고지(녹음 시작 전 고객 레그에 안내 재생)를 두지 않음. 클라이언트의 통화 중 REC 표시는 UX 권고(의무 아님). 구현 범위에 `recording_overview.rst` 에 한 줄 명시를 포함(3.10) | 에이전트는 회사/그룹 소속원으로 상식적 규율을 이해한다는 제품 전제. 서버에는 고지를 강제하는 코드가 없고(`callhandler/recording.go`, `recordinghandler/recording.go`) 현행 flow `recording_start` 액션도 동일. 플로우 대상의 법적 권고(`recording_overview.rst` 446~452행)는 유지 |
+| P2 | C1 transferee 주소 유형 v1 | 선택 필요. (a) v1 은 `extension` 만(권고): `agent`, `tel`, `sip` 는 400. (b) `tel` 까지 허용: `extension` 과 `tel`(E.164 검증)을 받고 `agent` 는 필요 시 포함. 이 제한은 보안 경계가 아니라 단계적 출시 선택입니다 | 에이전트는 자기 `tel`/`sip` 주소를 바꿀 수 있고(`bin-openapi-manager/openapi/paths/service_agents/me_addresses.yaml`) call-manager 는 `agent` 대상의 `Addresses` 를 그대로 발신 대상으로 확장하지만(`groupcallhandler/dial.go`), 외부 발신은 어떤 경로든 `CreateCallOutgoing`(`callhandler/outgoing_call.go`)의 고객 상태, 본인확인(`validateOutgoingCallPermission`), 잔액(`ValidateCustomerBalance`) 검사를 거치므로 이 제한 없이도 비용 안전의 건당 가드는 유지됩니다. 따라서 (a) 를 권고하는 이유는 가장 단순하기 때문입니다: `agent` 유형이 없으면 에이전트 조회, `Addresses` 검사, TOCTOU 처리, C3 의 "extension 정확히 1개" 제한이 모두 불필요합니다(3.9, 3.11). 단 square-talk 가 동료 에이전트를 고르려면 클라이언트가 `GET /service_agents/agents` 의 `addresses` 에서 extension 을 찾아야 합니다. (b) 는 `tel` 처리(형식 검증)와 PSTN 비용 누적 검토가 추가됩니다. 구현 검증은 어느 쪽이든 실제 PSTN 발신 없이 mock 과 내부 extension 으로만 함 |
+| P3 | C3 제3자 주소 유형 v1 | P2 와 같은 선택. (a) `extension` 만(권고), (b) `tel` 포함 | (b) 에서 `tel` 을 허용하면 외부 PSTN 비용이 3자 통화 시간 동안 누적됩니다. 발신 가드는 건당 검사라 통화 시간은 제한하지 않으므로 별도 위험으로 유지하며, (b) 를 고르면 통화 시간 상한이나 경고를 함께 설계해야 합니다 |
 | P4 | A4 disposition 값 집합 | `resolved`, `unresolved`, `follow_up_needed`, `spam`, `other` | 고객별 사용자 정의 목록은 별도 모델이 필요해 v1 에서 제외(트리거: 고객이 목록 자체를 바꾸고 싶다는 요구 발생) |
 | P5 | B3 기존 메시지 멘션 소급 | 소급하지 않음. 배포 이후 메시지부터 | 소급은 전체 `talk_messages.text` 스캔이 필요. 필요하면 일회성 도구로 별도 결정 |
 | P6 | C4, C5 | 3.12절의 정의 질문 목록에 답이 있기 전에는 구현하지 않음 | 필드도 정의도 없음 |
-| P7 | C2 에이전트의 녹음 중지 | 통화를 소유한 에이전트에게 허용. 다만 `recording_stop` 은 누가 시작한 녹음인지 구분하지 않으므로(`call.RecordingID` 만 확인) 에이전트가 고객 플로우가 시작한 고지/컴플라이언스 녹음도 자기 레그에서 멈출 수 있음. 막으려면 녹음에 시작 주체 표식이 필요하며 이는 스키마 변경이라 이 설계 범위 밖. 선택지로 '중지는 제공하지 않음(녹음은 통화 종료 시 끝남)'을 둔다 | 현행 플로우 녹음에도 중지 권한 구분이 없음 |
+| P7 | C2 에이전트의 녹음 중지 | **결정됨(개정 1): 통화를 소유한 에이전트의 start/stop 모두 허용, 감사 로그(에이전트 id, 통화 id, 동작)만 남김.** 시작 주체 표식과 "중지는 제공하지 않음" 선택지는 두지 않음 | 에이전트의 상식적 규율 준수를 신뢰한다는 제품 전제. 현행 플로우 녹음에도 중지 권한 구분이 없음 |
+| P8 | call-manager 의 기존 결함 A: `RecordingStart` 가 `progressing` 이 아닌 통화를 Answer 한 뒤 곧바로 녹음을 시작하나 `recordinghandler/recording.go:54-56` 의 상태 가드가 비동기 상태 전이 전의 값을 읽어 "invalid status" 로 실패(응답만 되고 녹음 실패. 1.5) | 선택 필요. (A-1) `callhandler` 의 Answer 분기를 없애고 `progressing` 이 아니면 거부: 가장 단순하나 울리는 통화에서 플로우 `recording_start` 가 거부되어 이미 병합된 자동 응답 시도의 의도가 되돌려짐. (A-2) Answer 분기를 두고 `recordinghandler` 의 가드를 `ringing` 도 허용하도록 완화하거나 `progressing` 대기: 의도를 지키나 응답 전 snoop 채널이 동작하는지 sandbox 확인이 필요(약 +1.5일). 에이전트 경로는 api-manager 가 `progressing` 을 강제하므로 어느 쪽이든 C-2 의 필수 범위가 아님 | A 는 flow 액션과 admin 의 `recording_start` 에서만 닿는 기존 결함이며 이 설계가 만든 것이 아님. 권고: 별도 판단. (A-1) 약 +0.5일 |
 
 ### 2.4 구현 체인 분할과 의존성
 
@@ -153,7 +179,7 @@
 |---|---|---|
 | A (소형, 독립) | A1, A2, A4, A5 | 서로 독립. 병렬 가능. A3 는 변경 없음 |
 | B (사용자별 상태) | B1, B2, B3 | 서로 독립. 마이그레이션은 서비스별(talk-manager 에 B1, B3 가 함께 들어가므로 번호는 먼저 머지되는 쪽이 `000002`, 다음이 `000003`, 3.6절과 3.8절). 그룹 A 와 독립 |
-| C (통화 제어) | C1, C2, C3 | C1, C2 는 독립(C1 은 스파이크 S7 의 extension 주소 필드 확정에 의존). C3 는 C1 과 같은 소유자 검증 헬퍼를 쓰므로 C1 뒤(순서 고정). C3 는 스파이크(3.11절) 결과에 의존 |
+| C (통화 제어) | C1, C2, C3 | C1, C2 는 독립(C1 은 스파이크 S7 의 extension 주소 필드 확정에 의존. C2 는 call-manager 의 기존 결함 수정 B, C, D 를 같은 PR 에 포함하므로 call-manager 를 먼저 배포할 필요 없이 한 PR 로 나감). C3 는 C1 과 같은 소유자 검증 헬퍼를 쓰므로 C1 뒤(순서 고정). C3 는 스파이크(3.11절) 결과에 의존 |
 | D (제품 정의 필요) | C4, C5 | 제품 정의 확정 뒤 별도 설계 |
 
 스키마 롤링 호환: 서비스는 시작 시 리스닝 전에 자기 마이그레이션을 적용하므로 신 스키마와 구버전 pod 가 공존하는 구간이 있습니다. A4 는 nullable 컬럼 추가라 구 코드가 영향받지 않는지(INSERT/SELECT 가 컬럼 목록을 명시하는지)를 구현 PR 이 확인하고, B1~B3 는 신규 테이블이라 구 코드는 참조하지 않습니다. 항목별 전체 분석은 4절입니다.
@@ -360,35 +386,47 @@ CREATE TABLE talk_mentions (
 ### 3.9 C1 Transfer (attended, blind)
 
 - 소유: bin-api-manager, bin-openapi-manager. transfer-manager 무변경(그러나 호출자/소유자/고객을 검증하지 않으므로 api-manager 검증이 유일한 방어선: 이 PR 이 책임).
-- API: `POST /service_agents/transfers`. 요청 스키마는 admin `/transfers` 와 같음(`transfer_type`, `transferer_call_id`, `transferee_addresses`), 응답 `TransferManagerTransfer`. 새 path 파일 `service_agents/transfers.yaml`, Admin `/transfers` 는 변경하지 않습니다.
-- 서버 검증 (순서): (1) `IsAgent`, PermissionAll. (2) `callGet(transferer_call_id)`, `CustomerID == a.CustomerID`, `OwnerID == a.AgentID()`(에이전트 자신의 레그만 transferer 가 될 수 있음, 소유자가 비어 있으면 거부). (3) 통화가 `progressing` 이고 `ConfbridgeID != uuid.Nil`(없으면 400 "the call is not transferable", transfer-manager 가 500 으로 뭉뚱그리는 에러를 앞에서 구분). (4) `transferee_addresses` 는 정확히 1개(v1)이고 P2 의 주소 규칙을 서버가 검증한다: `extension` 은 레지스트라에서 (고객, 내선 번호)로 조회해 같은 고객의 내선인지 확인, `agent` 는 `AgentV1AgentGet` 으로 같은 고객인지와 **그 에이전트의 `Addresses` 가 모두 `extension` 이고 1개 이상인지**를 확인(외부 `tel`/`sip` 주소가 하나라도 있거나 비어 있으면 거부, call-manager 가 `ag.Addresses` 를 그대로 발신 대상으로 확장하므로)하고, 검증 뒤 발신 시점에 대상이 주소를 바꾸는 창(TOCTOU)을 없애기 위해 **에이전트 주소를 서버가 검증한 `extension` 주소들로 풀어서** 전달(`agent` 유형 그대로 넘기지 않음), 본인 자신은 거부. (5) 검증한 값으로 주소를 **서버가 새로 조립**해 전달한다(`type` 과 검증된 식별자만 쓰고 클라이언트가 보낸 `target_name`, `name`, `detail` 은 버림; extension 의 식별 필드는 문서(`target` = 번호)와 발신 해석(`dial.go` 가 `TargetName` 으로 레지스트라 조회)이 어긋나 보여 구현 PR 이 코드를 따라가 확정, 스파이크 S7). (6) `TransferV1TransferStart` 호출.
+- API: `POST /service_agents/transfers`. 요청 필드는 admin `/transfers` 와 같은 이름(`transfer_type`, `transferer_call_id`, `transferee_addresses`)이나 `transferee_addresses` 는 3.13 의 `CallManagerParticipantAddress`(P2 (a): `extension` 한 개, `maxItems: 1`)로 좁혀집니다, 응답 `TransferManagerTransfer`. 새 path 파일 `service_agents/transfers.yaml`, Admin `/transfers` 는 변경하지 않습니다.
+- 서버 검증 (순서): (1) `IsAgent`, PermissionAll. (2) `callGet(transferer_call_id)`, `CustomerID == a.CustomerID`, `OwnerID == a.AgentID()`(에이전트 자신의 레그만 transferer 가 될 수 있음, 소유자가 비어 있으면 거부). (3) 통화가 `progressing` 이고 `ConfbridgeID != uuid.Nil`(없으면 400 "the call is not transferable", transfer-manager 가 500 으로 뭉뚱그리는 에러를 앞에서 구분). (4) `transferee_addresses` 는 정확히 1개(v1)이고 P2 (a) 의 주소 규칙을 서버가 검증한다: `extension` 만 받으며 레지스트라에서 (고객, 내선 번호)로 조회해 같은 고객의 내선인지 확인하고, 그 밖의 유형(`agent`, `tel`, `sip`)은 400 입니다. 본인 내선으로의 전환은 막지 않습니다(자기 전화가 울릴 뿐 무해). (a) 에서는 `agent` 유형이 없으므로 에이전트 조회(`AgentV1AgentGet`), 에이전트 `Addresses` 검사, 발신 시점 주소 변경(TOCTOU) 처리가 모두 필요하지 않습니다. (b) 를 고르면 2.3 P2/P3 의 (b) 항목을 따릅니다. (5) 검증한 값으로 주소를 **서버가 새로 조립**해 전달한다(`type` 과 검증된 식별자만 쓰고 클라이언트가 보낸 `target_name`, `name`, `detail` 은 버림; extension 의 식별 필드는 문서(`target` = 번호)와 발신 해석(`dial.go` 가 `TargetName` 으로 레지스트라 조회)이 어긋나 보여 구현 PR 이 코드를 따라가 확정, 스파이크 S7). (6) `TransferV1TransferStart` 호출.
 - attended 의 완료/취소: 완료는 transferer 가 통화를 끊을 때의 기존 의미(`transferer.go`)이며 새 API 가 없습니다. transferee 가 응답하지 않거나 먼저 끊는 경우는 transfer-manager 가 `attendedUnblock` 으로 자동 복구합니다(`transferee.go`). **attended 취소(transferee 를 끊고 고객에게 돌아가기)는 transfer-manager 에 취소 RPC 가 없고 transferee 레그 소유자가 transferee 라 에이전트가 직접 끊을 수 없어** 이 설계에서는 범위 밖으로 두며, `transferer.go`/`transferee.go` 의 전체 분기를 읽는 스파이크(3.11 의 S6) 후 필요하면 `POST /service_agents/transfers/{id}/cancel` 과 transfer-manager 신규 RPC(약 +1.5일)를 같은 항목의 후속 설계로 추가합니다.
 - 데이터 모델 변경 없음. 롤링: 순서 제약 없음(기존 RPC).
-- Verify: (1) 타인 소유 통화/다른 고객 통화 거부. (2) 소유자 비어 있는 레그 거부. (3) `progressing` 이 아닌 통화, confbridge 없는 통화 400. (4) 주소 규칙: `tel`/`sip` 거부, 다른 고객 agent/extension 거부, `Addresses` 에 외부 주소(`tel`)가 섞인 agent 와 `Addresses` 가 빈 agent 거부(주소에 `tel` 이 없는 fixture 와 있는 fixture 를 모두 사용), 전달되는 주소가 `agent` 유형이 아니라 검증된 `extension` 주소들임, 클라이언트가 보낸 `target_name` 이 전달되지 않음. (5) blind/attended 정상 경로는 mock transfer-manager 로 호출 인자 확인. (6) 직접 접근(`IsDirect`) 거부. (7) Admin `/transfers` 의 권한 검사가 변하지 않음(회귀).
-- 비용: M (약 4일, 취소 제외).
+- Verify: (1) 타인 소유 통화/다른 고객 통화 거부. (2) 소유자 비어 있는 레그 거부. (3) `progressing` 이 아닌 통화, confbridge 없는 통화 400. (4) 주소 규칙(P2 (a)): `extension` 외 유형(`agent`, `tel`, `sip`) 400, 다른 고객 extension 거부, `transferee_addresses` 가 2개 이상이거나 비어 있으면 400, 본인 내선 요청은 막지 않음(동작 고정), 클라이언트가 보낸 `target_name`, `name`, `detail` 이 전달되지 않고 서버가 조립한 `extension` 주소만 전달됨. (5) blind/attended 정상 경로는 mock transfer-manager 로 호출 인자 확인. (6) 직접 접근(`IsDirect`) 거부. (7) Admin `/transfers` 의 권한 검사가 변하지 않음(회귀).
+- 비용: S~M (약 3일, 취소 제외. 개정 1 이전 견적 4일에서 에이전트 조회, 주소 검사, TOCTOU 처리가 빠져 1일 감소. (b) 를 고르면 약 4일).
 
 ### 3.10 C2 Record (start/stop)
 
-- 소유: bin-api-manager, bin-openapi-manager. call-manager 는 한 줄 수정만(아래).
+- 소유: bin-api-manager, bin-openapi-manager, bin-call-manager(기존 결함 B, C, D 수정, 아래). A 는 에이전트 경로가 닿지 않는 기존 결함이라 필수 범위 밖이며 P8 에서 정합니다.
+- 전제: 에이전트는 조직의 규율(녹음 고지 포함)을 이해하고 지키는 소속원으로 봅니다. 따라서 에이전트 녹음에는 서버 강제 고지, 시작 때마다의 동의 확인, 시작 주체 표식, 중지 제한을 두지 않습니다(P1, P7 결정됨). 테넌트 격리, 소유자 검증, 고객 일치 검증은 유지합니다.
 - API: `POST /service_agents/calls/{id}/recording_start`, `POST /service_agents/calls/{id}/recording_stop`. start 본문은 `{format?, end_of_silence?, end_of_key?, duration?}` 이며 admin 의 `on_end_flow_id` 는 **제외**합니다(녹음 종료 시 임의 플로우 실행 권한을 에이전트에게 주지 않기 위해 `uuid.Nil` 로 고정). 응답은 `CallManagerCall`(WebhookMessage).
-- 서버 검증: `IsAgent`, PermissionAll, `callGet`, 고객 일치와 `OwnerID == a.AgentID()`(서버가 에이전트 레그 한 개만 녹음, 소유자 비어 있으면 거부). **start 도 `progressing` 상태를 api-manager 가 강제합니다**(400): call-manager 의 `RecordingStart` 는 `progressing` 이 아닌 통화를 먼저 Answer 한 뒤 녹음하므로(`callhandler/recording.go`) 울리는 에이전트 레그가 녹음 호출만으로 자동 응답되는 것을 막기 위함입니다. 요청 값 상한: `end_of_silence` 0~60초, `duration` 0~7200초(admin 과 같은 의미를 유지하되 에이전트 경로에만 상한을 둠; `0` 의 의미는 구현 PR 이 admin 구현에서 확인). 이미 녹음 중이면 call-manager 가 에러(`RecordingID` 존재 시). 감사: 시작/중지마다 에이전트 id, 통화 id, 동작을 구조화 로그로 남깁니다(기존 call-manager 녹음 이벤트는 그대로).
-- call-manager 한 줄 수정: `callhandler/recording.go` 의 `RecordingStop` 은 `RecordingID` 가 없을 때 `err == nil` 인 값으로 `errors.Wrapf(err, ...)` 를 호출해 `(nil, nil)` 을 반환합니다(녹음이 없는데 성공으로 보임). 이 경로를 에이전트에게 노출하므로 구현 PR 이 `errors.Errorf` 로 바로잡고 api-manager 에서 nil 응답을 방어합니다.
-- 정책 결정 필요: P1(고지), P7(중지 권한)(2.3). 기본값은 허용 + 고객 플로우 몫의 고지 + 클라이언트 REC 표시 의무. 녹음 파일 조회/재생은 현재 Admin|Manager 전용이며 이 항목 범위가 아닙니다(에이전트가 시작한 녹음의 재생 경로는 질문 목록).
-- 데이터 모델 변경 없음. 롤링: 순서 제약 없음.
-- Verify: (1) 소유자/고객 불일치 거부, 소유자 비어 있음 거부. (2) `on_end_flow_id` 가 요청에 있어도 전달되지 않음(스키마에 없음). (3) 이미 녹음 중인 통화에 start 는 에러. (4) 녹음이 없는 통화에 stop 은 에러(수정 전 nil 반환 재현 후 통과). (5) `progressing` 이 아닌 통화(울리는 레그)에 start 는 400이고 Answer 되지 않음. (6) `end_of_silence`/`duration` 상한 초과는 400. (7) Admin 엔드포인트 권한 불변. (8) 다른 주체가 시작한 녹음의 stop 은 P7 결정에 따른 동작으로 고정.
-- 비용: S (약 3일).
+- 서버 검증: `IsAgent`, PermissionAll, `callGet`, 고객 일치와 `OwnerID == a.AgentID()`(서버가 에이전트 레그 한 개만 녹음, 소유자 비어 있으면 거부). **start 도 `progressing` 상태를 api-manager 가 강제합니다**(400): call-manager 의 `RecordingStart` 는 `progressing` 이 아닌 통화를 먼저 Answer 하므로(`callhandler/recording.go:46-51`) 울리는 에이전트 레그가 녹음 호출만으로 자동 응답되는 것을 막기 위함이며, 이 때문에 에이전트 경로는 아래 결함 A 에 닿지 않습니다. 이미 `call.recording_id` 가 있으면 api-manager 가 call-manager 로 보내기 전에 409 를 돌려줍니다(이미 읽은 통화 객체로 판정하는 best-effort 사전 검사이며, 원자적 방어가 아님은 아래 "알려진 한계"). 요청 값: `duration` 만 상한이 있습니다. call-manager 의 `duration` 은 초 단위이고 0 이 무제한이므로(`bin-flow-manager/models/action/option.go` 의 `OptionRecordingStart.Duration`, `bin-common-handler/pkg/requesthandler/ast_channel.go` 의 `AstChannelRecord` 가 쓰는 `maxDurationSeconds`) 에이전트 경로는 생략을 7200 으로 채우고 1~7200 만 받습니다(녹음은 과금되고 동시 녹음 제한이 없어 무제한 녹음의 비용을 막기 위함). `end_of_silence` 는 상한을 두지 않습니다(0 이상, 0 은 무제한 유지: 비용, 안전 가치가 낮아 개정 1 에서 제거). 감사: 시작/중지마다 에이전트 id, 통화 id, 동작을 구조화 로그로 남깁니다(기존 call-manager 녹음 이벤트는 그대로). 별도의 표식이나 알림은 두지 않습니다.
+- 클라이언트 권고(의무 아님): 통화 중 녹음 상태 표시(REC)를 `call.recording_id` 로 보여 주면 에이전트가 녹음 여부를 알 수 있습니다. 이 값은 아래 결함 B 가 수정되어야 정확합니다.
+- call-manager 수정 범위 (코드로 확인, 1.5): 한 줄 수정이 아닙니다.
+  - B. 자연 종료(`end_of_silence`, `duration`, `end_of_key`) 때 `call.RecordingID` 해제. `recordinghandler` 는 `callhandler` 보다 먼저 초기화되므로(`cmd/call-manager/main.go`) `recordinghandler.Stopped` 가 `callhandler.UpdateRecordingID` 계열을 부르면 순환 의존이 됩니다(`recordinghandler` 가 가진 dbhandler 를 직접 부르는 대안도 있으나 call 갱신은 `callhandler` 에 두는 기존 패턴을 따름). 해제는 `callHandler` 를 가진 `arieventhandler` 의 `ari_recording.go` 에서 `Stopped` 직후, `r.ReferenceType == call` 일 때만 합니다. `Stopped` 는 녹음 상태를 `ended` 로 바꾼 뒤 파일 저장 등 `stopped()` 가 실패하면 오류를 반환하므로(`stop.go:17-42`) 그 오류 때문에 해제가 건너뛰어지지 않도록, 반환 오류를 잡아 둔 채 해제를 수행한 뒤 그 오류를 그대로 반환하고, 해제 자체의 실패는 로그만 남깁니다(이벤트 재처리를 유발하지 않음). `Stopped` 가 첫 단계(상태를 `ended` 로 기록)에서 실패한 경우에도 해제할지는 구현 PR 이 정하고 결과를 PR 본문에 적습니다(해제하면 녹음 상태는 `ended` 가 아닌데 `recording_id` 만 비는 불일치가 생김). 해제 조건은 `call.RecordingID == r.ID` 로 한정한 원자적 조건부 UPDATE(`WHERE id=? AND recording_id=?`)입니다. 필요한 변경은 이 조건부 갱신을 하는 새 dbhandler 메서드(`CallAddExternalMediaID` 처럼 직접 UPDATE 뒤 `callUpdateToCache` 로 Redis 를 갱신), 이를 부르는 새 callhandler 메서드, 두 인터페이스의 mock 재생성이며 5일 견적 안에 들어갑니다. 일치 조건이 필요한 이유: 명시적 stop 은 `callhandler/recording.go:104` 에서 먼저 해제하므로 뒤에 오는 Finished 시점의 `RecordingID` 는 비었거나 새 녹음의 id 일 수 있어, 무조건 해제하면 새 녹음 id 를 지워 동시 녹음이 생깁니다.
+  - C. `recordinghandler/stop.go:138` 의 `RecordingSetStatus(Stopping)` 은 현재 상태를 보지 않는 UPDATE 라 이미 `ended` 인 녹음을 `stopping` 으로 되돌립니다(RST 의 "상태는 앞으로만 간다"와 충돌). 수정: `RecordingSetStatus(Stopping)` 을 조건부 UPDATE(`WHERE status IN (initiating, recording)`)로 바꾸고(현재 `RecordingSetStatus` 는 오류만 반환하고 `RecordingUpdate` 는 영향 행 수를 돌려주지 않으므로 이를 알려 주는 새 dbhandler 메서드가 필요), 갱신된 행이 없으면(이미 `ended`) 상태를 바꾸지 않고 현재 녹음을 그대로 반환합니다(읽은 뒤 확인하는 방식은 Finished 선착 경합을 막지 못하므로 쓰지 않음). B 가 stale id 를 없애면 자연 종료 뒤 stop 경로는 사라지지만, 정상 stop 중 hangup 한 채널의 Finished 가 138행보다 먼저 처리되는 경합은 남으므로 C 는 B 와 별개로 필요합니다.
+  - D. `RecordingStop` 의 `(nil, nil)` 반환(`callhandler/recording.go:91-92`, `err` 가 nil 인 채 `errors.Wrapf(err, ...)` 호출). 구현 PR 이 `errors.Errorf` 로 바로잡고 api-manager 에서 nil 응답을 방어합니다.
+  - 범위 밖으로 둔 것: confbridge 의 같은 자연 종료 stale(`confbridgehandler/recording.go:61,100`)은 에이전트 경로와 무관한 기존 결함이라 이 항목에서 고치지 않고 기록만 합니다.
+- 알려진 한계와 위험:
+  - 에이전트가 먼저 녹음을 켠 레그에서 플로우의 `recording_start` 가 나중에 실행되면 `callhandler/recording.go:36-38` 의 "already progressing" 오류가 납니다. 이 충돌 시나리오는 실행으로 검증하지 못했고(Asterisk 필요) 코드 읽기 근거입니다. 이 오류는 통화를 끊지 않습니다: 액션 오류는 다음 액션으로 넘어갈 뿐이며(`callhandler/action.go:147-148`) 끊김은 다음 액션 요청 자체가 실패할 때만 일어납니다(`action.go:203-206`). 실제 영향은 그 플로우 녹음이 건너뛰어져 플로우가 지정한 파라미터(예: `on_end_flow_id`)가 적용되지 않는 것입니다. 에이전트 녹음과 플로우 녹음은 대부분 서로 다른 레그(통화 id)에 걸려 충돌하지 않고, 같은 레그에서만 일어납니다. 완화: 에이전트 쪽은 위 409 와 B 수정으로 stale 로 인한 오탐을 줄이고, 플로우 녹음이 건너뛰어지는 것은 조직 규율(컴플라이언스 녹음이 필요한 플로우에서는 에이전트 수동 녹음을 켜지 않음)과 문서에 맡기며 서버 조정은 하지 않습니다(트리거: 건너뜀이 실제로 보고될 때 플로우 액션의 "이미 녹음 중이면 성공 처리" 여부를 별도 판단).
+  - 자연 종료가 `RecordingStart` 의 id 설정(`callhandler/recording.go:70`)보다 먼저 처리되는 경우(아주 짧은 `duration` 이나 즉시 `end_of_key`)에는 B 의 조건부 해제가 아직 없는 id 를 지우려다 아무것도 하지 못하고, 뒤이어 id 가 설정되어 남습니다. 발생 조건이 좁아 v1 에서는 고치지 않습니다(트리거: 실제 stale 이 보고될 때 `Start` 가 id 설정 뒤 녹음 상태를 다시 확인). 이 stale 은 `recording_stop` 으로 풀 수 있습니다(C 적용 후 `ended` 녹음에 stop 을 호출해도 `ended` 가 유지되고 이어서 `callhandler/recording.go:104` 가 id 를 비움). `UpdateRecordingID` 는 call 이벤트를 발행하지 않으므로 클라이언트의 REC 표시는 `call.recording_id` 를 통화 조회로 읽는 방식이어야 하며 변경을 푸시로 받지 못합니다(녹음 이벤트 `recording_started`/`recording_finished` 웹훅을 쓰는 방안은 클라이언트 설계 몫).
+  - 동시 start 경합: `RecordingStart` 의 `RecordingID` 검사(`callhandler/recording.go:36`)와 설정(`:70`)은 원자적이지 않고 `CallSetRecordingID` 는 무조건 덮어씁니다. 소유 에이전트는 통화당 1명이라 에이전트 사이의 경합은 없고, 에이전트와 플로우 사이에서만 이론상 가능합니다. 이중 녹음 2건이 생기고 이전 id 를 잃을 수 있으나 api-manager 사전 409 는 best-effort 일 뿐입니다. 발생 조건이 좁아 v1 에서는 고치지 않습니다(트리거: 실제 이중 녹음이 확인될 때 조건부 설정).
+  - `Stop` 은 snoop 채널 hangup 실패를 로그만 남기고 성공으로 넘기며(`recordinghandler/stop.go:159-165`) 그 뒤 `callhandler/recording.go:104` 가 `RecordingID` 를 지웁니다. 채널이 살아 있는데 id 만 비어 두 번째 녹음이 시작될 수 있습니다. 에이전트에게 stop 을 열면 의미가 커지나 hangup 실패는 드문 경로라 이 항목의 필수 수정에는 넣지 않고 구현 PR 이 오류 반환 여부를 확인합니다.
+  - 녹음 파일 조회/재생은 현재 Admin|Manager 전용이며 이 항목 범위가 아닙니다(에이전트가 시작한 녹음의 재생 경로는 6절 "추가로 정할 사항").
+- 문서(RST): `bin-api-manager/docsdev/source/recording_overview.rst` 에 다음 취지의 한 줄을 추가합니다: "에이전트 API(`/service_agents/calls/{id}/recording_start`)로 시작한 녹음에서는 플랫폼이 통화 상대에게 녹음 사실을 알리지 않습니다. 고지는 조직의 운영 규율이며, 플로우에서는 `talk` 액션으로 고지를 재생하십시오." 문구는 Best Practices 의 "Legal Compliance"(`recording_overview.rst` 446행 부근) 아래에 두고 기존 법적 권고(플로우 대상, 446~452행)는 유지합니다. 같은 구현 PR 에서 "플랫폼 전체 최대 길이 없음, `duration` 미지정이면 무제한" 이라고 적은 두 곳(121행 부근 Key Behaviors, 307행 부근 Storage Details 표)에 "에이전트 API 는 `duration` 생략 시 7200초로 제한" 이라는 예외를 덧붙이고, 문서를 clean 재빌드해 `docsdev/build/` 와 함께 커밋합니다.
+- 데이터 모델 변경 없음. 롤링: 순서 제약 없음(call-manager 의 B, C, D 는 기존 RPC 의 내부 동작 수정이라 api-manager 와 배포 순서가 무관하며, B 가 배포되기 전에는 자연 종료 뒤 start 가 계속 막히는 현행 동작).
+- Verify: (1) 소유자/고객 불일치 거부, 소유자 비어 있음 거부. (2) `on_end_flow_id` 가 요청에 있어도 전달되지 않음(스키마에 없음). (3) 이미 녹음 중인 통화(`call.recording_id` 존재)에 start 는 409. (4) 녹음이 없는 통화에 stop 은 에러(수정 전 `(nil, nil)` 반환 재현 후 통과). (5) `progressing` 이 아닌 통화(울리는 레그)에 start 는 400이고 Answer 되지 않음. (6) `duration` 생략은 7200 으로 채워지고 명시적 0, 음수, 7201 은 400, `end_of_silence` 음수는 400 이고 상한은 없음(검증은 스펙 기반 요청 검증기가 api-manager 에 없으므로 서버 코드가 직접 하며, 생략과 명시적 0 을 구분하려고 요청 필드를 포인터로 받음). (7) Admin 엔드포인트 권한 불변. (8) 에이전트가 소유한 레그의 녹음은 시작 주체와 무관하게 stop 이 성공하고, start 와 stop 모두 감사 로그에 에이전트 id, 통화 id, 동작이 남음. (9) B: `Stopped` 가 오류를 반환해도 `call.recording_id` 가 해제되고 그 오류는 그대로 전달됨, 자연 종료(Finished) 뒤 `call.recording_id` 가 비고 다시 start 가능, 명시적 stop 뒤 새 녹음이 시작된 상태에서 늦게 도착한 이전 녹음의 Finished 가 새 id 를 지우지 않음(조건부 UPDATE), confbridge 녹음은 영향 없음. (10) C: `ended` 녹음에 stop 을 호출해도 `ended` 유지, 정상 stop 에서 Finished 가 먼저 와도 `ended` 유지. (11) 감사 로그에 통화 상대 정보나 개인정보가 들어가지 않음. (12) B 의 해제 실패는 로그만 남기고 이벤트 처리 결과에 영향이 없음. (13) RST 3곳(안내 한 줄, 121행 부근, 307행 부근)이 반영되고 `docsdev/build/` 가 clean 재빌드됨.
+- 비용: S 에서 M 으로 상향, 약 5일 (api-manager/openapi 2일 + call-manager B 1.5일 + C 0.5일 + D 0.25일 + RST/테스트 0.75일. P8 의 A 는 제외).
 
 ### 3.11 C3 Add (3자 통화)
 
 - 소유: bin-call-manager(신규 RPC), bin-api-manager, bin-openapi-manager. 선택 근거는 2.2(설계안 Y).
-- API: `POST /service_agents/calls/{id}/participants` body `{address: {type: agent|extension, target}}` (P3) -> 200 `CallManagerCall`(새로 만든 참가자 레그).
-- api-manager 검증: C1 과 같은 소유자/상태 검증과 주소 규칙(재사용 헬퍼: P2/P3 의 `extension` 또는 모든 주소가 `extension` 인 `agent`, 서버가 주소를 새로 조립), 통화가 `progressing` 이고 `ConfbridgeID != Nil`, 본인 제외. 통화가 이미 3자이면 409(v1 은 2자 -> 3자까지, 그 이상 확장은 범위 밖). 제3자가 응답하기 전에는 `ChannelCallIDs` 가 늘지 않으므로 이 검사만으로는 연속 요청 둘이 모두 통과할 수 있어, call-manager 가 confbridge id 기준의 SET NX 점유(선례: `bin-call-manager/pkg/cachehandler/handler.go` 의 `CallRecoveryClaim`)를 잡고 점유 중이면 409 를 돌려줍니다. 점유는 모든 검증을 통과한 직후, 발신 생성 직전에 잡고(검증 실패로 점유가 남지 않게), 캐시 오류가 나면 점유를 못 잡은 것으로 보고 거부(fail-closed)합니다. 새 `cachehandler` 메서드와 mock 은 call-manager 4일 견적에 포함합니다. TTL 은 제3자 발신의 응답 대기 상한과 같게 하고, 발신 생성이 동기적으로 실패하면 바로 해제합니다. 제3자가 거절한 뒤 재시도는 TTL 이 지나야 할 수 있으며 이는 v1 의 알려진 제약입니다(트리거: 사용성 문제가 보고될 때 참가자 레그 hangup 시 해제 추가).
-- call-manager `POST /v1/calls/{id}/participants` (`callHandler.AddParticipant`): (1) 통화와 confbridge 조회(`connect` 타입, `Progressing`, `ChannelCallIDs == 2`), (2) `confbridge_join(confbridge_id)` 하나짜리 임시 flow 생성(transfer-manager 의 `createFlow` 와 같은 구성), (3) 대상 주소로 발신 레그 생성(`source` 는 원 통화의 source, `masterCallID` 는 **원 통화의 `MasterCallID`**, 비어 있으면 `uuid.Nil`; attended transfer 가 `transfererCall.MasterCallID` 를 쓰는 선례와 같음. 원 통화 자체를 master 로 삼으면 에이전트 레그가 끊길 때 chained call 로 제3자도 끊기므로 피함, `callhandler/hangup.go` 의 chained call hangup). 대상이 응답한 뒤 flow 가 confbridge 에 합류시킵니다. 응답은 레그 하나(`CallManagerCall`)이므로 C3 의 `agent` 대상은 v1 에서 검증된 `extension` 주소가 정확히 1개인 에이전트로 한정하고(C1 은 여러 개여도 groupcall 이 처리), 그 밖은 400 입니다. 기존 레그에는 MOH/mute 를 걸지 않습니다(attended transfer 와의 차이). 외부 PSTN 비용: 내부 extension 만 허용하므로(P3, 외부 주소를 가진 agent 도 거부) 발생하지 않으며, 검증은 내부 extension 만 사용합니다.
+- API: `POST /service_agents/calls/{id}/participants` body `{address: {type: extension, target}}` (P3 (a)) -> 200 `CallManagerCall`(새로 만든 참가자 레그).
+- api-manager 검증: C1 과 같은 소유자/상태 검증과 주소 규칙(재사용 헬퍼: P2/P3 (a) 의 `extension` 만, 서버가 주소를 새로 조립; (b) 를 고르면 2.3 의 차이를 따름), 통화가 `progressing` 이고 `ConfbridgeID != Nil`. 본인 내선을 대상으로 한 요청은 C1 과 같이 막지 않습니다(본인 전화가 울릴 뿐 다른 사람에게 영향 없음). 통화가 이미 3자이면 409(v1 은 2자 -> 3자까지, 그 이상 확장은 범위 밖). 제3자가 응답하기 전에는 `ChannelCallIDs` 가 늘지 않으므로 이 검사만으로는 연속 요청 둘이 모두 통과할 수 있어, call-manager 가 confbridge id 기준의 SET NX 점유(선례: `bin-call-manager/pkg/cachehandler/handler.go` 의 `CallRecoveryClaim`)를 잡고 점유 중이면 409 를 돌려줍니다. 점유는 모든 검증을 통과한 직후, 발신 생성 직전에 잡고(검증 실패로 점유가 남지 않게), 캐시 오류가 나면 점유를 못 잡은 것으로 보고 거부(fail-closed)합니다. 새 `cachehandler` 메서드와 mock 은 call-manager 4일 견적에 포함합니다. TTL 은 제3자 발신의 응답 대기 상한과 같게 하고, 발신 생성이 동기적으로 실패하면 바로 해제합니다. 제3자가 거절한 뒤 재시도는 TTL 이 지나야 할 수 있으며 이는 v1 의 알려진 제약입니다(트리거: 사용성 문제가 보고될 때 참가자 레그 hangup 시 해제 추가).
+- call-manager `POST /v1/calls/{id}/participants` (`callHandler.AddParticipant`): (1) 통화와 confbridge 조회(`connect` 타입, `Progressing`, `ChannelCallIDs == 2`), (2) `confbridge_join(confbridge_id)` 하나짜리 임시 flow 생성(transfer-manager 의 `createFlow` 와 같은 구성), (3) 대상 주소로 발신 레그 생성(`source` 는 원 통화의 source, `masterCallID` 는 **원 통화의 `MasterCallID`**, 비어 있으면 `uuid.Nil`; attended transfer 가 `transfererCall.MasterCallID` 를 쓰는 선례와 같음. 원 통화 자체를 master 로 삼으면 에이전트 레그가 끊길 때 chained call 로 제3자도 끊기므로 피함, `callhandler/hangup.go` 의 chained call hangup). 대상이 응답한 뒤 flow 가 confbridge 에 합류시킵니다. 응답은 레그 하나(`CallManagerCall`)입니다. (a) 에서는 `extension` 만 받으므로 "에이전트는 extension 이 정확히 1개" 라는 제한이 필요 없습니다(`agent` 유형 자체가 없고, `extension` 은 레지스트라 조회로 하나의 레그를 만듦). (b) 에서 `agent` 유형을 허용하면 groupcall 이 여러 레그를 만들 수 있어 이 제한이 다시 필요하고, 그 경우 검증된 `extension` 주소가 정확히 1개인 에이전트로 한정합니다. 기존 레그에는 MOH/mute 를 걸지 않습니다(attended transfer 와의 차이). 외부 PSTN 비용: (a) 에서는 내부 extension 만 허용하므로 발생하지 않고 검증도 내부 extension 만 사용합니다. (b) 에서 `tel` 을 허용하면 3자 통화 시간 동안 PSTN 비용이 누적됩니다. 이 누적은 발신 가드(`CreateCallOutgoing` 의 고객 상태, 본인확인, 잔액 검사)가 건당 통제하지만 통화 시간 전체를 제한하지는 않으므로 별도 위험으로 유지합니다(트리거: (b) 선택 시 통화 시간 상한 또는 경고를 설계).
 - 종료 의미(코드 확인과 추정): `connect` 타입 confbridge 는 한 명만 남으면 자동 종료됩니다(`confbridgehandler/leaved.go:55`). 에이전트 레그와 제3자 레그가 같은 master(고객 레그)에 chained 되면 master 가 끊길 때(고객 이탈) chained 레그가 모두 끊기고(`hangup.go` 의 chained call hangup), 에이전트 이탈 시에는 master 가 남아 고객과 제3자가 통화를 이어 갑니다. 즉 고객이 이탈하면 통화 전체가 끝나고 에이전트가 이탈하면 고객+제3자는 유지됩니다. 이는 **고객 레그가 master 인 토폴로지(큐 경유 인입, `masterCallID = qc.ReferenceID`)** 기준입니다. 에이전트가 직접 건 발신 통화는 에이전트 레그의 `MasterCallID` 가 비어 있고 상대 레그가 에이전트 레그에 chained 되므로, 이 토폴로지에서는 제3자(`masterCallID = Nil`)가 chain 에 묶이지 않아 상대가 끊어도 전체가 끝나지 않고 에이전트가 끊을 때만 상대 레그가 끊깁니다. 두 토폴로지의 기대 동작은 코드 읽기로 도출한 것이며 스파이크 S5 에서 실측합니다.
-- 영향과 스파이크(구현 착수 전 sandbox 에서 내부 extension 으로 실행, 결과를 이 문서에 반영): S1 3번째 레그 합류 시 `joinedTypeConnect`(`joined.go:58~`)가 이미 응답한 레그에 미치는 영향(대상이 응답한 뒤 합류하므로 `Ring` 분기를 피하는 설계이지만 미검증). S2 3자 통화 중 call 단위 녹음(`recording.go`, 시작 시 `RecordingID` 존재 검사)과 confbridge 녹음의 충돌/유지. S3 Insight listen: 시작 조건이 정확히 2명이라(`listen_trigger.go` `lastPartyCount == 2`) 3자 이후에는 시작되지 않고, 이미 청취 중이던 세션이 3자에서 어떻게 되는지(화자 매핑이 2자 구조에 기대고 있음)는 미확인. S4 에이전트 webphone 의 UI 가 제3자 레그를 보여주는 방법(클라이언트 설계). S5 이탈 주체별(고객, 에이전트, 제3자) x 토폴로지별 연쇄 종료 의미와 외부 이벤트(`call_*`, `confbridge_*`)의 3자 처리. S6 `transferer.go`/`transferee.go` 전체 분기(C1 취소 판단). S7 extension 주소의 식별 필드(문서의 `target` = 번호와 발신 해석의 `TargetName` 불일치, C1 과 공통).
+- 영향과 스파이크(구현 착수 전 sandbox 에서 내부 extension 으로 실행, 결과를 이 문서에 반영): S1 3번째 레그 합류 시 `joinedTypeConnect`(`joined.go:58~`)가 이미 응답한 레그에 미치는 영향(대상이 응답한 뒤 합류하므로 `Ring` 분기를 피하는 설계이지만 미검증). S2 3자 통화 중 call 단위 녹음(`recording.go`, 시작 시 `RecordingID` 존재 검사)과 confbridge 녹음의 충돌/유지(3.10 의 에이전트 녹음은 call 단위이며, confbridge 의 `RecordingID` 도 자연 종료 때 지워지지 않는 같은 결함이 있음: 1.5). S3 Insight listen: 시작 조건이 정확히 2명이라(`listen_trigger.go` `lastPartyCount == 2`) 3자 이후에는 시작되지 않고, 이미 청취 중이던 세션이 3자에서 어떻게 되는지(화자 매핑이 2자 구조에 기대고 있음)는 미확인. S4 에이전트 webphone 의 UI 가 제3자 레그를 보여주는 방법(클라이언트 설계). S5 이탈 주체별(고객, 에이전트, 제3자) x 토폴로지별 연쇄 종료 의미와 외부 이벤트(`call_*`, `confbridge_*`)의 3자 처리. S6 `transferer.go`/`transferee.go` 전체 분기(C1 취소 판단). S7 extension 주소의 식별 필드(문서의 `target` = 번호와 발신 해석의 `TargetName` 불일치, 그리고 `bin-common-handler/models/address/validate.go:33` 의 검증과 `validate_test.go:58-59` 는 extension 의 target 으로 UUID 만 유효하다고 봄. C1 과 공통이며 P2 (a) 에서는 `extension` 이 유일한 유형이라 S7 을 C1, C3 구현의 첫 작업으로 확정해야 함).
 - 데이터 모델 변경 없음. 롤링: call-manager 먼저(새 RPC 경로).
 - Verify: (1) 소유자/상태/참가자 수(2 -> 3) 검증과 409. (2) 제3자 응답 전에는 합류하지 않음, 응답 후 confbridge `ChannelCallIDs` 가 3. (3) 제3자 거절/타임아웃 시 기존 두 레그가 영향받지 않음. (4) 토폴로지별(큐 경유 인입, 에이전트 발신) x 이탈 주체별(고객, 에이전트, 제3자) 기대 동작을 따로 검증하고 두 명 이탈 시 종료. (4-1) 제3자 응답 전 연속 요청 두 번째는 409, 발신 생성이 동기 실패하면 점유가 즉시 해제되어 재시도 가능, TTL 경과 뒤 재시도 허용, 캐시 오류 시 거부. (5) 유형 allowlist, 다른 고객 대상 거부. (6) 스파이크 S1~S7 의 결과 기록.
-- 비용: L (스파이크 2일 + call-manager 4일 + api-manager 2일 + 테스트/문서 2일, 약 10일).
+- 비용: L (스파이크 2일 + call-manager 4일 + api-manager 2일 + 테스트/문서 2일, 약 10일. (a) 는 `agent` 유형 처리와 'extension 정확히 1개' 검증이 없어 약 9일).
 
 ### 3.12 C4 SLA, C5 우선순위: 제품 정의 초안과 질문 목록
 
@@ -452,23 +490,18 @@ QueueManagerQueuecallSummary:
     status:     { allOf: [ { $ref: '#/components/schemas/QueueManagerQueuecallStatus' } ], description: "The queue entry status." }
     tm_create:  { type: string, format: date-time, description: "When the call entered the queue.", example: "2026-11-02T09:10:00.000000Z" }
 
-CallManagerParticipantAddress:        # used by POST /service_agents/transfers and POST /service_agents/calls/{id}/participants
-  oneOf:
-    - type: object
-      required: [type, target]
-      properties:
-        type:   { type: string, enum: [agent], example: "agent" }
-        target: { type: string, format: uuid, description: "The agent ID returned from GET /service_agents/agents. The agent's addresses must all be extensions.", example: "eed6a98a-f18d-11ee-96d3-133e13eafff9" }
-    - type: object
-      required: [type, target]
-      properties:
-        type:   { type: string, enum: [extension], example: "extension" }
-        target: { type: string, description: "The extension number registered for the customer. The final field the server resolves is fixed in the implementation after spike S7.", example: "2001" }
+CallManagerParticipantAddress:        # used by POST /service_agents/transfers and POST /service_agents/calls/{id}/participants (P2/P3 (a): extension only)
+  type: object
+  required: [type, target]
+  properties:
+    type:   { type: string, enum: [extension], example: "extension" }
+    target: { type: string, description: "The extension of the colleague to reach, taken from the addresses of GET /service_agents/agents (type extension). Whether the value is the extension number or the extension ID is fixed in the implementation after spike S7.", example: "2001" }
+# P2/P3 (b) would turn this into a oneOf over extension, tel (E.164 pattern) and agent; see 2.3.
 ```
 
 - C1 요청(`service_agents/transfers.yaml`): `transfer_type`(`TransferManagerTransferType`), `transferer_call_id`(`type: string, format: uuid`, 설명 "The call ID returned from GET /service_agents/calls. It must be a call the calling agent owns.", example), `transferee_addresses`(`type: array, items: $ref CallManagerParticipantAddress, minItems: 1, maxItems: 1`). 세 필드 모두 `required`.
 - C3 요청: `{ address: $ref CallManagerParticipantAddress }`, `required: [address]`.
-- C2 start 요청: `format`(`CallManagerRecordingFormat`), `end_of_silence`(`integer, minimum: 0, maximum: 60`), `end_of_key`(`string`), `duration`(`integer, minimum: 0, maximum: 7200`). admin 의 `on_end_flow_id` 는 없음.
+- C2 start 요청: `format`(`CallManagerRecordingFormat`), `end_of_silence`(`integer, minimum: 0`, 0 은 무제한 유지), `end_of_key`(`string`), `duration`(`integer, minimum: 1, maximum: 7200`, 설명에 "생략하면 7200" 을 적고 스키마의 `default` 키는 쓰지 않음: 0 은 call-manager 에서 무제한이므로 에이전트 경로는 0 을 받지 않음. 생략 시 7200 채움과 범위 검사는 서버 코드가 직접 함, 3.10). admin 의 `on_end_flow_id` 는 없음.
 - A4 close 요청: 3.4 의 `disposition` enum 본문(선택). 응답 스키마 `ContactManagerCase` 의 `disposition` 은 `type: string` 에 값 목록을 설명으로 기재.
 - B3 응답은 기존 `TalkManagerMessage` 를 재사용하고 새 스키마가 없습니다.
 
@@ -503,12 +536,12 @@ CallManagerParticipantAddress:        # used by POST /service_agents/transfers a
 | B-1 | B1 | talk-manager, api-manager, openapi-manager | talk `+1` | 4 | 없음 |
 | B-2 | B2 | contact-manager, api-manager, openapi-manager | contact `+1` | 4 | 없음 |
 | B-3 | B3 | talk-manager, api-manager, openapi-manager | talk `+1` | 4.5 | B-1 과 번호만 조율 |
-| C-1 | C1 | api-manager, openapi-manager | 없음 | 4 | 스파이크 S7 (취소 제외) |
-| C-2 | C2 | api-manager, openapi-manager, call-manager(한 줄) | 없음 | 3 | 없음 |
-| C-3 | C3 | call-manager, api-manager, openapi-manager | 없음 | 10 | C-1 의 소유자 검증 헬퍼, 스파이크 S1~S7 |
+| C-1 | C1 | api-manager, openapi-manager | 없음 | 3 ((b) 는 4) | 스파이크 S7 (취소 제외) |
+| C-2 | C2 | api-manager, openapi-manager, call-manager(기존 결함 B, C, D 수정: 3.10) | 없음 | 5 | 없음 (P8 의 A 는 별도 선택) |
+| C-3 | C3 | call-manager, api-manager, openapi-manager | 없음 | 9 ((b) 는 10) | C-1 의 소유자 검증 헬퍼, 스파이크 S1~S7 |
 | D | C4, C5 | contact-manager 등 | 정의 확정 뒤 | 미산정 | 제품 정의 |
 
-합계(D 제외): 그룹 A 9일, 그룹 B 12.5일, 그룹 C 17일, 총 약 38.5일. 여기에 병렬 PR 의 공통 파일 충돌 비용을 더해야 합니다: 10개 PR 이 모두 `bin-openapi-manager/gens/models/gen.go`, `servicehandler/main.go` 인터페이스와 `mock_main.go`, 추적되는 `bin-api-manager/docsdev/build/` 전체를 바꾸므로 머지 직전마다 main 을 가져와 재생성하고 충돌을 푸는 작업이 PR 당 약 0.5일(합 5일)이라 총 약 43.5일로 봅니다. 완화책: 머지를 한 번에 하나씩 순차로 하고(앞 PR 머지 뒤 다음 PR 은 rebase 후 `go generate` 와 문서 clean 재빌드), 생성 파일 충돌은 손으로 합치지 않고 재생성으로만 해소합니다.
+합계(D 제외): 그룹 A 9일, 그룹 B 12.5일, 그룹 C 17일(P2/P3 (a) 기준; (b) 는 19일), 총 약 38.5일((b) 는 40.5일). 여기에 병렬 PR 의 공통 파일 충돌 비용을 더해야 합니다: 10개 PR 이 모두 `bin-openapi-manager/gens/models/gen.go`, `servicehandler/main.go` 인터페이스와 `mock_main.go`, 추적되는 `bin-api-manager/docsdev/build/` 전체를 바꾸므로 머지 직전마다 main 을 가져와 재생성하고 충돌을 푸는 작업이 PR 당 약 0.5일(합 5일)이라 총 약 43.5일((b) 는 45.5일)로 봅니다. 개정 1 이전 견적은 C-1 4, C-2 3, C-3 10 이었고, (a) 에서는 C-1 이 1일 줄고(에이전트 조회, 주소 검사, TOCTOU 처리가 사라짐) C-2 가 2일 늘어(call-manager 기존 결함 B, C, D 와 RST) 합계가 같습니다. P8 의 선택(A-1 또는 A-2)은 위 합계에 포함하지 않았습니다(A-1 약 +0.5일, A-2 약 +1.5일). 완화책: 머지를 한 번에 하나씩 순차로 하고(앞 PR 머지 뒤 다음 PR 은 rebase 후 `go generate` 와 문서 clean 재빌드), 생성 파일 충돌은 손으로 합치지 않고 재생성으로만 해소합니다.
 
 PR 분할 원칙: 한 항목은 한 PR 입니다. 모노레포이므로 서비스 변경과 그것을 노출하는 OpenAPI/api-manager 변경이 같은 PR 에 들어가며(생성 코드가 서로 의존), 그 안의 배포 순서는 2.4 의 "하위 서비스 먼저" 규칙을 각 PR 설명에 적어 지킵니다. 같은 서비스에 마이그레이션이 둘 이상인 경우(contact: A-3, B-2 / talk: B-1, B-3)는 먼저 머지되는 PR 이 `000002` 를 씁니다. 그룹 A, B 는 서로 독립이라 구현은 병렬로 할 수 있지만 머지는 위 규칙대로 순차이고, 그룹 C 는 C-1 -> C-3 순서만 고정입니다.
 
@@ -516,10 +549,17 @@ PR 분할 원칙: 한 항목은 한 PR 입니다. 모노레포이므로 서비�
 
 ## 6. 열린 사항과 확인하지 못한 것
 
-제품/정책 결정 대기: P1~P7(2.3), 3.12 의 질문 1~9.
+제품/정책 결정 대기: 아래 "남은 결정 사항" 목록(P2/P3, P4, P5, P6, P8)과 3.12 의 질문 1~9 입니다.
+
+남은 결정 사항 (개정 1 이후):
+- P2/P3: 주소 유형. (a) v1 은 `extension` 만(권고, 가장 단순), (b) `tel` 까지 허용(`tel` 형식 검증과 3자 통화의 PSTN 비용 누적 대책 추가).
+- P4: A4 disposition 값 집합.
+- P5: B3 기존 메시지 멘션 소급 여부.
+- P6: C4, C5 제품 정의(3.12 질문 1~9).
+- P8: call-manager 기존 결함 A(ringing 통화의 `recording_start`)를 고칠지와 방식(A-1 또는 A-2). C-2 의 필수 범위가 아님.
+결정됨: P1(고지는 조직 규율, 서버 강제 없음), P7(소유 에이전트의 start/stop 허용, 감사 로그만).
 
 추가로 정할 사항:
-- A4 disposition 값 집합이 2.3 P4 로 충분한지, 고객별 사용자 정의 목록이 필요한지.
 - B3 멘션 목록의 읽음/미읽음 상태와 알림이 필요한지.
 - 에이전트가 시작한 녹음의 재생/다운로드 경로(현재 recordings API 는 Admin|Manager 전용).
 - C1 attended 취소 의미(3.9, 스파이크 S6 이후).
