@@ -34,7 +34,7 @@ The `bin-manager` Alembic stream is frozen read-only history (last head `b030752
 | bin-schedule-manager | schedule_executions, schedule_schedules | `bin-schedule-manager/migrations/` |
 | bin-storage-manager | storage_accounts, storage_files | `bin-storage-manager/migrations/` |
 | bin-tag-manager | tag_tags | `bin-tag-manager/migrations/` |
-| bin-talk-manager | talk_chats, talk_messages, talk_participants | `bin-talk-manager/migrations/` |
+| bin-talk-manager | talk_chats, talk_messages, talk_participants, talk_pins | `bin-talk-manager/migrations/` |
 | bin-timeline-manager | timeline_analyses | `bin-timeline-manager/migrations/mysql/` |
 | bin-transcribe-manager | transcribe_transcribes, transcribe_transcripts | `bin-transcribe-manager/migrations/` |
 | bin-tts-manager | tts_manager_speaking | `bin-tts-manager/migrations/` |
@@ -118,6 +118,7 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | talk_chats | bin-talk-manager | Talk (agent UI) chat sessions |
 | talk_messages | bin-talk-manager | Messages in talk chats |
 | talk_participants | bin-talk-manager | Participants in talk sessions |
+| talk_pins | bin-talk-manager | Chats and messages pinned by an agent |
 | timeline_analyses | bin-timeline-manager | Timeline analysis records |
 | transcribe_transcribes | bin-transcribe-manager | Transcription job records |
 | transcribe_transcripts | bin-transcribe-manager | STT transcription results (linked to transcribes) |

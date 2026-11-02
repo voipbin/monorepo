@@ -362,6 +362,32 @@ Add emoji reactions to messages for quick feedback.
 +------------+----------------------------------+
 
 
+Pinned Chats and Messages
+-------------------------
+An agent can pin a chat or a message to keep it at hand. A pin is personal to the agent who created it; other participants do not see it.
+
+**Pin a chat or a message**
+
+.. code::
+
+    $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_pins?token=<token>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "target_type": "message",
+            "target_id": "<message-id>"
+        }'
+
+**Rules**
+
+* ``target_type`` is ``chat`` or ``message``. The agent must be able to access the chat (a participant of a direct or group chat).
+* Pinning a target that is already pinned returns the existing pin.
+* ``GET /service_agents/talk_pins`` lists the agent's own pins, newest first. The optional ``target_type`` and ``chat_id`` query parameters narrow the list. A pin of a message carries the message in ``message``.
+* A pin is listed only while the agent can see its target. If the agent leaves a direct or group chat, its pins are hidden and they are listed again when the agent joins the chat again. A pin of a deleted chat or of a deleted message is not listed.
+* ``DELETE /service_agents/talk_pins/{id}`` removes a pin. The pin of another agent is reported as not found.
+
+See :ref:`Pin <talk-struct-pin>` for the response fields.
+
+
 Message Types
 -------------
 Messages can be different types based on their origin.

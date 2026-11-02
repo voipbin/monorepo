@@ -41,7 +41,7 @@ Services this service calls via RabbitMQ RPC (from `go.mod` replace directives):
 
 | Component | Purpose |
 |-----------|---------|
-| MySQL | Primary persistence (`talk_chats`, `talk_participants`, `talk_messages`) |
+| MySQL | Primary persistence (`talk_chats`, `talk_participants`, `talk_messages`, `talk_pins`) |
 | Redis | Cache layer for lookups |
 | RabbitMQ | RPC transport (request queue + event queue) |
 

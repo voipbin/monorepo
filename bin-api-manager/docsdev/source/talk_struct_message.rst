@@ -126,3 +126,61 @@ Agents can add emoji reactions to messages. Reactions are stored in the message 
 * ``tm_create`` (string, ISO 8601): Timestamp when the reaction was added.
 
 Multiple agents can react to the same message, and the same agent can add multiple different emoji reactions. Reactions provide quick feedback without sending a full message response.
+
+.. _talk-struct-pin:
+
+.. _talk-struct-pin-pin:
+
+Pin
+---
+
+A pin marks a chat or a message that the calling agent wants to keep at hand. A pin is personal: only the agent who created it can see it.
+
+.. code::
+
+    {
+        "id": "<string>",
+        "target_type": "<string>",
+        "target_id": "<string>",
+        "chat_id": "<string>",
+        "message": { ... },
+        "tm_create": "<string>"
+    }
+
+* ``id`` (UUID): The pin's unique identifier. Returned when pinning via ``POST /service_agents/talk_pins`` or listing via ``GET /service_agents/talk_pins``.
+* ``target_type`` (enum string): What is pinned. ``"chat"`` or ``"message"``.
+* ``target_id`` (UUID): The pinned chat ID (from ``GET /service_agents/talk_chats``) or the pinned message ID (from ``GET /service_agents/talk_messages``), depending on ``target_type``.
+* ``chat_id`` (UUID): The chat that the pinned chat or message belongs to. Obtained from ``GET /service_agents/talk_chats``.
+* ``message`` (Object, optional): The pinned message, see :ref:`Message <talk-struct-message-message>`. Present only in the items of ``GET /service_agents/talk_pins`` and only when ``target_type`` is ``"message"``. The responses of ``POST`` and ``DELETE`` do not include it.
+* ``tm_create`` (string, ISO 8601): Timestamp when the pin was created.
+
+.. note:: **AI Implementation Hint**
+
+   Pinning the same target again does not create a second pin; the request returns the existing pin. A pin is listed only while the agent can still see its target: the chat is not deleted, and in a direct or group chat the agent is still a participant. When the agent leaves such a chat the pins stay stored but are not listed, and they are listed again after the agent joins the chat again. A pinned message that was deleted is not listed.
+
+Example
++++++++
+
+.. code::
+
+    {
+        "id": "6f1c1a52-8d3b-4c1e-9a5e-0b7f2d9a1c10",
+        "target_type": "message",
+        "target_id": "0d4b7a3e-2f5c-4b8e-8a21-9c3e6f1d7a42",
+        "chat_id": "9a2b5c7d-1e3f-4a6b-8c9d-0e1f2a3b4c5d",
+        "message": {
+            "id": "0d4b7a3e-2f5c-4b8e-8a21-9c3e6f1d7a42",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "owner_type": "agent",
+            "owner_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+            "chat_id": "9a2b5c7d-1e3f-4a6b-8c9d-0e1f2a3b4c5d",
+            "type": "normal",
+            "text": "Meeting moved to 3 PM",
+            "medias": [],
+            "metadata": {"reactions": []},
+            "tm_create": "2026-11-02T09:00:00.000000Z",
+            "tm_update": "2026-11-02T09:00:00.000000Z",
+            "tm_delete": null
+        },
+        "tm_create": "2026-11-02T09:15:30.123456Z"
+    }

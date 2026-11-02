@@ -107,6 +107,7 @@ import (
 	tkchat "monorepo/bin-talk-manager/models/chat"
 	talkmessage "monorepo/bin-talk-manager/models/message"
 	talkparticipant "monorepo/bin-talk-manager/models/participant"
+	tkpin "monorepo/bin-talk-manager/models/pin"
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
@@ -1511,6 +1512,11 @@ type RequestHandler interface {
 	TalkV1MessageList(ctx context.Context, pageToken string, pageSize uint64) ([]*talkmessage.Message, error)
 	TalkV1MessageListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*talkmessage.Message, error)
 	TalkV1MessageReactionCreate(ctx context.Context, messageID uuid.UUID, ownerType string, ownerID uuid.UUID, emoji string) (*talkmessage.Message, error)
+
+	// talk-manager pin
+	TalkV1PinCreate(ctx context.Context, customerID uuid.UUID, ownerType string, ownerID uuid.UUID, targetType tkpin.TargetType, targetID uuid.UUID) (*tkpin.Pin, error)
+	TalkV1PinList(ctx context.Context, customerID uuid.UUID, ownerType string, ownerID uuid.UUID, targetType tkpin.TargetType, chatID uuid.UUID, pageToken string, pageSize uint64) ([]*tkpin.Pin, error)
+	TalkV1PinDelete(ctx context.Context, pinID, customerID uuid.UUID, ownerType string, ownerID uuid.UUID) (*tkpin.Pin, error)
 
 	// tts-manager speeches
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, language string, provider tmtts.Provider, voiceID string, timeout int) (*tmtts.TTS, error)

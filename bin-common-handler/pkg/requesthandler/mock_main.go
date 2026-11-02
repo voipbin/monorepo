@@ -94,6 +94,7 @@ import (
 	chat "monorepo/bin-talk-manager/models/chat"
 	message3 "monorepo/bin-talk-manager/models/message"
 	participant0 "monorepo/bin-talk-manager/models/participant"
+	pin "monorepo/bin-talk-manager/models/pin"
 	analysis0 "monorepo/bin-timeline-manager/models/analysis"
 	correlation "monorepo/bin-timeline-manager/models/correlation"
 	event "monorepo/bin-timeline-manager/models/event"
@@ -7751,6 +7752,51 @@ func (m *MockRequestHandler) TalkV1ParticipantListWithFilters(ctx context.Contex
 func (mr *MockRequestHandlerMockRecorder) TalkV1ParticipantListWithFilters(ctx, filters, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkV1ParticipantListWithFilters", reflect.TypeOf((*MockRequestHandler)(nil).TalkV1ParticipantListWithFilters), ctx, filters, pageToken, pageSize)
+}
+
+// TalkV1PinCreate mocks base method.
+func (m *MockRequestHandler) TalkV1PinCreate(ctx context.Context, customerID uuid.UUID, ownerType string, ownerID uuid.UUID, targetType pin.TargetType, targetID uuid.UUID) (*pin.Pin, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TalkV1PinCreate", ctx, customerID, ownerType, ownerID, targetType, targetID)
+	ret0, _ := ret[0].(*pin.Pin)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TalkV1PinCreate indicates an expected call of TalkV1PinCreate.
+func (mr *MockRequestHandlerMockRecorder) TalkV1PinCreate(ctx, customerID, ownerType, ownerID, targetType, targetID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkV1PinCreate", reflect.TypeOf((*MockRequestHandler)(nil).TalkV1PinCreate), ctx, customerID, ownerType, ownerID, targetType, targetID)
+}
+
+// TalkV1PinDelete mocks base method.
+func (m *MockRequestHandler) TalkV1PinDelete(ctx context.Context, pinID, customerID uuid.UUID, ownerType string, ownerID uuid.UUID) (*pin.Pin, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TalkV1PinDelete", ctx, pinID, customerID, ownerType, ownerID)
+	ret0, _ := ret[0].(*pin.Pin)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TalkV1PinDelete indicates an expected call of TalkV1PinDelete.
+func (mr *MockRequestHandlerMockRecorder) TalkV1PinDelete(ctx, pinID, customerID, ownerType, ownerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkV1PinDelete", reflect.TypeOf((*MockRequestHandler)(nil).TalkV1PinDelete), ctx, pinID, customerID, ownerType, ownerID)
+}
+
+// TalkV1PinList mocks base method.
+func (m *MockRequestHandler) TalkV1PinList(ctx context.Context, customerID uuid.UUID, ownerType string, ownerID uuid.UUID, targetType pin.TargetType, chatID uuid.UUID, pageToken string, pageSize uint64) ([]*pin.Pin, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TalkV1PinList", ctx, customerID, ownerType, ownerID, targetType, chatID, pageToken, pageSize)
+	ret0, _ := ret[0].([]*pin.Pin)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TalkV1PinList indicates an expected call of TalkV1PinList.
+func (mr *MockRequestHandlerMockRecorder) TalkV1PinList(ctx, customerID, ownerType, ownerID, targetType, chatID, pageToken, pageSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkV1PinList", reflect.TypeOf((*MockRequestHandler)(nil).TalkV1PinList), ctx, customerID, ownerType, ownerID, targetType, chatID, pageToken, pageSize)
 }
 
 // TimelineV1AggregatedEventList mocks base method.

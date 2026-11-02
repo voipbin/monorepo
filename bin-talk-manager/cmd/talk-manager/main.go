@@ -27,6 +27,7 @@ import (
 	"monorepo/bin-talk-manager/pkg/listenhandler"
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 	"monorepo/bin-talk-manager/pkg/participanthandler"
+	"monorepo/bin-talk-manager/pkg/pinhandler"
 	"monorepo/bin-talk-manager/pkg/reactionhandler"
 )
 
@@ -118,6 +119,7 @@ func runDaemon() error {
 	chatHandler := chathandler.New(dbHandler, participantHandler, notifyHandler, utilHandler)
 	messageHandler := messagehandler.New(dbHandler, sockHandler, notifyHandler, utilHandler)
 	reactionHandler := reactionhandler.New(dbHandler, sockHandler, notifyHandler, utilHandler)
+	pinHandler := pinhandler.New(dbHandler, utilHandler)
 
 	// Initialize listen handler
 	listenHandler := listenhandler.New(
@@ -126,6 +128,7 @@ func runDaemon() error {
 		messageHandler,
 		participantHandler,
 		reactionHandler,
+		pinHandler,
 		utilHandler,
 	)
 

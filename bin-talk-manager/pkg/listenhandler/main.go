@@ -20,6 +20,7 @@ import (
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 	"monorepo/bin-talk-manager/pkg/participanthandler"
+	"monorepo/bin-talk-manager/pkg/pinhandler"
 	"monorepo/bin-talk-manager/pkg/reactionhandler"
 )
 
@@ -33,6 +34,8 @@ var (
 	regV1Messages              = regexp.MustCompile(`^/v1/messages(\?.*)?$`)
 	regV1MessagesID            = regexp.MustCompile(`^/v1/messages/([^/?]+)(\?.*)?$`)
 	regV1MessagesIDReactions   = regexp.MustCompile(`^/v1/messages/([^/?]+)/reactions(\?.*)?$`)
+	regV1Pins                  = regexp.MustCompile(`^/v1/pins(\?.*)?$`)
+	regV1PinsID                = regexp.MustCompile(`^/v1/pins/([^/?]+)(\?.*)?$`)
 )
 
 type listenHandler struct {
@@ -41,6 +44,7 @@ type listenHandler struct {
 	messageHandler     messagehandler.MessageHandler
 	participantHandler participanthandler.ParticipantHandler
 	reactionHandler    reactionhandler.ReactionHandler
+	pinHandler         pinhandler.PinHandler
 	utilHandler        commonutil.UtilHandler
 }
 
@@ -51,6 +55,7 @@ func New(
 	msg messagehandler.MessageHandler,
 	part participanthandler.ParticipantHandler,
 	react reactionhandler.ReactionHandler,
+	pin pinhandler.PinHandler,
 	util commonutil.UtilHandler,
 ) *listenHandler {
 	return &listenHandler{
@@ -59,6 +64,7 @@ func New(
 		messageHandler:     msg,
 		participantHandler: part,
 		reactionHandler:    react,
+		pinHandler:         pin,
 		utilHandler:        util,
 	}
 }
@@ -154,6 +160,18 @@ func (h *listenHandler) processRequest(m *commonsock.Request) (*commonsock.Respo
 	// messages/<message-id>/reactions
 	case regV1MessagesIDReactions.MatchString(m.URI) && m.Method == commonsock.RequestMethodDelete:
 		response, err = h.v1MessagesIDReactionsDelete(ctx, *m)
+
+	// pins
+	case regV1Pins.MatchString(m.URI) && m.Method == commonsock.RequestMethodPost:
+		response, err = h.v1PinsPost(ctx, *m)
+
+	// pins
+	case regV1Pins.MatchString(m.URI) && m.Method == commonsock.RequestMethodGet:
+		response, err = h.v1PinsGet(ctx, *m)
+
+	// pins/<pin-id>
+	case regV1PinsID.MatchString(m.URI) && m.Method == commonsock.RequestMethodDelete:
+		response, err = h.v1PinsIDDelete(ctx, *m)
 
 	default:
 		logrus.Warnf("Unknown URI or method: %s %s", m.Method, m.URI)
