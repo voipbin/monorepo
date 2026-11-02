@@ -15,6 +15,22 @@ import (
 const tableMessages = "talk_messages"
 
 func (h *dbHandler) MessageCreate(ctx context.Context, m *message.Message) error {
+	sqlQuery, args, err := h.messageInsertQuery(m)
+	if err != nil {
+		return err
+	}
+
+	_, err = h.db.ExecContext(ctx, sqlQuery, args...)
+	if err != nil {
+		logrus.Errorf("Failed to create message: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// messageInsertQuery stamps the timestamps of the message and builds its INSERT statement.
+func (h *dbHandler) messageInsertQuery(m *message.Message) (string, []any, error) {
 	now := h.utilHandler.TimeNow()
 	m.TMCreate = now
 	m.TMUpdate = now
@@ -31,7 +47,7 @@ func (h *dbHandler) MessageCreate(ctx context.Context, m *message.Message) error
 	fields, err := commondb.PrepareFields(m)
 	if err != nil {
 		logrus.Errorf("Failed to prepare fields: %v", err)
-		return err
+		return "", nil, err
 	}
 
 	// Handle ParentID manually (nullable UUID)
@@ -48,16 +64,10 @@ func (h *dbHandler) MessageCreate(ctx context.Context, m *message.Message) error
 	sqlQuery, args, err := query.ToSql()
 	if err != nil {
 		logrus.Errorf("Failed to build query: %v", err)
-		return err
+		return "", nil, err
 	}
 
-	_, err = h.db.ExecContext(ctx, sqlQuery, args...)
-	if err != nil {
-		logrus.Errorf("Failed to create message: %v", err)
-		return err
-	}
-
-	return nil
+	return sqlQuery, args, nil
 }
 
 func (h *dbHandler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error) {

@@ -1096,6 +1096,7 @@ type ServiceHandler interface {
 	// service_agent talk message
 	ServiceAgentTalkMessageGet(ctx context.Context, a *auth.AuthIdentity, messageID uuid.UUID) (*tkmessage.WebhookMessage, error)
 	ServiceAgentTalkMessageList(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID, size uint64, token string) ([]*tkmessage.WebhookMessage, error)
+	ServiceAgentTalkMentionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*tkmessage.WebhookMessage, error)
 	ServiceAgentTalkMessageCreate(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID, parentID *uuid.UUID, msgType tkmessage.Type, text string, medias []tkmessage.Media) (*tkmessage.WebhookMessage, error)
 	ServiceAgentTalkMessageDelete(ctx context.Context, a *auth.AuthIdentity, messageID uuid.UUID) (*tkmessage.WebhookMessage, error)
 	ServiceAgentTalkMessageReactionCreate(ctx context.Context, a *auth.AuthIdentity, messageID uuid.UUID, emoji string) (*tkmessage.WebhookMessage, error)

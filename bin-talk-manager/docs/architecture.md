@@ -19,7 +19,7 @@ Key packages:
 |---------|------|
 | `pkg/listenhandler` | RabbitMQ RPC routing via regex patterns |
 | `pkg/chathandler` | Chat CRUD and business logic |
-| `pkg/messagehandler` | Message creation with threading validation |
+| `pkg/messagehandler` | Message creation with threading validation and agent mention extraction |
 | `pkg/participanthandler` | Chat membership UPSERT operations |
 | `pkg/reactionhandler` | Atomic emoji reaction management |
 | `pkg/dbhandler` | MySQL + Redis persistence |
@@ -71,5 +71,6 @@ Requests arrive on queue `bin-manager.talk-manager.request`. The listenhandler m
 | POST | `/v1/pins` | `v1PinsPost` |
 | GET | `/v1/pins` | `v1PinsGet` |
 | DELETE | `/v1/pins/{id}` | `v1PinsIDDelete` |
+| GET | `/v1/mentions` | `v1MentionsGet` |
 
 No per-pod queue routing — all replicas handle any request.

@@ -11,6 +11,7 @@ import (
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-talk-manager/models/mention"
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 )
@@ -129,8 +130,33 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		Metadata: defaultMetadata,
 	}
 
-	if err := h.dbHandler.MessageCreate(ctx, msg); err != nil {
-		return nil, errors.Wrap(err, "failed to create message")
+	// Agent mentions are indexed in the same transaction as the message. System messages are not scanned.
+	var mentionAgentIDs []uuid.UUID
+	if req.Type == message.TypeNormal {
+		mentionAgentIDs = extractAgentMentions(req.Text, req.OwnerID)
+	}
+
+	if len(mentionAgentIDs) == 0 {
+		if err := h.dbHandler.MessageCreate(ctx, msg); err != nil {
+			return nil, errors.Wrap(err, "failed to create message")
+		}
+	} else {
+		mentions := make([]*mention.Mention, 0, len(mentionAgentIDs))
+		for _, agentID := range mentionAgentIDs {
+			mentions = append(mentions, &mention.Mention{
+				Identity: commonidentity.Identity{
+					ID:         h.utilHandler.UUIDCreate(),
+					CustomerID: customerID,
+				},
+				ChatID:    req.ChatID,
+				MessageID: msg.ID,
+				AgentID:   agentID,
+			})
+		}
+
+		if err := h.dbHandler.MessageCreateWithMentions(ctx, msg, mentions); err != nil {
+			return nil, errors.Wrap(err, "failed to create message with mentions")
+		}
 	}
 
 	// Augment log with result before final log

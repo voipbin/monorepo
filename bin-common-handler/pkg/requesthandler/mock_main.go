@@ -7666,6 +7666,21 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1ChatUpdate(ctx, chatID, name, de
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkV1ChatUpdate", reflect.TypeOf((*MockRequestHandler)(nil).TalkV1ChatUpdate), ctx, chatID, name, detail)
 }
 
+// TalkV1MentionList mocks base method.
+func (m *MockRequestHandler) TalkV1MentionList(ctx context.Context, customerID, agentID uuid.UUID, pageToken string, pageSize uint64) ([]*message3.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TalkV1MentionList", ctx, customerID, agentID, pageToken, pageSize)
+	ret0, _ := ret[0].([]*message3.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TalkV1MentionList indicates an expected call of TalkV1MentionList.
+func (mr *MockRequestHandlerMockRecorder) TalkV1MentionList(ctx, customerID, agentID, pageToken, pageSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkV1MentionList", reflect.TypeOf((*MockRequestHandler)(nil).TalkV1MentionList), ctx, customerID, agentID, pageToken, pageSize)
+}
+
 // TalkV1MessageCreate mocks base method.
 func (m *MockRequestHandler) TalkV1MessageCreate(ctx context.Context, chatID uuid.UUID, parentID *uuid.UUID, ownerType string, ownerID uuid.UUID, msgType message3.Type, text string, medias []message3.Media) (*message3.Message, error) {
 	m.ctrl.T.Helper()

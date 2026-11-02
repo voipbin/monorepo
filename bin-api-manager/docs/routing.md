@@ -611,6 +611,7 @@ Managed locally by api-manager (no RabbitMQ RPC to a backend service).
 | GET | `/service_agents/talk_chats/:id/participants` | bin-talk-manager | List participants |
 | POST | `/service_agents/talk_chats/:id/participants` | bin-talk-manager | Add participant |
 | DELETE | `/service_agents/talk_chats/:id/participants/:participant_id` | bin-talk-manager | Remove participant |
+| GET | `/service_agents/talk_mentions` | bin-talk-manager | List talk messages that mention the calling agent |
 | GET | `/service_agents/talk_messages` | bin-talk-manager | List talk messages |
 | POST | `/service_agents/talk_messages` | bin-talk-manager | Send talk message |
 | GET | `/service_agents/talk_messages/:id` | bin-talk-manager | Get talk message |

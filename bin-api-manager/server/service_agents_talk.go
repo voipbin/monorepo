@@ -679,3 +679,52 @@ func (h *server) PostServiceAgentsTalkMessagesIdReactions(c *gin.Context, id str
 
 	c.JSON(200, res)
 }
+
+// GetServiceAgentsTalkMentions handles GET /service_agents/talk_mentions
+func (h *server) GetServiceAgentsTalkMentions(c *gin.Context, params openapi_server.GetServiceAgentsTalkMentionsParams) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "GetServiceAgentsTalkMentions",
+		"request_address": c.ClientIP(),
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	pageSize := uint64(100)
+	if params.PageSize != nil {
+		pageSize = uint64(*params.PageSize)
+	}
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 100
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+
+	pageToken := ""
+	if params.PageToken != nil {
+		pageToken = *params.PageToken
+	}
+
+	tmps, err := h.serviceHandler.ServiceAgentTalkMentionList(c.Request.Context(), a, pageSize, pageToken)
+	if err != nil {
+		log.Errorf("Could not get the mentions. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	nextToken := ""
+	if len(tmps) > 0 {
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
+	}
+
+	res := GenerateListResponse(tmps, nextToken)
+	c.JSON(200, res)
+}

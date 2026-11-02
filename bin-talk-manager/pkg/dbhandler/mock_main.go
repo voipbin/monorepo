@@ -12,6 +12,7 @@ package dbhandler
 import (
 	context "context"
 	chat "monorepo/bin-talk-manager/models/chat"
+	mention "monorepo/bin-talk-manager/models/mention"
 	message "monorepo/bin-talk-manager/models/message"
 	participant "monorepo/bin-talk-manager/models/participant"
 	pin "monorepo/bin-talk-manager/models/pin"
@@ -160,6 +161,21 @@ func (mr *MockDBHandlerMockRecorder) FindDirectChatByParticipants(ctx, customerI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindDirectChatByParticipants", reflect.TypeOf((*MockDBHandler)(nil).FindDirectChatByParticipants), ctx, customerID, ownerType1, ownerID1, ownerType2, ownerID2)
 }
 
+// MentionList mocks base method.
+func (m *MockDBHandler) MentionList(ctx context.Context, customerID, agentID uuid.UUID, token string, size uint64) ([]*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MentionList", ctx, customerID, agentID, token, size)
+	ret0, _ := ret[0].([]*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MentionList indicates an expected call of MentionList.
+func (mr *MockDBHandlerMockRecorder) MentionList(ctx, customerID, agentID, token, size any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MentionList", reflect.TypeOf((*MockDBHandler)(nil).MentionList), ctx, customerID, agentID, token, size)
+}
+
 // MessageAddReactionAtomic mocks base method.
 func (m *MockDBHandler) MessageAddReactionAtomic(ctx context.Context, messageID uuid.UUID, reactionJSON string) error {
 	m.ctrl.T.Helper()
@@ -186,6 +202,20 @@ func (m_2 *MockDBHandler) MessageCreate(ctx context.Context, m *message.Message)
 func (mr *MockDBHandlerMockRecorder) MessageCreate(ctx, m any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageCreate", reflect.TypeOf((*MockDBHandler)(nil).MessageCreate), ctx, m)
+}
+
+// MessageCreateWithMentions mocks base method.
+func (m_2 *MockDBHandler) MessageCreateWithMentions(ctx context.Context, m *message.Message, mentions []*mention.Mention) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "MessageCreateWithMentions", ctx, m, mentions)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MessageCreateWithMentions indicates an expected call of MessageCreateWithMentions.
+func (mr *MockDBHandlerMockRecorder) MessageCreateWithMentions(ctx, m, mentions any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageCreateWithMentions", reflect.TypeOf((*MockDBHandler)(nil).MessageCreateWithMentions), ctx, m, mentions)
 }
 
 // MessageDelete mocks base method.

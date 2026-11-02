@@ -42,6 +42,21 @@ func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 	return m.recorder
 }
 
+// MentionList mocks base method.
+func (m *MockMessageHandler) MentionList(ctx context.Context, customerID, agentID uuid.UUID, token string, size uint64) ([]*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MentionList", ctx, customerID, agentID, token, size)
+	ret0, _ := ret[0].([]*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MentionList indicates an expected call of MentionList.
+func (mr *MockMessageHandlerMockRecorder) MentionList(ctx, customerID, agentID, token, size any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MentionList", reflect.TypeOf((*MockMessageHandler)(nil).MentionList), ctx, customerID, agentID, token, size)
+}
+
 // MessageCreate mocks base method.
 func (m *MockMessageHandler) MessageCreate(ctx context.Context, req MessageCreateRequest) (*message.Message, error) {
 	m.ctrl.T.Helper()
