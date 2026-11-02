@@ -1,11 +1,21 @@
 get:
   summary: List contacts
-  description: Get contacts for the service agent's customer.
+  description: |
+    Get contacts for the service agent's customer. With `starred=true` the list holds only the
+    contacts the calling agent has starred. The order and the page token are the same in both
+    cases: the contact's `tm_create`, newest first (not the time the contact was starred).
   tags:
     - Service Agent
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
+    - name: starred
+      in: query
+      required: false
+      description: "When true, return only the contacts the calling agent has starred (see PUT /service_agents/contacts/{id}/star). False or omitted returns all contacts."
+      schema:
+        type: boolean
+        example: true
   responses:
     '200':
       description: Successful response.

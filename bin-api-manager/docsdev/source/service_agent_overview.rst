@@ -74,6 +74,9 @@ The table below groups every ``/service_agents/*`` path by the resource it front
    * - ``GET/POST/PUT/DELETE /service_agents/contact_addresses*``
      - :ref:`Contact <contact-main>`
      -
+   * - ``PUT/DELETE /service_agents/contacts/{id}/star``, ``GET /service_agents/contact_stars``, ``GET /service_agents/contacts?starred=true``
+     - :ref:`Starred contacts <contact-overview-starred>`
+     - **New** -- the calling agent's private contact stars
    * - ``GET /service_agents/contact_interactions``, ``/contact_peer_events``
      - :ref:`Contact <contact-peer-event-overview>`
      - Agent-scoped equivalent of ``GET /contact_interactions``/``/contact_peer_events`` -- identical response shape

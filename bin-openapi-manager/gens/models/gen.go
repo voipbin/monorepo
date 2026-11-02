@@ -6917,6 +6917,24 @@ type ContactManagerContact struct {
 // Example: manual
 type ContactManagerContactSource string
 
+// ContactManagerContactStar defines model for ContactManagerContactStar.
+type ContactManagerContactStar struct {
+	// ContactId The contact ID returned from GET /service_agents/contacts.
+	//
+	// Example: b2c3d4e5-f6a7-8901-bcde-f12345678901
+	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// Starred Whether the calling agent has starred the contact.
+	//
+	// Example: true
+	Starred bool `json:"starred"`
+
+	// TmCreate When the contact was starred. Absent when starred is false.
+	//
+	// Example: 2026-11-02T09:15:30.123456Z
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+}
+
 // ConversationManagerAccount defines model for ConversationManagerAccount.
 type ConversationManagerAccount struct {
 	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
@@ -13295,6 +13313,15 @@ type GetServiceAgentsContactPeerEventsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// GetServiceAgentsContactStarsParams defines parameters for GetServiceAgentsContactStars.
+type GetServiceAgentsContactStarsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetServiceAgentsContactsParams defines parameters for GetServiceAgentsContacts.
 type GetServiceAgentsContactsParams struct {
 	// PageSize Number of results to return per page.
@@ -13302,6 +13329,9 @@ type GetServiceAgentsContactsParams struct {
 
 	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// Starred When true, return only the contacts the calling agent has starred (see PUT /service_agents/contacts/{id}/star). False or omitted returns all contacts.
+	Starred *bool `form:"starred,omitempty" json:"starred,omitempty"`
 }
 
 // PostServiceAgentsContactsJSONBody defines parameters for PostServiceAgentsContacts.

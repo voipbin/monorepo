@@ -746,6 +746,64 @@ Contact matched → enrich conversation context
 <p>When using phone number lookup, the <code class="docutils literal notranslate"><span class="pre">+</span></code> character must be URL-encoded as <code class="docutils literal notranslate"><span class="pre">%2B</span></code>. For example: <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/contacts/lookup?phone=%2B15551234567</span></code>. Omitting this encoding will result in the <code class="docutils literal notranslate"><span class="pre">+</span></code> being interpreted as a space and the lookup will fail.</p>
 </div>
 </section>
+<section id="starred-contacts">
+<span id="contact-overview-starred"></span><h2>Starred Contacts<a class="headerlink" href="#starred-contacts" title="Link to this heading">¶</a></h2>
+<p>An agent can star the contacts it works with often. A star is private to the agent: other agents of the same customer never see it. Stars exist only on the agent surface (<code class="docutils literal notranslate"><span class="pre">/service_agents/*</span></code>).</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Endpoint</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>PUT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/contacts/{id}/star</span></code></p></td>
+<td><p>Star the contact. Idempotent: an already starred contact returns the existing star.</p></td>
+</tr>
+<tr class="row-odd"><td><p>DELETE</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/contacts/{id}/star</span></code></p></td>
+<td><p>Remove the star. Idempotent: a contact that is not starred also returns <code class="docutils literal notranslate"><span class="pre">200</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p>GET</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/contacts?starred=true</span></code></p></td>
+<td><p>The contacts the calling agent has starred, in the same schema as the contact list.</p></td>
+</tr>
+<tr class="row-odd"><td><p>GET</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/contact_stars</span></code></p></td>
+<td><p>The calling agent’s stars as <code class="docutils literal notranslate"><span class="pre">contact_id</span></code> entries, newest star first.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Star a contact</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/service_agents/contacts/&lt;contact-id&gt;/star?token=&lt;token&gt;'
+
+{
+    "contact_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    "starred": true,
+    "tm_create": "2026-11-02T09:15:30.123456Z"
+}
+</pre></div>
+</div>
+<p>Removing the star returns <code class="docutils literal notranslate"><span class="pre">{&quot;contact_id&quot;:</span> <span class="pre">&quot;&lt;contact-id&gt;&quot;,</span> <span class="pre">&quot;starred&quot;:</span> <span class="pre">false}</span></code> without <code class="docutils literal notranslate"><span class="pre">tm_create</span></code>. A contact that does not exist, was deleted, or belongs to another customer returns <code class="docutils literal notranslate"><span class="pre">404</span></code>.</p>
+<p><strong>List the starred contacts</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contacts?starred=true&amp;page_size=50&amp;token=&lt;token&gt;'
+</pre></div>
+</div>
+<p>The response has the same shape as the plain contact list. The order and the page token are also the same: the contact’s <code class="docutils literal notranslate"><span class="pre">tm_create</span></code>, newest first, and the next page token is the <code class="docutils literal notranslate"><span class="pre">tm_create</span></code> of the last returned contact. The list is <strong>not</strong> ordered by the time the contact was starred. <code class="docutils literal notranslate"><span class="pre">starred=false</span></code> or omitting the parameter returns every contact. Starred contacts that were deleted are left out.</p>
+<p><strong>List the star entries</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_stars?page_size=100&amp;token=&lt;token&gt;'
+</pre></div>
+</div>
+<p>Returns <code class="docutils literal notranslate"><span class="pre">{&quot;result&quot;:</span> <span class="pre">[{&quot;contact_id&quot;:</span> <span class="pre">&quot;...&quot;,</span> <span class="pre">&quot;starred&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;tm_create&quot;:</span> <span class="pre">&quot;...&quot;}],</span> <span class="pre">&quot;next_page_token&quot;:</span> <span class="pre">&quot;...&quot;}</span></code>, newest star first. The page token is the <code class="docutils literal notranslate"><span class="pre">tm_create</span></code> of the last star. Use it to mark the starred rows of a contact list or a contact detail screen without fetching the contacts again.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The agent a star belongs to always comes from the authentication token. There is no <code class="docutils literal notranslate"><span class="pre">agent_id</span></code> parameter, so an agent cannot read or change another agent’s stars. Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/contacts?starred=true</span></code> for a “Starred” tab (one call returns the contact objects), and <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/contact_stars</span></code> to decorate an already loaded list.</p>
+</div>
+</section>
 <section id="source-tracking">
 <h2>Source Tracking<a class="headerlink" href="#source-tracking" title="Link to this heading">¶</a></h2>
 <p>Each contact records how it was created, enabling analytics and deduplication.</p>
@@ -985,6 +1043,7 @@ Lookup contact → check tags
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#how-contacts-work">How Contacts Work</a></li>
 <li><a class="reference internal" href="#contact-lookup">Contact Lookup</a></li>
+<li><a class="reference internal" href="#starred-contacts">Starred Contacts</a></li>
 <li><a class="reference internal" href="#source-tracking">Source Tracking</a></li>
 <li><a class="reference internal" href="#external-crm-integration">External CRM Integration</a></li>
 <li><a class="reference internal" href="#key-features-and-use-cases">Key Features and Use Cases</a></li>

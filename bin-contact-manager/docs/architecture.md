@@ -89,5 +89,8 @@ Requests arrive via RabbitMQ queue `bin-manager.contact-manager.request`. The `l
 | `/v1/contacts/{uuid}/tags$` | POST | Assign tag to contact |
 | `/v1/contacts/{uuid}/tags/{uuid}$` | DELETE | Remove tag from contact |
 | `/v1/contacts/{uuid}/case_notes(\?.*)?$` | GET | List notes across the contact's cases, newest first (`page_size`, `page_token`) |
+| `/v1/contacts/starred(\?.*)?$` | GET | Contacts the agent in the body (`customer_id`, `agent_id`) has starred, contact `tm_create` newest first (`page_size`, `page_token`) |
+| `/v1/contacts/{uuid}/stars/{uuid}$` | POST, DELETE | Star / un-star the contact for the agent in the path (idempotent; body `customer_id`) |
+| `/v1/contact_stars(\?.*)?$` | GET | The agent's star rows, star `tm_create` newest first (`page_size`, `page_token`) |
 
 Unmatched URIs return `404`. Mismatched HTTP methods return `405`.

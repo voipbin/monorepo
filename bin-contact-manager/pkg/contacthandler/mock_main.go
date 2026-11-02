@@ -12,6 +12,7 @@ package contacthandler
 import (
 	context "context"
 	contact "monorepo/bin-contact-manager/models/contact"
+	contactstar "monorepo/bin-contact-manager/models/contactstar"
 	customer "monorepo/bin-customer-manager/models/customer"
 	peerevent "monorepo/bin-timeline-manager/models/peerevent"
 	reflect "reflect"
@@ -194,6 +195,21 @@ func (mr *MockContactHandlerMockRecorder) List(ctx, size, token, filters any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockContactHandler)(nil).List), ctx, size, token, filters)
 }
 
+// ListStarred mocks base method.
+func (m *MockContactHandler) ListStarred(ctx context.Context, customerID, agentID uuid.UUID, size uint64, token string) ([]*contact.Contact, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListStarred", ctx, customerID, agentID, size, token)
+	ret0, _ := ret[0].([]*contact.Contact)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListStarred indicates an expected call of ListStarred.
+func (mr *MockContactHandlerMockRecorder) ListStarred(ctx, customerID, agentID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListStarred", reflect.TypeOf((*MockContactHandler)(nil).ListStarred), ctx, customerID, agentID, size, token)
+}
+
 // LookupByEmail mocks base method.
 func (m *MockContactHandler) LookupByEmail(ctx context.Context, customerID uuid.UUID, email string) (*contact.Contact, error) {
 	m.ctrl.T.Helper()
@@ -252,6 +268,50 @@ func (m *MockContactHandler) RemoveTag(ctx context.Context, contactID, tagID uui
 func (mr *MockContactHandlerMockRecorder) RemoveTag(ctx, contactID, tagID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTag", reflect.TypeOf((*MockContactHandler)(nil).RemoveTag), ctx, contactID, tagID)
+}
+
+// StarDelete mocks base method.
+func (m *MockContactHandler) StarDelete(ctx context.Context, customerID, agentID, contactID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StarDelete", ctx, customerID, agentID, contactID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StarDelete indicates an expected call of StarDelete.
+func (mr *MockContactHandlerMockRecorder) StarDelete(ctx, customerID, agentID, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StarDelete", reflect.TypeOf((*MockContactHandler)(nil).StarDelete), ctx, customerID, agentID, contactID)
+}
+
+// StarList mocks base method.
+func (m *MockContactHandler) StarList(ctx context.Context, customerID, agentID uuid.UUID, size uint64, token string) ([]*contactstar.ContactStar, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StarList", ctx, customerID, agentID, size, token)
+	ret0, _ := ret[0].([]*contactstar.ContactStar)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StarList indicates an expected call of StarList.
+func (mr *MockContactHandlerMockRecorder) StarList(ctx, customerID, agentID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StarList", reflect.TypeOf((*MockContactHandler)(nil).StarList), ctx, customerID, agentID, size, token)
+}
+
+// StarSet mocks base method.
+func (m *MockContactHandler) StarSet(ctx context.Context, customerID, agentID, contactID uuid.UUID) (*contactstar.ContactStar, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StarSet", ctx, customerID, agentID, contactID)
+	ret0, _ := ret[0].(*contactstar.ContactStar)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StarSet indicates an expected call of StarSet.
+func (mr *MockContactHandlerMockRecorder) StarSet(ctx, customerID, agentID, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StarSet", reflect.TypeOf((*MockContactHandler)(nil).StarSet), ctx, customerID, agentID, contactID)
 }
 
 // Update mocks base method.

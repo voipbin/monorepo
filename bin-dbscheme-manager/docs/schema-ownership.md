@@ -18,7 +18,7 @@ The `bin-manager` Alembic stream is frozen read-only history (last head `b030752
 | bin-call-manager | call_bridges, call_calls, call_channels, call_confbridges, call_groupcalls, call_outbound_configs, call_recordings | `bin-call-manager/migrations/` |
 | bin-campaign-manager | campaign_campaigncalls, campaign_campaigns, campaign_outplans | `bin-campaign-manager/migrations/` |
 | bin-conference-manager | conference_conferencecalls, conference_conferences | `bin-conference-manager/migrations/` |
-| bin-contact-manager | contact_activities, contact_address_ownership_periods, contact_addresses, contact_case_notes, contact_cases, contact_contacts, contact_list_members, contact_lists, contact_tag_assignments | `bin-contact-manager/migrations/` |
+| bin-contact-manager | contact_activities, contact_address_ownership_periods, contact_addresses, contact_case_notes, contact_cases, contact_contacts, contact_list_members, contact_lists, contact_stars, contact_tag_assignments | `bin-contact-manager/migrations/` |
 | bin-conversation-manager | conversation_accounts, conversation_conversations, conversation_medias, conversation_messages | `bin-conversation-manager/migrations/` |
 | bin-customer-manager | customer_accesskeys, customer_customers | `bin-customer-manager/migrations/` |
 | bin-direct-manager | direct_directs | `bin-direct-manager/migrations/` |
@@ -82,6 +82,7 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | contact_contacts | bin-contact-manager | Contact book entries |
 | contact_list_members | bin-contact-manager | Legacy, not referenced by current code |
 | contact_lists | bin-contact-manager | Legacy, not referenced by current code |
+| contact_stars | bin-contact-manager | Contacts starred by an agent (private to the agent) |
 | contact_tag_assignments | bin-contact-manager | Tag-to-contact associations |
 | conversation_accounts | bin-conversation-manager | Messaging channel accounts |
 | conversation_conversations | bin-conversation-manager | Conversation threads |

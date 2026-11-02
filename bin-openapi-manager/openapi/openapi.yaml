@@ -4397,6 +4397,25 @@ components:
           description: Pagination token for the next page. Empty when no further pages exist.
           example: "2026-06-01T09:30:01.000000Z"
 
+    ContactManagerContactStar:
+      type: object
+      required: [contact_id, starred]
+      properties:
+        contact_id:
+          type: string
+          format: uuid
+          description: "The contact ID returned from GET /service_agents/contacts."
+          example: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+        starred:
+          type: boolean
+          description: Whether the calling agent has starred the contact.
+          example: true
+        tm_create:
+          type: string
+          format: date-time
+          description: When the contact was starred. Absent when starred is false.
+          example: "2026-11-02T09:15:30.123456Z"
+
     ContactManagerContact:
       type: object
       properties:
@@ -9572,6 +9591,8 @@ paths:
 
   /service_agents/contacts/{id}/case_notes:
     $ref: './paths/service_agents/contacts_id_case_notes.yaml'
+  /service_agents/contacts/{id}/star:
+    $ref: './paths/service_agents/contacts_id_star.yaml'
 
   /service_agents/contacts/{id}/tags/{tag_id}:
     $ref: './paths/service_agents/contacts_id_tags_id.yaml'
@@ -9583,6 +9604,8 @@ paths:
     $ref: './paths/service_agents/contacts_lookup.yaml'
   /service_agents/contacts:
     $ref: './paths/service_agents/contacts.yaml'
+  /service_agents/contact_stars:
+    $ref: './paths/service_agents/contact_stars.yaml'
 
   /service_agents/tags/{id}:
     $ref: './paths/service_agents/tags_id.yaml'

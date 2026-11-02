@@ -49,6 +49,7 @@ import (
 	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
 	casenote "monorepo/bin-contact-manager/models/casenote"
 	contact "monorepo/bin-contact-manager/models/contact"
+	contactstar "monorepo/bin-contact-manager/models/contactstar"
 	kase "monorepo/bin-contact-manager/models/kase"
 	account0 "monorepo/bin-conversation-manager/models/account"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
@@ -4172,6 +4173,67 @@ func (m *MockRequestHandler) ContactV1ContactLookup(ctx context.Context, custome
 func (mr *MockRequestHandlerMockRecorder) ContactV1ContactLookup(ctx, customerID, phoneE164, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactLookup", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactLookup), ctx, customerID, phoneE164, arg3)
+}
+
+// ContactV1ContactStar mocks base method.
+func (m *MockRequestHandler) ContactV1ContactStar(ctx context.Context, customerID, agentID, contactID uuid.UUID) (*contactstar.ContactStar, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1ContactStar", ctx, customerID, agentID, contactID)
+	ret0, _ := ret[0].(*contactstar.ContactStar)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactV1ContactStar indicates an expected call of ContactV1ContactStar.
+func (mr *MockRequestHandlerMockRecorder) ContactV1ContactStar(ctx, customerID, agentID, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactStar", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactStar), ctx, customerID, agentID, contactID)
+}
+
+// ContactV1ContactStarList mocks base method.
+func (m *MockRequestHandler) ContactV1ContactStarList(ctx context.Context, customerID, agentID uuid.UUID, size uint64, token string) ([]*contactstar.ContactStar, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1ContactStarList", ctx, customerID, agentID, size, token)
+	ret0, _ := ret[0].([]*contactstar.ContactStar)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ContactV1ContactStarList indicates an expected call of ContactV1ContactStarList.
+func (mr *MockRequestHandlerMockRecorder) ContactV1ContactStarList(ctx, customerID, agentID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactStarList", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactStarList), ctx, customerID, agentID, size, token)
+}
+
+// ContactV1ContactStarredList mocks base method.
+func (m *MockRequestHandler) ContactV1ContactStarredList(ctx context.Context, customerID, agentID uuid.UUID, size uint64, token string) ([]contact.Contact, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1ContactStarredList", ctx, customerID, agentID, size, token)
+	ret0, _ := ret[0].([]contact.Contact)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ContactV1ContactStarredList indicates an expected call of ContactV1ContactStarredList.
+func (mr *MockRequestHandlerMockRecorder) ContactV1ContactStarredList(ctx, customerID, agentID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactStarredList", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactStarredList), ctx, customerID, agentID, size, token)
+}
+
+// ContactV1ContactUnstar mocks base method.
+func (m *MockRequestHandler) ContactV1ContactUnstar(ctx context.Context, customerID, agentID, contactID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1ContactUnstar", ctx, customerID, agentID, contactID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ContactV1ContactUnstar indicates an expected call of ContactV1ContactUnstar.
+func (mr *MockRequestHandlerMockRecorder) ContactV1ContactUnstar(ctx, customerID, agentID, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactUnstar", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactUnstar), ctx, customerID, agentID, contactID)
 }
 
 // ContactV1ContactUpdate mocks base method.

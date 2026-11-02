@@ -43,6 +43,20 @@ func (h *server) GetServiceAgentsContacts(c *gin.Context, params openapi_server.
 		pageToken = *params.PageToken
 	}
 
+	// starred=true is a dedicated query on the star table (the star list does not fit the
+	// contact filter convention). false or omitted is the plain contact list.
+	if params.Starred != nil && *params.Starred {
+		starred, starredToken, errStarred := h.serviceHandler.ServiceAgentContactListStarred(c.Request.Context(), a, pageSize, pageToken)
+		if errStarred != nil {
+			log.Errorf("Could not get starred contacts. err: %v", errStarred)
+			abortWithServiceError(c, errStarred)
+			return
+		}
+
+		c.JSON(200, GenerateListResponse(starred, starredToken))
+		return
+	}
+
 	filters := map[string]string{
 		"customer_id": a.CustomerID.String(),
 		"deleted":     "false",

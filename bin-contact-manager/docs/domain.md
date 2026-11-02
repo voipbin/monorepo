@@ -66,6 +66,20 @@ Many-to-many link between contacts and tags managed by `bin-tag-manager`.
 
 Table: `contact_tag_assignments`
 
+### ContactStar (`models/contactstar`)
+
+A private bookmark: one agent stars one contact. Other agents never see it.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | UUID | Primary key |
+| `customer_id` | UUID | Owning customer |
+| `agent_id` | UUID | The agent that starred. Taken from the caller's authenticated identity by api-manager; this service stores it as a value |
+| `contact_id` | UUID | The starred contact |
+| `tm_create` | timestamp | When the contact was starred |
+
+Table: `contact_stars` (migration `000003`). Unique key `(agent_id, contact_id)`, index `(customer_id, agent_id, tm_create)`. There is no foreign key and no soft delete: un-starring deletes the row, and the contact is soft-deleted, so the list queries join `contact_contacts` and leave out stars whose contact has `tm_delete` set. Starring is idempotent: the insert is followed by a re-read on any failure, and an existing row is returned unchanged (its original `tm_create` is kept). `StarSet` and `StarDelete` return not found for a contact of another customer or a deleted contact. Two lists: `ListStarred` returns contacts in the same order and with the same page token key as the contact list (the contact's `tm_create`), and `StarList` returns star rows ordered by the star's `tm_create`. `EventCustomerDeleted` removes every star of the customer after the contacts. Stars of a deleted agent are not cleaned up (no agent deletion event is consumed) and are harmless: they are only readable through that agent's id.
+
 ### Case close disposition (`models/kase`)
 
 `kase.Case.Disposition` (`contact_cases.disposition`, `varchar(32)` nullable, migration `000002`) records the outcome an agent chooses when closing a case. Allowed values: `resolved`, `unresolved`, `follow_up_needed`, `spam`, `other` (`kase.IsValidDisposition`). It is optional: a close without one leaves the column untouched (an empty string for cases created by this version, NULL for rows that existed before the migration; both read back as an empty string), and `closed_reason` stays `agent_closed`. `casehandler.Close` rejects any other non-empty value with `InvalidArgument` before writing, and `dbhandler.CaseUpdateStatusClosed` writes the disposition in the same `status='open'` guarded UPDATE as the close, so a later close never overwrites the first value. Closing publishes no event.

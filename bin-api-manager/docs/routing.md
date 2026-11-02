@@ -568,7 +568,7 @@ Managed locally by api-manager (no RabbitMQ RPC to a backend service).
 | POST | `/service_agents/calls/:id/recording_start` | bin-call-manager | Start recording an owned, answered call |
 | POST | `/service_agents/calls/:id/recording_stop` | bin-call-manager | Stop recording an owned call |
 | POST | `/service_agents/transfers` | bin-call-manager, bin-registrar-manager, bin-transfer-manager | Transfer an owned call to a colleague extension |
-| GET | `/service_agents/contacts` | bin-contact-manager | List contacts |
+| GET | `/service_agents/contacts` | bin-contact-manager | List contacts (`starred=true`: the caller's starred contacts) |
 | POST | `/service_agents/contacts` | bin-contact-manager | Create contact |
 | GET | `/service_agents/contacts/lookup` | bin-contact-manager | Lookup contact |
 | GET | `/service_agents/contacts/:id` | bin-contact-manager | Get contact |
@@ -582,6 +582,9 @@ Managed locally by api-manager (no RabbitMQ RPC to a backend service).
 | DELETE | `/service_agents/contacts/:id/phone_numbers/:phone_number_id` | bin-contact-manager | Remove phone number |
 | POST | `/service_agents/contacts/:id/tags` | bin-contact-manager | Add tag |
 | DELETE | `/service_agents/contacts/:id/tags/:tag_id` | bin-contact-manager | Remove tag |
+| PUT | `/service_agents/contacts/:id/star` | bin-contact-manager | Star a contact (private to the agent) |
+| DELETE | `/service_agents/contacts/:id/star` | bin-contact-manager | Remove the star |
+| GET | `/service_agents/contact_stars` | bin-contact-manager | List the caller's stars |
 | GET | `/service_agents/conversations` | bin-conversation-manager | List conversations |
 | GET | `/service_agents/conversations/:id` | bin-conversation-manager | Get conversation |
 | PUT | `/service_agents/conversations/:id` | bin-conversation-manager | Update conversation |

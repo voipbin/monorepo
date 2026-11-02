@@ -22610,6 +22610,102 @@
         }
       }
     },
+    "/service_agents/contacts/{id}/star": {
+      "put": {
+        "summary": "Star a contact",
+        "description": "Star the contact for the calling agent. A star is private to the agent: other agents never\nsee it. The call is idempotent: starring a contact that is already starred returns the\nexisting star with its original `tm_create`. A contact that does not exist, is deleted, or\nbelongs to another customer returns 404.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The contact ID returned from GET /service_agents/contacts.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The contact is starred.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerContactStar"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove the star of a contact",
+        "description": "Remove the calling agent's star on the contact. The call is idempotent: removing a star that\ndoes not exist also returns 200. A contact that does not exist, is deleted, or belongs to\nanother customer returns 404.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The contact ID returned from GET /service_agents/contacts.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The contact is not starred.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerContactStar"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/service_agents/contacts/{id}/tags/{tag_id}": {
       "delete": {
         "summary": "Remove tag from contact",
@@ -22952,7 +23048,7 @@
     "/service_agents/contacts": {
       "get": {
         "summary": "List contacts",
-        "description": "Get contacts for the service agent's customer.",
+        "description": "Get contacts for the service agent's customer. With `starred=true` the list holds only the\ncontacts the calling agent has starred. The order and the page token are the same in both\ncases: the contact's `tm_create`, newest first (not the time the contact was starred).\n",
         "tags": [
           "Service Agent"
         ],
@@ -22962,6 +23058,16 @@
           },
           {
             "$ref": "#/components/parameters/PageToken"
+          },
+          {
+            "name": "starred",
+            "in": "query",
+            "required": false,
+            "description": "When true, return only the contacts the calling agent has starred (see PUT /service_agents/contacts/{id}/star). False or omitted returns all contacts.",
+            "schema": {
+              "type": "boolean",
+              "example": true
+            }
           }
         ],
         "responses": {
@@ -23090,6 +23196,62 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthenticated"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/service_agents/contact_stars": {
+      "get": {
+        "summary": "List the contacts starred by the calling agent",
+        "description": "The calling agent's stars, newest star first. Every item has `starred` set to true. Use it to\nmark the starred contacts in a contact list or on a contact detail screen. To get the\nstarred contacts themselves in one call, use `GET /service_agents/contacts?starred=true`.\nThe page token is the `tm_create` of the last returned star. Stars of contacts that were\ndeleted are not returned.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CommonPagination"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ContactManagerContactStar"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
@@ -30929,6 +31091,32 @@
             "type": "string",
             "description": "Pagination token for the next page. Empty when no further pages exist.",
             "example": "2026-06-01T09:30:01.000000Z"
+          }
+        }
+      },
+      "ContactManagerContactStar": {
+        "type": "object",
+        "required": [
+          "contact_id",
+          "starred"
+        ],
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The contact ID returned from GET /service_agents/contacts.",
+            "example": "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+          },
+          "starred": {
+            "type": "boolean",
+            "description": "Whether the calling agent has starred the contact.",
+            "example": true
+          },
+          "tm_create": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the contact was starred. Absent when starred is false.",
+            "example": "2026-11-02T09:15:30.123456Z"
           }
         }
       },

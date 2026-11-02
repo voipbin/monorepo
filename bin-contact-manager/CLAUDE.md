@@ -48,7 +48,7 @@ go generate ./pkg/cachehandler/...
 
 ## Database migrations
 
-The schema of the nine tables `contact_activities`, `contact_address_ownership_periods`, `contact_addresses`, `contact_case_notes`, `contact_cases`, `contact_contacts`, `contact_list_members`, `contact_lists` and `contact_tag_assignments` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax.
+The schema of the ten tables `contact_activities`, `contact_address_ownership_periods`, `contact_addresses`, `contact_case_notes`, `contact_cases`, `contact_contacts`, `contact_list_members`, `contact_lists`, `contact_stars` and `contact_tag_assignments` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax.
 
 - Files: `migrations/NNNNNN_<description>.up.sql` and `.down.sql` (six digits, from 000001 without gaps). `000001_baseline` is the schema at the time of the conversion (`CREATE TABLE IF NOT EXISTS`, the table options Alembic declared, down is the no-op `SELECT 1`). Version table: `contact_schema_migrations`.
 - `cmd/contact-manager` runs `migrationhandler.Run` right after the database connection and before the cache and RabbitMQ. Failure stops the start (non-zero exit).

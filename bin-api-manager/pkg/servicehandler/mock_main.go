@@ -43,6 +43,7 @@ import (
 	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
 	casenote "monorepo/bin-contact-manager/models/casenote"
 	contact "monorepo/bin-contact-manager/models/contact"
+	contactstar "monorepo/bin-contact-manager/models/contactstar"
 	kase "monorepo/bin-contact-manager/models/kase"
 	account0 "monorepo/bin-conversation-manager/models/account"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
@@ -5241,6 +5242,22 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactList(ctx, a, size, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactList), ctx, a, size, token, filters)
 }
 
+// ServiceAgentContactListStarred mocks base method.
+func (m *MockServiceHandler) ServiceAgentContactListStarred(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*contact.WebhookMessage, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentContactListStarred", ctx, a, size, token)
+	ret0, _ := ret[0].([]*contact.WebhookMessage)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ServiceAgentContactListStarred indicates an expected call of ServiceAgentContactListStarred.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactListStarred(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactListStarred", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactListStarred), ctx, a, size, token)
+}
+
 // ServiceAgentContactLookup mocks base method.
 func (m *MockServiceHandler) ServiceAgentContactLookup(ctx context.Context, a *auth.AuthIdentity, phoneE164, arg3 string) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -5254,6 +5271,52 @@ func (m *MockServiceHandler) ServiceAgentContactLookup(ctx context.Context, a *a
 func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactLookup(ctx, a, phoneE164, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactLookup", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactLookup), ctx, a, phoneE164, arg3)
+}
+
+// ServiceAgentContactStarDelete mocks base method.
+func (m *MockServiceHandler) ServiceAgentContactStarDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*contactstar.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentContactStarDelete", ctx, a, contactID)
+	ret0, _ := ret[0].(*contactstar.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentContactStarDelete indicates an expected call of ServiceAgentContactStarDelete.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactStarDelete(ctx, a, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactStarDelete", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactStarDelete), ctx, a, contactID)
+}
+
+// ServiceAgentContactStarList mocks base method.
+func (m *MockServiceHandler) ServiceAgentContactStarList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*contactstar.WebhookMessage, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentContactStarList", ctx, a, size, token)
+	ret0, _ := ret[0].([]*contactstar.WebhookMessage)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ServiceAgentContactStarList indicates an expected call of ServiceAgentContactStarList.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactStarList(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactStarList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactStarList), ctx, a, size, token)
+}
+
+// ServiceAgentContactStarSet mocks base method.
+func (m *MockServiceHandler) ServiceAgentContactStarSet(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*contactstar.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentContactStarSet", ctx, a, contactID)
+	ret0, _ := ret[0].(*contactstar.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentContactStarSet indicates an expected call of ServiceAgentContactStarSet.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactStarSet(ctx, a, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactStarSet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactStarSet), ctx, a, contactID)
 }
 
 // ServiceAgentContactTagAdd mocks base method.

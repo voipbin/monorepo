@@ -52,6 +52,7 @@ import (
 
 	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
+	cmcontactstar "monorepo/bin-contact-manager/models/contactstar"
 	cmkase "monorepo/bin-contact-manager/models/kase"
 
 	cvaccount "monorepo/bin-conversation-manager/models/account"
@@ -996,6 +997,10 @@ type RequestHandler interface {
 	ContactV1CaseContinue(ctx context.Context, customerID, id uuid.UUID, callerType string, callerID uuid.UUID, callerIsAdmin bool) (*cmkase.Case, error)
 	ContactV1CaseNoteList(ctx context.Context, customerID, caseID uuid.UUID) ([]*cmcasenote.CaseNote, error)
 	ContactV1ContactCaseNoteList(ctx context.Context, customerID, contactID uuid.UUID, size uint64, token string) ([]*cmcasenote.CaseNote, string, error)
+	ContactV1ContactStar(ctx context.Context, customerID, agentID, contactID uuid.UUID) (*cmcontactstar.ContactStar, error)
+	ContactV1ContactUnstar(ctx context.Context, customerID, agentID, contactID uuid.UUID) error
+	ContactV1ContactStarredList(ctx context.Context, customerID, agentID uuid.UUID, size uint64, token string) ([]cmcontact.Contact, string, error)
+	ContactV1ContactStarList(ctx context.Context, customerID, agentID uuid.UUID, size uint64, token string) ([]*cmcontactstar.ContactStar, string, error)
 	ContactV1CaseNoteCreate(ctx context.Context, customerID, caseID uuid.UUID, authorType string, authorID *uuid.UUID, text string) (*cmcasenote.CaseNote, error)
 	ContactV1CaseNoteDelete(ctx context.Context, customerID, caseID, noteID uuid.UUID) error
 	ContactV1CaseTagList(ctx context.Context, customerID, caseID uuid.UUID) ([]uuid.UUID, error)

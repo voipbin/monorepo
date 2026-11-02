@@ -49,6 +49,7 @@ import (
 
 	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
+	cmcontactstar "monorepo/bin-contact-manager/models/contactstar"
 	cmkase "monorepo/bin-contact-manager/models/kase"
 	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
 
@@ -1069,6 +1070,10 @@ type ServiceHandler interface {
 	// service_agent case note
 	ServiceAgentCaseNoteList(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID) ([]*cmcasenote.CaseNote, error)
 	ServiceAgentContactCaseNoteList(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, size uint64, token string) ([]*cmcasenote.CaseNote, string, error)
+	ServiceAgentContactStarSet(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontactstar.WebhookMessage, error)
+	ServiceAgentContactStarDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontactstar.WebhookMessage, error)
+	ServiceAgentContactStarList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmcontactstar.WebhookMessage, string, error)
+	ServiceAgentContactListStarred(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmcontact.WebhookMessage, string, error)
 	ServiceAgentCaseNoteCreate(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, text string) (*cmcasenote.CaseNote, error)
 	ServiceAgentCaseNoteDelete(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, noteID uuid.UUID) error
 
