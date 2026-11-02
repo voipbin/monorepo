@@ -4271,6 +4271,10 @@ components:
           format: uuid
           description: ID of the actor that closed the case. Nullable.
           example: "2a2ec0ba-8004-11ec-aea5-439829c92a7c"
+        disposition:
+          type: string
+          description: The outcome the agent recorded when closing the case (resolved, unresolved, follow_up_needed, spam, other). Empty for open cases and for cases closed without one.
+          example: "resolved"
         name:
           type: string
           description: Optional freeform case name/title, settable only at creation time.

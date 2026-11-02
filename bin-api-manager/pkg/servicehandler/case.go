@@ -271,7 +271,7 @@ func (h *serviceHandler) CaseClose(ctx context.Context, a *auth.AuthIdentity, id
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1CaseClose(ctx, a.CustomerID, id, string(commonidentity.OwnerTypeAgent), a.AgentID())
+	res, err := h.reqHandler.ContactV1CaseClose(ctx, a.CustomerID, id, string(commonidentity.OwnerTypeAgent), a.AgentID(), "")
 	if err != nil {
 		log.Errorf("Could not close case. err: %v", err)
 		return nil, err

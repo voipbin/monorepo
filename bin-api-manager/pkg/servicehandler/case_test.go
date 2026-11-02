@@ -386,7 +386,7 @@ func Test_CaseClose_DerivesClosedByFromCaller(t *testing.T) {
 	// EXPECT() below fails the test if the code ever accepts/forwards a
 	// different, client-suppliable agent ID.
 	mockReq.EXPECT().
-		ContactV1CaseClose(ctx, customerID, caseID, string(commonidentity.OwnerTypeAgent), agentID).
+		ContactV1CaseClose(ctx, customerID, caseID, string(commonidentity.OwnerTypeAgent), agentID, "").
 		Return(&cmkase.Case{ID: caseID, CustomerID: customerID, Status: cmkase.StatusClosed}, nil)
 
 	res, err := h.CaseClose(ctx, a, caseID)

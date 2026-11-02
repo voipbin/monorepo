@@ -391,6 +391,7 @@ func Test_ContactV1CaseClose(t *testing.T) {
 		id           uuid.UUID
 		closedByType string
 		closedByID   uuid.UUID
+		disposition  string
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -398,6 +399,34 @@ func Test_ContactV1CaseClose(t *testing.T) {
 
 		expectRes *cmkase.Case
 	}{
+		{
+			name: "with disposition",
+
+			customerID:   uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
+			id:           uuid.FromStringOrNil("5623e25e-2c74-11ee-87a6-bfa8ae34077f"),
+			closedByType: "agent",
+			closedByID:   uuid.FromStringOrNil("8fe6c136-2c75-11ee-a3a4-37400837e12e"),
+			disposition:  "follow_up_needed",
+
+			expectTarget: "bin-manager.contact-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/cases/5623e25e-2c74-11ee-87a6-bfa8ae34077f/close",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data: []byte(
+					`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","closed_by_type":"agent","closed_by_id":"8fe6c136-2c75-11ee-a3a4-37400837e12e","disposition":"follow_up_needed"}`,
+				),
+			},
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"Case":{"id":"5623e25e-2c74-11ee-87a6-bfa8ae34077f","disposition":"follow_up_needed"},"ClosedReason":"agent_closed","ClosedByType":"agent","AlreadyClosed":false}`),
+			},
+			expectRes: &cmkase.Case{
+				ID:          uuid.FromStringOrNil("5623e25e-2c74-11ee-87a6-bfa8ae34077f"),
+				Disposition: "follow_up_needed",
+			},
+		},
 		{
 			name: "normal",
 
@@ -439,7 +468,7 @@ func Test_ContactV1CaseClose(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ContactV1CaseClose(ctx, tt.customerID, tt.id, tt.closedByType, tt.closedByID)
+			res, err := reqHandler.ContactV1CaseClose(ctx, tt.customerID, tt.id, tt.closedByType, tt.closedByID, tt.disposition)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

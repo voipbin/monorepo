@@ -173,9 +173,17 @@ Only the current owning agent may unassign themselves; there is no admin/manager
 
 .. code::
 
-    $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/<case-id>/close?token=<token>'
+    $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/<case-id>/close?token=<token>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "disposition": "resolved"
+        }'
 
-``closed_by_type``/``closed_by_id`` are always derived from the caller's own authenticated agent identity -- the request body carries no fields, so a case can never be closed "as" another agent.
+The request body is optional. ``disposition`` records the outcome of the case and must be one of ``resolved``, ``unresolved``, ``follow_up_needed``, ``spam`` or ``other``; any other value returns ``400 Bad Request``. Omit the body (or the field) to close the case without recording one.
+
+If the case was already closed, the stored ``disposition`` is kept and the response returns the stored value, which can differ from the requested one.
+
+``closed_by_type``/``closed_by_id`` are always derived from the caller's own authenticated agent identity -- the request body cannot set them, so a case can never be closed "as" another agent.
 
 **Attach or detach the case's Contact**
 

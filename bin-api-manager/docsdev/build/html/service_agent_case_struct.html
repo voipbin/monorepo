@@ -667,6 +667,7 @@
     <span class="s2">"closed_reason"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
     <span class="s2">"closed_by_type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
     <span class="s2">"closed_by_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"disposition"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
     <span class="s2">"previous_case_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
     <span class="s2">"tag_ids"</span><span class="p">:</span> <span class="p">[</span>
         <span class="s2">"&lt;string&gt;"</span>
@@ -694,6 +695,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">closed_reason</span></code> (String, optional): Why the case was closed. See <a class="reference internal" href="#service-agent-case-struct-case-closed-reason"><span class="std std-ref">Closed reason</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">closed_by_type</span></code> (String, optional): <code class="docutils literal notranslate"><span class="pre">agent</span></code>. Derived server-side from the caller that closed the case.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">closed_by_id</span></code> (UUID, nullable): The agent that closed the case, when <code class="docutils literal notranslate"><span class="pre">closed_by_type</span></code> is <code class="docutils literal notranslate"><span class="pre">agent</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">disposition</span></code> (String): The outcome the agent recorded when closing the case. See <a class="reference internal" href="#service-agent-case-struct-case-disposition"><span class="std std-ref">Disposition</span></a>. Empty for open cases and for cases closed without one.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">previous_case_id</span></code> (UUID, nullable): The prior, now-closed case for the same peer, set automatically on re-contact.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> (Array of UUID, optional): Tag IDs assigned to the case.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the case was created.</p></li>
@@ -734,6 +736,35 @@
 </tr>
 <tr class="row-odd"><td><p>merged</p></td>
 <td><p>Reserved for a future same-channel case-merge feature. Not yet used.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="disposition">
+<span id="service-agent-case-struct-case-disposition"></span><h3>Disposition<a class="headerlink" href="#disposition" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>resolved</p></td>
+<td><p>The customer’s issue was resolved.</p></td>
+</tr>
+<tr class="row-odd"><td><p>unresolved</p></td>
+<td><p>The case was closed without resolving the issue.</p></td>
+</tr>
+<tr class="row-even"><td><p>follow_up_needed</p></td>
+<td><p>The issue needs a follow-up.</p></td>
+</tr>
+<tr class="row-odd"><td><p>spam</p></td>
+<td><p>The contact was spam.</p></td>
+</tr>
+<tr class="row-even"><td><p>other</p></td>
+<td><p>Any other outcome.</p></td>
 </tr>
 </tbody>
 </table>
@@ -856,6 +887,7 @@
 <li><a class="reference internal" href="#case">Case</a><ul>
 <li><a class="reference internal" href="#status">Status</a></li>
 <li><a class="reference internal" href="#closed-reason">Closed reason</a></li>
+<li><a class="reference internal" href="#disposition">Disposition</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#casenote">CaseNote</a><ul>

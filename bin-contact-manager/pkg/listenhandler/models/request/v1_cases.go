@@ -11,6 +11,7 @@ type V1DataCasesIDClose struct {
 	CustomerID   uuid.UUID `json:"customer_id"`
 	ClosedByType string    `json:"closed_by_type"`
 	ClosedByID   uuid.UUID `json:"closed_by_id"`
+	Disposition  string    `json:"disposition,omitempty"`
 }
 
 // V1DataCasesIDAssign is the request body for POST /v1/cases/{id}/assign.

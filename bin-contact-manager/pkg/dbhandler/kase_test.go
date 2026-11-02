@@ -282,7 +282,7 @@ func Test_CaseGetOpenByPeer(t *testing.T) {
 		"id", "customer_id", "peer", "local", "reference_type",
 		"name", "detail", "reference_id",
 		"contact_id", "owner_type", "owner_id",
-		"status", "opened_at", "closed_at", "closed_reason", "closed_by_type", "closed_by_id",
+		"status", "opened_at", "closed_at", "closed_reason", "closed_by_type", "closed_by_id", "disposition",
 		"previous_case_id", "tag_ids", "tm_create", "tm_update",
 	}
 
@@ -299,7 +299,7 @@ func Test_CaseGetOpenByPeer(t *testing.T) {
 			caseID.Bytes(), customerID.Bytes(), `{"type":"tel","target":"+155****0003"}`, `{}`, "call",
 			"", nil, "",
 			nil, nil, nil,
-			string(kase.StatusOpen), openedAt, nil, nil, nil, nil,
+			string(kase.StatusOpen), openedAt, nil, nil, nil, nil, nil,
 			nil, nil, openedAt, openedAt,
 		))
 
@@ -363,7 +363,7 @@ func Test_CaseUpdateStatusClosed(t *testing.T) {
 		t.Fatalf("CaseInsert() error = %v", err)
 	}
 
-	ok, err := h.CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonAgentClosed, kase.ClosedByTypeAgent, &agentID, closedAt)
+	ok, err := h.CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonAgentClosed, kase.ClosedByTypeAgent, &agentID, closedAt, "")
 	if err != nil {
 		t.Fatalf("CaseUpdateStatusClosed() error = %v", err)
 	}
@@ -384,7 +384,7 @@ func Test_CaseUpdateStatusClosed(t *testing.T) {
 
 	// Double-close: WHERE status='open' guard means the second call
 	// affects 0 rows -- idempotent no-op, not an error.
-	ok2, err := h.CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonMerged, kase.ClosedByTypeAgent, nil, closedAt)
+	ok2, err := h.CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonMerged, kase.ClosedByTypeAgent, nil, closedAt, "")
 	if err != nil {
 		t.Fatalf("CaseUpdateStatusClosed() second call error = %v", err)
 	}
@@ -793,5 +793,68 @@ func Test_CaseListByOwner(t *testing.T) {
 	}
 	if foundUnowned {
 		t.Errorf("expected unowned case to NOT appear in CaseListByOwner()")
+	}
+}
+
+// Test_CaseUpdateStatusClosed_Disposition verifies that the disposition is
+// written by the same guarded UPDATE as the status change, and that an empty
+// disposition leaves the column untouched.
+func Test_CaseUpdateStatusClosed_Disposition(t *testing.T) {
+	resetTestDB(t)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h := handler{utilHandler: utilhandler.NewMockUtilHandler(mc), db: dbTest, cache: cachehandler.NewMockCacheHandler(mc)}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("f1b2c3d4-5104-5104-5104-000000000001")
+	agentID := uuid.FromStringOrNil("f1b2c3d4-5104-5104-5104-000000000003")
+	openedAt := timePtr(time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC))
+	closedAt := timePtr(time.Date(2026, 6, 28, 12, 0, 0, 0, time.UTC))
+
+	tests := []struct {
+		name        string
+		caseID      uuid.UUID
+		target      string
+		disposition string
+		second      string
+		expect      string
+	}{
+		{"stored", uuid.FromStringOrNil("f1b2c3d4-5104-5104-5104-000000000011"), "+155****0011", kase.DispositionFollowUpNeeded, kase.DispositionSpam, kase.DispositionFollowUpNeeded},
+		{"empty", uuid.FromStringOrNil("f1b2c3d4-5104-5104-5104-000000000012"), "+155****0012", "", kase.DispositionSpam, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &kase.Case{
+				ID: tt.caseID, CustomerID: customerID,
+				Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: tt.target},
+				ReferenceType: "call", Status: kase.StatusOpen, OpenedAt: openedAt, TMCreate: openedAt, TMUpdate: openedAt,
+			}
+			if err := h.CaseInsert(ctx, c); err != nil {
+				t.Fatalf("CaseInsert() error = %v", err)
+			}
+			ok, err := h.CaseUpdateStatusClosed(ctx, customerID, tt.caseID, kase.ClosedReasonAgentClosed, kase.ClosedByTypeAgent, &agentID, closedAt, tt.disposition)
+			if err != nil || !ok {
+				t.Fatalf("CaseUpdateStatusClosed() = %v, %v", ok, err)
+			}
+			res, err := h.CaseGetByID(ctx, tt.caseID)
+			if err != nil {
+				t.Fatalf("CaseGetByID() error = %v", err)
+			}
+			if res.Disposition != tt.expect {
+				t.Errorf("disposition = %q, want %q", res.Disposition, tt.expect)
+			}
+
+			// A later close must not overwrite the stored value.
+			ok2, err := h.CaseUpdateStatusClosed(ctx, customerID, tt.caseID, kase.ClosedReasonAgentClosed, kase.ClosedByTypeAgent, &agentID, closedAt, tt.second)
+			if err != nil || ok2 {
+				t.Fatalf("second CaseUpdateStatusClosed() = %v, %v; want false, nil", ok2, err)
+			}
+			res2, _ := h.CaseGetByID(ctx, tt.caseID)
+			if res2.Disposition != tt.expect {
+				t.Errorf("disposition after second close = %q, want %q", res2.Disposition, tt.expect)
+			}
+		})
 	}
 }

@@ -1056,7 +1056,7 @@ type ServiceHandler interface {
 	// service_agent case
 	ServiceAgentCaseList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, contactID uuid.UUID, referenceID string) ([]*cmkase.Case, string, error)
 	ServiceAgentCaseGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
-	ServiceAgentCaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
+	ServiceAgentCaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, disposition string) (*cmkase.Case, error)
 	ServiceAgentCaseAssign(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, ownerID uuid.UUID) (*cmkase.Case, error)
 	ServiceAgentCaseUnassign(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
 	ServiceAgentCaseUpdateContact(ctx context.Context, a *auth.AuthIdentity, id, contactID uuid.UUID) (*cmkase.Case, error)

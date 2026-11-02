@@ -554,18 +554,18 @@ func (mr *MockDBHandlerMockRecorder) CaseUpdateOwner(ctx, customerID, id, ownerT
 }
 
 // CaseUpdateStatusClosed mocks base method.
-func (m *MockDBHandler) CaseUpdateStatusClosed(ctx context.Context, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
+func (m *MockDBHandler) CaseUpdateStatusClosed(ctx context.Context, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time, disposition string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseUpdateStatusClosed", ctx, customerID, id, closedReason, closedByType, closedByID, closedAt)
+	ret := m.ctrl.Call(m, "CaseUpdateStatusClosed", ctx, customerID, id, closedReason, closedByType, closedByID, closedAt, disposition)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CaseUpdateStatusClosed indicates an expected call of CaseUpdateStatusClosed.
-func (mr *MockDBHandlerMockRecorder) CaseUpdateStatusClosed(ctx, customerID, id, closedReason, closedByType, closedByID, closedAt any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) CaseUpdateStatusClosed(ctx, customerID, id, closedReason, closedByType, closedByID, closedAt, disposition any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateStatusClosed", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateStatusClosed), ctx, customerID, id, closedReason, closedByType, closedByID, closedAt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateStatusClosed", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateStatusClosed), ctx, customerID, id, closedReason, closedByType, closedByID, closedAt, disposition)
 }
 
 // CaseUpdateTagIDs mocks base method.

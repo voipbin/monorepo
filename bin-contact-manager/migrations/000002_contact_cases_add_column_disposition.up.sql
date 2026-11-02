@@ -1,0 +1,1 @@
+ALTER TABLE contact_cases ADD COLUMN disposition varchar(32) NULL, ALGORITHM=INPLACE, LOCK=NONE;

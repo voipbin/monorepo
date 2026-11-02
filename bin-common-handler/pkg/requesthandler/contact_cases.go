@@ -199,11 +199,14 @@ func (r *requestHandler) ContactV1CaseGet(ctx context.Context, customerID, id uu
 // CloseResult embeds *kase.Case as a named field (not embedded), the
 // wire shape is {"Case": {...}, "ClosedReason": ..., ...}, not a bare
 // Case object. Decode into a local mirror struct and return .Case.
+// disposition is optional (empty means none) and is omitted from the wire
+// body when empty.
 func (r *requestHandler) ContactV1CaseClose(
 	ctx context.Context,
 	customerID, id uuid.UUID,
 	closedByType string,
 	closedByID uuid.UUID,
+	disposition string,
 ) (*cmkase.Case, error) {
 	uri := fmt.Sprintf("/v1/cases/%s/close", id)
 
@@ -211,6 +214,7 @@ func (r *requestHandler) ContactV1CaseClose(
 		CustomerID:   customerID,
 		ClosedByType: closedByType,
 		ClosedByID:   closedByID,
+		Disposition:  disposition,
 	}
 
 	m, err := json.Marshal(data)

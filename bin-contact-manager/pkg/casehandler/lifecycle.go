@@ -44,6 +44,14 @@ var ErrCaseContinueForbidden = cerrors.PermissionDenied(
 	"caller is neither the case's owning agent nor an admin/manager",
 )
 
+// ErrCaseDispositionInvalid is returned by Close when the disposition is not
+// one of the kase.Disposition* values (InvalidArgument -> HTTP 400).
+var ErrCaseDispositionInvalid = cerrors.InvalidArgument(
+	commonoutline.ServiceNameContactManager,
+	"CASE_DISPOSITION_INVALID",
+	"disposition must be one of resolved, unresolved, follow_up_needed, spam, other",
+)
+
 // CloseResult is the response shape for Close (design §5.1). It always
 // reflects the ACTUALLY persisted closed_reason/closed_by -- never the
 // caller's own request intent -- distinguishing a genuine first-close
@@ -64,12 +72,16 @@ type CloseResult struct {
 // else" (returns the truthful persisted state) from "0 rows because the id
 // doesn't exist or belongs to a different tenant" (returns
 // dbhandler.ErrNotFound).
-func (h *caseHandler) Close(ctx context.Context, customerID, id uuid.UUID, closedByType commonidentity.OwnerType, closedByID uuid.UUID) (*CloseResult, error) {
+func (h *caseHandler) Close(ctx context.Context, customerID, id uuid.UUID, closedByType commonidentity.OwnerType, closedByID uuid.UUID, disposition string) (*CloseResult, error) {
+	if disposition != "" && !kase.IsValidDisposition(disposition) {
+		return nil, ErrCaseDispositionInvalid
+	}
+
 	now := h.utilHandler.TimeNow()
 
 	byType := string(closedByType)
 	byID := closedByID
-	ok, err := h.db.CaseUpdateStatusClosed(ctx, customerID, id, kase.ClosedReasonAgentClosed, byType, &byID, now)
+	ok, err := h.db.CaseUpdateStatusClosed(ctx, customerID, id, kase.ClosedReasonAgentClosed, byType, &byID, now, disposition)
 	if err != nil {
 		return nil, fmt.Errorf("could not close case. Close. err: %w", err)
 	}

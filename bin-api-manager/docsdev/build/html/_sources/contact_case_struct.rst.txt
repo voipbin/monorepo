@@ -26,6 +26,7 @@ Case
         "closed_reason": "<string>",
         "closed_by_type": "<string>",
         "closed_by_id": "<string>",
+        "disposition": "<string>",
         "name": "<string>",
         "detail": "<string>",
         "previous_case_id": "<string>",
@@ -49,6 +50,7 @@ Case
 * ``closed_reason`` (String): Reason the case was closed. See :ref:`ClosedReason <contact-case-struct-closedreason>`.
 * ``closed_by_type`` (String): Type of the actor that closed the case. See :ref:`ClosedByType <contact-case-struct-closedbytype>`.
 * ``closed_by_id`` (UUID): ID of the actor that closed the case. Nullable.
+* ``disposition`` (String): Outcome the agent recorded when closing the case. See :ref:`Disposition <contact-case-struct-disposition>`. Empty for open cases and for cases closed without one.
 * ``name`` (String): Optional freeform case name/title, settable only at creation time (e.g. by the ``case_create`` Flow action).
 * ``detail`` (String): Optional freeform case detail, settable only at creation time.
 * ``previous_case_id`` (UUID): The prior (now-closed) case this case continues from, if created via ``POST /contact_cases/{id}/continue``. Nil for the first case on a given peer.
@@ -83,6 +85,29 @@ ClosedReason
      - Description
    * - agent_closed
      - Closed explicitly by an agent via ``POST /contact_cases/{id}/close``
+
+.. _contact-case-struct-disposition:
+
+Disposition
+^^^^^^^^^^^
+
+Recorded only through ``POST /service_agents/contact_cases/{id}/close``. The admin ``POST /contact_cases/{id}/close`` does not accept one.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Value
+     - Description
+   * - resolved
+     - The customer's issue was resolved
+   * - unresolved
+     - The case was closed without resolving the issue
+   * - follow_up_needed
+     - The issue needs a follow-up
+   * - spam
+     - The contact was spam
+   * - other
+     - Any other outcome
 
 .. _contact-case-struct-closedbytype:
 

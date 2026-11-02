@@ -225,18 +225,18 @@ func (mr *MockCaseHandlerMockRecorder) CaseTagRemove(ctx, customerID, caseID, ta
 }
 
 // Close mocks base method.
-func (m *MockCaseHandler) Close(ctx context.Context, customerID, id uuid.UUID, closedByType identity.OwnerType, closedByID uuid.UUID) (*CloseResult, error) {
+func (m *MockCaseHandler) Close(ctx context.Context, customerID, id uuid.UUID, closedByType identity.OwnerType, closedByID uuid.UUID, disposition string) (*CloseResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Close", ctx, customerID, id, closedByType, closedByID)
+	ret := m.ctrl.Call(m, "Close", ctx, customerID, id, closedByType, closedByID, disposition)
 	ret0, _ := ret[0].(*CloseResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Close indicates an expected call of Close.
-func (mr *MockCaseHandlerMockRecorder) Close(ctx, customerID, id, closedByType, closedByID any) *gomock.Call {
+func (mr *MockCaseHandlerMockRecorder) Close(ctx, customerID, id, closedByType, closedByID, disposition any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockCaseHandler)(nil).Close), ctx, customerID, id, closedByType, closedByID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockCaseHandler)(nil).Close), ctx, customerID, id, closedByType, closedByID, disposition)
 }
 
 // Continue mocks base method.

@@ -282,7 +282,7 @@ func Test_contactCasesIDClosePOST(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentCaseClose(req.Context(), tt.agent, tt.expectCaseID).Return(tt.responseCase, nil)
+			mockSvc.EXPECT().ServiceAgentCaseClose(req.Context(), tt.agent, tt.expectCaseID, "").Return(tt.responseCase, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -511,6 +511,67 @@ func Test_contactCasesIDPUT(t *testing.T) {
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d, body: %s", http.StatusOK, w.Code, w.Body.String())
+			}
+		})
+	}
+}
+
+func Test_contactCasesIDClosePOST_Disposition(t *testing.T) {
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+		},
+	})
+	caseID := uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1")
+	path := "/service_agents/contact_cases/e66d1da0-3ed7-11ef-9208-4bcc069917a1/close"
+
+	tests := []struct {
+		name string
+		body string
+
+		expectCall        bool
+		expectDisposition string
+		expectCode        int
+	}{
+		{"resolved", `{"disposition":"resolved"}`, true, "resolved", http.StatusOK},
+		{"unresolved", `{"disposition":"unresolved"}`, true, "unresolved", http.StatusOK},
+		{"follow_up_needed", `{"disposition":"follow_up_needed"}`, true, "follow_up_needed", http.StatusOK},
+		{"spam", `{"disposition":"spam"}`, true, "spam", http.StatusOK},
+		{"other", `{"disposition":"other"}`, true, "other", http.StatusOK},
+		{"empty body", ``, true, "", http.StatusOK},
+		{"empty object", `{}`, true, "", http.StatusOK},
+		{"empty disposition", `{"disposition":""}`, true, "", http.StatusOK},
+		{"unknown value", `{"disposition":"bogus"}`, false, "", http.StatusBadRequest},
+		{"wrong case", `{"disposition":"Resolved"}`, false, "", http.StatusBadRequest},
+		{"invalid json", `{"disposition":`, false, "", http.StatusBadRequest},
+		{"wrong type", `{"disposition":1}`, false, "", http.StatusBadRequest},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{serviceHandler: mockSvc}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", path, strings.NewReader(tt.body))
+			req.Header.Set("Content-Type", "application/json")
+			if tt.expectCall {
+				mockSvc.EXPECT().ServiceAgentCaseClose(gomock.Any(), agent, caseID, tt.expectDisposition).
+					Return(&cmkase.Case{ID: caseID, Status: cmkase.StatusClosed, Disposition: tt.expectDisposition}, nil)
+			}
+
+			r.ServeHTTP(w, req)
+			if w.Code != tt.expectCode {
+				t.Errorf("Wrong status. expect: %d, got: %d, body: %s", tt.expectCode, w.Code, w.Body.String())
 			}
 		})
 	}

@@ -4865,18 +4865,18 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentCaseAssign(ctx, a, id, own
 }
 
 // ServiceAgentCaseClose mocks base method.
-func (m *MockServiceHandler) ServiceAgentCaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*kase.Case, error) {
+func (m *MockServiceHandler) ServiceAgentCaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, disposition string) (*kase.Case, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentCaseClose", ctx, a, id)
+	ret := m.ctrl.Call(m, "ServiceAgentCaseClose", ctx, a, id, disposition)
 	ret0, _ := ret[0].(*kase.Case)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceAgentCaseClose indicates an expected call of ServiceAgentCaseClose.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentCaseClose(ctx, a, id any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentCaseClose(ctx, a, id, disposition any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCaseClose", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCaseClose), ctx, a, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCaseClose", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCaseClose), ctx, a, id, disposition)
 }
 
 // ServiceAgentCaseGet mocks base method.

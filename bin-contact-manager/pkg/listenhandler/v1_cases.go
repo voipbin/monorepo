@@ -200,7 +200,7 @@ func (h *listenHandler) processV1CasesIDClosePost(ctx context.Context, req *sock
 		return simpleResponse(400), nil
 	}
 
-	res, err := h.caseHandler.Close(ctx, body.CustomerID, id, commonidentity.OwnerType(body.ClosedByType), body.ClosedByID)
+	res, err := h.caseHandler.Close(ctx, body.CustomerID, id, commonidentity.OwnerType(body.ClosedByType), body.ClosedByID, body.Disposition)
 	if err != nil {
 		log.Errorf("Could not close case. err: %v", err)
 		return errorResponse(err), nil

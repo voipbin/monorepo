@@ -189,3 +189,44 @@ func TestReferenceTypeConversationMessageValue(t *testing.T) {
 		t.Errorf("ReferenceTypeConversationMessage mismatch. expected: %q, got: %q", "conversation_message", ReferenceTypeConversationMessage)
 	}
 }
+
+func Test_IsValidDisposition(t *testing.T) {
+	tests := []struct {
+		value  string
+		expect bool
+	}{
+		{DispositionResolved, true},
+		{DispositionUnresolved, true},
+		{DispositionFollowUpNeeded, true},
+		{DispositionSpam, true},
+		{DispositionOther, true},
+		{"", false},
+		{"RESOLVED", false},
+		{"closed", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.value, func(t *testing.T) {
+			if got := IsValidDisposition(tt.value); got != tt.expect {
+				t.Errorf("IsValidDisposition(%q) = %v, want %v", tt.value, got, tt.expect)
+			}
+		})
+	}
+}
+
+// Test_Case_DispositionJSON verifies the disposition key is always present
+// in the marshaled Case (empty string when none was recorded).
+func Test_Case_DispositionJSON(t *testing.T) {
+	for _, v := range []string{"", DispositionSpam} {
+		data, err := json.Marshal(&Case{Disposition: v})
+		if err != nil {
+			t.Fatalf("marshal error: %v", err)
+		}
+		var raw map[string]any
+		if err := json.Unmarshal(data, &raw); err != nil {
+			t.Fatalf("unmarshal error: %v", err)
+		}
+		if got, ok := raw["disposition"]; !ok || got != v {
+			t.Errorf("disposition = %v (present=%v), want %q", got, ok, v)
+		}
+	}
+}

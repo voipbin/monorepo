@@ -3784,18 +3784,18 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1CaseAssign(ctx, customerID, i
 }
 
 // ContactV1CaseClose mocks base method.
-func (m *MockRequestHandler) ContactV1CaseClose(ctx context.Context, customerID, id uuid.UUID, closedByType string, closedByID uuid.UUID) (*kase.Case, error) {
+func (m *MockRequestHandler) ContactV1CaseClose(ctx context.Context, customerID, id uuid.UUID, closedByType string, closedByID uuid.UUID, disposition string) (*kase.Case, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactV1CaseClose", ctx, customerID, id, closedByType, closedByID)
+	ret := m.ctrl.Call(m, "ContactV1CaseClose", ctx, customerID, id, closedByType, closedByID, disposition)
 	ret0, _ := ret[0].(*kase.Case)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ContactV1CaseClose indicates an expected call of ContactV1CaseClose.
-func (mr *MockRequestHandlerMockRecorder) ContactV1CaseClose(ctx, customerID, id, closedByType, closedByID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ContactV1CaseClose(ctx, customerID, id, closedByType, closedByID, disposition any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1CaseClose", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1CaseClose), ctx, customerID, id, closedByType, closedByID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1CaseClose", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1CaseClose), ctx, customerID, id, closedByType, closedByID, disposition)
 }
 
 // ContactV1CaseContinue mocks base method.

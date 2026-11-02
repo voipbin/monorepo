@@ -8,7 +8,9 @@ post:
     Returns the actually-persisted state, including already_closed
     semantics reflected via the returned closed_reason / closed_by_type /
     closed_by_id fields when the case had already been closed by
-    someone/something else.
+    someone/something else. The returned case also carries the disposition
+    (empty for cases closed without one); the disposition can only be recorded
+    through the service agent close endpoint.
   tags:
     - Case
   parameters:

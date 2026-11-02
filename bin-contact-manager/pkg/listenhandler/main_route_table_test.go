@@ -162,7 +162,7 @@ func Test_processRequest_RouteTable(t *testing.T) {
 		{
 			name: "cases close", method: sock.RequestMethodPost, uri: "/v1/cases/" + caseID.String() + "/close", data: custBody,
 			expect: func(c *contacthandler.MockContactHandler, k *casehandler.MockCaseHandler) {
-				k.EXPECT().Close(gomock.Any(), customerID, caseID, gomock.Any(), gomock.Any()).Return(&casehandler.CloseResult{Case: theCase}, nil)
+				k.EXPECT().Close(gomock.Any(), customerID, caseID, gomock.Any(), gomock.Any(), gomock.Any()).Return(&casehandler.CloseResult{Case: theCase}, nil)
 			},
 			expectCode: 200, bodyHas: []string{caseID.String()},
 		},

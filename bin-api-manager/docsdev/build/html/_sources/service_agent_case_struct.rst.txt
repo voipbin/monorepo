@@ -28,6 +28,7 @@ Case
         "closed_reason": "<string>",
         "closed_by_type": "<string>",
         "closed_by_id": "<string>",
+        "disposition": "<string>",
         "previous_case_id": "<string>",
         "tag_ids": [
             "<string>"
@@ -53,6 +54,7 @@ Case
 * ``closed_reason`` (String, optional): Why the case was closed. See :ref:`Closed reason <service_agent-case-struct-case-closed_reason>`.
 * ``closed_by_type`` (String, optional): ``agent``. Derived server-side from the caller that closed the case.
 * ``closed_by_id`` (UUID, nullable): The agent that closed the case, when ``closed_by_type`` is ``agent``.
+* ``disposition`` (String): The outcome the agent recorded when closing the case. See :ref:`Disposition <service_agent-case-struct-case-disposition>`. Empty for open cases and for cases closed without one.
 * ``previous_case_id`` (UUID, nullable): The prior, now-closed case for the same peer, set automatically on re-contact.
 * ``tag_ids`` (Array of UUID, optional): Tag IDs assigned to the case.
 * ``tm_create`` (string, ISO 8601): Timestamp when the case was created.
@@ -82,6 +84,21 @@ agent_closed   An agent explicitly closed the case via ``POST .../close``.
 merged         Reserved for a future same-channel case-merge feature. Not yet used.
 ============== ============
 
+
+.. _service_agent-case-struct-case-disposition:
+
+Disposition
+^^^^^^^^^^^
+
+================= ============
+Type              Description
+================= ============
+resolved          The customer's issue was resolved.
+unresolved        The case was closed without resolving the issue.
+follow_up_needed  The issue needs a follow-up.
+spam              The contact was spam.
+other             Any other outcome.
+================= ============
 
 .. _service_agent-case-struct-casenote:
 

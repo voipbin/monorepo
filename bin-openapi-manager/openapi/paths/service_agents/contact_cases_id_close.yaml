@@ -1,6 +1,11 @@
 post:
   summary: Close the case
-  description: Closes an open case by its ID.
+  description: |
+    Closes an open case by its ID. The request body is optional. When it carries a
+    `disposition`, the outcome is recorded together with the close. Omit the body
+    (or the field) to close without recording one. If the case was already closed,
+    the stored `disposition` is kept and the response returns the stored value, which
+    can differ from the requested one.
   tags:
     - Service Agent
   parameters:
@@ -12,6 +17,18 @@ post:
         format: uuid
         example: "550e8400-e29b-41d4-a716-446655440000"
       description: "The unique identifier of the case. Returned from the `GET /service_agents/contact_cases` response."
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            disposition:
+              type: string
+              enum: [resolved, unresolved, follow_up_needed, spam, other]
+              description: The outcome the agent records when closing the case. Omit to close without recording one.
+              example: "resolved"
   responses:
     '200':
       description: The case after closing.

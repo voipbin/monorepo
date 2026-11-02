@@ -214,7 +214,7 @@ func (h *handler) CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID 
 // itself (not checked separately afterward) so a cross-tenant caller's
 // UPDATE can never match a row at all -- there is no window where the
 // mutation could commit before tenancy is verified.
-func caseUpdateStatusClosedExec(ctx context.Context, exec sqlExecutor, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
+func caseUpdateStatusClosedExec(ctx context.Context, exec sqlExecutor, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time, disposition string) (bool, error) {
 	setMap := sq.Eq{
 		"status":         string(kase.StatusClosed),
 		"closed_reason":  closedReason,
@@ -223,6 +223,9 @@ func caseUpdateStatusClosedExec(ctx context.Context, exec sqlExecutor, customerI
 	}
 	if closedByID != nil {
 		setMap["closed_by_id"] = closedByID.Bytes()
+	}
+	if disposition != "" {
+		setMap["disposition"] = disposition
 	}
 
 	query, args, err := sq.Update(caseTable).
@@ -263,9 +266,10 @@ func caseUpdateStatusClosedExec(ctx context.Context, exec sqlExecutor, customerI
 // rows affected -- a no-op, not an error): callers must re-read the
 // Case (itself tenant-scoped) to distinguish these cases and to
 // discover the actually-persisted closed_reason/closed_by, not assume
-// their own call's arguments won.
-func (h *handler) CaseUpdateStatusClosed(ctx context.Context, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
-	return caseUpdateStatusClosedExec(ctx, h.db, customerID, id, closedReason, closedByType, closedByID, closedAt)
+// their own call's arguments won. A non-empty disposition is written by the
+// same guarded UPDATE; an empty one leaves the column untouched.
+func (h *handler) CaseUpdateStatusClosed(ctx context.Context, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time, disposition string) (bool, error) {
+	return caseUpdateStatusClosedExec(ctx, h.db, customerID, id, closedReason, closedByType, closedByID, closedAt, disposition)
 }
 
 // caseUpdateContactIDExec is the shared implementation for

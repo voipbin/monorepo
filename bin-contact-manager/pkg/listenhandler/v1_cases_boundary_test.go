@@ -48,7 +48,7 @@ func Test_ProcessV1Cases_BoundaryAndErrorMapping(t *testing.T) {
 			body:         fmt.Sprintf(`{"customer_id":"%s","closed_by_type":"agent","closed_by_id":"%s"}`, customerID, ownerID),
 			bodyRequired: true,
 			expect: func(m *casehandler.MockCaseHandler, err error) {
-				m.EXPECT().Close(gomock.Any(), customerID, caseID, commonidentity.OwnerTypeAgent, ownerID).Return(nil, err)
+				m.EXPECT().Close(gomock.Any(), customerID, caseID, commonidentity.OwnerTypeAgent, ownerID, "").Return(nil, err)
 			},
 		},
 		{
