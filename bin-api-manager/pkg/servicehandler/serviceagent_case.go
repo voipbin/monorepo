@@ -15,9 +15,10 @@ import (
 
 // ServiceAgentCaseList sends a request to contact-manager to list cases for
 // the service agent's own customer, optionally filtered by contactID
-// (VOIP-1563). Status/owner_type/owner_id/reference_id filters remain
+// (VOIP-1563) and referenceID (VOIP-1673). An empty referenceID means no
+// reference_id filter. Status/owner_type/owner_id filters remain
 // unsupported on this surface.
-func (h *serviceHandler) ServiceAgentCaseList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, contactID uuid.UUID) ([]*cmkase.Case, string, error) {
+func (h *serviceHandler) ServiceAgentCaseList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, contactID uuid.UUID, referenceID string) ([]*cmkase.Case, string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentCaseList",
 		"customer_id": a.CustomerID,
@@ -28,7 +29,7 @@ func (h *serviceHandler) ServiceAgentCaseList(ctx context.Context, a *auth.AuthI
 		return nil, "", serviceerrors.ErrPermissionDenied
 	}
 
-	items, nextToken, err := h.reqHandler.ContactV1CaseList(ctx, a.CustomerID, "", "", uuid.Nil, contactID, size, token, "")
+	items, nextToken, err := h.reqHandler.ContactV1CaseList(ctx, a.CustomerID, "", "", uuid.Nil, contactID, size, token, referenceID)
 	if err != nil {
 		log.Errorf("Could not list cases. err: %v", err)
 		return nil, "", err

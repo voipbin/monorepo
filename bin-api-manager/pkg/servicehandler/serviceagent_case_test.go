@@ -23,10 +23,11 @@ func Test_ServiceAgentCaseList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *auth.AuthIdentity
-		pageSize  uint64
-		pageToken string
-		contactID uuid.UUID
+		agent       *auth.AuthIdentity
+		pageSize    uint64
+		pageToken   string
+		contactID   uuid.UUID
+		referenceID string
 
 		responseCases     []*cmkase.Case
 		responseNextToken string
@@ -90,6 +91,56 @@ func Test_ServiceAgentCaseList(t *testing.T) {
 				},
 			},
 		},
+		{
+			// VOIP-1673: reference_id is threaded through to ContactV1CaseList
+			// (last RPC arg) unchanged.
+			name: "agent permission, with reference_id filter",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("55555555-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("66666666-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			pageSize:    10,
+			pageToken:   "",
+			contactID:   uuid.Nil,
+			referenceID: "77777777-8270-11ed-914d-6bceafeffecb",
+
+			responseCases: []*cmkase.Case{
+				{
+					ID: uuid.FromStringOrNil("88888888-8270-11ed-914d-6bceafeffecb"),
+				},
+			},
+			responseNextToken: "",
+
+			expectRes: []*cmkase.Case{
+				{
+					ID: uuid.FromStringOrNil("88888888-8270-11ed-914d-6bceafeffecb"),
+				},
+			},
+		},
+		{
+			// VOIP-1673: contact_id and reference_id are both forwarded (AND
+			// is applied by contact-manager).
+			name: "agent permission, with contact_id and reference_id filters",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("99999999-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("aaaaaaaa-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			pageSize:    10,
+			pageToken:   "",
+			contactID:   uuid.FromStringOrNil("bbbbbbbb-8270-11ed-914d-6bceafeffecb"),
+			referenceID: "cccccccc-8270-11ed-914d-6bceafeffecb",
+
+			responseCases:     []*cmkase.Case{},
+			responseNextToken: "",
+
+			expectRes: []*cmkase.Case{},
+		},
 	}
 
 	for _, tt := range tests {
@@ -106,9 +157,9 @@ func Test_ServiceAgentCaseList(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ContactV1CaseList(ctx, tt.agent.CustomerID, "", "", uuid.Nil, tt.contactID, tt.pageSize, tt.pageToken, "").Return(tt.responseCases, tt.responseNextToken, nil)
+			mockReq.EXPECT().ContactV1CaseList(ctx, tt.agent.CustomerID, "", "", uuid.Nil, tt.contactID, tt.pageSize, tt.pageToken, tt.referenceID).Return(tt.responseCases, tt.responseNextToken, nil)
 
-			res, nextToken, err := h.ServiceAgentCaseList(ctx, tt.agent, tt.pageSize, tt.pageToken, tt.contactID)
+			res, nextToken, err := h.ServiceAgentCaseList(ctx, tt.agent, tt.pageSize, tt.pageToken, tt.contactID, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

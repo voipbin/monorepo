@@ -13043,6 +13043,9 @@ type GetServiceAgentsContactCasesParams struct {
 	// ContactId Filter to cases attributed to this Contact.
 	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
 
+	// ReferenceId Filter to cases whose reference_id (the internal VoIPBin resource ID reference_type points at, e.g. a call ID) exactly matches this value. An empty value applies no filter.
+	ReferenceId *string `form:"reference_id,omitempty" json:"reference_id,omitempty"`
+
 	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 

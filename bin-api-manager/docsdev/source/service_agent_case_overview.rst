@@ -71,7 +71,7 @@ Endpoints
      - Description
    * - GET
      - ``/service_agents/contact_cases``
-     - List cases for the caller's customer (paginated, no server-side owner filter -- filter client-side).
+     - List cases for the caller's customer (paginated, no server-side owner filter -- filter client-side). Optional ``contact_id`` and ``reference_id`` filters narrow the result.
    * - GET
      - ``/service_agents/contact_cases/{id}``
      - Get a single case by ID. Any agent of the customer may view any case.
@@ -126,6 +126,14 @@ Listing and Viewing Cases
 
 Returns the notes written on every case currently attributed to the contact, newest first, as a single paginated list. Each note carries the ``case_id`` of the case it was written on. Pass the returned ``next_page_token`` as ``page_token`` to fetch the next page. If a case is later attributed to a different contact, its notes follow the case. A contact that does not exist or belongs to another customer returns ``404``.
 
+**List cases bound to a specific call**
+
+``reference_id`` matches the internal resource ID that the case's ``reference_type`` points at (for ``reference_type`` ``call``, the call ID). Combined with ``contact_id`` the filters are ANDed. A call that is bound to no case returns an empty ``result`` array. An empty ``reference_id`` value applies no filter.
+
+.. code::
+
+    $ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_cases?reference_id=<call-id>&page_size=50&token=<token>'
+
 **Get a case**
 
 .. code::
@@ -134,7 +142,7 @@ Returns the notes written on every case currently attributed to the contact, new
 
 .. note:: **AI Implementation Hint**
 
-   ``GET /service_agents/contact_cases`` returns every open and closed case for the customer with no server-side ``status``/``owner_id`` filter -- console UIs (e.g. an agent's "My Cases" view) are expected to filter the result client-side. There is no ``status=open`` or ``owner_id=<my-agent-id>`` query parameter on this endpoint today. A ``contact_id`` filter IS supported (added VOIP-1563) -- use it to fetch a specific contact's case history server-side instead of filtering the full customer-wide result client-side.
+   ``GET /service_agents/contact_cases`` returns every open and closed case for the customer with no server-side ``status``/``owner_id`` filter -- console UIs (e.g. an agent's "My Cases" view) are expected to filter the result client-side. There is no ``status=open`` or ``owner_id=<my-agent-id>`` query parameter on this endpoint today. A ``contact_id`` filter IS supported (added VOIP-1563) -- use it to fetch a specific contact's case history server-side instead of filtering the full customer-wide result client-side. A ``reference_id`` filter is also supported -- use it to find the case a given call is bound to.
 
 
 Assigning and Closing

@@ -715,7 +715,7 @@
 <tbody>
 <tr class="row-even"><td><p>GET</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/contact_cases</span></code></p></td>
-<td><p>List cases for the caller’s customer (paginated, no server-side owner filter – filter client-side).</p></td>
+<td><p>List cases for the caller’s customer (paginated, no server-side owner filter – filter client-side). Optional <code class="docutils literal notranslate"><span class="pre">contact_id</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> filters narrow the result.</p></td>
 </tr>
 <tr class="row-odd"><td><p>GET</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/contact_cases/{id}</span></code></p></td>
@@ -773,6 +773,11 @@
 </pre></div>
 </div>
 <p>Returns the notes written on every case currently attributed to the contact, newest first, as a single paginated list. Each note carries the <code class="docutils literal notranslate"><span class="pre">case_id</span></code> of the case it was written on. Pass the returned <code class="docutils literal notranslate"><span class="pre">next_page_token</span></code> as <code class="docutils literal notranslate"><span class="pre">page_token</span></code> to fetch the next page. If a case is later attributed to a different contact, its notes follow the case. A contact that does not exist or belongs to another customer returns <code class="docutils literal notranslate"><span class="pre">404</span></code>.</p>
+<p><strong>List cases bound to a specific call</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> matches the internal resource ID that the case’s <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> points at (for <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> <code class="docutils literal notranslate"><span class="pre">call</span></code>, the call ID). Combined with <code class="docutils literal notranslate"><span class="pre">contact_id</span></code> the filters are ANDed. A call that is bound to no case returns an empty <code class="docutils literal notranslate"><span class="pre">result</span></code> array. An empty <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> value applies no filter.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_cases?reference_id=&lt;call-id&gt;&amp;page_size=50&amp;token=&lt;token&gt;'
+</pre></div>
+</div>
 <p><strong>Get a case</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;?token=&lt;token&gt;'
 </pre></div>
@@ -780,7 +785,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/contact_cases</span></code> returns every open and closed case for the customer with no server-side <code class="docutils literal notranslate"><span class="pre">status</span></code>/<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> filter – console UIs (e.g. an agent’s “My Cases” view) are expected to filter the result client-side. There is no <code class="docutils literal notranslate"><span class="pre">status=open</span></code> or <code class="docutils literal notranslate"><span class="pre">owner_id=&lt;my-agent-id&gt;</span></code> query parameter on this endpoint today. A <code class="docutils literal notranslate"><span class="pre">contact_id</span></code> filter IS supported (added VOIP-1563) – use it to fetch a specific contact’s case history server-side instead of filtering the full customer-wide result client-side.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/contact_cases</span></code> returns every open and closed case for the customer with no server-side <code class="docutils literal notranslate"><span class="pre">status</span></code>/<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> filter – console UIs (e.g. an agent’s “My Cases” view) are expected to filter the result client-side. There is no <code class="docutils literal notranslate"><span class="pre">status=open</span></code> or <code class="docutils literal notranslate"><span class="pre">owner_id=&lt;my-agent-id&gt;</span></code> query parameter on this endpoint today. A <code class="docutils literal notranslate"><span class="pre">contact_id</span></code> filter IS supported (added VOIP-1563) – use it to fetch a specific contact’s case history server-side instead of filtering the full customer-wide result client-side. A <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> filter is also supported – use it to find the case a given call is bound to.</p>
 </div>
 </section>
 <section id="assigning-and-closing">

@@ -47,7 +47,12 @@ func (h *server) GetServiceAgentsContactCases(c *gin.Context, params openapi_ser
 		contactID = uuid.UUID(*params.ContactId)
 	}
 
-	tmps, nextToken, err := h.serviceHandler.ServiceAgentCaseList(c.Request.Context(), a, pageSize, pageToken, contactID)
+	referenceID := ""
+	if params.ReferenceId != nil {
+		referenceID = *params.ReferenceId
+	}
+
+	tmps, nextToken, err := h.serviceHandler.ServiceAgentCaseList(c.Request.Context(), a, pageSize, pageToken, contactID, referenceID)
 	if err != nil {
 		log.Errorf("Could not get cases info. err: %v", err)
 		abortWithServiceError(c, err)
