@@ -15,6 +15,8 @@ Call transfer is just one of many features available in CPaaS technology, which 
 
    Call transfers involve active calls, which are chargeable. A transfer creates a new outbound call to the transfer destination. Initiate a transfer via ``POST /transfers`` with the ``transferer_call_id`` (UUID, obtained from ``GET /calls``) of an active call in ``progressing`` status, along with ``transferee_addresses`` (array of addresses) and ``transfer_type`` (enum: ``attended`` or ``blind``).
 
+   Agents of a customer can transfer a call they own through ``POST /service_agents/transfers``. The ``transferee_addresses`` takes exactly one address of type ``extension`` with the extension ID as ``target``, and the extension must belong to the same customer.
+
 .. _call-transfer-blind_transfer:
 
 Blind Transfer

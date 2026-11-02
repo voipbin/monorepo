@@ -1,0 +1,58 @@
+post:
+  summary: Start a transfer
+  description: >-
+    Transfers a call the calling agent owns to a colleague's extension, either blind or attended.
+
+    The call must be one the calling agent owns, be in progress and be in a conference (a bridged call).
+    The transferee must be an extension of the calling agent's customer. Any other address type, or an extension
+    that does not exist, is deleted or belongs to another customer, is rejected with 400.
+
+    Cancelling an attended transfer is not available through this API.
+  tags:
+    - Service Agent
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            transfer_type:
+              $ref: '#/components/schemas/TransferManagerTransferType'
+            transferer_call_id:
+              type: string
+              format: uuid
+              description: "The call ID returned from the `GET /service_agents/calls` response. It must be a call the calling agent owns."
+              example: "896d70be-3f9f-11ef-bfa4-532d59e85e8c"
+            transferee_addresses:
+              type: array
+              minItems: 1
+              maxItems: 1
+              items:
+                $ref: '#/components/schemas/CallManagerParticipantAddress'
+              description: "The colleague to transfer the call to. Exactly one address of type `extension`."
+          required:
+            - transfer_type
+            - transferer_call_id
+            - transferee_addresses
+  responses:
+    '200':
+      description: The transfer details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TransferManagerTransfer'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '409':
+      $ref: '#/components/responses/Conflict'
+    '500':
+      $ref: '#/components/responses/InternalError'
+    '503':
+      $ref: '#/components/responses/Unavailable'

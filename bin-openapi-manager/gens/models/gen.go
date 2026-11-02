@@ -1286,6 +1286,21 @@ func (e CallManagerGroupcallStatus) Valid() bool {
 	}
 }
 
+// Defines values for CallManagerParticipantAddressType.
+const (
+	CallManagerParticipantAddressTypeExtension CallManagerParticipantAddressType = "extension"
+)
+
+// Valid indicates whether the value is a known member of the CallManagerParticipantAddressType enum.
+func (e CallManagerParticipantAddressType) Valid() bool {
+	switch e {
+	case CallManagerParticipantAddressTypeExtension:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CallManagerRecordingFormat.
 const (
 	CallManagerRecordingFormatWAV CallManagerRecordingFormat = "wav"
@@ -5945,6 +5960,24 @@ type CallManagerOutboundConfigUpdateRequest struct {
 	// Example: production outbound config
 	Name *string `json:"name,omitempty"`
 }
+
+// CallManagerParticipantAddress A colleague's extension to bring into a call. Used by `POST /service_agents/transfers`.
+type CallManagerParticipantAddress struct {
+	// Target The extension ID of the colleague to reach. It is the `target` of the address of type `extension` returned from the `GET /service_agents/agents` response. The extension must belong to the calling agent's customer.
+	//
+	// Example: c5e7f18c-fc5a-4520-8326-e534e2ca0b8f
+	Target string `json:"target"`
+
+	// Type Type of address. Only `extension` is accepted.
+	//
+	// Example: extension
+	Type CallManagerParticipantAddressType `json:"type"`
+}
+
+// CallManagerParticipantAddressType Type of address. Only `extension` is accepted.
+//
+// Example: extension
+type CallManagerParticipantAddressType string
 
 // CallManagerRecording defines model for CallManagerRecording.
 type CallManagerRecording struct {
@@ -13616,6 +13649,20 @@ type GetServiceAgentsTranscriptsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// PostServiceAgentsTransfersJSONBody defines parameters for PostServiceAgentsTransfers.
+type PostServiceAgentsTransfersJSONBody struct {
+	// TransferType Example: blind
+	TransferType TransferManagerTransferType `json:"transfer_type"`
+
+	// TransfereeAddresses The colleague to transfer the call to. Exactly one address of type `extension`.
+	TransfereeAddresses []CallManagerParticipantAddress `json:"transferee_addresses"`
+
+	// TransfererCallId The call ID returned from the `GET /service_agents/calls` response. It must be a call the calling agent owns.
+	//
+	// Example: 896d70be-3f9f-11ef-bfa4-532d59e85e8c
+	TransfererCallId openapi_types.UUID `json:"transferer_call_id"`
+}
+
 // GetSpeakingsParams defines parameters for GetSpeakings.
 type GetSpeakingsParams struct {
 	PageSize  *int    `form:"page_size,omitempty" json:"page_size,omitempty"`
@@ -14463,6 +14510,9 @@ type PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody PostServiceAgentsTa
 
 // PostServiceAgentsTranscribesJSONRequestBody defines body for PostServiceAgentsTranscribes for application/json ContentType.
 type PostServiceAgentsTranscribesJSONRequestBody PostServiceAgentsTranscribesJSONBody
+
+// PostServiceAgentsTransfersJSONRequestBody defines body for PostServiceAgentsTransfers for application/json ContentType.
+type PostServiceAgentsTransfersJSONRequestBody PostServiceAgentsTransfersJSONBody
 
 // PostSpeakingsJSONRequestBody defines body for PostSpeakings for application/json ContentType.
 type PostSpeakingsJSONRequestBody PostSpeakingsJSONBody

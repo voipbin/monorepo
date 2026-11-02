@@ -62,6 +62,9 @@ The table below groups every ``/service_agents/*`` path by the resource it front
    * - ``GET /service_agents/calls/{id}/queuecall``
      - This page
      - **New** -- the queue a call the agent owns was routed through. Returns ``id`` (queuecall), ``queue_id``, ``queue_name``, ``status`` and ``tm_create``; ``404`` if the call has no queue entry handled by the calling agent
+   * - ``POST /service_agents/transfers``
+     - :ref:`Transfer <call-transfer>`
+     - **New** -- blind or attended transfer of a call the agent owns to a colleague. ``transferee_addresses`` takes exactly one address of type ``extension`` whose ``target`` is the extension ID (the ``target`` of the extension address returned by ``GET /service_agents/agents``) of the same customer. The call must be in ``progressing`` status and bridged; other address types and unknown or foreign extensions return ``400``. Cancelling an attended transfer is not available
    * - ``GET/POST /service_agents/aicalls``, ``/aimessages``
      - :ref:`AI <ai-main>`
      -
