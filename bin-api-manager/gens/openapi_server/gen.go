@@ -5817,6 +5817,18 @@ type ContactManagerContact struct {
 // ContactManagerContactSource Source of the contact.
 type ContactManagerContactSource string
 
+// ContactManagerContactStar defines model for ContactManagerContactStar.
+type ContactManagerContactStar struct {
+	// ContactId The contact ID returned from GET /service_agents/contacts.
+	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// Starred Whether the calling agent has starred the contact.
+	Starred bool `json:"starred"`
+
+	// TmCreate When the contact was starred. Absent when starred is false.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+}
+
 // ConversationManagerAccount defines model for ConversationManagerAccount.
 type ConversationManagerAccount struct {
 	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
@@ -10600,6 +10612,15 @@ type GetServiceAgentsContactPeerEventsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// GetServiceAgentsContactStarsParams defines parameters for GetServiceAgentsContactStars.
+type GetServiceAgentsContactStarsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetServiceAgentsContactsParams defines parameters for GetServiceAgentsContacts.
 type GetServiceAgentsContactsParams struct {
 	// PageSize Number of results to return per page.
@@ -10607,6 +10628,9 @@ type GetServiceAgentsContactsParams struct {
 
 	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// Starred When true, return only the contacts the calling agent has starred (see PUT /service_agents/contacts/{id}/star). False or omitted returns all contacts.
+	Starred *bool `form:"starred,omitempty" json:"starred,omitempty"`
 }
 
 // PostServiceAgentsContactsJSONBody defines parameters for PostServiceAgentsContacts.
@@ -12857,6 +12881,9 @@ type ServerInterface interface {
 	// List peer_events (raw, unfiltered)
 	// (GET /service_agents/contact_peer_events)
 	GetServiceAgentsContactPeerEvents(c *gin.Context, params GetServiceAgentsContactPeerEventsParams)
+	// List the contacts starred by the calling agent
+	// (GET /service_agents/contact_stars)
+	GetServiceAgentsContactStars(c *gin.Context, params GetServiceAgentsContactStarsParams)
 	// List contacts
 	// (GET /service_agents/contacts)
 	GetServiceAgentsContacts(c *gin.Context, params GetServiceAgentsContactsParams)
@@ -12887,6 +12914,12 @@ type ServerInterface interface {
 	// Get list of case notes of a contact
 	// (GET /service_agents/contacts/{id}/case_notes)
 	GetServiceAgentsContactsIdCaseNotes(c *gin.Context, id openapi_types.UUID, params GetServiceAgentsContactsIdCaseNotesParams)
+	// Remove the star of a contact
+	// (DELETE /service_agents/contacts/{id}/star)
+	DeleteServiceAgentsContactsIdStar(c *gin.Context, id openapi_types.UUID)
+	// Star a contact
+	// (PUT /service_agents/contacts/{id}/star)
+	PutServiceAgentsContactsIdStar(c *gin.Context, id openapi_types.UUID)
 	// Add tag to contact
 	// (POST /service_agents/contacts/{id}/tags)
 	PostServiceAgentsContactsIdTags(c *gin.Context, id string)
@@ -21888,6 +21921,41 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsContactPeerEvents(c *gin.Cont
 	siw.Handler.GetServiceAgentsContactPeerEvents(c, params)
 }
 
+// GetServiceAgentsContactStars operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsContactStars(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceAgentsContactStarsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsContactStars(c, params)
+}
+
 // GetServiceAgentsContacts operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsContacts(c *gin.Context) {
 
@@ -21910,6 +21978,14 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsContacts(c *gin.Context) {
 	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "starred" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "starred", c.Request.URL.Query(), &params.Starred, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starred: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -22181,6 +22257,56 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsContactsIdCaseNotes(c *gin.Co
 	}
 
 	siw.Handler.GetServiceAgentsContactsIdCaseNotes(c, id, params)
+}
+
+// DeleteServiceAgentsContactsIdStar operation middleware
+func (siw *ServerInterfaceWrapper) DeleteServiceAgentsContactsIdStar(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteServiceAgentsContactsIdStar(c, id)
+}
+
+// PutServiceAgentsContactsIdStar operation middleware
+func (siw *ServerInterfaceWrapper) PutServiceAgentsContactsIdStar(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutServiceAgentsContactsIdStar(c, id)
 }
 
 // PostServiceAgentsContactsIdTags operation middleware
@@ -25328,6 +25454,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/service_agents/contact_cases/:id/unassign", wrapper.PostServiceAgentsContactCasesIdUnassign)
 	router.GET(options.BaseURL+"/service_agents/contact_interactions", wrapper.GetServiceAgentsContactInteractions)
 	router.GET(options.BaseURL+"/service_agents/contact_peer_events", wrapper.GetServiceAgentsContactPeerEvents)
+	router.GET(options.BaseURL+"/service_agents/contact_stars", wrapper.GetServiceAgentsContactStars)
 	router.GET(options.BaseURL+"/service_agents/contacts", wrapper.GetServiceAgentsContacts)
 	router.POST(options.BaseURL+"/service_agents/contacts", wrapper.PostServiceAgentsContacts)
 	router.GET(options.BaseURL+"/service_agents/contacts/lookup", wrapper.GetServiceAgentsContactsLookup)
@@ -25338,6 +25465,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/service_agents/contacts/:id/addresses/:address_id", wrapper.DeleteServiceAgentsContactsIdAddressesAddressId)
 	router.PUT(options.BaseURL+"/service_agents/contacts/:id/addresses/:address_id", wrapper.PutServiceAgentsContactsIdAddressesAddressId)
 	router.GET(options.BaseURL+"/service_agents/contacts/:id/case_notes", wrapper.GetServiceAgentsContactsIdCaseNotes)
+	router.DELETE(options.BaseURL+"/service_agents/contacts/:id/star", wrapper.DeleteServiceAgentsContactsIdStar)
+	router.PUT(options.BaseURL+"/service_agents/contacts/:id/star", wrapper.PutServiceAgentsContactsIdStar)
 	router.POST(options.BaseURL+"/service_agents/contacts/:id/tags", wrapper.PostServiceAgentsContactsIdTags)
 	router.DELETE(options.BaseURL+"/service_agents/contacts/:id/tags/:tag_id", wrapper.DeleteServiceAgentsContactsIdTagsTagId)
 	router.GET(options.BaseURL+"/service_agents/conversations", wrapper.GetServiceAgentsConversations)
@@ -52918,6 +53047,88 @@ func (response GetServiceAgentsContactPeerEvents500JSONResponse) VisitGetService
 	return err
 }
 
+type GetServiceAgentsContactStarsRequestObject struct {
+	Params GetServiceAgentsContactStarsParams
+}
+
+type GetServiceAgentsContactStarsResponseObject interface {
+	VisitGetServiceAgentsContactStarsResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsContactStars200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                      `json:"next_page_token,omitempty"`
+	Result        *[]ContactManagerContactStar `json:"result,omitempty"`
+}
+
+func (response GetServiceAgentsContactStars200JSONResponse) VisitGetServiceAgentsContactStarsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsContactStars400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsContactStars400JSONResponse) VisitGetServiceAgentsContactStarsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsContactStars401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsContactStars401JSONResponse) VisitGetServiceAgentsContactStarsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsContactStars403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsContactStars403JSONResponse) VisitGetServiceAgentsContactStarsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsContactStars500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsContactStars500JSONResponse) VisitGetServiceAgentsContactStarsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetServiceAgentsContactsRequestObject struct {
 	Params GetServiceAgentsContactsParams
 }
@@ -53711,6 +53922,190 @@ func (response GetServiceAgentsContactsIdCaseNotes404JSONResponse) VisitGetServi
 type GetServiceAgentsContactsIdCaseNotes500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response GetServiceAgentsContactsIdCaseNotes500JSONResponse) VisitGetServiceAgentsContactsIdCaseNotesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsContactsIdStarRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type DeleteServiceAgentsContactsIdStarResponseObject interface {
+	VisitDeleteServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error
+}
+
+type DeleteServiceAgentsContactsIdStar200JSONResponse ContactManagerContactStar
+
+func (response DeleteServiceAgentsContactsIdStar200JSONResponse) VisitDeleteServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsContactsIdStar400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteServiceAgentsContactsIdStar400JSONResponse) VisitDeleteServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsContactsIdStar401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteServiceAgentsContactsIdStar401JSONResponse) VisitDeleteServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsContactsIdStar403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteServiceAgentsContactsIdStar403JSONResponse) VisitDeleteServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsContactsIdStar404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteServiceAgentsContactsIdStar404JSONResponse) VisitDeleteServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsContactsIdStar500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteServiceAgentsContactsIdStar500JSONResponse) VisitDeleteServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsContactsIdStarRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PutServiceAgentsContactsIdStarResponseObject interface {
+	VisitPutServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error
+}
+
+type PutServiceAgentsContactsIdStar200JSONResponse ContactManagerContactStar
+
+func (response PutServiceAgentsContactsIdStar200JSONResponse) VisitPutServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsContactsIdStar400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutServiceAgentsContactsIdStar400JSONResponse) VisitPutServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsContactsIdStar401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutServiceAgentsContactsIdStar401JSONResponse) VisitPutServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsContactsIdStar403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PutServiceAgentsContactsIdStar403JSONResponse) VisitPutServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsContactsIdStar404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PutServiceAgentsContactsIdStar404JSONResponse) VisitPutServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsContactsIdStar500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutServiceAgentsContactsIdStar500JSONResponse) VisitPutServiceAgentsContactsIdStarResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response); err != nil {
@@ -63607,6 +64002,9 @@ type StrictServerInterface interface {
 	// List peer_events (raw, unfiltered)
 	// (GET /service_agents/contact_peer_events)
 	GetServiceAgentsContactPeerEvents(ctx context.Context, request GetServiceAgentsContactPeerEventsRequestObject) (GetServiceAgentsContactPeerEventsResponseObject, error)
+	// List the contacts starred by the calling agent
+	// (GET /service_agents/contact_stars)
+	GetServiceAgentsContactStars(ctx context.Context, request GetServiceAgentsContactStarsRequestObject) (GetServiceAgentsContactStarsResponseObject, error)
 	// List contacts
 	// (GET /service_agents/contacts)
 	GetServiceAgentsContacts(ctx context.Context, request GetServiceAgentsContactsRequestObject) (GetServiceAgentsContactsResponseObject, error)
@@ -63637,6 +64035,12 @@ type StrictServerInterface interface {
 	// Get list of case notes of a contact
 	// (GET /service_agents/contacts/{id}/case_notes)
 	GetServiceAgentsContactsIdCaseNotes(ctx context.Context, request GetServiceAgentsContactsIdCaseNotesRequestObject) (GetServiceAgentsContactsIdCaseNotesResponseObject, error)
+	// Remove the star of a contact
+	// (DELETE /service_agents/contacts/{id}/star)
+	DeleteServiceAgentsContactsIdStar(ctx context.Context, request DeleteServiceAgentsContactsIdStarRequestObject) (DeleteServiceAgentsContactsIdStarResponseObject, error)
+	// Star a contact
+	// (PUT /service_agents/contacts/{id}/star)
+	PutServiceAgentsContactsIdStar(ctx context.Context, request PutServiceAgentsContactsIdStarRequestObject) (PutServiceAgentsContactsIdStarResponseObject, error)
 	// Add tag to contact
 	// (POST /service_agents/contacts/{id}/tags)
 	PostServiceAgentsContactsIdTags(ctx context.Context, request PostServiceAgentsContactsIdTagsRequestObject) (PostServiceAgentsContactsIdTagsResponseObject, error)
@@ -73395,6 +73799,32 @@ func (sh *strictHandler) GetServiceAgentsContactPeerEvents(ctx *gin.Context, par
 	}
 }
 
+// GetServiceAgentsContactStars operation middleware
+func (sh *strictHandler) GetServiceAgentsContactStars(ctx *gin.Context, params GetServiceAgentsContactStarsParams) {
+	var request GetServiceAgentsContactStarsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsContactStars(ctx, request.(GetServiceAgentsContactStarsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsContactStars")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetServiceAgentsContactStarsResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsContactStarsResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetServiceAgentsContacts operation middleware
 func (sh *strictHandler) GetServiceAgentsContacts(ctx *gin.Context, params GetServiceAgentsContactsParams) {
 	var request GetServiceAgentsContactsRequestObject
@@ -73677,6 +74107,58 @@ func (sh *strictHandler) GetServiceAgentsContactsIdCaseNotes(ctx *gin.Context, i
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(GetServiceAgentsContactsIdCaseNotesResponseObject); ok {
 		if err := validResponse.VisitGetServiceAgentsContactsIdCaseNotesResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteServiceAgentsContactsIdStar operation middleware
+func (sh *strictHandler) DeleteServiceAgentsContactsIdStar(ctx *gin.Context, id openapi_types.UUID) {
+	var request DeleteServiceAgentsContactsIdStarRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteServiceAgentsContactsIdStar(ctx, request.(DeleteServiceAgentsContactsIdStarRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteServiceAgentsContactsIdStar")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(DeleteServiceAgentsContactsIdStarResponseObject); ok {
+		if err := validResponse.VisitDeleteServiceAgentsContactsIdStarResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutServiceAgentsContactsIdStar operation middleware
+func (sh *strictHandler) PutServiceAgentsContactsIdStar(ctx *gin.Context, id openapi_types.UUID) {
+	var request PutServiceAgentsContactsIdStarRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutServiceAgentsContactsIdStar(ctx, request.(PutServiceAgentsContactsIdStarRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutServiceAgentsContactsIdStar")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PutServiceAgentsContactsIdStarResponseObject); ok {
+		if err := validResponse.VisitPutServiceAgentsContactsIdStarResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

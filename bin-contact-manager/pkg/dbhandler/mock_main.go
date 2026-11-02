@@ -16,6 +16,7 @@ import (
 	identity "monorepo/bin-common-handler/models/identity"
 	casenote "monorepo/bin-contact-manager/models/casenote"
 	contact "monorepo/bin-contact-manager/models/contact"
+	contactstar "monorepo/bin-contact-manager/models/contactstar"
 	kase "monorepo/bin-contact-manager/models/kase"
 	reflect "reflect"
 	time "time"
@@ -654,6 +655,21 @@ func (mr *MockDBHandlerMockRecorder) ContactList(ctx, size, token, filters any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactList", reflect.TypeOf((*MockDBHandler)(nil).ContactList), ctx, size, token, filters)
 }
 
+// ContactListStarred mocks base method.
+func (m *MockDBHandler) ContactListStarred(ctx context.Context, customerID, agentID uuid.UUID, size uint64, token string) ([]*contact.Contact, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactListStarred", ctx, customerID, agentID, size, token)
+	ret0, _ := ret[0].([]*contact.Contact)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactListStarred indicates an expected call of ContactListStarred.
+func (mr *MockDBHandlerMockRecorder) ContactListStarred(ctx, customerID, agentID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactListStarred", reflect.TypeOf((*MockDBHandler)(nil).ContactListStarred), ctx, customerID, agentID, size, token)
+}
+
 // ContactLookupByEmail mocks base method.
 func (m *MockDBHandler) ContactLookupByEmail(ctx context.Context, customerID uuid.UUID, email string) (*contact.Contact, error) {
 	m.ctrl.T.Helper()
@@ -682,6 +698,64 @@ func (m *MockDBHandler) ContactLookupByPhone(ctx context.Context, customerID uui
 func (mr *MockDBHandlerMockRecorder) ContactLookupByPhone(ctx, customerID, phoneE164 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactLookupByPhone", reflect.TypeOf((*MockDBHandler)(nil).ContactLookupByPhone), ctx, customerID, phoneE164)
+}
+
+// ContactStarCreate mocks base method.
+func (m *MockDBHandler) ContactStarCreate(ctx context.Context, s *contactstar.ContactStar) (*contactstar.ContactStar, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactStarCreate", ctx, s)
+	ret0, _ := ret[0].(*contactstar.ContactStar)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactStarCreate indicates an expected call of ContactStarCreate.
+func (mr *MockDBHandlerMockRecorder) ContactStarCreate(ctx, s any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactStarCreate", reflect.TypeOf((*MockDBHandler)(nil).ContactStarCreate), ctx, s)
+}
+
+// ContactStarDelete mocks base method.
+func (m *MockDBHandler) ContactStarDelete(ctx context.Context, customerID, agentID, contactID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactStarDelete", ctx, customerID, agentID, contactID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ContactStarDelete indicates an expected call of ContactStarDelete.
+func (mr *MockDBHandlerMockRecorder) ContactStarDelete(ctx, customerID, agentID, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactStarDelete", reflect.TypeOf((*MockDBHandler)(nil).ContactStarDelete), ctx, customerID, agentID, contactID)
+}
+
+// ContactStarDeleteByCustomerID mocks base method.
+func (m *MockDBHandler) ContactStarDeleteByCustomerID(ctx context.Context, customerID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactStarDeleteByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ContactStarDeleteByCustomerID indicates an expected call of ContactStarDeleteByCustomerID.
+func (mr *MockDBHandlerMockRecorder) ContactStarDeleteByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactStarDeleteByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).ContactStarDeleteByCustomerID), ctx, customerID)
+}
+
+// ContactStarList mocks base method.
+func (m *MockDBHandler) ContactStarList(ctx context.Context, customerID, agentID uuid.UUID, size uint64, token string) ([]*contactstar.ContactStar, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactStarList", ctx, customerID, agentID, size, token)
+	ret0, _ := ret[0].([]*contactstar.ContactStar)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactStarList indicates an expected call of ContactStarList.
+func (mr *MockDBHandlerMockRecorder) ContactStarList(ctx, customerID, agentID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactStarList", reflect.TypeOf((*MockDBHandler)(nil).ContactStarList), ctx, customerID, agentID, size, token)
 }
 
 // ContactUpdate mocks base method.

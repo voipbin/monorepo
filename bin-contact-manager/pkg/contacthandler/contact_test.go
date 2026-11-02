@@ -734,6 +734,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			}
 
 			mockDB.EXPECT().ContactDeleteByCustomerID(ctx, tt.customerID).Return(nil)
+			mockDB.EXPECT().ContactStarDeleteByCustomerID(ctx, tt.customerID).Return(nil)
 
 			err := h.EventCustomerDeleted(ctx, customer)
 			if err != nil {

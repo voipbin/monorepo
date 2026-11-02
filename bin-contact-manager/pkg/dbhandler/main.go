@@ -18,6 +18,7 @@ import (
 
 	"monorepo/bin-contact-manager/models/casenote"
 	"monorepo/bin-contact-manager/models/contact"
+	"monorepo/bin-contact-manager/models/contactstar"
 	"monorepo/bin-contact-manager/models/kase"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 )
@@ -34,6 +35,13 @@ type DBHandler interface {
 	ContactLookupByEmail(ctx context.Context, customerID uuid.UUID, email string) (*contact.Contact, error)
 	AddressLookupContactIDByTypeTarget(ctx context.Context, customerID uuid.UUID, addrType commonaddress.Type, target string) (uuid.UUID, error)
 	ContactDeleteByCustomerID(ctx context.Context, customerID uuid.UUID) error
+
+	// ContactStar operations (VOIP-1673 B2). A star is private to one agent.
+	ContactStarCreate(ctx context.Context, s *contactstar.ContactStar) (*contactstar.ContactStar, error)
+	ContactStarDelete(ctx context.Context, customerID, agentID, contactID uuid.UUID) error
+	ContactStarDeleteByCustomerID(ctx context.Context, customerID uuid.UUID) error
+	ContactStarList(ctx context.Context, customerID, agentID uuid.UUID, size uint64, token string) ([]*contactstar.ContactStar, error)
+	ContactListStarred(ctx context.Context, customerID, agentID uuid.UUID, size uint64, token string) ([]*contact.Contact, error)
 
 	// Address operations
 	AddressCreate(ctx context.Context, a *contact.Address) error

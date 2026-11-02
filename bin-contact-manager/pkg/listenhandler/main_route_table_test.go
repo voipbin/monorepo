@@ -12,6 +12,7 @@ import (
 
 	"monorepo/bin-contact-manager/models/casenote"
 	"monorepo/bin-contact-manager/models/contact"
+	"monorepo/bin-contact-manager/models/contactstar"
 	"monorepo/bin-contact-manager/models/kase"
 	"monorepo/bin-contact-manager/pkg/casehandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
@@ -188,6 +189,34 @@ func Test_processRequest_RouteTable(t *testing.T) {
 			expectCode: 200, bodyHas: []string{"aggregated"},
 		},
 		{
+			name: "contacts star", method: sock.RequestMethodPost, uri: "/v1/contacts/" + contactID.String() + "/stars/" + subID.String(), data: custBody,
+			expect: func(c *contacthandler.MockContactHandler, k *casehandler.MockCaseHandler) {
+				c.EXPECT().StarSet(gomock.Any(), customerID, subID, contactID).Return(&contactstar.ContactStar{ContactID: contactID, AgentID: subID}, nil)
+			},
+			expectCode: 200, bodyHas: []string{contactID.String()},
+		},
+		{
+			name: "contacts unstar", method: sock.RequestMethodDelete, uri: "/v1/contacts/" + contactID.String() + "/stars/" + subID.String(), data: custBody,
+			expect: func(c *contacthandler.MockContactHandler, k *casehandler.MockCaseHandler) {
+				c.EXPECT().StarDelete(gomock.Any(), customerID, subID, contactID).Return(nil)
+			},
+			expectCode: 200,
+		},
+		{
+			name: "contacts starred list", method: sock.RequestMethodGet, uri: "/v1/contacts/starred?page_size=4", data: []byte(fmt.Sprintf(`{"customer_id":"%s","agent_id":"%s"}`, cid, subID)),
+			expect: func(c *contacthandler.MockContactHandler, k *casehandler.MockCaseHandler) {
+				c.EXPECT().ListStarred(gomock.Any(), customerID, subID, uint64(4), "").Return([]*contact.Contact{pat}, nil)
+			},
+			expectCode: 200, bodyHas: []string{"Pat"},
+		},
+		{
+			name: "contact_stars list", method: sock.RequestMethodGet, uri: "/v1/contact_stars?page_size=4", data: []byte(fmt.Sprintf(`{"customer_id":"%s","agent_id":"%s"}`, cid, subID)),
+			expect: func(c *contacthandler.MockContactHandler, k *casehandler.MockCaseHandler) {
+				c.EXPECT().StarList(gomock.Any(), customerID, subID, uint64(4), "").Return([]*contactstar.ContactStar{{ContactID: contactID}}, nil)
+			},
+			expectCode: 200, bodyHas: []string{contactID.String()}, bodyNot: []string{"first_name"},
+		},
+		{
 			name: "cases notes list", method: sock.RequestMethodGet, uri: "/v1/cases/" + caseID.String() + "/notes", data: custBody,
 			expect: func(c *contacthandler.MockContactHandler, k *casehandler.MockCaseHandler) {
 				k.EXPECT().CaseNoteListByCase(gomock.Any(), customerID, caseID).Return([]*casenote.CaseNote{{ID: subID, Text: "listed"}}, nil)
@@ -275,6 +304,9 @@ func Test_processRequest_MethodMismatchIsNotFound(t *testing.T) {
 		{"cases assign with delete", sock.RequestMethodDelete, "/v1/cases/" + caseID.String() + "/assign"},
 		{"interactions with post", sock.RequestMethodPost, "/v1/interactions?contact_id=" + caseID.String()},
 		{"contact_addresses claim with get", sock.RequestMethodGet, "/v1/contact_addresses/" + addressID.String() + "/claim"},
+		{"contacts star with get", sock.RequestMethodGet, "/v1/contacts/" + caseID.String() + "/stars/" + addressID.String()},
+		{"contacts starred with post", sock.RequestMethodPost, "/v1/contacts/starred"},
+		{"contact_stars with delete", sock.RequestMethodDelete, "/v1/contact_stars"},
 		{"unknown version", sock.RequestMethodGet, "/v2/cases"},
 	}
 

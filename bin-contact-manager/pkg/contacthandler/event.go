@@ -48,6 +48,12 @@ func (h *contactHandler) EventCustomerDeleted(ctx context.Context, c *cmcustomer
 		return err
 	}
 
+	// The stars depend on the contacts and share their lifetime.
+	if err := h.db.ContactStarDeleteByCustomerID(ctx, c.ID); err != nil {
+		log.Errorf("Could not delete contact stars for customer. err: %v", err)
+		return err
+	}
+
 	log.Info("Successfully cleaned up contacts for deleted customer.")
 	return nil
 }

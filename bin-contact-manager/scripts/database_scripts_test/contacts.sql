@@ -53,6 +53,21 @@ create unique index idx_contact_addresses_cust_primary on contact_addresses(cust
 create index idx_contact_addresses_contact_type on contact_addresses(contact_id, type);
 create index idx_contact_addresses_lookup on contact_addresses(customer_id, type, target);
 
+-- contact_stars mirrors migration 000003_contact_stars_create_table (VOIP-1673 B2).
+create table contact_stars(
+  id          binary(16),
+  customer_id binary(16),
+  agent_id    binary(16),
+  contact_id  binary(16),
+
+  tm_create   datetime(6),
+
+  primary key(id)
+);
+
+create unique index uq_contact_stars_agent_contact on contact_stars(agent_id, contact_id);
+create index idx_contact_stars_agent_create on contact_stars(customer_id, agent_id, tm_create);
+
 create table contact_tag_assignments(
   contact_id    binary(16),
   tag_id        binary(16),

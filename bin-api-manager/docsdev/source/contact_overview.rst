@@ -109,6 +109,59 @@ Phone numbers are matched in E.164 format for reliable international matching. E
    When using phone number lookup, the ``+`` character must be URL-encoded as ``%2B``. For example: ``GET https://api.voipbin.net/v1.0/contacts/lookup?phone=%2B15551234567``. Omitting this encoding will result in the ``+`` being interpreted as a space and the lookup will fail.
 
 
+.. _contact-overview-starred:
+
+Starred Contacts
+----------------
+An agent can star the contacts it works with often. A star is private to the agent: other agents of the same customer never see it. Stars exist only on the agent surface (``/service_agents/*``).
+
++--------+---------------------------------------------+------------------------------------------------------------------------------------------+
+| Method | Endpoint                                    | Description                                                                              |
++========+=============================================+==========================================================================================+
+| PUT    | ``/service_agents/contacts/{id}/star``      | Star the contact. Idempotent: an already starred contact returns the existing star.      |
++--------+---------------------------------------------+------------------------------------------------------------------------------------------+
+| DELETE | ``/service_agents/contacts/{id}/star``      | Remove the star. Idempotent: a contact that is not starred also returns ``200``.         |
++--------+---------------------------------------------+------------------------------------------------------------------------------------------+
+| GET    | ``/service_agents/contacts?starred=true``   | The contacts the calling agent has starred, in the same schema as the contact list.      |
++--------+---------------------------------------------+------------------------------------------------------------------------------------------+
+| GET    | ``/service_agents/contact_stars``           | The calling agent's stars as ``contact_id`` entries, newest star first.                  |
++--------+---------------------------------------------+------------------------------------------------------------------------------------------+
+
+**Star a contact**
+
+.. code::
+
+    $ curl -X PUT 'https://api.voipbin.net/v1.0/service_agents/contacts/<contact-id>/star?token=<token>'
+
+    {
+        "contact_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "starred": true,
+        "tm_create": "2026-11-02T09:15:30.123456Z"
+    }
+
+Removing the star returns ``{"contact_id": "<contact-id>", "starred": false}`` without ``tm_create``. A contact that does not exist, was deleted, or belongs to another customer returns ``404``.
+
+**List the starred contacts**
+
+.. code::
+
+    $ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contacts?starred=true&page_size=50&token=<token>'
+
+The response has the same shape as the plain contact list. The order and the page token are also the same: the contact's ``tm_create``, newest first, and the next page token is the ``tm_create`` of the last returned contact. The list is **not** ordered by the time the contact was starred. ``starred=false`` or omitting the parameter returns every contact. Starred contacts that were deleted are left out.
+
+**List the star entries**
+
+.. code::
+
+    $ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_stars?page_size=100&token=<token>'
+
+Returns ``{"result": [{"contact_id": "...", "starred": true, "tm_create": "..."}], "next_page_token": "..."}``, newest star first. The page token is the ``tm_create`` of the last star. Use it to mark the starred rows of a contact list or a contact detail screen without fetching the contacts again.
+
+.. note:: **AI Implementation Hint**
+
+   The agent a star belongs to always comes from the authentication token. There is no ``agent_id`` parameter, so an agent cannot read or change another agent's stars. Use ``GET /service_agents/contacts?starred=true`` for a "Starred" tab (one call returns the contact objects), and ``GET /service_agents/contact_stars`` to decorate an already loaded list.
+
+
 Source Tracking
 ---------------
 Each contact records how it was created, enabling analytics and deduplication.

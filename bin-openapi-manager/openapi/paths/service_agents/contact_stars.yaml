@@ -1,0 +1,35 @@
+get:
+  summary: List the contacts starred by the calling agent
+  description: |
+    The calling agent's stars, newest star first. Every item has `starred` set to true. Use it to
+    mark the starred contacts in a contact list or on a contact detail screen. To get the
+    starred contacts themselves in one call, use `GET /service_agents/contacts?starred=true`.
+    The page token is the `tm_create` of the last returned star. Stars of contacts that were
+    deleted are not returned.
+  tags:
+    - Service Agent
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContactManagerContactStar'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'

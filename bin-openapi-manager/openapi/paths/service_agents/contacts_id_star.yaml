@@ -1,0 +1,70 @@
+put:
+  summary: Star a contact
+  description: |
+    Star the contact for the calling agent. A star is private to the agent: other agents never
+    see it. The call is idempotent: starring a contact that is already starred returns the
+    existing star with its original `tm_create`. A contact that does not exist, is deleted, or
+    belongs to another customer returns 404.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: "The contact ID returned from GET /service_agents/contacts."
+      schema:
+        type: string
+        format: uuid
+        example: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+  responses:
+    '200':
+      description: The contact is starred.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContactStar'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+delete:
+  summary: Remove the star of a contact
+  description: |
+    Remove the calling agent's star on the contact. The call is idempotent: removing a star that
+    does not exist also returns 200. A contact that does not exist, is deleted, or belongs to
+    another customer returns 404.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: "The contact ID returned from GET /service_agents/contacts."
+      schema:
+        type: string
+        format: uuid
+        example: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+  responses:
+    '200':
+      description: The contact is not starred.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContactStar'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

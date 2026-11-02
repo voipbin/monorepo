@@ -67,6 +67,11 @@ var (
 	regV1ContactsTags   = regexp.MustCompile("/v1/contacts/" + regUUID + "/tags$")
 	regV1ContactsTagsID = regexp.MustCompile("/v1/contacts/" + regUUID + "/tags/" + regUUID + "$")
 
+	// v1 contacts/starred (the contacts an agent starred), contacts/{id}/stars/{agent_id}, contact_stars
+	regV1ContactsStarred  = regexp.MustCompile(`/v1/contacts/starred(\?.*)?$`)
+	regV1ContactsStarsID  = regexp.MustCompile("/v1/contacts/" + regUUID + "/stars/" + regUUID + "$")
+	regV1ContactStarsList = regexp.MustCompile(`/v1/contact_stars(\?.*)?$`)
+
 	// contact case notes (aggregated over the contact's cases)
 	regV1ContactsCaseNotes = regexp.MustCompile("/v1/contacts/" + regUUID + `/case_notes(\?.*)?$`)
 
@@ -298,6 +303,30 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ContactsTagsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1ContactsTagsIDDelete(ctx, m)
 		requestType = "/v1/contacts/{id}/tags/{tag_id}"
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// v1 Contact Stars (private to one agent)
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// GET /contacts/starred?...
+	case regV1ContactsStarred.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1ContactsStarredGet(ctx, m)
+		requestType = "/v1/contacts/starred"
+
+	// POST /contacts/{id}/stars/{agent_id}
+	case regV1ContactsStarsID.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1ContactsIDStarsPost(ctx, m)
+		requestType = "/v1/contacts/{id}/stars/{agent_id}"
+
+	// DELETE /contacts/{id}/stars/{agent_id}
+	case regV1ContactsStarsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1ContactsIDStarsDelete(ctx, m)
+		requestType = "/v1/contacts/{id}/stars/{agent_id}"
+
+	// GET /contact_stars?...
+	case regV1ContactStarsList.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1ContactStarsGet(ctx, m)
+		requestType = "/v1/contact_stars"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// v1 Contacts Case Notes

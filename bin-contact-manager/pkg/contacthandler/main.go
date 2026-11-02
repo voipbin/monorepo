@@ -14,6 +14,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-contact-manager/models/contact"
+	"monorepo/bin-contact-manager/models/contactstar"
 	"monorepo/bin-contact-manager/pkg/casehandler"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
@@ -36,6 +37,12 @@ type ContactHandler interface {
 	RemoveAddress(ctx context.Context, contactID, addressID uuid.UUID) (*contact.Contact, error)
 	CreateUnresolvedAddress(ctx context.Context, customerID uuid.UUID, a *contact.Address) (*contact.Address, error)
 	ClaimAddress(ctx context.Context, customerID, addressID, contactID uuid.UUID, force bool) (*contact.Address, error)
+
+	// Star operations (VOIP-1673 B2). A star is private to one agent.
+	StarSet(ctx context.Context, customerID, agentID, contactID uuid.UUID) (*contactstar.ContactStar, error)
+	StarDelete(ctx context.Context, customerID, agentID, contactID uuid.UUID) error
+	StarList(ctx context.Context, customerID, agentID uuid.UUID, size uint64, token string) ([]*contactstar.ContactStar, error)
+	ListStarred(ctx context.Context, customerID, agentID uuid.UUID, size uint64, token string) ([]*contact.Contact, error)
 
 	// Tag operations
 	AddTag(ctx context.Context, contactID, tagID uuid.UUID) (*contact.Contact, error)
