@@ -259,3 +259,45 @@ Delete a talk (soft delete):
         "tm_update": "2024-01-17 10:35:00.000000",
         "tm_delete": "2024-01-17 10:35:00.000000"
     }
+
+Pin a Message
+-------------
+
+Pin a message so that it is easy to find again. A pin is personal to the agent who creates it:
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/service_agents/talk_pins?token=<YOUR_AUTH_TOKEN>' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "target_type": "message",
+        "target_id": "0d4b7a3e-2f5c-4b8e-8a21-9c3e6f1d7a42"
+    }'
+
+    {
+        "id": "6f1c1a52-8d3b-4c1e-9a5e-0b7f2d9a1c10",
+        "target_type": "message",
+        "target_id": "0d4b7a3e-2f5c-4b8e-8a21-9c3e6f1d7a42",
+        "chat_id": "9a2b5c7d-1e3f-4a6b-8c9d-0e1f2a3b4c5d",
+        "tm_create": "2026-11-02T09:15:30.123456Z"
+    }
+
+To pin a whole chat, use ``"target_type": "chat"`` and the chat ID as ``target_id``.
+
+List Pins
+---------
+
+List the pins of the calling agent, newest first. The list can be narrowed with ``target_type`` and ``chat_id``:
+
+.. code::
+
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/service_agents/talk_pins?token=<YOUR_AUTH_TOKEN>&target_type=message'
+
+A pin of a message carries the pinned message in the ``message`` field.
+
+Remove a Pin
+------------
+
+.. code::
+
+    $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/service_agents/talk_pins/6f1c1a52-8d3b-4c1e-9a5e-0b7f2d9a1c10?token=<YOUR_AUTH_TOKEN>'

@@ -18,10 +18,12 @@ import (
 	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/models/participant"
+	"monorepo/bin-talk-manager/models/pin"
 	"monorepo/bin-talk-manager/pkg/chathandler"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 	"monorepo/bin-talk-manager/pkg/participanthandler"
+	"monorepo/bin-talk-manager/pkg/pinhandler"
 	"monorepo/bin-talk-manager/pkg/reactionhandler"
 )
 
@@ -39,6 +41,7 @@ type lhMocks struct {
 	msg   *messagehandler.MockMessageHandler
 	part  *participanthandler.MockParticipantHandler
 	react *reactionhandler.MockReactionHandler
+	pin   *pinhandler.MockPinHandler
 }
 
 // newRoutingHandler builds a listenHandler through New() with mocks for every collaborator
@@ -53,9 +56,10 @@ func newRoutingHandler(t *testing.T) (*listenHandler, *lhMocks) {
 		msg:   messagehandler.NewMockMessageHandler(mc),
 		part:  participanthandler.NewMockParticipantHandler(mc),
 		react: reactionhandler.NewMockReactionHandler(mc),
+		pin:   pinhandler.NewMockPinHandler(mc),
 	}
 
-	return New(m.sock, m.chat, m.msg, m.part, m.react, utilhandler.NewUtilHandler()), m
+	return New(m.sock, m.chat, m.msg, m.part, m.react, m.pin, utilhandler.NewUtilHandler()), m
 }
 
 func chatWithCustomer() *chat.Chat {
@@ -330,9 +334,10 @@ func Test_New(t *testing.T) {
 	mockMsg := messagehandler.NewMockMessageHandler(mc)
 	mockPart := participanthandler.NewMockParticipantHandler(mc)
 	mockReact := reactionhandler.NewMockReactionHandler(mc)
+	mockPin := pinhandler.NewMockPinHandler(mc)
 	mockUtil := utilhandler.NewMockUtilHandler(mc)
 
-	h := New(mockSock, mockChat, mockMsg, mockPart, mockReact, mockUtil)
+	h := New(mockSock, mockChat, mockMsg, mockPart, mockReact, mockPin, mockUtil)
 
 	chatID := uuid.FromStringOrNil(testChatID)
 	messageID := uuid.FromStringOrNil(testMessageID)
@@ -343,12 +348,14 @@ func Test_New(t *testing.T) {
 	mockUtil.EXPECT().ParseFiltersFromRequestBody(gomock.Any()).Return(map[string]any{}, nil)
 	mockPart.EXPECT().ParticipantListWithFilters(gomock.Any(), gomock.Any(), "", uint64(50)).Return([]*participant.Participant{}, nil)
 	mockReact.EXPECT().ReactionAdd(gomock.Any(), messageID, "smile", "agent", ownerID).Return(&message.Message{}, nil)
+	mockPin.EXPECT().PinList(gomock.Any(), uuid.FromStringOrNil(testCustomerID), "agent", ownerID, pin.TargetType(""), uuid.Nil, "", uint64(0)).Return([]*pin.Pin{}, nil)
 
 	for _, req := range []*sock.Request{
 		{URI: "/v1/chats/" + testChatID, Method: sock.RequestMethodGet},
 		{URI: "/v1/messages/" + testMessageID, Method: sock.RequestMethodGet},
 		{URI: "/v1/participants", Method: sock.RequestMethodGet, Data: []byte(`{}`)},
 		{URI: "/v1/messages/" + testMessageID + "/reactions", Method: sock.RequestMethodPost, Data: []byte(`{"owner_type":"agent","owner_id":"` + testOwnerID + `","emoji":"smile"}`)},
+		{URI: "/v1/pins", Method: sock.RequestMethodGet, Data: []byte(`{"customer_id":"` + testCustomerID + `","owner_type":"agent","owner_id":"` + testOwnerID + `"}`)},
 	} {
 		res, err := h.processRequest(req)
 		if err != nil || res.StatusCode >= 300 {

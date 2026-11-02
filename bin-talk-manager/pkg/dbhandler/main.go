@@ -14,6 +14,7 @@ import (
 	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/models/participant"
+	"monorepo/bin-talk-manager/models/pin"
 )
 
 // ErrNotFound is returned when a requested record does not exist.
@@ -47,6 +48,12 @@ type DBHandler interface {
 	MessageList(ctx context.Context, filters map[message.Field]any, token string, size uint64) ([]*message.Message, error)
 	MessageUpdate(ctx context.Context, id uuid.UUID, fields map[message.Field]any) error
 	MessageDelete(ctx context.Context, id uuid.UUID) error
+
+	// Pin operations
+	PinCreate(ctx context.Context, p *pin.Pin) (*pin.Pin, error)
+	PinGet(ctx context.Context, id uuid.UUID) (*pin.Pin, error)
+	PinList(ctx context.Context, customerID uuid.UUID, ownerType string, ownerID uuid.UUID, targetType pin.TargetType, chatID uuid.UUID, token string, size uint64) ([]*pin.Pin, error)
+	PinDelete(ctx context.Context, id, customerID uuid.UUID, ownerType string, ownerID uuid.UUID) error
 
 	// Atomic reaction operations (prevents race conditions)
 	MessageAddReactionAtomic(ctx context.Context, messageID uuid.UUID, reactionJSON string) error

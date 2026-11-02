@@ -53,6 +53,23 @@ A chat message with optional threading and emoji reactions. Stored in `talk_mess
 | `tm_update` | timestamp | Last update time |
 | `tm_delete` | timestamp | Soft-delete marker |
 
+### Pin
+
+A personal state of an owner (an agent): the owner pinned a chat or a message. Stored in `talk_pins`.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | UUID | Primary key |
+| `customer_id` | UUID | Owning tenant |
+| `owner_type` | string | Who pinned (`agent`) |
+| `owner_id` | UUID | Owner ID |
+| `chat_id` | UUID | FK to chat. For a chat pin the chat itself; for a message pin the chat of the message. Filled by the server |
+| `target_type` | enum | `chat` or `message` |
+| `target_id` | UUID | Chat ID or message ID, depending on `target_type` |
+| `tm_create` | timestamp | When pinned |
+
+Hard delete — no `tm_delete` column. UNIQUE constraint on `(owner_type, owner_id, target_type, target_id)`: pinning again returns the existing pin. A message has no foreign key (messages are soft-deleted); the list filters deleted messages out.
+
 ## Key Business Rules
 
 ### Threading Validation
@@ -78,6 +95,10 @@ Adding a participant who already exists updates `tm_joined` rather than creating
 - SQLite tests use `ON CONFLICT DO UPDATE SET`.
 
 Both achieve the same semantics — never create duplicate memberships.
+
+### Pin Visibility (rule R)
+
+A pin is personal: only its owner sees it. The list shows a pin only if the chat of the pin is not deleted, belongs to the calling customer, and is a `talk` chat or a chat in which the owner is an `agent` participant; a message pin also needs a message that is not deleted and belongs to the chat. A pin whose target is hidden stays stored and reappears when the owner joins the chat again. Creating a pin applies the same conditions (a non-participant of a direct or group chat is refused). Deleting a pin needs only ownership, so a pin that is no longer visible can still be removed. api-manager checks `canAccessChat` before it creates a pin; rule R is deliberately stricter than `canAccessChat` on two axes: a deleted chat and a customer mismatch.
 
 ### Events Published
 

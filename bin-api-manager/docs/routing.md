@@ -613,6 +613,9 @@ Managed locally by api-manager (no RabbitMQ RPC to a backend service).
 | GET | `/service_agents/talk_messages/:id` | bin-talk-manager | Get talk message |
 | DELETE | `/service_agents/talk_messages/:id` | bin-talk-manager | Delete talk message |
 | POST | `/service_agents/talk_messages/:id/reactions` | bin-talk-manager | Add reaction |
+| GET | `/service_agents/talk_pins` | bin-talk-manager | List the pins of the calling agent |
+| POST | `/service_agents/talk_pins` | bin-talk-manager | Pin a chat or a message |
+| DELETE | `/service_agents/talk_pins/:id` | bin-talk-manager | Remove a pin |
 | GET | `/service_agents/ws` | local (websockhandler) | Agent WebSocket endpoint |
 
 ---

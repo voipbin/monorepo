@@ -887,6 +887,41 @@
 </pre></div>
 </div>
 </section>
+<section id="pin-a-message">
+<h3>Pin a Message<a class="headerlink" href="#pin-a-message" title="Link to this heading">¶</a></h3>
+<p>Pin a message so that it is easy to find again. A pin is personal to the agent who creates it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/service_agents/talk_pins?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "target_type": "message",
+    "target_id": "0d4b7a3e-2f5c-4b8e-8a21-9c3e6f1d7a42"
+}'
+
+{
+    "id": "6f1c1a52-8d3b-4c1e-9a5e-0b7f2d9a1c10",
+    "target_type": "message",
+    "target_id": "0d4b7a3e-2f5c-4b8e-8a21-9c3e6f1d7a42",
+    "chat_id": "9a2b5c7d-1e3f-4a6b-8c9d-0e1f2a3b4c5d",
+    "tm_create": "2026-11-02T09:15:30.123456Z"
+}
+</pre></div>
+</div>
+<p>To pin a whole chat, use <code class="docutils literal notranslate"><span class="pre">&quot;target_type&quot;:</span> <span class="pre">&quot;chat&quot;</span></code> and the chat ID as <code class="docutils literal notranslate"><span class="pre">target_id</span></code>.</p>
+</section>
+<section id="list-pins">
+<h3>List Pins<a class="headerlink" href="#list-pins" title="Link to this heading">¶</a></h3>
+<p>List the pins of the calling agent, newest first. The list can be narrowed with <code class="docutils literal notranslate"><span class="pre">target_type</span></code> and <code class="docutils literal notranslate"><span class="pre">chat_id</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/service_agents/talk_pins?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;target_type=message'
+</pre></div>
+</div>
+<p>A pin of a message carries the pinned message in the <code class="docutils literal notranslate"><span class="pre">message</span></code> field.</p>
+</section>
+<section id="remove-a-pin">
+<h3>Remove a Pin<a class="headerlink" href="#remove-a-pin" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/service_agents/talk_pins/6f1c1a52-8d3b-4c1e-9a5e-0b7f2d9a1c10?token=&lt;YOUR_AUTH_TOKEN&gt;'
+</pre></div>
+</div>
+</section>
 </section>
 </section>
 
@@ -958,6 +993,9 @@
 <li><a class="reference internal" href="#list-messages">List Messages</a></li>
 <li><a class="reference internal" href="#remove-a-participant">Remove a Participant</a></li>
 <li><a class="reference internal" href="#delete-a-talk">Delete a Talk</a></li>
+<li><a class="reference internal" href="#pin-a-message">Pin a Message</a></li>
+<li><a class="reference internal" href="#list-pins">List Pins</a></li>
+<li><a class="reference internal" href="#remove-a-pin">Remove a Pin</a></li>
 </ul>
 </li>
 </ul>

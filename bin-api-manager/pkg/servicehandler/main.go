@@ -91,6 +91,7 @@ import (
 	tkchat "monorepo/bin-talk-manager/models/chat"
 	tkmessage "monorepo/bin-talk-manager/models/message"
 	tkparticipant "monorepo/bin-talk-manager/models/participant"
+	tkpin "monorepo/bin-talk-manager/models/pin"
 
 	rmrag "monorepo/bin-rag-manager/models/rag"
 
@@ -1093,6 +1094,9 @@ type ServiceHandler interface {
 	ServiceAgentTalkMessageCreate(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID, parentID *uuid.UUID, msgType tkmessage.Type, text string, medias []tkmessage.Media) (*tkmessage.WebhookMessage, error)
 	ServiceAgentTalkMessageDelete(ctx context.Context, a *auth.AuthIdentity, messageID uuid.UUID) (*tkmessage.WebhookMessage, error)
 	ServiceAgentTalkMessageReactionCreate(ctx context.Context, a *auth.AuthIdentity, messageID uuid.UUID, emoji string) (*tkmessage.WebhookMessage, error)
+	ServiceAgentTalkPinCreate(ctx context.Context, a *auth.AuthIdentity, targetType tkpin.TargetType, targetID uuid.UUID) (*tkpin.WebhookMessage, error)
+	ServiceAgentTalkPinList(ctx context.Context, a *auth.AuthIdentity, targetType tkpin.TargetType, chatID uuid.UUID, size uint64, token string) ([]*tkpin.WebhookMessage, error)
+	ServiceAgentTalkPinDelete(ctx context.Context, a *auth.AuthIdentity, pinID uuid.UUID) (*tkpin.WebhookMessage, error)
 
 	// service_agent contact
 	ServiceAgentContactCreate(

@@ -983,6 +983,28 @@
 </table>
 </div>
 </section>
+<section id="pinned-chats-and-messages">
+<h2>Pinned Chats and Messages<a class="headerlink" href="#pinned-chats-and-messages" title="Link to this heading">¶</a></h2>
+<p>An agent can pin a chat or a message to keep it at hand. A pin is personal to the agent who created it; other participants do not see it.</p>
+<p><strong>Pin a chat or a message</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_pins?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "target_type": "message",
+        "target_id": "&lt;message-id&gt;"
+    }'
+</pre></div>
+</div>
+<p><strong>Rules</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">target_type</span></code> is <code class="docutils literal notranslate"><span class="pre">chat</span></code> or <code class="docutils literal notranslate"><span class="pre">message</span></code>. The agent must be able to access the chat (a participant of a direct or group chat).</p></li>
+<li><p>Pinning a target that is already pinned returns the existing pin.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_pins</span></code> lists the agent’s own pins, newest first. The optional <code class="docutils literal notranslate"><span class="pre">target_type</span></code> and <code class="docutils literal notranslate"><span class="pre">chat_id</span></code> query parameters narrow the list. A pin of a message carries the message in <code class="docutils literal notranslate"><span class="pre">message</span></code>.</p></li>
+<li><p>A pin is listed only while the agent can see its target. If the agent leaves a direct or group chat, its pins are hidden and they are listed again when the agent joins the chat again. A pin of a deleted chat or of a deleted message is not listed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/service_agents/talk_pins/{id}</span></code> removes a pin. The pin of another agent is reported as not found.</p></li>
+</ul>
+<p>See <a class="reference internal" href="talk_struct_message.html#talk-struct-pin"><span class="std std-ref">Pin</span></a> for the response fields.</p>
+</section>
 <section id="message-types">
 <h2>Message Types<a class="headerlink" href="#message-types" title="Link to this heading">¶</a></h2>
 <p>Messages can be different types based on their origin.</p>
@@ -1262,6 +1284,7 @@ subscription</p></td>
 <li><a class="reference internal" href="#sending-messages">Sending Messages</a></li>
 <li><a class="reference internal" href="#message-threading">Message Threading</a></li>
 <li><a class="reference internal" href="#message-reactions">Message Reactions</a></li>
+<li><a class="reference internal" href="#pinned-chats-and-messages">Pinned Chats and Messages</a></li>
 <li><a class="reference internal" href="#message-types">Message Types</a></li>
 <li><a class="reference internal" href="#real-time-updates">Real-Time Updates</a></li>
 <li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>

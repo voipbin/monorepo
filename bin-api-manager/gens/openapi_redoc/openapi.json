@@ -21714,6 +21714,190 @@
         }
       }
     },
+    "/service_agents/talk_pins/{id}": {
+      "delete": {
+        "summary": "Remove a pin",
+        "description": "Removes a pin of the calling agent and returns the removed pin. The pin of another agent is reported as not found.",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The pin ID returned from POST /service_agents/talk_pins or GET /service_agents/talk_pins.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "6f1c1a52-8d3b-4c1e-9a5e-0b7f2d9a1c10"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The removed pin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TalkManagerPin"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/service_agents/talk_pins": {
+      "get": {
+        "summary": "Get a list of the pins of the calling agent",
+        "description": "Returns the chats and messages that the calling agent has pinned, newest first. Only the\nagent's own pins are returned. A pin is listed only while the agent can still see its target:\nthe chat is not deleted, and in a direct or group chat the agent is still a participant (the\npin reappears when the agent joins again). A pinned message that was deleted is not listed.\nA pin of a message carries the pinned message in `message` in this list; the responses of POST and DELETE do not include it.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "target_type",
+            "in": "query",
+            "required": false,
+            "description": "Return only the pins of this target type.",
+            "schema": {
+              "$ref": "#/components/schemas/TalkManagerPinTargetType"
+            }
+          },
+          {
+            "name": "chat_id",
+            "in": "query",
+            "required": false,
+            "description": "Return only the pins of this chat (the pinned chat itself and the pinned messages of the chat). The ID is returned from GET /service_agents/talk_chats.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "9a2b5c7d-1e3f-4a6b-8c9d-0e1f2a3b4c5d"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of the pins of the calling agent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CommonPagination"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/TalkManagerPin"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Pin a chat or a message",
+        "description": "Pins a chat or a message for the calling agent and returns the pin. The call is idempotent:\npinning a target that the agent already pinned returns the existing pin. The agent must be able\nto access the chat of the target (a participant of a direct or group chat). The chat of a\nmessage pin is filled by the server.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "target_type": {
+                    "$ref": "#/components/schemas/TalkManagerPinTargetType"
+                  },
+                  "target_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The chat ID returned from GET /service_agents/talk_chats, or the message ID returned from GET /service_agents/talk_messages, depending on target_type.",
+                    "example": "0d4b7a3e-2f5c-4b8e-8a21-9c3e6f1d7a42"
+                  }
+                },
+                "required": [
+                  "target_type",
+                  "target_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The pin of the target.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TalkManagerPin"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/service_agents/contact_addresses": {
       "get": {
         "summary": "List contact addresses (service agent)",
@@ -34814,6 +34998,65 @@
             "x-go-type": "string",
             "description": "Timestamp when the message was deleted.",
             "example": "2026-01-17T18:45:00.000000Z"
+          }
+        }
+      },
+      "TalkManagerPinTargetType": {
+        "type": "string",
+        "description": "What a pin points to.",
+        "enum": [
+          "chat",
+          "message"
+        ],
+        "x-enum-varnames": [
+          "TalkManagerPinTargetTypeChat",
+          "TalkManagerPinTargetTypeMessage"
+        ],
+        "example": "message"
+      },
+      "TalkManagerPin": {
+        "type": "object",
+        "description": "A chat or a message that the calling agent pinned. A pin is personal to the agent.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The pin ID returned from POST /service_agents/talk_pins or GET /service_agents/talk_pins.",
+            "example": "6f1c1a52-8d3b-4c1e-9a5e-0b7f2d9a1c10"
+          },
+          "target_type": {
+            "$ref": "#/components/schemas/TalkManagerPinTargetType",
+            "description": "What is pinned."
+          },
+          "target_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The chat ID returned from GET /service_agents/talk_chats, or the message ID returned from GET /service_agents/talk_messages, depending on target_type.",
+            "example": "0d4b7a3e-2f5c-4b8e-8a21-9c3e6f1d7a42"
+          },
+          "chat_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The chat the pinned chat or message belongs to. The ID is returned from GET /service_agents/talk_chats.",
+            "example": "9a2b5c7d-1e3f-4a6b-8c9d-0e1f2a3b4c5d"
+          },
+          "message": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TalkManagerMessage"
+              }
+            ],
+            "description": "The pinned message. Present only in the items of GET /service_agents/talk_pins, and only when target_type is message."
+          },
+          "tm_create": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "description": "Timestamp when the pin was created.",
+            "example": "2026-11-02T09:15:30.123456Z"
           }
         }
       },

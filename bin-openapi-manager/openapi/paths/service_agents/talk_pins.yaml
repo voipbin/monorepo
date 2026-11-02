@@ -1,0 +1,93 @@
+get:
+  summary: Get a list of the pins of the calling agent
+  description: |
+    Returns the chats and messages that the calling agent has pinned, newest first. Only the
+    agent's own pins are returned. A pin is listed only while the agent can still see its target:
+    the chat is not deleted, and in a direct or group chat the agent is still a participant (the
+    pin reappears when the agent joins again). A pinned message that was deleted is not listed.
+    A pin of a message carries the pinned message in `message` in this list; the responses of POST and DELETE do not include it.
+  tags:
+    - Service Agent
+  parameters:
+    - name: target_type
+      in: query
+      required: false
+      description: Return only the pins of this target type.
+      schema:
+        $ref: '#/components/schemas/TalkManagerPinTargetType'
+    - name: chat_id
+      in: query
+      required: false
+      description: Return only the pins of this chat (the pinned chat itself and the pinned messages of the chat). The ID is returned from GET /service_agents/talk_chats.
+      schema:
+        type: string
+        format: uuid
+        example: "9a2b5c7d-1e3f-4a6b-8c9d-0e1f2a3b4c5d"
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of the pins of the calling agent.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TalkManagerPin'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+post:
+  summary: Pin a chat or a message
+  description: |
+    Pins a chat or a message for the calling agent and returns the pin. The call is idempotent:
+    pinning a target that the agent already pinned returns the existing pin. The agent must be able
+    to access the chat of the target (a participant of a direct or group chat). The chat of a
+    message pin is filled by the server.
+  tags:
+    - Service Agent
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            target_type:
+              $ref: '#/components/schemas/TalkManagerPinTargetType'
+            target_id:
+              type: string
+              format: uuid
+              description: "The chat ID returned from GET /service_agents/talk_chats, or the message ID returned from GET /service_agents/talk_messages, depending on target_type."
+              example: "0d4b7a3e-2f5c-4b8e-8a21-9c3e6f1d7a42"
+          required:
+            - target_type
+            - target_id
+  responses:
+    '200':
+      description: The pin of the target.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TalkManagerPin'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

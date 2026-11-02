@@ -75,6 +75,7 @@ import (
 	chat "monorepo/bin-talk-manager/models/chat"
 	message2 "monorepo/bin-talk-manager/models/message"
 	participant0 "monorepo/bin-talk-manager/models/participant"
+	pin "monorepo/bin-talk-manager/models/pin"
 	analysis "monorepo/bin-timeline-manager/models/analysis"
 	peerevent "monorepo/bin-timeline-manager/models/peerevent"
 	sipmessage "monorepo/bin-timeline-manager/models/sipmessage"
@@ -5870,6 +5871,51 @@ func (m *MockServiceHandler) ServiceAgentTalkParticipantList(ctx context.Context
 func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkParticipantList(ctx, a, chatID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTalkParticipantList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTalkParticipantList), ctx, a, chatID)
+}
+
+// ServiceAgentTalkPinCreate mocks base method.
+func (m *MockServiceHandler) ServiceAgentTalkPinCreate(ctx context.Context, a *auth.AuthIdentity, targetType pin.TargetType, targetID uuid.UUID) (*pin.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentTalkPinCreate", ctx, a, targetType, targetID)
+	ret0, _ := ret[0].(*pin.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentTalkPinCreate indicates an expected call of ServiceAgentTalkPinCreate.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkPinCreate(ctx, a, targetType, targetID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTalkPinCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTalkPinCreate), ctx, a, targetType, targetID)
+}
+
+// ServiceAgentTalkPinDelete mocks base method.
+func (m *MockServiceHandler) ServiceAgentTalkPinDelete(ctx context.Context, a *auth.AuthIdentity, pinID uuid.UUID) (*pin.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentTalkPinDelete", ctx, a, pinID)
+	ret0, _ := ret[0].(*pin.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentTalkPinDelete indicates an expected call of ServiceAgentTalkPinDelete.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkPinDelete(ctx, a, pinID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTalkPinDelete", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTalkPinDelete), ctx, a, pinID)
+}
+
+// ServiceAgentTalkPinList mocks base method.
+func (m *MockServiceHandler) ServiceAgentTalkPinList(ctx context.Context, a *auth.AuthIdentity, targetType pin.TargetType, chatID uuid.UUID, size uint64, token string) ([]*pin.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentTalkPinList", ctx, a, targetType, chatID, size, token)
+	ret0, _ := ret[0].([]*pin.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentTalkPinList indicates an expected call of ServiceAgentTalkPinList.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkPinList(ctx, a, targetType, chatID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTalkPinList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTalkPinList), ctx, a, targetType, chatID, size, token)
 }
 
 // ServiceAgentTranscribeList mocks base method.

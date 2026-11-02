@@ -2893,6 +2893,24 @@ func (e TalkManagerMessageType) Valid() bool {
 	}
 }
 
+// Defines values for TalkManagerPinTargetType.
+const (
+	TalkManagerPinTargetTypeChat    TalkManagerPinTargetType = "chat"
+	TalkManagerPinTargetTypeMessage TalkManagerPinTargetType = "message"
+)
+
+// Valid indicates whether the value is a known member of the TalkManagerPinTargetType enum.
+func (e TalkManagerPinTargetType) Valid() bool {
+	switch e {
+	case TalkManagerPinTargetTypeChat:
+		return true
+	case TalkManagerPinTargetTypeMessage:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TalkManagerTalkType.
 const (
 	TalkManagerTalkTypeDirect TalkManagerTalkType = "direct"
@@ -7805,6 +7823,30 @@ type TalkManagerParticipantInput struct {
 	OwnerType string `json:"owner_type"`
 }
 
+// TalkManagerPin A chat or a message that the calling agent pinned. A pin is personal to the agent.
+type TalkManagerPin struct {
+	// ChatId The chat the pinned chat or message belongs to. The ID is returned from GET /service_agents/talk_chats.
+	ChatId *string `json:"chat_id,omitempty"`
+
+	// Id The pin ID returned from POST /service_agents/talk_pins or GET /service_agents/talk_pins.
+	Id *string `json:"id,omitempty"`
+
+	// Message The pinned message. Present only in the items of GET /service_agents/talk_pins, and only when target_type is message.
+	Message *TalkManagerMessage `json:"message,omitempty"`
+
+	// TargetId The chat ID returned from GET /service_agents/talk_chats, or the message ID returned from GET /service_agents/talk_messages, depending on target_type.
+	TargetId *string `json:"target_id,omitempty"`
+
+	// TargetType What a pin points to.
+	TargetType *TalkManagerPinTargetType `json:"target_type,omitempty"`
+
+	// TmCreate Timestamp when the pin was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+}
+
+// TalkManagerPinTargetType What a pin points to.
+type TalkManagerPinTargetType string
+
 // TalkManagerReaction defines model for TalkManagerReaction.
 type TalkManagerReaction struct {
 	// Emoji Emoji character for the reaction.
@@ -10866,6 +10908,30 @@ type PostServiceAgentsTalkMessagesIdReactionsJSONBody struct {
 	Emoji string `json:"emoji"`
 }
 
+// GetServiceAgentsTalkPinsParams defines parameters for GetServiceAgentsTalkPins.
+type GetServiceAgentsTalkPinsParams struct {
+	// TargetType Return only the pins of this target type.
+	TargetType *TalkManagerPinTargetType `form:"target_type,omitempty" json:"target_type,omitempty"`
+
+	// ChatId Return only the pins of this chat (the pinned chat itself and the pinned messages of the chat). The ID is returned from GET /service_agents/talk_chats.
+	ChatId *openapi_types.UUID `form:"chat_id,omitempty" json:"chat_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostServiceAgentsTalkPinsJSONBody defines parameters for PostServiceAgentsTalkPins.
+type PostServiceAgentsTalkPinsJSONBody struct {
+	// TargetId The chat ID returned from GET /service_agents/talk_chats, or the message ID returned from GET /service_agents/talk_messages, depending on target_type.
+	TargetId openapi_types.UUID `json:"target_id"`
+
+	// TargetType What a pin points to.
+	TargetType TalkManagerPinTargetType `json:"target_type"`
+}
+
 // GetServiceAgentsTranscribesParams defines parameters for GetServiceAgentsTranscribes.
 type GetServiceAgentsTranscribesParams struct {
 	// PageSize Number of results to return per page.
@@ -11708,6 +11774,9 @@ type PostServiceAgentsTalkMessagesJSONRequestBody PostServiceAgentsTalkMessagesJ
 
 // PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody defines body for PostServiceAgentsTalkMessagesIdReactions for application/json ContentType.
 type PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody PostServiceAgentsTalkMessagesIdReactionsJSONBody
+
+// PostServiceAgentsTalkPinsJSONRequestBody defines body for PostServiceAgentsTalkPins for application/json ContentType.
+type PostServiceAgentsTalkPinsJSONRequestBody PostServiceAgentsTalkPinsJSONBody
 
 // PostServiceAgentsTranscribesJSONRequestBody defines body for PostServiceAgentsTranscribes for application/json ContentType.
 type PostServiceAgentsTranscribesJSONRequestBody PostServiceAgentsTranscribesJSONBody
@@ -12932,6 +13001,15 @@ type ServerInterface interface {
 	// Add a reaction to a talk message
 	// (POST /service_agents/talk_messages/{id}/reactions)
 	PostServiceAgentsTalkMessagesIdReactions(c *gin.Context, id string)
+	// Get a list of the pins of the calling agent
+	// (GET /service_agents/talk_pins)
+	GetServiceAgentsTalkPins(c *gin.Context, params GetServiceAgentsTalkPinsParams)
+	// Pin a chat or a message
+	// (POST /service_agents/talk_pins)
+	PostServiceAgentsTalkPins(c *gin.Context)
+	// Remove a pin
+	// (DELETE /service_agents/talk_pins/{id})
+	DeleteServiceAgentsTalkPinsId(c *gin.Context, id openapi_types.UUID)
 	// List transcribes
 	// (GET /service_agents/transcribes)
 	GetServiceAgentsTranscribes(c *gin.Context, params GetServiceAgentsTranscribesParams)
@@ -23062,6 +23140,95 @@ func (siw *ServerInterfaceWrapper) PostServiceAgentsTalkMessagesIdReactions(c *g
 	siw.Handler.PostServiceAgentsTalkMessagesIdReactions(c, id)
 }
 
+// GetServiceAgentsTalkPins operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsTalkPins(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceAgentsTalkPinsParams
+
+	// ------------- Optional query parameter "target_type" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "target_type", c.Request.URL.Query(), &params.TargetType, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter target_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "chat_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "chat_id", c.Request.URL.Query(), &params.ChatId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chat_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsTalkPins(c, params)
+}
+
+// PostServiceAgentsTalkPins operation middleware
+func (siw *ServerInterfaceWrapper) PostServiceAgentsTalkPins(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostServiceAgentsTalkPins(c)
+}
+
+// DeleteServiceAgentsTalkPinsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteServiceAgentsTalkPinsId(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteServiceAgentsTalkPinsId(c, id)
+}
+
 // GetServiceAgentsTranscribes operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsTranscribes(c *gin.Context) {
 
@@ -25209,6 +25376,9 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/service_agents/talk_messages/:id", wrapper.DeleteServiceAgentsTalkMessagesId)
 	router.GET(options.BaseURL+"/service_agents/talk_messages/:id", wrapper.GetServiceAgentsTalkMessagesId)
 	router.POST(options.BaseURL+"/service_agents/talk_messages/:id/reactions", wrapper.PostServiceAgentsTalkMessagesIdReactions)
+	router.GET(options.BaseURL+"/service_agents/talk_pins", wrapper.GetServiceAgentsTalkPins)
+	router.POST(options.BaseURL+"/service_agents/talk_pins", wrapper.PostServiceAgentsTalkPins)
+	router.DELETE(options.BaseURL+"/service_agents/talk_pins/:id", wrapper.DeleteServiceAgentsTalkPinsId)
 	router.GET(options.BaseURL+"/service_agents/transcribes", wrapper.GetServiceAgentsTranscribes)
 	router.POST(options.BaseURL+"/service_agents/transcribes", wrapper.PostServiceAgentsTranscribes)
 	router.GET(options.BaseURL+"/service_agents/transcripts", wrapper.GetServiceAgentsTranscripts)
@@ -56541,6 +56711,272 @@ func (response PostServiceAgentsTalkMessagesIdReactions500JSONResponse) VisitPos
 	return err
 }
 
+type GetServiceAgentsTalkPinsRequestObject struct {
+	Params GetServiceAgentsTalkPinsParams
+}
+
+type GetServiceAgentsTalkPinsResponseObject interface {
+	VisitGetServiceAgentsTalkPinsResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsTalkPins200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string           `json:"next_page_token,omitempty"`
+	Result        *[]TalkManagerPin `json:"result,omitempty"`
+}
+
+func (response GetServiceAgentsTalkPins200JSONResponse) VisitGetServiceAgentsTalkPinsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsTalkPins400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsTalkPins400JSONResponse) VisitGetServiceAgentsTalkPinsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsTalkPins401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsTalkPins401JSONResponse) VisitGetServiceAgentsTalkPinsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsTalkPins403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsTalkPins403JSONResponse) VisitGetServiceAgentsTalkPinsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsTalkPins500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsTalkPins500JSONResponse) VisitGetServiceAgentsTalkPinsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsTalkPinsRequestObject struct {
+	Body *PostServiceAgentsTalkPinsJSONRequestBody
+}
+
+type PostServiceAgentsTalkPinsResponseObject interface {
+	VisitPostServiceAgentsTalkPinsResponse(w http.ResponseWriter) error
+}
+
+type PostServiceAgentsTalkPins200JSONResponse TalkManagerPin
+
+func (response PostServiceAgentsTalkPins200JSONResponse) VisitPostServiceAgentsTalkPinsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsTalkPins400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsTalkPins400JSONResponse) VisitPostServiceAgentsTalkPinsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsTalkPins401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsTalkPins401JSONResponse) VisitPostServiceAgentsTalkPinsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsTalkPins403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostServiceAgentsTalkPins403JSONResponse) VisitPostServiceAgentsTalkPinsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsTalkPins404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostServiceAgentsTalkPins404JSONResponse) VisitPostServiceAgentsTalkPinsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsTalkPins500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsTalkPins500JSONResponse) VisitPostServiceAgentsTalkPinsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsTalkPinsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type DeleteServiceAgentsTalkPinsIdResponseObject interface {
+	VisitDeleteServiceAgentsTalkPinsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteServiceAgentsTalkPinsId200JSONResponse TalkManagerPin
+
+func (response DeleteServiceAgentsTalkPinsId200JSONResponse) VisitDeleteServiceAgentsTalkPinsIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsTalkPinsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteServiceAgentsTalkPinsId400JSONResponse) VisitDeleteServiceAgentsTalkPinsIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsTalkPinsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteServiceAgentsTalkPinsId401JSONResponse) VisitDeleteServiceAgentsTalkPinsIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsTalkPinsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteServiceAgentsTalkPinsId403JSONResponse) VisitDeleteServiceAgentsTalkPinsIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsTalkPinsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteServiceAgentsTalkPinsId404JSONResponse) VisitDeleteServiceAgentsTalkPinsIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsTalkPinsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteServiceAgentsTalkPinsId500JSONResponse) VisitDeleteServiceAgentsTalkPinsIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetServiceAgentsTranscribesRequestObject struct {
 	Params GetServiceAgentsTranscribesParams
 }
@@ -63315,6 +63751,15 @@ type StrictServerInterface interface {
 	// Add a reaction to a talk message
 	// (POST /service_agents/talk_messages/{id}/reactions)
 	PostServiceAgentsTalkMessagesIdReactions(ctx context.Context, request PostServiceAgentsTalkMessagesIdReactionsRequestObject) (PostServiceAgentsTalkMessagesIdReactionsResponseObject, error)
+	// Get a list of the pins of the calling agent
+	// (GET /service_agents/talk_pins)
+	GetServiceAgentsTalkPins(ctx context.Context, request GetServiceAgentsTalkPinsRequestObject) (GetServiceAgentsTalkPinsResponseObject, error)
+	// Pin a chat or a message
+	// (POST /service_agents/talk_pins)
+	PostServiceAgentsTalkPins(ctx context.Context, request PostServiceAgentsTalkPinsRequestObject) (PostServiceAgentsTalkPinsResponseObject, error)
+	// Remove a pin
+	// (DELETE /service_agents/talk_pins/{id})
+	DeleteServiceAgentsTalkPinsId(ctx context.Context, request DeleteServiceAgentsTalkPinsIdRequestObject) (DeleteServiceAgentsTalkPinsIdResponseObject, error)
 	// List transcribes
 	// (GET /service_agents/transcribes)
 	GetServiceAgentsTranscribes(ctx context.Context, request GetServiceAgentsTranscribesRequestObject) (GetServiceAgentsTranscribesResponseObject, error)
@@ -74308,6 +74753,89 @@ func (sh *strictHandler) PostServiceAgentsTalkMessagesIdReactions(ctx *gin.Conte
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(PostServiceAgentsTalkMessagesIdReactionsResponseObject); ok {
 		if err := validResponse.VisitPostServiceAgentsTalkMessagesIdReactionsResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsTalkPins operation middleware
+func (sh *strictHandler) GetServiceAgentsTalkPins(ctx *gin.Context, params GetServiceAgentsTalkPinsParams) {
+	var request GetServiceAgentsTalkPinsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsTalkPins(ctx, request.(GetServiceAgentsTalkPinsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsTalkPins")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetServiceAgentsTalkPinsResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsTalkPinsResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostServiceAgentsTalkPins operation middleware
+func (sh *strictHandler) PostServiceAgentsTalkPins(ctx *gin.Context) {
+	var request PostServiceAgentsTalkPinsRequestObject
+
+	var body PostServiceAgentsTalkPinsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostServiceAgentsTalkPins(ctx, request.(PostServiceAgentsTalkPinsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostServiceAgentsTalkPins")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostServiceAgentsTalkPinsResponseObject); ok {
+		if err := validResponse.VisitPostServiceAgentsTalkPinsResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteServiceAgentsTalkPinsId operation middleware
+func (sh *strictHandler) DeleteServiceAgentsTalkPinsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request DeleteServiceAgentsTalkPinsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteServiceAgentsTalkPinsId(ctx, request.(DeleteServiceAgentsTalkPinsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteServiceAgentsTalkPinsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(DeleteServiceAgentsTalkPinsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteServiceAgentsTalkPinsIdResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

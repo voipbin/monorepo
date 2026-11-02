@@ -1,0 +1,31 @@
+delete:
+  summary: Remove a pin
+  description: Removes a pin of the calling agent and returns the removed pin. The pin of another agent is reported as not found.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The pin ID returned from POST /service_agents/talk_pins or GET /service_agents/talk_pins.
+      schema:
+        type: string
+        format: uuid
+        example: "6f1c1a52-8d3b-4c1e-9a5e-0b7f2d9a1c10"
+  responses:
+    '200':
+      description: The removed pin.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TalkManagerPin'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

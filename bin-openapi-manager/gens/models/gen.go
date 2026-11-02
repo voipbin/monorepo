@@ -2885,6 +2885,24 @@ func (e TalkManagerMessageType) Valid() bool {
 	}
 }
 
+// Defines values for TalkManagerPinTargetType.
+const (
+	TalkManagerPinTargetTypeChat    TalkManagerPinTargetType = "chat"
+	TalkManagerPinTargetTypeMessage TalkManagerPinTargetType = "message"
+)
+
+// Valid indicates whether the value is a known member of the TalkManagerPinTargetType enum.
+func (e TalkManagerPinTargetType) Valid() bool {
+	switch e {
+	case TalkManagerPinTargetTypeChat:
+		return true
+	case TalkManagerPinTargetTypeMessage:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TalkManagerTalkType.
 const (
 	TalkManagerTalkTypeDirect TalkManagerTalkType = "direct"
@@ -9930,6 +9948,42 @@ type TalkManagerParticipantInput struct {
 	OwnerType string `json:"owner_type"`
 }
 
+// TalkManagerPin A chat or a message that the calling agent pinned. A pin is personal to the agent.
+type TalkManagerPin struct {
+	// ChatId The chat the pinned chat or message belongs to. The ID is returned from GET /service_agents/talk_chats.
+	//
+	// Example: 9a2b5c7d-1e3f-4a6b-8c9d-0e1f2a3b4c5d
+	ChatId *string `json:"chat_id,omitempty"`
+
+	// Id The pin ID returned from POST /service_agents/talk_pins or GET /service_agents/talk_pins.
+	//
+	// Example: 6f1c1a52-8d3b-4c1e-9a5e-0b7f2d9a1c10
+	Id *string `json:"id,omitempty"`
+
+	// Message The pinned message. Present only in the items of GET /service_agents/talk_pins, and only when target_type is message.
+	Message *TalkManagerMessage `json:"message,omitempty"`
+
+	// TargetId The chat ID returned from GET /service_agents/talk_chats, or the message ID returned from GET /service_agents/talk_messages, depending on target_type.
+	//
+	// Example: 0d4b7a3e-2f5c-4b8e-8a21-9c3e6f1d7a42
+	TargetId *string `json:"target_id,omitempty"`
+
+	// TargetType What a pin points to.
+	//
+	// Example: message
+	TargetType *TalkManagerPinTargetType `json:"target_type,omitempty"`
+
+	// TmCreate Timestamp when the pin was created.
+	//
+	// Example: 2026-11-02T09:15:30.123456Z
+	TmCreate *string `json:"tm_create,omitempty"`
+}
+
+// TalkManagerPinTargetType What a pin points to.
+//
+// Example: message
+type TalkManagerPinTargetType string
+
 // TalkManagerReaction defines model for TalkManagerReaction.
 type TalkManagerReaction struct {
 	// Emoji Emoji character for the reaction.
@@ -13594,6 +13648,34 @@ type PostServiceAgentsTalkMessagesIdReactionsJSONBody struct {
 	Emoji string `json:"emoji"`
 }
 
+// GetServiceAgentsTalkPinsParams defines parameters for GetServiceAgentsTalkPins.
+type GetServiceAgentsTalkPinsParams struct {
+	// TargetType Return only the pins of this target type.
+	TargetType *TalkManagerPinTargetType `form:"target_type,omitempty" json:"target_type,omitempty"`
+
+	// ChatId Return only the pins of this chat (the pinned chat itself and the pinned messages of the chat). The ID is returned from GET /service_agents/talk_chats.
+	ChatId *openapi_types.UUID `form:"chat_id,omitempty" json:"chat_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostServiceAgentsTalkPinsJSONBody defines parameters for PostServiceAgentsTalkPins.
+type PostServiceAgentsTalkPinsJSONBody struct {
+	// TargetId The chat ID returned from GET /service_agents/talk_chats, or the message ID returned from GET /service_agents/talk_messages, depending on target_type.
+	//
+	// Example: 0d4b7a3e-2f5c-4b8e-8a21-9c3e6f1d7a42
+	TargetId openapi_types.UUID `json:"target_id"`
+
+	// TargetType What a pin points to.
+	//
+	// Example: message
+	TargetType TalkManagerPinTargetType `json:"target_type"`
+}
+
 // GetServiceAgentsTranscribesParams defines parameters for GetServiceAgentsTranscribes.
 type GetServiceAgentsTranscribesParams struct {
 	// PageSize Number of results to return per page.
@@ -14507,6 +14589,9 @@ type PostServiceAgentsTalkMessagesJSONRequestBody PostServiceAgentsTalkMessagesJ
 
 // PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody defines body for PostServiceAgentsTalkMessagesIdReactions for application/json ContentType.
 type PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody PostServiceAgentsTalkMessagesIdReactionsJSONBody
+
+// PostServiceAgentsTalkPinsJSONRequestBody defines body for PostServiceAgentsTalkPins for application/json ContentType.
+type PostServiceAgentsTalkPinsJSONRequestBody PostServiceAgentsTalkPinsJSONBody
 
 // PostServiceAgentsTranscribesJSONRequestBody defines body for PostServiceAgentsTranscribes for application/json ContentType.
 type PostServiceAgentsTranscribesJSONRequestBody PostServiceAgentsTranscribesJSONBody

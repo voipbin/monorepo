@@ -2,7 +2,7 @@
 
 ## Component Overview
 
-`bin-talk-manager` manages chat sessions, messages, participants, and reactions for the VoIPbin platform. It exposes a REST-style RPC interface over RabbitMQ and persists data in MySQL with Redis caching.
+`bin-talk-manager` manages chat sessions, messages, participants, reactions, and the personal pins of agents for the VoIPbin platform. It exposes a REST-style RPC interface over RabbitMQ and persists data in MySQL with Redis caching.
 
 ```
 cmd/talk-manager/main.go
@@ -68,5 +68,8 @@ Requests arrive on queue `bin-manager.talk-manager.request`. The listenhandler m
 | DELETE | `/v1/messages/{id}` | `v1MessagesIDDelete` |
 | POST | `/v1/messages/{id}/reactions` | `v1MessagesIDReactionsPost` |
 | DELETE | `/v1/messages/{id}/reactions` | `v1MessagesIDReactionsDelete` |
+| POST | `/v1/pins` | `v1PinsPost` |
+| GET | `/v1/pins` | `v1PinsGet` |
+| DELETE | `/v1/pins/{id}` | `v1PinsIDDelete` |
 
 No per-pod queue routing — all replicas handle any request.

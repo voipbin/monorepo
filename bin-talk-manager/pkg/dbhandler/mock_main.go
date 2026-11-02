@@ -14,6 +14,7 @@ import (
 	chat "monorepo/bin-talk-manager/models/chat"
 	message "monorepo/bin-talk-manager/models/message"
 	participant "monorepo/bin-talk-manager/models/participant"
+	pin "monorepo/bin-talk-manager/models/pin"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -330,4 +331,63 @@ func (m *MockDBHandler) ParticipantListByChatIDs(ctx context.Context, chatIDs []
 func (mr *MockDBHandlerMockRecorder) ParticipantListByChatIDs(ctx, chatIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantListByChatIDs", reflect.TypeOf((*MockDBHandler)(nil).ParticipantListByChatIDs), ctx, chatIDs)
+}
+
+// PinCreate mocks base method.
+func (m *MockDBHandler) PinCreate(ctx context.Context, p *pin.Pin) (*pin.Pin, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PinCreate", ctx, p)
+	ret0, _ := ret[0].(*pin.Pin)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PinCreate indicates an expected call of PinCreate.
+func (mr *MockDBHandlerMockRecorder) PinCreate(ctx, p any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PinCreate", reflect.TypeOf((*MockDBHandler)(nil).PinCreate), ctx, p)
+}
+
+// PinDelete mocks base method.
+func (m *MockDBHandler) PinDelete(ctx context.Context, id, customerID uuid.UUID, ownerType string, ownerID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PinDelete", ctx, id, customerID, ownerType, ownerID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PinDelete indicates an expected call of PinDelete.
+func (mr *MockDBHandlerMockRecorder) PinDelete(ctx, id, customerID, ownerType, ownerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PinDelete", reflect.TypeOf((*MockDBHandler)(nil).PinDelete), ctx, id, customerID, ownerType, ownerID)
+}
+
+// PinGet mocks base method.
+func (m *MockDBHandler) PinGet(ctx context.Context, id uuid.UUID) (*pin.Pin, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PinGet", ctx, id)
+	ret0, _ := ret[0].(*pin.Pin)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PinGet indicates an expected call of PinGet.
+func (mr *MockDBHandlerMockRecorder) PinGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PinGet", reflect.TypeOf((*MockDBHandler)(nil).PinGet), ctx, id)
+}
+
+// PinList mocks base method.
+func (m *MockDBHandler) PinList(ctx context.Context, customerID uuid.UUID, ownerType string, ownerID uuid.UUID, targetType pin.TargetType, chatID uuid.UUID, token string, size uint64) ([]*pin.Pin, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PinList", ctx, customerID, ownerType, ownerID, targetType, chatID, token, size)
+	ret0, _ := ret[0].([]*pin.Pin)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PinList indicates an expected call of PinList.
+func (mr *MockDBHandlerMockRecorder) PinList(ctx, customerID, ownerType, ownerID, targetType, chatID, token, size any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PinList", reflect.TypeOf((*MockDBHandler)(nil).PinList), ctx, customerID, ownerType, ownerID, targetType, chatID, token, size)
 }

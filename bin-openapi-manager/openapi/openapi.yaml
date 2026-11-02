@@ -7878,6 +7878,52 @@ components:
           description: Timestamp when the message was deleted.
           example: "2026-01-17T18:45:00.000000Z"
 
+    TalkManagerPinTargetType:
+      type: string
+      description: What a pin points to.
+      enum:
+        - chat
+        - message
+      x-enum-varnames:
+        - TalkManagerPinTargetTypeChat
+        - TalkManagerPinTargetTypeMessage
+      example: "message"
+    TalkManagerPin:
+      type: object
+      description: A chat or a message that the calling agent pinned. A pin is personal to the agent.
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The pin ID returned from POST /service_agents/talk_pins or GET /service_agents/talk_pins."
+          example: "6f1c1a52-8d3b-4c1e-9a5e-0b7f2d9a1c10"
+        target_type:
+          $ref: '#/components/schemas/TalkManagerPinTargetType'
+          description: "What is pinned."
+        target_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The chat ID returned from GET /service_agents/talk_chats, or the message ID returned from GET /service_agents/talk_messages, depending on target_type."
+          example: "0d4b7a3e-2f5c-4b8e-8a21-9c3e6f1d7a42"
+        chat_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The chat the pinned chat or message belongs to. The ID is returned from GET /service_agents/talk_chats."
+          example: "9a2b5c7d-1e3f-4a6b-8c9d-0e1f2a3b4c5d"
+        message:
+          allOf:
+            - $ref: '#/components/schemas/TalkManagerMessage'
+          description: "The pinned message. Present only in the items of GET /service_agents/talk_pins, and only when target_type is message."
+        tm_create:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the pin was created.
+          example: "2026-11-02T09:15:30.123456Z"
+
     TalkManagerMediaType:
       type: string
       description: Type of the media content.
@@ -9507,6 +9553,10 @@ paths:
     $ref: './paths/service_agents/talk_messages_id.yaml'
   /service_agents/talk_messages:
     $ref: './paths/service_agents/talk_messages.yaml'
+  /service_agents/talk_pins/{id}:
+    $ref: './paths/service_agents/talk_pins_id.yaml'
+  /service_agents/talk_pins:
+    $ref: './paths/service_agents/talk_pins.yaml'
 
   /service_agents/contact_addresses:
     $ref: './paths/service_agents/contact_addresses.yaml'
