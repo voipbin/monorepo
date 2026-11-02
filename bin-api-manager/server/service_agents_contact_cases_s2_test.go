@@ -21,7 +21,7 @@ func Test_ServiceAgentsContactCasesHandlers_ErrorPaths(t *testing.T) {
 		}},
 		{name: "PostServiceAgentsContactCasesIdClose unauthenticated", method: http.MethodPost, path: "/service_agents/contact_cases/3bc539bc-c68b-11ec-b41f-0776699e7467/close", body: `{}`, noAuth: true, wantStatus: cerrors.StatusUnauthenticated, wantReason: "AUTHENTICATION_REQUIRED"},
 		{name: "PostServiceAgentsContactCasesIdClose service error", method: http.MethodPost, path: "/service_agents/contact_cases/3bc539bc-c68b-11ec-b41f-0776699e7467/close", body: `{}`, wantStatus: cerrors.StatusPermissionDenied, wantReason: "S2_DENIED", setup: func(m *servicehandler.MockServiceHandler, a *auth.AuthIdentity) {
-			m.EXPECT().ServiceAgentCaseClose(gomock.Any(), a, uuid.FromStringOrNil("3bc539bc-c68b-11ec-b41f-0776699e7467")).Return(nil, s2Err)
+			m.EXPECT().ServiceAgentCaseClose(gomock.Any(), a, uuid.FromStringOrNil("3bc539bc-c68b-11ec-b41f-0776699e7467"), "").Return(nil, s2Err)
 		}},
 		{name: "PostServiceAgentsContactCasesIdAssign unauthenticated", method: http.MethodPost, path: "/service_agents/contact_cases/3bc539bc-c68b-11ec-b41f-0776699e7467/assign", body: `{}`, noAuth: true, wantStatus: cerrors.StatusUnauthenticated, wantReason: "AUTHENTICATION_REQUIRED"},
 		{name: "PostServiceAgentsContactCasesIdAssign bad json", method: http.MethodPost, path: "/service_agents/contact_cases/3bc539bc-c68b-11ec-b41f-0776699e7467/assign", body: "{", wantStatus: cerrors.StatusInvalidArgument, wantReason: "INVALID_JSON_BODY"},

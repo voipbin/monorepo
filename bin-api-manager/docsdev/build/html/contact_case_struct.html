@@ -665,6 +665,7 @@
     <span class="s2">"closed_reason"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
     <span class="s2">"closed_by_type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
     <span class="s2">"closed_by_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"disposition"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
     <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
     <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
     <span class="s2">"previous_case_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
@@ -690,6 +691,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">closed_reason</span></code> (String): Reason the case was closed. See <a class="reference internal" href="#contact-case-struct-closedreason"><span class="std std-ref">ClosedReason</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">closed_by_type</span></code> (String): Type of the actor that closed the case. See <a class="reference internal" href="#contact-case-struct-closedbytype"><span class="std std-ref">ClosedByType</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">closed_by_id</span></code> (UUID): ID of the actor that closed the case. Nullable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">disposition</span></code> (String): Outcome the agent recorded when closing the case. See <a class="reference internal" href="#contact-case-struct-disposition"><span class="std std-ref">Disposition</span></a>. Empty for open cases and for cases closed without one.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): Optional freeform case name/title, settable only at creation time (e.g. by the <code class="docutils literal notranslate"><span class="pre">case_create</span></code> Flow action).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Optional freeform case detail, settable only at creation time.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">previous_case_id</span></code> (UUID): The prior (now-closed) case this case continues from, if created via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contact_cases/{id}/continue</span></code>. Nil for the first case on a given peer.</p></li>
@@ -729,6 +731,36 @@
 <tbody>
 <tr class="row-even"><td><p>agent_closed</p></td>
 <td><p>Closed explicitly by an agent via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contact_cases/{id}/close</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="disposition">
+<span id="contact-case-struct-disposition"></span><h3>Disposition<a class="headerlink" href="#disposition" title="Link to this heading">¶</a></h3>
+<p>Recorded only through <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/contact_cases/{id}/close</span></code>. The admin <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contact_cases/{id}/close</span></code> does not accept one.</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Value</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>resolved</p></td>
+<td><p>The customer’s issue was resolved</p></td>
+</tr>
+<tr class="row-odd"><td><p>unresolved</p></td>
+<td><p>The case was closed without resolving the issue</p></td>
+</tr>
+<tr class="row-even"><td><p>follow_up_needed</p></td>
+<td><p>The issue needs a follow-up</p></td>
+</tr>
+<tr class="row-odd"><td><p>spam</p></td>
+<td><p>The contact was spam</p></td>
+</tr>
+<tr class="row-even"><td><p>other</p></td>
+<td><p>Any other outcome</p></td>
 </tr>
 </tbody>
 </table>
@@ -864,6 +896,7 @@
 <li><a class="reference internal" href="#case">Case</a><ul>
 <li><a class="reference internal" href="#status">Status</a></li>
 <li><a class="reference internal" href="#closedreason">ClosedReason</a></li>
+<li><a class="reference internal" href="#disposition">Disposition</a></li>
 <li><a class="reference internal" href="#closedbytype">ClosedByType</a></li>
 </ul>
 </li>

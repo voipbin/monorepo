@@ -243,14 +243,45 @@ func Test_ServiceAgentCaseClose(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *auth.AuthIdentity
-		caseID uuid.UUID
+		agent       *auth.AuthIdentity
+		caseID      uuid.UUID
+		disposition string
 
 		responseCaseGet   *cmkase.Case
 		responseCaseClose *cmkase.Case
 
 		expectRes *cmkase.Case
 	}{
+		{
+			name: "agent permission with disposition",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			caseID:      uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+			disposition: "resolved",
+
+			responseCaseGet: &cmkase.Case{
+				ID:         uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+			},
+			responseCaseClose: &cmkase.Case{
+				ID:          uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+				CustomerID:  uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Status:      cmkase.StatusClosed,
+				Disposition: "resolved",
+			},
+
+			expectRes: &cmkase.Case{
+				ID:          uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+				CustomerID:  uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Status:      cmkase.StatusClosed,
+				Disposition: "resolved",
+			},
+		},
 		{
 			name: "agent permission",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
@@ -295,9 +326,9 @@ func Test_ServiceAgentCaseClose(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ContactV1CaseGet(ctx, tt.agent.CustomerID, tt.caseID).Return(tt.responseCaseGet, nil)
-			mockReq.EXPECT().ContactV1CaseClose(ctx, tt.agent.CustomerID, tt.caseID, string(commonidentity.OwnerTypeAgent), tt.agent.AgentID()).Return(tt.responseCaseClose, nil)
+			mockReq.EXPECT().ContactV1CaseClose(ctx, tt.agent.CustomerID, tt.caseID, string(commonidentity.OwnerTypeAgent), tt.agent.AgentID(), tt.disposition).Return(tt.responseCaseClose, nil)
 
-			res, err := h.ServiceAgentCaseClose(ctx, tt.agent, tt.caseID)
+			res, err := h.ServiceAgentCaseClose(ctx, tt.agent, tt.caseID, tt.disposition)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

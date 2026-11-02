@@ -26,7 +26,7 @@ type CaseHandler interface {
 	// Returns the ACTUALLY persisted closed_reason/closed_by, never the
 	// caller's own intent, distinguishing a genuine close from a
 	// race-lost double-close via CloseResult.AlreadyClosed.
-	Close(ctx context.Context, customerID, id uuid.UUID, closedByType commonidentity.OwnerType, closedByID uuid.UUID) (*CloseResult, error)
+	Close(ctx context.Context, customerID, id uuid.UUID, closedByType commonidentity.OwnerType, closedByID uuid.UUID, disposition string) (*CloseResult, error)
 
 	// Continue implements design §5.3: agent-initiated manual
 	// continuation for accidental-close recovery. Requires the source

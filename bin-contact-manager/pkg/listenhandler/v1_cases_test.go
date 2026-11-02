@@ -183,10 +183,11 @@ func Test_ProcessV1CasesIDClosePost(t *testing.T) {
 		"customer_id":    customerID.String(),
 		"closed_by_type": "agent",
 		"closed_by_id":   closedByID.String(),
+		"disposition":    "resolved",
 	})
 	req := &sock.Request{URI: "/v1/cases/" + caseID.String() + "/close", Method: sock.RequestMethodPost, Data: body}
 
-	mockCase.EXPECT().Close(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, closedByID).
+	mockCase.EXPECT().Close(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, closedByID, "resolved").
 		Return(&casehandler.CloseResult{Case: &kase.Case{ID: caseID}}, nil)
 
 	res, err := h.processV1CasesIDClosePost(ctx, req)
@@ -401,5 +402,37 @@ func Test_ProcessRequest_RoutesCasesURIs(t *testing.T) {
 	res, err = h.processRequest(&sock.Request{URI: "/v1/cases/" + caseID.String(), Method: sock.RequestMethodGet, Data: body})
 	if err != nil || res.StatusCode != 200 {
 		t.Fatalf("routing /v1/cases/{id}: res=%v err=%v", res, err)
+	}
+}
+
+// Test_ProcessV1CasesIDClosePost_InvalidDisposition verifies that the
+// casehandler's InvalidArgument for a bad disposition is returned as a 400.
+func Test_ProcessV1CasesIDClosePost_InvalidDisposition(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	h, mockCase := newTestListenHandlerWithCase(mc)
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("aaaaaaaa-0004-0004-0004-000000000011")
+	caseID := uuid.FromStringOrNil("aaaaaaaa-0004-0004-0004-000000000012")
+	closedByID := uuid.FromStringOrNil("aaaaaaaa-0004-0004-0004-000000000013")
+
+	body, _ := json.Marshal(map[string]any{
+		"customer_id":    customerID.String(),
+		"closed_by_type": "agent",
+		"closed_by_id":   closedByID.String(),
+		"disposition":    "bogus",
+	})
+	req := &sock.Request{URI: "/v1/cases/" + caseID.String() + "/close", Method: sock.RequestMethodPost, Data: body}
+
+	mockCase.EXPECT().Close(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, closedByID, "bogus").
+		Return(nil, casehandler.ErrCaseDispositionInvalid)
+
+	res, err := h.processV1CasesIDClosePost(ctx, req)
+	if err != nil {
+		t.Fatalf("processV1CasesIDClosePost() error = %v", err)
+	}
+	if res.StatusCode != 400 {
+		t.Errorf("StatusCode = %v, want 400", res.StatusCode)
 	}
 }

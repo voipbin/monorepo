@@ -3715,6 +3715,33 @@ func (e PostServiceAgentsContactAddressesJSONBodyType) Valid() bool {
 	}
 }
 
+// Defines values for PostServiceAgentsContactCasesIdCloseJSONBodyDisposition.
+const (
+	FollowUpNeeded PostServiceAgentsContactCasesIdCloseJSONBodyDisposition = "follow_up_needed"
+	Other          PostServiceAgentsContactCasesIdCloseJSONBodyDisposition = "other"
+	Resolved       PostServiceAgentsContactCasesIdCloseJSONBodyDisposition = "resolved"
+	Spam           PostServiceAgentsContactCasesIdCloseJSONBodyDisposition = "spam"
+	Unresolved     PostServiceAgentsContactCasesIdCloseJSONBodyDisposition = "unresolved"
+)
+
+// Valid indicates whether the value is a known member of the PostServiceAgentsContactCasesIdCloseJSONBodyDisposition enum.
+func (e PostServiceAgentsContactCasesIdCloseJSONBodyDisposition) Valid() bool {
+	switch e {
+	case FollowUpNeeded:
+		return true
+	case Other:
+		return true
+	case Resolved:
+		return true
+	case Spam:
+		return true
+	case Unresolved:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PostServiceAgentsContactsJSONBodyAddressesType.
 const (
 	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeAgent      PostServiceAgentsContactsJSONBodyAddressesType = "agent"
@@ -5596,6 +5623,9 @@ type ContactManagerCase struct {
 
 	// Detail Optional freeform case detail, settable only at creation time.
 	Detail *string `json:"detail,omitempty"`
+
+	// Disposition The outcome the agent recorded when closing the case (resolved, unresolved, follow_up_needed, spam, other). Empty for open cases and for cases closed without one.
+	Disposition *string `json:"disposition,omitempty"`
 
 	// Id Unique identifier for the case.
 	Id *openapi_types.UUID `json:"id,omitempty"`
@@ -10414,6 +10444,15 @@ type PostServiceAgentsContactCasesIdAssignJSONBody struct {
 	OwnerId openapi_types.UUID `json:"owner_id"`
 }
 
+// PostServiceAgentsContactCasesIdCloseJSONBody defines parameters for PostServiceAgentsContactCasesIdClose.
+type PostServiceAgentsContactCasesIdCloseJSONBody struct {
+	// Disposition The outcome the agent records when closing the case. Omit to close without recording one.
+	Disposition *PostServiceAgentsContactCasesIdCloseJSONBodyDisposition `json:"disposition,omitempty"`
+}
+
+// PostServiceAgentsContactCasesIdCloseJSONBodyDisposition defines parameters for PostServiceAgentsContactCasesIdClose.
+type PostServiceAgentsContactCasesIdCloseJSONBodyDisposition string
+
 // PostServiceAgentsContactCasesIdNotesJSONBody defines parameters for PostServiceAgentsContactCasesIdNotes.
 type PostServiceAgentsContactCasesIdNotesJSONBody struct {
 	// Text The note's text content.
@@ -11538,6 +11577,9 @@ type PutServiceAgentsContactCasesIdJSONRequestBody PutServiceAgentsContactCasesI
 
 // PostServiceAgentsContactCasesIdAssignJSONRequestBody defines body for PostServiceAgentsContactCasesIdAssign for application/json ContentType.
 type PostServiceAgentsContactCasesIdAssignJSONRequestBody PostServiceAgentsContactCasesIdAssignJSONBody
+
+// PostServiceAgentsContactCasesIdCloseJSONRequestBody defines body for PostServiceAgentsContactCasesIdClose for application/json ContentType.
+type PostServiceAgentsContactCasesIdCloseJSONRequestBody PostServiceAgentsContactCasesIdCloseJSONBody
 
 // PostServiceAgentsContactCasesIdNotesJSONRequestBody defines body for PostServiceAgentsContactCasesIdNotes for application/json ContentType.
 type PostServiceAgentsContactCasesIdNotesJSONRequestBody PostServiceAgentsContactCasesIdNotesJSONBody
@@ -51574,7 +51616,8 @@ func (response PostServiceAgentsContactCasesIdAssign500JSONResponse) VisitPostSe
 }
 
 type PostServiceAgentsContactCasesIdCloseRequestObject struct {
-	Id openapi_types.UUID `json:"id"`
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostServiceAgentsContactCasesIdCloseJSONRequestBody
 }
 
 type PostServiceAgentsContactCasesIdCloseResponseObject interface {
@@ -71978,6 +72021,16 @@ func (sh *strictHandler) PostServiceAgentsContactCasesIdClose(ctx *gin.Context, 
 	var request PostServiceAgentsContactCasesIdCloseRequestObject
 
 	request.Id = id
+
+	var body PostServiceAgentsContactCasesIdCloseJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		if !errors.Is(err, io.EOF) {
+			sh.options.RequestErrorHandlerFunc(ctx, err)
+			return
+		}
+	} else {
+		request.Body = &body
+	}
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.PostServiceAgentsContactCasesIdClose(ctx, request.(PostServiceAgentsContactCasesIdCloseRequestObject))

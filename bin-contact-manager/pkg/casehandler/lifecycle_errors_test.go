@@ -98,7 +98,7 @@ func Test_Close_ErrorPaths(t *testing.T) {
 		{
 			name: "update failure is wrapped and nothing is re-read",
 			setup: func(mockDB *dbhandler.MockDBHandler) {
-				mockDB.EXPECT().CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonAgentClosed, string(commonidentity.OwnerTypeAgent), &agentID, &now).Return(false, errLifecycleBoom)
+				mockDB.EXPECT().CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonAgentClosed, string(commonidentity.OwnerTypeAgent), &agentID, &now, "").Return(false, errLifecycleBoom)
 			},
 			expectIs:   errLifecycleBoom,
 			expectText: "could not close case. Close",
@@ -106,7 +106,7 @@ func Test_Close_ErrorPaths(t *testing.T) {
 		{
 			name: "re-read failure after a successful close is returned",
 			setup: func(mockDB *dbhandler.MockDBHandler) {
-				mockDB.EXPECT().CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonAgentClosed, string(commonidentity.OwnerTypeAgent), &agentID, &now).Return(true, nil)
+				mockDB.EXPECT().CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonAgentClosed, string(commonidentity.OwnerTypeAgent), &agentID, &now, "").Return(true, nil)
 				mockDB.EXPECT().CaseGetByID(ctx, caseID).Return(nil, errLifecycleBoom)
 			},
 			expectIs: errLifecycleBoom,
@@ -114,7 +114,7 @@ func Test_Close_ErrorPaths(t *testing.T) {
 		{
 			name: "re-read failure after a no-op close is returned",
 			setup: func(mockDB *dbhandler.MockDBHandler) {
-				mockDB.EXPECT().CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonAgentClosed, string(commonidentity.OwnerTypeAgent), &agentID, &now).Return(false, nil)
+				mockDB.EXPECT().CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonAgentClosed, string(commonidentity.OwnerTypeAgent), &agentID, &now, "").Return(false, nil)
 				mockDB.EXPECT().CaseGetByID(ctx, caseID).Return(nil, dbhandler.ErrNotFound)
 			},
 			expectIs: dbhandler.ErrNotFound,
@@ -127,7 +127,7 @@ func Test_Close_ErrorPaths(t *testing.T) {
 			mockUtil.EXPECT().TimeNow().Return(&now)
 			tt.setup(mockDB)
 
-			res, err := h.Close(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, agentID)
+			res, err := h.Close(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, agentID, "")
 			if res != nil {
 				t.Errorf("Close() = %v, want nil on error", res)
 			}

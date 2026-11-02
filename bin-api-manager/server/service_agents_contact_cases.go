@@ -1,9 +1,14 @@
 package server
 
 import (
+	"errors"
+	"io"
+	"net/http"
+
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	cmkase "monorepo/bin-contact-manager/models/kase"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -121,7 +126,27 @@ func (h *server) PostServiceAgentsContactCasesIdClose(c *gin.Context, id openapi
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentCaseClose(c.Request.Context(), a, target)
+	// The request body is optional: no body, an empty object and an empty
+	// disposition all mean "close without recording a disposition".
+	disposition := ""
+	if c.Request.Body != nil && c.Request.Body != http.NoBody {
+		var req openapi_server.PostServiceAgentsContactCasesIdCloseJSONBody
+		if errBind := c.ShouldBindJSON(&req); errBind != nil && !errors.Is(errBind, io.EOF) {
+			log.Errorf("Could not parse the request. err: %v", errBind)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(errBind))
+			return
+		}
+		if req.Disposition != nil {
+			disposition = string(*req.Disposition)
+		}
+	}
+	if disposition != "" && !cmkase.IsValidDisposition(disposition) {
+		log.Errorf("Invalid disposition. disposition: %s", disposition)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_DISPOSITION", "The disposition must be one of resolved, unresolved, follow_up_needed, spam, other."))
+		return
+	}
+
+	res, err := h.serviceHandler.ServiceAgentCaseClose(c.Request.Context(), a, target, disposition)
 	if err != nil {
 		log.Errorf("Could not close the case. err: %v", err)
 		abortWithServiceError(c, err)

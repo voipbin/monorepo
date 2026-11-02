@@ -115,6 +115,7 @@ create table contact_cases (
   closed_reason     varchar(32),
   closed_by_type    varchar(32),
   closed_by_id      binary(16),
+  disposition       varchar(32),
 
   previous_case_id  binary(16),
 

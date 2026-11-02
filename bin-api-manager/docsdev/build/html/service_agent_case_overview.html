@@ -806,10 +806,16 @@
 </div>
 <p>Only the current owning agent may unassign themselves; there is no admin/manager bypass on this surface. Attempting to unassign a case owned by a different agent, or an already-unowned case, returns <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code> – not <code class="docutils literal notranslate"><span class="pre">404</span></code>, since any agent of the customer may already view the case via <code class="docutils literal notranslate"><span class="pre">GET</span></code>. Unassigning a <code class="docutils literal notranslate"><span class="pre">closed</span></code> case returns <code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">Conflict</span></code>, matching <code class="docutils literal notranslate"><span class="pre">assign</span></code>’s behavior.</p>
 <p><strong>Close a case</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/close?token=&lt;token&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/close?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "disposition": "resolved"
+    }'
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">closed_by_type</span></code>/<code class="docutils literal notranslate"><span class="pre">closed_by_id</span></code> are always derived from the caller’s own authenticated agent identity – the request body carries no fields, so a case can never be closed “as” another agent.</p>
+<p>The request body is optional. <code class="docutils literal notranslate"><span class="pre">disposition</span></code> records the outcome of the case and must be one of <code class="docutils literal notranslate"><span class="pre">resolved</span></code>, <code class="docutils literal notranslate"><span class="pre">unresolved</span></code>, <code class="docutils literal notranslate"><span class="pre">follow_up_needed</span></code>, <code class="docutils literal notranslate"><span class="pre">spam</span></code> or <code class="docutils literal notranslate"><span class="pre">other</span></code>; any other value returns <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code>. Omit the body (or the field) to close the case without recording one.</p>
+<p>If the case was already closed, the stored <code class="docutils literal notranslate"><span class="pre">disposition</span></code> is kept and the response returns the stored value, which can differ from the requested one.</p>
+<p><code class="docutils literal notranslate"><span class="pre">closed_by_type</span></code>/<code class="docutils literal notranslate"><span class="pre">closed_by_id</span></code> are always derived from the caller’s own authenticated agent identity – the request body cannot set them, so a case can never be closed “as” another agent.</p>
 <p><strong>Attach or detach the case’s Contact</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;?token=&lt;token&gt;' \
     --header 'Content-Type: application/json' \

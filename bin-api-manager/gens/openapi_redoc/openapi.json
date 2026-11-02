@@ -10645,7 +10645,7 @@
     "/contact_cases/{id}/close": {
       "post": {
         "summary": "Close a case",
-        "description": "Close a case. closed_by_id is derived server-side from the\nauthenticated caller's own agent identity -- there is no request\nbody -- so the closing-agent attribution the platform treats as a\nhard invariant cannot be forged by supplying an arbitrary agent_id.\nReturns the actually-persisted state, including already_closed\nsemantics reflected via the returned closed_reason / closed_by_type /\nclosed_by_id fields when the case had already been closed by\nsomeone/something else.\n",
+        "description": "Close a case. closed_by_id is derived server-side from the\nauthenticated caller's own agent identity -- there is no request\nbody -- so the closing-agent attribution the platform treats as a\nhard invariant cannot be forged by supplying an arbitrary agent_id.\nReturns the actually-persisted state, including already_closed\nsemantics reflected via the returned closed_reason / closed_by_type /\nclosed_by_id fields when the case had already been closed by\nsomeone/something else. The returned case also carries the disposition\n(empty for cases closed without one); the disposition can only be recorded\nthrough the service agent close endpoint.\n",
         "tags": [
           "Case"
         ],
@@ -19449,7 +19449,7 @@
     "/service_agents/contact_cases/{id}/close": {
       "post": {
         "summary": "Close the case",
-        "description": "Closes an open case by its ID.",
+        "description": "Closes an open case by its ID. The request body is optional. When it carries a\n`disposition`, the outcome is recorded together with the close. Omit the body\n(or the field) to close without recording one. If the case was already closed,\nthe stored `disposition` is kept and the response returns the stored value, which\ncan differ from the requested one.\n",
         "tags": [
           "Service Agent"
         ],
@@ -19466,6 +19466,30 @@
             "description": "The unique identifier of the case. Returned from the `GET /service_agents/contact_cases` response."
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "type": "string",
+                    "enum": [
+                      "resolved",
+                      "unresolved",
+                      "follow_up_needed",
+                      "spam",
+                      "other"
+                    ],
+                    "description": "The outcome the agent records when closing the case. Omit to close without recording one.",
+                    "example": "resolved"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "The case after closing.",
@@ -30296,6 +30320,11 @@
             "format": "uuid",
             "description": "ID of the actor that closed the case. Nullable.",
             "example": "2a2ec0ba-8004-11ec-aea5-439829c92a7c"
+          },
+          "disposition": {
+            "type": "string",
+            "description": "The outcome the agent recorded when closing the case (resolved, unresolved, follow_up_needed, spam, other). Empty for open cases and for cases closed without one.",
+            "example": "resolved"
           },
           "name": {
             "type": "string",

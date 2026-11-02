@@ -66,6 +66,10 @@ Many-to-many link between contacts and tags managed by `bin-tag-manager`.
 
 Table: `contact_tag_assignments`
 
+### Case close disposition (`models/kase`)
+
+`kase.Case.Disposition` (`contact_cases.disposition`, `varchar(32)` nullable, migration `000002`) records the outcome an agent chooses when closing a case. Allowed values: `resolved`, `unresolved`, `follow_up_needed`, `spam`, `other` (`kase.IsValidDisposition`). It is optional: a close without one leaves the column untouched (an empty string for cases created by this version, NULL for rows that existed before the migration; both read back as an empty string), and `closed_reason` stays `agent_closed`. `casehandler.Close` rejects any other non-empty value with `InvalidArgument` before writing, and `dbhandler.CaseUpdateStatusClosed` writes the disposition in the same `status='open'` guarded UPDATE as the close, so a later close never overwrites the first value. Closing publishes no event.
+
 ### Case event payloads (`models/kase`, `models/casenote`)
 
 Internal, agent-facing state changes on a Case are published through the plain `PublishEvent()` primitive (never `PublishWebhookEvent()` — a CaseNote must never reach a customer-facing webhook). VOIP-1405 replaced the ad-hoc `map[string]uuid.UUID` payloads of these sites with named structs; the JSON key SET is unchanged (only field order differs, which is JSON-semantically irrelevant), so fanout consumers see no change.

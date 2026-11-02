@@ -83,6 +83,11 @@ type Case struct {
 	ClosedByType string     `json:"closed_by_type" db:"closed_by_type"`
 	ClosedByID   *uuid.UUID `json:"closed_by_id"   db:"closed_by_id,uuid"`
 
+	// Disposition is the outcome an agent records when closing the case
+	// (one of the Disposition* values). Empty for open cases and for cases
+	// closed without one; the column is nullable and read as an empty string.
+	Disposition string `json:"disposition" db:"disposition"`
+
 	// PreviousCaseID chains re-contact: nil for the first Case with a
 	// given peer, set to the prior (now-closed) Case's ID on re-contact.
 	PreviousCaseID *uuid.UUID `json:"previous_case_id" db:"previous_case_id,uuid"`
@@ -134,6 +139,26 @@ const (
 	ClosedReasonAgentClosed = "agent_closed"
 	ClosedReasonMerged      = "merged"
 )
+
+// Disposition values an agent can record when closing a case.
+const (
+	DispositionResolved       = "resolved"
+	DispositionUnresolved     = "unresolved"
+	DispositionFollowUpNeeded = "follow_up_needed"
+	DispositionSpam           = "spam"
+	DispositionOther          = "other"
+)
+
+// IsValidDisposition reports whether v is one of the Disposition* values.
+// The empty string (no disposition) is not valid here; callers treat it as
+// "not provided" before validating.
+func IsValidDisposition(v string) bool {
+	switch v {
+	case DispositionResolved, DispositionUnresolved, DispositionFollowUpNeeded, DispositionSpam, DispositionOther:
+		return true
+	}
+	return false
+}
 
 // ClosedByType constants.
 const (

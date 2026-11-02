@@ -720,7 +720,11 @@
 </pre></div>
 </div>
 <p>Once resolved, close the case:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/close?token=&lt;token&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/close?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "disposition": "resolved"
+    }'
 </pre></div>
 </div>
 </section>

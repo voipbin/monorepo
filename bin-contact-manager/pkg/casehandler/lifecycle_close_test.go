@@ -50,7 +50,7 @@ func Test_Close_FirstCallSucceeds(t *testing.T) {
 
 	mockUtil.EXPECT().TimeNow().Return(&now)
 
-	res, err := h.Close(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, agentID)
+	res, err := h.Close(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, agentID, "")
 	if err != nil {
 		t.Fatalf("Close() error = %v", err)
 	}
@@ -104,7 +104,7 @@ func Test_Close_DoubleClose_ReturnsTruthfulPersistedState(t *testing.T) {
 	}
 
 	mockUtil.EXPECT().TimeNow().Return(&firstCloseTime)
-	first, err := h.Close(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, firstAgentID)
+	first, err := h.Close(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, firstAgentID, "")
 	if err != nil {
 		t.Fatalf("Close() (first) error = %v", err)
 	}
@@ -113,7 +113,7 @@ func Test_Close_DoubleClose_ReturnsTruthfulPersistedState(t *testing.T) {
 	}
 
 	mockUtil.EXPECT().TimeNow().Return(&secondCloseTime)
-	second, err := h.Close(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, secondAgentID)
+	second, err := h.Close(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, secondAgentID, "")
 	if err != nil {
 		t.Fatalf("Close() (second, double-close) error = %v", err)
 	}
@@ -150,7 +150,7 @@ func Test_Close_NonExistentCase_Returns404Signal(t *testing.T) {
 
 	mockUtil.EXPECT().TimeNow().Return(&now)
 
-	_, err := h.Close(ctx, customerID, ghostCaseID, commonidentity.OwnerTypeAgent, agentID)
+	_, err := h.Close(ctx, customerID, ghostCaseID, commonidentity.OwnerTypeAgent, agentID, "")
 	if err != dbhandler.ErrNotFound {
 		t.Errorf("expected ErrNotFound for a genuinely non-existent case, got: %v", err)
 	}
@@ -198,7 +198,7 @@ func Test_Close_CrossTenant_MustNotMutateOtherTenantsCase(t *testing.T) {
 
 	// The attacker calls Close() with THEIR OWN customerID but the
 	// victim's case id.
-	_, err := h.Close(ctx, attackerCustomerID, caseID, commonidentity.OwnerTypeAgent, attackerAgentID)
+	_, err := h.Close(ctx, attackerCustomerID, caseID, commonidentity.OwnerTypeAgent, attackerAgentID, "")
 	if err != dbhandler.ErrNotFound {
 		t.Errorf("expected ErrNotFound (tenant isolation must hide existence), got: %v", err)
 	}

@@ -65,7 +65,9 @@ func (h *serviceHandler) ServiceAgentCaseGet(ctx context.Context, a *auth.AuthId
 // ServiceAgentCaseClose closes an open case for a service-agent caller.
 // closed_by_id is derived server-side from the authenticated caller's own
 // agent identity (a.AgentID()), matching CaseClose's pattern in case.go.
-func (h *serviceHandler) ServiceAgentCaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error) {
+// disposition is optional (empty means none); the server layer has already
+// validated it against the allowed values.
+func (h *serviceHandler) ServiceAgentCaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, disposition string) (*cmkase.Case, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentCaseClose",
 		"customer_id": a.CustomerID,
@@ -82,7 +84,7 @@ func (h *serviceHandler) ServiceAgentCaseClose(ctx context.Context, a *auth.Auth
 		return nil, err
 	}
 
-	res, err := h.reqHandler.ContactV1CaseClose(ctx, a.CustomerID, id, string(commonidentity.OwnerTypeAgent), a.AgentID())
+	res, err := h.reqHandler.ContactV1CaseClose(ctx, a.CustomerID, id, string(commonidentity.OwnerTypeAgent), a.AgentID(), disposition)
 	if err != nil {
 		log.Errorf("Could not close case. err: %v", err)
 		return nil, err

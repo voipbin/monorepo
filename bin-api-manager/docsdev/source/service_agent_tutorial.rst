@@ -97,7 +97,11 @@ Once resolved, close the case:
 
 .. code::
 
-    $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/<case-id>/close?token=<token>'
+    $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/<case-id>/close?token=<token>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "disposition": "resolved"
+        }'
 
 
 6. Ask a teammate for help via Talk

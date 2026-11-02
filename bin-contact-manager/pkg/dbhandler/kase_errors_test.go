@@ -220,7 +220,7 @@ func Test_CaseUpdateStatusClosed_ErrorClassification(t *testing.T) {
 			h, mock, _ := newCtxRowsHandler(t)
 			tt.setup(mock)
 
-			closed, err := h.CaseUpdateStatusClosed(ctx, uuid.Must(uuid.NewV4()), uuid.Must(uuid.NewV4()), "agent_closed", "agent", nil, &closedAt)
+			closed, err := h.CaseUpdateStatusClosed(ctx, uuid.Must(uuid.NewV4()), uuid.Must(uuid.NewV4()), "agent_closed", "agent", nil, &closedAt, "")
 			if closed {
 				t.Errorf("CaseUpdateStatusClosed() closed = true on error")
 			}
