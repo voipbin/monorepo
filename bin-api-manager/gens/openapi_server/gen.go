@@ -5223,7 +5223,7 @@ type CallManagerOutboundConfigUpdateRequest struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// CallManagerParticipantAddress A colleague's extension to bring into a call. Used by `POST /service_agents/transfers`.
+// CallManagerParticipantAddress A colleague's extension to bring into a call. Used by `POST /service_agents/transfers` and `POST /service_agents/calls/{id}/participants`.
 type CallManagerParticipantAddress struct {
 	// Target The extension ID of the colleague to reach. It is the `target` of the address of type `extension` returned from the `GET /service_agents/agents` response. The extension must belong to the calling agent's customer.
 	Target string `json:"target"`
@@ -10451,6 +10451,12 @@ type GetServiceAgentsCallsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// PostServiceAgentsCallsIdParticipantsJSONBody defines parameters for PostServiceAgentsCallsIdParticipants.
+type PostServiceAgentsCallsIdParticipantsJSONBody struct {
+	// Address A colleague's extension to bring into a call. Used by `POST /service_agents/transfers` and `POST /service_agents/calls/{id}/participants`.
+	Address CallManagerParticipantAddress `json:"address"`
+}
+
 // PostServiceAgentsCallsIdRecordingStartJSONBody defines parameters for PostServiceAgentsCallsIdRecordingStart.
 type PostServiceAgentsCallsIdRecordingStartJSONBody struct {
 	// Duration The maximum duration of the recording (in seconds). If omitted, 7200 is used.
@@ -11733,6 +11739,9 @@ type PostServiceAgentsAicallsJSONRequestBody PostServiceAgentsAicallsJSONBody
 // PostServiceAgentsAimessagesJSONRequestBody defines body for PostServiceAgentsAimessages for application/json ContentType.
 type PostServiceAgentsAimessagesJSONRequestBody PostServiceAgentsAimessagesJSONBody
 
+// PostServiceAgentsCallsIdParticipantsJSONRequestBody defines body for PostServiceAgentsCallsIdParticipants for application/json ContentType.
+type PostServiceAgentsCallsIdParticipantsJSONRequestBody PostServiceAgentsCallsIdParticipantsJSONBody
+
 // PostServiceAgentsCallsIdRecordingStartJSONRequestBody defines body for PostServiceAgentsCallsIdRecordingStart for application/json ContentType.
 type PostServiceAgentsCallsIdRecordingStartJSONRequestBody PostServiceAgentsCallsIdRecordingStartJSONBody
 
@@ -12830,6 +12839,9 @@ type ServerInterface interface {
 	// Retrieve detailed information of a specific call
 	// (GET /service_agents/calls/{id})
 	GetServiceAgentsCallsId(c *gin.Context, id string)
+	// Add a participant to a call
+	// (POST /service_agents/calls/{id}/participants)
+	PostServiceAgentsCallsIdParticipants(c *gin.Context, id openapi_types.UUID)
 	// Get the queue of a call
 	// (GET /service_agents/calls/{id}/queuecall)
 	GetServiceAgentsCallsIdQueuecall(c *gin.Context, id openapi_types.UUID)
@@ -21300,6 +21312,31 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsCallsId(c *gin.Context) {
 	siw.Handler.GetServiceAgentsCallsId(c, id)
 }
 
+// PostServiceAgentsCallsIdParticipants operation middleware
+func (siw *ServerInterfaceWrapper) PostServiceAgentsCallsIdParticipants(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostServiceAgentsCallsIdParticipants(c, id)
+}
+
 // GetServiceAgentsCallsIdQueuecall operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsCallsIdQueuecall(c *gin.Context) {
 
@@ -25481,6 +25518,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/service_agents/aimessages", wrapper.PostServiceAgentsAimessages)
 	router.GET(options.BaseURL+"/service_agents/calls", wrapper.GetServiceAgentsCalls)
 	router.GET(options.BaseURL+"/service_agents/calls/:id", wrapper.GetServiceAgentsCallsId)
+	router.POST(options.BaseURL+"/service_agents/calls/:id/participants", wrapper.PostServiceAgentsCallsIdParticipants)
 	router.GET(options.BaseURL+"/service_agents/calls/:id/queuecall", wrapper.GetServiceAgentsCallsIdQueuecall)
 	router.POST(options.BaseURL+"/service_agents/calls/:id/recording_start", wrapper.PostServiceAgentsCallsIdRecordingStart)
 	router.POST(options.BaseURL+"/service_agents/calls/:id/recording_stop", wrapper.PostServiceAgentsCallsIdRecordingStop)
@@ -51281,6 +51319,127 @@ func (response GetServiceAgentsCallsId500JSONResponse) VisitGetServiceAgentsCall
 	return err
 }
 
+type PostServiceAgentsCallsIdParticipantsRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostServiceAgentsCallsIdParticipantsJSONRequestBody
+}
+
+type PostServiceAgentsCallsIdParticipantsResponseObject interface {
+	VisitPostServiceAgentsCallsIdParticipantsResponse(w http.ResponseWriter) error
+}
+
+type PostServiceAgentsCallsIdParticipants200JSONResponse CallManagerGroupcall
+
+func (response PostServiceAgentsCallsIdParticipants200JSONResponse) VisitPostServiceAgentsCallsIdParticipantsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsCallsIdParticipants400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsCallsIdParticipants400JSONResponse) VisitPostServiceAgentsCallsIdParticipantsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsCallsIdParticipants401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsCallsIdParticipants401JSONResponse) VisitPostServiceAgentsCallsIdParticipantsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsCallsIdParticipants403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostServiceAgentsCallsIdParticipants403JSONResponse) VisitPostServiceAgentsCallsIdParticipantsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsCallsIdParticipants404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostServiceAgentsCallsIdParticipants404JSONResponse) VisitPostServiceAgentsCallsIdParticipantsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsCallsIdParticipants409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostServiceAgentsCallsIdParticipants409JSONResponse) VisitPostServiceAgentsCallsIdParticipantsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsCallsIdParticipants500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsCallsIdParticipants500JSONResponse) VisitPostServiceAgentsCallsIdParticipantsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsCallsIdParticipants503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PostServiceAgentsCallsIdParticipants503JSONResponse) VisitPostServiceAgentsCallsIdParticipantsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetServiceAgentsCallsIdQueuecallRequestObject struct {
 	Id openapi_types.UUID `json:"id"`
 }
@@ -64058,6 +64217,9 @@ type StrictServerInterface interface {
 	// Retrieve detailed information of a specific call
 	// (GET /service_agents/calls/{id})
 	GetServiceAgentsCallsId(ctx context.Context, request GetServiceAgentsCallsIdRequestObject) (GetServiceAgentsCallsIdResponseObject, error)
+	// Add a participant to a call
+	// (POST /service_agents/calls/{id}/participants)
+	PostServiceAgentsCallsIdParticipants(ctx context.Context, request PostServiceAgentsCallsIdParticipantsRequestObject) (PostServiceAgentsCallsIdParticipantsResponseObject, error)
 	// Get the queue of a call
 	// (GET /service_agents/calls/{id}/queuecall)
 	GetServiceAgentsCallsIdQueuecall(ctx context.Context, request GetServiceAgentsCallsIdQueuecallRequestObject) (GetServiceAgentsCallsIdQueuecallResponseObject, error)
@@ -73330,6 +73492,39 @@ func (sh *strictHandler) GetServiceAgentsCallsId(ctx *gin.Context, id string) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(GetServiceAgentsCallsIdResponseObject); ok {
 		if err := validResponse.VisitGetServiceAgentsCallsIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostServiceAgentsCallsIdParticipants operation middleware
+func (sh *strictHandler) PostServiceAgentsCallsIdParticipants(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostServiceAgentsCallsIdParticipantsRequestObject
+
+	request.Id = id
+
+	var body PostServiceAgentsCallsIdParticipantsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostServiceAgentsCallsIdParticipants(ctx, request.(PostServiceAgentsCallsIdParticipantsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostServiceAgentsCallsIdParticipants")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostServiceAgentsCallsIdParticipantsResponseObject); ok {
+		if err := validResponse.VisitPostServiceAgentsCallsIdParticipantsResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

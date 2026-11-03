@@ -3958,7 +3958,7 @@ components:
 
     CallManagerParticipantAddress:
       type: object
-      description: "A colleague's extension to bring into a call. Used by `POST /service_agents/transfers`."
+      description: "A colleague's extension to bring into a call. Used by `POST /service_agents/transfers` and `POST /service_agents/calls/{id}/participants`."
       required:
         - type
         - target
@@ -9492,6 +9492,8 @@ paths:
     $ref: './paths/service_agents/aimessages.yaml'
   /service_agents/calls/{id}:
     $ref: './paths/service_agents/calls_id.yaml'
+  /service_agents/calls/{id}/participants:
+    $ref: './paths/service_agents/calls_id_participants.yaml'
   /service_agents/calls/{id}/queuecall:
     $ref: './paths/service_agents/calls_id_queuecall.yaml'
   /service_agents/calls/{id}/recording_start:

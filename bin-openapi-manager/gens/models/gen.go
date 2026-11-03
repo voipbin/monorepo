@@ -5979,7 +5979,7 @@ type CallManagerOutboundConfigUpdateRequest struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// CallManagerParticipantAddress A colleague's extension to bring into a call. Used by `POST /service_agents/transfers`.
+// CallManagerParticipantAddress A colleague's extension to bring into a call. Used by `POST /service_agents/transfers` and `POST /service_agents/calls/{id}/participants`.
 type CallManagerParticipantAddress struct {
 	// Target The extension ID of the colleague to reach. It is the `target` of the address of type `extension` returned from the `GET /service_agents/agents` response. The extension must belong to the calling agent's customer.
 	//
@@ -13115,6 +13115,12 @@ type GetServiceAgentsCallsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// PostServiceAgentsCallsIdParticipantsJSONBody defines parameters for PostServiceAgentsCallsIdParticipants.
+type PostServiceAgentsCallsIdParticipantsJSONBody struct {
+	// Address A colleague's extension to bring into a call. Used by `POST /service_agents/transfers` and `POST /service_agents/calls/{id}/participants`.
+	Address CallManagerParticipantAddress `json:"address"`
+}
+
 // PostServiceAgentsCallsIdRecordingStartJSONBody defines parameters for PostServiceAgentsCallsIdRecordingStart.
 type PostServiceAgentsCallsIdRecordingStartJSONBody struct {
 	// Duration The maximum duration of the recording (in seconds). If omitted, 7200 is used.
@@ -14553,6 +14559,9 @@ type PostServiceAgentsAicallsJSONRequestBody PostServiceAgentsAicallsJSONBody
 
 // PostServiceAgentsAimessagesJSONRequestBody defines body for PostServiceAgentsAimessages for application/json ContentType.
 type PostServiceAgentsAimessagesJSONRequestBody PostServiceAgentsAimessagesJSONBody
+
+// PostServiceAgentsCallsIdParticipantsJSONRequestBody defines body for PostServiceAgentsCallsIdParticipants for application/json ContentType.
+type PostServiceAgentsCallsIdParticipantsJSONRequestBody PostServiceAgentsCallsIdParticipantsJSONBody
 
 // PostServiceAgentsCallsIdRecordingStartJSONRequestBody defines body for PostServiceAgentsCallsIdRecordingStart for application/json ContentType.
 type PostServiceAgentsCallsIdRecordingStartJSONRequestBody PostServiceAgentsCallsIdRecordingStartJSONBody

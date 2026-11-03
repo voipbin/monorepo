@@ -80,6 +80,7 @@ Requests arrive via RabbitMQ queue `bin-manager.call-manager.request`. The `list
 | `/v1/calls/{{UUID}}/silence$` | POST/DELETE | Enable or disable silence |
 | `/v1/calls/{{UUID}}/confbridge_id$` | POST | Associate a confbridge with a call |
 | `/v1/calls/{{UUID}}/recording_id$` | POST | Associate a recording with a call |
+| `/v1/calls/{{UUID}}/participants$` | POST | Add an extension to a two-party call as the third party |
 | `/v1/calls/{{UUID}}/recording_start$` | POST | Start recording a call |
 | `/v1/calls/{{UUID}}/recording_stop$` | POST | Stop recording a call |
 | `/v1/calls/{{UUID}}/talk$` | POST | Play TTS audio on a call |

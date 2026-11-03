@@ -233,6 +233,26 @@ func (h *handler) CallRecoveryClaim(ctx context.Context, callID uuid.UUID, ttl t
 	return res, nil
 }
 
+// ConfbridgeParticipantClaim takes the add-participant claim for the given confbridge (Redis SET NX with the given ttl).
+// It returns true when this caller took the claim, false when another add-participant request holds it.
+func (h *handler) ConfbridgeParticipantClaim(ctx context.Context, confbridgeID uuid.UUID, ttl time.Duration) (bool, error) {
+	key := fmt.Sprintf("confbridge:participant_add:%s", confbridgeID)
+
+	res, err := h.Cache.SetNX(ctx, key, 1, ttl).Result()
+	if err != nil {
+		return false, err
+	}
+
+	return res, nil
+}
+
+// ConfbridgeParticipantRelease releases the add-participant claim of the given confbridge.
+func (h *handler) ConfbridgeParticipantRelease(ctx context.Context, confbridgeID uuid.UUID) error {
+	key := fmt.Sprintf("confbridge:participant_add:%s", confbridgeID)
+
+	return h.Cache.Del(ctx, key).Err()
+}
+
 // ExternalMediaGet returns the given external media info from the cache
 func (h *handler) ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error) {
 	key := fmt.Sprintf("external_media:%s", externalMediaID)

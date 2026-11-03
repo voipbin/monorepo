@@ -61,6 +61,8 @@ type DBHandler interface {
 	CallSetHangupIfChannel(ctx context.Context, id uuid.UUID, channelID string, reason call.HangupReason, hangupBy call.HangupBy) (bool, error)
 	CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallRecoveryClaim(ctx context.Context, id uuid.UUID, ttl time.Duration) (bool, error)
+	ConfbridgeParticipantClaim(ctx context.Context, confbridgeID uuid.UUID, ttl time.Duration) (bool, error)
+	ConfbridgeParticipantRelease(ctx context.Context, confbridgeID uuid.UUID) error
 	CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error
 	CallSetMuteDirection(ctx context.Context, id uuid.UUID, muteDirection call.MuteDirection) error
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status) error

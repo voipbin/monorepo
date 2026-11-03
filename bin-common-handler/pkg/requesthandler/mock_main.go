@@ -2159,6 +2159,21 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallAddChainedCall(ctx, callID, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallAddChainedCall", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallAddChainedCall), ctx, callID, chainedCallID)
 }
 
+// CallV1CallAddParticipant mocks base method.
+func (m *MockRequestHandler) CallV1CallAddParticipant(ctx context.Context, callID uuid.UUID, arg2 address.Address) (*groupcall.Groupcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallAddParticipant", ctx, callID, arg2)
+	ret0, _ := ret[0].(*groupcall.Groupcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1CallAddParticipant indicates an expected call of CallV1CallAddParticipant.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallAddParticipant(ctx, callID, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallAddParticipant", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallAddParticipant), ctx, callID, arg2)
+}
+
 // CallV1CallCreateWithID mocks base method.
 func (m *MockRequestHandler) CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address, groupcallID uuid.UUID, ealryExecution, connect bool, anonymous string, metadata map[string]any, variables map[string]string) (*call.Call, error) {
 	m.ctrl.T.Helper()

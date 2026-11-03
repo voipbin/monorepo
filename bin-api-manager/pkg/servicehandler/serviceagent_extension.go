@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
@@ -32,6 +33,29 @@ func newExtensionNotFound() error {
 func isCanonicalExtensionTarget(target string) bool {
 	id := uuid.FromStringOrNil(target)
 	return id != uuid.Nil && id.String() == target
+}
+
+// errServiceAgentExtensionUnusable means the extension does not exist, belongs to another customer or is deleted.
+var errServiceAgentExtensionUnusable = errors.New("the extension is not usable")
+
+// serviceAgentExtensionGet looks up the given extension for an agent action that reaches a colleague's extension.
+//
+// It returns errServiceAgentExtensionUnusable when the extension does not exist, belongs to another customer or is
+// deleted, so the caller gives all three the very same response and a caller can not probe other customers. Any
+// other lookup error is returned as it is, so a backend failure is not reported as a bad request.
+func (h *serviceHandler) serviceAgentExtensionGet(ctx context.Context, a *auth.AuthIdentity, extensionID uuid.UUID) (*rmextension.Extension, error) {
+	ext, err := h.reqHandler.RegistrarV1ExtensionGet(ctx, extensionID)
+	if err != nil {
+		if queuecallIsNotFound(err) {
+			return nil, errServiceAgentExtensionUnusable
+		}
+		return nil, err
+	}
+	if ext == nil || ext.CustomerID != a.CustomerID || ext.TMDelete != nil {
+		return nil, errServiceAgentExtensionUnusable
+	}
+
+	return ext, nil
 }
 
 // serviceAgentOwnedExtensionIDs returns the set of the extension ids assigned to the calling agent.

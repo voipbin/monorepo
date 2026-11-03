@@ -122,3 +122,39 @@ This is the basic process of an attended transfer using a CPaaS like VoIPBin. It
 .. note:: **AI Implementation Hint**
 
    During an attended transfer, the caller is placed on hold with music. The transferer and transferee can speak privately before completing the transfer. The transfer is only completed when the transferer hangs up. If the transferee does not answer or the consultation fails, the transferer can cancel the transfer and resume the original call with the caller.
+
+.. _call-transfer-add_participant:
+
+Adding a Participant
+--------------------
+An agent can bring a colleague into a call the agent owns, so that the two-party call becomes a three-party call. Unlike a transfer, nobody is put on hold or muted, and nobody leaves the call: the colleague's phone rings, and when the colleague answers, the colleague joins the call.
+
+Send ``POST /service_agents/calls/{id}/participants`` with an ``address`` of type ``extension``, whose ``target`` is the extension ID of the colleague (the ``target`` of the extension address returned by ``GET /service_agents/agents``). The extension must belong to the same customer as the call, and the call must be in ``progressing`` status and have exactly two parties.
+
+.. code::
+
+    POST /service_agents/calls/{id}/participants
+    {
+        "address": {
+            "type": "extension",
+            "target": "c5e7f18c-fc5a-4520-8326-e534e2ca0b8f"
+        }
+    }
+
+The response is the group call of the new leg. Its ``call_ids`` hold the IDs of the call legs. The legs are created right after the response, and an extension with several registered phones has one leg per phone, of which only the one that answers joins the call. The legs belong to the colleague, so they are not listed by ``GET /service_agents/calls`` of the calling agent. Follow them from the call events.
+
+**When the call ends**
+
+- A call that came in through a queue ends for everyone when the customer leaves. When the agent leaves, the customer and the colleague stay connected.
+- A call that the agent placed ends for everyone when the agent leaves, including the colleague. When the other party leaves, the agent and the colleague stay connected.
+- In both cases, when only one party is left, the call ends.
+
+**Limits**
+
+- Only a two-party call can take a participant, and only one participant can be added. A request while another participant is being added, and a request for about 90 seconds after the previous request, is refused with ``409``. A refused ring or an unanswered ring can therefore be retried after that time.
+- Only extensions of the same customer can be added. Other address types and unknown, deleted or foreign extensions return ``400``. An extension that has no registered phone returns ``409``.
+- A recording of a leg that was started before the colleague joined continues. Insight listening cannot be started while the call has three parties.
+
+.. note:: **AI Implementation Hint**
+
+   Add a participant only to a call in ``progressing`` status that has two parties. Do not retry a ``409`` immediately: wait about 90 seconds or until the call state changes. The colleague answers on the phone registered for the extension, and the call grows to three parties only after the colleague answers.

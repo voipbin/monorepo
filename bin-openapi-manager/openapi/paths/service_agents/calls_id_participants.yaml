@@ -1,0 +1,67 @@
+post:
+  summary: Add a participant to a call
+  description: >-
+    Brings a colleague's extension into a call the calling agent owns, turning a two-party call into a three-party
+    call. The colleague's phone rings. When the colleague answers, the colleague joins the call. The other two
+    parties are not put on hold or muted and are not interrupted.
+
+    The call must be one the calling agent owns, be in progress and be a two-party call. The participant must be an
+    extension of the calling agent's customer. Any other address type, or an extension that does not exist, is
+    deleted or belongs to another customer, is rejected with 400. A call that already has three parties, a call that
+    is not in a conference, an extension that has no registered phone, and a request made while another participant
+    is being added to the same call are rejected with 409. After a participant was added or declined, a new request
+    can be refused for up to 90 seconds.
+
+    The response is the group call of the new leg. It carries the IDs of the call legs in `call_ids`. The calls
+    themselves can appear a moment after the response, and an extension with several registered phones has one leg
+    per phone, of which only the one that answers joins. The legs belong to the colleague, so they are not returned
+    from `GET /service_agents/calls` of the calling agent. Follow the progress from the call events.
+
+    When the three-party call ends depends on how the original call started. If the call came in through a queue,
+    it ends when the customer leaves, and it continues when the calling agent leaves. If the calling agent placed
+    the call, it ends for everyone when the calling agent leaves. In both cases the call ends when only one party
+    is left. The recording of a leg that was started before continues. Insight listening cannot be started while
+    there are three parties.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+      description: "The call ID returned from the `GET /service_agents/calls` response."
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            address:
+              $ref: '#/components/schemas/CallManagerParticipantAddress'
+          required:
+            - address
+  responses:
+    '200':
+      description: The group call of the new leg.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallManagerGroupcall'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '409':
+      $ref: '#/components/responses/Conflict'
+    '500':
+      $ref: '#/components/responses/InternalError'
+    '503':
+      $ref: '#/components/responses/Unavailable'
