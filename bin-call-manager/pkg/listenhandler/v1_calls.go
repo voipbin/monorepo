@@ -724,6 +724,45 @@ func (h *listenHandler) processV1CallsIDConfbridgeIDPut(ctx context.Context, m *
 	return res, nil
 }
 
+// processV1CallsIDParticipantsPost handles /v1/calls/<call-id>/participants POST request
+func (h *listenHandler) processV1CallsIDParticipantsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDParticipantsPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataCallsIDParticipantsPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	tmp, err := h.callHandler.AddParticipant(ctx, id, req.Address)
+	if err != nil {
+		log.Errorf("Could not add the participant. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", data, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // processV1CallsIDRecordingStartPost handles /v1/calls/<call-id>/recording_start POST request
 func (h *listenHandler) processV1CallsIDRecordingStartPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{

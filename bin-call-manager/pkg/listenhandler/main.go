@@ -78,6 +78,7 @@ var (
 	regV1CallsIDSilence           = regexp.MustCompile("/v1/calls/" + regUUID + "/silence$")
 	regV1CallsIDConfbridgeID      = regexp.MustCompile("/v1/calls/" + regUUID + "/confbridge_id$")
 	regV1CallsIDRecordingID       = regexp.MustCompile("/v1/calls/" + regUUID + "/recording_id$")
+	regV1CallsIDParticipants      = regexp.MustCompile("/v1/calls/" + regUUID + "/participants$")
 	regV1CallsIDRecordingStart    = regexp.MustCompile("/v1/calls/" + regUUID + "/recording_start$")
 	regV1CallsIDRecordingStop     = regexp.MustCompile("/v1/calls/" + regUUID + "/recording_stop$")
 	regV1CallsIDTalk              = regexp.MustCompile("/v1/calls/" + regUUID + "/talk$")
@@ -339,6 +340,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1CallsIDRecordingID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1CallsIDRecordingIDPut(ctx, m)
 		requestType = "/v1/calls/<call-id>/recording_id"
+
+	// POST /calls/<call-id>/participants
+	case regV1CallsIDParticipants.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1CallsIDParticipantsPost(ctx, m)
+		requestType = "/v1/calls/<call-id>/participants"
 
 	// POST /calls/<call-id>/recording_start
 	case regV1CallsIDRecordingStart.MatchString(m.URI) && m.Method == sock.RequestMethodPost:

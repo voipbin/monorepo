@@ -212,6 +212,35 @@ func (mr *MockCacheHandlerMockRecorder) ConfbridgeGet(ctx, id any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeGet", reflect.TypeOf((*MockCacheHandler)(nil).ConfbridgeGet), ctx, id)
 }
 
+// ConfbridgeParticipantClaim mocks base method.
+func (m *MockCacheHandler) ConfbridgeParticipantClaim(ctx context.Context, confbridgeID uuid.UUID, ttl time.Duration) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfbridgeParticipantClaim", ctx, confbridgeID, ttl)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConfbridgeParticipantClaim indicates an expected call of ConfbridgeParticipantClaim.
+func (mr *MockCacheHandlerMockRecorder) ConfbridgeParticipantClaim(ctx, confbridgeID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeParticipantClaim", reflect.TypeOf((*MockCacheHandler)(nil).ConfbridgeParticipantClaim), ctx, confbridgeID, ttl)
+}
+
+// ConfbridgeParticipantRelease mocks base method.
+func (m *MockCacheHandler) ConfbridgeParticipantRelease(ctx context.Context, confbridgeID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfbridgeParticipantRelease", ctx, confbridgeID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConfbridgeParticipantRelease indicates an expected call of ConfbridgeParticipantRelease.
+func (mr *MockCacheHandlerMockRecorder) ConfbridgeParticipantRelease(ctx, confbridgeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeParticipantRelease", reflect.TypeOf((*MockCacheHandler)(nil).ConfbridgeParticipantRelease), ctx, confbridgeID)
+}
+
 // ConfbridgeSet mocks base method.
 func (m *MockCacheHandler) ConfbridgeSet(ctx context.Context, data *confbridge.Confbridge) error {
 	m.ctrl.T.Helper()

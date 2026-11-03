@@ -616,6 +616,7 @@ type RequestHandler interface {
 		onEndFlowID uuid.UUID,
 	) (*cmcall.Call, error)
 	CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
+	CallV1CallAddParticipant(ctx context.Context, callID uuid.UUID, address commonaddress.Address) (*cmgroupcall.Groupcall, error)
 	CallV1CallSendDigits(ctx context.Context, callID uuid.UUID, digits string) error
 	CallV1CallTalk(ctx context.Context, callID uuid.UUID, text string, language string, provider string, voiceID string, rqeuestTimeout int) error
 	CallV1CallUpdateConfbridgeID(ctx context.Context, callID uuid.UUID, confbirdgeID uuid.UUID) (*cmcall.Call, error)

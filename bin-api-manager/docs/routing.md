@@ -565,6 +565,7 @@ Managed locally by api-manager (no RabbitMQ RPC to a backend service).
 | GET | `/service_agents/calls` | bin-call-manager | List calls (scoped) |
 | GET | `/service_agents/calls/:id` | bin-call-manager | Get call |
 | GET | `/service_agents/calls/:id/queuecall` | bin-call-manager, bin-queue-manager | Get the queue of an owned call |
+| POST | `/service_agents/calls/:id/participants` | bin-call-manager, bin-registrar-manager | Add a colleague extension to an owned two-party call |
 | POST | `/service_agents/calls/:id/recording_start` | bin-call-manager | Start recording an owned, answered call |
 | POST | `/service_agents/calls/:id/recording_stop` | bin-call-manager | Stop recording an owned call |
 | POST | `/service_agents/transfers` | bin-call-manager, bin-registrar-manager, bin-transfer-manager | Transfer an owned call to a colleague extension |

@@ -763,3 +763,30 @@ func (r *requestHandler) CallV1CallSilenceOff(ctx context.Context, callID uuid.U
 
 	return nil
 }
+
+// CallV1CallAddParticipant sends a request to call-manager
+// to add the given extension to the given call as the third party.
+// it returns the groupcall of the new leg. The call ids of the leg are in the groupcall's call_ids,
+// the call rows may not exist yet when this returns.
+func (r *requestHandler) CallV1CallAddParticipant(ctx context.Context, callID uuid.UUID, address commonaddress.Address) (*cmgroupcall.Groupcall, error) {
+	uri := fmt.Sprintf("/v1/calls/%s/participants", callID)
+
+	m, err := json.Marshal(cmrequest.V1DataCallsIDParticipantsPost{
+		Address: address,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/calls/<call-id>/participants", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cmgroupcall.Groupcall
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}

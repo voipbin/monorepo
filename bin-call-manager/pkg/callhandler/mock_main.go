@@ -180,6 +180,21 @@ func (mr *MockCallHandlerMockRecorder) ActionTimeout(ctx, callID, a any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionTimeout", reflect.TypeOf((*MockCallHandler)(nil).ActionTimeout), ctx, callID, a)
 }
 
+// AddParticipant mocks base method.
+func (m *MockCallHandler) AddParticipant(ctx context.Context, id uuid.UUID, destination address.Address) (*groupcall.Groupcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddParticipant", ctx, id, destination)
+	ret0, _ := ret[0].(*groupcall.Groupcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddParticipant indicates an expected call of AddParticipant.
+func (mr *MockCallHandlerMockRecorder) AddParticipant(ctx, id, destination any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddParticipant", reflect.TypeOf((*MockCallHandler)(nil).AddParticipant), ctx, id, destination)
+}
+
 // ChainedCallIDAdd mocks base method.
 func (m *MockCallHandler) ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()

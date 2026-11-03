@@ -4851,6 +4851,21 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallList(ctx, a, size, tok
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCallList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCallList), ctx, a, size, token)
 }
 
+// ServiceAgentCallParticipantAdd mocks base method.
+func (m *MockServiceHandler) ServiceAgentCallParticipantAdd(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID, arg3 address.Address) (*groupcall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentCallParticipantAdd", ctx, a, callID, arg3)
+	ret0, _ := ret[0].(*groupcall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentCallParticipantAdd indicates an expected call of ServiceAgentCallParticipantAdd.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallParticipantAdd(ctx, a, callID, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCallParticipantAdd", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCallParticipantAdd), ctx, a, callID, arg3)
+}
+
 // ServiceAgentCallQueuecallGet mocks base method.
 func (m *MockServiceHandler) ServiceAgentCallQueuecallGet(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*openapi_server.QueueManagerQueuecallSummary, error) {
 	m.ctrl.T.Helper()

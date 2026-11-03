@@ -42,6 +42,9 @@ type CacheHandler interface {
 
 	CallRecoveryClaim(ctx context.Context, callID uuid.UUID, ttl time.Duration) (bool, error)
 
+	ConfbridgeParticipantClaim(ctx context.Context, confbridgeID uuid.UUID, ttl time.Duration) (bool, error)
+	ConfbridgeParticipantRelease(ctx context.Context, confbridgeID uuid.UUID) error
+
 	ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error)
 	ExternalMediaGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*externalmedia.ExternalMedia, error)
 	ExternalMediaSet(ctx context.Context, data *externalmedia.ExternalMedia) error

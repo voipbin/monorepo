@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"errors"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
@@ -107,12 +108,12 @@ func serviceAgentTransferValidateInput(transferType tmtransfer.Type, transfereeA
 // An extension that does not exist, belongs to another customer or is deleted gets the very same error. Any other
 // lookup error is returned as it is, so a backend failure is not reported as a bad request.
 func (h *serviceHandler) serviceAgentTransferBuildAddresses(ctx context.Context, a *auth.AuthIdentity, extensionID uuid.UUID) ([]commonaddress.Address, error) {
-	ext, err := h.reqHandler.RegistrarV1ExtensionGet(ctx, extensionID)
-	if err != nil && !queuecallIsNotFound(err) {
-		return nil, err
-	}
-	if err != nil || ext == nil || ext.CustomerID != a.CustomerID || ext.TMDelete != nil {
+	ext, err := h.serviceAgentExtensionGet(ctx, a, extensionID)
+	if errors.Is(err, errServiceAgentExtensionUnusable) {
 		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_TRANSFEREE_ADDRESS", "The transferee extension was not found.")
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	return []commonaddress.Address{

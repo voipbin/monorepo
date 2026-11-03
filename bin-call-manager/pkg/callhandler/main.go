@@ -90,6 +90,7 @@ type CallHandler interface {
 		metadata map[string]interface{},
 		variables map[string]string,
 	) (*call.Call, error)
+	AddParticipant(ctx context.Context, id uuid.UUID, destination commonaddress.Address) (*groupcall.Groupcall, error)
 	Start(ctx context.Context, cn *channel.Channel) error
 	Hangup(ctx context.Context, cn *channel.Channel) (*call.Call, error)
 	HangingUp(ctx context.Context, id uuid.UUID, reason call.HangupReason) (*call.Call, error)

@@ -1980,3 +1980,94 @@ func Test_CallV1CallActionTimeout_tmExecuteRoundTrip(t *testing.T) {
 		})
 	}
 }
+
+func Test_CallV1CallAddParticipant(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID  uuid.UUID
+		address address.Address
+
+		response *sock.Response
+
+		expectRequest *sock.Request
+		expectRes     *cmgroupcall.Groupcall
+	}{
+		{
+			name: "normal",
+
+			callID: uuid.FromStringOrNil("7d4fbe85-4444-11ef-d001-000000000001"),
+			address: address.Address{
+				Type:       address.TypeExtension,
+				Target:     "7d4fbe85-4444-11ef-d001-000000000002",
+				TargetName: "2002",
+			},
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"7d4fbe85-4444-11ef-d001-000000000003","call_ids":["7d4fbe85-4444-11ef-d001-000000000004"]}`),
+			},
+
+			expectRequest: &sock.Request{
+				URI:      "/v1/calls/7d4fbe85-4444-11ef-d001-000000000001/participants",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"address":{"type":"extension","target":"7d4fbe85-4444-11ef-d001-000000000002","target_name":"2002"}}`),
+			},
+			expectRes: &cmgroupcall.Groupcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7d4fbe85-4444-11ef-d001-000000000003"),
+				},
+				CallIDs: []uuid.UUID{uuid.FromStringOrNil("7d4fbe85-4444-11ef-d001-000000000004")},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CallV1CallAddParticipant(ctx, tt.callID, tt.address)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CallV1CallAddParticipant_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	reqHandler := requestHandler{
+		sock: mockSock,
+	}
+
+	mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", gomock.Any()).Return(&sock.Response{
+		StatusCode: 409,
+		DataType:   ContentTypeJSON,
+		Data:       []byte(`{"status":"FAILED_PRECONDITION","reason":"PARTICIPANT_ADD_IN_PROGRESS","domain":"call-manager","message":"busy"}`),
+	}, nil)
+
+	res, err := reqHandler.CallV1CallAddParticipant(context.Background(), uuid.FromStringOrNil("7d4fbe85-4444-11ef-d001-000000000001"), address.Address{})
+	if err == nil || res != nil {
+		t.Errorf("Wrong match. expect: error and nil, got: %v, %v", res, err)
+	}
+}

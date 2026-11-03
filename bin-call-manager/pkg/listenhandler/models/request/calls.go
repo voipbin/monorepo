@@ -161,3 +161,10 @@ type V1DataCallsIDMutePost struct {
 type V1DataCallsIDMuteDelete struct {
 	Direction call.MuteDirection `json:"direction"`
 }
+
+// V1DataCallsIDParticipantsPost is
+// v1 data type request struct for
+// /v1/calls/<call-id>/participants POST
+type V1DataCallsIDParticipantsPost struct {
+	Address commonaddress.Address `json:"address,omitempty"`
+}

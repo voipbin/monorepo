@@ -62,6 +62,9 @@ The table below groups every ``/service_agents/*`` path by the resource it front
    * - ``GET /service_agents/calls/{id}/queuecall``
      - This page
      - **New** -- the queue a call the agent owns was routed through. Returns ``id`` (queuecall), ``queue_id``, ``queue_name``, ``status`` and ``tm_create``; ``404`` if the call has no queue entry handled by the calling agent
+   * - ``POST /service_agents/calls/{id}/participants``
+     - :ref:`Adding a participant <call-transfer-add_participant>`
+     - **New** -- brings a colleague's extension into a two-party call the agent owns, which makes it a three-party call. ``address`` takes exactly one address of type ``extension`` whose ``target`` is the extension ID of the same customer. Returns the group call of the new leg (``call_ids``). The call must be in ``progressing`` status and have two parties; a call with three parties, a request while another participant is being added, and an extension without a registered phone return ``409``. When the agent places the call and leaves, the call ends for everyone
    * - ``POST /service_agents/transfers``
      - :ref:`Transfer <call-transfer>`
      - **New** -- blind or attended transfer of a call the agent owns to a colleague. ``transferee_addresses`` takes exactly one address of type ``extension`` whose ``target`` is the extension ID (the ``target`` of the extension address returned by ``GET /service_agents/agents``) of the same customer. The call must be in ``progressing`` status and bridged; other address types and unknown or foreign extensions return ``400``. Cancelling an attended transfer is not available

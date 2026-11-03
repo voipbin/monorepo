@@ -23,3 +23,13 @@ func (h *handler) CallApplicationAMDSet(ctx context.Context, channelID string, a
 func (h *handler) CallRecoveryClaim(ctx context.Context, id uuid.UUID, ttl time.Duration) (bool, error) {
 	return h.cache.CallRecoveryClaim(ctx, id, ttl)
 }
+
+// ConfbridgeParticipantClaim takes the add-participant claim for the given confbridge. Cache-only data, passed through like the recovery claim.
+func (h *handler) ConfbridgeParticipantClaim(ctx context.Context, confbridgeID uuid.UUID, ttl time.Duration) (bool, error) {
+	return h.cache.ConfbridgeParticipantClaim(ctx, confbridgeID, ttl)
+}
+
+// ConfbridgeParticipantRelease releases the add-participant claim of the given confbridge.
+func (h *handler) ConfbridgeParticipantRelease(ctx context.Context, confbridgeID uuid.UUID) error {
+	return h.cache.ConfbridgeParticipantRelease(ctx, confbridgeID)
+}

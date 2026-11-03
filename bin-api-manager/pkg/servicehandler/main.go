@@ -1042,6 +1042,7 @@ type ServiceHandler interface {
 	ServiceAgentCallRecordingStart(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID, format *cmrecording.Format, endOfSilence *int, endOfKey *string, duration *int) (*cmcall.WebhookMessage, error)
 	ServiceAgentCallRecordingStop(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	ServiceAgentTransferStart(ctx context.Context, a *auth.AuthIdentity, transferType tmtransfer.Type, transfererCallID uuid.UUID, transfereeAddresses []commonaddress.Address) (*tmtransfer.WebhookMessage, error)
+	ServiceAgentCallParticipantAdd(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID, address commonaddress.Address) (*cmgroupcall.WebhookMessage, error)
 
 	// service_agent conversation
 	ServiceAgentConversationGet(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error)
