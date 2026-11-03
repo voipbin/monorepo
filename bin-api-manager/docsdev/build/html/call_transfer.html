@@ -783,14 +783,14 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 </ul>
 <p><strong>Limits</strong></p>
 <ul class="simple">
-<li><p>Only a two-party call can take a participant, and only one participant can be added. A request while another participant is being added, and a request for about 90 seconds after the previous request, is refused with <code class="docutils literal notranslate"><span class="pre">409</span></code>. A refused ring or an unanswered ring can therefore be retried after that time.</p></li>
+<li><p>Only a two-party call can take a participant, and only one participant can be added. A request while another participant is being added is refused with <code class="docutils literal notranslate"><span class="pre">409</span></code> (<code class="docutils literal notranslate"><span class="pre">PARTICIPANT_ADD_IN_PROGRESS</span></code>). Once a ring has started, a new request is also refused for up to 90 seconds, even when the colleague declined or did not answer, so such a ring can be retried after that time. A request that failed before any ring started, for example for an extension without a registered phone, does not hold the call.</p></li>
 <li><p>Only extensions of the same customer can be added. Other address types and unknown, deleted or foreign extensions return <code class="docutils literal notranslate"><span class="pre">400</span></code>. An extension that has no registered phone returns <code class="docutils literal notranslate"><span class="pre">409</span></code>.</p></li>
 <li><p>A recording of a leg that was started before the colleague joined continues. Insight listening cannot be started while the call has three parties.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Add a participant only to a call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status that has two parties. Do not retry a <code class="docutils literal notranslate"><span class="pre">409</span></code> immediately: wait about 90 seconds or until the call state changes. The colleague answers on the phone registered for the extension, and the call grows to three parties only after the colleague answers.</p>
+<p>Add a participant only to a call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status that has two parties. Do not retry <code class="docutils literal notranslate"><span class="pre">PARTICIPANT_ADD_IN_PROGRESS</span></code> immediately: wait up to 90 seconds or until the call state changes. <code class="docutils literal notranslate"><span class="pre">PARTICIPANT_COUNT_INVALID</span></code> and <code class="docutils literal notranslate"><span class="pre">CALL_NOT_JOINABLE</span></code> do not clear by waiting, and <code class="docutils literal notranslate"><span class="pre">EXTENSION_NOT_REGISTERED</span></code> clears when the colleague’s phone registers. The colleague answers on the phone registered for the extension, and the call grows to three parties only after the colleague answers.</p>
 </div>
 </section>
 </section>

@@ -24,7 +24,8 @@ import (
 // started, so a second request is refused until the leg joined (the confbridge then has 3 channels) or this ttl passed.
 const participantClaimTTL = (defaultDialTimeout + 30) * time.Second
 
-// list of the reasons of the add-participant errors. All of them are failed preconditions (409).
+// list of the reasons of the add-participant errors. All of them are failed preconditions (409) except the invalid
+// address, which is a bad request (400).
 const (
 	reasonCallNotJoinable         = "CALL_NOT_JOINABLE"
 	reasonParticipantCountInvalid = "PARTICIPANT_COUNT_INVALID"

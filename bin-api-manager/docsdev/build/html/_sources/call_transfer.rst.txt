@@ -152,10 +152,10 @@ The response is the group call of the new leg. Its ``call_ids`` hold the IDs of 
 
 **Limits**
 
-- Only a two-party call can take a participant, and only one participant can be added. A request while another participant is being added, and a request for about 90 seconds after the previous request, is refused with ``409``. A refused ring or an unanswered ring can therefore be retried after that time.
+- Only a two-party call can take a participant, and only one participant can be added. A request while another participant is being added is refused with ``409`` (``PARTICIPANT_ADD_IN_PROGRESS``). Once a ring has started, a new request is also refused for up to 90 seconds, even when the colleague declined or did not answer, so such a ring can be retried after that time. A request that failed before any ring started, for example for an extension without a registered phone, does not hold the call.
 - Only extensions of the same customer can be added. Other address types and unknown, deleted or foreign extensions return ``400``. An extension that has no registered phone returns ``409``.
 - A recording of a leg that was started before the colleague joined continues. Insight listening cannot be started while the call has three parties.
 
 .. note:: **AI Implementation Hint**
 
-   Add a participant only to a call in ``progressing`` status that has two parties. Do not retry a ``409`` immediately: wait about 90 seconds or until the call state changes. The colleague answers on the phone registered for the extension, and the call grows to three parties only after the colleague answers.
+   Add a participant only to a call in ``progressing`` status that has two parties. Do not retry ``PARTICIPANT_ADD_IN_PROGRESS`` immediately: wait up to 90 seconds or until the call state changes. ``PARTICIPANT_COUNT_INVALID`` and ``CALL_NOT_JOINABLE`` do not clear by waiting, and ``EXTENSION_NOT_REGISTERED`` clears when the colleague's phone registers. The colleague answers on the phone registered for the extension, and the call grows to three parties only after the colleague answers.
