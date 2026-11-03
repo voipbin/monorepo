@@ -10896,6 +10896,15 @@ type PostServiceAgentsTalkChatsIdParticipantsJSONBody struct {
 	OwnerType string `json:"owner_type"`
 }
 
+// GetServiceAgentsTalkMentionsParams defines parameters for GetServiceAgentsTalkMentions.
+type GetServiceAgentsTalkMentionsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetServiceAgentsTalkMessagesParams defines parameters for GetServiceAgentsTalkMessages.
 type GetServiceAgentsTalkMessagesParams struct {
 	// ChatId Chat ID to filter messages
@@ -13019,6 +13028,9 @@ type ServerInterface interface {
 	// Remove a participant from a talk chat
 	// (DELETE /service_agents/talk_chats/{id}/participants/{participant_id})
 	DeleteServiceAgentsTalkChatsIdParticipantsParticipantId(c *gin.Context, id string, participantId string)
+	// Get list of talk messages that mention the calling agent
+	// (GET /service_agents/talk_mentions)
+	GetServiceAgentsTalkMentions(c *gin.Context, params GetServiceAgentsTalkMentionsParams)
 	// Get list of talk messages for a specific chat
 	// (GET /service_agents/talk_messages)
 	GetServiceAgentsTalkMessages(c *gin.Context, params GetServiceAgentsTalkMessagesParams)
@@ -23135,6 +23147,41 @@ func (siw *ServerInterfaceWrapper) DeleteServiceAgentsTalkChatsIdParticipantsPar
 	siw.Handler.DeleteServiceAgentsTalkChatsIdParticipantsParticipantId(c, id, participantId)
 }
 
+// GetServiceAgentsTalkMentions operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsTalkMentions(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceAgentsTalkMentionsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsTalkMentions(c, params)
+}
+
 // GetServiceAgentsTalkMessages operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsTalkMessages(c *gin.Context) {
 
@@ -25500,6 +25547,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/service_agents/talk_chats/:id/participants", wrapper.GetServiceAgentsTalkChatsIdParticipants)
 	router.POST(options.BaseURL+"/service_agents/talk_chats/:id/participants", wrapper.PostServiceAgentsTalkChatsIdParticipants)
 	router.DELETE(options.BaseURL+"/service_agents/talk_chats/:id/participants/:participant_id", wrapper.DeleteServiceAgentsTalkChatsIdParticipantsParticipantId)
+	router.GET(options.BaseURL+"/service_agents/talk_mentions", wrapper.GetServiceAgentsTalkMentions)
 	router.GET(options.BaseURL+"/service_agents/talk_messages", wrapper.GetServiceAgentsTalkMessages)
 	router.POST(options.BaseURL+"/service_agents/talk_messages", wrapper.PostServiceAgentsTalkMessages)
 	router.DELETE(options.BaseURL+"/service_agents/talk_messages/:id", wrapper.DeleteServiceAgentsTalkMessagesId)
@@ -56711,6 +56759,74 @@ func (response DeleteServiceAgentsTalkChatsIdParticipantsParticipantId500JSONRes
 	return err
 }
 
+type GetServiceAgentsTalkMentionsRequestObject struct {
+	Params GetServiceAgentsTalkMentionsParams
+}
+
+type GetServiceAgentsTalkMentionsResponseObject interface {
+	VisitGetServiceAgentsTalkMentionsResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsTalkMentions200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string               `json:"next_page_token,omitempty"`
+	Result        *[]TalkManagerMessage `json:"result,omitempty"`
+}
+
+func (response GetServiceAgentsTalkMentions200JSONResponse) VisitGetServiceAgentsTalkMentionsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsTalkMentions401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsTalkMentions401JSONResponse) VisitGetServiceAgentsTalkMentionsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsTalkMentions403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsTalkMentions403JSONResponse) VisitGetServiceAgentsTalkMentionsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsTalkMentions500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsTalkMentions500JSONResponse) VisitGetServiceAgentsTalkMentionsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetServiceAgentsTalkMessagesRequestObject struct {
 	Params GetServiceAgentsTalkMessagesParams
 }
@@ -64140,6 +64256,9 @@ type StrictServerInterface interface {
 	// Remove a participant from a talk chat
 	// (DELETE /service_agents/talk_chats/{id}/participants/{participant_id})
 	DeleteServiceAgentsTalkChatsIdParticipantsParticipantId(ctx context.Context, request DeleteServiceAgentsTalkChatsIdParticipantsParticipantIdRequestObject) (DeleteServiceAgentsTalkChatsIdParticipantsParticipantIdResponseObject, error)
+	// Get list of talk messages that mention the calling agent
+	// (GET /service_agents/talk_mentions)
+	GetServiceAgentsTalkMentions(ctx context.Context, request GetServiceAgentsTalkMentionsRequestObject) (GetServiceAgentsTalkMentionsResponseObject, error)
 	// Get list of talk messages for a specific chat
 	// (GET /service_agents/talk_messages)
 	GetServiceAgentsTalkMessages(ctx context.Context, request GetServiceAgentsTalkMessagesRequestObject) (GetServiceAgentsTalkMessagesResponseObject, error)
@@ -75087,6 +75206,32 @@ func (sh *strictHandler) DeleteServiceAgentsTalkChatsIdParticipantsParticipantId
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(DeleteServiceAgentsTalkChatsIdParticipantsParticipantIdResponseObject); ok {
 		if err := validResponse.VisitDeleteServiceAgentsTalkChatsIdParticipantsParticipantIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsTalkMentions operation middleware
+func (sh *strictHandler) GetServiceAgentsTalkMentions(ctx *gin.Context, params GetServiceAgentsTalkMentionsParams) {
+	var request GetServiceAgentsTalkMentionsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsTalkMentions(ctx, request.(GetServiceAgentsTalkMentionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsTalkMentions")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetServiceAgentsTalkMentionsResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsTalkMentionsResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

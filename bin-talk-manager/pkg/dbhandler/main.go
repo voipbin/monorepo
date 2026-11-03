@@ -12,6 +12,7 @@ import (
 
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/chat"
+	"monorepo/bin-talk-manager/models/mention"
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/models/participant"
 	"monorepo/bin-talk-manager/models/pin"
@@ -44,6 +45,7 @@ type DBHandler interface {
 
 	// Message operations
 	MessageCreate(ctx context.Context, m *message.Message) error
+	MessageCreateWithMentions(ctx context.Context, m *message.Message, mentions []*mention.Mention) error
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	MessageList(ctx context.Context, filters map[message.Field]any, token string, size uint64) ([]*message.Message, error)
 	MessageUpdate(ctx context.Context, id uuid.UUID, fields map[message.Field]any) error
@@ -54,6 +56,9 @@ type DBHandler interface {
 	PinGet(ctx context.Context, id uuid.UUID) (*pin.Pin, error)
 	PinList(ctx context.Context, customerID uuid.UUID, ownerType string, ownerID uuid.UUID, targetType pin.TargetType, chatID uuid.UUID, token string, size uint64) ([]*pin.Pin, error)
 	PinDelete(ctx context.Context, id, customerID uuid.UUID, ownerType string, ownerID uuid.UUID) error
+
+	// Mention operations
+	MentionList(ctx context.Context, customerID, agentID uuid.UUID, token string, size uint64) ([]*message.Message, error)
 
 	// Atomic reaction operations (prevents race conditions)
 	MessageAddReactionAtomic(ctx context.Context, messageID uuid.UUID, reactionJSON string) error

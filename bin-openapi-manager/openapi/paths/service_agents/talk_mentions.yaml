@@ -1,0 +1,33 @@
+get:
+  summary: Get list of talk messages that mention the calling agent
+  description: |
+    Returns the talk messages in which the calling agent is mentioned, newest first.
+    A mention is written in the message text as `[@display name](mention:<agent-id>)`; the server records it when the message is created.
+    Only messages created after this feature was deployed are listed; earlier messages are not indexed.
+    Messages in chats the agent cannot access (a direct or group chat the agent is not a participant of), deleted messages and messages of deleted chats are not returned.
+    The mention of the author by the author is not recorded, and at most 50 distinct agents are recorded for one message.
+  tags:
+    - Service Agent
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of talk messages that mention the calling agent.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TalkManagerMessage'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'

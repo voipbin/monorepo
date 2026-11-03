@@ -70,7 +70,28 @@ A personal state of an owner (an agent): the owner pinned a chat or a message. S
 
 Hard delete — no `tm_delete` column. UNIQUE constraint on `(owner_type, owner_id, target_type, target_id)`: pinning again returns the existing pin. A message has no foreign key (messages are soft-deleted); the list filters deleted messages out.
 
+### Mention
+
+The index row of one agent mention in one message. Stored in `talk_mentions`; it is never exposed itself, the mention list returns the mentioning messages.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | UUID | Primary key |
+| `customer_id` | UUID | Owning tenant |
+| `chat_id` | UUID | FK to chat (`ON DELETE CASCADE`) |
+| `message_id` | UUID | FK to message (`ON DELETE CASCADE`) |
+| `agent_id` | UUID | The mentioned agent |
+| `tm_create` | timestamp | The message's creation time (used as the page token) |
+
+UNIQUE on `(message_id, agent_id)`; the list index is `(customer_id, agent_id, tm_create)`.
+
 ## Key Business Rules
+
+### Agent Mentions
+
+`messagehandler.MessageCreate` scans the text of a `normal` message for `[@display name](mention:<agent-id>)` (the id must be a UUID, so `mention:contact:<id>` never matches). Distinct agents are kept in order of appearance, the author is dropped, and at most 50 are recorded. The message row and its mention rows are written by `dbhandler.MessageCreateWithMentions` in one transaction: if a mention insert fails the message is not stored and the creation fails. A message without an agent mention, and every `system` message, uses the plain `MessageCreate`. The mentioned id is not checked against the agent service. Messages created before the feature was deployed have no mention rows (no backfill). Mentions are extracted only when a message is created: messages have no edit API today, and `dbhandler.MessageUpdate` (which could change `text`) has no caller outside tests, so a future text-editing feature has to re-extract the mentions of the message.
+
+`GET /v1/mentions` (`customer_id`, `agent_id` in the body, `page_size`/`page_token` in the query) joins the mention rows to their messages and chats and returns the messages newest first, applying the access rule in SQL: the message and the chat are not deleted, the chat belongs to the customer, and the chat is a `talk` chat or the agent is an `agent` participant of it.
 
 ### Threading Validation
 

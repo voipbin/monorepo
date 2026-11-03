@@ -1516,6 +1516,7 @@ type RequestHandler interface {
 	TalkV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error)
 	TalkV1MessageList(ctx context.Context, pageToken string, pageSize uint64) ([]*talkmessage.Message, error)
 	TalkV1MessageListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*talkmessage.Message, error)
+	TalkV1MentionList(ctx context.Context, customerID uuid.UUID, agentID uuid.UUID, pageToken string, pageSize uint64) ([]*talkmessage.Message, error)
 	TalkV1MessageReactionCreate(ctx context.Context, messageID uuid.UUID, ownerType string, ownerID uuid.UUID, emoji string) (*talkmessage.Message, error)
 
 	// talk-manager pin

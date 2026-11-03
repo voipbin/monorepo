@@ -772,15 +772,19 @@
 <td><p>This page (below)</p></td>
 <td><p><strong>New</strong> – public channel discovery</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST/PUT/DELETE</span> <span class="pre">/service_agents/talk_chats*</span></code>, <code class="docutils literal notranslate"><span class="pre">/talk_messages*</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_mentions</span></code></p></td>
+<td><p><a class="reference internal" href="talk.html#talk-main"><span class="std std-ref">Talk</span></a></p></td>
+<td><p><strong>New</strong> – messages that mention the calling agent</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST/PUT/DELETE</span> <span class="pre">/service_agents/talk_chats*</span></code>, <code class="docutils literal notranslate"><span class="pre">/talk_messages*</span></code></p></td>
 <td><p><a class="reference internal" href="talk.html#talk-main"><span class="std std-ref">Talk</span></a></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">.../talk_chats/{id}/join</span></code> documented on this page (<strong>New</strong>)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST</span> <span class="pre">/service_agents/transcribes</span></code>, <code class="docutils literal notranslate"><span class="pre">/transcripts</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET/POST</span> <span class="pre">/service_agents/transcribes</span></code>, <code class="docutils literal notranslate"><span class="pre">/transcripts</span></code></p></td>
 <td><p><a class="reference internal" href="transcribe.html#transcribe-main"><span class="std std-ref">Transcribe</span></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/ws</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/ws</span></code></p></td>
 <td><p><a class="reference internal" href="websocket.html#websocket-main"><span class="std std-ref">WebSocket</span></a></p></td>
 <td><p>Agent-scoped WebSocket connection (below)</p></td>
 </tr>

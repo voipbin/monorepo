@@ -20,6 +20,7 @@ type MessageHandler interface {
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	MessageList(ctx context.Context, filters map[message.Field]any, token string, size uint64) ([]*message.Message, error)
 	MessageDelete(ctx context.Context, id uuid.UUID) (*message.Message, error)
+	MentionList(ctx context.Context, customerID, agentID uuid.UUID, token string, size uint64) ([]*message.Message, error)
 }
 
 // MessageCreateRequest defines the input for creating a message

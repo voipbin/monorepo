@@ -224,6 +224,47 @@ Public ``talk`` type chats (e.g., ``#general``) work differently from ``direct``
     $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_chats/<chat-id>/join?token=<token>'
 
 
+Mentions
+--------
+A message can mention an agent by writing ``[@display name](mention:<agent-id>)`` in its ``text``. When the message is created, the server records the mention of every agent written this way, so an agent can list the messages that mention it across all of its chats.
+
+``GET /service_agents/talk_mentions`` returns the messages that mention the calling agent, from every chat the agent can access, newest first. The result uses the same message object as ``GET /service_agents/talk_messages`` and is paginated with ``page_size`` and ``page_token``. An agent can only list its own mentions.
+
+.. code::
+
+    $ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/talk_mentions?token=<token>&page_size=20'
+
+    {
+        "result": [
+            {
+                "id": "93d48228-3ed7-11ef-a9ca-070e7ba46a55",
+                "customer_id": "550e8400-e29b-41d4-a716-446655440000",
+                "owner_type": "agent",
+                "owner_id": "2a2ec0ba-8004-11ec-aea5-439829c92a7c",
+                "chat_id": "e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+                "type": "normal",
+                "text": "Please review this [@Alice](mention:6a1b3c5d-7e9f-4a2b-8c4d-0e1f2a3b4c5d)",
+                "medias": [],
+                "metadata": {"reactions": []},
+                "tm_create": "2026-11-02T09:15:30.123456Z",
+                "tm_update": "2026-11-02T09:15:30.123456Z",
+                "tm_delete": null
+            }
+        ],
+        "next_page_token": "2026-11-02T09:15:30.123456Z"
+    }
+
+Rules:
+
+* Only the mentions of agents are recorded. A mention of a contact (``mention:contact:<id>``) is not.
+* A message records each mentioned agent once, in order of appearance, up to 50 distinct agents. Mentioning yourself is not recorded.
+* ``system`` type messages are not scanned for mentions.
+* The server does not check that the mentioned id belongs to an agent of the same customer; the list is always scoped to the calling agent and its customer, so it is never exposed to anyone else.
+* Messages that were created before this feature was deployed are not listed. Mentions are not added to existing messages.
+* A message in a ``direct`` or ``group`` chat that the calling agent is not a participant of, a deleted message and a message of a deleted chat are not returned. If the agent leaves a chat the mentions of that chat disappear from the list, and they come back when the agent joins again.
+* Reading the list does not mark anything as read; read and unread state is not part of this endpoint.
+
+
 Sending Messages
 ----------------
 Send messages within talks with support for threading and media.

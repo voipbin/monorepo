@@ -101,6 +101,9 @@ The table below groups every ``/service_agents/*`` path by the resource it front
    * - ``GET /service_agents/talk_channels``
      - This page (below)
      - **New** -- public channel discovery
+   * - ``GET /service_agents/talk_mentions``
+     - :ref:`Talk <talk-main>`
+     - **New** -- messages that mention the calling agent
    * - ``GET/POST/PUT/DELETE /service_agents/talk_chats*``, ``/talk_messages*``
      - :ref:`Talk <talk-main>`
      - ``POST .../talk_chats/{id}/join`` documented on this page (**New**)

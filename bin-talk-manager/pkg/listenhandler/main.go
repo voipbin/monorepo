@@ -30,6 +30,7 @@ var (
 	regV1ChatsID               = regexp.MustCompile(`^/v1/chats/([^/?]+)(\?.*)?$`)
 	regV1ChatsIDParticipants   = regexp.MustCompile(`^/v1/chats/([^/?]+)/participants(\?.*)?$`)
 	regV1ChatsIDParticipantsID = regexp.MustCompile(`^/v1/chats/([^/?]+)/participants/([^/?]+)(\?.*)?$`)
+	regV1Mentions              = regexp.MustCompile(`^/v1/mentions(\?.*)?$`)
 	regV1Participants          = regexp.MustCompile(`^/v1/participants(\?.*)?$`)
 	regV1Messages              = regexp.MustCompile(`^/v1/messages(\?.*)?$`)
 	regV1MessagesID            = regexp.MustCompile(`^/v1/messages/([^/?]+)(\?.*)?$`)
@@ -152,6 +153,10 @@ func (h *listenHandler) processRequest(m *commonsock.Request) (*commonsock.Respo
 	// participants
 	case regV1Participants.MatchString(m.URI) && m.Method == commonsock.RequestMethodGet:
 		response, err = h.v1ParticipantsGet(ctx, *m)
+
+	// mentions
+	case regV1Mentions.MatchString(m.URI) && m.Method == commonsock.RequestMethodGet:
+		response, err = h.v1MentionsGet(ctx, *m)
 
 	// messages/<message-id>/reactions
 	case regV1MessagesIDReactions.MatchString(m.URI) && m.Method == commonsock.RequestMethodPost:

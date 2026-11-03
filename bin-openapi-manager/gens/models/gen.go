@@ -13640,6 +13640,15 @@ type PostServiceAgentsTalkChatsIdParticipantsJSONBody struct {
 	OwnerType string `json:"owner_type"`
 }
 
+// GetServiceAgentsTalkMentionsParams defines parameters for GetServiceAgentsTalkMentions.
+type GetServiceAgentsTalkMentionsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetServiceAgentsTalkMessagesParams defines parameters for GetServiceAgentsTalkMessages.
 type GetServiceAgentsTalkMessagesParams struct {
 	// ChatId Chat ID to filter messages
