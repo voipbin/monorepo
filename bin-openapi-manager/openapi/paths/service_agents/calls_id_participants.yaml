@@ -20,7 +20,8 @@ post:
     When the three-party call ends depends on how the original call started. If the call came in through a queue,
     it ends when the customer leaves, and it continues when the calling agent leaves. If the calling agent placed
     the call, it ends for everyone when the calling agent leaves. In both cases the call ends when only one party
-    is left. The recording of a leg that was started before continues. Insight listening cannot be started while
+    is left. Calls that reached the agent in another way, for example a direct call to the agent's extension, were
+    not measured. The recording of a leg that was started before continues. Insight listening cannot be started while
     there are three parties.
   tags:
     - Service Agent

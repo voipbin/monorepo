@@ -5,6 +5,7 @@ import (
 	stderrors "errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -471,5 +472,15 @@ func Test_AddParticipant_release_survives_canceled_context(t *testing.T) {
 
 	if _, err := h.AddParticipant(ctx, testPartCallID, testPartDestination()); err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+// The claim ttl is the dial timeout plus the time for the flow to run and the leg to join. The documents say 90 s.
+func Test_participantClaimTTL(t *testing.T) {
+	if participantClaimTTL != 90*time.Second {
+		t.Errorf("Wrong match. expect: 90s, got: %v", participantClaimTTL)
+	}
+	if participantClaimTTL <= defaultDialTimeout*time.Second {
+		t.Errorf("Wrong match. the claim must outlive the dial timeout: %v", participantClaimTTL)
 	}
 }

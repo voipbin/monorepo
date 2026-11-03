@@ -148,6 +148,7 @@ The response is the group call of the new leg. Its ``call_ids`` hold the IDs of 
 - A call that came in through a queue ends for everyone when the customer leaves. When the agent leaves, the customer and the colleague stay connected.
 - A call that the agent placed ends for everyone when the agent leaves, including the colleague. When the other party leaves, the agent and the colleague stay connected.
 - In both cases, when only one party is left, the call ends.
+- Calls that reached the agent in another way, for example a direct call to the agent's extension, were not measured. Do not rely on a particular behavior when the agent leaves such a call.
 
 **Limits**
 

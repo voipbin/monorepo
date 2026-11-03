@@ -341,10 +341,12 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1CallsIDRecordingIDPut(ctx, m)
 		requestType = "/v1/calls/<call-id>/recording_id"
 
-	// POST /calls/<call-id>/recording_start
+	// POST /calls/<call-id>/participants
 	case regV1CallsIDParticipants.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1CallsIDParticipantsPost(ctx, m)
+		requestType = "/v1/calls/<call-id>/participants"
 
+	// POST /calls/<call-id>/recording_start
 	case regV1CallsIDRecordingStart.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1CallsIDRecordingStartPost(ctx, m)
 		requestType = "/v1/calls/<call-id>/recording_start"

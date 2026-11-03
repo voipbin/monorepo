@@ -99,6 +99,7 @@ func Test_ServiceAgentCallParticipantAdd(t *testing.T) {
 
 		addCalled      bool
 		responseAddErr error
+		responseAddNil bool
 
 		expectErr    error          // matched with errors.Is
 		expectStatus cerrors.Status // set when a VoipbinError is expected
@@ -338,6 +339,21 @@ func Test_ServiceAgentCallParticipantAdd(t *testing.T) {
 			expectErr:          errRPC,
 		},
 		{
+			name:               "call-manager empty response is an internal error",
+			agent:              agent,
+			address:            okAddr,
+			callGet:            true,
+			responseCall:       okCall,
+			confbridgeGet:      true,
+			responseConfbridge: confbridge(2),
+			extGet:             true,
+			responseExt:        extension(customerID, nil),
+			addCalled:          true,
+			responseAddNil:     true,
+			expectStatus:       cerrors.StatusInternal,
+			expectReason:       "EMPTY_RESPONSE",
+		},
+		{
 			name:               "call-manager conflict keeps its reason",
 			agent:              agent,
 			address:            okAddr,
@@ -377,7 +393,7 @@ func Test_ServiceAgentCallParticipantAdd(t *testing.T) {
 			}
 			var responseGroupcall *cmgroupcall.Groupcall
 			if tt.addCalled {
-				if tt.responseAddErr == nil {
+				if tt.responseAddErr == nil && !tt.responseAddNil {
 					responseGroupcall = &cmgroupcall.Groupcall{
 						Identity: commonidentity.Identity{ID: groupcallID, CustomerID: customerID},
 						CallIDs:  []uuid.UUID{uuid.FromStringOrNil("a1b2c3d4-8286-11ed-8875-378ced61c028")},
