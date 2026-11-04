@@ -274,7 +274,28 @@ func (h *handler) CustomerUpdate(ctx context.Context, id uuid.UUID, fields map[c
 }
 
 // CustomerFreeze sets the customer status to frozen and schedules deletion.
+// Only an active customer is frozen; any other status returns ErrNotFound.
 func (h *handler) CustomerFreeze(ctx context.Context, id uuid.UUID) error {
+	return h.customerFreeze(ctx, id, "CustomerFreeze", squirrel.Eq{string(customer.FieldStatus): string(customer.StatusActive)})
+}
+
+// CustomerFreezeAllowUnverified is CustomerFreeze for the immediate self-delete
+// path. It also freezes an unverified (initial or expired) customer, but never a
+// customer that already has tm_delete set (legacy rows). Any other state returns
+// ErrNotFound.
+func (h *handler) CustomerFreezeAllowUnverified(ctx context.Context, id uuid.UUID) error {
+	return h.customerFreeze(ctx, id, "CustomerFreezeAllowUnverified", squirrel.And{
+		squirrel.Eq{string(customer.FieldStatus): []string{
+			string(customer.StatusActive),
+			string(customer.StatusInitial),
+			string(customer.StatusExpired),
+		}},
+		squirrel.Eq{string(customer.FieldTMDelete): nil},
+	})
+}
+
+// customerFreeze freezes the customer when the given status guard matches.
+func (h *handler) customerFreeze(ctx context.Context, id uuid.UUID, caller string, statusGuard squirrel.Sqlizer) error {
 	start := time.Now()
 	status := "error"
 	defer func() {
@@ -292,23 +313,23 @@ func (h *handler) CustomerFreeze(ctx context.Context, id uuid.UUID) error {
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("CustomerFreeze: prepare fields failed: %w", err)
+		return fmt.Errorf("%s: prepare fields failed: %w", caller, err)
 	}
 
 	sb := squirrel.Update(customerTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{string(customer.FieldID): id.Bytes()}).
-		Where(squirrel.Eq{string(customer.FieldStatus): string(customer.StatusActive)}).
+		Where(statusGuard).
 		PlaceholderFormat(squirrel.Question)
 
 	sqlStr, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("CustomerFreeze: build SQL failed: %w", err)
+		return fmt.Errorf("%s: build SQL failed: %w", caller, err)
 	}
 
 	result, err := h.db.ExecContext(ctx, sqlStr, args...)
 	if err != nil {
-		return fmt.Errorf("CustomerFreeze: exec failed: %w", err)
+		return fmt.Errorf("%s: exec failed: %w", caller, err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
@@ -327,6 +348,8 @@ func (h *handler) CustomerFreeze(ctx context.Context, id uuid.UUID) error {
 }
 
 // CustomerRecover sets the customer status back to active and clears the deletion schedule.
+// Only a frozen customer with a verified email is recovered, so recovery can never
+// turn an unverified account into an active one; otherwise it returns ErrNotFound.
 func (h *handler) CustomerRecover(ctx context.Context, id uuid.UUID) error {
 	start := time.Now()
 	status := "error"
@@ -352,6 +375,7 @@ func (h *handler) CustomerRecover(ctx context.Context, id uuid.UUID) error {
 		SetMap(tmpFields).
 		Where(squirrel.Eq{string(customer.FieldID): id.Bytes()}).
 		Where(squirrel.Eq{string(customer.FieldStatus): string(customer.StatusFrozen)}).
+		Where(squirrel.Eq{string(customer.FieldEmailVerified): true}).
 		PlaceholderFormat(squirrel.Question)
 
 	sqlStr, args, err := sb.ToSql()

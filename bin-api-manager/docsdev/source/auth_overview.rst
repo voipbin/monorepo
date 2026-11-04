@@ -527,7 +527,7 @@ Self-service account freeze/deletion and recovery. Requires authentication (Toke
      - Must be exactly ``"DELETE"``. Used for SSO/accesskey-authenticated requests that have no password to re-check.
    * - ``immediate``
      - Boolean, Optional
-     - Default ``false``. If ``true``, skips the 30-day grace period: the account is frozen and then permanently deleted (PII anonymized, all resources cascade-deleted) in the same request. Irreversible.
+     - Default ``false``. If ``true``, skips the 30-day grace period: the account is frozen and then permanently deleted (PII anonymized, all resources cascade-deleted) in the same request. Irreversible. Only with ``true`` can an account in ``initial`` or ``expired`` status (email never verified) be deleted; without it only an ``active`` account can be frozen.
 
 **Query parameters (both POST and DELETE)**
 
@@ -553,19 +553,19 @@ Self-service account freeze/deletion and recovery. Requires authentication (Toke
    * - Status
      - Cause
    * - 400
-     - Neither or both of ``password``/``confirmation_phrase`` supplied; password re-authentication failed; ``confirmation_phrase`` is not exactly ``"DELETE"``; malformed JSON body; caller lacks ``PermissionCustomerAdmin``; caller is authenticated via a direct (boot) token (``DIRECT_ACCESS_NOT_SUPPORTED``); or the downstream freeze/delete call failed. The handler returns a bare ``400`` for all of these cases — it does not distinguish permission/direct-access failures with a ``403``, unlike ``POST /auth/delegate``.
+     - Neither or both of ``password``/``confirmation_phrase`` supplied; password re-authentication failed; ``confirmation_phrase`` is not exactly ``"DELETE"``; malformed JSON body; the account status does not allow the request (``immediate`` is not ``true`` and the account is not ``active``, or the account is already ``deleted``, or it is a legacy ``expired`` account that was already marked deleted); caller lacks ``PermissionCustomerAdmin``; caller is authenticated via a direct (boot) token (``DIRECT_ACCESS_NOT_SUPPORTED``); or the downstream freeze/delete call failed. The handler returns a bare ``400`` for all of these cases — it does not distinguish permission/direct-access failures with a ``403``, unlike ``POST /auth/delegate``.
    * - 401
      - Missing/invalid/expired token or access key (returned by the shared ``Authenticate()`` middleware, as a structured error envelope — see the response-shape note above).
    * - 403
-     - The account's customer status is ``expired`` or ``deleted``. Password re-authentication runs the same login path that refuses those two statuses (VOIP-1491), so the refusal surfaces here instead of failing a step later. Both were already dead ends on this endpoint — the freeze transition requires ``active`` — so this only makes the refusal earlier and honest.
+     - The ``password`` method was used and the account's customer status is ``expired`` or ``deleted``: password re-authentication runs the login path, which refuses those two statuses. An ``expired`` account can still be deleted with ``immediate`` set to ``true`` and ``confirmation_phrase`` (using an existing token or access key).
    * - 500
      - The customer lookup performed during password re-authentication failed for any other reason (RPC timeout, or the customer-manager circuit breaker being open). That lookup fails **closed**, unlike the ``/v1.0/*`` gate's, so an unreachable customer-manager blocks the request rather than letting it through.
 
 .. note::
 
-   ``403`` and ``500`` are reachable only through the ``password`` branch, which re-authenticates by calling ``AuthLogin``; before VOIP-1491 that branch could only ever produce a ``400``. The ``confirmation_phrase`` branch does not re-authenticate and is unaffected.
+   ``403`` and ``500`` are reachable only through the ``password`` branch, which re-authenticates by calling ``AuthLogin``. The ``confirmation_phrase`` branch does not re-authenticate and is unaffected.
 
-**DELETE /auth/unregister** — cancels a scheduled deletion and restores ``active`` status. No request body. Only works while the account is ``frozen`` within the 30-day grace period.
+**DELETE /auth/unregister** — cancels a scheduled deletion and restores ``active`` status. No request body. Only works while the account is ``frozen`` within the 30-day grace period. A frozen account whose email was never verified (it was frozen while ``initial`` or ``expired``) cannot be recovered; it is deleted by repeating ``POST /auth/unregister`` with ``immediate`` set to ``true``, or automatically when the grace period ends.
 
 **Response — 200 OK**: the restored ``Customer`` object.
 
@@ -578,7 +578,7 @@ Self-service account freeze/deletion and recovery. Requires authentication (Toke
    * - Status
      - Cause
    * - 400
-     - Account is not currently in ``frozen`` state; caller lacks ``PermissionCustomerAdmin``; or caller is authenticated via a direct (boot) token. As with ``POST /auth/unregister`` above, the handler returns a bare ``400`` for all of these cases rather than a ``403``.
+     - Account is not currently in ``frozen`` state, or its email was never verified; caller lacks ``PermissionCustomerAdmin``; or caller is authenticated via a direct (boot) token. As with ``POST /auth/unregister`` above, the handler returns a bare ``400`` for all of these cases rather than a ``403``.
    * - 401
      - Missing/invalid/expired token or access key.
 

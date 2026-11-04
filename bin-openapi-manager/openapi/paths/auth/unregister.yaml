@@ -9,6 +9,12 @@ post:
     If `immediate` is set to `true`, the account is frozen and then permanently deleted (PII anonymized,
     all resources cascade-deleted) in a single request. This cannot be undone.
 
+    Account status requirements: with `immediate` set to `true` the account may be `active`, `initial`
+    or `expired` (an account whose email was never verified can be deleted). Without `immediate` only an
+    `active` account can be frozen. An already deleted account cannot be unregistered.
+    An `expired` account cannot use the `password` method (login is refused with `403`); use
+    `confirmation_phrase` with an existing token or access key instead.
+
     Exactly one of `password` or `confirmation_phrase` must be provided:
     - Password-based accounts: provide `password` for re-authentication.
     - SSO or API-key authenticated requests: provide `confirmation_phrase` set to `"DELETE"`.
@@ -41,6 +47,10 @@ post:
         - Both `password` and `confirmation_phrase` were provided (exactly one required).
         - Password validation failed.
         - `confirmation_phrase` is not `"DELETE"`.
+        - The account status does not allow the request (for example `immediate` is not `true` and the
+          account is not `active`, or the account is already deleted).
+    '403':
+      description: The account is `expired` or `deleted` and the `password` method was used.
     '401':
       description: Authentication failed. Invalid or missing access key / bearer token.
 
@@ -49,6 +59,8 @@ delete:
   description: |
     Cancels a scheduled deletion and restores the authenticated customer's account to active state.
     Only works during the 30-day grace period while the account is in 'frozen' status.
+    A frozen account whose email was never verified cannot be recovered; delete it with
+    `POST /auth/unregister` and `immediate` set to `true`, or wait for the scheduled deletion.
     No request body required.
   tags:
     - Auth
@@ -67,6 +79,6 @@ delete:
           schema:
             $ref: '#/components/schemas/CustomerManagerCustomer'
     '400':
-      description: Recovery failed. Account may not be in frozen state.
+      description: Recovery failed. The account is not in frozen state, or its email was never verified.
     '401':
       description: Authentication failed. Invalid or missing access key / bearer token.

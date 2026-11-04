@@ -31053,6 +31053,14 @@ func (response PostAuthUnregister401Response) VisitPostAuthUnregisterResponse(w 
 	return nil
 }
 
+type PostAuthUnregister403Response struct {
+}
+
+func (response PostAuthUnregister403Response) VisitPostAuthUnregisterResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
 type GetAvailableNumbersRequestObject struct {
 	Params GetAvailableNumbersParams
 }

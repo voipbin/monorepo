@@ -5647,7 +5647,7 @@
     "/auth/unregister": {
       "post": {
         "summary": "Schedule or immediately execute account deletion (self-service).",
-        "description": "Marks the authenticated customer's account for deletion. The account enters 'frozen' state immediately.\nActive calls are terminated and new operations are blocked.\n\nBy default, the customer has 30 days to recover via `DELETE /auth/unregister` before permanent deletion.\n\nIf `immediate` is set to `true`, the account is frozen and then permanently deleted (PII anonymized,\nall resources cascade-deleted) in a single request. This cannot be undone.\n\nExactly one of `password` or `confirmation_phrase` must be provided:\n- Password-based accounts: provide `password` for re-authentication.\n- SSO or API-key authenticated requests: provide `confirmation_phrase` set to `\"DELETE\"`.\n",
+        "description": "Marks the authenticated customer's account for deletion. The account enters 'frozen' state immediately.\nActive calls are terminated and new operations are blocked.\n\nBy default, the customer has 30 days to recover via `DELETE /auth/unregister` before permanent deletion.\n\nIf `immediate` is set to `true`, the account is frozen and then permanently deleted (PII anonymized,\nall resources cascade-deleted) in a single request. This cannot be undone.\n\nAccount status requirements: with `immediate` set to `true` the account may be `active`, `initial`\nor `expired` (an account whose email was never verified can be deleted). Without `immediate` only an\n`active` account can be frozen. An already deleted account cannot be unregistered.\nAn `expired` account cannot use the `password` method (login is refused with `403`); use\n`confirmation_phrase` with an existing token or access key instead.\n\nExactly one of `password` or `confirmation_phrase` must be provided:\n- Password-based accounts: provide `password` for re-authentication.\n- SSO or API-key authenticated requests: provide `confirmation_phrase` set to `\"DELETE\"`.\n",
         "tags": [
           "Auth"
         ],
@@ -5684,16 +5684,19 @@
             }
           },
           "400": {
-            "description": "Bad request. Possible causes:\n- Neither `password` nor `confirmation_phrase` was provided.\n- Both `password` and `confirmation_phrase` were provided (exactly one required).\n- Password validation failed.\n- `confirmation_phrase` is not `\"DELETE\"`.\n"
+            "description": "Bad request. Possible causes:\n- Neither `password` nor `confirmation_phrase` was provided.\n- Both `password` and `confirmation_phrase` were provided (exactly one required).\n- Password validation failed.\n- `confirmation_phrase` is not `\"DELETE\"`.\n- The account status does not allow the request (for example `immediate` is not `true` and the\n  account is not `active`, or the account is already deleted).\n"
           },
           "401": {
             "description": "Authentication failed. Invalid or missing access key / bearer token."
+          },
+          "403": {
+            "description": "The account is `expired` or `deleted` and the `password` method was used."
           }
         }
       },
       "delete": {
         "summary": "Cancel account deletion (self-service recover).",
-        "description": "Cancels a scheduled deletion and restores the authenticated customer's account to active state.\nOnly works during the 30-day grace period while the account is in 'frozen' status.\nNo request body required.\n",
+        "description": "Cancels a scheduled deletion and restores the authenticated customer's account to active state.\nOnly works during the 30-day grace period while the account is in 'frozen' status.\nA frozen account whose email was never verified cannot be recovered; delete it with\n`POST /auth/unregister` and `immediate` set to `true`, or wait for the scheduled deletion.\nNo request body required.\n",
         "tags": [
           "Auth"
         ],
@@ -5720,7 +5723,7 @@
             }
           },
           "400": {
-            "description": "Recovery failed. Account may not be in frozen state."
+            "description": "Recovery failed. The account is not in frozen state, or its email was never verified."
           },
           "401": {
             "description": "Authentication failed. Invalid or missing access key / bearer token."
@@ -12080,7 +12083,7 @@
     "/customers/{id}/recover": {
       "post": {
         "summary": "Cancel customer deletion (recover account).",
-        "description": "Cancels a scheduled deletion and restores the account to active state.\nOnly works during the 30-day grace period.\nAdmin-only endpoint.\n",
+        "description": "Cancels a scheduled deletion and restores the account to active state.\nOnly works during the 30-day grace period, and only for an account whose email was verified.\nAdmin-only endpoint.\n",
         "tags": [
           "Customer"
         ],

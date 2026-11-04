@@ -172,6 +172,20 @@ func (mr *MockDBHandlerMockRecorder) CustomerFreeze(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerFreeze", reflect.TypeOf((*MockDBHandler)(nil).CustomerFreeze), ctx, id)
 }
 
+// CustomerFreezeAllowUnverified mocks base method.
+func (m *MockDBHandler) CustomerFreezeAllowUnverified(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerFreezeAllowUnverified", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CustomerFreezeAllowUnverified indicates an expected call of CustomerFreezeAllowUnverified.
+func (mr *MockDBHandlerMockRecorder) CustomerFreezeAllowUnverified(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerFreezeAllowUnverified", reflect.TypeOf((*MockDBHandler)(nil).CustomerFreezeAllowUnverified), ctx, id)
+}
+
 // CustomerGet mocks base method.
 func (m *MockDBHandler) CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()

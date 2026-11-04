@@ -12,10 +12,18 @@ import (
 	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
 
-// Freeze freezes the customer account.
+// Freeze freezes the customer account. Only an active customer can be frozen.
 func (h *customerHandler) Freeze(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
+	return h.freeze(ctx, id, false)
+}
+
+// freeze freezes the customer account. When allowUnverified is true an unverified
+// (initial or expired) customer is frozen as well; this is used only by the
+// immediate self-delete path. A deleted customer or a customer that has tm_delete
+// set (legacy rows) is always rejected before any DB write.
+func (h *customerHandler) freeze(ctx context.Context, id uuid.UUID, allowUnverified bool) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Freeze",
+		"func":        "freeze",
 		"customer_id": id,
 	})
 	log.Debug("Freezing the customer account.")
@@ -39,7 +47,11 @@ func (h *customerHandler) Freeze(ctx context.Context, id uuid.UUID) (*customer.C
 		return nil, fmt.Errorf("cannot freeze a deleted customer")
 	}
 
-	if err := h.db.CustomerFreeze(ctx, id); err != nil {
+	dbFreeze := h.db.CustomerFreeze
+	if allowUnverified {
+		dbFreeze = h.db.CustomerFreezeAllowUnverified
+	}
+	if err := dbFreeze(ctx, id); err != nil {
 		// Handle race condition: if another request already froze this customer,
 		// the DB returns ErrNotFound (0 rows affected). Re-fetch and return if frozen.
 		if errors.Is(err, dbhandler.ErrNotFound) {
@@ -67,6 +79,7 @@ func (h *customerHandler) Freeze(ctx context.Context, id uuid.UUID) (*customer.C
 
 // FreezeAndDelete freezes the customer account and immediately deletes it.
 // This skips the 30-day grace period by combining freeze + PII anonymization + deletion event.
+// Unlike Freeze, it also accepts an unverified (initial or expired) customer.
 func (h *customerHandler) FreezeAndDelete(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "FreezeAndDelete",
@@ -77,7 +90,7 @@ func (h *customerHandler) FreezeAndDelete(ctx context.Context, id uuid.UUID) (*c
 	// Step 1: Freeze (idempotent — handles already-frozen)
 	// Note: Freeze() rejects already-deleted customers with an error, so calling
 	// FreezeAndDelete on a deleted customer returns an error (not idempotent).
-	c, err := h.Freeze(ctx, id)
+	c, err := h.freeze(ctx, id, true)
 	if err != nil {
 		log.Errorf("Could not freeze the customer. err: %v", err)
 		return nil, err
@@ -124,6 +137,12 @@ func (h *customerHandler) Recover(ctx context.Context, id uuid.UUID) (*customer.
 	if c.Status != customer.StatusFrozen {
 		log.Errorf("Cannot recover a customer that is not frozen. status: %s", c.Status)
 		return nil, fmt.Errorf("customer is not in frozen state")
+	}
+
+	// An unverified customer must never become active through recovery.
+	if !c.EmailVerified {
+		log.Errorf("Cannot recover a customer that has not verified its email. customer_id: %s", c.ID)
+		return nil, fmt.Errorf("customer email is not verified")
 	}
 
 	if err := h.db.CustomerRecover(ctx, id); err != nil {
