@@ -38,7 +38,7 @@ Recover currently restores any `frozen` customer to `active` without looking at 
 - OpenAPI descriptions of the unregister/recover endpoints are checked for an 'active only' statement; if present they are corrected together with their generated artifacts.
 - `auth_overview.rst` (POST /auth/unregister): `immediate=true` accepts `initial`/`expired`; `immediate=false` still requires `active`; legacy and deleted unchanged; 400 cause text updated; password-branch 403 explained for `expired`; DELETE /auth/unregister: an unverified frozen account cannot be recovered. Also `customer_overview.rst` where it describes unregister. Rebuild and add the HTML.
 - `bin-customer-manager/docs/domain.md`: lifecycle note.
-- No OpenAPI change. Error-code visibility work (bare 400) is out of scope.
+- OpenAPI: description-only changes plus a documented 403 response on `POST /auth/unregister` (already returned today by the password branch); no request/response schema change. Error-code visibility work (bare 400) is out of scope.
 
 ## 3. Verification plan (tests, written first and shown failing on current code)
 
