@@ -511,7 +511,7 @@ func Test_Freeze_concurrentRace(t *testing.T) {
 }
 
 func Test_Recover_concurrentRace(t *testing.T) {
-	frozen := &customer.Customer{ID: errPathCustomerID, Status: customer.StatusFrozen}
+	frozen := &customer.Customer{ID: errPathCustomerID, Status: customer.StatusFrozen, EmailVerified: true}
 	active := &customer.Customer{ID: errPathCustomerID, Status: customer.StatusActive}
 
 	tests := []struct {

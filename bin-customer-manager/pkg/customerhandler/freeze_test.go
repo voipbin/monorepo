@@ -310,7 +310,7 @@ func Test_FreezeAndDelete(t *testing.T) {
 			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(tt.responseCustomerGet, nil)
 
 			if tt.expectDBFreeze {
-				mockDB.EXPECT().CustomerFreeze(gomock.Any(), tt.id).Return(nil)
+				mockDB.EXPECT().CustomerFreezeAllowUnverified(gomock.Any(), tt.id).Return(nil)
 				// Freeze() internal: Get after DB freeze
 				mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(tt.responseCustomerGetFreeze, nil)
 			}
@@ -374,7 +374,7 @@ func Test_FreezeAndDelete_AnonymizeError(t *testing.T) {
 		ID:     id,
 		Status: customer.StatusActive,
 	}, nil)
-	mockDB.EXPECT().CustomerFreeze(gomock.Any(), id).Return(nil)
+	mockDB.EXPECT().CustomerFreezeAllowUnverified(gomock.Any(), id).Return(nil)
 	frozenCustomer := &customer.Customer{
 		ID:     id,
 		Status: customer.StatusFrozen,
@@ -416,7 +416,7 @@ func Test_FreezeAndDelete_GetAfterAnonymizeError(t *testing.T) {
 		ID:     id,
 		Status: customer.StatusActive,
 	}, nil)
-	mockDB.EXPECT().CustomerFreeze(gomock.Any(), id).Return(nil)
+	mockDB.EXPECT().CustomerFreezeAllowUnverified(gomock.Any(), id).Return(nil)
 	frozenCustomer := &customer.Customer{
 		ID:     id,
 		Status: customer.StatusFrozen,
@@ -576,8 +576,9 @@ func Test_Recover(t *testing.T) {
 			name: "frozen customer - success",
 			id:   uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
 			responseCustomerGet: &customer.Customer{
-				ID:     uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
-				Status: customer.StatusFrozen,
+				ID:            uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
+				Status:        customer.StatusFrozen,
+				EmailVerified: true,
 			},
 			expectDBRecover: true,
 			expectDBGet2:    true,
@@ -694,8 +695,9 @@ func Test_Recover_DBRecoverError(t *testing.T) {
 	id := uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125")
 
 	mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(&customer.Customer{
-		ID:     id,
-		Status: customer.StatusFrozen,
+		ID:            id,
+		Status:        customer.StatusFrozen,
+		EmailVerified: true,
 	}, nil)
 	mockDB.EXPECT().CustomerRecover(gomock.Any(), id).Return(fmt.Errorf("db error"))
 
@@ -723,14 +725,198 @@ func Test_Recover_GetAfterRecoverError(t *testing.T) {
 	id := uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125")
 
 	mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(&customer.Customer{
-		ID:     id,
-		Status: customer.StatusFrozen,
+		ID:            id,
+		Status:        customer.StatusFrozen,
+		EmailVerified: true,
 	}, nil)
 	mockDB.EXPECT().CustomerRecover(gomock.Any(), id).Return(nil)
 	mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(nil, fmt.Errorf("not found"))
 
 	_, err := h.Recover(ctx, id)
 	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+}
+
+func Test_FreezeAndDelete_Unverified(t *testing.T) {
+	id := uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125")
+
+	tests := []struct {
+		name   string
+		status customer.Status
+	}{
+		{"initial customer", customer.StatusInitial},
+		{"expired customer", customer.StatusExpired},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := &customerHandler{db: mockDB, notifyHandler: mockNotify}
+			ctx := context.Background()
+
+			frozen := &customer.Customer{ID: id, Status: customer.StatusFrozen}
+			deleted := &customer.Customer{ID: id, Status: customer.StatusDeleted}
+			shortID := id.String()[:8]
+			anonName := fmt.Sprintf("deleted_user_%s", shortID)
+			anonEmail := fmt.Sprintf("deleted_%s@removed.voipbin.net", shortID)
+
+			gomock.InOrder(
+				mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(&customer.Customer{ID: id, Status: tt.status}, nil),
+				mockDB.EXPECT().CustomerFreezeAllowUnverified(gomock.Any(), id).Return(nil),
+				mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(frozen, nil),
+				mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerFrozen, frozen).Return(),
+				mockDB.EXPECT().CustomerAnonymizePII(gomock.Any(), id, anonName, anonEmail).Return(nil),
+				mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(deleted, nil),
+				mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerDeleted, deleted).Return(),
+			)
+
+			res, err := h.FreezeAndDelete(ctx, id)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res != deleted {
+				t.Errorf("Wrong match. expect: %v, got: %v", deleted, res)
+			}
+		})
+	}
+}
+
+// Legacy expired customers (tm_delete set) and deleted customers stay rejected:
+// nothing is written and no event is published.
+func Test_FreezeAndDelete_Rejected(t *testing.T) {
+	id := uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125")
+	now := time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name     string
+		customer *customer.Customer
+	}{
+		{"legacy expired customer", &customer.Customer{ID: id, Status: customer.StatusExpired, TMDelete: &now}},
+		{"initial customer with tm_delete", &customer.Customer{ID: id, Status: customer.StatusInitial, TMDelete: &now}},
+		{"deleted customer", &customer.Customer{ID: id, Status: customer.StatusDeleted, TMDelete: &now}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := &customerHandler{db: mockDB, notifyHandler: mockNotify}
+
+			// only the first Get is expected: no freeze, anonymize or event
+			mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(tt.customer, nil)
+
+			if _, err := h.FreezeAndDelete(context.Background(), id); err == nil {
+				t.Errorf("Expected error, got nil")
+			}
+		})
+	}
+}
+
+// The plain Freeze (immediate=false) path keeps freezing active customers only:
+// an unverified customer goes to CustomerFreeze, whose guard rejects it.
+func Test_Freeze_UnverifiedRejected(t *testing.T) {
+	id := uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125")
+
+	for _, st := range []customer.Status{customer.StatusInitial, customer.StatusExpired} {
+		t.Run(string(st), func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := &customerHandler{db: mockDB, notifyHandler: mockNotify}
+
+			gomock.InOrder(
+				mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(&customer.Customer{ID: id, Status: st}, nil),
+				mockDB.EXPECT().CustomerFreeze(gomock.Any(), id).Return(dbhandler.ErrNotFound),
+				mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(&customer.Customer{ID: id, Status: st}, nil),
+			)
+
+			if _, err := h.Freeze(context.Background(), id); err == nil {
+				t.Errorf("Expected error, got nil")
+			}
+		})
+	}
+}
+
+// A concurrent request froze the unverified customer first: the 0-row result is
+// resolved by the refetch and the deletion continues.
+func Test_FreezeAndDelete_Unverified_ConcurrentFreeze(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &customerHandler{db: mockDB, notifyHandler: mockNotify}
+
+	id := uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125")
+	frozen := &customer.Customer{ID: id, Status: customer.StatusFrozen}
+	deleted := &customer.Customer{ID: id, Status: customer.StatusDeleted}
+	shortID := id.String()[:8]
+
+	gomock.InOrder(
+		mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(&customer.Customer{ID: id, Status: customer.StatusInitial}, nil),
+		mockDB.EXPECT().CustomerFreezeAllowUnverified(gomock.Any(), id).Return(dbhandler.ErrNotFound),
+		mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(frozen, nil),
+		mockDB.EXPECT().CustomerAnonymizePII(gomock.Any(), id, fmt.Sprintf("deleted_user_%s", shortID), fmt.Sprintf("deleted_%s@removed.voipbin.net", shortID)).Return(nil),
+		mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(deleted, nil),
+		mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerDeleted, deleted).Return(),
+	)
+
+	if _, err := h.FreezeAndDelete(context.Background(), id); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+// Losing the anonymize race (0 rows) or a recovered customer returns an error and
+// never publishes customer_deleted.
+func Test_FreezeAndDelete_Unverified_AnonymizeNotFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &customerHandler{db: mockDB, notifyHandler: mockNotify}
+
+	id := uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125")
+	frozen := &customer.Customer{ID: id, Status: customer.StatusFrozen}
+
+	gomock.InOrder(
+		mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(&customer.Customer{ID: id, Status: customer.StatusExpired}, nil),
+		mockDB.EXPECT().CustomerFreezeAllowUnverified(gomock.Any(), id).Return(nil),
+		mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(frozen, nil),
+		mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerFrozen, frozen).Return(),
+		mockDB.EXPECT().CustomerAnonymizePII(gomock.Any(), id, gomock.Any(), gomock.Any()).Return(dbhandler.ErrNotFound),
+	)
+
+	if _, err := h.FreezeAndDelete(context.Background(), id); !errors.Is(err, dbhandler.ErrNotFound) {
+		t.Errorf("Wrong match. expect: ErrNotFound, got: %v", err)
+	}
+}
+
+// A frozen customer that never verified its email is not recovered to active.
+func Test_Recover_UnverifiedRejected(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &customerHandler{db: mockDB, notifyHandler: mockNotify}
+
+	id := uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125")
+
+	// no CustomerRecover call and no event
+	mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(&customer.Customer{ID: id, Status: customer.StatusFrozen, EmailVerified: false}, nil)
+
+	if _, err := h.Recover(context.Background(), id); err == nil {
 		t.Errorf("Expected error, got nil")
 	}
 }

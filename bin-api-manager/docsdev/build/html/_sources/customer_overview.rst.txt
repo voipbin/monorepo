@@ -264,7 +264,7 @@ When an account is frozen:
 
 **Immediate Deletion**
 
-To skip the 30-day grace period and delete the account immediately, include ``"immediate": true``. ``password`` and ``confirmation_phrase`` are mutually exclusive -- provide exactly one: ``password`` for password-based accounts, or ``confirmation_phrase`` set to ``"DELETE"`` for SSO or API-key authenticated requests.
+To skip the 30-day grace period and delete the account immediately, include ``"immediate": true``. Immediate deletion is also available to an account that never verified its email (``initial`` or ``expired`` status); the 30-day unregistration without ``immediate`` requires an ``active`` account. An ``expired`` account cannot use the ``password`` method (login is refused), so it uses ``confirmation_phrase`` with an existing token or access key. ``password`` and ``confirmation_phrase`` are mutually exclusive -- provide exactly one: ``password`` for password-based accounts, or ``confirmation_phrase`` set to ``"DELETE"`` for SSO or API-key authenticated requests.
 
 .. code::
 
@@ -289,7 +289,7 @@ During the 30-day grace period, a frozen account can be recovered by cancelling 
     $ curl -X DELETE 'https://api.voipbin.net/auth/unregister' \
         --header 'Authorization: Bearer <token>'
 
-This restores the account to ``active`` status, clears the ``tm_deletion_scheduled`` field, and re-enables all operations.
+This restores the account to ``active`` status, clears the ``tm_deletion_scheduled`` field, and re-enables all operations. A frozen account whose email was never verified cannot be recovered this way.
 
 **What Happens on Permanent Deletion**
 

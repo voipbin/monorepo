@@ -21,6 +21,14 @@ import (
 func seedCustomer(t *testing.T, status customer.Status) uuid.UUID {
 	t.Helper()
 
+	return seedCustomerWith(t, status, true, false)
+}
+
+// seedCustomerWith is seedCustomer with an explicit email_verified value and,
+// when legacyTMDelete is set, a tm_delete on the row (legacy expired rows).
+func seedCustomerWith(t *testing.T, status customer.Status, emailVerified bool, legacyTMDelete bool) uuid.UUID {
+	t.Helper()
+
 	mc := gomock.NewController(t)
 	mockUtil := utilhandler.NewMockUtilHandler(mc)
 	mockCache := cachehandler.NewMockCacheHandler(mc)
@@ -35,12 +43,19 @@ func seedCustomer(t *testing.T, status customer.Status) uuid.UUID {
 		t.Fatalf("could not generate uuid: %v", err)
 	}
 	if err := h.CustomerCreate(context.Background(), &customer.Customer{
-		ID:     id,
-		Name:   "freeze test",
-		Email:  "freeze@example.com",
-		Status: status,
+		ID:            id,
+		Name:          "freeze test",
+		Email:         "freeze@example.com",
+		Status:        status,
+		EmailVerified: emailVerified,
 	}); err != nil {
 		t.Fatalf("could not create customer: %v", err)
+	}
+
+	if legacyTMDelete {
+		if _, err := dbTest.ExecContext(context.Background(), "update customer_customers set tm_delete = ? where id = ?", curTime, id.Bytes()); err != nil {
+			t.Fatalf("could not set tm_delete: %v", err)
+		}
 	}
 
 	return id

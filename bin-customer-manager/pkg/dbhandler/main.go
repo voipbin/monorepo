@@ -29,6 +29,7 @@ type DBHandler interface {
 	CustomerCreate(ctx context.Context, b *customer.Customer) error
 	CustomerDelete(ctx context.Context, id uuid.UUID) error
 	CustomerFreeze(ctx context.Context, id uuid.UUID) error
+	CustomerFreezeAllowUnverified(ctx context.Context, id uuid.UUID) error
 	CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	CustomerList(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error)
 	CustomerListFrozenExpired(ctx context.Context, expiredBefore time.Time) ([]*customer.Customer, error)

@@ -57,8 +57,8 @@ The `POST /v1/customers/signup` flow:
 
 Customers can be frozen (preventing resource creation) and recovered:
 - `freeze` — sets customer status to `frozen`; blocks new resource creation across all services
-- `recover` — restores customer to `active`
-- `freeze_and_delete` — freezes and schedules eventual hard deletion (used for GDPR/account closure)
+- `recover` — restores customer to `active`; refused for a frozen customer whose email is not verified
+- `freeze_and_delete` — freezes and immediately anonymizes and deletes (used for account closure); also accepts an unverified (`initial` or `expired`) customer without `tm_delete`, whereas `freeze` accepts `active` only
 
 ### Soft Deletes
 

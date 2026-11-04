@@ -2,7 +2,7 @@ post:
   summary: Cancel customer deletion (recover account).
   description: |
     Cancels a scheduled deletion and restores the account to active state.
-    Only works during the 30-day grace period.
+    Only works during the 30-day grace period, and only for an account whose email was verified.
     Admin-only endpoint.
   tags:
     - Customer
