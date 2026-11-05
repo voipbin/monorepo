@@ -2,7 +2,7 @@
 
 ## 1. Issue analysis
 
-Ticket review (against origin/main 18297945d): valid.
+Checked against origin/main at the time of writing.
 
 - `pkg/emailhandler/hook.go` `hookMailgun` only logs the payload (TODO). Mailgun delivery events never update the email status.
 - `pkg/emailhandler/send.go` tries SendGrid first, then Mailgun.
