@@ -93,7 +93,7 @@ func Test_InternalCarrier(t *testing.T) {
 
 func Test_DefaultCarrierTable(t *testing.T) {
 	table := DefaultCarrierTable()
-	if len(table) != 2 {
+	if len(table) != 3 {
 		t.Fatalf("the production table holds the open carriers only, got %d entries", len(table))
 	}
 	for path, carrier := range map[string]string{"/fedex": "fedex", "/ups": "ups"} {
@@ -104,20 +104,30 @@ func Test_DefaultCarrierTable(t *testing.T) {
 			t.Errorf("the %s url must be recognized, got %+v %v", carrier, entry, ok)
 		}
 	}
-	for _, closed := range []string{"https://carrier.invalid/dhl", "https://carrier.invalid/unlisted"} {
+	for _, closed := range []string{"https://carrier.invalid/unlisted"} {
 		if _, ok := table.InternalCarrier(closed); ok {
-			t.Errorf("%s must not be recognized while its carrier is closed", closed)
+			t.Errorf("%s must not be recognized while it is not listed", closed)
 		}
 	}
-	if got := table.AllowedURLs(); len(got) != 2 || got[0] != "https://carrier.invalid/fedex" || got[1] != "https://carrier.invalid/ups" {
+	if entry := table["/dhl"]; entry.Carrier != "dhl" || entry.Credential != CredentialAPIKey {
+		t.Errorf("unexpected dhl line %+v", entry)
+	}
+	if entry, ok := table.InternalCarrier("https://carrier.invalid/dhl"); !ok || entry.Carrier != "dhl" {
+		t.Errorf("the dhl url must be recognized, got %+v %v", entry, ok)
+	}
+	if got := table.AllowedURLs(); fmt.Sprint(got) != fmt.Sprint([]string{"https://carrier.invalid/dhl", "https://carrier.invalid/fedex", "https://carrier.invalid/ups"}) {
 		t.Errorf("unexpected allowed urls %v", got)
 	}
 
 	// each call returns a new map, so a caller cannot change another caller's table.
 	table["/x"] = CarrierEntry{Carrier: "x"}
 	delete(table, "/ups")
-	if again := DefaultCarrierTable(); len(again) != 2 || again["/ups"].Carrier != "ups" {
+	delete(table, "/dhl")
+	if again := DefaultCarrierTable(); len(again) != 3 || again["/ups"].Carrier != "ups" || again["/dhl"].Carrier != "dhl" {
 		t.Errorf("DefaultCarrierTable must return a new map on every call")
+	}
+	if _, ok := DefaultCarrierTable()["/x"]; ok {
+		t.Errorf("a line added by a caller must not show in the next table")
 	}
 }
 

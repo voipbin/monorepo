@@ -50,6 +50,7 @@ type CarrierTable map[string]CarrierEntry
 // in pkg/carriertrackhandler.
 func DefaultCarrierTable() CarrierTable {
 	return CarrierTable{
+		"/dhl":   {Carrier: "dhl", Credential: CredentialAPIKey},
 		"/fedex": {Carrier: "fedex", Credential: CredentialClientIDSecret},
 		"/ups":   {Carrier: "ups", Credential: CredentialClientIDSecret},
 	}

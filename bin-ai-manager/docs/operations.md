@@ -167,6 +167,21 @@ What reaches the model is either the allow-list result (no recipient, sender, ad
 - Scan events are sorted newest first by the adapter, because the FedEx schema does not define an order; an event whose time has no offset is listed after the others and has `time_local` instead of `time`.
 - Answer mapping: `400` is `invalid_format` (a `400` that says the request had no tracking number is `carrier_unavailable`), `401` drops the cached token and is `carrier_unavailable`, `403` is `carrier_unavailable` and blocks the key for a minute, a `200` answer whose result (or, when the result is empty or missing, whose alerts) carries the "no data" code is treated like that `404`, and the secured delivery code gives the secured delivery result in every case; `404` is `not_found` only when the body says there is no data for the number and `carrier_unavailable` otherwise, `429` is `rate_limited` and blocks the key for a minute, every other status is `carrier_unavailable`. A sudden rise of `invalid_format` or `not_found` outcomes for this carrier can mean the request format is wrong rather than customers entering wrong numbers.
 
+#### DHL
+
+`https://carrier.invalid/dhl` is served by the DHL adapter (tool `track_dhl`). The saved key is the DHL API key, one value, stored as the server's `bearer` secret; it is sent in the `DHL-API-Key` request header only, never in a url. There is no token exchange. The adapter calls the one host fixed in the code, with the tracking number as the only query value, and does not follow redirects. A tracking number is 8 to 40 letters and digits (spaces and hyphens are ignored; DHL publishes no stricter rule).
+
+| DHL answer | Result for the model | Cooldown of the key |
+|------------|----------------------|---------------------|
+| 200 with a shipment | the allow-list result | |
+| 200 with no shipment, 404 | `not_found` (cached) | |
+| 400 | `invalid_format` (cached) | |
+| 401, 403 | `credential_invalid` | 10 minutes |
+| 429 | `rate_limited` | the `Retry-After` seconds, between 1 second and 10 minutes; 1 minute when the header is missing, zero or negative, or not a whole number of seconds |
+| any other status, a body that is not valid, a body over the limit, a transport error, a redirect | `carrier_unavailable`; only the status number is logged | |
+
+The DHL documentation names 200, 404 and 429 only; reading 400 as `invalid_format` and 401 and 403 as a rejected key is a provisional choice that has not been seen against a real key. When the answer lists several shipments, the one whose id equals the requested number is used, and the first one when none does. A shipment DHL marks as returned is reported as `returned` whatever its status code says; the code itself stays in `carrier_status_code`. A time without an offset is the local time of the event: it is given as `time_local`, `time_zone_known` is false, and `delivered_at` stays empty. DHL requires its notice to be shown wherever the data is presented, so every DHL result carries `attribution` (also appended to the card description) and the tool description asks the model to show it.
+
 ## Database Migrations
 
 The service applies the migrations of its eleven tables itself (`migrations/`, embedded) on every start, after the database connection and before the cache and RabbitMQ; version table `ai_schema_migrations`. A failure exits the process with a non-zero code and the container restarts.

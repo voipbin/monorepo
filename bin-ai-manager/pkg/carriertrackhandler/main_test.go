@@ -144,7 +144,7 @@ func Test_New_registersTheOpenCarriersAndFixesTheTimeout(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(h.adapters) != 2 || h.adapters["fedex"] == nil || h.adapters["ups"] == nil {
+	if len(h.adapters) != 3 || h.adapters["dhl"] == nil || h.adapters["fedex"] == nil || h.adapters["ups"] == nil {
 		t.Errorf("only the open adapters are registered, got %d", len(h.adapters))
 	}
 	if h.timeout != 10*time.Second {
@@ -153,8 +153,10 @@ func Test_New_registersTheOpenCarriersAndFixesTheTimeout(t *testing.T) {
 	if h2, _ := New(7); h2.timeout != 7*time.Second {
 		t.Errorf("timeout = %v", h2.timeout)
 	}
-	if tools, ok := h.Tools("fedex"); !ok || len(tools) != 1 || tools[0].Name != "track_fedex" {
-		t.Errorf("unexpected tools %v %v", tools, ok)
+	for _, name := range []string{"dhl", "fedex"} {
+		if tools, ok := h.Tools(name); !ok || len(tools) != 1 || tools[0].Name != "track_"+name {
+			t.Errorf("unexpected tools %v %v", tools, ok)
+		}
 	}
 	if _, ok := h.Tools("unregistered"); ok {
 		t.Errorf("no tools without an adapter")

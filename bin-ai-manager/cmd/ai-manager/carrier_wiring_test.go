@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"reflect"
 	"regexp"
 	"strings"
 	"sync/atomic"
@@ -25,9 +24,19 @@ import (
 // the compiler checks that the handler satisfies the interface it is wired to.
 var _ mcptoolhandler.CarrierHandler = (*carriertrackhandler.Handler)(nil)
 
+var toolNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
+
 const wiringKeys = "1:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="
 
-func wiringServer(mc *gomock.Controller, url string) (*dbhandler.MockDBHandler, uuid.UUID) {
+// wiringTool builds the tool handler the process builds, over one server
+// record that has no saved key. A call with no key ends before any network:
+// the tracking number is checked first, then the key, and there is none.
+func wiringTool(t *testing.T, table mcpserver.CarrierTable, carriers mcptoolhandler.CarrierHandler, url string) (mcptoolhandler.McpToolHandler, uuid.UUID) {
+	t.Helper()
+
+	mc := gomock.NewController(t)
+	t.Cleanup(mc.Finish)
+
 	id := uuid.Must(uuid.NewV4())
 	server := &mcpserver.McpServer{
 		Identity: commonidentity.Identity{ID: id, CustomerID: uuid.Must(uuid.NewV4())},
@@ -37,46 +46,114 @@ func wiringServer(mc *gomock.Controller, url string) (*dbhandler.MockDBHandler, 
 	}
 	db := dbhandler.NewMockDBHandler(mc)
 	db.EXPECT().McpServerGet(gomock.Any(), id).Return(server, nil).AnyTimes()
-	return db, id
+
+	tool, err := mcptoolhandler.NewMcpToolHandler(db, wiringKeys, 5, nil, table, carriers)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return tool, id
 }
 
-// Test_carrierWiring_onlyTheOpenCarriersAreReachable runs the production wiring
-// (the default table and the real adapter handler) against records on the
-// reserved host. The servers hold no saved key, so a call ends before any
-// request could be made. Only the open carriers list a tool; every other
-// reserved url is closed and ends with the fixed text.
-func Test_carrierWiring_onlyTheOpenCarriersAreReachable(t *testing.T) {
+// Test_carrierWiring_openUrlsListTheToolOfTheCarrier runs the production wiring
+// (the default table and the real adapter handler) against the urls that name
+// a carrier of the table. The tool is listed, its definition is acceptable to
+// the model providers, and a call without a saved key ends with the fixed text.
+// No call here carries a key, so none can reach a carrier.
+func Test_carrierWiring_openUrlsListTheToolOfTheCarrier(t *testing.T) {
 	table := mcpserver.DefaultCarrierTable()
-	if len(table) != 2 || table["/fedex"].Carrier != "fedex" || table["/ups"].Carrier != "ups" {
-		t.Fatalf("the production table must hold the fedex and ups lines only, got %+v", table)
+	if len(table) != 3 || table["/dhl"].Carrier != "dhl" || table["/fedex"].Carrier != "fedex" || table["/ups"].Carrier != "ups" {
+		t.Fatalf("the production table must hold the dhl, fedex and ups lines, got %+v", table)
 	}
-
 	carriers, err := carriertrackhandler.New(10)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	closed := []string{
-		"https://carrier.invalid/dhl",
-		"https://CARRIER.invalid./dhl", "https://carrier.invalid/dhl?x=1", "https://carrier.invalid:443/dhl",
-		"https://carrier.invalid/fedex?x=1", "https://carrier.invalid:443/fedex", "https://carrier.invalid/fedex/",
-		"https://carrier.invalid/ups?x=1", "https://carrier.invalid:443/ups", "https://carrier.invalid/ups/",
-	}
-	for _, url := range closed {
-		t.Run("closed "+url, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+	for path, entry := range table {
+		for _, host := range []string{"carrier.invalid", "CARRIER.invalid.", "carrier\u3002invalid"} {
+			url := "https://" + host + path
+			t.Run(url, func(t *testing.T) {
+				tool, id := wiringTool(t, table, carriers, url)
 
-			db, id := wiringServer(mc, url)
-			tool, err := mcptoolhandler.NewMcpToolHandler(db, wiringKeys, 5, nil, table, carriers)
-			if err != nil {
-				t.Fatal(err)
-			}
+				tools, err := tool.ListTools(context.Background(), id)
+				if err != nil || len(tools) != 1 {
+					t.Fatalf("the open carrier must list one tool, got %+v %v", tools, err)
+				}
+				def := tools[0]
+				if def.Name != "track_"+entry.Carrier {
+					t.Errorf("tool name = %q", def.Name)
+				}
+				if entry.Carrier == "ups" && !strings.Contains(def.Description, "1Z") {
+					t.Errorf("the ups tool must describe the 1Z tracking number, got %q", def.Description)
+				}
+
+				// A name the sessions accept: [A-Za-z0-9_-], at most 51 bytes.
+				if len(def.Name) == 0 || len(def.Name) > 51 || !toolNamePattern.MatchString(def.Name) {
+					t.Errorf("tool name %q is not accepted by the sessions", def.Name)
+				}
+
+				// The schema passes the provider-neutral normalizer unchanged.
+				var schema map[string]any
+				if err := json.Unmarshal(def.InputSchema, &schema); err != nil {
+					t.Fatal(err)
+				}
+				norm, rep := mcpschema.Normalize(schema, 64<<10)
+				if rep.ToolDropped || rep.DroppedKeys != 0 || rep.DroppedPropsN != 0 || rep.Rewrites != 0 {
+					t.Errorf("the schema was changed by the normalizer: %+v", rep)
+				}
+				before, _ := json.Marshal(schema)
+				after, _ := json.Marshal(norm)
+				if string(before) != string(after) {
+					t.Errorf("the schema changed: %s -> %s", before, after)
+				}
+
+				// No saved key: the call ends before any network.
+				number := "ABCD12345678"
+				if entry.Carrier == "ups" {
+					number = "1Z999AA10123456784"
+				}
+				text, isError, err := tool.CallTool(context.Background(), id, def.Name, `{"tracking_number":"`+number+`"}`)
+				if err != nil || !isError || text != carriertrackhandler.Message(carriertrackhandler.CodeCredentialNotConfigured, entry.Carrier, entry.Credential) {
+					t.Errorf("got %q %v %v", text, isError, err)
+				}
+			})
+		}
+	}
+}
+
+// Test_carrierWiring_closedUrlsReachNothing runs the production wiring against
+// urls that do not name a line of the table: none lists a tool or reaches a
+// carrier, and a call ends with the fixed text. The urls use paths no carrier
+// owns, and variants of an open path that are not its canonical form.
+func Test_carrierWiring_closedUrlsReachNothing(t *testing.T) {
+	table := mcpserver.DefaultCarrierTable()
+	carriers, err := carriertrackhandler.New(10)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	urls := []string{
+		"https://carrier.invalid/fake", "https://carrier\u3002invalid/fake",
+		"https://carrier.invalid/unlisted", "https://CARRIER.invalid./unlisted", "https://carrier\u3002invalid/unlisted",
+		"https://carrier.invalid/DHL", "https://carrier.invalid/%64hl", "https://carrier.invalid/FEDEX", "https://carrier.invalid/UPS",
+	}
+	for open := range table {
+		urls = append(urls,
+			"https://carrier.invalid"+open+"?x=1", "https://carrier.invalid:443"+open, "https://carrier.invalid"+open+"/")
+	}
+
+	for _, url := range urls {
+		t.Run(url, func(t *testing.T) {
+			tool, id := wiringTool(t, table, carriers, url)
 
 			if tools, err := tool.ListTools(context.Background(), id); err == nil || len(tools) != 0 {
 				t.Errorf("no tool may be listed, got %+v %v", tools, err)
 			}
-			for _, name := range []string{"track_dhl", "track_fedex", "track_ups"} {
+			names := []string{"track_fake"}
+			for _, entry := range table {
+				names = append(names, "track_"+entry.Carrier)
+			}
+			for _, name := range names {
 				text, isError, err := tool.CallTool(context.Background(), id, name, `{"tracking_number":"ABCD12345678"}`)
 				if err != nil || !isError || text != mcpserver.IntegrationUnavailableText {
 					t.Errorf("%s: got %q %v %v", name, text, isError, err)
@@ -84,50 +161,31 @@ func Test_carrierWiring_onlyTheOpenCarriersAreReachable(t *testing.T) {
 			}
 		})
 	}
+}
 
-	// the spelling of the host does not matter (case, trailing dots, an
-	// ideographic full stop), the same record is the same carrier
-	for _, url := range []string{"https://CARRIER.invalid./fedex", "https://carrier\u3002invalid/fedex"} {
-		t.Run("open "+url, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			db, id := wiringServer(mc, url)
-			tool, err := mcptoolhandler.NewMcpToolHandler(db, wiringKeys, 5, nil, table, carriers)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if tools, err := tool.ListTools(context.Background(), id); err != nil || len(tools) != 1 || tools[0].Name != "track_fedex" {
-				t.Errorf("expected the fedex tool, got %+v %v", tools, err)
-			}
-		})
+// Test_carrierWiring_anotherCarrierToolNameIsRefused checks that the tool of
+// one open carrier is not reachable through the record of another one.
+func Test_carrierWiring_anotherCarrierToolNameIsRefused(t *testing.T) {
+	table := mcpserver.DefaultCarrierTable()
+	carriers, err := carriertrackhandler.New(10)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	t.Run("open https://carrier.invalid/fedex", func(t *testing.T) {
-		mc := gomock.NewController(t)
-		defer mc.Finish()
-
-		db, id := wiringServer(mc, "https://carrier.invalid/fedex")
-		tool, err := mcptoolhandler.NewMcpToolHandler(db, wiringKeys, 5, nil, table, carriers)
-		if err != nil {
-			t.Fatal(err)
+	for path, entry := range table {
+		for _, other := range table {
+			if other.Carrier == entry.Carrier {
+				continue
+			}
+			t.Run(entry.Carrier+" record, "+other.Carrier+" tool", func(t *testing.T) {
+				tool, id := wiringTool(t, table, carriers, "https://carrier.invalid"+path)
+				text, isError, err := tool.CallTool(context.Background(), id, "track_"+other.Carrier, `{"tracking_number":"ABCD12345678"}`)
+				if want := carriertrackhandler.Message(carriertrackhandler.CodeToolUnknown, entry.Carrier, entry.Credential); err != nil || !isError || text != want {
+					t.Errorf("another tool name must end with %q, got %q %v %v", want, text, isError, err)
+				}
+			})
 		}
-
-		tools, err := tool.ListTools(context.Background(), id)
-		if err != nil || len(tools) != 1 || tools[0].Name != "track_fedex" {
-			t.Fatalf("expected the fedex tool, got %+v %v", tools, err)
-		}
-
-		text, isError, err := tool.CallTool(context.Background(), id, "track_fedex", `{"tracking_number":"ABCD12345678"}`)
-		if want := carriertrackhandler.Message(carriertrackhandler.CodeCredentialNotConfigured, "fedex", mcpserver.CredentialClientIDSecret); err != nil || !isError || text != want {
-			t.Errorf("a server without a saved key must end with %q, got %q %v %v", want, text, isError, err)
-		}
-
-		text, isError, err = tool.CallTool(context.Background(), id, "track_dhl", `{"tracking_number":"ABCD12345678"}`)
-		if want := carriertrackhandler.Message(carriertrackhandler.CodeToolUnknown, "fedex", mcpserver.CredentialClientIDSecret); err != nil || !isError || text != want {
-			t.Errorf("another tool name must end with %q, got %q %v %v", want, text, isError, err)
-		}
-	})
+	}
 }
 
 // countingCarriers records the calls it receives and answers none of them.
@@ -146,20 +204,64 @@ func (c *countingCarriers) Call(context.Context, mcpserver.CarrierCall) (string,
 	return "", false, nil
 }
 
-// Test_carrierWiring_aCarrierWithoutItsLineIsClosed removes the fedex line
-// from the table (the adapter stays registered) and checks that the record is
-// closed and that the adapter side is never reached, which is what keeps the
-// saved key from being sent anywhere.
+// Test_carrierWiring_aCarrierWithoutItsLineIsClosed removes the line of each
+// open carrier from the table (the adapter stays registered) and checks that
+// the record is closed and that the adapter side is never reached, which is
+// what keeps the saved key from being sent anywhere.
 func Test_carrierWiring_aCarrierWithoutItsLineIsClosed(t *testing.T) {
-	table := mcpserver.DefaultCarrierTable()
-	delete(table, "/fedex")
+	for path, entry := range mcpserver.DefaultCarrierTable() {
+		t.Run(entry.Carrier, func(t *testing.T) {
+			table := mcpserver.DefaultCarrierTable()
+			delete(table, path)
+
+			counter := &countingCarriers{}
+			tool, id := wiringTool(t, table, counter, "https://carrier.invalid"+path)
+
+			if tools, err := tool.ListTools(context.Background(), id); err == nil || len(tools) != 0 {
+				t.Errorf("no tool may be listed, got %+v %v", tools, err)
+			}
+			text, isError, err := tool.CallTool(context.Background(), id, "track_"+entry.Carrier, `{"tracking_number":"ABCD12345678"}`)
+			if err != nil || !isError || text != mcpserver.IntegrationUnavailableText {
+				t.Errorf("got %q %v %v", text, isError, err)
+			}
+			if counter.tools.Load() != 0 || counter.calls.Load() != 0 {
+				t.Errorf("the adapter side was reached: %d, %d", counter.tools.Load(), counter.calls.Load())
+			}
+		})
+	}
+}
+
+// Test_carrierWiring_aCarrierIsClosedByRemovingItsLine shows that taking the
+// line out of the table closes the carrier even when the adapter is still
+// registered and the server holds a saved key: nothing is listed and nothing
+// is called. (The other half, a line without an adapter, is closed by the
+// adapter handler itself and is tested in carriertrackhandler and
+// mcptoolhandler.)
+func Test_carrierWiring_aCarrierIsClosedByRemovingItsLine(t *testing.T) {
+	carriers, err := carriertrackhandler.New(10)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	db, id := wiringServer(mc, "https://carrier.invalid/fedex")
-	counter := &countingCarriers{}
-	tool, err := mcptoolhandler.NewMcpToolHandler(db, wiringKeys, 5, nil, table, counter)
+	// The record holds a saved key; the closed path never decrypts it.
+	id := uuid.Must(uuid.NewV4())
+	server := &mcpserver.McpServer{
+		Identity:         commonidentity.Identity{ID: id, CustomerID: uuid.Must(uuid.NewV4())},
+		URL:              "https://carrier.invalid/dhl",
+		Status:           mcpserver.StatusActive,
+		AuthType:         mcpserver.AuthTypeBearer,
+		SecretCiphertext: []byte("not a real ciphertext"),
+		SecretNonce:      []byte("123456789012"),
+		KeyVersion:       1,
+	}
+	db := dbhandler.NewMockDBHandler(mc)
+	db.EXPECT().McpServerGet(gomock.Any(), id).Return(server, nil).AnyTimes()
+
+	// The table without the line of the carrier.
+	tool, err := mcptoolhandler.NewMcpToolHandler(db, wiringKeys, 5, nil, mcpserver.CarrierTable{}, carriers)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -167,75 +269,22 @@ func Test_carrierWiring_aCarrierWithoutItsLineIsClosed(t *testing.T) {
 	if tools, err := tool.ListTools(context.Background(), id); err == nil || len(tools) != 0 {
 		t.Errorf("no tool may be listed, got %+v %v", tools, err)
 	}
-	text, isError, err := tool.CallTool(context.Background(), id, "track_fedex", `{"tracking_number":"ABCD12345678"}`)
+	text, isError, err := tool.CallTool(context.Background(), id, "track_dhl", `{"tracking_number":"ABCD12345678"}`)
 	if err != nil || !isError || text != mcpserver.IntegrationUnavailableText {
 		t.Errorf("got %q %v %v", text, isError, err)
 	}
-	if counter.tools.Load() != 0 || counter.calls.Load() != 0 {
-		t.Errorf("the adapter side was reached: %d, %d", counter.tools.Load(), counter.calls.Load())
-	}
 }
 
-// upsToolHandler wires the real adapter handler and the given table to a tool
-// handler that serves one stored server on url.
-func upsToolHandler(t *testing.T, table mcpserver.CarrierTable, url string) (mcptoolhandler.McpToolHandler, uuid.UUID) {
-	t.Helper()
-
-	mc := gomock.NewController(t)
-	t.Cleanup(mc.Finish)
-
+// Test_carrierWiring_everyOtherReservedUrlIsClosed runs the production wiring
+// against reserved-host urls the table does not list, and against an empty and
+// a nil table: none may list a tool or reach a carrier, and a call must end
+// with the fixed text.
+func Test_carrierWiring_everyOtherReservedUrlIsClosed(t *testing.T) {
 	carriers, err := carriertrackhandler.New(10)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	db, id := wiringServer(mc, url)
-	tool, err := mcptoolhandler.NewMcpToolHandler(db, wiringKeys, 5, nil, table, carriers)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return tool, id
-}
-
-// Test_carrierWiring_upsIsOpen runs the production wiring (the default table and
-// the real adapter handler) against the urls of the ups carrier, odd spellings of
-// the host included: the tool is listed with the real definition.
-func Test_carrierWiring_upsIsOpen(t *testing.T) {
-	for _, url := range []string{
-		"https://carrier.invalid/ups", "https://CARRIER.invalid./ups", "https://carrier\u3002invalid/ups",
-	} {
-		t.Run(url, func(t *testing.T) {
-			tool, id := upsToolHandler(t, mcpserver.DefaultCarrierTable(), url)
-
-			tools, err := tool.ListTools(context.Background(), id)
-			if err != nil || len(tools) != 1 {
-				t.Fatalf("got %+v %v", tools, err)
-			}
-			def := tools[0]
-			if def.Name != "track_ups" || !strings.Contains(def.Description, "1Z") {
-				t.Errorf("tool = %+v", def)
-			}
-
-			// the name rule of the tool exposure and the schema normalization keep the definition as it is
-			if !regexp.MustCompile(`^[A-Za-z0-9_-]{1,51}$`).MatchString(def.Name) {
-				t.Errorf("the tool name breaks the name rule: %q", def.Name)
-			}
-			var schema map[string]any
-			if err := json.Unmarshal(def.InputSchema, &schema); err != nil {
-				t.Fatal(err)
-			}
-			norm, rep := mcpschema.Normalize(schema, 8192)
-			if rep.ToolDropped || rep.DroppedKeys != 0 || rep.DroppedPropsN != 0 || !reflect.DeepEqual(norm, schema) {
-				t.Errorf("the schema is changed by the normalization: %+v %+v", norm, rep)
-			}
-		})
-	}
-}
-
-// Test_carrierWiring_everyOtherReservedUrlIsClosed runs the production wiring against
-// reserved-host urls the table does not list, and against an empty table: none
-// may list a tool or reach a carrier, and a call must end with the fixed text.
-func Test_carrierWiring_everyOtherReservedUrlIsClosed(t *testing.T) {
 	tests := []struct {
 		name  string
 		table mcpserver.CarrierTable
@@ -250,14 +299,16 @@ func Test_carrierWiring_everyOtherReservedUrlIsClosed(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tool, id := upsToolHandler(t, tt.table, tt.url)
+			tool, id := wiringTool(t, tt.table, carriers, tt.url)
 
 			if tools, err := tool.ListTools(context.Background(), id); err == nil || len(tools) != 0 {
 				t.Errorf("no tool may be listed, got %+v %v", tools, err)
 			}
-			text, isError, err := tool.CallTool(context.Background(), id, "track_ups", `{"tracking_number":"1Z999AA10123456784"}`)
-			if err != nil || !isError || text != mcpserver.IntegrationUnavailableText {
-				t.Errorf("got %q %v %v", text, isError, err)
+			for _, name := range []string{"track_dhl", "track_fedex", "track_ups"} {
+				text, isError, err := tool.CallTool(context.Background(), id, name, `{"tracking_number":"ABCD12345678"}`)
+				if err != nil || !isError || text != mcpserver.IntegrationUnavailableText {
+					t.Errorf("%s: got %q %v %v", name, text, isError, err)
+				}
 			}
 		})
 	}
