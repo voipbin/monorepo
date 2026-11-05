@@ -51,6 +51,7 @@ type CarrierTable map[string]CarrierEntry
 func DefaultCarrierTable() CarrierTable {
 	return CarrierTable{
 		"/fedex": {Carrier: "fedex", Credential: CredentialClientIDSecret},
+		"/ups":   {Carrier: "ups", Credential: CredentialClientIDSecret},
 	}
 }
 
