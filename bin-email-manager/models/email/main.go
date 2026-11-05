@@ -38,9 +38,11 @@ type Email struct {
 // ProviderType type
 type ProviderType string
 
-// list of NumberProvider
+// list of ProviderType
 const (
+	ProviderTypeNone     ProviderType = "" // The provider is not decided yet (the email is not sent yet).
 	ProviderTypeSendgrid ProviderType = "sendgrid"
+	ProviderTypeMailgun  ProviderType = "mailgun"
 )
 
 type Attachment struct {
@@ -48,18 +50,33 @@ type Attachment struct {
 	ReferenceID   uuid.UUID               `json:"reference_id"`
 }
 
+// Status is the delivery status of the email.
+//
+// The values follow the SendGrid event names. The Mailgun webhook events map
+// onto them as follows (see emailhandler/hook.go):
+//
+//	accepted                  -> processed
+//	delivered                 -> delivered
+//	failed (temporary)        -> deferred
+//	failed (permanent)        -> bounce
+//	opened                    -> open
+//	clicked                   -> click
+//	unsubscribed              -> unsubscribe
+//	complained                -> spamreport
+//
+// The dropped status is produced by the SendGrid webhook only.
 type Status string
 
 const (
 	StatusNone        Status = ""            // The email has no status.
 	StatusInitiated   Status = "initiated"   // The email has been initiated.
-	StatusProcessed   Status = "processed"   // The email has been received is being processed.
-	StatusDelivered   Status = "delivered"   // The email has been successfully delivered to the recipient's inbox (or spam folder).
+	StatusProcessed   Status = "processed"   // The provider accepted the email and queued it for delivery.
+	StatusDelivered   Status = "delivered"   // The email has been successfully delivered to the recipient's mail server.
 	StatusOpen        Status = "open"        // The recipient opened the email.
 	StatusClick       Status = "click"       // The recipient clicked on a link in the email.
-	StatusBounce      Status = "bounce"      // The email bounced (permanent or temporary failure). The status and reason fields provide more information.
-	StatusDropped     Status = "dropped"     // SendGrid dropped the email (e.g., due to an invalid recipient, spam report, or blocked IP address). The reason field indicates the reason for the drop.
-	StatusDeffered    Status = "deferred"    // SendGrid has temporarily deferred delivery of the email. They will attempt to deliver it later.
+	StatusBounce      Status = "bounce"      // The email could not be delivered (permanent failure).
+	StatusDropped     Status = "dropped"     // The provider dropped the email (e.g., invalid recipient or suppression). SendGrid only.
+	StatusDeffered    Status = "deferred"    // The provider has temporarily failed to deliver the email and will retry.
 	StatusUnsubscribe Status = "unsubscribe" // The recipient unsubscribed from your email list.
 	StatusSpamreport  Status = "spamreport"  // The recipient marked the email as spam.
 )

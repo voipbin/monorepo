@@ -2,7 +2,7 @@
 
 ## Component Overview
 
-`bin-email-manager` is a Class A Standard Go RPC Manager that handles email delivery through external providers (SendGrid, Mailgun) with automatic failover. It tracks delivery status via provider webhooks and supports file attachments via `bin-storage-manager`.
+`bin-email-manager` is a Class A Standard Go RPC Manager that handles email delivery through external providers (Mailgun primary, SendGrid fallback) with automatic failover. It tracks delivery status via provider webhooks and supports file attachments via `bin-storage-manager`.
 
 ```
 cmd/email-manager/main.go
@@ -31,6 +31,7 @@ Supporting binary:
 | Provider | `pkg/emailhandler/engine_mailgun.go` | Mailgun API send implementation |
 | Data | `pkg/dbhandler` | Squirrel SQL builder queries for email records |
 | Cache | `pkg/cachehandler` | Redis caching for email lookups |
+| Models | `models/mailgun` | Mailgun webhook event models |
 | Models | `models/email` | Email, Status, ProviderType, Attachment, WebhookMessage |
 | Models | `models/sendgrid` | SendGrid-specific webhook event models |
 

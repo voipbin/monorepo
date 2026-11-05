@@ -137,6 +137,16 @@ func TestProviderTypeConstants(t *testing.T) {
 			constant: ProviderTypeSendgrid,
 			expected: "sendgrid",
 		},
+		{
+			name:     "provider_type_mailgun",
+			constant: ProviderTypeMailgun,
+			expected: "mailgun",
+		},
+		{
+			name:     "provider_type_none",
+			constant: ProviderTypeNone,
+			expected: "",
+		},
 	}
 
 	for _, tt := range tests {

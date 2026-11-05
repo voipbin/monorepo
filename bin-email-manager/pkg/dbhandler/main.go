@@ -21,7 +21,8 @@ type DBHandler interface {
 	EmailDelete(ctx context.Context, id uuid.UUID) error
 	EmailUpdate(ctx context.Context, id uuid.UUID, fields map[email.Field]any) error
 	EmailUpdateStatus(ctx context.Context, id uuid.UUID, status email.Status) error
-	EmailUpdateProviderReferenceID(ctx context.Context, id uuid.UUID, providerReferenceID string) error
+	EmailUpdateProvider(ctx context.Context, id uuid.UUID, providerType email.ProviderType, providerReferenceID string) error
+	EmailUpdateStatusFrom(ctx context.Context, id uuid.UUID, status email.Status, from []email.Status) (bool, error)
 }
 
 // handler database handler

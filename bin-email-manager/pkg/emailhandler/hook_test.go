@@ -2,11 +2,14 @@ package emailhandler
 
 import (
 	"context"
+	"errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-email-manager/models/email"
 	"monorepo/bin-email-manager/pkg/dbhandler"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -135,19 +138,40 @@ func Test_hookSendgrid(t *testing.T) {
 	}
 }
 
-func Test_hookMailgun(t *testing.T) {
+const testMailgunEmailID = "5e8f0f0a-8888-4888-8888-000000000001"
+
+// mailgunTestPayload builds a webhook body with fixed, synthetic values.
+func mailgunTestPayload(event string, severity string, vars string, wrapped bool) []byte {
+	ev := `"event":"` + event + `","id":"synthetic-event-id","timestamp":1770146431.65,"recipient":"user@example.com","message":{"headers":{"message-id":"synthetic-message-id@example.com"}},"user-variables":` + vars
+	if severity != "" {
+		ev += `,"severity":"` + severity + `","reason":"generic"`
+	}
+	if wrapped {
+		return []byte(`{"signature":{"timestamp":"1770146431","token":"synthetic-token","signature":"synthetic-signature"},"event-data":{` + ev + `}}`)
+	}
+	return []byte(`{` + ev + `}`)
+}
+
+func Test_hookMailgun_status(t *testing.T) {
+	id := uuid.FromStringOrNil(testMailgunEmailID)
+	vars := `{"voipbin_message_id":"` + testMailgunEmailID + `"}`
+
 	tests := []struct {
 		name string
 		data []byte
+
+		expectStatus email.Status
+		expectFrom   []email.Status
 	}{
-		{
-			name: "handles_mailgun_webhook",
-			data: []byte(`{"event":"delivered"}`),
-		},
-		{
-			name: "handles_empty_data",
-			data: []byte(`{}`),
-		},
+		{"accepted", mailgunTestPayload("accepted", "", vars, true), email.StatusProcessed, []email.Status{email.StatusNone, email.StatusInitiated}},
+		{"delivered", mailgunTestPayload("delivered", "", vars, true), email.StatusDelivered, []email.Status{email.StatusNone, email.StatusInitiated, email.StatusProcessed, email.StatusDeffered}},
+		{"failed_temporary", mailgunTestPayload("failed", "temporary", vars, true), email.StatusDeffered, []email.Status{email.StatusNone, email.StatusInitiated, email.StatusProcessed}},
+		{"failed_permanent", mailgunTestPayload("failed", "permanent", vars, true), email.StatusBounce, []email.Status{email.StatusNone, email.StatusInitiated, email.StatusProcessed, email.StatusDeffered, email.StatusDelivered}},
+		{"opened", mailgunTestPayload("opened", "", vars, true), email.StatusOpen, []email.Status{email.StatusNone, email.StatusInitiated, email.StatusProcessed, email.StatusDeffered, email.StatusDelivered, email.StatusBounce, email.StatusDropped}},
+		{"clicked", mailgunTestPayload("clicked", "", vars, true), email.StatusClick, []email.Status{email.StatusNone, email.StatusInitiated, email.StatusProcessed, email.StatusDeffered, email.StatusDelivered, email.StatusBounce, email.StatusDropped, email.StatusOpen}},
+		{"unsubscribed", mailgunTestPayload("unsubscribed", "", vars, true), email.StatusUnsubscribe, []email.Status{email.StatusNone, email.StatusInitiated, email.StatusProcessed, email.StatusDeffered, email.StatusDelivered, email.StatusBounce, email.StatusDropped, email.StatusOpen, email.StatusClick}},
+		{"complained", mailgunTestPayload("complained", "", vars, true), email.StatusSpamreport, []email.Status{email.StatusNone, email.StatusInitiated, email.StatusProcessed, email.StatusDeffered, email.StatusDelivered, email.StatusBounce, email.StatusDropped, email.StatusOpen, email.StatusClick, email.StatusUnsubscribe}},
+		{"flat_body_without_event_data", mailgunTestPayload("delivered", "", vars, false), email.StatusDelivered, []email.Status{email.StatusNone, email.StatusInitiated, email.StatusProcessed, email.StatusDeffered}},
 	}
 
 	for _, tt := range tests {
@@ -156,22 +180,128 @@ func Test_hookMailgun(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &emailHandler{
 				db:            mockDB,
-				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
-				utilHandler:   mockUtil,
+			}
+			ctx := context.Background()
+			customerID := uuid.FromStringOrNil("5e8f0f0a-8888-4888-8888-0000000000c1")
+			updated := &email.Email{Identity: commonidentity.Identity{ID: id, CustomerID: customerID}, Status: tt.expectStatus}
+
+			mockDB.EXPECT().EmailUpdateStatusFrom(ctx, id, tt.expectStatus, tt.expectFrom).Return(true, nil)
+			mockDB.EXPECT().EmailGet(ctx, id).Return(updated, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, customerID, email.EventTypeUpdated, updated)
+
+			if err := h.hookMailgun(ctx, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_hookMailgun_noUpdate(t *testing.T) {
+	id := uuid.FromStringOrNil(testMailgunEmailID)
+	vars := `{"voipbin_message_id":"` + testMailgunEmailID + `"}`
+
+	tests := []struct {
+		name string
+		data []byte
+
+		// the status update is attempted and reports no change
+		expectAttempt bool
+	}{
+		{"stale_or_duplicate_event", mailgunTestPayload("accepted", "", vars, true), true},
+		{"event_without_status", mailgunTestPayload("rejected", "", vars, true), false},
+		{"failed_with_unknown_severity", mailgunTestPayload("failed", "", vars, true), false},
+		{"user_variables_empty_array", mailgunTestPayload("delivered", "", `[]`, true), false},
+		{"user_variables_missing_id", mailgunTestPayload("delivered", "", `{"other":"x"}`, true), false},
+		{"user_variables_invalid_id", mailgunTestPayload("delivered", "", `{"voipbin_message_id":"not-a-uuid"}`, true), false},
+		{"user_variables_not_a_string", mailgunTestPayload("delivered", "", `{"voipbin_message_id":123}`, true), false},
+		{"user_variables_absent", []byte(`{"event":"delivered"}`), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			// strict mocks: no notify, no get
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := &emailHandler{
+				db:            mockDB,
+				notifyHandler: notifyhandler.NewMockNotifyHandler(mc),
 			}
 			ctx := context.Background()
 
-			// hookMailgun currently just logs and returns nil
-			err := h.hookMailgun(ctx, tt.data)
-			if err != nil {
-				t.Errorf("Unexpected error from hookMailgun: %v", err)
+			if tt.expectAttempt {
+				mockDB.EXPECT().EmailUpdateStatusFrom(ctx, id, email.StatusProcessed, gomock.Any()).Return(false, nil)
+			}
+
+			if err := h.hookMailgun(ctx, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_hookMailgun_errors(t *testing.T) {
+	id := uuid.FromStringOrNil(testMailgunEmailID)
+	vars := `{"voipbin_message_id":"` + testMailgunEmailID + `"}`
+	data := mailgunTestPayload("delivered", "", vars, true)
+
+	tests := []struct {
+		name  string
+		data  []byte
+		setup func(db *dbhandler.MockDBHandler)
+	}{
+		{"invalid_json", []byte(`not json`), func(db *dbhandler.MockDBHandler) {}},
+		{"no_event", []byte(`{}`), func(db *dbhandler.MockDBHandler) {}},
+		{"update_fails", data, func(db *dbhandler.MockDBHandler) {
+			db.EXPECT().EmailUpdateStatusFrom(gomock.Any(), id, email.StatusDelivered, gomock.Any()).Return(false, errors.New("db down"))
+		}},
+		{"get_fails_after_update", data, func(db *dbhandler.MockDBHandler) {
+			db.EXPECT().EmailUpdateStatusFrom(gomock.Any(), id, email.StatusDelivered, gomock.Any()).Return(true, nil)
+			db.EXPECT().EmailGet(gomock.Any(), id).Return(nil, errors.New("select failed"))
+		}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := &emailHandler{
+				db:            mockDB,
+				notifyHandler: notifyhandler.NewMockNotifyHandler(mc),
+			}
+			tt.setup(mockDB)
+
+			if err := h.hookMailgun(context.Background(), tt.data); err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_statusesBefore(t *testing.T) {
+	tests := []struct {
+		status email.Status
+		expect []email.Status
+	}{
+		{email.StatusProcessed, []email.Status{email.StatusNone, email.StatusInitiated}},
+		{email.StatusBounce, []email.Status{email.StatusNone, email.StatusInitiated, email.StatusProcessed, email.StatusDeffered, email.StatusDelivered}},
+		{email.StatusDropped, []email.Status{email.StatusNone, email.StatusInitiated, email.StatusProcessed, email.StatusDeffered, email.StatusDelivered}},
+		{email.StatusInitiated, []email.Status{}},
+		{email.Status("unknown"), nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.status), func(t *testing.T) {
+			if res := statusesBefore(tt.status); !reflect.DeepEqual(res, tt.expect) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expect, res)
 			}
 		})
 	}

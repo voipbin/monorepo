@@ -1,6 +1,6 @@
 # bin-email-manager
 
-Email delivery service — sends emails via SendGrid (primary) and Mailgun (failover), tracks delivery status via provider webhooks, and supports call recording attachments via bin-storage-manager.
+Email delivery service — sends emails via Mailgun (primary) and SendGrid (failover), tracks delivery status via provider webhooks, and supports call recording attachments via bin-storage-manager.
 
 > Cross-cutting rules (verification workflow, branch/commit format, worktrees, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md).
 
@@ -13,7 +13,7 @@ Email delivery service — sends emails via SendGrid (primary) and Mailgun (fail
 
 ## CRITICAL: Provider Failover Order
 
-SendGrid is attempted first; Mailgun is the fallback. If both fail, the email stays at `initiated` status. Both API keys must be configured.
+Mailgun is attempted first; SendGrid is the fallback. If both fail, the email stays at `initiated` status with an empty `provider_type`. Both API keys must be configured. After a successful send, `provider_type` and `provider_reference_id` are recorded together.
 
 ## CRITICAL: No SubscribeHandler
 
@@ -52,7 +52,7 @@ MAILGUN_API_KEY="xxx" \
 
 - **No SubscribeHandler** — purely RPC-driven + inbound webhooks
 - **ListenHandler**: consumes `QueueNameEmailRequest`
-- **Provider engines**: `engine_sendgrid.go` and `engine_mailgun.go`; tried in order
+- **Provider engines**: `engine_sendgrid.go` and `engine_mailgun.go`; tried in order (Mailgun, then SendGrid)
 - **Attachments**: resolved via RPC to bin-storage-manager before send
 - **Database**: Squirrel SQL builder (not raw SQL)
 

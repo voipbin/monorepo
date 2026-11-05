@@ -27,25 +27,32 @@ func Test_Send_failover(t *testing.T) {
 		setup func(ctx context.Context, sg *MockEngineSendgrid, mg *MockEngineMailgun, db *dbhandler.MockDBHandler)
 	}{
 		{
-			name: "sendgrid_fails_mailgun_succeeds",
+			name: "mailgun_succeeds_first_provider",
 			setup: func(ctx context.Context, sg *MockEngineSendgrid, mg *MockEngineMailgun, db *dbhandler.MockDBHandler) {
-				sg.EXPECT().Send(ctx, e).Return("", fmt.Errorf("sendgrid down"))
 				mg.EXPECT().Send(ctx, e).Return("mailgun-ref", nil)
-				db.EXPECT().EmailUpdateProviderReferenceID(ctx, e.ID, "mailgun-ref").Return(nil)
+				db.EXPECT().EmailUpdateProvider(ctx, e.ID, email.ProviderTypeMailgun, "mailgun-ref").Return(nil)
+			},
+		},
+		{
+			name: "mailgun_fails_sendgrid_succeeds",
+			setup: func(ctx context.Context, sg *MockEngineSendgrid, mg *MockEngineMailgun, db *dbhandler.MockDBHandler) {
+				mg.EXPECT().Send(ctx, e).Return("", fmt.Errorf("mailgun down"))
+				sg.EXPECT().Send(ctx, e).Return("sendgrid-ref", nil)
+				db.EXPECT().EmailUpdateProvider(ctx, e.ID, email.ProviderTypeSendgrid, "sendgrid-ref").Return(nil)
 			},
 		},
 		{
 			name: "both_providers_fail_leaves_email_untouched",
 			setup: func(ctx context.Context, sg *MockEngineSendgrid, mg *MockEngineMailgun, db *dbhandler.MockDBHandler) {
-				sg.EXPECT().Send(ctx, e).Return("", fmt.Errorf("sendgrid down"))
 				mg.EXPECT().Send(ctx, e).Return("", fmt.Errorf("mailgun down"))
+				sg.EXPECT().Send(ctx, e).Return("", fmt.Errorf("sendgrid down"))
 			},
 		},
 		{
-			name: "reference_update_failure_does_not_retry_next_provider",
+			name: "provider_update_failure_does_not_retry_next_provider",
 			setup: func(ctx context.Context, sg *MockEngineSendgrid, mg *MockEngineMailgun, db *dbhandler.MockDBHandler) {
-				sg.EXPECT().Send(ctx, e).Return("sendgrid-ref", nil)
-				db.EXPECT().EmailUpdateProviderReferenceID(ctx, e.ID, "sendgrid-ref").Return(fmt.Errorf("db down"))
+				mg.EXPECT().Send(ctx, e).Return("mailgun-ref", nil)
+				db.EXPECT().EmailUpdateProvider(ctx, e.ID, email.ProviderTypeMailgun, "mailgun-ref").Return(fmt.Errorf("db down"))
 			},
 		},
 	}

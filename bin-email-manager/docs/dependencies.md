@@ -59,8 +59,8 @@ This service has **no SubscribeHandler** and subscribes to no external events. P
 | MySQL | Persistent storage for email records |
 | Redis | Email lookup cache |
 | RabbitMQ | RPC request queue + event publishing |
-| SendGrid API | Primary email delivery provider |
-| Mailgun API | Secondary email delivery provider (failover) |
+| Mailgun API | Primary email delivery provider |
+| SendGrid API | Secondary email delivery provider (failover) |
 
 ## Services That Depend on This Service
 

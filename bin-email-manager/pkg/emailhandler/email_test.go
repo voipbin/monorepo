@@ -68,7 +68,7 @@ func Test_Create(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("86e92dc4-0083-11f0-a8c4-0f10cc7d6102"),
 				},
 				ActiveflowID: uuid.FromStringOrNil("871bddaa-0083-11f0-8d2f-a32510551821"),
-				ProviderType: email.ProviderTypeSendgrid,
+				ProviderType: email.ProviderTypeNone,
 				Source:       defaultSource,
 				Destinations: []commonaddress.Address{
 					{
@@ -93,7 +93,7 @@ func Test_Create(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("86e92dc4-0083-11f0-a8c4-0f10cc7d6102"),
 				},
 				ActiveflowID: uuid.FromStringOrNil("871bddaa-0083-11f0-8d2f-a32510551821"),
-				ProviderType: email.ProviderTypeSendgrid,
+				ProviderType: email.ProviderTypeNone,
 				Source:       defaultSource,
 				Destinations: []commonaddress.Address{
 					{
@@ -149,8 +149,8 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().EmailGet(ctx, tt.responseUUID).Return(tt.expectEmail, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectEmail.CustomerID, email.EventTypeCreated, tt.expectEmail)
 
-			mockSendgrid.EXPECT().Send(ctx, tt.expectEmail).Return(tt.responseProviderReferenceID, nil)
-			mockDB.EXPECT().EmailUpdateProviderReferenceID(ctx, tt.expectEmail.ID, tt.responseProviderReferenceID).Return(nil)
+			mockMailgun.EXPECT().Send(ctx, tt.expectEmail).Return(tt.responseProviderReferenceID, nil)
+			mockDB.EXPECT().EmailUpdateProvider(ctx, tt.expectEmail.ID, email.ProviderTypeMailgun, tt.responseProviderReferenceID).Return(nil)
 
 			res, err := h.Create(ctx, tt.customerID, tt.activeflowID, tt.destinations, tt.subject, tt.content, tt.attachments)
 			if err != nil {
@@ -581,7 +581,7 @@ func Test_create(t *testing.T) {
 	}
 }
 
-func Test_UpdateProviderReferenceID(t *testing.T) {
+func Test_UpdateProvider(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -618,9 +618,9 @@ func Test_UpdateProviderReferenceID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().EmailUpdateProviderReferenceID(ctx, tt.id, tt.providerReferenceID).Return(nil)
+			mockDB.EXPECT().EmailUpdateProvider(ctx, tt.id, email.ProviderTypeMailgun, tt.providerReferenceID).Return(nil)
 
-			if errUpdate := h.UpdateProviderReferenceID(ctx, tt.id, tt.providerReferenceID); errUpdate != nil {
+			if errUpdate := h.UpdateProvider(ctx, tt.id, email.ProviderTypeMailgun, tt.providerReferenceID); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
 			}
 		})
@@ -854,7 +854,7 @@ func Test_Get_DBError(t *testing.T) {
 	}
 }
 
-func Test_UpdateProviderReferenceID_DBError(t *testing.T) {
+func Test_UpdateProvider_DBError(t *testing.T) {
 	tests := []struct {
 		name                string
 		id                  uuid.UUID
@@ -887,9 +887,9 @@ func Test_UpdateProviderReferenceID_DBError(t *testing.T) {
 			ctx := context.Background()
 			dbErr := errors.New("db error")
 
-			mockDB.EXPECT().EmailUpdateProviderReferenceID(ctx, tt.id, tt.providerReferenceID).Return(dbErr)
+			mockDB.EXPECT().EmailUpdateProvider(ctx, tt.id, email.ProviderTypeMailgun, tt.providerReferenceID).Return(dbErr)
 
-			err := h.UpdateProviderReferenceID(ctx, tt.id, tt.providerReferenceID)
+			err := h.UpdateProvider(ctx, tt.id, email.ProviderTypeMailgun, tt.providerReferenceID)
 			if err == nil {
 				t.Errorf("Expected error when update fails")
 			}
@@ -988,7 +988,7 @@ func Test_Create_NormalizesDestinations(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("86e92dc4-0083-11f0-a8c4-0f10cc7d6102"),
 				},
 				ActiveflowID: uuid.FromStringOrNil("871bddaa-0083-11f0-8d2f-a32510551821"),
-				ProviderType: email.ProviderTypeSendgrid,
+				ProviderType: email.ProviderTypeNone,
 				Source:       defaultSource,
 				Destinations: []commonaddress.Address{
 					{
@@ -1007,7 +1007,7 @@ func Test_Create_NormalizesDestinations(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("86e92dc4-0083-11f0-a8c4-0f10cc7d6102"),
 				},
 				ActiveflowID: uuid.FromStringOrNil("871bddaa-0083-11f0-8d2f-a32510551821"),
-				ProviderType: email.ProviderTypeSendgrid,
+				ProviderType: email.ProviderTypeNone,
 				Source:       defaultSource,
 				Destinations: []commonaddress.Address{
 					{
@@ -1059,8 +1059,8 @@ func Test_Create_NormalizesDestinations(t *testing.T) {
 			mockDB.EXPECT().EmailGet(ctx, tt.responseUUID).Return(tt.expectEmail, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectEmail.CustomerID, email.EventTypeCreated, tt.expectEmail)
 
-			mockSendgrid.EXPECT().Send(ctx, tt.expectEmail).Return(tt.responseProviderReferenceID, nil)
-			mockDB.EXPECT().EmailUpdateProviderReferenceID(ctx, tt.expectEmail.ID, tt.responseProviderReferenceID).Return(nil)
+			mockMailgun.EXPECT().Send(ctx, tt.expectEmail).Return(tt.responseProviderReferenceID, nil)
+			mockDB.EXPECT().EmailUpdateProvider(ctx, tt.expectEmail.ID, email.ProviderTypeMailgun, tt.responseProviderReferenceID).Return(nil)
 
 			res, err := h.Create(ctx, tt.customerID, tt.activeflowID, tt.destinations, tt.subject, tt.content, tt.attachments)
 			if err != nil {

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-email-manager/models/email"
+	mmailgun "monorepo/bin-email-manager/models/mailgun"
 	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
 	"time"
 
@@ -75,6 +76,11 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 	}
 
 	message.AddHeader("X-Voipbin-Message-Id", m.ID.String())
+
+	// the webhook events return the user variables, not the custom headers.
+	if errVar := message.AddVariable(mmailgun.UserVariableMessageID, m.ID.String()); errVar != nil {
+		return "", errors.Wrapf(errVar, "could not add the message id variable. email_id: %s", m.ID)
+	}
 	for _, a := range m.Attachments {
 		filename, data, err := h.getAttachment(ctx, &a)
 		if err != nil {

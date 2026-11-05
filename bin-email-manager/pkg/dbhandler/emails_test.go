@@ -289,7 +289,7 @@ func Test_EmailList(t *testing.T) {
 	}
 }
 
-func Test_EmailUpdateProviderReferenceID(t *testing.T) {
+func Test_EmailUpdateProvider(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -319,6 +319,7 @@ func Test_EmailUpdateProviderReferenceID(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("83bf937c-0010-11f0-98ab-f7954e7eb6d8"),
 				},
+				ProviderType:        email.ProviderTypeMailgun,
 				ProviderReferenceID: "8409255a-0010-11f0-8fe6-c7156be65533",
 				Source:              &commonaddress.Address{},
 				Destinations:        []commonaddress.Address{},
@@ -354,7 +355,7 @@ func Test_EmailUpdateProviderReferenceID(t *testing.T) {
 
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
-			if errUpdate := h.EmailUpdateProviderReferenceID(ctx, tt.id, tt.providerReferenceID); errUpdate != nil {
+			if errUpdate := h.EmailUpdateProvider(ctx, tt.id, email.ProviderTypeMailgun, tt.providerReferenceID); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
 			}
 
@@ -783,6 +784,147 @@ func Test_EmailList_WithToken(t *testing.T) {
 
 			if res == nil {
 				t.Errorf("Expected non-nil result")
+			}
+		})
+	}
+}
+
+func Test_EmailUpdateStatusFrom(t *testing.T) {
+	now := timePtr(time.Date(2025, 3, 13, 3, 22, 17, 995000000, time.UTC))
+
+	tests := []struct {
+		name string
+
+		currentStatus email.Status
+		nullStatus    bool
+		deleted       bool
+		newStatus     email.Status
+		from          []email.Status
+
+		expectChanged bool
+		expectStatus  email.Status
+	}{
+		{
+			name:          "advances_from_listed_status",
+			currentStatus: email.StatusInitiated,
+			newStatus:     email.StatusDelivered,
+			from:          []email.Status{email.StatusNone, email.StatusInitiated, email.StatusProcessed},
+			expectChanged: true,
+			expectStatus:  email.StatusDelivered,
+		},
+		{
+			name:          "advances_from_empty_status",
+			currentStatus: email.StatusNone,
+			newStatus:     email.StatusProcessed,
+			from:          []email.Status{email.StatusNone, email.StatusInitiated},
+			expectChanged: true,
+			expectStatus:  email.StatusProcessed,
+		},
+		{
+			name:          "advances_from_null_status",
+			currentStatus: email.StatusInitiated,
+			nullStatus:    true,
+			newStatus:     email.StatusProcessed,
+			from:          []email.Status{email.StatusNone, email.StatusInitiated},
+			expectChanged: true,
+			expectStatus:  email.StatusProcessed,
+		},
+		{
+			name:          "stale_event_does_not_move_back",
+			currentStatus: email.StatusDelivered,
+			newStatus:     email.StatusProcessed,
+			from:          []email.Status{email.StatusNone, email.StatusInitiated},
+			expectChanged: false,
+			expectStatus:  email.StatusDelivered,
+		},
+		{
+			name:          "same_status_is_not_changed",
+			currentStatus: email.StatusOpen,
+			newStatus:     email.StatusOpen,
+			from:          []email.Status{email.StatusNone, email.StatusInitiated},
+			expectChanged: false,
+			expectStatus:  email.StatusOpen,
+		},
+		{
+			name:          "legacy_dropped_is_not_replaced_by_bounce",
+			currentStatus: email.StatusDropped,
+			newStatus:     email.StatusBounce,
+			from:          []email.Status{email.StatusNone, email.StatusInitiated, email.StatusProcessed, email.StatusDeffered, email.StatusDelivered},
+			expectChanged: false,
+			expectStatus:  email.StatusDropped,
+		},
+		{
+			name:          "deleted_email_is_not_updated",
+			currentStatus: email.StatusInitiated,
+			deleted:       true,
+			newStatus:     email.StatusDelivered,
+			from:          []email.Status{email.StatusNone, email.StatusInitiated},
+			expectChanged: false,
+			expectStatus:  email.StatusInitiated,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
+			ctx := context.Background()
+
+			id := uuid.Must(uuid.NewV4())
+			e := &email.Email{
+				Identity: commonidentity.Identity{ID: id},
+				Status:   tt.currentStatus,
+			}
+
+			mockUtil.EXPECT().TimeNow().Return(now)
+			mockCache.EXPECT().EmailSet(ctx, gomock.Any())
+			if err := h.EmailCreate(ctx, e); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if tt.nullStatus {
+				if _, err := dbTest.ExecContext(ctx, "update email_emails set status = NULL where id = ?", id.Bytes()); err != nil {
+					t.Fatalf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+
+			if tt.deleted {
+				mockUtil.EXPECT().TimeNow().Return(now)
+				mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
+				if err := h.EmailDelete(ctx, id); err != nil {
+					t.Fatalf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+
+			mockUtil.EXPECT().TimeNow().Return(now)
+			if tt.expectChanged {
+				// the cache is refreshed only when the row changed
+				mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
+			}
+			changed, err := h.EmailUpdateStatusFrom(ctx, id, tt.newStatus, tt.from)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if changed != tt.expectChanged {
+				t.Errorf("Wrong changed. expect: %v, got: %v", tt.expectChanged, changed)
+			}
+
+			mockCache.EXPECT().EmailGet(gomock.Any(), id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
+			res, err := h.EmailGet(ctx, id)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res.Status != tt.expectStatus {
+				t.Errorf("Wrong status. expect: %s, got: %s", tt.expectStatus, res.Status)
 			}
 		})
 	}

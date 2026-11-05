@@ -13,12 +13,14 @@ func (h *emailHandler) Send(ctx context.Context, e *email.Email) {
 		"email_id": e.ID,
 	})
 
+	// mailgun is the primary provider, sendgrid is the fallback.
 	providers := []struct {
-		name    string
-		handler func(context.Context, *email.Email) (string, error)
+		name         string
+		providerType email.ProviderType
+		handler      func(context.Context, *email.Email) (string, error)
 	}{
-		{"sendgrid", h.engineSendgrid.Send},
-		{"mailgun", h.engineMailgun.Send},
+		{"mailgun", email.ProviderTypeMailgun, h.engineMailgun.Send},
+		{"sendgrid", email.ProviderTypeSendgrid, h.engineSendgrid.Send},
 	}
 
 	for _, p := range providers {
@@ -31,10 +33,10 @@ func (h *emailHandler) Send(ctx context.Context, e *email.Email) {
 		}
 		log.Infof("Email successfully sent via provider. provider_name: %s, provider_reference_id: %s", p.name, providerReferenceID)
 
-		if errUpdate := h.UpdateProviderReferenceID(ctx, e.ID, providerReferenceID); errUpdate != nil {
-			// we could not update the provider reference id
+		if errUpdate := h.UpdateProvider(ctx, e.ID, p.providerType, providerReferenceID); errUpdate != nil {
+			// we could not update the provider info
 			// but just log it and return
-			log.Errorf("could not update provider reference id. err: %v", errUpdate)
+			log.Errorf("could not update provider info. err: %v", errUpdate)
 		}
 		return
 	}

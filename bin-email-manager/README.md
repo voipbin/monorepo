@@ -11,11 +11,16 @@ The bin-email-manager supports webhook event reception to track email delivery s
 
 ## Supported Providers
 
-* SendGrid
+* Mailgun (primary)
+* SendGrid (fallback)
 
-For SendGrid, configure your webhook to point to the following endpoint:
+Configure the provider webhooks to point to the following endpoints:
+
+```Mailgun: https://hook.voipbin.net/v1.0/emails/mailgun```
 
 ```Sendgrid: https://hook.voipbin.net/v1.0/emails/sendgrid```
+
+For Mailgun, register the URL for the accepted, delivered, temporary failure, permanent failure, opened, clicked, unsubscribed and complained events. Opened and clicked events need open and click tracking enabled on the Mailgun domain.
 
 <!-- Updated dependencies: 2026-02-20 -->
 
