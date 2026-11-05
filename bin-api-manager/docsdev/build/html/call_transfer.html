@@ -6,9 +6,9 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Transfer Struct" href="transfer_struct_transfer.html"><link rel="prev" title="Overview" href="call_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>Transfer - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -388,6 +388,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_participant.html">AI Call Participant</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_tutorial.html">Tutorial</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_tutorial_prompt_proposal.html">Tutorial: Improve an AI Prompt from Audits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_tutorial_carrier_tracking.html">Tutorial: Package Tracking with a Carrier MCP Server</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="ai_voice_agent_integration.html">AI Voice Agent Integration</a><input aria-label="Toggle navigation of AI Voice Agent Integration" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
@@ -766,9 +767,9 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 <p>Send <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/calls/{id}/participants</span></code> with an <code class="docutils literal notranslate"><span class="pre">address</span></code> of type <code class="docutils literal notranslate"><span class="pre">extension</span></code>, whose <code class="docutils literal notranslate"><span class="pre">target</span></code> is the extension ID of the colleague (the <code class="docutils literal notranslate"><span class="pre">target</span></code> of the extension address returned by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/agents</span></code>). The extension must belong to the same customer as the call, and the call must be in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status and have exactly two parties.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">participants</span>
 <span class="p">{</span>
-    <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;c5e7f18c-fc5a-4520-8326-e534e2ca0b8f&quot;</span>
+    <span class="s2">"address"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"extension"</span><span class="p">,</span>
+        <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"c5e7f18c-fc5a-4520-8326-e534e2ca0b8f"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
