@@ -119,7 +119,7 @@ func New(timeoutSeconds int) (*Handler, error) {
 	}
 	return newHandler(options{
 		timeout:  time.Duration(timeoutSeconds) * time.Second,
-		adapters: []Adapter{newFedExAdapter(), NewUPS()},
+		adapters: []Adapter{newDHLAdapter(), newFedExAdapter(), NewUPS()},
 	})
 }
 

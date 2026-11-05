@@ -33,6 +33,7 @@ const (
 	maxDisplayLabelLen              = 50
 	maxDisplayTitleLen              = 200
 	maxDisplayDescriptionLen        = 1000
+	maxAttributionLen               = 80
 	redactedText                    = "[redacted]"
 
 	// resultNote is added to every result: a tracking number taken from a
@@ -96,9 +97,13 @@ type Result struct {
 	CarrierStatusCode *string           `json:"carrier_status_code"`
 	EventsTruncated   bool              `json:"events_truncated"`
 	Note              string            `json:"note"`
-	FetchedAt         string            `json:"fetched_at"`
-	Cached            bool              `json:"cached"`
-	Display           Display           `json:"display"`
+	// Attribution is a notice a carrier requires wherever its tracking data is
+	// shown to people. Only that carrier's adapter sets it, so the key is absent
+	// from every other carrier's result; it is added to the card description.
+	Attribution string  `json:"attribution,omitempty"`
+	FetchedAt   string  `json:"fetched_at"`
+	Cached      bool    `json:"cached"`
+	Display     Display `json:"display"`
 }
 
 var (
@@ -176,6 +181,7 @@ func (r *Result) finalize(carrier, number string, now time.Time) {
 	r.Carrier = carrier
 	r.TrackingNumber = number
 	r.Note = resultNote
+	r.Attribution = cleanStructured(r.Attribution, maxAttributionLen)
 	r.FetchedAt = now.UTC().Format(time.RFC3339)
 	r.Cached = false
 
@@ -281,9 +287,14 @@ func (r *Result) buildDisplay() Display {
 		add(label, value)
 	}
 
+	description := sanitizeText(r.StatusText, maxDisplayDescriptionLen)
+	if r.Attribution != "" {
+		description = strings.TrimSpace(description + " " + r.Attribution)
+	}
+
 	return Display{
 		Title:       cleanStructured(name+" package "+r.TrackingNumber, maxDisplayTitleLen),
-		Description: sanitizeText(r.StatusText, maxDisplayDescriptionLen),
+		Description: description,
 		Fields:      fields,
 	}
 }

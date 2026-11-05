@@ -231,3 +231,76 @@ func Test_Result_marshal_doesNotEscapeHTMLCharacters(t *testing.T) {
 		t.Errorf("unexpected encoding: %s", text)
 	}
 }
+
+func Test_Result_attribution_absentChangesNothing(t *testing.T) {
+	now := time.Date(2026, 2, 3, 4, 5, 6, 0, time.UTC)
+	r := &Result{Status: StatusInTransit, StatusText: "In transit"}
+	r.finalize("fake", "FAKE12345678", now)
+
+	text, err := r.marshal()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(text, "attribution") {
+		t.Errorf("a result without an attribution must not carry the key: %s", text)
+	}
+	if r.Display.Description != "In transit" {
+		t.Errorf("description changed for a carrier without an attribution: %q", r.Display.Description)
+	}
+	if len(r.Display.Fields) != 4 {
+		t.Errorf("the field count of the card must not change, got %d", len(r.Display.Fields))
+	}
+}
+
+func Test_Result_attribution_isShownOnTheCard(t *testing.T) {
+	now := time.Date(2026, 2, 3, 4, 5, 6, 0, time.UTC)
+	const notice = "Delivered by Example Group"
+
+	tests := []struct {
+		name         string
+		statusText   string
+		attribution  string
+		expectDesc   string
+		expectResult string
+	}{
+		{"with a status text", "In transit", notice, "In transit " + notice, notice},
+		{"no status text keeps no leading space", "", notice, notice, notice},
+		{"control characters are removed", "In transit", "Delivered\x00 by\nExample Group", "In transit Delivered by Example Group", "Delivered by Example Group"},
+		{"cut to 80 runes", "In transit", strings.Repeat("A", 100), "In transit " + strings.Repeat("A", 80), strings.Repeat("A", 80)},
+		{"blank is ignored", "In transit", "   ", "In transit", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &Result{Status: StatusInTransit, StatusText: tt.statusText, Attribution: tt.attribution}
+			r.finalize("fake", "FAKE12345678", now)
+
+			if r.Attribution != tt.expectResult {
+				t.Errorf("attribution = %q, expected %q", r.Attribution, tt.expectResult)
+			}
+			if r.Display.Description != tt.expectDesc {
+				t.Errorf("description = %q, expected %q", r.Display.Description, tt.expectDesc)
+			}
+
+			text, err := r.marshal()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := strings.Contains(text, `"attribution"`); got != (tt.expectResult != "") {
+				t.Errorf("attribution key present = %v in %s", got, text)
+			}
+		})
+	}
+}
+
+func Test_Result_attribution_staysInsideTheCardLimits(t *testing.T) {
+	now := time.Date(2026, 2, 3, 4, 5, 6, 0, time.UTC)
+	r := &Result{Status: StatusInTransit, StatusText: strings.Repeat("S", 400), Attribution: strings.Repeat("A", 400)}
+	r.finalize("fake", "FAKE12345678", now)
+
+	if n := len([]rune(r.Display.Description)); n > maxDisplayDescriptionLen {
+		t.Errorf("description has %d runes, the card limit is %d", n, maxDisplayDescriptionLen)
+	}
+	if !strings.HasSuffix(r.Display.Description, strings.Repeat("A", 80)) {
+		t.Errorf("the attribution must stay whole at the end of the description")
+	}
+}

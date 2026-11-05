@@ -305,3 +305,81 @@ func Test_guardInvalidDial_netHttpVariants(t *testing.T) {
 		}
 	}
 }
+
+// Test_productionTable_registration runs the registration checks against the
+// table the service really uses, so that the line of a carrier and the format
+// of its key are checked together.
+func Test_productionTable_registration(t *testing.T) {
+	customerID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+
+	table := mcpserver.DefaultCarrierTable()
+	for _, u := range table.AllowedURLs() {
+		t.Run("create "+u, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := newCarrierTestHandler(t, mockDB, mockNotify, table)
+
+			mockDB.EXPECT().McpServerCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().McpServerGet(gomock.Any(), gomock.Any()).Return(&mcpserver.McpServer{}, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), mcpserver.EventTypeCreated, gomock.Any())
+
+			entry, ok := table.InternalCarrier(u)
+			if !ok {
+				t.Fatalf("%s is not recognized by its own table", u)
+			}
+			// the format of each key is pinned here, not read from the table
+			wantCredential := map[string]mcpserver.CredentialFormat{
+				"dhl":   mcpserver.CredentialAPIKey,
+				"fedex": mcpserver.CredentialClientIDSecret,
+				"ups":   mcpserver.CredentialClientIDSecret,
+			}[entry.Carrier]
+			if entry.Credential != wantCredential {
+				t.Fatalf("the key format of %s is %v, want %v", entry.Carrier, entry.Credential, wantCredential)
+			}
+			secret := "key-without-a-colon"
+			if wantCredential == mcpserver.CredentialClientIDSecret {
+				secret = "id1:sec1"
+			}
+			if _, err := h.Create(context.Background(), customerID, "n", "d", u, mcpserver.StatusActive, mcpserver.AuthTypeBearer, "", secret); err != nil {
+				t.Fatalf("the url of an open carrier must register: %v", err)
+			}
+		})
+	}
+
+	badKeys := map[string]string{
+		"an inner space":     "KEY WITH SPACE",
+		"over the limit":     strings.Repeat("K", 513),
+		"a non ascii letter": "KEY\u00e9",
+		"a control char":     "KEY\x01",
+	}
+	for name, key := range badKeys {
+		t.Run("a bad DHL key: "+name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			h := newCarrierTestHandler(t, dbhandler.NewMockDBHandler(mc), notifyhandler.NewMockNotifyHandler(mc), table)
+
+			_, err := h.Create(context.Background(), customerID, "n", "d", "https://carrier.invalid/dhl", mcpserver.StatusActive, mcpserver.AuthTypeBearer, "", key)
+			ve := assertReasonAndMessage(t, err, "INVALID_MCP_SERVER_SECRET")
+			if strings.Contains(ve.Message, strings.TrimSpace(key)) {
+				t.Errorf("the message must not repeat the key")
+			}
+		})
+	}
+
+	t.Run("a url that is not canonical is refused with the allowed urls", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		h := newCarrierTestHandler(t, dbhandler.NewMockDBHandler(mc), notifyhandler.NewMockNotifyHandler(mc), table)
+
+		_, err := h.Create(context.Background(), customerID, "n", "d", "https://carrier.invalid/dhl/", mcpserver.StatusActive, mcpserver.AuthTypeBearer, "", "key")
+		ve := assertReasonAndMessage(t, err, "INVALID_MCP_SERVER_URL")
+		if !strings.HasPrefix(ve.Message, "url must be one of: ") || !strings.Contains(ve.Message, "https://carrier.invalid/dhl") {
+			t.Errorf("message = %q", ve.Message)
+		}
+	})
+}
