@@ -195,6 +195,8 @@ Tool execution flow:
 3. `AIcallHandler.ToolHandle()` dispatches to the appropriate manager service
 4. Result returned to Pipecat → LLM context
 
+**Carrier tracking servers.** An MCP server whose `url` is `https://carrier.invalid/<carrier>` is a built-in carrier adapter. The table of open carriers is `mcpserver.CarrierTable` (`models/mcpserver/internal.go`): the path, the carrier name and the format of the saved key (`CLIENT_ID:CLIENT_SECRET` or a single key, stored as the server's `bearer` secret). `IsReservedHost` looks at the host only; `CarrierTable.InternalCarrier` accepts only the canonical form (https, no port, query, fragment, user info or encoded path). The production table is empty. `Credential` prints as `[redacted]` in every format and encoding. See `docs/operations.md` for the limits.
+
 ## Real-Time Audio Architecture
 
 ```

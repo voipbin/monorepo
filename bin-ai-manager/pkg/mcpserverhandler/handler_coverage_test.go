@@ -411,7 +411,7 @@ func Test_NewMcpServerHandler(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			res, err := NewMcpServerHandler(notifyhandler.NewMockNotifyHandler(mc), dbhandler.NewMockDBHandler(mc), tt.keys)
+			res, err := NewMcpServerHandler(notifyhandler.NewMockNotifyHandler(mc), dbhandler.NewMockDBHandler(mc), tt.keys, mcpserver.DefaultCarrierTable())
 			if tt.expectErr {
 				if err == nil || res != nil {
 					t.Errorf("expected error and nil handler, got %v / %v", res, err)

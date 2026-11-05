@@ -54,6 +54,10 @@ type mcpServerHandler struct {
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
 	crypto        *SecretCrypto
+
+	// carrierTable lists the reserved urls that route to a built-in carrier
+	// adapter. A reserved url that is not in it is refused at registration.
+	carrierTable mcpserver.CarrierTable
 }
 
 // NewMcpServerHandler creates a new McpServerHandler. cryptoKeys is the raw
@@ -65,6 +69,7 @@ func NewMcpServerHandler(
 	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
 	cryptoKeys string,
+	carrierTable mcpserver.CarrierTable,
 ) (McpServerHandler, error) {
 	crypto, err := NewSecretCrypto(cryptoKeys)
 	if err != nil {
@@ -76,5 +81,6 @@ func NewMcpServerHandler(
 		notifyHandler: notifyHandler,
 		db:            db,
 		crypto:        crypto,
+		carrierTable:  carrierTable,
 	}, nil
 }
