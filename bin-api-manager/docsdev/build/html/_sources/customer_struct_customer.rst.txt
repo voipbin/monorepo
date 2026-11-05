@@ -59,7 +59,7 @@ Customer
   - ``active``: Normal operation, fully verified.
   - ``frozen``: Deletion scheduled, 30-day grace period (or immediate deletion in progress).
   - ``deleted``: Permanently deleted, PII anonymized.
-  - ``expired``: Unverified signup expired.
+  - ``expired``: Unverified signup expired. Still not verified once at least 30 days have passed since expiry, the account becomes ``deleted``.
 
 * ``tm_deletion_scheduled`` (String, ISO 8601, nullable): Timestamp when the account is scheduled for permanent deletion. Set when the account transitions to ``frozen`` status. ``null`` if no deletion is scheduled.
 * ``tm_create`` (String, ISO 8601): Timestamp when the customer was created.

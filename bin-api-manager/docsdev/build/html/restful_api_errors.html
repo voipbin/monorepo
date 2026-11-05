@@ -689,7 +689,7 @@
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ACCOUNT_EXPIRED</span></code></p></td>
 <td><p>403</p></td>
-<td><p>The customer account expired because its email address was never verified. Call <code class="docutils literal notranslate"><span class="pre">error.details[0].recovery_endpoint</span></code> (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code>) to request a new verification email; if that is refused, contact support. Also returned by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> for the same account, so a client can handle both identically.</p></td>
+<td><p>The customer account expired because its email address was never verified. Call <code class="docutils literal notranslate"><span class="pre">error.details[0].recovery_endpoint</span></code> (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code>) to request a new verification email (possible for at least 30 days after the account expired, after which the account is deleted); if that is refused, contact support. Also returned by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> for the same account, so a client can handle both identically.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ACCOUNT_FROZEN</span></code></p></td>
 <td><p>403</p></td>

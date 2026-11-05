@@ -48,7 +48,7 @@ The `listenhandler` consumes from queue `bin-manager.customer-manager.request` a
 | POST | `/v1/customers/signup` | New customer self-registration |
 | POST | `/v1/customers/email_verify` | Email verification callback |
 | POST | `/v1/customers/email_verify_resend` | Re-issue and re-send the signup verification email |
-| POST | `/v1/customers/cleanup_unverified` | Sweep endpoint: expire unverified customers past `unverifiedMaxAge` (invoked by schedule-manager cron, replaces the old in-process ticker) |
+| POST | `/v1/customers/cleanup_unverified` | Sweep endpoint, two steps that both always run: expire unverified `initial` customers past `unverifiedMaxAge`, then purge (anonymize PII, set `tm_delete`, publish `customer_deleted`) expired unverified customers past `expiredRetention`, at most 100 per step. The response is `{"expired": n, "purged": m}`. Invoked by schedule-manager cron every 15 minutes |
 | POST | `/v1/customers/cleanup_frozen_expired` | Sweep endpoint: anonymize PII and publish `customer_deleted` for frozen customers past the grace period (invoked by schedule-manager cron, replaces the old in-process ticker) |
 | POST | `/v1/customers/{uuid}/freeze` | Freeze customer account |
 | POST | `/v1/customers/{uuid}/recover` | Recover frozen customer |

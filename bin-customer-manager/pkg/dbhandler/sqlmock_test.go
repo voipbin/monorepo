@@ -92,6 +92,13 @@ func Test_sqlmock_rowsAffectedError(t *testing.T) {
 			},
 		},
 		{
+			name:   "customer anonymize expired unverified",
+			expect: "UPDATE customer_customers",
+			call: func(h *handler) error {
+				return h.CustomerAnonymizeExpiredUnverified(context.Background(), testSQLMockCustomerID, "anon", "anon@example.com")
+			},
+		},
+		{
 			name:   "customer anonymize",
 			expect: "UPDATE customer_customers",
 			call: func(h *handler) error {
@@ -278,6 +285,27 @@ func Test_sqlmock_listErrors(t *testing.T) {
 			expect: "could not get data. CustomerListFrozenExpired",
 			call: func(h *handler) error {
 				_, err := h.CustomerListFrozenExpired(context.Background(), curTime)
+				return err
+			},
+		},
+		{
+			name:   "expired unverified list, row does not match the model",
+			table:  "customer_customers",
+			rows:   mismatchedRows(),
+			expect: "could not get data. CustomerListExpiredUnverified",
+			call: func(h *handler) error {
+				_, err := h.CustomerListExpiredUnverified(context.Background(), curTime, 100)
+				return err
+			},
+		},
+		{
+			name:     "expired unverified list, row iteration error",
+			table:    "customer_customers",
+			rows:     sqlmock.NewRows([]string{"id"}).AddRow([]byte{0x01}).RowError(0, errTestSQLMock),
+			expect:   "rows iteration error. CustomerListExpiredUnverified",
+			expectIs: errTestSQLMock,
+			call: func(h *handler) error {
+				_, err := h.CustomerListExpiredUnverified(context.Background(), curTime, 100)
 				return err
 			},
 		},

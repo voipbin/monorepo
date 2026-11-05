@@ -116,6 +116,20 @@ func (mr *MockDBHandlerMockRecorder) AccesskeyUpdate(ctx, id, fields any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyUpdate", reflect.TypeOf((*MockDBHandler)(nil).AccesskeyUpdate), ctx, id, fields)
 }
 
+// CustomerAnonymizeExpiredUnverified mocks base method.
+func (m *MockDBHandler) CustomerAnonymizeExpiredUnverified(ctx context.Context, id uuid.UUID, anonName, anonEmail string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerAnonymizeExpiredUnverified", ctx, id, anonName, anonEmail)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CustomerAnonymizeExpiredUnverified indicates an expected call of CustomerAnonymizeExpiredUnverified.
+func (mr *MockDBHandlerMockRecorder) CustomerAnonymizeExpiredUnverified(ctx, id, anonName, anonEmail any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerAnonymizeExpiredUnverified", reflect.TypeOf((*MockDBHandler)(nil).CustomerAnonymizeExpiredUnverified), ctx, id, anonName, anonEmail)
+}
+
 // CustomerAnonymizePII mocks base method.
 func (m *MockDBHandler) CustomerAnonymizePII(ctx context.Context, id uuid.UUID, anonName, anonEmail string) error {
 	m.ctrl.T.Helper()
@@ -228,6 +242,21 @@ func (m *MockDBHandler) CustomerList(ctx context.Context, size uint64, token str
 func (mr *MockDBHandlerMockRecorder) CustomerList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerList", reflect.TypeOf((*MockDBHandler)(nil).CustomerList), ctx, size, token, filters)
+}
+
+// CustomerListExpiredUnverified mocks base method.
+func (m *MockDBHandler) CustomerListExpiredUnverified(ctx context.Context, updatedBefore time.Time, limit uint64) ([]*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerListExpiredUnverified", ctx, updatedBefore, limit)
+	ret0, _ := ret[0].([]*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerListExpiredUnverified indicates an expected call of CustomerListExpiredUnverified.
+func (mr *MockDBHandlerMockRecorder) CustomerListExpiredUnverified(ctx, updatedBefore, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerListExpiredUnverified", reflect.TypeOf((*MockDBHandler)(nil).CustomerListExpiredUnverified), ctx, updatedBefore, limit)
 }
 
 // CustomerListFrozenExpired mocks base method.

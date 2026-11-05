@@ -702,7 +702,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">active</span></code>: Normal operation, fully verified.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">frozen</span></code>: Deletion scheduled, 30-day grace period (or immediate deletion in progress).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">deleted</span></code>: Permanently deleted, PII anonymized.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">expired</span></code>: Unverified signup expired.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">expired</span></code>: Unverified signup expired. Still not verified once at least 30 days have passed since expiry, the account becomes <code class="docutils literal notranslate"><span class="pre">deleted</span></code>.</p></li>
 </ul>
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_deletion_scheduled</span></code> (String, ISO 8601, nullable): Timestamp when the account is scheduled for permanent deletion. Set when the account transitions to <code class="docutils literal notranslate"><span class="pre">frozen</span></code> status. <code class="docutils literal notranslate"><span class="pre">null</span></code> if no deletion is scheduled.</p></li>

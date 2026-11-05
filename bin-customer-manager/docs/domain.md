@@ -53,6 +53,16 @@ The `POST /v1/customers/signup` flow:
 2. Sends verification email to `email_verify_base_url` (configured via flag)
 3. `POST /v1/customers/email_verify` confirms the token and marks customer `status = active`
 
+### Unverified Signup Lifecycle
+
+A signup that never verifies its email address follows this path, driven by the `cleanup_unverified` sweep (every 15 minutes):
+
+1. `initial` for 72 hours (`unverifiedMaxAge`), the window in which the verification link can be used or re-sent.
+2. `expired`. The row is kept live (no `tm_delete`). The customer can still recover with `POST /v1/customers/email_verify_resend` and the new link.
+3. After `expiredRetention` (30 days, counted from the last update of the row, which is normally the expiry time; any later update of the row postpones the purge) the purge step anonymizes the row in one UPDATE: name, email, phone number, address and webhook URI are replaced or cleared, `status = deleted`, `tm_delete` and `tm_update` are set. The row is not removed. `customer_deleted` is published once, built from the listed row with the anonymized values, and the other services clean up their data for the customer. After this the email address can be used for a new signup and an old verification link is rejected.
+
+The purge only selects `status = expired AND email_verified = false AND tm_delete IS NULL`, and the UPDATE repeats the same condition, so a customer that verified after the list query, a legacy expired row that already has `tm_delete`, and a row claimed by another replica are skipped without an event. Up to 100 customers are purged per run; a row whose anonymize fails with an unexpected error is logged and retried on the next run. The five anonymized fields are the same set that `CleanupFrozenExpired` anonymizes.
+
 ### Freeze / Recover Lifecycle
 
 Customers can be frozen (preventing resource creation) and recovered:
