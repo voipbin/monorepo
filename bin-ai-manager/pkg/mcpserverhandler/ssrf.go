@@ -12,6 +12,8 @@ import (
 	"syscall"
 	"time"
 	"unicode/utf8"
+
+	"monorepo/bin-ai-manager/models/mcpserver"
 )
 
 // McpHTTPResponseSizeCapBytes bounds the response body an SSRF-guarded MCP
@@ -109,7 +111,32 @@ func NewSSRFGuardedClient(timeout time.Duration) *http.Client {
 		Timeout: timeout,
 		Control: controlRejectDisallowedAddr,
 	}
-	return newGuardedClient(timeout, dialer.DialContext, &tls.Config{MinVersion: tls.VersionTLS12})
+	return newGuardedClient(timeout, guardInvalidDial(dialer.DialContext), &tls.Config{MinVersion: tls.VersionTLS12})
+}
+
+// errReservedHostDial is returned for a dial to a ".invalid" host.
+var errReservedHostDial = errors.New("refusing to dial a reserved .invalid host")
+
+// guardInvalidDial wraps dial so that it never connects to a ".invalid" host.
+//
+// The reserved carrier url (mcpserver.ReservedHost) names a built-in adapter,
+// not a server, so no request to it may reach the network whatever the
+// resolver does with the name (a search domain or wildcard DNS could resolve
+// it). The check sits on the dial address, not on the request url, because
+// net/http turns variants such as an ideographic full stop into ASCII only at
+// dial time. An address that cannot be split is refused too.
+func guardInvalidDial(dial func(ctx context.Context, network, addr string) (net.Conn, error)) func(ctx context.Context, network, addr string) (net.Conn, error) {
+	return func(ctx context.Context, network, addr string) (net.Conn, error) {
+		host, _, err := net.SplitHostPort(addr)
+		if err != nil {
+			return nil, errReservedHostDial
+		}
+		host = mcpserver.NormalizeHost(host)
+		if host == "invalid" || strings.HasSuffix(host, ".invalid") {
+			return nil, errReservedHostDial
+		}
+		return dial(ctx, network, addr)
+	}
 }
 
 // newGuardedClient assembles the client around a given dialer and TLS

@@ -577,7 +577,7 @@ func Test_NewMcpToolHandler(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			res, err := NewMcpToolHandler(dbhandler.NewMockDBHandler(mc), tt.keys, tt.timeoutSeconds, nil)
+			res, err := NewMcpToolHandler(dbhandler.NewMockDBHandler(mc), tt.keys, tt.timeoutSeconds, nil, mcpserver.DefaultCarrierTable(), nil)
 			if tt.expectErr {
 				if err == nil || res != nil {
 					t.Errorf("expected error and nil handler, got %v / %v", res, err)

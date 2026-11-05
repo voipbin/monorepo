@@ -404,16 +404,38 @@ func (h *aicallHandler) discoverMcpTools(ctx context.Context, a *ai.AI, keepCont
 
 	waitLeft := mcpDiscoverySlotWait
 
-	for i, serverID := range a.McpServerIDs {
-		if len(res) >= mcpMaxToolsPerResolution {
-			log.Warnf("Reached the limit of %d mcp tools per session; %d whitelisted servers were not listed.", mcpMaxToolsPerResolution, len(a.McpServerIDs)-i)
-			break
-		}
-
+	// Read every server first, so the servers that are built-in carrier
+	// adapters (a reserved url, never a network call) can be listed before
+	// the others. They need no slot, and an earlier slow server of the same
+	// AI must not spend the session start budget that their (instant) listing
+	// would otherwise find spent. The order among the other servers is kept.
+	type listed struct {
+		id     uuid.UUID
+		server *mcpserver.McpServer
+	}
+	reserved := make([]listed, 0, len(a.McpServerIDs))
+	others := make([]listed, 0, len(a.McpServerIDs))
+	for _, serverID := range a.McpServerIDs {
 		server, err := h.mcpServerHandler.Get(ctx, serverID)
 		if err != nil {
 			log.Warnf("Could not get mcp server, skipping its tools. mcp_server_id: %s, err: %v", serverID, err)
 			continue
+		}
+		if server != nil && mcpserver.IsReservedHost(server.URL) {
+			reserved = append(reserved, listed{id: serverID, server: server})
+		} else {
+			others = append(others, listed{id: serverID, server: server})
+		}
+	}
+	ordered := make([]listed, 0, len(reserved)+len(others))
+	ordered = append(ordered, reserved...)
+	ordered = append(ordered, others...)
+
+	for i, entry := range ordered {
+		serverID, server := entry.id, entry.server
+		if len(res) >= mcpMaxToolsPerResolution {
+			log.Warnf("Reached the limit of %d mcp tools per session; %d whitelisted servers were not listed.", mcpMaxToolsPerResolution, len(ordered)-i)
+			break
 		}
 
 		if ok, why := mcpServerIsUsable(server, a); !ok {
@@ -421,14 +443,21 @@ func (h *aicallHandler) discoverMcpTools(ctx context.Context, a *ai.AI, keepCont
 			continue
 		}
 
-		mcpTools, listed, err := h.listToolsWithSlot(ctx, serverID, &waitLeft)
-		if !listed {
-			if ctx.Err() != nil {
-				log.Warnf("Skipped an mcp server: the session start was cancelled while waiting to list it. mcp_server_id: %s", serverID)
-			} else {
-				log.Warnf("Skipped an mcp server: no discovery slot was free in time. mcp_server_id: %s", serverID)
+		var mcpTools []mcptoolhandler.McpTool
+		var err error
+		if mcpserver.IsReservedHost(server.URL) {
+			mcpTools, err = h.mcptoolHandler.ListTools(ctx, serverID)
+		} else {
+			var listedOK bool
+			mcpTools, listedOK, err = h.listToolsWithSlot(ctx, serverID, &waitLeft)
+			if !listedOK {
+				if ctx.Err() != nil {
+					log.Warnf("Skipped an mcp server: the session start was cancelled while waiting to list it. mcp_server_id: %s", serverID)
+				} else {
+					log.Warnf("Skipped an mcp server: no discovery slot was free in time. mcp_server_id: %s", serverID)
+				}
+				continue
 			}
-			continue
 		}
 		if err != nil {
 			log.Warnf("Could not list tools from mcp server, skipping. mcp_server_id: %s, err: %s", serverID, capErrText(err.Error(), 1024))

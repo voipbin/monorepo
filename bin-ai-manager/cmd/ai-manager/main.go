@@ -25,6 +25,7 @@ import (
 
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/migrations"
+	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/aiaudithandler"
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/aihandler"
@@ -33,6 +34,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/analysishandler"
 	"monorepo/bin-ai-manager/pkg/builderhandler"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
+	"monorepo/bin-ai-manager/pkg/carriertrackhandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
@@ -161,7 +163,10 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aiHandler := aihandler.NewAIHandler(requestHandler, notifyHandler, db, engineBaseKeyCrypto)
 	teamHandler := teamhandler.NewTeamHandler(requestHandler, notifyHandler, db)
 
-	mcpServerHandler, err := mcpserverhandler.NewMcpServerHandler(notifyHandler, db, cfg.McpSecretEncryptionKeys)
+	// No carrier is open yet: the table is empty, so every url on the reserved
+	// carrier host is refused at registration and closed at call time.
+	carrierTable := mcpserver.DefaultCarrierTable()
+	mcpServerHandler, err := mcpserverhandler.NewMcpServerHandler(notifyHandler, db, cfg.McpSecretEncryptionKeys, carrierTable)
 	if err != nil {
 		log.Errorf("Could not create mcp server handler. err: %v", err)
 		return err
@@ -182,7 +187,12 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		log.Errorf("Could not create mcp oauth handler. err: %v", err)
 		return err
 	}
-	mcptoolHandler, err := mcptoolhandler.NewMcpToolHandler(db, cfg.McpSecretEncryptionKeys, cfg.McpToolCallTimeoutSeconds, mcpOAuthHandler)
+	carrierHandler, err := carriertrackhandler.New(cfg.McpToolCallTimeoutSeconds)
+	if err != nil {
+		log.Errorf("Could not create carrier tracking handler. err: %v", err)
+		return err
+	}
+	mcptoolHandler, err := mcptoolhandler.NewMcpToolHandler(db, cfg.McpSecretEncryptionKeys, cfg.McpToolCallTimeoutSeconds, mcpOAuthHandler, carrierTable, carrierHandler)
 	if err != nil {
 		log.Errorf("Could not create mcp tool handler. err: %v", err)
 		return err

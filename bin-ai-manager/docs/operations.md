@@ -101,6 +101,10 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `aicall_tool_execute_total` | Counter | `tool_name` | Tool executions. For a built-in tool the label is its name; every MCP tool (`mcp_` prefix) is labeled the constant `mcp`, since the remote tool name is customer-controlled and unbounded |
 | `mcp_tool_advertised_total` | Counter | — | `ResolveMcpTools` resolutions that returned at least one MCP tool to pipecat |
 | `mcp_tool_call_outcome_total` | Counter | `outcome` | MCP tool dispatch outcomes: `success`, `error` (the remote server returned `isError: true`), `failed` (transport failure or a fail-closed gate refused the call) |
+| `ai_manager_carrier_lookup_total` | Counter | `carrier`, `outcome` | Carrier tracking lookups by outcome: `success`, `cache_hit`, an error code (`credential_not_configured`, `credential_malformed`, `credential_invalid`, `rate_limited`, `carrier_unavailable`, `service_busy`, `invalid_format`, `not_found`, `tool_unknown`) or `internal_error`. A call to a reserved-host server with no adapter behind it is not counted here; it is counted as `error` in `mcp_tool_call_outcome_total`. No customer, server, number or key is ever a label |
+| `ai_manager_carrier_lookup_duration_seconds` | Histogram | `carrier` | Duration of lookups that reached the adapter |
+| `ai_manager_carrier_inflight` | Gauge | `carrier` | Lookups running now |
+| `ai_manager_carrier_token_exchange_total` | Counter | `carrier`, `outcome` | Carrier access token exchanges by outcome |
 | `aicall_backstop_reply_total` | Counter | `result` | `pipecatcall_terminated` handling: conversation backstop replies (`sent`, `failed`, `send_failed`, `skipped_seen`, `skipped_terminated`), `skipped_voice` (neither a conversation nor a contact_case), `skipped_not_aicall`, and for contact_case turns that ended without an answer `timeout_notice_created`, `timeout_notice_failed`, `timeout_notice_skipped` (VOIP-1633; contact_case was counted under `skipped_voice` before) |
 | `aicall_idle_expired_total` | Counter | — | Sessions terminated due to idle timeout |
 | `aicall_insight_session_refresh_total` | Counter | `result` | Insight Case panel reopens evaluated for a session refresh, by outcome: `kept` (the denominator: still live, disabled, not an Insight AI, or not an AI assistance), `refreshed` (a new session started), `failed` (the previous session was kept because the prompt could not be resolved or the write failed) |
@@ -130,6 +134,25 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `connect` | Gauge | — | Active connections |
 | `conversation_reply_send_total` | Counter | — | Conversation replies sent |
 | `message_send` | Counter | — | Messages dispatched |
+
+### Carrier tracking adapters (VOIP-1677)
+
+An MCP server whose url is on the reserved host `carrier.invalid` (for example `https://carrier.invalid/<carrier>`) is a built-in carrier adapter, not a remote server. `mcptoolhandler` answers its `tools/list` and `tools/call` in the same process and never opens a connection to it; the guarded dialer also refuses every `.invalid` host as a second line. The carriers that are open are the lines of `mcpserver.DefaultCarrierTable()` together with the adapters registered in `pkg/carriertrackhandler`; both are empty until a carrier is added, and removing a carrier's line and adapter closes it. For a reserved url that is not in the table, registration is refused (`INVALID_MCP_SERVER_URL`) and an existing record answers a call with a fixed "integration is not available" text.
+
+Every limit is per process, not per platform. None of them is measured yet; they are starting values.
+
+| Limit | Value | Behaviour |
+|-------|-------|-----------|
+| Concurrent lookups per carrier | 2 | The next call is refused at once with `service_busy`; it does not wait |
+| Key cooldown | 10 minutes for a rejected key, 1 minute for `rate_limited` or an adapter's short block | The same (customer, carrier, key) gets the same error without a carrier call; a re-entered key is tried at once. At most 256 entries per carrier |
+| Time budget | the tool call timeout (or what is left of the caller's context), minus a 2 second reserve | Under 1 second left: no carrier call, `carrier_unavailable`. A carrier answer that arrives after the budget is discarded and nothing is stored |
+| Result cache | 120 seconds, 256 entries, 16 KiB per entry | Keyed by customer, carrier, key and number; the 256 entries are shared by all customers of the process. Only results, `not_found` and `invalid_format` are cached |
+| Token cache | `expires_in` minus 60 seconds, at most 1 hour, 128 entries, 4 KiB per token | A token over the size, or without a usable lifetime, is not cached |
+| Response body | 1 MiB unless the adapter sets less; 64 KiB for a token response | A longer body fails the lookup instead of being cut |
+
+Not adopted, with the signal that would change that: a per (customer, carrier) concurrency limit (one customer's calls refusing another customer's with `service_busy`), and blocking all token exchanges of a carrier after a 429 (repeated 429 answers in `ai_manager_carrier_token_exchange_total`).
+
+What reaches the model is either the allow-list result (no recipient, sender, address, signature or payment field exists in it) or one of the fixed texts of `carriertrackhandler.Message`. Carrier answers, keys and tracking numbers are not written to logs or error texts.
 
 ## Database Migrations
 

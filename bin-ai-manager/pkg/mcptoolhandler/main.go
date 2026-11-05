@@ -14,6 +14,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/mcpoauthhandler"
 	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
@@ -79,6 +80,12 @@ type mcpToolHandler struct {
 	// address the SSRF guard correctly rejects in real traffic) without
 	// weakening the guard used at runtime.
 	newClient func(timeout time.Duration) *http.Client
+
+	// carrierTable and carriers route a server on the reserved carrier host
+	// (mcpserver.ReservedHost) to a built-in adapter instead of the network.
+	// carriers may be nil; a reserved-host server is then unavailable.
+	carrierTable mcpserver.CarrierTable
+	carriers     CarrierHandler
 }
 
 // NewMcpToolHandler creates a new McpToolHandler. cryptoKeys is the raw
@@ -87,8 +94,9 @@ type mcpToolHandler struct {
 // tools/list or tools/call, handshake included, not each request within it;
 // the session close may run up to sessionCloseFloor past it. oauthHandler resolves valid access
 // tokens for AuthTypeOAuth servers (design §8); pass nil only in tests
-// that don't exercise OAuth servers.
-func NewMcpToolHandler(db dbhandler.DBHandler, cryptoKeys string, timeoutSeconds int, oauthHandler mcpoauthhandler.McpOAuthHandler) (McpToolHandler, error) {
+// that don't exercise OAuth servers. carrierTable and carriers route a server
+// on the reserved carrier host to a built-in adapter; carriers may be nil.
+func NewMcpToolHandler(db dbhandler.DBHandler, cryptoKeys string, timeoutSeconds int, oauthHandler mcpoauthhandler.McpOAuthHandler, carrierTable mcpserver.CarrierTable, carriers CarrierHandler) (McpToolHandler, error) {
 	crypto, err := mcpserverhandler.NewSecretCrypto(cryptoKeys)
 	if err != nil {
 		return nil, err
@@ -104,5 +112,7 @@ func NewMcpToolHandler(db dbhandler.DBHandler, cryptoKeys string, timeoutSeconds
 		timeout:      time.Duration(timeoutSeconds) * time.Second,
 		oauthHandler: oauthHandler,
 		newClient:    mcpserverhandler.NewSSRFGuardedClient,
+		carrierTable: carrierTable,
+		carriers:     carriers,
 	}, nil
 }

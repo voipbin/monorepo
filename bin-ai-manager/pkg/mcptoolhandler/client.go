@@ -219,6 +219,12 @@ func (h *mcpToolHandler) ListTools(ctx context.Context, serverID uuid.UUID) ([]M
 		return nil, err
 	}
 
+	// A server on the reserved carrier host is a built-in adapter, not a
+	// remote server: it is answered here and never reaches the network.
+	if mcpserver.IsReservedHost(m.URL) {
+		return h.listCarrierTools(m)
+	}
+
 	result, err := h.doJSONRPCRequest(ctx, m, "tools/list", map[string]any{})
 	if err != nil {
 		return nil, fmt.Errorf("mcptoolhandler.ListTools: %w", err)
@@ -337,6 +343,10 @@ func (h *mcpToolHandler) CallTool(ctx context.Context, serverID uuid.UUID, toolN
 	}
 	if err := refuseDeleted("CallTool", m); err != nil {
 		return "", false, err
+	}
+
+	if mcpserver.IsReservedHost(m.URL) {
+		return h.callCarrierTool(ctx, m, toolName, argumentsJSON)
 	}
 
 	var args any

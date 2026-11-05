@@ -38,6 +38,9 @@ func (h *mcpServerHandler) Create(
 	if err := ValidateURL(url); err != nil {
 		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_URL", err.Error()).Wrap(err)
 	}
+	if err := h.checkCarrierURL(url); err != nil {
+		return nil, err
+	}
 
 	if status == "" {
 		status = mcpserver.StatusActive
@@ -58,6 +61,9 @@ func (h *mcpServerHandler) Create(
 			"INVALID_MCP_SERVER_AUTH_TYPE",
 			"auth_type \"oauth\" is set by completing the OAuth authorization flow, not directly",
 		)
+	}
+	if err := h.checkCarrierSecret(url, authType, secret); err != nil {
+		return nil, err
 	}
 
 	m := &mcpserver.McpServer{
@@ -198,6 +204,14 @@ func (h *mcpServerHandler) Update(
 		if err := ValidateURL(*url); err != nil {
 			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_URL", err.Error()).Wrap(err)
 		}
+		// Only a changed url is checked against the carrier table, so a
+		// record whose carrier was later removed can still be renamed or
+		// disabled by a client that re-sends every field.
+		if *url != live.URL {
+			if err := h.checkCarrierURL(*url); err != nil {
+				return nil, err
+			}
+		}
 	}
 	if status != nil && !status.IsValid() {
 		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_STATUS", "invalid status: "+string(*status))
@@ -241,6 +255,23 @@ func (h *mcpServerHandler) Update(
 			"MCP_SERVER_OAUTH_URL_IMMUTABLE",
 			"url cannot be changed while auth_type is oauth; disconnect (move auth_type out of oauth) first",
 		)
+	}
+
+	// A secret in the request is checked against the format of the carrier url
+	// the record will have. A request that sends no secret (a url or auth_type
+	// change alone) keeps the stored one unchecked; the carrier adapter checks
+	// it again when the tool is called.
+	if secret != nil {
+		effectiveURL, effectiveAuth := live.URL, live.AuthType
+		if url != nil {
+			effectiveURL = *url
+		}
+		if authType != nil {
+			effectiveAuth = *authType
+		}
+		if err := h.checkCarrierSecret(effectiveURL, effectiveAuth, *secret); err != nil {
+			return nil, err
+		}
 	}
 
 	fields := map[mcpserver.Field]any{}
