@@ -68,6 +68,7 @@ type CustomerHandler interface {
 
 	CleanupUnverified(ctx context.Context) (int, error)
 	CleanupFrozenExpired(ctx context.Context) (int, error)
+	PurgeExpiredUnverified(ctx context.Context) (int, error)
 }
 
 type customerHandler struct {

@@ -450,12 +450,88 @@ func (h *handler) CustomerListFrozenExpired(ctx context.Context, expiredBefore t
 	return res, nil
 }
 
+// CustomerListExpiredUnverified returns expired customers that never verified
+// their email address, were last updated before updatedBefore, and are not
+// soft-deleted (legacy rows with tm_delete are excluded). The oldest tm_update
+// comes first and at most limit rows are returned.
+func (h *handler) CustomerListExpiredUnverified(ctx context.Context, updatedBefore time.Time, limit uint64) ([]*customer.Customer, error) {
+	start := time.Now()
+	status := "error"
+	defer func() {
+		metricshandler.DBOperationTotal.WithLabelValues("list_expired_unverified", "customer", status).Inc()
+		metricshandler.DBOperationDuration.WithLabelValues("list_expired_unverified", "customer").Observe(float64(time.Since(start).Milliseconds()))
+	}()
+
+	fields := commondatabasehandler.GetDBFields(&customer.Customer{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(customerTable).
+		Where(squirrel.Eq{string(customer.FieldStatus): string(customer.StatusExpired)}).
+		Where(squirrel.Eq{string(customer.FieldEmailVerified): false}).
+		Where(squirrel.Eq{string(customer.FieldTMDelete): nil}).
+		Where(squirrel.Lt{string(customer.FieldTMUpdate): updatedBefore}).
+		OrderBy(string(customer.FieldTMUpdate) + " ASC").
+		Limit(limit).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. CustomerListExpiredUnverified. err: %w", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CustomerListExpiredUnverified. err: %w", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	res := []*customer.Customer{}
+	for rows.Next() {
+		u, err := h.customerGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. CustomerListExpiredUnverified. err: %w", err)
+		}
+		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. CustomerListExpiredUnverified. err: %w", err)
+	}
+
+	status = "success"
+
+	return res, nil
+}
+
 // CustomerAnonymizePII anonymizes the customer's personally identifiable information.
 // Guarded on status='frozen' AND tm_delete IS NULL so a concurrent claimant
 // cannot double-fire the anonymization (and the customer_deleted publish that
 // follows it) — returns ErrNotFound when 0 rows are affected, whether because
 // the row genuinely does not exist or because the guard no longer matched.
 func (h *handler) CustomerAnonymizePII(ctx context.Context, id uuid.UUID, anonName, anonEmail string) error {
+	return h.customerAnonymize(ctx, id, "CustomerAnonymizePII", anonName, anonEmail, squirrel.And{
+		squirrel.Eq{string(customer.FieldStatus): string(customer.StatusFrozen)},
+		squirrel.Eq{string(customer.FieldTMDelete): nil},
+	})
+}
+
+// CustomerAnonymizeExpiredUnverified anonymizes an expired customer that never
+// verified its email address, in a single UPDATE and without a frozen step.
+// Guarded on status='expired' AND email_verified=false AND tm_delete IS NULL, so
+// a customer that verified after the caller listed it, a legacy row that
+// already has tm_delete, and a row claimed by a concurrent run all return
+// ErrNotFound.
+func (h *handler) CustomerAnonymizeExpiredUnverified(ctx context.Context, id uuid.UUID, anonName, anonEmail string) error {
+	return h.customerAnonymize(ctx, id, "CustomerAnonymizeExpiredUnverified", anonName, anonEmail, squirrel.And{
+		squirrel.Eq{string(customer.FieldStatus): string(customer.StatusExpired)},
+		squirrel.Eq{string(customer.FieldEmailVerified): false},
+		squirrel.Eq{string(customer.FieldTMDelete): nil},
+	})
+}
+
+// customerAnonymize replaces the PII of the customer and marks it deleted when
+// the given guard matches. It returns ErrNotFound when 0 rows are affected.
+func (h *handler) customerAnonymize(ctx context.Context, id uuid.UUID, caller, anonName, anonEmail string, guard squirrel.Sqlizer) error {
 	start := time.Now()
 	status := "error"
 	defer func() {
@@ -478,24 +554,23 @@ func (h *handler) CustomerAnonymizePII(ctx context.Context, id uuid.UUID, anonNa
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("CustomerAnonymizePII: prepare fields failed: %w", err)
+		return fmt.Errorf("%s: prepare fields failed: %w", caller, err)
 	}
 
 	sb := squirrel.Update(customerTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{string(customer.FieldID): id.Bytes()}).
-		Where(squirrel.Eq{string(customer.FieldStatus): string(customer.StatusFrozen)}).
-		Where(squirrel.Eq{string(customer.FieldTMDelete): nil}).
+		Where(guard).
 		PlaceholderFormat(squirrel.Question)
 
 	sqlStr, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("CustomerAnonymizePII: build SQL failed: %w", err)
+		return fmt.Errorf("%s: build SQL failed: %w", caller, err)
 	}
 
 	result, err := h.db.ExecContext(ctx, sqlStr, args...)
 	if err != nil {
-		return fmt.Errorf("CustomerAnonymizePII: exec failed: %w", err)
+		return fmt.Errorf("%s: exec failed: %w", caller, err)
 	}
 
 	rowsAffected, err := result.RowsAffected()

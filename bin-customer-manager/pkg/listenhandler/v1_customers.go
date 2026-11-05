@@ -126,22 +126,36 @@ func (h *listenHandler) processV1CustomersCleanupUnverifiedPost(ctx context.Cont
 	})
 	log.Debug("Executing processV1CustomersCleanupUnverifiedPost.")
 
-	expired, err := h.customerHandler.CleanupUnverified(ctx)
-	if err != nil {
-		log.Errorf("Could not cleanup unverified customers. err: %v", err)
-		return errorResponse(err), nil
+	// both steps always run: a failure of the first must not stop the purge of
+	// customers that are already past the retention period.
+	expired, errExpire := h.customerHandler.CleanupUnverified(ctx)
+	if errExpire != nil {
+		log.Errorf("Could not cleanup unverified customers. err: %v", errExpire)
+	}
+
+	purged, errPurge := h.customerHandler.PurgeExpiredUnverified(ctx)
+	if errPurge != nil {
+		log.Errorf("Could not purge expired unverified customers. err: %v", errPurge)
+	}
+
+	if errExpire != nil {
+		return errorResponse(errExpire), nil
+	}
+	if errPurge != nil {
+		return errorResponse(errPurge), nil
 	}
 
 	tmp := &response.V1ResponseCustomersCleanupUnverified{
 		Expired: expired,
+		Purged:  purged,
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.WithField("expired", expired).Debugf("Could not marshal the response message. err: %v", err)
+		log.WithFields(logrus.Fields{"expired": expired, "purged": purged}).Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.WithField("expired", expired).Debug("Sending result.")
+	log.WithFields(logrus.Fields{"expired": expired, "purged": purged}).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,

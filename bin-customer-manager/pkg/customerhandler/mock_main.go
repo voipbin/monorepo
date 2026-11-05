@@ -191,6 +191,21 @@ func (mr *MockCustomerHandlerMockRecorder) List(ctx, size, token, filters any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCustomerHandler)(nil).List), ctx, size, token, filters)
 }
 
+// PurgeExpiredUnverified mocks base method.
+func (m *MockCustomerHandler) PurgeExpiredUnverified(ctx context.Context) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PurgeExpiredUnverified", ctx)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PurgeExpiredUnverified indicates an expected call of PurgeExpiredUnverified.
+func (mr *MockCustomerHandlerMockRecorder) PurgeExpiredUnverified(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PurgeExpiredUnverified", reflect.TypeOf((*MockCustomerHandler)(nil).PurgeExpiredUnverified), ctx)
+}
+
 // Recover mocks base method.
 func (m *MockCustomerHandler) Recover(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()

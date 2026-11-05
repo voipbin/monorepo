@@ -13,7 +13,7 @@ Sign up via Admin Console
 5. Click the verification link in the email to verify your address.
 6. You will receive a welcome email with instructions to set your password.
 
-If the link has expired (verification links are valid for 24 hours, and an unverified signup is left open for 72 hours), the page it opens will offer to send you a new one. Enter your email address there and follow the fresh link.
+If the link has expired (verification links are valid for 24 hours, and an unverified signup is left open for 72 hours), the page it opens will offer to send you a new one. Enter your email address there and follow the fresh link. A signup that is still not verified at least 30 days after it expired is deleted, and the address can then be used to sign up again.
 
 Once your password is set, you can log in to the `admin console <https://admin.voipbin.net>`_ and start making API requests.
 
@@ -75,4 +75,4 @@ Troubleshooting
 
 * **Verification link expired / verification email never arrived:**
     * **Cause:** Verification tokens are valid for 24 hours, and the email may have been filtered or lost.
-    * **Fix:** Call ``POST /auth/email-verify-resend`` with the registered email address, or use the resend form on the page the expired link opens. An account that already expired for want of verification can still be recovered this way.
+    * **Fix:** Call ``POST /auth/email-verify-resend`` with the registered email address, or use the resend form on the page the expired link opens. An account that already expired for want of verification can still be recovered this way, for at least 30 days after it expired.

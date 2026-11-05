@@ -111,6 +111,8 @@ Auth & Account Lifecycle
                                     |    active      |     |    deleted     |
                                     +----------------+     +----------------+
 
+An ``expired`` account that is still not verified is moved to ``deleted`` by the cleanup job once at least 30 days have passed since it expired: its personal data is anonymized and the email address can be used for a new signup.
+
 For the full customer status lifecycle (including what gets cascade-deleted), see :ref:`Customer — Account Deletion Lifecycle <customer-main>`.
 
 
@@ -239,7 +241,7 @@ If the token has expired or was already used, the page reports that the link is 
 
 Email Verify Resend — ``POST /auth/email-verify-resend``
 ----------------------------------------------------------
-Issues a new verification token for an account whose original link expired or was never received, and emails it to the registered address. This is the recovery path out of the ``expired`` status: an account that missed the 72-hour verification window is not permanently lost.
+Issues a new verification token for an account whose original link expired or was never received, and emails it to the registered address. This is the recovery path out of the ``expired`` status: an account that missed the 72-hour verification window is not lost at once. The recovery is possible for at least 30 days after the account expired; after that the account is deleted and its email address can be used for a new signup.
 
 **Request body**
 
@@ -300,7 +302,7 @@ Response: ``{"username": "...", "token": "eyJ..."}``. The token is also set as a
    * - 400
      - Missing fields, malformed JSON, or invalid credentials. Credential failures return a **bare 400 with no response body** — a wrong password is deliberately not distinguished from an unknown username, to avoid a username-enumeration oracle. A failure to look up the account's status (see below) also returns this same bare ``400``.
    * - 403
-     - The credentials were correct, but the account's status forbids issuing a token: ``ACCOUNT_EXPIRED`` (email address was never verified, so the account was expired by the cleanup job) or ``ACCOUNT_DELETED``. Unlike the ``400`` above, these carry a full error envelope, and ``ACCOUNT_EXPIRED`` carries ``details[0].recovery_endpoint`` — byte-identical to what the ``/v1.0/*`` gate returns for the same account.
+     - The credentials were correct, but the account's status forbids issuing a token: ``ACCOUNT_EXPIRED`` (email address was never verified, so the account was expired by the cleanup job; it is deleted at least 30 days after it expired) or ``ACCOUNT_DELETED``. Unlike the ``400`` above, these carry a full error envelope, and ``ACCOUNT_EXPIRED`` carries ``details[0].recovery_endpoint`` — byte-identical to what the ``/v1.0/*`` gate returns for the same account.
 
 .. note:: **AI Implementation Hint — login can now fail on account status**
 
@@ -588,7 +590,7 @@ Self-service account freeze/deletion and recovery. Requires authentication (Toke
 
    The same middleware also rejects any authenticated request from a ``deleted`` customer with ``403 ACCOUNT_DELETED``. In the steady state this is unreachable — a deleted customer's agents/access keys should already have been soft-deleted by the ``customer_deleted`` cascade and fail earlier at authentication — but this is a deliberate second layer in case that cascade misses a resource, so credentials belonging to a deleted account can never keep working indefinitely. Unlike ``frozen``, ``deleted`` is not recoverable via ``/auth/unregister``.
 
-   An ``expired`` customer — signup completed but the email address was never verified, so the unverified-account cleanup job moved the account out of ``initial`` — is rejected the same way, with ``403 ACCOUNT_EXPIRED``. Its ``details[0]`` carries ``recovery_endpoint: "POST /auth/email-verify-resend"``, so a client can point the user at a new verification email without string-matching the message. ``initial`` is **not** blocked: it is the normal state during the 72-hour verification window. Note that requesting a resend requires the account to still have a live agent for the address; if it does not, direct the user to ``support@voipbin.net`` rather than telling them to sign up again, because an account expired under the current cleanup behaviour keeps its customer row live and will fail the signup duplicate-email check.
+   An ``expired`` customer — signup completed but the email address was never verified, so the unverified-account cleanup job moved the account out of ``initial`` — is rejected the same way, with ``403 ACCOUNT_EXPIRED``. Its ``details[0]`` carries ``recovery_endpoint: "POST /auth/email-verify-resend"``, so a client can point the user at a new verification email without string-matching the message. ``initial`` is **not** blocked: it is the normal state during the 72-hour verification window. Note that requesting a resend requires the account to still have a live agent for the address; if it does not, direct the user to ``support@voipbin.net`` rather than telling them to sign up again, because an account that has expired keeps its customer row live and will fail the signup duplicate-email check until the cleanup job deletes it, at least 30 days after it expired. After that deletion the address can be used for a new signup.
 
    The gate's customer lookup fails **open**: if the customer record cannot be fetched, the request is allowed through rather than blocked, because api-manager holds no customer cache and failing closed would take every ``/v1.0/*`` route down whenever customer-manager is unreachable. Occurrences are counted by the ``api_manager_account_status_lookup_failed_total`` metric, labelled by ``identity_type`` and ``error_class``. ``POST /auth/login`` deliberately does the opposite and fails closed — see the login section above.
 

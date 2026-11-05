@@ -866,6 +866,13 @@
 <span class="o">+----------+</span>            <span class="o">|</span>                 <span class="o">+----------+</span>
 <span class="o">|</span> <span class="n">expired</span>  <span class="o">|------------+</span>                 <span class="o">|</span>  <span class="n">active</span>  <span class="o">|</span>
 <span class="o">+----------+</span>                              <span class="o">+----------+</span>
+     <span class="o">|</span>
+     <span class="o">|</span> <span class="ow">not</span> <span class="n">verified</span> <span class="k">for</span> <span class="n">at</span>
+     <span class="o">|</span> <span class="n">least</span> <span class="mi">30</span> <span class="n">days</span>
+     <span class="n">v</span>
+<span class="o">+----------+</span>
+<span class="o">|</span> <span class="n">deleted</span>  <span class="o">|</span>
+<span class="o">+----------+</span>
 </pre></div>
 </div>
 <p><strong>Status Values</strong></p>
@@ -890,7 +897,7 @@
 <td><p>Permanently deleted. All PII anonymized, all resources removed.</p></td>
 </tr>
 <tr class="row-even"><td><p>expired</p></td>
-<td><p>Unverified signup expired. The account was never activated, but it is <strong>not</strong> a terminal state: requesting a new verification link via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code> and following it returns the account to <code class="docutils literal notranslate"><span class="pre">active</span></code>. See <a class="reference internal" href="auth_overview.html#auth-overview"><span class="std std-ref">Auth — Email Verify Resend</span></a>.</p></td>
+<td><p>Unverified signup expired. The account was never activated, but it is <strong>not</strong> a terminal state: requesting a new verification link via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code> and following it returns the account to <code class="docutils literal notranslate"><span class="pre">active</span></code>. This is possible for at least 30 days after the account expired; an account that is still not verified after that is moved to <code class="docutils literal notranslate"><span class="pre">deleted</span></code> and its personal data is anonymized. See <a class="reference internal" href="auth_overview.html#auth-overview"><span class="std std-ref">Auth — Email Verify Resend</span></a>.</p></td>
 </tr>
 </tbody>
 </table>

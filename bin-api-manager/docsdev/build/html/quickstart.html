@@ -663,7 +663,7 @@
 <li><p>Click the verification link in the email to verify your address.</p></li>
 <li><p>You will receive a welcome email with instructions to set your password.</p></li>
 </ol>
-<p>If the link has expired (verification links are valid for 24 hours, and an unverified signup is left open for 72 hours), the page it opens will offer to send you a new one. Enter your email address there and follow the fresh link.</p>
+<p>If the link has expired (verification links are valid for 24 hours, and an unverified signup is left open for 72 hours), the page it opens will offer to send you a new one. Enter your email address there and follow the fresh link. A signup that is still not verified at least 30 days after it expired is deleted, and the address can then be used to sign up again.</p>
 <p>Once your password is set, you can log in to the <a class="reference external" href="https://admin.voipbin.net">admin console</a> and start making API requests.</p>
 </section>
 <section id="sign-up-via-api">
@@ -726,7 +726,7 @@
 <li><dl class="simple">
 <dt><strong>Verification link expired / verification email never arrived:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> Verification tokens are valid for 24 hours, and the email may have been filtered or lost.</p></li>
-<li><p><strong>Fix:</strong> Call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code> with the registered email address, or use the resend form on the page the expired link opens. An account that already expired for want of verification can still be recovered this way.</p></li>
+<li><p><strong>Fix:</strong> Call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code> with the registered email address, or use the resend form on the page the expired link opens. An account that already expired for want of verification can still be recovered this way, for at least 30 days after it expired.</p></li>
 </ul>
 </dd>
 </dl>

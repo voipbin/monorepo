@@ -104,6 +104,21 @@ func Test_closedDatabase(t *testing.T) {
 			},
 		},
 		{
+			name:         "customer list expired unverified",
+			expectPhrase: "CustomerListExpiredUnverified",
+			call: func(h *handler) error {
+				_, err := h.CustomerListExpiredUnverified(context.Background(), curTime, 100)
+				return err
+			},
+		},
+		{
+			name:         "customer anonymize expired unverified",
+			expectPhrase: "CustomerAnonymizeExpiredUnverified",
+			call: func(h *handler) error {
+				return h.CustomerAnonymizeExpiredUnverified(context.Background(), customerID, "anon", "anon@example.com")
+			},
+		},
+		{
 			name:         "customer anonymize",
 			expectPhrase: "CustomerAnonymizePII",
 			call: func(h *handler) error {

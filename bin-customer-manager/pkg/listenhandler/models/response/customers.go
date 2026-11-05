@@ -7,9 +7,12 @@ package response
 // v1 response type struct for
 // /v1/customers/cleanup_unverified POST
 //
-// Wraps the bare expired-row count — a scalar with no domain type (style B).
+// Wraps the bare row counts (scalars with no domain type, style B). Expired is
+// the number of initial customers moved to expired, Purged the number of
+// expired customers anonymized after the retention period.
 type V1ResponseCustomersCleanupUnverified struct {
 	Expired int `json:"expired"`
+	Purged  int `json:"purged"`
 }
 
 // V1ResponseCustomersCleanupFrozenExpired is

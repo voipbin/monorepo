@@ -583,6 +583,8 @@ func Test_processV1CustomersCleanupUnverifiedPost(t *testing.T) {
 
 		responseExpired int
 		responseErr     error
+		responsePurged  int
+		responsePurgeEr error
 
 		expectRes *sock.Response
 	}{
@@ -595,15 +597,17 @@ func Test_processV1CustomersCleanupUnverifiedPost(t *testing.T) {
 
 			responseExpired: 3,
 			responseErr:     nil,
+			responsePurged:  2,
+			responsePurgeEr: nil,
 
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"expired":3}`),
+				Data:       []byte(`{"expired":3,"purged":2}`),
 			},
 		},
 		{
-			name: "handler error",
+			name: "expire error, purge still runs",
 			request: &sock.Request{
 				URI:    "/v1/customers/cleanup_unverified",
 				Method: sock.RequestMethodPost,
@@ -611,6 +615,40 @@ func Test_processV1CustomersCleanupUnverifiedPost(t *testing.T) {
 
 			responseExpired: 0,
 			responseErr:     fmt.Errorf("db error"),
+			responsePurged:  4,
+			responsePurgeEr: nil,
+
+			expectRes: &sock.Response{
+				StatusCode: 500,
+			},
+		},
+		{
+			name: "purge error, expire result is committed",
+			request: &sock.Request{
+				URI:    "/v1/customers/cleanup_unverified",
+				Method: sock.RequestMethodPost,
+			},
+
+			responseExpired: 3,
+			responseErr:     nil,
+			responsePurged:  0,
+			responsePurgeEr: fmt.Errorf("db error"),
+
+			expectRes: &sock.Response{
+				StatusCode: 500,
+			},
+		},
+		{
+			name: "both steps fail",
+			request: &sock.Request{
+				URI:    "/v1/customers/cleanup_unverified",
+				Method: sock.RequestMethodPost,
+			},
+
+			responseExpired: 0,
+			responseErr:     fmt.Errorf("db error"),
+			responsePurged:  0,
+			responsePurgeEr: fmt.Errorf("another db error"),
 
 			expectRes: &sock.Response{
 				StatusCode: 500,
@@ -634,6 +672,7 @@ func Test_processV1CustomersCleanupUnverifiedPost(t *testing.T) {
 			}
 
 			mockCustomer.EXPECT().CleanupUnverified(gomock.Any()).Return(tt.responseExpired, tt.responseErr)
+			mockCustomer.EXPECT().PurgeExpiredUnverified(gomock.Any()).Return(tt.responsePurged, tt.responsePurgeEr)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
