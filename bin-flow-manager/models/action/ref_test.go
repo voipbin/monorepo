@@ -26,6 +26,7 @@ import (
 func Test_EveryUUIDFieldIsTagged(t *testing.T) {
 	uuidType := reflect.TypeOf(uuid.UUID{})
 	mapUUIDType := reflect.TypeOf(map[string]uuid.UUID{})
+	uuidListType := reflect.TypeOf([]uuid.UUID{})
 	addrType := reflect.TypeOf(commonaddress.Address{})
 	addrPtrType := reflect.TypeOf(&commonaddress.Address{})
 	addrListType := reflect.TypeOf([]commonaddress.Address{})
@@ -46,7 +47,7 @@ func Test_EveryUUIDFieldIsTagged(t *testing.T) {
 					t.Errorf("%s.%s is an address field with ref tag %q; want `ref:\"address\"` (VOIP-1573)", optType.Name(), f.Name, tag)
 				}
 				continue
-			case uuidType, mapUUIDType:
+			case uuidType, mapUUIDType, uuidListType:
 				tag := f.Tag.Get("ref")
 				if tag != "action" && tag != "resource" {
 					t.Errorf("%s.%s is a %s field with ref tag %q; want `ref:\"action\"` or `ref:\"resource\"` (VOIP-1573)",

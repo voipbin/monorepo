@@ -5,7 +5,6 @@ import (
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
-	cvmedia "monorepo/bin-conversation-manager/models/media"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -180,7 +179,7 @@ func (h *server) PostServiceAgentsConversationsIdMessages(c *gin.Context, id str
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentConversationMessageSend(c.Request.Context(), a, target, req.Text, []cvmedia.Media{})
+	res, err := h.serviceHandler.ServiceAgentConversationMessageSend(c.Request.Context(), a, target, req.Text, convertConversationMedias(req.Medias))
 	if err != nil {
 		log.Errorf("Could not create a customer. err: %v", err)
 		abortWithServiceError(c, err)

@@ -37,7 +37,7 @@ Message
 * ``source`` (Object): The sending party of the message as an absolute address ``{type, target}``. Direction-independent: ``source`` is always the origin.
 * ``destination`` (Object): The receiving party of the message as an absolute address ``{type, target}``. Direction-independent: ``destination`` is always the target.
 * ``text`` (String): The message body text content.
-* ``medias`` (Array of Object): List of media attachments (images, videos, etc.) included with the message.
+* ``medias`` (Array of Object): List of media attachments included with the message. For a message sent to a conversation that sends SMS, each item's ``id`` is the storage file id of the attached file. See :ref:`Sending attachments <conversation-overview-mms>`.
 * ``tm_create`` (string, ISO 8601): Timestamp when the message was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last status update.
 * ``tm_delete`` (string, ISO 8601): Timestamp of deletion (soft delete).

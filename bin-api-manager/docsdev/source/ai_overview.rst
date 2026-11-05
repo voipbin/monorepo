@@ -313,7 +313,7 @@ Tool                      Description
 connect_call              Transfer or connect to another endpoint
 create_call               Place a new, independent outbound call
 send_email                Send an email message
-send_message              Send an SMS text message
+send_message              Send an SMS or MMS message
 stop_media                Stop currently playing media
 stop_service              End AI conversation (soft stop, flow continues)
 stop_flow                 Terminate entire flow (hard stop, call ends)

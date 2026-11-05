@@ -1077,13 +1077,18 @@ Parameters
                 },
                 ...
             ],
-            "text": "<string>"
+            "text": "<string>",
+            "medias": [
+                "<string>",
+                ...
+            ]
         }
     }
 
 * ``source`` (Object): Source address for the message. See :ref:`Address <common-struct-address-address>`. Must be a number you own, obtained from ``GET /numbers``.
 * ``destinations`` (Array of Object): Array of destination addresses. See :ref:`Address <common-struct-address-address>`.
 * ``text`` (String): Message text content. Supports ``${variable}`` substitution.
+* ``medias`` (Array of UUID, optional): Ids of the files to attach, returned from the ``POST /storage_files`` response (uploaded with ``type=media``). When the list is not empty the message is sent as an MMS. Without it (missing or an empty list) the message is an SMS. URLs are not accepted and ``${variable}`` substitution is not supported in this list. The limits, the owner check and the price are described in :ref:`Sending an MMS <message-overview-mms>`. If the files cannot be attached, the action fails and no message is sent.
 
 .. _flow-struct-action-mute:
 

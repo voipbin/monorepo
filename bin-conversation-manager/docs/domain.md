@@ -55,6 +55,8 @@ Caller → POST /v1/messages/create
     → messagehandler.CreateSend()
     → create Message record (direction=outgoing, status=progressing)
     → linehandler.Send() / whatsapphandler.Send() / smshandler.Send()
+      (smshandler: no medias → MessageV1MessageSend (SMS); medias → MessageV1MessageSendMMS with Media.ID as the storage file id.
+       A media without an id is rejected with MEDIA_ID_REQUIRED before the record is created. Other conversation types ignore medias.)
     → update Message status to done or failed
     → publish message_created event
 ```

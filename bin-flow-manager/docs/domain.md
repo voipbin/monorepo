@@ -63,3 +63,7 @@ stateDiagram-v2
     done --> [*]
     error --> [*]
 ```
+
+### message_send medias
+
+The `message_send` action option has an optional `medias` list of storage file ids (uploaded with type `media`). Without it the action calls `MessageV1MessageSend` (SMS). With a non empty list it calls `MessageV1MessageSendMMS`; message-manager checks the owner and the limits of the files. URLs are not accepted, and variable substitution does not apply to the list.

@@ -7117,7 +7117,7 @@ type ConversationManagerMedia struct {
 	// Example: photo_2026-01-15.jpg
 	Filename *string `json:"filename,omitempty"`
 
-	// Id The unique identifier of the media.
+	// Id The unique identifier of the media. In a request to a conversation that sends SMS, it is the storage file id of the file to attach, returned from the `POST /storage_files` response (uploaded with type `media`).
 	//
 	// Example: 550e8400-e29b-41d4-a716-446655440000
 	Id *string `json:"id,omitempty"`
@@ -8032,6 +8032,9 @@ type FlowManagerActionOptionHangup struct {
 type FlowManagerActionOptionMessageSend struct {
 	// Destinations List of destination addresses. Must contain at least one.
 	Destinations *[]CommonAddress `json:"destinations,omitempty"`
+
+	// Medias Optional. The ids of the files to attach, returned from the `POST /storage_files` response (uploaded with type `media`). When the list is not empty the message is sent as an MMS; the limits and the owner check of `POST /messages` apply. URLs are not accepted, and variables cannot be used here.
+	Medias *[]string `json:"medias,omitempty"`
 
 	// Source Contains source or destination detail info.
 	Source *CommonAddress `json:"source,omitempty"`
@@ -12154,6 +12157,7 @@ type GetConversationsIdMessagesParams struct {
 
 // PostConversationsIdMessagesJSONBody defines parameters for PostConversationsIdMessages.
 type PostConversationsIdMessagesJSONBody struct {
+	// Medias Files to attach. In a conversation that sends SMS, each item must carry the storage file id in `id` (the id returned from the `POST /storage_files` response, uploaded with type `media`); the message is then sent as an MMS and the limits of `POST /messages` apply. An item without a valid `id` is rejected with `MEDIA_ID_REQUIRED`. Other conversation types do not send attachments and ignore this list.
 	Medias []ConversationManagerMedia `json:"medias"`
 
 	// Text The message text.
@@ -13535,6 +13539,7 @@ type GetServiceAgentsConversationsIdMessagesParams struct {
 
 // PostServiceAgentsConversationsIdMessagesJSONBody defines parameters for PostServiceAgentsConversationsIdMessages.
 type PostServiceAgentsConversationsIdMessagesJSONBody struct {
+	// Medias Files to attach. In a conversation that sends SMS, each item must carry the storage file id in `id` (the id returned from the `POST /storage_files` response, uploaded with type `media`); the message is then sent as an MMS and the limits of `POST /messages` apply. An item without a valid `id` is rejected with `MEDIA_ID_REQUIRED`. Other conversation types do not send attachments and ignore this list.
 	Medias []ConversationManagerMedia `json:"medias"`
 
 	// Text The text content of the message.

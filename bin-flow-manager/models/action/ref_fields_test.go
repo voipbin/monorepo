@@ -57,6 +57,15 @@ func Test_RefFieldsOf(t *testing.T) {
 			},
 		},
 		{
+			name: "message_send has two address fields and a ref:resource uuid list (medias)",
+			ty:   TypeMessageSend,
+			want: []RefField{
+				{JSONName: "source", Kind: RefKindAddress},
+				{JSONName: "destinations", Kind: RefKindAddress, IsList: true},
+				{JSONName: "medias", Kind: RefKindResource, IsList: true},
+			},
+		},
+		{
 			name: "answer has no option fields at all",
 			ty:   TypeAnswer,
 			want: nil,

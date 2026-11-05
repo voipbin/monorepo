@@ -885,3 +885,56 @@ func Test_FlowCatalog_statesWhatTheFourthAuditFound(t *testing.T) {
 		t.Errorf("Wrong match. expect the midnight limit in the system prompt")
 	}
 }
+
+// The Flow AI Builder must never keep file ids that the model wrote: the files belong to the
+// customer, so the user attaches them later. medias is a ref:"resource" list. Each case has to
+// reach the clearing step on its own: a value that is not a uuid is dropped earlier by the strict
+// decode of the option, which would hide a missing clearing step.
+func Test_AssembleFlowDraft_MessageSendMediasAlwaysClearedEvenIfSupplied(t *testing.T) {
+	tests := []struct {
+		name   string
+		medias any
+	}{
+		{name: "valid file ids", medias: []any{"11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222"}},
+		{name: "a url", medias: []any{"https://example.com/a.jpg"}},
+		{name: "an empty list", medias: []any{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
+				{Label: "m", Type: string(fmaction.TypeMessageSend), Option: map[string]any{
+					"text":   "hi",
+					"medias": tt.medias,
+				}},
+			}}
+			draft, _ := AssembleFlowDraft(graph, allAllowed(fmaction.TypeMessageSend))
+			opt, _ := draft.Actions[0]["option"].(map[string]any)
+			if v, ok := opt["medias"]; ok {
+				t.Errorf("option.medias = %v, want cleared", v)
+			}
+			if opt["text"] != "hi" {
+				t.Errorf("option.text = %v, want it kept", opt["text"])
+			}
+		})
+	}
+}
+
+func Test_ReconstructGraph_messageSendMediasAreNotShownToTheModel(t *testing.T) {
+	idA := "aaaaaaaa-0000-4000-8000-000000000001"
+	draft := &flowbuilder.Draft{
+		Actions: []map[string]any{
+			{"id": idA, "type": "message_send", "option": map[string]any{
+				"text":   "hi",
+				"medias": []any{"11111111-1111-1111-1111-111111111111"},
+			}},
+		},
+		Labels: map[string]string{idA: "m"},
+	}
+	g := ReconstructGraph(draft)
+	if len(g.Nodes) != 1 {
+		t.Fatalf("Wrong match. expect: 1 node, got: %+v", g.Nodes)
+	}
+	if _, ok := g.Nodes[0].Option["medias"]; ok {
+		t.Errorf("Wrong match. expect: medias hidden, got: %v", g.Nodes[0].Option)
+	}
+}

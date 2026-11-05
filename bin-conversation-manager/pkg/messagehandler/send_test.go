@@ -465,7 +465,7 @@ func Test_Send_sendSMS(t *testing.T) {
 			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)
 
-			mockSms.EXPECT().Send(ctx, tt.conversation, tt.responseUUIDSmsID, tt.text).Return(nil)
+			mockSms.EXPECT().Send(ctx, tt.conversation, tt.responseUUIDSmsID, tt.text, tt.medias).Return(nil)
 
 			res, err := h.Send(ctx, tt.conversation, tt.text, tt.medias)
 			if err != nil {

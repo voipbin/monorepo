@@ -100,7 +100,7 @@ Only these tools exist. Do not promise anything that no tool provides (for examp
 - ` + "`stop_service`" + `: end this AI conversation and let the flow continue to its next step.
 In a flow, ` + "`stop_service`" + ` moves on to the next node, and ` + "`connect_call`" + ` transfers the caller instead.
 - ` + "`send_email`" + `: send an email to a recipient.
-- ` + "`send_message`" + `: send an SMS text message.
+- ` + "`send_message`" + `: send an SMS text message, or an MMS when it is given the ids of uploaded files.
 - ` + "`set_variables`" + `: save data such as answers or preferences to the flow context for later steps.
 - ` + "`case_create`" + `: create a CRM case for the current contact or interaction.
 

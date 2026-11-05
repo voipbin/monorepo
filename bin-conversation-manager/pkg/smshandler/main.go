@@ -8,6 +8,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"monorepo/bin-conversation-manager/models/conversation"
+	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/pkg/accounthandler"
 
 	"github.com/gofrs/uuid"
@@ -15,7 +16,7 @@ import (
 
 // SMSHandler defines
 type SMSHandler interface {
-	Send(ctx context.Context, cv *conversation.Conversation, messageID uuid.UUID, text string) error
+	Send(ctx context.Context, cv *conversation.Conversation, messageID uuid.UUID, text string, medias []media.Media) error
 }
 
 // smsHandler defines

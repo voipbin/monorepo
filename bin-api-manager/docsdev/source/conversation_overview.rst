@@ -248,6 +248,27 @@ When sending to a conversation, VoIPBin selects the best channel based on:
 3. Participant preferences
 4. Channel availability
 
+.. _conversation-overview-mms:
+
+Sending attachments (MMS)
++++++++++++++++++++++++++
+
+A conversation that sends SMS (a conversation of the SMS channel) can send files as an MMS. Upload each file first with ``POST /storage_files`` using ``type=media``, then list the returned file ids in ``medias`` when you send the message. Each item of ``medias`` carries the file id in ``id``:
+
+.. code::
+
+    {
+        "text": "Here is the photo you asked for.",
+        "medias": [
+            {"id": "3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"}
+        ]
+    }
+
+* Without ``medias`` (missing or an empty list) the message is an SMS, exactly as before.
+* The limits, the owner check, the delivery behavior and the price are the same as for ``POST /messages``. See :ref:`Sending an MMS <message-overview-mms>`.
+* An item without a valid ``id`` is rejected with the reason ``MEDIA_ID_REQUIRED`` and nothing is sent. A file that is unknown, belongs to another account or was not uploaded with ``type=media`` is rejected with the reason returned by the message service (see the error table of :ref:`Sending an MMS <message-overview-mms>`).
+* A request that is rejected for a missing ``id`` creates no message. A file that the message service rejects leaves the message in the conversation with the status ``failed``; check the conversation messages before you retry.
+* Conversations of other channels (for example LINE) do not send attachments. They ignore ``medias`` and send the text only.
 
 Receiving Messages
 ------------------

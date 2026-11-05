@@ -1780,7 +1780,11 @@ It checks the call’s status and if it matched with condition then move to the 
             <span class="p">},</span>
             <span class="o">...</span>
         <span class="p">],</span>
-        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+        <span class="s2">"medias"</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+            <span class="o">...</span>
+        <span class="p">]</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1789,6 +1793,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): Source address for the message. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>. Must be a number you own, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">destinations</span></code> (Array of Object): Array of destination addresses. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">text</span></code> (String): Message text content. Supports <code class="docutils literal notranslate"><span class="pre">${variable}</span></code> substitution.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">medias</span></code> (Array of UUID, optional): Ids of the files to attach, returned from the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage_files</span></code> response (uploaded with <code class="docutils literal notranslate"><span class="pre">type=media</span></code>). When the list is not empty the message is sent as an MMS. Without it (missing or an empty list) the message is an SMS. URLs are not accepted and <code class="docutils literal notranslate"><span class="pre">${variable}</span></code> substitution is not supported in this list. The limits, the owner check and the price are described in <a class="reference internal" href="message_overview.html#message-overview-mms"><span class="std std-ref">Sending an MMS</span></a>. If the files cannot be attached, the action fails and no message is sent.</p></li>
 </ul>
 </section>
 </section>
