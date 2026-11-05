@@ -299,14 +299,8 @@ func (h *Handler) call(ctx context.Context, a Adapter, call mcpserver.CarrierCal
 	}
 
 	// 6. The time budget: what is left of the call's time minus a reserve.
-	remaining := h.timeout
-	if dl, has := ctx.Deadline(); has {
-		if r := time.Until(dl); r < remaining {
-			remaining = r
-		}
-	}
-	budget := remaining - h.reserve
-	if ctx.Err() != nil || budget < h.minBudget {
+	budget, ok := h.budget(ctx)
+	if !ok {
 		return fail(CodeCarrierUnavailable)
 	}
 
@@ -352,19 +346,47 @@ func (h *Handler) call(ctx context.Context, a Adapter, call mcpserver.CarrierCal
 		return fail(CodeCarrierUnavailable)
 	}
 
+	return h.finish(res, cerr, lookupKeys{result: resultKey, cooldown: cooldownKey, token: tokenKey}, st, call, number, log)
+}
+
+type lookupKeys struct{ result, cooldown, token string }
+
+// budget returns how long one lookup may take: what is left of the caller's
+// time (or the configured timeout) minus a reserve. It is false when too little
+// is left to try.
+func (h *Handler) budget(ctx context.Context) (time.Duration, bool) {
+	remaining := h.timeout
+	if dl, has := ctx.Deadline(); has {
+		if r := time.Until(dl); r < remaining {
+			remaining = r
+		}
+	}
+	budget := remaining - h.reserve
+	if ctx.Err() != nil || budget < h.minBudget {
+		return 0, false
+	}
+	return budget, true
+}
+
+// finish turns what the adapter returned into an outcome and stores what may
+// be stored.
+func (h *Handler) finish(res *Result, cerr *CarrierError, keys lookupKeys, st *carrierState, call mcpserver.CarrierCall, number string, log *logrus.Entry) outcome {
+	carrier := call.Carrier
+	fail := func(code ErrCode) outcome { return h.fail(code, carrier, call.Credential) }
+
 	if cerr != nil {
 		if cerr.DropToken {
-			h.tokens.Delete(tokenKey)
+			h.tokens.Delete(keys.token)
 		}
 		code := cerr.Code
 		if !knownCode(code) {
 			code = CodeCarrierUnavailable
 		}
 		if cd := cerr.cooldown(); cd > 0 {
-			st.cooldowns.put(cooldownKey, code, cd)
+			st.cooldowns.put(keys.cooldown, code, cd)
 		}
 		if code == CodeNotFound || code == CodeInvalidFormat {
-			h.results.put(resultKey, cachedEntry{code: code}, resultTTL)
+			h.results.put(keys.result, cachedEntry{code: code}, resultTTL)
 		}
 		return fail(code)
 	}
@@ -380,7 +402,7 @@ func (h *Handler) call(ctx context.Context, a Adapter, call mcpserver.CarrierCal
 	if len(text) > h.resultMaxBytes {
 		log.Warnf("The result is over the cache entry limit and is not cached.")
 	} else {
-		h.results.put(resultKey, cachedEntry{result: res}, resultTTL)
+		h.results.put(keys.result, cachedEntry{result: res}, resultTTL)
 	}
 	return outcome{text: text, label: outcomeSuccess}
 }
