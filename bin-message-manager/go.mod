@@ -86,6 +86,7 @@ require (
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0
 	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183
+	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880
 )
 
 require (
@@ -140,7 +141,6 @@ require (
 	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d // indirect
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24 // indirect
 	monorepo/bin-schedule-manager v0.0.0-00010101000000-000000000000 // indirect
-	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880 // indirect
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d // indirect
 	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-timeline-manager v0.0.0-00010101000000-000000000000 // indirect

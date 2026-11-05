@@ -27,7 +27,7 @@ A billing record created for each billable event. Immutable after finalization.
 | `customer_id` | UUID | Owning customer |
 | `account_id` | UUID | Associated billing account |
 | `reference_id` | UUID | ID of the resource billed (call, message, number) |
-| `reference_type` | string | `call`, `sms`, `number`, `number_renew` |
+| `reference_type` | string | `call`, `sms`, `mms`, `number`, `number_renew` |
 | `status` | string | `progressing`, `end`, `pending`, `finished` |
 | `cost_per_unit` | float64 | Rate in USD per billing unit |
 | `billing_unit_count` | int | Number of units consumed |
@@ -37,6 +37,7 @@ A billing record created for each billable event. Immutable after finalization.
 Default unit costs (defined in `models/billing/billing.go`):
 - Call: $0.020 per minute
 - SMS: $0.008 per message
+- MMS: $0.03 per message (provisional; `DefaultCreditPerUnitMMS` in `models/billing/cost_type.go`)
 - Number: $5.00 per number purchase
 - Number renew: $5.00 per renewal
 

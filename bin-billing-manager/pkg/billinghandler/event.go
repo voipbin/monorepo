@@ -128,17 +128,29 @@ func (h *billingHandler) EventMMMessageCreated(ctx context.Context, m *mmmessage
 	})
 	log.Debugf("Received message_created event. message_id: %s", m.ID)
 
+	referenceType, costType := messageBillingTypes(m)
+
 	for i, target := range m.Targets {
 		// Generate a deterministic per-target reference ID so each target gets its own
 		// billing record, while event redelivery still triggers idempotency protection.
 		targetRefID := uuid.NewV5(m.ID, fmt.Sprintf("target-%d", i))
 		log.WithField("target", target).Debugf("Creating billing for message. destination: %v, target_ref_id: %s", target.Destination, targetRefID)
-		if errBilling := h.BillingStart(ctx, m.CustomerID, billing.ReferenceTypeSMS, targetRefID, billing.CostTypeSMS, m.TMCreate, m.Source, &target.Destination); errBilling != nil {
+		if errBilling := h.BillingStart(ctx, m.CustomerID, referenceType, targetRefID, costType, m.TMCreate, m.Source, &target.Destination); errBilling != nil {
 			return errors.Wrapf(errBilling, "could not create a billing. target: %v", target)
 		}
 	}
 
 	return nil
+}
+
+// messageBillingTypes returns the billing reference type and cost type of the given message.
+// An mms message is charged with the MMS pair, every other type keeps the SMS pair.
+func messageBillingTypes(m *mmmessage.Message) (billing.ReferenceType, billing.CostType) {
+	if m.Type == mmmessage.TypeMMS {
+		return billing.ReferenceTypeMMS, billing.CostTypeMMS
+	}
+
+	return billing.ReferenceTypeSMS, billing.CostTypeSMS
 }
 
 // EventNMNumberCreated handles the number-manager's number_created event

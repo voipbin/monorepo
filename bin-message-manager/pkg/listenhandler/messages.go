@@ -104,6 +104,41 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 	return res, nil
 }
 
+// processV1MessagesMMSPost handles POST /v1/messages/mms request
+func (h *listenHandler) processV1MessagesMMSPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1MessagesMMSPost",
+		"request": m,
+	})
+
+	var req request.V1DataMessagesMMSPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		logrus.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	// send message
+	ms, err := h.messageHandler.SendMMS(ctx, req.ID, req.CustomerID, req.Source, req.Destinations, req.Text, req.Medias)
+	if err != nil {
+		log.Errorf("Could not send a message. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(ms)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", ms, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // processV1MessagesIDGet handles GET /v1/messages/<id> request
 func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{

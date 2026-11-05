@@ -103,4 +103,5 @@ Type      Description
 rag       A file used for RAG (Retrieval-Augmented Generation) knowledge base.
 talk      A file associated with talk/conversation context.
 recording A recording file.
+media     A file uploaded to be attached to a message (MMS). Only a file of this type can be listed in ``medias`` of ``POST /messages``.
 ========= ==============================

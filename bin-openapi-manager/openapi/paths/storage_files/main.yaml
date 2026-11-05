@@ -41,10 +41,11 @@ post:
               format: binary
             type:
               type: string
-              description: "The type/category of the file. Must be 'rag' for this endpoint."
+              description: "The type/category of the file. Use 'rag' for a knowledge base file and 'media' for a file to attach to a message (see `POST /messages`)."
               enum:
                 - "rag"
-              example: "rag"
+                - "media"
+              example: "media"
           required:
             - file
             - type

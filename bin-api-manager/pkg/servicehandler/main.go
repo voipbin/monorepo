@@ -790,6 +790,7 @@ type ServiceHandler interface {
 	MessageList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*mmmessage.WebhookMessage, error)
 	MessageGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*mmmessage.WebhookMessage, error)
 	MessageSend(ctx context.Context, a *auth.AuthIdentity, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.WebhookMessage, error)
+	MessageSendMMS(ctx context.Context, a *auth.AuthIdentity, source *commonaddress.Address, destinations []commonaddress.Address, text string, medias []uuid.UUID) (*mmmessage.WebhookMessage, error)
 
 	// order numbers handler
 	NumberCreate(ctx context.Context, a *auth.AuthIdentity, num string, numType nmnumber.Type, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error)

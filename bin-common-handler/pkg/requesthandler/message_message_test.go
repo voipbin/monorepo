@@ -392,3 +392,108 @@ func Test_MessageV1MessageSend(t *testing.T) {
 		})
 	}
 }
+
+func Test_MessageV1MessageSendMMS(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id           uuid.UUID
+		customerID   uuid.UUID
+		source       *address.Address
+		destinations []address.Address
+		text         string
+		medias       []uuid.UUID
+
+		response  *sock.Response
+		expectReq *sock.Request
+		expectRes *mmmessage.Message
+	}{
+		{
+			name: "2 medias",
+
+			id:         uuid.FromStringOrNil("0e5a5a1c-1a2b-4c3d-8e9f-0a1b2c3d4e5f"),
+			customerID: uuid.FromStringOrNil("96ed3008-a2b2-11ec-b585-bf3e19b7355a"),
+			source: &address.Address{
+				Type:   address.TypeTel,
+				Target: "+155****0001",
+			},
+			destinations: []address.Address{
+				{
+					Type:   address.TypeTel,
+					Target: "+155****0002",
+				},
+			},
+			text: "hello world",
+			medias: []uuid.UUID{
+				uuid.FromStringOrNil("11111111-1111-4111-8111-111111111111"),
+				uuid.FromStringOrNil("22222222-2222-4222-8222-222222222222"),
+			},
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"0e5a5a1c-1a2b-4c3d-8e9f-0a1b2c3d4e5f","type":"mms","medias":["11111111-1111-4111-8111-111111111111","22222222-2222-4222-8222-222222222222"]}`),
+			},
+			expectReq: &sock.Request{
+				URI:      "/v1/messages/mms",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"id":"0e5a5a1c-1a2b-4c3d-8e9f-0a1b2c3d4e5f","customer_id":"96ed3008-a2b2-11ec-b585-bf3e19b7355a","source":{"type":"tel","target":"+155****0001"},"destinations":[{"type":"tel","target":"+155****0002"}],"text":"hello world","medias":["11111111-1111-4111-8111-111111111111","22222222-2222-4222-8222-222222222222"]}`),
+			},
+			expectRes: &mmmessage.Message{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("0e5a5a1c-1a2b-4c3d-8e9f-0a1b2c3d4e5f"),
+				},
+				Type: mmmessage.TypeMMS,
+				Medias: []string{
+					"11111111-1111-4111-8111-111111111111",
+					"22222222-2222-4222-8222-222222222222",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.message-manager.request", tt.expectReq).Return(tt.response, nil)
+
+			res, err := reqHandler.MessageV1MessageSendMMS(ctx, tt.id, tt.customerID, tt.source, tt.destinations, tt.text, tt.medias)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+// Test_MessageV1MessageSendMMS_unknownRoute checks that an answer of an old message-manager, which does
+// not know the route, is an error and is never turned into a sent message.
+func Test_MessageV1MessageSendMMS_unknownRoute(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	reqHandler := requestHandler{
+		sock: mockSock,
+	}
+
+	mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.message-manager.request", gomock.Any()).Return(&sock.Response{StatusCode: 404}, nil)
+
+	res, err := reqHandler.MessageV1MessageSendMMS(context.Background(), uuid.Nil, uuid.Nil, &address.Address{}, []address.Address{{}}, "hello", []uuid.UUID{uuid.Must(uuid.NewV4())})
+	if err == nil || res != nil {
+		t.Errorf("Wrong match. expect: error and no message, got: res: %v, err: %v", res, err)
+	}
+}

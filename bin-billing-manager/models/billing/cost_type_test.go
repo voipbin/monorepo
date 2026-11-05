@@ -58,6 +58,13 @@ func Test_GetCostInfo(t *testing.T) {
 			expectCreditPerUnit: DefaultCreditPerUnitSMS,
 		},
 		{
+			name:                "mms - credit only",
+			costType:            CostTypeMMS,
+			expectMode:          CostModeCreditOnly,
+			expectTokenPerUnit:  0,
+			expectCreditPerUnit: DefaultCreditPerUnitMMS,
+		},
+		{
 			name:                "email - credit only",
 			costType:            CostTypeEmail,
 			expectMode:          CostModeCreditOnly,

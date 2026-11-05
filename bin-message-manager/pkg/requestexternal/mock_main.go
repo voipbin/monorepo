@@ -42,6 +42,21 @@ func (m *MockRequestExternal) EXPECT() *MockRequestExternalMockRecorder {
 	return m.recorder
 }
 
+// MessagebirdSendMMS mocks base method.
+func (m *MockRequestExternal) MessagebirdSendMMS(ctx context.Context, sender, destination, text string, mediaURLs []string) (*messagebird.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessagebirdSendMMS", ctx, sender, destination, text, mediaURLs)
+	ret0, _ := ret[0].(*messagebird.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessagebirdSendMMS indicates an expected call of MessagebirdSendMMS.
+func (mr *MockRequestExternalMockRecorder) MessagebirdSendMMS(ctx, sender, destination, text, mediaURLs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessagebirdSendMMS", reflect.TypeOf((*MockRequestExternal)(nil).MessagebirdSendMMS), ctx, sender, destination, text, mediaURLs)
+}
+
 // MessagebirdSendMessage mocks base method.
 func (m *MockRequestExternal) MessagebirdSendMessage(ctx context.Context, sender string, destinations []string, text string) (*messagebird.Message, error) {
 	m.ctrl.T.Helper()
@@ -55,6 +70,21 @@ func (m *MockRequestExternal) MessagebirdSendMessage(ctx context.Context, sender
 func (mr *MockRequestExternalMockRecorder) MessagebirdSendMessage(ctx, sender, destinations, text any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessagebirdSendMessage", reflect.TypeOf((*MockRequestExternal)(nil).MessagebirdSendMessage), ctx, sender, destinations, text)
+}
+
+// TelnyxSendMMS mocks base method.
+func (m *MockRequestExternal) TelnyxSendMMS(ctx context.Context, source, destination, text string, mediaURLs []string) (*telnyx.MessageResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TelnyxSendMMS", ctx, source, destination, text, mediaURLs)
+	ret0, _ := ret[0].(*telnyx.MessageResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TelnyxSendMMS indicates an expected call of TelnyxSendMMS.
+func (mr *MockRequestExternalMockRecorder) TelnyxSendMMS(ctx, source, destination, text, mediaURLs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxSendMMS", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxSendMMS), ctx, source, destination, text, mediaURLs)
 }
 
 // TelnyxSendMessage mocks base method.

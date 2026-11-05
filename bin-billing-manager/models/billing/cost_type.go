@@ -28,6 +28,7 @@ const (
 	CostTypeCallExtension    CostType = "call_extension"
 	CostTypeCallDirectExt    CostType = "call_direct_ext"
 	CostTypeSMS              CostType = "sms"
+	CostTypeMMS              CostType = "mms"
 	CostTypeEmail            CostType = "email"
 	CostTypeNumber           CostType = "number"
 	CostTypeNumberRenew      CostType = "number_renew"
@@ -41,6 +42,7 @@ const (
 	DefaultCreditPerUnitCallPSTNIncoming int64 = 10000   // $0.01/min
 	DefaultCreditPerUnitCallVN           int64 = 1000    // $0.001/min
 	DefaultCreditPerUnitSMS              int64 = 10000   // $0.01/msg
+	DefaultCreditPerUnitMMS              int64 = 30000   // $0.03/msg (provisional)
 	DefaultCreditPerUnitEmail            int64 = 10000   // $0.01/msg
 	DefaultCreditPerUnitNumber           int64 = 5000000 // $5.00/number
 	DefaultCreditPerUnitTTS              int64 = 30000   // $0.03/min
@@ -67,6 +69,8 @@ func GetCostInfo(ct CostType) CostInfo {
 		return CostInfo{CostModeFree, 0, 0}
 	case CostTypeSMS:
 		return CostInfo{CostModeCreditOnly, 0, DefaultCreditPerUnitSMS}
+	case CostTypeMMS:
+		return CostInfo{CostModeCreditOnly, 0, DefaultCreditPerUnitMMS}
 	case CostTypeEmail:
 		return CostInfo{CostModeCreditOnly, 0, DefaultCreditPerUnitEmail}
 	case CostTypeNumber, CostTypeNumberRenew:

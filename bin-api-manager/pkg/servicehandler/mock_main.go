@@ -3470,6 +3470,21 @@ func (mr *MockServiceHandlerMockRecorder) MessageSend(ctx, a, source, destinatio
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageSend", reflect.TypeOf((*MockServiceHandler)(nil).MessageSend), ctx, a, source, destinations, text)
 }
 
+// MessageSendMMS mocks base method.
+func (m *MockServiceHandler) MessageSendMMS(ctx context.Context, a *auth.AuthIdentity, source *address.Address, destinations []address.Address, text string, medias []uuid.UUID) (*message1.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageSendMMS", ctx, a, source, destinations, text, medias)
+	ret0, _ := ret[0].(*message1.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageSendMMS indicates an expected call of MessageSendMMS.
+func (mr *MockServiceHandlerMockRecorder) MessageSendMMS(ctx, a, source, destinations, text, medias any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageSendMMS", reflect.TypeOf((*MockServiceHandler)(nil).MessageSendMMS), ctx, a, source, destinations, text, medias)
+}
+
 // NumberCreate mocks base method.
 func (m *MockServiceHandler) NumberCreate(ctx context.Context, a *auth.AuthIdentity, num string, numType number.Type, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()

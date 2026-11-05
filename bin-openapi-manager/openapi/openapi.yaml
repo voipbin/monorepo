@@ -697,6 +697,7 @@ components:
         - call
         - call_extension
         - sms
+        - mms
         - email
         - number
         - number_renew
@@ -711,6 +712,7 @@ components:
         - BillingManagerBillingreferenceTypeCall
         - BillingManagerBillingreferenceTypeCallExtension
         - BillingManagerBillingreferenceTypeSMS
+        - BillingManagerBillingreferenceTypeMMS
         - BillingManagerBillingreferenceTypeEmail
         - BillingManagerBillingreferenceTypeNumber
         - BillingManagerBillingreferenceTypeNumberRenew
@@ -732,6 +734,7 @@ components:
         - call_extension
         - call_direct_ext
         - sms
+        - mms
         - email
         - number
         - number_renew
@@ -745,6 +748,7 @@ components:
         - BillingManagerBillingCostTypeCallExtension
         - BillingManagerBillingCostTypeCallDirectExt
         - BillingManagerBillingCostTypeSMS
+        - BillingManagerBillingCostTypeMMS
         - BillingManagerBillingCostTypeEmail
         - BillingManagerBillingCostTypeNumber
         - BillingManagerBillingCostTypeNumberRenew
@@ -6271,12 +6275,14 @@ components:
         - MessageManagerMessageProviderNameMessagebird
     MessageManagerMessageType:
       type: string
-      description: Type of the message.
+      description: Type of the message. A message sent with `medias` is `mms`, every other message is `sms`.
       example: "sms"
       enum:
         - sms
+        - mms
       x-enum-varnames:
         - MessageManagerMessageTypeSMS
+        - MessageManagerMessageTypeMMS
     MessageManagerMessage:
       type: object
       properties:
@@ -6308,6 +6314,14 @@ components:
           type: string
           description: The text delivered in the body of the message.
           example: "Your appointment is confirmed for tomorrow at 2 PM."
+        medias:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+          description: The ids of the media files attached to the message, returned from the `POST /storage_files` response. Present only when the message has medias (type `mms`).
+          example: ["3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"]
         direction:
           $ref: '#/components/schemas/MessageManagerMessageDirection'
           description: The direction of the message (outbound/inbound).
@@ -7640,11 +7654,13 @@ components:
         - "rag"
         - "talk"
         - "recording"
+        - "media"
       x-enum-varnames:
         - StorageManagerFileTypeNone
         - StorageManagerFileTypeRAG
         - StorageManagerFileTypeTalk
         - StorageManagerFileTypeRecording
+        - StorageManagerFileTypeMedia
       example: "rag"
 
     StorageManagerFile:

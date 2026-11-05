@@ -237,6 +237,71 @@ func Test_MessageSend(t *testing.T) {
 	}
 }
 
+func Test_MessageSendMMS(t *testing.T) {
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+821****0001"}
+	destinations := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+821****0002"}}
+	medias := []uuid.UUID{uuid.FromStringOrNil("3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d")}
+
+	admin := auth.NewAgentIdentity(&amagent.Agent{
+		Identity:   commonidentity.Identity{ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"), CustomerID: customerID},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+	noPermission := auth.NewAgentIdentity(&amagent.Agent{
+		Identity:   commonidentity.Identity{ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"), CustomerID: customerID},
+		Permission: amagent.PermissionNone,
+	})
+
+	t.Run("normal", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		h := &serviceHandler{reqHandler: mockReq}
+		ctx := context.Background()
+
+		response := &mmmessage.Message{
+			Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("14e68482-a2e5-11ec-8d92-6bc6fec62487")},
+			Type:     mmmessage.TypeMMS,
+			Medias:   []string{medias[0].String()},
+		}
+		mockReq.EXPECT().MessageV1MessageSendMMS(ctx, uuid.Nil, customerID, source, destinations, "hello", medias).Return(response, nil)
+
+		res, err := h.MessageSendMMS(ctx, admin, source, destinations, "hello", medias)
+		if err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
+		if !reflect.DeepEqual(res, response.ConvertWebhookMessage()) {
+			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", response.ConvertWebhookMessage(), res)
+		}
+		if res.Type != mmmessage.TypeMMS || len(res.Medias) != 1 {
+			t.Errorf("The response must expose the type and the medias. got: %v", res)
+		}
+	})
+
+	t.Run("no permission never reaches the message-manager", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		h := &serviceHandler{reqHandler: requesthandler.NewMockRequestHandler(mc)}
+		_, err := h.MessageSendMMS(context.Background(), noPermission, source, destinations, "hello", medias)
+		if err == nil {
+			t.Errorf("Wrong match. expect: error, got: nil")
+		}
+	})
+
+	t.Run("no destination", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		h := &serviceHandler{reqHandler: requesthandler.NewMockRequestHandler(mc)}
+		_, err := h.MessageSendMMS(context.Background(), admin, source, nil, "hello", medias)
+		if err == nil {
+			t.Errorf("Wrong match. expect: error, got: nil")
+		}
+	})
+}
+
 func Test_MessageDelete(t *testing.T) {
 
 	tests := []struct {

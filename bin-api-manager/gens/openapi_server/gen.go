@@ -810,6 +810,7 @@ const (
 	BillingManagerBillingCostTypeCallPSTNOutgoing BillingManagerBillingCostType = "call_pstn_outgoing"
 	BillingManagerBillingCostTypeCallVN           BillingManagerBillingCostType = "call_vn"
 	BillingManagerBillingCostTypeEmail            BillingManagerBillingCostType = "email"
+	BillingManagerBillingCostTypeMMS              BillingManagerBillingCostType = "mms"
 	BillingManagerBillingCostTypeNone             BillingManagerBillingCostType = ""
 	BillingManagerBillingCostTypeNumber           BillingManagerBillingCostType = "number"
 	BillingManagerBillingCostTypeNumberRenew      BillingManagerBillingCostType = "number_renew"
@@ -832,6 +833,8 @@ func (e BillingManagerBillingCostType) Valid() bool {
 	case BillingManagerBillingCostTypeCallVN:
 		return true
 	case BillingManagerBillingCostTypeEmail:
+		return true
+	case BillingManagerBillingCostTypeMMS:
 		return true
 	case BillingManagerBillingCostTypeNone:
 		return true
@@ -905,6 +908,7 @@ const (
 	BillingManagerBillingreferenceTypeCreditAdjustment BillingManagerBillingreferenceType = "credit_adjustment"
 	BillingManagerBillingreferenceTypeCreditFreeTier   BillingManagerBillingreferenceType = "credit_free_tier"
 	BillingManagerBillingreferenceTypeEmail            BillingManagerBillingreferenceType = "email"
+	BillingManagerBillingreferenceTypeMMS              BillingManagerBillingreferenceType = "mms"
 	BillingManagerBillingreferenceTypeMonthlyAllowance BillingManagerBillingreferenceType = "monthly_allowance"
 	BillingManagerBillingreferenceTypeNone             BillingManagerBillingreferenceType = ""
 	BillingManagerBillingreferenceTypeNumber           BillingManagerBillingreferenceType = "number"
@@ -927,6 +931,8 @@ func (e BillingManagerBillingreferenceType) Valid() bool {
 	case BillingManagerBillingreferenceTypeCreditFreeTier:
 		return true
 	case BillingManagerBillingreferenceTypeEmail:
+		return true
+	case BillingManagerBillingreferenceTypeMMS:
 		return true
 	case BillingManagerBillingreferenceTypeMonthlyAllowance:
 		return true
@@ -2451,12 +2457,15 @@ func (e MessageManagerMessageProviderName) Valid() bool {
 
 // Defines values for MessageManagerMessageType.
 const (
+	MessageManagerMessageTypeMMS MessageManagerMessageType = "mms"
 	MessageManagerMessageTypeSMS MessageManagerMessageType = "sms"
 )
 
 // Valid indicates whether the value is a known member of the MessageManagerMessageType enum.
 func (e MessageManagerMessageType) Valid() bool {
 	switch e {
+	case MessageManagerMessageTypeMMS:
+		return true
 	case MessageManagerMessageTypeSMS:
 		return true
 	default:
@@ -2829,6 +2838,7 @@ func (e StorageManagerFileReferenceType) Valid() bool {
 
 // Defines values for StorageManagerFileType.
 const (
+	StorageManagerFileTypeMedia     StorageManagerFileType = "media"
 	StorageManagerFileTypeNone      StorageManagerFileType = ""
 	StorageManagerFileTypeRAG       StorageManagerFileType = "rag"
 	StorageManagerFileTypeRecording StorageManagerFileType = "recording"
@@ -2838,6 +2848,8 @@ const (
 // Valid indicates whether the value is a known member of the StorageManagerFileType enum.
 func (e StorageManagerFileType) Valid() bool {
 	switch e {
+	case StorageManagerFileTypeMedia:
+		return true
 	case StorageManagerFileTypeNone:
 		return true
 	case StorageManagerFileTypeRAG:
@@ -3873,12 +3885,15 @@ func (e PostServiceAgentsFilesMultipartBodyType) Valid() bool {
 
 // Defines values for PostStorageFilesMultipartBodyType.
 const (
-	Rag PostStorageFilesMultipartBodyType = "rag"
+	Media PostStorageFilesMultipartBodyType = "media"
+	Rag   PostStorageFilesMultipartBodyType = "rag"
 )
 
 // Valid indicates whether the value is a known member of the PostStorageFilesMultipartBodyType enum.
 func (e PostStorageFilesMultipartBodyType) Valid() bool {
 	switch e {
+	case Media:
+		return true
 	case Rag:
 		return true
 	default:
@@ -6853,6 +6868,9 @@ type MessageManagerMessage struct {
 	// Id Unique identifier for the message.
 	Id *string `json:"id,omitempty"`
 
+	// Medias The ids of the media files attached to the message, returned from the `POST /storage_files` response. Present only when the message has medias (type `mms`).
+	Medias *[]string `json:"medias,omitempty"`
+
 	// Source Contains source or destination detail info.
 	Source *CommonAddress `json:"source,omitempty"`
 
@@ -6871,7 +6889,7 @@ type MessageManagerMessage struct {
 	// TmUpdate Timestamp when the message was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// Type Type of the message.
+	// Type Type of the message. A message sent with `medias` is `mms`, every other message is `sms`.
 	Type *MessageManagerMessageType `json:"type,omitempty"`
 }
 
@@ -6881,7 +6899,7 @@ type MessageManagerMessageDirection string
 // MessageManagerMessageProviderName Name of the message provider.
 type MessageManagerMessageProviderName string
 
-// MessageManagerMessageType Type of the message.
+// MessageManagerMessageType Type of the message. A message sent with `medias` is `mms`, every other message is `sms`.
 type MessageManagerMessageType string
 
 // MessageManagerTarget defines model for MessageManagerTarget.
@@ -9874,10 +9892,13 @@ type PostMessagesJSONBody struct {
 	// Destinations List of destinations for the message.
 	Destinations []CommonAddress `json:"destinations"`
 
+	// Medias The ids of the files to attach, returned from the `POST /storage_files` response (upload with type `media`). When this list is not empty the message is sent as an MMS. At most 10 files; the total size is limited to 900 KiB, images up to 900 KiB each, and audio (mp3, wav) and pdf up to 600 KiB each. Only files of the same customer can be attached.
+	Medias *[]string `json:"medias,omitempty"`
+
 	// Source Contains source or destination detail info.
 	Source CommonAddress `json:"source"`
 
-	// Text The content of the message.
+	// Text The content of the message. For a message with `medias` it can be an empty string.
 	Text string `json:"text"`
 }
 
@@ -11089,7 +11110,7 @@ type GetStorageFilesParams struct {
 type PostStorageFilesMultipartBody struct {
 	File openapi_types.File `json:"file"`
 
-	// Type The type/category of the file. Must be 'rag' for this endpoint.
+	// Type The type/category of the file. Use 'rag' for a knowledge base file and 'media' for a file to attach to a message (see `POST /messages`).
 	Type PostStorageFilesMultipartBodyType `json:"type"`
 }
 

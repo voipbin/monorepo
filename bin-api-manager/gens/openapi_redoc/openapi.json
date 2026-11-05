@@ -13939,8 +13939,19 @@
                     }
                   },
                   "text": {
-                    "description": "The content of the message.",
+                    "description": "The content of the message. For a message with `medias` it can be an empty string.",
                     "type": "string"
+                  },
+                  "medias": {
+                    "description": "The ids of the files to attach, returned from the `POST /storage_files` response (upload with type `media`). When this list is not empty the message is sent as an MMS. At most 10 files; the total size is limited to 900 KiB, images up to 900 KiB each, and audio (mp3, wav) and pdf up to 600 KiB each. Only files of the same customer can be attached.",
+                    "type": "array",
+                    "maxItems": 10,
+                    "items": {
+                      "type": "string",
+                      "format": "uuid",
+                      "x-go-type": "string",
+                      "example": "3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
+                    }
                   }
                 },
                 "required": [
@@ -24652,11 +24663,12 @@
                   },
                   "type": {
                     "type": "string",
-                    "description": "The type/category of the file. Must be 'rag' for this endpoint.",
+                    "description": "The type/category of the file. Use 'rag' for a knowledge base file and 'media' for a file to attach to a message (see `POST /messages`).",
                     "enum": [
-                      "rag"
+                      "rag",
+                      "media"
                     ],
-                    "example": "rag"
+                    "example": "media"
                   }
                 },
                 "required": [
@@ -26861,6 +26873,7 @@
           "call",
           "call_extension",
           "sms",
+          "mms",
           "email",
           "number",
           "number_renew",
@@ -26876,6 +26889,7 @@
           "BillingManagerBillingreferenceTypeCall",
           "BillingManagerBillingreferenceTypeCallExtension",
           "BillingManagerBillingreferenceTypeSMS",
+          "BillingManagerBillingreferenceTypeMMS",
           "BillingManagerBillingreferenceTypeEmail",
           "BillingManagerBillingreferenceTypeNumber",
           "BillingManagerBillingreferenceTypeNumberRenew",
@@ -26899,6 +26913,7 @@
           "call_extension",
           "call_direct_ext",
           "sms",
+          "mms",
           "email",
           "number",
           "number_renew",
@@ -26913,6 +26928,7 @@
           "BillingManagerBillingCostTypeCallExtension",
           "BillingManagerBillingCostTypeCallDirectExt",
           "BillingManagerBillingCostTypeSMS",
+          "BillingManagerBillingCostTypeMMS",
           "BillingManagerBillingCostTypeEmail",
           "BillingManagerBillingCostTypeNumber",
           "BillingManagerBillingCostTypeNumberRenew",
@@ -33367,13 +33383,15 @@
       },
       "MessageManagerMessageType": {
         "type": "string",
-        "description": "Type of the message.",
+        "description": "Type of the message. A message sent with `medias` is `mms`, every other message is `sms`.",
         "example": "sms",
         "enum": [
-          "sms"
+          "sms",
+          "mms"
         ],
         "x-enum-varnames": [
-          "MessageManagerMessageTypeSMS"
+          "MessageManagerMessageTypeSMS",
+          "MessageManagerMessageTypeMMS"
         ]
       },
       "MessageManagerMessage": {
@@ -33413,6 +33431,18 @@
             "type": "string",
             "description": "The text delivered in the body of the message.",
             "example": "Your appointment is confirmed for tomorrow at 2 PM."
+          },
+          "medias": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "x-go-type": "string"
+            },
+            "description": "The ids of the media files attached to the message, returned from the `POST /storage_files` response. Present only when the message has medias (type `mms`).",
+            "example": [
+              "3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
+            ]
           },
           "direction": {
             "$ref": "#/components/schemas/MessageManagerMessageDirection",
@@ -35009,13 +35039,15 @@
           "",
           "rag",
           "talk",
-          "recording"
+          "recording",
+          "media"
         ],
         "x-enum-varnames": [
           "StorageManagerFileTypeNone",
           "StorageManagerFileTypeRAG",
           "StorageManagerFileTypeTalk",
-          "StorageManagerFileTypeRecording"
+          "StorageManagerFileTypeRecording",
+          "StorageManagerFileTypeMedia"
         ],
         "example": "rag"
       },

@@ -25,7 +25,7 @@ How Billing Works
 -----------------
 VoIPBin uses a hybrid billing model with two cost mechanisms: **token balance** and **credit balance**.
 
-Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls, TTS, and recording). When tokens are exhausted, usage overflows to the credit balance. PSTN calls, SMS, email, and number purchases are always charged to the credit balance.
+Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls, TTS, and recording). When tokens are exhausted, usage overflows to the credit balance. PSTN calls, SMS, MMS, email, and number purchases are always charged to the credit balance.
 
 All monetary values are stored as **int64 micros** (1 USD = 1,000,000 micros) to prevent floating-point rounding errors.
 
@@ -207,6 +207,10 @@ All credit rates are stored internally as int64 micros.
    * - SMS
      - $0.01
      - 10,000
+     - Per message
+   * - MMS
+     - $0.03
+     - 30,000
      - Per message
    * - Email
      - $0.01
@@ -392,6 +396,7 @@ Each billing entry has a ``reference_type`` linking the charge to its source:
 * ``call``: PSTN or VN call usage.
 * ``call_extension``: Extension-to-extension call (free).
 * ``sms``: SMS message sent.
+* ``mms``: MMS message (a message with media attachments) sent.
 * ``email``: Email message sent.
 * ``number``: Phone number purchase.
 * ``number_renew``: Phone number renewal.

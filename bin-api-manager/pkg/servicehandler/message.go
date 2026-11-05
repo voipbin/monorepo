@@ -115,6 +115,43 @@ func (h *serviceHandler) MessageSend(ctx context.Context, a *auth.AuthIdentity, 
 	return res, nil
 }
 
+// MessageSendMMS handles the message send request that has medias.
+// It sends a request to the message-manager to create(send) a new message with the given medias,
+// which are the ids of the files of the customer. The message-manager validates the files.
+// it returns created message information if it succeed.
+func (h *serviceHandler) MessageSendMMS(ctx context.Context, a *auth.AuthIdentity, source *commonaddress.Address, destinations []commonaddress.Address, text string, medias []uuid.UUID) (*mmmessage.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "MessageSendMMS",
+		"customer_id": a.CustomerID,
+		"username":    a.DisplayName(),
+		"medias":      len(medias),
+	})
+
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	if len(destinations) == 0 {
+		log.Errorf("The destination is empty. destinations: %d", len(destinations))
+		return nil, fmt.Errorf("%w: destination is empty", serviceerrors.ErrInvalidArgument)
+	}
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	// send message
+	tmp, err := h.reqHandler.MessageV1MessageSendMMS(ctx, uuid.Nil, a.CustomerID, source, destinations, text, medias)
+	if err != nil {
+		log.Infof("Could not send a message with medias. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // MessageGet handles message get request.
 // It sends a request to the message-manager to get a existed message.
 // it returns a message information if it succeed.

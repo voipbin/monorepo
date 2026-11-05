@@ -46,8 +46,21 @@ post:
                 type: string
                 $ref: '#/components/schemas/CommonAddress'
             text:
-              description: The content of the message.
+              description: The content of the message. For a message with `medias` it can be an empty string.
               type: string
+            medias:
+              description: >-
+                The ids of the files to attach, returned from the `POST /storage_files` response (upload with
+                type `media`). When this list is not empty the message is sent as an MMS. At most 10 files; the
+                total size is limited to 900 KiB, images up to 900 KiB each, and audio (mp3, wav) and pdf up to
+                600 KiB each. Only files of the same customer can be attached.
+              type: array
+              maxItems: 10
+              items:
+                type: string
+                format: uuid
+                x-go-type: string
+                example: "3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
           required:
             - source
             - destinations

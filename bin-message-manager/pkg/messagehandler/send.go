@@ -36,12 +36,7 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 	// canonical form. NormalizeTarget is loss-proof (an alphanumeric/sentinel
 	// sender with no digit is preserved verbatim), so the error is discarded.
 	// Nil-guard the source pointer; normalize destinations by index.
-	if source != nil {
-		source.Target, _ = commonaddress.NormalizeTarget(source.Type, source.Target)
-	}
-	for i := range destinations {
-		destinations[i].Target, _ = commonaddress.NormalizeTarget(destinations[i].Type, destinations[i].Target)
-	}
+	normalizeSendAddresses(source, destinations)
 
 	// create targets
 	targets := []target.Target{}
@@ -103,4 +98,15 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 	}()
 
 	return res, nil
+}
+
+// normalizeSendAddresses canonicalizes the source and the destinations in place. The source pointer
+// is nil guarded and the destinations are normalized by index.
+func normalizeSendAddresses(source *commonaddress.Address, destinations []commonaddress.Address) {
+	if source != nil {
+		source.Target, _ = commonaddress.NormalizeTarget(source.Type, source.Target)
+	}
+	for i := range destinations {
+		destinations[i].Target, _ = commonaddress.NormalizeTarget(destinations[i].Type, destinations[i].Target)
+	}
 }

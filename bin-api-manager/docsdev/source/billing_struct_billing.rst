@@ -107,6 +107,7 @@ Type                      Description
 call                      A PSTN phone call
 call_extension            A call to an extension
 sms                       An SMS message
+mms                       An MMS message (a message with media attachments)
 email                     An email message
 number                    A phone number purchase
 number_renew              A phone number renewal
@@ -137,6 +138,7 @@ call_vn                Call to a virtual number
 call_extension         Call to an extension
 call_direct_ext        Direct extension call
 sms                    SMS message
+mms                    MMS message (a message with media attachments)
 email                  Email message
 number                 Phone number purchase
 number_renew           Phone number renewal

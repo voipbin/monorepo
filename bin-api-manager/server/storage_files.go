@@ -47,7 +47,7 @@ func (h *server) PostStorageFiles(c *gin.Context) {
 
 	// read and validate type field
 	fileType := c.PostForm("type")
-	if fileType != "rag" {
+	if fileType != string(smfile.TypeRAG) && fileType != string(smfile.TypeMedia) {
 		log.Errorf("Invalid or missing file type. type: %s", fileType)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_FILE_TYPE", "The provided file type is invalid or missing."))
 		return

@@ -49,6 +49,7 @@ The `listenhandler` consumes from queue `bin-manager.message-manager.request` an
 | Method | URI Pattern | Handler |
 |--------|------------|---------|
 | POST | `/v1/messages` | Send SMS (balance check → create → async dispatch to provider) |
+| POST | `/v1/messages/mms` | Send a message with medias (media check → balance check → signed URL refresh → create → async dispatch, Telnyx first and MessageBird for the targets Telnyx refused) |
 | GET | `/v1/messages?` | List messages (pagination) |
 | GET | `/v1/messages/{uuid}` | Get message details |
 | DELETE | `/v1/messages/{uuid}` | Delete message |

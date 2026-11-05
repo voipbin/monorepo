@@ -6,7 +6,7 @@
 A per-customer record that tracks total storage usage and enforces the 10 GB quota. Every customer must have exactly one storage account before files can be uploaded. Managed by `pkg/accounthandler`.
 
 ### File
-An object stored in the `gcp_bucket_name_media` GCS bucket. Each file record has a `reference_type` (`normal` or `recording`) and an optional `reference_id` that links files to a specific call or resource.
+An object stored in the `gcp_bucket_name_media` GCS bucket. Each file record also has a `type` (`rag`, `talk`, `recording` or `media`; `media` is a file uploaded to be attached to an MMS). Each file record has a `reference_type` (`normal` or `recording`) and an optional `reference_id` that links files to a specific call or resource.
 
 - `normal` — generic uploaded files (e.g., audio prompts, TTS outputs)
 - `recording` — call recordings; files sharing the same `reference_id` can be compressed together

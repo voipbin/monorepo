@@ -421,3 +421,110 @@ func Test_processV1MessagesID_notFound(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1MessagesMMSPost(t *testing.T) {
+	id := uuid.FromStringOrNil("5f00c9bc-f176-11ec-bda0-af0b8c9491f5")
+	customerID := uuid.FromStringOrNil("fdca8fb4-a22b-11ec-8894-7bfd708fa894")
+	media1 := uuid.FromStringOrNil("11111111-1111-4111-8111-111111111111")
+	media2 := uuid.FromStringOrNil("22222222-2222-4222-8222-222222222222")
+	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0001"}
+	destinations := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+155****0002"}}
+
+	tests := []struct {
+		name string
+
+		data string
+
+		expectCall bool
+		sendErr    error
+
+		expectStatus int
+	}{
+		{
+			name:         "normal",
+			data:         `{"id":"5f00c9bc-f176-11ec-bda0-af0b8c9491f5","customer_id":"fdca8fb4-a22b-11ec-8894-7bfd708fa894","source":{"type":"tel","target":"+155****0001"},"destinations":[{"type":"tel","target":"+155****0002"}],"text":"hello","medias":["11111111-1111-4111-8111-111111111111","22222222-2222-4222-8222-222222222222"]}`,
+			expectCall:   true,
+			expectStatus: 200,
+		},
+		{
+			name:         "a typed error is answered with its own status",
+			data:         `{"id":"5f00c9bc-f176-11ec-bda0-af0b8c9491f5","customer_id":"fdca8fb4-a22b-11ec-8894-7bfd708fa894","source":{"type":"tel","target":"+155****0001"},"destinations":[{"type":"tel","target":"+155****0002"}],"text":"hello","medias":["11111111-1111-4111-8111-111111111111","22222222-2222-4222-8222-222222222222"]}`,
+			expectCall:   true,
+			sendErr:      cerrors.PaymentRequired(commonoutline.ServiceNameMessageManager, "INSUFFICIENT_BALANCE", "no balance"),
+			expectStatus: 402,
+		},
+		{
+			name:         "broken json is a bad request and never reaches the handler",
+			data:         `{bad`,
+			expectStatus: 400,
+		},
+		{
+			name:         "a media id that is not a uuid is a bad request",
+			data:         `{"id":"5f00c9bc-f176-11ec-bda0-af0b8c9491f5","medias":["not-a-uuid"]}`,
+			expectStatus: 400,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockMessageHandler := messagehandler.NewMockMessageHandler(mc)
+			h := &listenHandler{
+				sockHandler:    sockhandler.NewMockSockHandler(mc),
+				messageHandler: mockMessageHandler,
+			}
+
+			if tt.expectCall {
+				mockMessageHandler.EXPECT().SendMMS(gomock.Any(), id, customerID, source, destinations, "hello", []uuid.UUID{media1, media2}).Return(&message.Message{
+					Identity: commonidentity.Identity{ID: id},
+					Type:     message.TypeMMS,
+				}, tt.sendErr)
+			}
+
+			res, err := h.processRequest(&sock.Request{
+				URI:      "/v1/messages/mms",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(tt.data),
+			})
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res.StatusCode != tt.expectStatus {
+				t.Errorf("Wrong status. expect: %d, got: %d", tt.expectStatus, res.StatusCode)
+			}
+		})
+	}
+}
+
+// Test_processRequest_mmsRouteIsSeparate checks the new route is reached only by POST and that the
+// old routes do not match it, so an old message-manager answers 404 for it.
+func Test_processRequest_mmsRouteIsSeparate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	// no expectation: the handler must not be called for a GET of the mms route.
+	h := &listenHandler{
+		sockHandler:    sockhandler.NewMockSockHandler(mc),
+		messageHandler: messagehandler.NewMockMessageHandler(mc),
+	}
+
+	res, err := h.processRequest(&sock.Request{URI: "/v1/messages/mms", Method: sock.RequestMethodGet})
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res.StatusCode != 404 {
+		t.Errorf("Wrong status. expect: 404, got: %d", res.StatusCode)
+	}
+
+	for _, re := range []interface{ MatchString(string) bool }{regV1Messages, regV1MessagesID, regV1MessagesGet} {
+		if re.MatchString("/v1/messages/mms") {
+			t.Errorf("The mms route must not match the old pattern: %v", re)
+		}
+	}
+	if regV1MessagesMMS.MatchString("/v1/messages") || regV1MessagesMMS.MatchString("/v1/messages/mms/extra") {
+		t.Errorf("The mms pattern is too wide")
+	}
+}

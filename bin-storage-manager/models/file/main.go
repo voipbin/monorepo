@@ -56,4 +56,5 @@ const (
 	TypeRAG       Type = "rag"
 	TypeTalk      Type = "talk"
 	TypeRecording Type = "recording"
+	TypeMedia     Type = "media"
 )
