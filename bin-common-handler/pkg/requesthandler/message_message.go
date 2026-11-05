@@ -47,6 +47,43 @@ func (r *requestHandler) MessageV1MessageSend(ctx context.Context, id uuid.UUID,
 	return &res, nil
 }
 
+// MessageV1MessageSendMMS sends a message with medias.
+//
+// It uses its own route and not the route of MessageV1MessageSend, so a message-manager that does
+// not know medias answers 404 and cannot send the message as a text only sms. The long timeout is
+// for the media check of message-manager, which calls the storage-manager before it creates the
+// message.
+func (r *requestHandler) MessageV1MessageSendMMS(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string, medias []uuid.UUID) (*mmmessage.Message, error) {
+
+	uri := "/v1/messages/mms"
+
+	reqData := &mmrequest.V1DataMessagesMMSPost{
+		ID:           id,
+		CustomerID:   customerID,
+		Source:       source,
+		Destinations: destinations,
+		Text:         text,
+		Medias:       medias,
+	}
+
+	m, err := json.Marshal(reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestMessage(ctx, uri, sock.RequestMethodPost, "message/messages/mms", requestTimeoutLong, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res mmmessage.Message
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // MessageV1MessageList gets the messages
 func (r *requestHandler) MessageV1MessageList(ctx context.Context, pageToken string, pageSize uint64, filters map[mmmessage.Field]any) ([]mmmessage.Message, error) {
 	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)

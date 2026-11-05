@@ -429,3 +429,118 @@ func Test_messagesPost_InsufficientBalance(t *testing.T) {
 
 	assertErrorResponse(t, w, cerrors.StatusPaymentRequired, "INSUFFICIENT_BALANCE")
 }
+
+func Test_messagesPOST_medias(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("c96bf1c2-a2e9-11ec-a8e3-a716ee72ed9d"),
+		},
+	})
+	media1 := uuid.FromStringOrNil("3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d")
+	media2 := uuid.FromStringOrNil("4a2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d")
+	prefix := `{"source":{"type":"tel","target":"+821****0001"},"destinations":[{"type":"tel","target":"+821****0002"}],"text":"hello"`
+
+	tests := []struct {
+		name string
+
+		body string
+
+		// which service method is expected: "mms", "sms" or "none"
+		expectCall   string
+		expectMedias []uuid.UUID
+		svcErr       error
+
+		expectStatus cerrors.Status
+		expectReason string
+	}{
+		{
+			name:         "medias go to the mms method",
+			body:         prefix + `,"medias":["3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d","4a2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"]}`,
+			expectCall:   "mms",
+			expectMedias: []uuid.UUID{media1, media2},
+		},
+		{
+			name:       "an empty medias list is an sms",
+			body:       prefix + `,"medias":[]}`,
+			expectCall: "sms",
+		},
+		{
+			name:       "a missing medias is an sms",
+			body:       prefix + `}`,
+			expectCall: "sms",
+		},
+		{
+			name:       "a null medias is an sms",
+			body:       prefix + `,"medias":null}`,
+			expectCall: "sms",
+		},
+		{
+			name:         "a medias id that is not a uuid is rejected before any service call",
+			body:         prefix + `,"medias":["not-a-uuid"]}`,
+			expectCall:   "none",
+			expectStatus: cerrors.StatusInvalidArgument,
+			expectReason: "INVALID_MEDIA_ID",
+		},
+		{
+			name:         "a nil uuid is rejected",
+			body:         prefix + `,"medias":["00000000-0000-0000-0000-000000000000"]}`,
+			expectCall:   "none",
+			expectStatus: cerrors.StatusInvalidArgument,
+			expectReason: "INVALID_MEDIA_ID",
+		},
+		{
+			name:         "a typed payment required error keeps its status",
+			body:         prefix + `,"medias":["3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"]}`,
+			expectCall:   "mms",
+			expectMedias: []uuid.UUID{media1},
+			svcErr:       cerrors.PaymentRequired("message-manager", "INSUFFICIENT_BALANCE", "no balance"),
+			expectStatus: cerrors.StatusPaymentRequired,
+			expectReason: "INSUFFICIENT_BALANCE",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{serviceHandler: mockSvc}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+			r.Use(middleware.RequestID())
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest(http.MethodPost, "/messages", bytes.NewBufferString(tt.body))
+			req.Header.Set("Content-Type", "application/json")
+
+			res := &mmmessage.WebhookMessage{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("d0b1f3f4-a2e9-11ec-8b3b-4b3b3b3b3b3b")}}
+			switch tt.expectCall {
+			case "mms":
+				var ret *mmmessage.WebhookMessage
+				if tt.svcErr == nil {
+					ret = res
+				}
+				mockSvc.EXPECT().MessageSendMMS(gomock.Any(), agent, gomock.Any(), gomock.Any(), "hello", tt.expectMedias).Return(ret, tt.svcErr)
+			case "sms":
+				mockSvc.EXPECT().MessageSend(gomock.Any(), agent, gomock.Any(), gomock.Any(), "hello").Return(res, nil)
+			}
+
+			r.ServeHTTP(w, req)
+
+			if tt.expectReason != "" {
+				assertErrorResponse(t, w, tt.expectStatus, tt.expectReason)
+				return
+			}
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d, body: %s", http.StatusOK, w.Code, w.Body.String())
+			}
+		})
+	}
+}

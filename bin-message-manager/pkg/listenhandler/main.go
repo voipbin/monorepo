@@ -50,6 +50,7 @@ var (
 	// messages
 	regV1MessagesGet = regexp.MustCompile(`/v1/messages\?`)
 	regV1Messages    = regexp.MustCompile(`/v1/messages$`)
+	regV1MessagesMMS = regexp.MustCompile(`/v1/messages/mms$`)
 	regV1MessagesID  = regexp.MustCompile("/v1/messages/" + regUUID + "$")
 
 	// hooks
@@ -173,6 +174,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Messages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1MessagesPost(ctx, m)
 		requestType = "/v1/messages"
+
+	// POST /messages/mms
+	case regV1MessagesMMS.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1MessagesMMSPost(ctx, m)
+		requestType = "/v1/messages/mms"
 
 	// GET /messages/<id>
 	case regV1MessagesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:

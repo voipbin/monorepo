@@ -336,6 +336,55 @@ func Test_IsValidBalance(t *testing.T) {
 			expectRes: false,
 		},
 		{
+			name: "mms with enough credit balance",
+
+			accountID:   uuid.FromStringOrNil("c1c1c1c1-1111-11ee-86c6-111111111111"),
+			billingType: billing.ReferenceTypeMMS,
+			count:       2,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c1c1c1c1-1111-11ee-86c6-111111111111"),
+				},
+				BalanceCredit: 2 * billing.DefaultCreditPerUnitMMS,
+				TMDelete:      nil,
+			},
+			expectRes: true,
+		},
+		{
+			name: "mms with credit enough for sms but not for mms returns false",
+
+			accountID:   uuid.FromStringOrNil("c2c2c2c2-2222-11ee-86c6-222222222222"),
+			billingType: billing.ReferenceTypeMMS,
+			count:       1,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c2c2c2c2-2222-11ee-86c6-222222222222"),
+				},
+				BalanceCredit: billing.DefaultCreditPerUnitSMS,
+				TMDelete:      nil,
+			},
+			expectRes: false,
+		},
+		{
+			name: "mms with tokens but no credit returns false",
+
+			accountID:   uuid.FromStringOrNil("c3c3c3c3-3333-11ee-86c6-333333333333"),
+			billingType: billing.ReferenceTypeMMS,
+			count:       1,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c3c3c3c3-3333-11ee-86c6-333333333333"),
+				},
+				BalanceToken:  1000,
+				BalanceCredit: 0,
+				TMDelete:      nil,
+			},
+			expectRes: false,
+		},
+		{
 			name: "email with enough credit balance",
 
 			accountID:   uuid.FromStringOrNil("b1b1b1b1-1111-11ee-86c6-111111111111"),

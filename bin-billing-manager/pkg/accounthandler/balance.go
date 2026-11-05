@@ -99,6 +99,14 @@ func (h *accountHandler) IsValidBalance(ctx context.Context, accountID uuid.UUID
 			return true, nil
 		}
 
+	case billing.ReferenceTypeMMS:
+		costInfo := billing.GetCostInfo(billing.CostTypeMMS)
+		expectCost := costInfo.CreditPerUnit * int64(count)
+		if a.BalanceCredit >= expectCost {
+			promAccountBalanceCheckTotal.WithLabelValues("valid").Inc()
+			return true, nil
+		}
+
 	case billing.ReferenceTypeEmail:
 		costInfo := billing.GetCostInfo(billing.CostTypeEmail)
 		expectCost := costInfo.CreditPerUnit * int64(count)

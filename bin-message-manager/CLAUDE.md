@@ -1,6 +1,6 @@
 # bin-message-manager
 
-SMS messaging service — sends messages via Telnyx and MessageBird, tracks per-target delivery status, and processes provider webhooks for delivery updates.
+SMS and MMS messaging service — sends messages via Telnyx and MessageBird (an MMS goes to Telnyx first, and to MessageBird only for the targets Telnyx refused), tracks per-target delivery status, and processes provider webhooks for delivery updates.
 
 > Cross-cutting rules (verification workflow, branch/commit format, worktrees, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md).
 
@@ -61,7 +61,7 @@ AUTHTOKEN_TELNYX="token" \
 
 - **No SubscribeHandler** — webhook events arrive via `POST /v1/hooks` from bin-hook-manager
 - **ListenHandler**: consumes `bin-manager.message-manager.request`
-- **Provider dispatch**: MessageBird primary, Telnyx fallback; goroutine-based async send
+- **Provider dispatch**: SMS starts with MessageBird (see `pkg/messagehandler/send.go`); MMS goes to Telnyx first and to MessageBird only for the targets Telnyx refused; goroutine-based async send
 - **Database**: Squirrel SQL builder (not raw SQL); Targets tracked separately per recipient
 
 ## Testing

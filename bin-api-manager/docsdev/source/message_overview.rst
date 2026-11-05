@@ -53,10 +53,71 @@ When you send a message, VoIPBin routes it through carrier networks to reach the
      - Description
    * - SMS
      - Text-only messages up to 160 characters (or 70 for Unicode). Longer messages are split and reassembled by the recipient.
+   * - MMS
+     - A message with media attachments (images, audio, PDF). Sent when ``POST /messages`` has a non-empty ``medias`` list.
 
 .. note:: **AI Implementation Hint**
 
-   VoIPBin's Message API currently supports SMS only. The public ``POST /messages`` endpoint accepts ``source``, ``destinations``, and ``text`` -- there is no ``medias``/MMS parameter.
+   ``POST /messages`` accepts ``source``, ``destinations``, ``text`` and the optional ``medias`` (a list of file ids). Without ``medias`` (missing, ``null`` or an empty list) the message is an SMS, exactly as before. With ``medias`` it is an MMS.
+
+.. _message-overview-mms:
+
+Sending an MMS
+--------------
+To send an MMS, upload each file first and then reference the file ids in ``medias``.
+
+1. Upload each file with ``POST /storage_files`` using ``type=media``. Keep the returned ``id``.
+2. Send ``POST /messages`` with the ``medias`` list of those ids. The ``text`` may be an empty string for a media-only message.
+
+**Limits**
+
+.. list-table::
+   :header-rows: 1
+
+   * - Item
+     - Limit
+   * - Number of files
+     - At most 10 per message.
+   * - Total size
+     - At most 900 KiB for all files together.
+   * - Image files (``jpg``, ``jpeg``, ``png``, ``gif``)
+     - At most 900 KiB each.
+   * - Audio and document files (``mp3``, ``wav``, ``pdf``)
+     - At most 600 KiB each.
+   * - Text
+     - At most 2000 characters.
+   * - Files
+     - Must belong to your account and must have been uploaded with ``type=media``.
+
+**Delivery**
+
+An MMS is sent through the carrier network of the destination. Whether an MMS can be delivered depends on the destination number and its carrier. A target that could not be delivered gets the status ``failed``. This includes a target whose result could not be confirmed, which is not sent again through another route so that it is never delivered twice. An MMS is never sent as a text-only message. Each destination is charged as one MMS message when the message is created, so a target that ends as ``failed`` is charged as well. The price is listed in :ref:`Billing Account Overview <billing-account-overview>`.
+
+**Errors**
+
+A request that is rejected with one of the reasons below creates no message, charges nothing and sends nothing, so it can be retried safely after the cause is fixed.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Reason
+     - Meaning
+   * - ``MEDIA_NOT_FOUND``
+     - A file id does not exist, is deleted, or belongs to another account.
+   * - ``MEDIA_FILE_TYPE_INVALID``
+     - A file was not uploaded with ``type=media``.
+   * - ``MEDIA_TYPE_UNSUPPORTED``
+     - The file extension is not one of the supported types.
+   * - ``MEDIA_TOO_LARGE``
+     - A file, or all the files together, exceed the size limit.
+   * - ``MEDIA_TOO_MANY``, ``MEDIA_DUPLICATE``, ``INVALID_MEDIA_ID``
+     - More than 10 files, the same id listed twice, or an id that is not a valid UUID.
+   * - ``TEXT_TOO_LONG``
+     - The text is longer than 2000 characters.
+   * - ``INSUFFICIENT_BALANCE`` (HTTP 402)
+     - The credit balance is not enough for the message.
+   * - ``MEDIA_CHECK_TIMEOUT`` (HTTP 503)
+     - The files could not be checked in time. Retry the request.
 
 
 

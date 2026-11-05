@@ -37,6 +37,43 @@ Send a message
         "text": "hello, this is test message."
     }'
 
+Send an MMS
+-----------
+
+Upload the file with the type ``media``, then send the message with the returned file id in ``medias``.
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/storage_files?token=<YOUR_AUTH_TOKEN>' \
+    --form 'file=@/path/to/photo.png' \
+    --form 'type=media'
+
+    {
+        "id": "3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+        "type": "media",
+        "filename": "photo.png",
+        ...
+    }
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/messages?token=<YOUR_AUTH_TOKEN>' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "source": {
+            "type": "tel",
+            "target": "+155****6543"
+        },
+        "destinations": [
+            {
+                "type": "tel",
+                "target": "+155****8985"
+            }
+        ],
+        "text": "Here is the photo.",
+        "medias": ["3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"]
+    }'
+
+The response has ``"type": "mms"`` and the ``medias`` list. See :ref:`Sending an MMS <message-overview-mms>` for the limits and the errors.
+
 Get list of messages
 --------------------
 

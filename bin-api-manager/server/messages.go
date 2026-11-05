@@ -5,6 +5,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	mmmessage "monorepo/bin-message-manager/models/message"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -84,7 +85,25 @@ func (h *server) PostMessages(c *gin.Context) {
 		destinations = append(destinations, ConvertCommonAddress(v))
 	}
 
-	res, err := h.serviceHandler.MessageSend(c.Request.Context(), a, &source, destinations, req.Text)
+	// a message with medias is sent as an mms through its own method. A missing or an empty list is an sms.
+	var res *mmmessage.WebhookMessage
+	var err error
+	if req.Medias != nil && len(*req.Medias) > 0 {
+		medias := []uuid.UUID{}
+		for _, v := range *req.Medias {
+			id := uuid.FromStringOrNil(v)
+			if id == uuid.Nil {
+				log.Errorf("Could not parse the media id.")
+				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_MEDIA_ID", "A media id is not a valid UUID."))
+				return
+			}
+			medias = append(medias, id)
+		}
+
+		res, err = h.serviceHandler.MessageSendMMS(c.Request.Context(), a, &source, destinations, req.Text, medias)
+	} else {
+		res, err = h.serviceHandler.MessageSend(c.Request.Context(), a, &source, destinations, req.Text)
+	}
 	if err != nil {
 		log.Errorf("Could not send the message. err: %v", err)
 		abortWithServiceError(c, err)

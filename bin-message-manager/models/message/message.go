@@ -24,8 +24,8 @@ type Message struct {
 	ProviderReferenceID string       `json:"provider_reference_id" db:"provider_reference_id"`
 
 	// message info
-	Text      string    `json:"text" db:"text"` // Text delivered in the body of the message.
-	Medias    []string  `json:"medias" db:"medias,json"`
+	Text      string    `json:"text" db:"text"`          // Text delivered in the body of the message.
+	Medias    []string  `json:"medias" db:"medias,json"` // storage file ids of the medias of an mms, never urls.
 	Direction Direction `json:"direction" db:"direction"`
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
@@ -39,6 +39,7 @@ type Type string
 // list of types
 const (
 	TypeSMS Type = "sms"
+	TypeMMS Type = "mms"
 )
 
 // Direction defines

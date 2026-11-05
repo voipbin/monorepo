@@ -16,3 +16,15 @@ type V1DataMessagesPost struct {
 	Destinations []commonaddress.Address `json:"destinations"`
 	Text         string                  `json:"text"`
 }
+
+// V1DataMessagesMMSPost is
+// v1 data type request struct for
+// /v1/messages/mms POST
+type V1DataMessagesMMSPost struct {
+	ID           uuid.UUID               `json:"id"`
+	CustomerID   uuid.UUID               `json:"customer_id"`
+	Source       *commonaddress.Address  `json:"source"`
+	Destinations []commonaddress.Address `json:"destinations"`
+	Text         string                  `json:"text"`
+	Medias       []uuid.UUID             `json:"medias"`
+}

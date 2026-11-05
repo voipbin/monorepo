@@ -21,7 +21,8 @@ type WebhookMessage struct {
 	Targets []target.Target        `json:"targets"`
 
 	// message info
-	Text      string    `json:"text"` // Text delivered in the body of the message.
+	Text      string    `json:"text"`             // Text delivered in the body of the message.
+	Medias    []string  `json:"medias,omitempty"` // Storage file ids of the medias. Omitted when the message has none.
 	Direction Direction `json:"direction"`
 
 	TMCreate *time.Time `json:"tm_create"`
@@ -40,6 +41,7 @@ func (h *Message) ConvertWebhookMessage() *WebhookMessage {
 		Targets: h.Targets,
 
 		Text:      h.Text,
+		Medias:    h.Medias,
 		Direction: h.Direction,
 
 		TMCreate: h.TMCreate,

@@ -5472,6 +5472,21 @@ func (mr *MockRequestHandlerMockRecorder) MessageV1MessageSend(ctx, id, customer
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).MessageV1MessageSend), ctx, id, customerID, source, destinations, text)
 }
 
+// MessageV1MessageSendMMS mocks base method.
+func (m *MockRequestHandler) MessageV1MessageSendMMS(ctx context.Context, id, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string, medias []uuid.UUID) (*message1.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageV1MessageSendMMS", ctx, id, customerID, source, destinations, text, medias)
+	ret0, _ := ret[0].(*message1.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageV1MessageSendMMS indicates an expected call of MessageV1MessageSendMMS.
+func (mr *MockRequestHandlerMockRecorder) MessageV1MessageSendMMS(ctx, id, customerID, source, destinations, text, medias any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageV1MessageSendMMS", reflect.TypeOf((*MockRequestHandler)(nil).MessageV1MessageSendMMS), ctx, id, customerID, source, destinations, text, medias)
+}
+
 // NumberV1AvailableNumberList mocks base method.
 func (m *MockRequestHandler) NumberV1AvailableNumberList(ctx context.Context, pageSize uint64, filters map[string]any) ([]availablenumber.AvailableNumber, error) {
 	m.ctrl.T.Helper()

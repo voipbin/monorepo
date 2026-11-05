@@ -1182,6 +1182,7 @@ type RequestHandler interface {
 	MessageV1MessageGet(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
 	MessageV1MessageDelete(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
 	MessageV1MessageSend(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.Message, error)
+	MessageV1MessageSendMMS(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string, medias []uuid.UUID) (*mmmessage.Message, error)
 
 	// number-manager available-number
 	NumberV1AvailableNumberList(ctx context.Context, pageSize uint64, filters map[string]any) ([]nmavailablenumber.AvailableNumber, error)

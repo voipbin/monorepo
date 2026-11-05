@@ -16,7 +16,8 @@ This service has **no SubscribeHandler** and subscribes to no external events. P
 
 | Target Service | When | Purpose |
 |----------------|------|---------|
-| `bin-billing-manager` | Before SMS send | Validate customer has sufficient balance |
+| `bin-billing-manager` | Before SMS or MMS send | Validate customer has sufficient balance |
+| `bin-storage-manager` | Before MMS send | Read the media files (owner, type, size) and request a fresh signed download URL for each |
 
 ## Local Monorepo Dependencies
 
@@ -24,6 +25,7 @@ This service has **no SubscribeHandler** and subscribes to no external events. P
 |--------|---------|
 | `monorepo/bin-common-handler` | sockhandler, requesthandler, notifyhandler, databasehandler |
 | `monorepo/bin-billing-manager` | Billing RPC for balance validation before send |
+| `monorepo/bin-storage-manager` | File model (media validation) |
 | `monorepo/bin-number-manager` | Phone number models (indirect dependency) |
 | `monorepo/bin-hook-manager` | Webhook models; hooks proxied through bin-hook-manager |
 | `monorepo/bin-agent-manager` | Agent models (indirect dependency) |

@@ -38,9 +38,11 @@ type RequestExternal interface {
 
 	// messagebird
 	MessagebirdSendMessage(ctx context.Context, sender string, destinations []string, text string) (*messagebird.Message, error)
+	MessagebirdSendMMS(ctx context.Context, sender string, destination string, text string, mediaURLs []string) (*messagebird.Message, error)
 
 	// telnyx
 	TelnyxSendMessage(ctx context.Context, source string, destination string, text string) (*telnyx.MessageResponse, error)
+	TelnyxSendMMS(ctx context.Context, source string, destination string, text string, mediaURLs []string) (*telnyx.MessageResponse, error)
 }
 
 type requestExternal struct {

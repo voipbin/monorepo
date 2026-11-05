@@ -7,6 +7,7 @@
 | SMS not sent | Message created but target stays `queued` | Provider API credentials invalid or provider API down |
 | Balance rejection | `POST /v1/messages` returns 402 | Customer billing balance insufficient |
 | Webhook not processed | Target status never updates | `bin-hook-manager` not forwarding; or provider webhook URL misconfigured |
+| MMS target `failed` | A message of type `mms` has a target in `failed` and the others are `queued` or `sent` | The provider refused the media or the destination (the `mms_target_failed_total` counter shows the provider and the reason), or the destination is outside the US and Canada and Telnyx refused it |
 | MessageBird auth failure | Targets fail with 401 | `authtoken_messagebird` expired or wrong |
 | Telnyx auth failure | Fallback provider fails | `authtoken_telnyx` expired or wrong |
 | Cache stale | Stale message data returned | Redis out of sync; restart clears cache |
@@ -110,6 +111,8 @@ All flags can also be set via environment variable (uppercase, underscores).
 | Metric | Type | Labels | Description |
 |--------|------|--------|-------------|
 | `receive_request_process_time` | Histogram | `type`, `method` | RPC request processing duration |
+| `mms_target_failed_total` | Counter | `provider`, `reason` | MMS targets that no provider accepted (`rejected`, `error`, `ineligible`) |
+| `mms_media_check_seconds` | Histogram | none | Duration of the media validation and signed URL refresh of one MMS request |
 | `request_external_process_time` | Histogram | `provider`, `method` | Provider API call duration |
 | `messagebird_number_send_total` | Counter | `type` | Total SMS sent via MessageBird |
 | `telnyx_number_send_total` | Counter | `type` | Total SMS sent via Telnyx |

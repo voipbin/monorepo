@@ -103,6 +103,42 @@ func Test_PostStorageFiles(t *testing.T) {
 	}
 }
 
+// Test_PostStorageFiles_mediaType checks that the upload type media is accepted and passed through.
+func Test_PostStorageFiles_mediaType(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")},
+	})
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+	part, _ := writer.CreateFormFile("file", "photo.png")
+	_, _ = part.Write([]byte("png"))
+	_ = writer.WriteField("type", "media")
+	_ = writer.Close()
+
+	req, _ := http.NewRequest("POST", "/storage_files", body)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+
+	mockSvc.EXPECT().StorageFileCreate(req.Context(), agent, gomock.Any(), smfile.Type("media"), "", "", "photo.png").Return(&smfile.WebhookMessage{}, nil)
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+	}
+}
+
 func Test_PostStorageFiles_err(t *testing.T) {
 
 	tests := []struct {

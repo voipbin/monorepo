@@ -44,12 +44,9 @@ An individual recipient within a message. Each destination address maps to one T
 
 ### Provider Selection
 
-Currently defaults to MessageBird; Telnyx is the fallback. Provider is hardcoded in the send logic:
-```
-messagebird → primary
-telnyx      → fallback
-```
-Provider identifier is stored on the Message record for webhook routing.
+SMS: the send logic starts with MessageBird and goes through the SMS provider handlers; see `pkg/messagehandler/send.go`.
+MMS: Telnyx is the first provider and MessageBird is used only for the targets Telnyx definitively refused (see the MMS Send Flow below).
+The provider identifier is stored on the Message record for webhook routing.
 
 ### Webhook Processing
 
@@ -79,3 +76,15 @@ Uses Squirrel SQL builder (not raw SQL):
 ```go
 sq.Select("*").From("messages").Where(sq.Eq{"id": id}).Where(sq.Eq{"tm_delete": DefaultTimeStamp})
 ```
+
+### MMS Send Flow
+
+`POST /v1/messages/mms` (`messagehandler.SendMMS`) sends a message with media attachments:
+
+1. Identity verification gate and address normalization, the same as SMS.
+2. Text length check (2000 characters) and media validation: every media is a storage file id of the same customer, uploaded with file type `media`, with a supported extension and within the size limits. All checks run before the message is created.
+3. Balance check with the `mms` billing reference type.
+4. A fresh signed download URL is requested for every media. The URLs are handed to the provider only; they are not stored or logged.
+5. The message is created with type `mms` and the file ids in `medias`, then dispatched in a goroutine.
+6. Every target is sent to Telnyx once. A target that Telnyx definitively refused (HTTP 4xx other than 408), with a `+1` source and destination, is sent once to MessageBird. A target with an unknown result (timeout, 5xx, transport error) is never sent through another provider, so it cannot be delivered twice. A target that no provider accepted becomes `failed`; an MMS is never sent as text only.
+7. The final target states and the provider that accepted the targets are written once.

@@ -31,6 +31,7 @@ type MessageHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*message.Message, error)
 
 	Send(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error)
+	SendMMS(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string, medias []uuid.UUID) (*message.Message, error)
 
 	Hook(ctx context.Context, uri string, m []byte) error
 }
@@ -44,6 +45,9 @@ type messageHandler struct {
 
 	messageHandlerMessagebird messagehandlermessagebird.MessageHandlerMessagebird
 	messageHandlerTelnyx      MessageHandlerTelnyx
+
+	mmsTelnyx      MMSProvider
+	mmsMessagebird MMSProvider
 }
 
 // NewMessageHandler returns a new MessageHandler
@@ -57,6 +61,9 @@ func NewMessageHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHa
 
 		messageHandlerMessagebird: NewMessageHandlerMessagebird(requestExternal),
 		messageHandlerTelnyx:      NewMessageHandlerTelnyx(requestExternal),
+
+		mmsTelnyx:      NewMMSTelnyx(requestExternal),
+		mmsMessagebird: NewMMSMessagebird(requestExternal),
 	}
 }
 
@@ -80,11 +87,31 @@ var (
 		},
 		[]string{"type"},
 	)
+
+	promMMSTargetFailedTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "mms_target_failed_total",
+			Help:      "Total number of mms targets that no provider accepted, by the last provider tried and the reason.",
+		},
+		[]string{"provider", "reason"},
+	)
+
+	promMMSMediaCheckSeconds = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "mms_media_check_seconds",
+			Help:      "Duration of the media validation and the signed url refresh of one mms request.",
+			Buckets:   []float64{0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10},
+		},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(
 		promTelnyxSendTotal,
 		promMessagebirdSendTotal,
+		promMMSTargetFailedTotal,
+		promMMSMediaCheckSeconds,
 	)
 }

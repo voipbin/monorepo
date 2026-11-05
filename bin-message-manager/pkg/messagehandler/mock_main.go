@@ -116,3 +116,18 @@ func (mr *MockMessageHandlerMockRecorder) Send(ctx, id, customerID, source, dest
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockMessageHandler)(nil).Send), ctx, id, customerID, source, destinations, text)
 }
+
+// SendMMS mocks base method.
+func (m *MockMessageHandler) SendMMS(ctx context.Context, id, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string, medias []uuid.UUID) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendMMS", ctx, id, customerID, source, destinations, text, medias)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SendMMS indicates an expected call of SendMMS.
+func (mr *MockMessageHandlerMockRecorder) SendMMS(ctx, id, customerID, source, destinations, text, medias any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMMS", reflect.TypeOf((*MockMessageHandler)(nil).SendMMS), ctx, id, customerID, source, destinations, text, medias)
+}

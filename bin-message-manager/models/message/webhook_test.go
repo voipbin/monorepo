@@ -272,3 +272,36 @@ func TestWebhookMessageStruct(t *testing.T) {
 		t.Errorf("TMCreate mismatch: got %v, want %v", wm.TMCreate, tmCreate)
 	}
 }
+
+func Test_WebhookMessage_Medias(t *testing.T) {
+	tests := []struct {
+		name string
+
+		medias []string
+
+		expectKey bool
+	}{
+		{"nil medias is omitted, an sms looks as before", nil, false},
+		{"empty medias is omitted", []string{}, false},
+		{"medias are exposed", []string{"11111111-1111-4111-8111-111111111111"}, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := &Message{Type: TypeMMS, Medias: tt.medias}
+
+			data, err := m.CreateWebhookEvent()
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			var raw map[string]json.RawMessage
+			if errUnmarshal := json.Unmarshal(data, &raw); errUnmarshal != nil {
+				t.Fatalf("Could not unmarshal: %v", errUnmarshal)
+			}
+			if _, ok := raw["medias"]; ok != tt.expectKey {
+				t.Errorf("Wrong match. expect the medias key: %v, got: %s", tt.expectKey, string(data))
+			}
+		})
+	}
+}

@@ -37,6 +37,7 @@ Message struct
             }
         ],
         "text": "Hello, this is test message.",
+        "medias": ["<string>"],
         "direction": "outbound",
         "tm_create": "2022-03-13 15:11:05.235717",
         "tm_update": "2022-03-13 15:11:06.497278",
@@ -49,6 +50,7 @@ Message struct
 * ``source`` (Object): Source address info. See :ref:`Address <common-struct-address-address>`.
 * ``targets`` (Array of Object): List of delivery targets with per-destination status. See :ref:`Target <message-struct-message-target>`.
 * ``text`` (String): The message body text content.
+* ``medias`` (Array of UUID): The ids of the media files attached to the message, from the ``POST /storage_files`` response. Present only when the message has medias (type ``mms``); omitted for an SMS.
 * ``direction`` (enum string): Whether the message is inbound or outbound. See :ref:`Direction <message-struct-message-direction>`.
 * ``tm_create`` (string, ISO 8601): Timestamp when the message was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last status update.
@@ -97,6 +99,8 @@ Message's type.
      - Description
    * - sms
      - Standard SMS text message. Limited to 160 characters per segment (GSM-7 encoding) or 70 characters (Unicode encoding).
+   * - mms
+     - A message with one or more media attachments (images, audio, PDF), listed in ``medias``. A message sent with ``medias`` is returned with type ``mms``.
 
 
 .. _message-struct-message-direction:
