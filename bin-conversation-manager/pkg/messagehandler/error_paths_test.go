@@ -127,7 +127,7 @@ func Test_sendSMS_errors(t *testing.T) {
 
 		m.util.EXPECT().UUIDCreate().Return(testSendMessageID)
 		expectCreateOK(m, testSendMessageID)
-		m.sms.EXPECT().Send(gomock.Any(), cv, testSendMessageID, "hello").Return(sendErr)
+		m.sms.EXPECT().Send(gomock.Any(), cv, testSendMessageID, "hello", nil).Return(sendErr)
 
 		failed := newSendTestMessage()
 		m.db.EXPECT().MessageUpdate(gomock.Any(), testSendMessageID, failedStatus()).Return(nil)

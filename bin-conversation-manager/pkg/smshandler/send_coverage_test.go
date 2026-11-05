@@ -52,7 +52,7 @@ func Test_Send_requestFailureIsReturned(t *testing.T) {
 	ctx := context.Background()
 	mockReq.EXPECT().MessageV1MessageSend(ctx, messageID, customerID, &cv.Self, []commonaddress.Address{cv.Peer}, "hello").Return(nil, errSend)
 
-	if err := h.Send(ctx, cv, messageID, "hello"); !errors.Is(err, errSend) {
+	if err := h.Send(ctx, cv, messageID, "hello", nil); !errors.Is(err, errSend) {
 		t.Errorf("Send() error = %v, want %v", err, errSend)
 	}
 }

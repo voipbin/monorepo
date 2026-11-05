@@ -16,6 +16,7 @@ import (
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 	fmvariable "monorepo/bin-flow-manager/models/variable"
+	mmmessage "monorepo/bin-message-manager/models/message"
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 	tmcorrelation "monorepo/bin-timeline-manager/models/correlation"
 
@@ -672,7 +673,16 @@ func (h *aicallHandler) toolHandleMessageSend(ctx context.Context, c *aicall.AIc
 	}
 
 	msgID := h.utilHandler.UUIDCreate()
-	tmpRes, err := h.reqHandler.MessageV1MessageSend(ctx, msgID, c.CustomerID, tmpOpt.Source, tmpOpt.Destinations, tmpOpt.Text)
+
+	// without medias the message is an sms as before. medias are storage file ids only (a url fails
+	// the unmarshal above) and message-manager checks that the files belong to the customer.
+	var tmpRes *mmmessage.Message
+	var err error
+	if len(tmpOpt.Medias) == 0 {
+		tmpRes, err = h.reqHandler.MessageV1MessageSend(ctx, msgID, c.CustomerID, tmpOpt.Source, tmpOpt.Destinations, tmpOpt.Text)
+	} else {
+		tmpRes, err = h.reqHandler.MessageV1MessageSendMMS(ctx, msgID, c.CustomerID, tmpOpt.Source, tmpOpt.Destinations, tmpOpt.Text, tmpOpt.Medias)
+	}
 	if err != nil {
 		fillFailed(res, err)
 		return res

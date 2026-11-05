@@ -59,6 +59,12 @@ post:
               type: string
               description: The message text.
             medias:
+              description: >-
+                Files to attach. In a conversation that sends SMS, each item must carry the storage file id in
+                `id` (the id returned from the `POST /storage_files` response, uploaded with type `media`); the
+                message is then sent as an MMS and the limits of `POST /messages` apply. An item without a valid
+                `id` is rejected with `MEDIA_ID_REQUIRED`. Other conversation types do not send attachments and
+                ignore this list.
               type: array
               items:
                 $ref: '#/components/schemas/ConversationManagerMedia'

@@ -18,6 +18,8 @@ import (
 
 	kmkase "monorepo/bin-contact-manager/models/kase"
 
+	mmmessage "monorepo/bin-message-manager/models/message"
+
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
@@ -886,8 +888,14 @@ func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, af *act
 		return err
 	}
 
-	// send message
-	tmp, err := h.reqHandler.MessageV1MessageSend(ctx, uuid.Nil, af.CustomerID, opt.Source, opt.Destinations, opt.Text)
+	// send message. Without medias the message is an sms as before. With medias the message goes to
+	// the mms route, and the files are validated against the customer by message-manager.
+	var tmp *mmmessage.Message
+	if len(opt.Medias) == 0 {
+		tmp, err = h.reqHandler.MessageV1MessageSend(ctx, uuid.Nil, af.CustomerID, opt.Source, opt.Destinations, opt.Text)
+	} else {
+		tmp, err = h.reqHandler.MessageV1MessageSendMMS(ctx, uuid.Nil, af.CustomerID, opt.Source, opt.Destinations, opt.Text, opt.Medias)
+	}
 	if err != nil {
 		log.Errorf("Could not send the message correctly. err: %v", err)
 		return err

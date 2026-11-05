@@ -161,12 +161,16 @@ run_llm: Set true to confirm ("I've sent that to your email"), false for silent 
 	},
 	{
 		Name: tool.ToolNameSendMessage,
-		Description: `Sends an SMS text message to a phone number.
+		Description: `Sends an SMS text message to a phone number. When medias are given, the message is sent as an MMS with those attached files.
 
 WHEN TO USE:
 - User explicitly requests a text/SMS: "text me", "send me a text", "SMS me", "message my phone"
 - User asks for information sent to their phone number
 - User provides a phone number and asks for a message there
+
+MEDIAS (attachments):
+- medias takes storage file ids only, each a uuid of a file the customer uploaded for messaging. Use only ids you were given in your instructions or by the user. Never invent an id and never pass a URL.
+- Leave medias out for a plain text message.
 
 WHEN NOT TO USE:
 - User says "message me" generically without specifying SMS (ask: email or text?)
@@ -231,6 +235,16 @@ run_llm: Set true to confirm ("I've texted you the details"), false for silent s
 				"text": map[string]any{
 					"type":        "string",
 					"description": "The SMS message content to send",
+				},
+				"medias": map[string]any{
+					"type": "array",
+					"items": map[string]any{
+						"type":        "string",
+						"format":      "uuid",
+						"description": "Storage file id (uuid) of an uploaded file to attach. Never a URL.",
+					},
+					"maxItems":    10,
+					"description": "Optional. Storage file ids to attach, which sends the message as an MMS. Omit for a plain SMS. The limit of 10 files and the file checks are enforced by the messaging service.",
 				},
 			},
 			"required": []string{"destinations", "text"},

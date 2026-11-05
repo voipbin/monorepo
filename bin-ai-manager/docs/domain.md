@@ -172,7 +172,7 @@ Tool definitions live in `pkg/toolhandler/definitions.go`. Only tools listed in 
 | `connect_call` | Transfer or bridge a call |
 | `create_call` | Place a new, independent outbound call (not bridged; current AI session continues) |
 | `send_email` | Send an email via email-manager |
-| `send_message` | Send SMS via message-manager |
+| `send_message` | Send SMS via message-manager; with `medias` (storage file ids, never URLs) it is sent as an MMS through `MessageV1MessageSendMMS` |
 | `stop_media` | Stop current TTS audio playback |
 | `stop_service` | Soft-end the AI conversation |
 | `stop_flow` | Hard-terminate the entire flow |

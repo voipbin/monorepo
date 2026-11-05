@@ -138,6 +138,27 @@ Example
         "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
+Send a message with a file to an SMS conversation
+--------------------------------------------------
+
+Upload the file with ``POST /storage_files`` (``type=media``) and use the returned ``id`` as the ``id`` of an item in ``medias``. The message is sent as an MMS.
+
+Example
++++++++
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "text": "Here is the photo you asked for.",
+            "medias": [
+                {"id": "3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"}
+            ]
+        }'
+
+See :ref:`Sending attachments <conversation-overview-mms>` for the rules.
+
 Get list of conversation messages
 ---------------------------------
 

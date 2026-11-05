@@ -11521,6 +11521,7 @@
                     "description": "The message text."
                   },
                   "medias": {
+                    "description": "Files to attach. In a conversation that sends SMS, each item must carry the storage file id in `id` (the id returned from the `POST /storage_files` response, uploaded with type `media`); the message is then sent as an MMS and the limits of `POST /messages` apply. An item without a valid `id` is rejected with `MEDIA_ID_REQUIRED`. Other conversation types do not send attachments and ignore this list.",
                     "type": "array",
                     "items": {
                       "$ref": "#/components/schemas/ConversationManagerMedia"
@@ -19460,6 +19461,7 @@
                     "description": "The text content of the message."
                   },
                   "medias": {
+                    "description": "Files to attach. In a conversation that sends SMS, each item must carry the storage file id in `id` (the id returned from the `POST /storage_files` response, uploaded with type `media`); the message is then sent as an MMS and the limits of `POST /messages` apply. An item without a valid `id` is rejected with `MEDIA_ID_REQUIRED`. Other conversation types do not send attachments and ignore this list.",
                     "type": "array",
                     "items": {
                       "$ref": "#/components/schemas/ConversationManagerMedia"
@@ -31665,7 +31667,7 @@
             "type": "string",
             "format": "uuid",
             "x-go-type": "string",
-            "description": "The unique identifier of the media.",
+            "description": "The unique identifier of the media. In a request to a conversation that sends SMS, it is the storage file id of the file to attach, returned from the `POST /storage_files` response (uploaded with type `media`).",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
           "customer_id": {
@@ -32810,6 +32812,17 @@
             "type": "string",
             "description": "The text of the message to send.",
             "example": "Your verification code is 1234."
+          },
+          "medias": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "x-go-type": "string",
+              "example": "3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
+            },
+            "maxItems": 10,
+            "description": "Optional. The ids of the files to attach, returned from the `POST /storage_files` response (uploaded with type `media`). When the list is not empty the message is sent as an MMS; the limits and the owner check of `POST /messages` apply. URLs are not accepted, and variables cannot be used here."
           }
         }
       },

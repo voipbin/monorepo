@@ -4758,7 +4758,9 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: The unique identifier of the media.
+          description: >-
+            The unique identifier of the media. In a request to a conversation that sends SMS, it is the storage
+            file id of the file to attach, returned from the `POST /storage_files` response (uploaded with type `media`).
           example: "550e8400-e29b-41d4-a716-446655440000"
         customer_id:
           type: string
@@ -5752,6 +5754,18 @@ components:
           type: string
           description: The text of the message to send.
           example: "Your verification code is 1234."
+        medias:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+            example: "3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
+          maxItems: 10
+          description: >-
+            Optional. The ids of the files to attach, returned from the `POST /storage_files` response (uploaded
+            with type `media`). When the list is not empty the message is sent as an MMS; the limits and the
+            owner check of `POST /messages` apply. URLs are not accepted, and variables cannot be used here.
 
     FlowManagerActionOptionPlay:
       type: object

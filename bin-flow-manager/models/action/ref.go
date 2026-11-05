@@ -38,7 +38,7 @@ type RefField struct {
 	// OptionBranch.TargetIDs): the builder must resolve every value in
 	// the map, not the field itself.
 	IsMap bool
-	// IsList is true for a []Address field.
+	// IsList is true for a []Address field or a []uuid.UUID field.
 	IsList bool
 }
 
@@ -57,6 +57,7 @@ func RefFieldsOf(t Type) []RefField {
 
 	uuidType := reflect.TypeOf(uuid.UUID{})
 	mapUUIDType := reflect.TypeOf(map[string]uuid.UUID{})
+	uuidListType := reflect.TypeOf([]uuid.UUID{})
 	addrType := reflect.TypeOf(commonaddress.Address{})
 	addrPtrType := reflect.TypeOf(&commonaddress.Address{})
 	addrListType := reflect.TypeOf([]commonaddress.Address{})
@@ -75,6 +76,8 @@ func RefFieldsOf(t Type) []RefField {
 			out = append(out, RefField{JSONName: jsonName, Kind: kind})
 		case mapUUIDType:
 			out = append(out, RefField{JSONName: jsonName, Kind: kind, IsMap: true})
+		case uuidListType:
+			out = append(out, RefField{JSONName: jsonName, Kind: kind, IsList: true})
 		case addrType, addrPtrType:
 			out = append(out, RefField{JSONName: jsonName, Kind: kind})
 		case addrListType:

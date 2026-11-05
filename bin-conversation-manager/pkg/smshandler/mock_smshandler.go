@@ -12,6 +12,7 @@ package smshandler
 import (
 	context "context"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
+	media "monorepo/bin-conversation-manager/models/media"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -43,15 +44,15 @@ func (m *MockSMSHandler) EXPECT() *MockSMSHandlerMockRecorder {
 }
 
 // Send mocks base method.
-func (m *MockSMSHandler) Send(ctx context.Context, cv *conversation.Conversation, messageID uuid.UUID, text string) error {
+func (m *MockSMSHandler) Send(ctx context.Context, cv *conversation.Conversation, messageID uuid.UUID, text string, medias []media.Media) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", ctx, cv, messageID, text)
+	ret := m.ctrl.Call(m, "Send", ctx, cv, messageID, text, medias)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Send indicates an expected call of Send.
-func (mr *MockSMSHandlerMockRecorder) Send(ctx, cv, messageID, text any) *gomock.Call {
+func (mr *MockSMSHandlerMockRecorder) Send(ctx, cv, messageID, text, medias any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockSMSHandler)(nil).Send), ctx, cv, messageID, text)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockSMSHandler)(nil).Send), ctx, cv, messageID, text, medias)
 }

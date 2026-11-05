@@ -888,6 +888,25 @@ immediate                   interactive     global reach,
 <li><p>Participant preferences</p></li>
 <li><p>Channel availability</p></li>
 </ol>
+<section id="sending-attachments-mms">
+<span id="conversation-overview-mms"></span><h3>Sending attachments (MMS)<a class="headerlink" href="#sending-attachments-mms" title="Link to this heading">¶</a></h3>
+<p>A conversation that sends SMS (a conversation of the SMS channel) can send files as an MMS. Upload each file first with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage_files</span></code> using <code class="docutils literal notranslate"><span class="pre">type=media</span></code>, then list the returned file ids in <code class="docutils literal notranslate"><span class="pre">medias</span></code> when you send the message. Each item of <code class="docutils literal notranslate"><span class="pre">medias</span></code> carries the file id in <code class="docutils literal notranslate"><span class="pre">id</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Here is the photo you asked for."</span><span class="p">,</span>
+    <span class="s2">"medias"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="s2">"3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"</span><span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Without <code class="docutils literal notranslate"><span class="pre">medias</span></code> (missing or an empty list) the message is an SMS, exactly as before.</p></li>
+<li><p>The limits, the owner check, the delivery behavior and the price are the same as for <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code>. See <a class="reference internal" href="message_overview.html#message-overview-mms"><span class="std std-ref">Sending an MMS</span></a>.</p></li>
+<li><p>An item without a valid <code class="docutils literal notranslate"><span class="pre">id</span></code> is rejected with the reason <code class="docutils literal notranslate"><span class="pre">MEDIA_ID_REQUIRED</span></code> and nothing is sent. A file that is unknown, belongs to another account or was not uploaded with <code class="docutils literal notranslate"><span class="pre">type=media</span></code> is rejected with the reason returned by the message service (see the error table of <a class="reference internal" href="message_overview.html#message-overview-mms"><span class="std std-ref">Sending an MMS</span></a>).</p></li>
+<li><p>A request that is rejected for a missing <code class="docutils literal notranslate"><span class="pre">id</span></code> creates no message. A file that the message service rejects leaves the message in the conversation with the status <code class="docutils literal notranslate"><span class="pre">failed</span></code>; check the conversation messages before you retry.</p></li>
+<li><p>Conversations of other channels (for example LINE) do not send attachments. They ignore <code class="docutils literal notranslate"><span class="pre">medias</span></code> and send the text only.</p></li>
+</ul>
+</section>
 </section>
 <section id="receiving-messages">
 <h2>Receiving Messages<a class="headerlink" href="#receiving-messages" title="Link to this heading">¶</a></h2>
@@ -1482,7 +1501,10 @@ Auto-generated titles apply only to conversations created automatically; convers
 <li><a class="reference internal" href="#conversation-lifecycle">Conversation Lifecycle</a></li>
 <li><a class="reference internal" href="#conversation-rooms">Conversation Rooms</a></li>
 <li><a class="reference internal" href="#how-conversations-are-created">How Conversations Are Created</a></li>
-<li><a class="reference internal" href="#sending-messages">Sending Messages</a></li>
+<li><a class="reference internal" href="#sending-messages">Sending Messages</a><ul>
+<li><a class="reference internal" href="#sending-attachments-mms">Sending attachments (MMS)</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#receiving-messages">Receiving Messages</a></li>
 <li><a class="reference internal" href="#assigning-a-conversation-to-an-agent">Assigning a Conversation to an Agent</a></li>
 <li><a class="reference internal" href="#cross-channel-continuity">Cross-Channel Continuity</a></li>

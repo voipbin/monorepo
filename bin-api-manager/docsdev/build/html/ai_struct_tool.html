@@ -705,7 +705,7 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 <td><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>send_message</p></td>
-<td><p>Send an SMS text message</p></td>
+<td><p>Send an SMS or MMS message</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>stop_media</p></td>
@@ -876,10 +876,11 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </section>
 <section id="send-message">
 <span id="ai-struct-tool-send-message"></span><h2>send_message<a class="headerlink" href="#send-message" title="Link to this heading">¶</a></h2>
-<p>Sends an SMS text message to a phone number.</p>
+<p>Sends an SMS text message to a phone number. When <code class="docutils literal notranslate"><span class="pre">medias</span></code> is given, the message is sent as an MMS with those files attached.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">medias</span></code> takes storage file ids only, each the <code class="docutils literal notranslate"><span class="pre">id</span></code> of a file uploaded with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage_files</span></code> using <code class="docutils literal notranslate"><span class="pre">type=media</span></code>. The LLM must use only ids that it was given in its instructions or by the caller; it must not invent an id and must not pass a URL (a URL makes the tool call fail and nothing is sent). Files that do not belong to your account are rejected. Leave <code class="docutils literal notranslate"><span class="pre">medias</span></code> out for a plain text message.</p>
 <p>Phone numbers in <code class="docutils literal notranslate"><span class="pre">source.target</span></code> and <code class="docutils literal notranslate"><span class="pre">destinations[].target</span></code> must be in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). If the user provides a local number like <code class="docutils literal notranslate"><span class="pre">555-1234</span></code>, the LLM must normalize it to E.164 before invoking this tool. The <code class="docutils literal notranslate"><span class="pre">source</span></code> phone number must be a number owned by your VoIPBin account (obtainable via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>).</p>
 </div>
 <p><strong>When to use:</strong></p>
@@ -918,7 +919,13 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
                 <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"type"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">]</span>
             <span class="p">}</span>
         <span class="p">},</span>
-        <span class="s2">"text"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"SMS message content"</span> <span class="p">}</span>
+        <span class="s2">"text"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"SMS message content"</span> <span class="p">},</span>
+        <span class="s2">"medias"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+            <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"uuid"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Storage file id. Never a URL."</span> <span class="p">},</span>
+            <span class="s2">"maxItems"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Optional. Storage file ids to attach, which sends an MMS."</span>
+        <span class="p">}</span>
     <span class="p">},</span>
     <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"destinations"</span><span class="p">,</span> <span class="s2">"text"</span><span class="p">]</span>
 <span class="p">}</span>
@@ -1088,7 +1095,7 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </pre></div>
 </div>
 <p><strong>Examples:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Need</span> <span class="n">customer</span> <span class="n">name</span> <span class="kn">from</span><span class="w"> </span><span class="nn">earlier</span> <span class="o">-&gt;</span> <span class="n">get_variables</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Need</span> <span class="n">customer</span> <span class="n">name</span> <span class="kn">from</span> <span class="nn">earlier</span> <span class="o">-&gt;</span> <span class="n">get_variables</span>
 <span class="s2">"What was my confirmation?"</span>     <span class="o">-&gt;</span> <span class="n">get_variables</span>
 <span class="n">Before</span> <span class="n">sending</span> <span class="n">SMS</span>              <span class="o">-&gt;</span> <span class="n">get_variables</span> <span class="p">(</span><span class="n">to</span> <span class="n">get</span> <span class="n">phone</span> <span class="n">number</span><span class="p">)</span>
 </pre></div>

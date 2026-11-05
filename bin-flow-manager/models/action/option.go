@@ -313,6 +313,7 @@ type OptionMessageSend struct {
 	Source       *commonaddress.Address  `json:"source,omitempty" ref:"address"`
 	Destinations []commonaddress.Address `json:"destinations,omitempty" ref:"address"`
 	Text         string                  `json:"text,omitempty"`
+	Medias       []uuid.UUID             `json:"medias,omitempty" ref:"resource"` // storage file ids (uploaded with type media). Not urls. When set, the message is sent as an mms.
 }
 
 // OptionPlay defines action play's option.

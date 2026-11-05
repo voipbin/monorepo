@@ -6,7 +6,9 @@ import (
 	"strings"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -28,6 +30,13 @@ func (h *messageHandler) Send(ctx context.Context, cv *conversation.Conversation
 		"medias":       medias,
 	})
 	log.Debugf("Sending a message to the conversation. conversation_id: %s, reference_type: %s", cv.ID, cv.Type)
+
+	// only the sms type of conversation sends medias. The other types ignore them as before, and
+	// the message record must not claim an attachment that was never sent.
+	if len(medias) > 0 && cv.Type != conversation.TypeMessage {
+		log.Warnf("The conversation type does not send medias. Ignoring them. conversation_id: %s, reference_type: %s, media_count: %d", cv.ID, cv.Type, len(medias))
+		medias = []media.Media{}
+	}
 
 	switch cv.Type {
 	case conversation.TypeLine:
@@ -60,6 +69,14 @@ func (h *messageHandler) sendSMS(ctx context.Context, cv *conversation.Conversat
 		"medias":       medias,
 	})
 
+	// a media is sent by its storage file id. A media without one cannot be sent, and sending the
+	// text alone would silently drop the attachment, so reject it before anything is created.
+	for _, m := range medias {
+		if m.ID == uuid.Nil {
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameConversationManager, "MEDIA_ID_REQUIRED", "A media needs a valid storage file id in id.")
+		}
+	}
+
 	// create a sent message
 	messageID := h.utilHandler.UUIDCreate()
 	source, destination := DeriveEndpoints(cv, message.DirectionOutgoing)
@@ -81,7 +98,7 @@ func (h *messageHandler) sendSMS(ctx context.Context, cv *conversation.Conversat
 		return nil, err
 	}
 
-	if errSend := h.smsHandler.Send(ctx, cv, messageID, text); errSend != nil {
+	if errSend := h.smsHandler.Send(ctx, cv, messageID, text, medias); errSend != nil {
 		log.Errorf("Could not send the message. err: %v", errSend)
 		_, _ = h.UpdateStatus(ctx, res.ID, message.StatusFailed)
 		return nil, errSend

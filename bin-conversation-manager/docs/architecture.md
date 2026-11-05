@@ -33,7 +33,7 @@ cmd/conversation-manager/main.go
 | Domain | `pkg/accounthandler` | CRUD for platform credentials (LINE channel secret/token, SMS credentials, WhatsApp Meta credentials) |
 | Platform | `pkg/linehandler` | LINE Bot SDK: webhook signature verification, message send/receive |
 | Platform | `pkg/whatsapphandler` | WhatsApp Meta Cloud API: HMAC webhook validation, hub challenge verification, message send/receive |
-| Platform | `pkg/smshandler` | SMS/MMS sending via RPC to message-manager |
+| Platform | `pkg/smshandler` | SMS/MMS sending via RPC to message-manager (medias → `MessageV1MessageSendMMS`, otherwise `MessageV1MessageSend`) |
 | Data | `pkg/dbhandler` | MySQL CRUD using Squirrel SQL builder |
 | Data | `pkg/cachehandler` | Redis cache for account/conversation lookups |
 | Data | `migrations` | Embedded golang-migrate SQL files (service-owned schema of the four conversation tables); applied by `cmd/conversation-manager` at startup through `bin-common-handler/pkg/migrationhandler`, after the database connection and before the cache connection |

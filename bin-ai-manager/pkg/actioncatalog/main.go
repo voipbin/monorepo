@@ -192,10 +192,11 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "reason", Type: "string (normal|failed|busy|cancel|timeout|noanswer|dialout|amd)", Required: false, Description: "Hangup reason code. Empty means normal."},
 		{Name: "reference_id", Type: "uuid", Required: false, Description: "Hang up with the same reason as this referenced call id (overrides reason)."},
 	}},
-	{Type: fmaction.TypeMessageSend, Summary: "Send an SMS text message.", Options: []actionOptionField{
+	{Type: fmaction.TypeMessageSend, Summary: "Send an SMS text message, or an MMS when medias are given.", Options: []actionOptionField{
 		{Name: "source", Type: "address object {type,target,target_name}", Required: true, Description: "Source phone number the message is sent from. type is tel. Required: the sender cannot work without it."},
 		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Destination phone numbers. type is tel."},
 		{Name: "text", Type: "string", Required: true, Description: "Message text."},
+		{Name: "medias", Type: "array of uuid", Required: false, Description: "Storage file ids of uploaded files to attach, which sends an MMS. Always left empty in a draft: the user attaches files later. Never invent an id and never use a URL."},
 	}},
 	{Type: fmaction.TypeMute, Summary: "Mute audio on the call.", Options: nil},
 	{Type: fmaction.TypePlay, Summary: "Play audio from one or more media URLs.", Options: []actionOptionField{

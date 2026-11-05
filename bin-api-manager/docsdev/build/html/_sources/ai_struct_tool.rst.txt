@@ -46,7 +46,7 @@ Tool Name                 Description                                       run_
 connect_call              Transfer or connect to another endpoint            ``false``
 create_call               Place a new, independent outbound call             ``true``
 send_email                Send an email message                              ``false``
-send_message              Send an SMS text message                           ``false``
+send_message              Send an SMS or MMS message                         ``false``
 stop_media                Stop currently playing media                       ``false``
 stop_service              End the AI conversation (soft stop)                ``false``
 stop_flow                 Terminate the entire flow (hard stop)              ``false``
@@ -187,9 +187,11 @@ Sends an email to one or more email addresses.
 send_message
 ------------
 
-Sends an SMS text message to a phone number.
+Sends an SMS text message to a phone number. When ``medias`` is given, the message is sent as an MMS with those files attached.
 
 .. note:: **AI Implementation Hint**
+
+   ``medias`` takes storage file ids only, each the ``id`` of a file uploaded with ``POST /storage_files`` using ``type=media``. The LLM must use only ids that it was given in its instructions or by the caller; it must not invent an id and must not pass a URL (a URL makes the tool call fail and nothing is sent). Files that do not belong to your account are rejected. Leave ``medias`` out for a plain text message.
 
    Phone numbers in ``source.target`` and ``destinations[].target`` must be in E.164 format (e.g., ``+15551234567``). If the user provides a local number like ``555-1234``, the LLM must normalize it to E.164 before invoking this tool. The ``source`` phone number must be a number owned by your VoIPBin account (obtainable via ``GET /numbers``).
 
@@ -232,7 +234,13 @@ Sends an SMS text message to a phone number.
                     "required": ["type", "target"]
                 }
             },
-            "text": { "type": "string", "description": "SMS message content" }
+            "text": { "type": "string", "description": "SMS message content" },
+            "medias": {
+                "type": "array",
+                "items": { "type": "string", "format": "uuid", "description": "Storage file id. Never a URL." },
+                "maxItems": 10,
+                "description": "Optional. Storage file ids to attach, which sends an MMS."
+            }
         },
         "required": ["destinations", "text"]
     }

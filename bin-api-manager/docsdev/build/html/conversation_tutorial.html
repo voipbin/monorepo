@@ -779,12 +779,30 @@
 }
 </pre></div>
 </div>
-<section id="get-list-of-conversation-messages">
-<h3>Get list of conversation messages<a class="headerlink" href="#get-list-of-conversation-messages" title="Link to this heading">¶</a></h3>
+<section id="send-a-message-with-a-file-to-an-sms-conversation">
+<h3>Send a message with a file to an SMS conversation<a class="headerlink" href="#send-a-message-with-a-file-to-an-sms-conversation" title="Link to this heading">¶</a></h3>
+<p>Upload the file with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage_files</span></code> (<code class="docutils literal notranslate"><span class="pre">type=media</span></code>) and use the returned <code class="docutils literal notranslate"><span class="pre">id</span></code> as the <code class="docutils literal notranslate"><span class="pre">id</span></code> of an item in <code class="docutils literal notranslate"><span class="pre">medias</span></code>. The message is sent as an MMS.</p>
 </section>
 </section>
 <section id="id3">
 <h2>Example<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "text": "Here is the photo you asked for.",
+        "medias": [
+            {"id": "3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"}
+        ]
+    }'
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="conversation_overview.html#conversation-overview-mms"><span class="std std-ref">Sending attachments</span></a> for the rules.</p>
+<section id="get-list-of-conversation-messages">
+<h3>Get list of conversation messages<a class="headerlink" href="#get-list-of-conversation-messages" title="Link to this heading">¶</a></h3>
+</section>
+</section>
+<section id="id4">
+<h2>Example<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
@@ -1174,10 +1192,14 @@ This is intentionally out of scope for the current assignment release.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#id2">Example</a><ul>
-<li><a class="reference internal" href="#get-list-of-conversation-messages">Get list of conversation messages</a></li>
+<li><a class="reference internal" href="#send-a-message-with-a-file-to-an-sms-conversation">Send a message with a file to an SMS conversation</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#id3">Example</a><ul>
+<li><a class="reference internal" href="#get-list-of-conversation-messages">Get list of conversation messages</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id4">Example</a><ul>
 <li><a class="reference internal" href="#assigning-a-conversation-to-an-agent-walkthrough">Assigning a conversation to an agent (walkthrough)</a></li>
 </ul>
 </li>
