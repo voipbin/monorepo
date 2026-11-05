@@ -18,7 +18,7 @@ An outgoing email with status tracking, provider reference, and optional attachm
 | `provider_type` | string | `mailgun` or `sendgrid`; empty until a provider has accepted the email |
 | `provider_reference_id` | string | Provider's message reference for tracking |
 | `attachments` | []Attachment | File attachments |
-| `tm_delete` | timestamp | Soft-delete sentinel (`9999-01-01` = active) |
+| `tm_delete` | timestamp | Soft-delete timestamp (`NULL` = active) |
 
 ### Attachment
 

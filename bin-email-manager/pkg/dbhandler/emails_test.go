@@ -796,6 +796,7 @@ func Test_EmailUpdateStatusFrom(t *testing.T) {
 		name string
 
 		currentStatus email.Status
+		nullStatus    bool
 		deleted       bool
 		newStatus     email.Status
 		from          []email.Status
@@ -814,6 +815,15 @@ func Test_EmailUpdateStatusFrom(t *testing.T) {
 		{
 			name:          "advances_from_empty_status",
 			currentStatus: email.StatusNone,
+			newStatus:     email.StatusProcessed,
+			from:          []email.Status{email.StatusNone, email.StatusInitiated},
+			expectChanged: true,
+			expectStatus:  email.StatusProcessed,
+		},
+		{
+			name:          "advances_from_null_status",
+			currentStatus: email.StatusInitiated,
+			nullStatus:    true,
 			newStatus:     email.StatusProcessed,
 			from:          []email.Status{email.StatusNone, email.StatusInitiated},
 			expectChanged: true,
@@ -878,6 +888,12 @@ func Test_EmailUpdateStatusFrom(t *testing.T) {
 			mockCache.EXPECT().EmailSet(ctx, gomock.Any())
 			if err := h.EmailCreate(ctx, e); err != nil {
 				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if tt.nullStatus {
+				if _, err := dbTest.ExecContext(ctx, "update email_emails set status = NULL where id = ?", id.Bytes()); err != nil {
+					t.Fatalf("Wrong match. expect: ok, got: %v", err)
+				}
 			}
 
 			if tt.deleted {
