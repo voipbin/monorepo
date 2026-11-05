@@ -354,6 +354,8 @@ Reasons fired by RAG endpoints (``/rags``, ``/rags/{id}*``).
      - 404
      - RAG document/source ID does not exist or belongs to another customer. Fired by ``DELETE /rags/{id}/sources/{source_id}`` when the source is missing. **Fix:** Verify the source ID was obtained from a recent ``GET /rags/{id}`` response.
 
+.. _restful-api-errors-mcp-server:
+
 MCP Server Reasons
 ^^^^^^^^^^^^^^^^^^
 
@@ -371,7 +373,10 @@ Reasons fired by MCP server endpoints (``/mcpservers``, ``/mcpservers/{id}``, ``
      - MCP server ID does not exist, belongs to another customer, or has already been deleted. A deleted server keeps returning its record from ``GET``, but every write that changes it refuses, so this is the expected result of editing a server that is already gone. ``DELETE /mcpservers/{id}`` is the exception and is idempotent: a repeat delete returns 200 with the record, publishing no second ``mcp_server_deleted`` event. **Fix:** Verify the ID against a recent ``GET /mcpservers`` list, which omits deleted servers. A deleted server cannot be restored; register a new one.
    * - ``INVALID_MCP_SERVER_URL``
      - 400
-     - The ``url`` is not a valid ``https://`` MCP endpoint. Plain ``http://``, a missing host, and addresses that resolve into private or link-local ranges are all refused, because VoIPBin calls this URL from its own network. **Fix:** Publish the server on a public ``https://`` address.
+     - The ``url`` is not a valid ``https://`` MCP endpoint. Plain ``http://``, a missing host, and addresses that resolve into private or link-local ranges are all refused, because VoIPBin calls this URL from its own network. The reserved host ``carrier.invalid`` is accepted only as one of the carrier URLs of :ref:`Package Tracking <ai-tutorial-carrier-tracking>` (exact form, no trailing slash, port or query); any other URL on that host is refused, and the message lists the accepted URLs. On ``PUT`` the carrier URL check applies only when the ``url`` changes. **Fix:** Publish the server on a public ``https://`` address, or use a listed carrier URL.
+   * - ``INVALID_MCP_SERVER_SECRET``
+     - 400
+     - The ``secret`` does not have the format that the carrier URL of the server needs, for example, for a carrier that needs ``CLIENT_ID:CLIENT_SECRET``, a secret without the colon or with an empty part, a value over 512 characters, or a value with inner spaces or non-ASCII characters. Checked on ``POST``, and on ``PUT`` when a ``secret`` is sent, only when the server's resulting ``auth_type`` is ``bearer`` or ``api_key`` and its ``url`` is a carrier URL. The message does not repeat the value. **Fix:** Send the secret in the format of the carrier, see :ref:`Package Tracking <ai-tutorial-carrier-tracking>`.
    * - ``INVALID_MCP_SERVER_STATUS``
      - 400
      - The ``status`` is not one of ``active`` or ``disabled``. **Fix:** Send one of those two values, or omit the field to leave it unchanged.
