@@ -59,6 +59,8 @@ func Test_ExchangeClientCredentials_status(t *testing.T) {
 		{"expires_in zero: used once, not cached", 200, `{"access_token":"tok1","expires_in":0}`, "tok1", "", 0, false},
 		{"expires_in as a string: used once, not cached", 200, `{"access_token":"tok1","expires_in":"3600"}`, "tok1", "", 0, false},
 		{"expires_in below the margin: used once, not cached", 200, `{"access_token":"tok1","expires_in":30}`, "tok1", "", 0, false},
+		{"expires_in absurdly large is capped, not overflowed", 200, `{"access_token":"tok1","expires_in":1e300}`, "tok1", "", 0, true},
+		{"expires_in negative: used once, not cached", 200, `{"access_token":"tok1","expires_in":-5}`, "tok1", "", 0, false},
 		{"token over 4 KiB", 200, `{"access_token":"` + strings.Repeat("a", 4097) + `","expires_in":3600}`, "", CodeCarrierUnavailable, 0, false},
 		{"401 means the key was rejected", 401, `{"error":"invalid_client","error_description":"SECRET-DETAIL"}`, "", CodeCredentialInvalid, 0, false},
 		{"400 is not blamed on the key", 400, `{}`, "", CodeCarrierUnavailable, 0, false},

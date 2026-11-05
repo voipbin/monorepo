@@ -267,3 +267,39 @@ func Test_NewSSRFGuardedClient_neverDialsReservedHost(t *testing.T) {
 		}
 	}
 }
+
+// Test_guardInvalidDial_netHttpVariants runs the real transport over the guard
+// with a dial function that records what it is asked to reach: whatever
+// spelling of the reserved host is used, net/http hands the dialer the final
+// host, and nothing may be dialed for a .invalid name.
+func Test_guardInvalidDial_netHttpVariants(t *testing.T) {
+	variants := []string{
+		"https://carrier.invalid/x",
+		"https://CARRIER.INVALID./x",
+		"https://carrier\u3002invalid/x",
+		"https://carrier\uff0einvalid/x",
+		"https://carrier\uff61invalid/x",
+		"https://\uff43arrier.invalid/x",         // fullwidth letter
+		"https://carr\u0130er.invalid/x",         // dotted capital i
+		"https://carrier\u00adinvalid.invalid/x", // soft hyphen
+		"https://carr\u200bier.invalid/x",        // zero width space
+	}
+	for _, u := range variants {
+		var dialed []string
+		fake := func(ctx context.Context, network, addr string) (net.Conn, error) {
+			dialed = append(dialed, addr)
+			return nil, errors.New("fake dial")
+		}
+		client := newGuardedClient(2e9, guardInvalidDial(fake), nil)
+		resp, err := client.Get(u) //nolint:noctx // the dial is refused before any network use
+		if resp != nil {
+			_ = resp.Body.Close()
+		}
+		if err == nil {
+			t.Errorf("GET %q: expected an error", u)
+		}
+		if len(dialed) != 0 {
+			t.Errorf("GET %q: the dialer was asked to reach %v", u, dialed)
+		}
+	}
+}

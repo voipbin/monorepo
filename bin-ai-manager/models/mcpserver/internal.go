@@ -54,13 +54,17 @@ func DefaultCarrierTable() CarrierTable {
 // NormalizeHost reduces a host to the form used for every comparison against
 // ReservedHost: ideographic, fullwidth and halfwidth full stops become ".",
 // letters are lower-cased and trailing dots are removed.
+var stopReplacer = strings.NewReplacer("\u3002", ".", "\uff0e", ".", "\uff61", ".")
+
 func NormalizeHost(host string) string {
-	host = strings.NewReplacer("\u3002", ".", "\uff0e", ".", "\uff61", ".").Replace(host)
+	host = stopReplacer.Replace(host)
 	return strings.TrimRight(strings.ToLower(host), ".")
 }
 
-// IsReservedHost reports whether rawURL points at ReservedHost. It looks at
-// the host only and does not depend on the table, so a url that is not (or no
+// IsReservedHost reports whether rawURL points at ReservedHost. Case folding
+// can map a non-ASCII letter to an ASCII one; that is kept as reserved on
+// purpose, because the wrong answer here sends a url to the network path.
+// InternalCarrier is the strict check. It looks at the host only and does not depend on the table, so a url that is not (or no
 // longer) a known carrier url is still kept off the network.
 func IsReservedHost(rawURL string) bool {
 	u, err := url.Parse(rawURL)
@@ -80,7 +84,8 @@ func (t CarrierTable) InternalCarrier(rawURL string) (CarrierEntry, bool) {
 		return CarrierEntry{}, false
 	}
 	switch {
-	case u.Scheme != "https",
+	case strings.Contains(rawURL, "#"), !isASCII(stopReplacer.Replace(u.Hostname())),
+		u.Scheme != "https",
 		NormalizeHost(u.Hostname()) != ReservedHost,
 		strings.Contains(u.Host, ":"),
 		u.User != nil,
@@ -92,6 +97,15 @@ func (t CarrierTable) InternalCarrier(rawURL string) (CarrierEntry, bool) {
 
 	entry, ok := t[u.Path]
 	return entry, ok
+}
+
+func isASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] >= 0x80 {
+			return false
+		}
+	}
+	return true
 }
 
 // AllowedURLs returns the canonical urls of the table in sorted order.

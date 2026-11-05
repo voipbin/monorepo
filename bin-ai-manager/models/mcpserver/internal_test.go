@@ -30,6 +30,7 @@ func Test_IsReservedHost(t *testing.T) {
 		{"halfwidth ideographic full stop", "https://carrier\uff61invalid/fake", true},
 		{"no path", "https://carrier.invalid", true},
 		{"with port", "https://carrier.invalid:443/fake", true},
+		{"turkish dotted capital i folds to the reserved host and stays off the network", "https://carr\u0130er.invalid/fake", true},
 		{"other invalid host", "https://example.invalid/fake", false},
 		{"sub domain", "https://x.carrier.invalid/fake", false},
 		{"ordinary host", "https://mcp.example.com/fake", false},
@@ -74,6 +75,8 @@ func Test_InternalCarrier(t *testing.T) {
 		{"no path", table, "https://carrier.invalid", false, ""},
 		{"http scheme", table, "http://carrier.invalid/fake", false, ""},
 		{"ordinary host", table, "https://mcp.example.com/fake", false, ""},
+		{"empty fragment marker", table, "https://carrier.invalid/fake#", false, ""},
+		{"turkish dotted capital i is not folded to i", table, "https://carr\u0130er.invalid/fake", false, ""},
 		{"empty table", CarrierTable{}, "https://carrier.invalid/fake", false, ""},
 		{"nil table", nil, "https://carrier.invalid/fake", false, ""},
 	}
@@ -121,6 +124,7 @@ func Test_NormalizeHost(t *testing.T) {
 		expect string
 	}{
 		{"CARRIER.Invalid", "carrier.invalid"},
+		{"CARR\u0130ER.Invalid", "carrier.invalid"},
 		{"carrier.invalid...", "carrier.invalid"},
 		{"carrier\u3002invalid\uff0e", "carrier.invalid"},
 		{"", ""},

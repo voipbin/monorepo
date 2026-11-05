@@ -24,7 +24,12 @@ func Test_sanitizeText(t *testing.T) {
 		{"trims", "  hello  ", 200, "hello"},
 		{"masks an email address", "Left with jane.doe@example.com at the door", 200, "Left with [redacted] at the door"},
 		{"masks a phone number", "Call +1 (555) 010-9999 now", 200, "Call [redacted] now"},
-		{"masks a plain digit phone number", "Call 5550109999 now", 200, "Call [redacted] now"},
+		{"masks a grouped phone number", "Call (555) 010-9999 now", 200, "Call [redacted] now"},
+		{"masks a dotted phone number", "Call 555.010.9999 now", 200, "Call [redacted] now"},
+		{"masks a plain digit phone number", "Call 5550109999 now", 200, "Call 5550109999 now"},
+		{"keeps a date", "Delivered 2026-11-05 at 10:00", 200, "Delivered 2026-11-05 at 10:00"},
+		{"keeps a timestamp", "At 2026-11-05T10:00:00Z", 200, "At 2026-11-05T10:00:00Z"},
+		{"keeps a tracking number", "Package 794644790138 and 1Z999AA10123456784", 200, "Package 794644790138 and 1Z999AA10123456784"},
 		{"keeps short numbers", "Scan 12 of 34", 200, "Scan 12 of 34"},
 		{"cuts on a rune boundary", strings.Repeat("\u00e9", 10), 4, strings.Repeat("\u00e9", 4)},
 		{"cuts to the limit", strings.Repeat("a", 300), 200, strings.Repeat("a", 200)},
@@ -145,5 +150,70 @@ func Test_Result_marshal_allowList(t *testing.T) {
 		if strings.Contains(strings.ToLower(text), forbidden) {
 			t.Errorf("the output must not contain %q", forbidden)
 		}
+	}
+}
+
+func Test_cleanStructured(t *testing.T) {
+	tests := []struct {
+		in     string
+		limit  int
+		expect string
+	}{
+		{"2026-11-05", 64, "2026-11-05"},
+		{"2026-11-05T10:00:00-05:00", 64, "2026-11-05T10:00:00-05:00"},
+		{"1Z999AA10123456784", 64, "1Z999AA10123456784"},
+		{"a\r\nb\x00c", 64, "a b c"},
+		{strings.Repeat("x", 500), 64, strings.Repeat("x", 64)},
+		{"   ", 64, ""},
+	}
+	for _, tt := range tests {
+		if got := cleanStructured(tt.in, tt.limit); got != tt.expect {
+			t.Errorf("cleanStructured(%q) = %q, expected %q", tt.in, got, tt.expect)
+		}
+	}
+}
+
+func Test_Result_finalize_keepsStructuredFieldsAndCapsThem(t *testing.T) {
+	long := strings.Repeat("9", 100000)
+	r := &Result{
+		Status:      StatusDelivered,
+		DeliveredAt: str("2026-11-05T10:00:00Z"),
+		EstimatedDelivery: EstimatedDelivery{
+			Date: str(long), From: str(long), To: str(long),
+		},
+		Events: []Event{{Time: str(long), TimeLocal: str(long), Description: "x"}, {Time: str("2026-11-04T10:00:00Z"), Description: "y"}},
+	}
+	r.LastEvent = &Event{Time: str(long), Description: "z"}
+	r.finalize("fake", "794644790138", time.Date(2026, 11, 5, 0, 0, 0, 0, time.UTC))
+
+	if *r.DeliveredAt != "2026-11-05T10:00:00Z" {
+		t.Errorf("a clean timestamp must be kept as it is: %q", *r.DeliveredAt)
+	}
+	if r.TrackingNumber != "794644790138" {
+		t.Errorf("tracking number = %q", r.TrackingNumber)
+	}
+	for _, v := range []*string{r.EstimatedDelivery.Date, r.EstimatedDelivery.From, r.EstimatedDelivery.To, r.Events[0].Time, r.Events[0].TimeLocal, r.LastEvent.Time} {
+		if v == nil || len(*v) > maxTimeLen {
+			t.Errorf("a time field is not capped")
+		}
+	}
+
+	fieldValues := map[string]string{}
+	for _, f := range r.Display.Fields {
+		fieldValues[f.Label] = f.Value
+	}
+	if fieldValues["Tracking number"] != "794644790138" || fieldValues["Delivered"] != "2026-11-05T10:00:00Z" {
+		t.Errorf("the card lost its structured values: %+v", fieldValues)
+	}
+	if r.Display.Title != "FAKE package 794644790138" {
+		t.Errorf("title = %q", r.Display.Title)
+	}
+
+	text, err := r.marshal()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(text) > 16<<10 {
+		t.Errorf("a result with hostile time fields is %d bytes", len(text))
 	}
 }

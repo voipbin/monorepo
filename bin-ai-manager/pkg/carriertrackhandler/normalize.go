@@ -24,6 +24,7 @@ const (
 	maxDisplayEvents                = 5
 	maxDisplayFields                = 12
 	maxTextLen                      = 200
+	maxTimeLen                      = 64
 	maxLocationLen                  = 120
 	maxServiceLen                   = 80
 	maxStatusCodeLen                = 40
@@ -101,7 +102,10 @@ type Result struct {
 
 var (
 	emailPattern = regexp.MustCompile(`[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}`)
-	phonePattern = regexp.MustCompile(`\+?\d[\d\s().\-]{7,}\d`)
+	// A phone number is masked when it is written with separators or a plus
+	// sign. A plain run of digits is left alone: tracking numbers and dates
+	// look the same and the card needs them.
+	phonePattern = regexp.MustCompile(`\+\d{8,15}|(?:\+\d{1,3}[\s.\-]?)?\(?\d{2,4}\)?[\s.\-]\d{3,4}[\s.\-]\d{3,4}`)
 )
 
 // sanitizeText makes carrier free text safe to hand on: control characters and
@@ -124,6 +128,34 @@ func sanitizeText(s string, limit int) string {
 		runes = runes[:limit]
 	}
 	return strings.TrimSpace(string(runes))
+}
+
+// cleanStructured bounds a field that holds a date, a time or an identifier.
+// Control characters become spaces and the value is cut to limit runes; nothing
+// is masked, because masking would damage the value.
+func cleanStructured(s string, limit int) string {
+	s = strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) {
+			return ' '
+		}
+		return r
+	}, s)
+	runes := []rune(strings.Join(strings.Fields(s), " "))
+	if len(runes) > limit {
+		runes = runes[:limit]
+	}
+	return strings.TrimSpace(string(runes))
+}
+
+func cleanStructuredPtr(p *string) *string {
+	if p == nil {
+		return nil
+	}
+	s := cleanStructured(*p, maxTimeLen)
+	if s == "" {
+		return nil
+	}
+	return &s
 }
 
 func sanitizePtr(p *string, limit int) *string {
@@ -152,6 +184,12 @@ func (r *Result) finalize(carrier, number string, now time.Time) {
 	r.StatusText = sanitizeText(r.StatusText, maxTextLen)
 	r.Service = sanitizePtr(r.Service, maxServiceLen)
 	r.CarrierStatusCode = sanitizePtr(r.CarrierStatusCode, maxStatusCodeLen)
+	r.DeliveredAt = cleanStructuredPtr(r.DeliveredAt)
+	r.EstimatedDelivery = EstimatedDelivery{
+		Date: cleanStructuredPtr(r.EstimatedDelivery.Date),
+		From: cleanStructuredPtr(r.EstimatedDelivery.From),
+		To:   cleanStructuredPtr(r.EstimatedDelivery.To),
+	}
 
 	if len(r.Events) > maxEvents {
 		r.Events = r.Events[:maxEvents]
@@ -176,8 +214,8 @@ func (r *Result) finalize(carrier, number string, now time.Time) {
 
 func cleanEvent(e Event) Event {
 	out := Event{
-		Time:        e.Time,
-		TimeLocal:   sanitizePtr(e.TimeLocal, maxServiceLen),
+		Time:        cleanStructuredPtr(e.Time),
+		TimeLocal:   cleanStructuredPtr(e.TimeLocal),
 		Description: sanitizeText(e.Description, maxTextLen),
 	}
 	if e.Location != nil {
@@ -191,31 +229,37 @@ func cleanEvent(e Event) Event {
 func (r *Result) buildDisplay() Display {
 	name := displayName(r.Carrier)
 	fields := []DisplayField{}
+	addValue := func(label, value string) {
+		if value == "" || len(fields) >= maxDisplayFields {
+			return
+		}
+		fields = append(fields, DisplayField{Label: cleanStructured(label, maxDisplayLabelLen), Value: value})
+	}
 	add := func(label, value string) {
 		value = sanitizeText(value, maxDisplayValueLen)
 		if value == "" || len(fields) >= maxDisplayFields {
 			return
 		}
-		fields = append(fields, DisplayField{Label: sanitizeText(label, maxDisplayLabelLen), Value: value})
+		fields = append(fields, DisplayField{Label: cleanStructured(label, maxDisplayLabelLen), Value: value})
 	}
 
 	add("Carrier", name)
-	add("Tracking number", r.TrackingNumber)
+	addValue("Tracking number", cleanStructured(r.TrackingNumber, maxTimeLen))
 	add("Status", string(r.Status))
 	add("Status detail", r.StatusText)
 	switch {
 	case r.DeliveredAt != nil:
-		add("Delivered", *r.DeliveredAt)
+		addValue("Delivered", *r.DeliveredAt)
 	case r.EstimatedDelivery.Date != nil:
-		add("Estimated delivery", *r.EstimatedDelivery.Date)
+		addValue("Estimated delivery", *r.EstimatedDelivery.Date)
 	case r.EstimatedDelivery.From != nil && r.EstimatedDelivery.To != nil:
-		add("Estimated delivery", *r.EstimatedDelivery.From+" to "+*r.EstimatedDelivery.To)
+		addValue("Estimated delivery", *r.EstimatedDelivery.From+" to "+*r.EstimatedDelivery.To)
 	}
 	if r.Service != nil {
 		add("Service", *r.Service)
 	}
 	if r.LastEvent != nil && r.LastEvent.Time != nil {
-		add("Last update", *r.LastEvent.Time)
+		addValue("Last update", *r.LastEvent.Time)
 	}
 
 	for i, e := range r.Events {
@@ -228,6 +272,7 @@ func (r *Result) buildDisplay() Display {
 		} else if e.TimeLocal != nil {
 			label = *e.TimeLocal
 		}
+		label = cleanStructured(label, maxDisplayLabelLen)
 		value := e.Description
 		if e.Location != nil {
 			value += " (" + e.Location.Text + ")"
@@ -236,7 +281,7 @@ func (r *Result) buildDisplay() Display {
 	}
 
 	return Display{
-		Title:       sanitizeText(name+" package "+r.TrackingNumber, maxDisplayTitleLen),
+		Title:       cleanStructured(name+" package "+r.TrackingNumber, maxDisplayTitleLen),
 		Description: sanitizeText(r.StatusText, maxDisplayDescriptionLen),
 		Fields:      fields,
 	}

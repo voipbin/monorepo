@@ -146,7 +146,7 @@ Every limit is per process, not per platform. None of them is measured yet; they
 | Concurrent lookups per carrier | 2 | The next call is refused at once with `service_busy`; it does not wait |
 | Key cooldown | 10 minutes for a rejected key, 1 minute for `rate_limited` or an adapter's short block | The same (customer, carrier, key) gets the same error without a carrier call; a re-entered key is tried at once. At most 256 entries per carrier |
 | Time budget | the tool call timeout (or what is left of the caller's context), minus a 2 second reserve | Under 1 second left: no carrier call, `carrier_unavailable`. A carrier answer that arrives after the budget is discarded and nothing is stored |
-| Result cache | 120 seconds, 256 entries, 16 KiB per entry | Keyed by customer, carrier, key and number. Only results, `not_found` and `invalid_format` are cached |
+| Result cache | 120 seconds, 256 entries, 16 KiB per entry | Keyed by customer, carrier, key and number; the 256 entries are shared by all customers of the process. Only results, `not_found` and `invalid_format` are cached |
 | Token cache | `expires_in` minus 60 seconds, at most 1 hour, 128 entries, 4 KiB per token | A token over the size, or without a usable lifetime, is not cached |
 | Response body | 1 MiB unless the adapter sets less; 64 KiB for a token response | A longer body fails the lookup instead of being cut |
 

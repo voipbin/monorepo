@@ -170,6 +170,9 @@ func tokenTTL(raw json.RawMessage) time.Duration {
 	if err := json.Unmarshal(raw, &seconds); err != nil {
 		return 0
 	}
+	if seconds > tokenMaxTTL.Seconds() {
+		return tokenMaxTTL
+	}
 	ttl := time.Duration(seconds*float64(time.Second)) - tokenExpiryMargin
 	if ttl <= 0 {
 		return 0
