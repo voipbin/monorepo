@@ -257,6 +257,10 @@ func Test_fedex_tool(t *testing.T) {
 }
 
 func Test_fedex_secured_text(t *testing.T) {
+	const want = "Secured delivery shipment: FedEx does not provide its status or scan events through this lookup. The caller must check it on the carrier website or with the carrier."
+	if fedexSecuredText != want {
+		t.Errorf("unexpected secured text %q", fedexSecuredText)
+	}
 	if len([]rune(fedexSecuredText)) > maxTextLen {
 		t.Errorf("the secured text is cut by finalize: %d runes", len([]rune(fedexSecuredText)))
 	}
@@ -297,7 +301,7 @@ func Test_fedex_NormalizeNumber(t *testing.T) {
 
 func Test_fedex_productionConstants(t *testing.T) {
 	a := newFedExAdapter()
-	if a.host != fedexHost {
+	if a.host != "apis.fedex.com" || fedexHost != "apis.fedex.com" {
 		t.Fatalf("host = %q", a.host)
 	}
 	if got, want := a.url(fedexTokenPath), "https://"+fedexHost+fedexTokenPath; got != want {
@@ -838,6 +842,16 @@ func Test_fedex_fields(t *testing.T) {
 				e := r.EstimatedDelivery
 				if e.From != nil || e.To != nil || e.Date == nil || *e.Date != "2026-01-11" || !r.TimeZoneKnown {
 					t.Errorf("unexpected %+v %v", e, r.TimeZoneKnown)
+				}
+			},
+		},
+		{
+			"a window whose end has no offset falls back to the estimated date",
+			`{"latestStatusDetail":{"code":"PU","description":"x"},"estimatedDeliveryTimeWindow":{"window":{"begins":"2026-01-10T08:00:00-06:00","ends":"2026-01-10T18:00:00"}},"dateAndTimes":[{"type":"ESTIMATED_DELIVERY","dateTime":"2026-01-11T00:00:00"}]}`,
+			func(t *testing.T, r Result) {
+				e := r.EstimatedDelivery
+				if e.From != nil || e.To != nil || e.Date == nil || *e.Date != "2026-01-11" {
+					t.Errorf("unexpected %+v", e)
 				}
 			},
 		},
