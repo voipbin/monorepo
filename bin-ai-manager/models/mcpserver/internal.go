@@ -46,9 +46,12 @@ type CarrierEntry struct {
 type CarrierTable map[string]CarrierEntry
 
 // DefaultCarrierTable returns the production table, as a new map on each
-// call. It is empty: no carrier is open.
+// call. A carrier is open while its line is here and its adapter is registered
+// in pkg/carriertrackhandler.
 func DefaultCarrierTable() CarrierTable {
-	return CarrierTable{}
+	return CarrierTable{
+		"/fedex": {Carrier: "fedex", Credential: CredentialClientIDSecret},
+	}
 }
 
 // NormalizeHost reduces a host to the form used for every comparison against

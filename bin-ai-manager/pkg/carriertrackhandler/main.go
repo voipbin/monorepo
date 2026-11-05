@@ -2,9 +2,9 @@
 // for an AI's tool call, in the same process, with the customer's own API key
 // (VOIP-1677).
 //
-// It is the framework only. The adapters of the carriers are added one by one,
-// each together with its line in the carrier table of models/mcpserver, and
-// the production registry is empty until then.
+// The adapters of the carriers are added one by one, each together with its
+// line in the carrier table of models/mcpserver: a carrier is open while both
+// exist, and removing both closes it.
 //
 // The rules every adapter works under:
 //   - the key is read only after the tracking number has been checked, is held
@@ -110,14 +110,17 @@ type options struct {
 	newClient func(timeout time.Duration) *http.Client
 }
 
-// New returns the production handler. No carrier is registered in it yet.
+// New returns the production handler, with the adapters of the open carriers.
 // timeoutSeconds is mcp_tool_call_timeout_seconds; a value of zero or less
 // selects 10, as in mcptoolhandler.
 func New(timeoutSeconds int) (*Handler, error) {
 	if timeoutSeconds <= 0 {
 		timeoutSeconds = defaultTimeoutSeconds
 	}
-	return newHandler(options{timeout: time.Duration(timeoutSeconds) * time.Second})
+	return newHandler(options{
+		timeout:  time.Duration(timeoutSeconds) * time.Second,
+		adapters: []Adapter{newFedExAdapter()},
+	})
 }
 
 func newHandler(o options) (*Handler, error) {

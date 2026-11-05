@@ -137,7 +137,7 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 
 ### Carrier tracking adapters (VOIP-1677)
 
-An MCP server whose url is on the reserved host `carrier.invalid` (for example `https://carrier.invalid/<carrier>`) is a built-in carrier adapter, not a remote server. `mcptoolhandler` answers its `tools/list` and `tools/call` in the same process and never opens a connection to it; the guarded dialer also refuses every `.invalid` host as a second line. The carriers that are open are the lines of `mcpserver.DefaultCarrierTable()` together with the adapters registered in `pkg/carriertrackhandler`; both are empty until a carrier is added, and removing a carrier's line and adapter closes it. For a reserved url that is not in the table, registration is refused (`INVALID_MCP_SERVER_URL`) and an existing record answers a call with a fixed "integration is not available" text.
+An MCP server whose url is on the reserved host `carrier.invalid` (for example `https://carrier.invalid/<carrier>`) is a built-in carrier adapter, not a remote server. `mcptoolhandler` answers its `tools/list` and `tools/call` in the same process and never opens a connection to it; the guarded dialer also refuses every `.invalid` host as a second line. The carriers that are open are the lines of `mcpserver.DefaultCarrierTable()` together with the adapters registered in `pkg/carriertrackhandler`; a carrier is added by adding its line and its adapter together, and removing both closes it. For a reserved url that is not in the table, registration is refused (`INVALID_MCP_SERVER_URL`) and an existing record answers a call with a fixed "integration is not available" text.
 
 Every limit is per process, not per platform. None of them is measured yet; they are starting values.
 
@@ -153,6 +153,17 @@ Every limit is per process, not per platform. None of them is measured yet; they
 Not adopted, with the signal that would change that: a per (customer, carrier) concurrency limit (one customer's calls refusing another customer's with `service_busy`), and blocking all token exchanges of a carrier after a 429 (repeated 429 answers in `ai_manager_carrier_token_exchange_total`).
 
 What reaches the model is either the allow-list result (no recipient, sender, address, signature or payment field exists in it) or one of the fixed texts of `carriertrackhandler.Message`. Carrier answers, keys and tracking numbers are not written to logs or error texts.
+
+#### FedEx
+
+`https://carrier.invalid/fedex` is served by the FedEx adapter (tool `track_fedex`). The saved key is `CLIENT_ID:CLIENT_SECRET` of a FedEx developer project, stored as the server's `bearer` secret.
+
+- The only host the adapter calls is `apis.fedex.com` on port 443: the OAuth token (`/oauth/token`, client credentials) and the lookup (`/track/v1/trackingnumbers`). The host is a constant of the code. The key goes in the token request body; the lookup carries only the access token in a header, and the tracking number is in the request body, never in a url.
+- An access token is cached in memory until a minute before it expires (at most an hour), per customer and key. FedEx limits token requests per source address, so repeated `429` answers in `ai_manager_carrier_token_exchange_total` mean the token cache is not enough.
+- The status values the adapter returns are `label_created`, `in_transit`, `out_for_delivery`, `delivered` and `unknown`. FedEx documents few status codes; any other code gives `unknown`, with the carrier's status text and the scan events, and the original code in `carrier_status_code`. A delivery date from FedEx makes the status `delivered`.
+- A shipment that FedEx does not track through this API (Authenticated Delivery) gets an `unknown` result with a fixed sentence and no events. That result is cached like any other.
+- Scan events are sorted newest first by the adapter, because the FedEx schema does not define an order; an event whose time has no offset is listed after the others and has `time_local` instead of `time`.
+- Answer mapping: `400` is `invalid_format` (a `400` that says the request had no tracking number is `carrier_unavailable`), `401` drops the cached token and is `carrier_unavailable`, `403` is `carrier_unavailable` and blocks the key for a minute, `404` is `not_found` only when the body says there is no data for the number and `carrier_unavailable` otherwise, `429` is `rate_limited` and blocks the key for a minute, every other status is `carrier_unavailable`. A sudden rise of `invalid_format` or `not_found` outcomes for this carrier can mean the request format is wrong rather than customers entering wrong numbers.
 
 ## Database Migrations
 
