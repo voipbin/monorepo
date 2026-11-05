@@ -93,28 +93,30 @@ func Test_InternalCarrier(t *testing.T) {
 
 func Test_DefaultCarrierTable(t *testing.T) {
 	table := DefaultCarrierTable()
-	if len(table) != 1 {
+	if len(table) != 2 {
 		t.Fatalf("the production table holds the open carriers only, got %d entries", len(table))
 	}
-	if entry := table["/fedex"]; entry.Carrier != "fedex" || entry.Credential != CredentialClientIDSecret {
-		t.Errorf("unexpected fedex line %+v", entry)
+	for path, carrier := range map[string]string{"/fedex": "fedex", "/ups": "ups"} {
+		if entry := table[path]; entry.Carrier != carrier || entry.Credential != CredentialClientIDSecret {
+			t.Errorf("unexpected line for %s: %+v", path, entry)
+		}
+		if entry, ok := table.InternalCarrier("https://carrier.invalid" + path); !ok || entry.Carrier != carrier {
+			t.Errorf("the %s url must be recognized, got %+v %v", carrier, entry, ok)
+		}
 	}
-	if entry, ok := table.InternalCarrier("https://carrier.invalid/fedex"); !ok || entry.Carrier != "fedex" {
-		t.Errorf("the fedex url must be recognized, got %+v %v", entry, ok)
-	}
-	for _, closed := range []string{"https://carrier.invalid/ups", "https://carrier.invalid/dhl"} {
+	for _, closed := range []string{"https://carrier.invalid/dhl", "https://carrier.invalid/unlisted"} {
 		if _, ok := table.InternalCarrier(closed); ok {
 			t.Errorf("%s must not be recognized while its carrier is closed", closed)
 		}
 	}
-	if got := table.AllowedURLs(); len(got) != 1 || got[0] != "https://carrier.invalid/fedex" {
+	if got := table.AllowedURLs(); len(got) != 2 || got[0] != "https://carrier.invalid/fedex" || got[1] != "https://carrier.invalid/ups" {
 		t.Errorf("unexpected allowed urls %v", got)
 	}
 
 	// each call returns a new map, so a caller cannot change another caller's table.
 	table["/x"] = CarrierEntry{Carrier: "x"}
-	delete(table, "/fedex")
-	if again := DefaultCarrierTable(); len(again) != 1 || again["/fedex"].Carrier != "fedex" {
+	delete(table, "/ups")
+	if again := DefaultCarrierTable(); len(again) != 2 || again["/ups"].Carrier != "ups" {
 		t.Errorf("DefaultCarrierTable must return a new map on every call")
 	}
 }

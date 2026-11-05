@@ -61,8 +61,8 @@ func CleanNumber(raw string) string {
 }
 
 // LooseNumber reports whether n is ASCII letters and digits with a length from
-// minLen to maxLen. Carriers other than UPS have no published check rule, so this is
-// all that can be said without a lookup.
+// minLen to maxLen. No carrier has a published check digit rule, so this and a
+// fixed prefix are all that can be said without a lookup.
 func LooseNumber(n string, minLen, maxLen int) bool {
 	if len(n) < minLen || len(n) > maxLen {
 		return false

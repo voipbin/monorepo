@@ -3,8 +3,10 @@ package carriertrackhandler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -166,8 +168,8 @@ func defaultTokenStatusError(status int) *CarrierError {
 // An absent, non-numeric or too short expires_in gives zero: the token is
 // used for the current call only.
 func tokenTTL(raw json.RawMessage) time.Duration {
-	var seconds float64
-	if err := json.Unmarshal(raw, &seconds); err != nil {
+	seconds, ok := tokenSeconds(raw)
+	if !ok {
 		return 0
 	}
 	if seconds > tokenMaxTTL.Seconds() {
@@ -181,6 +183,27 @@ func tokenTTL(raw json.RawMessage) time.Duration {
 		ttl = tokenMaxTTL
 	}
 	return ttl
+}
+
+// tokenSeconds reads expires_in as a JSON number, or as a quoted run of ASCII
+// digits (UPS sends a string). Anything else is not usable. A run of digits
+// too long for a number is read as the largest one, so it is capped like a
+// huge number.
+func tokenSeconds(raw json.RawMessage) (float64, bool) {
+	var seconds float64
+	if err := json.Unmarshal(raw, &seconds); err == nil {
+		return seconds, true
+	}
+
+	var text string
+	if err := json.Unmarshal(raw, &text); err != nil {
+		return 0, false
+	}
+	n, err := strconv.ParseUint(text, 10, 64)
+	if err != nil && !errors.Is(err, strconv.ErrRange) {
+		return 0, false
+	}
+	return float64(n), true
 }
 
 // printableASCII reports whether s holds only visible ASCII characters, the
