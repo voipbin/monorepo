@@ -105,7 +105,7 @@ var (
 	// A phone number is masked when it is written with separators or a plus
 	// sign. A plain run of digits is left alone: tracking numbers and dates
 	// look the same and the card needs them.
-	phonePattern = regexp.MustCompile(`\+\d{8,15}|(?:\+\d{1,3}[\s.\-]?)?\(?\d{2,4}\)?[\s.\-]\d{3,4}[\s.\-]\d{3,4}`)
+	phonePattern = regexp.MustCompile(`\+\d{8,15}|(?:\+\d{1,3}[\s.\-]?)?(?:\(\d{2,4}\)[\s.\-]?|\d{2,4}[\s.\-])\d{3,4}[\s.\-]\d{3,4}|\+\d{1,3}[\s.\-]\d{2}[\s.\-]\d{5,8}`)
 )
 
 // sanitizeText makes carrier free text safe to hand on: control characters and
@@ -114,7 +114,7 @@ var (
 // to detect instructions.
 func sanitizeText(s string, limit int) string {
 	s = strings.Map(func(r rune) rune {
-		if unicode.IsControl(r) {
+		if unicode.IsControl(r) || unicode.Is(unicode.Cf, r) {
 			return ' '
 		}
 		return r
@@ -135,7 +135,7 @@ func sanitizeText(s string, limit int) string {
 // is masked, because masking would damage the value.
 func cleanStructured(s string, limit int) string {
 	s = strings.Map(func(r rune) rune {
-		if unicode.IsControl(r) {
+		if unicode.IsControl(r) || unicode.Is(unicode.Cf, r) {
 			return ' '
 		}
 		return r
