@@ -274,11 +274,59 @@ func (h *handler) EmailUpdateStatus(ctx context.Context, id uuid.UUID, status em
 	return h.EmailUpdate(ctx, id, fields)
 }
 
-// EmailUpdateProviderReferenceID updates the provider_reference_id.
-func (h *handler) EmailUpdateProviderReferenceID(ctx context.Context, id uuid.UUID, providerReferenceID string) error {
+// EmailUpdateProvider updates the provider_type and the provider_reference_id at once.
+func (h *handler) EmailUpdateProvider(ctx context.Context, id uuid.UUID, providerType email.ProviderType, providerReferenceID string) error {
 	fields := map[email.Field]any{
+		email.FieldProviderType:        providerType,
 		email.FieldProviderReferenceID: providerReferenceID,
 	}
 
 	return h.EmailUpdate(ctx, id, fields)
+}
+
+// EmailUpdateStatusFrom updates the status only if the current status of the
+// (not deleted) email is empty or one of the given statuses. It is a single
+// conditional statement, so concurrent updates can not move the status back.
+// It returns true if the status was changed.
+func (h *handler) EmailUpdateStatusFrom(ctx context.Context, id uuid.UUID, status email.Status, from []email.Status) (bool, error) {
+	fromStrs := make([]string, 0, len(from))
+	for _, s := range from {
+		fromStrs = append(fromStrs, string(s))
+	}
+
+	data, err := commondatabasehandler.PrepareFields(map[email.Field]any{
+		email.FieldStatus:   status,
+		email.FieldTMUpdate: h.util.TimeNow(),
+	})
+	if err != nil {
+		return false, errors.Wrap(err, "could not prepare fields. EmailUpdateStatusFrom")
+	}
+
+	query, args, err := sq.Update(emailTable).
+		SetMap(data).
+		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"tm_delete": nil}).
+		Where(sq.Or{sq.Eq{"status": nil}, sq.Eq{"status": fromStrs}}).
+		ToSql()
+	if err != nil {
+		return false, errors.Wrap(err, "could not build query. EmailUpdateStatusFrom")
+	}
+
+	res, err := h.db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return false, errors.Wrap(err, "could not execute. EmailUpdateStatusFrom")
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return false, errors.Wrap(err, "could not get the affected rows. EmailUpdateStatusFrom")
+	}
+	if affected == 0 {
+		return false, nil
+	}
+
+	// update the cache
+	_ = h.emailUpdateToCache(ctx, id)
+
+	return true, nil
 }

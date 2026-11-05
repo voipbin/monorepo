@@ -174,6 +174,9 @@ func Test_engineMailgun_Send_success(t *testing.T) {
 			if got := capture.values["h:X-Voipbin-Message-Id"]; len(got) != 1 || got[0] != m.ID.String() {
 				t.Errorf("Wrong message id header. got: %v", got)
 			}
+			if got := capture.values["v:voipbin_message_id"]; len(got) != 1 || got[0] != m.ID.String() {
+				t.Errorf("Wrong message id variable. got: %v", got)
+			}
 			if len(capture.files) != 0 {
 				t.Errorf("Expected no attachments. got: %v", capture.files)
 			}

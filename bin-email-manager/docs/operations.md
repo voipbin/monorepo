@@ -4,11 +4,11 @@
 
 | Failure | Symptom | Likely Cause |
 |---------|---------|-------------|
-| Email not delivered | Status stays `initiated` | Both SendGrid and Mailgun APIs failing; check credentials |
-| SendGrid auth failure | Primary provider rejected | `sendgrid_api_key` invalid or expired |
-| Mailgun auth failure | Fallback also fails; email stuck | `mailgun_api_key` invalid or expired |
+| Email not delivered | Status stays `initiated` | Both Mailgun and SendGrid APIs failing; check credentials |
+| Mailgun auth failure | Primary provider rejected; SendGrid is tried | `mailgun_api_key` invalid or expired |
+| SendGrid auth failure | Fallback also fails; email stuck | `sendgrid_api_key` invalid or expired |
 | Attachment failure | Email stays `initiated`; no provider sends it | `bin-storage-manager` RPC failed, recording not found or download failed |
-| Webhook status not updated | Email stays at `processed` forever | `bin-hook-manager` not forwarding; or provider webhook URL misconfigured |
+| Webhook status not updated | Email stays at `initiated` or `processed` | `bin-hook-manager` not forwarding; or provider webhook URL misconfigured |
 | Cache stale | Old email data returned | Redis out of sync; restart clears cache |
 
 ## Debugging Guide
@@ -30,7 +30,7 @@
 
 **Check provider webhook configuration:**
 - SendGrid: Settings → Mail Settings → Event Webhook → URL must be `https://hook.voipbin.net/v1.0/emails/sendgrid`
-- Mailgun: Sending → Webhooks → URL must be `https://hook.voipbin.net/v1.0/emails/mailgun`
+- Mailgun: Sending → Webhooks → URL must be `https://hook.voipbin.net/v1.0/emails/mailgun` for the accepted, delivered, temporary failure, permanent failure, opened, clicked, unsubscribed and complained events. Opened and clicked events also need tracking enabled on the domain. Emails sent before the `voipbin_message_id` variable was added carry no email id, so their events are ignored.
 
 **Run service locally:**
 ```bash

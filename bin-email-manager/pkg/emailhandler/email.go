@@ -56,7 +56,7 @@ func (h *emailHandler) Create(
 		return nil, errors.New("insufficient balance for email")
 	}
 
-	res, err := h.create(ctx, customerID, activeflowID, email.ProviderTypeSendgrid, defaultSource, destinations, subject, content, attachments)
+	res, err := h.create(ctx, customerID, activeflowID, email.ProviderTypeNone, defaultSource, destinations, subject, content, attachments)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create email")
 	}
@@ -167,10 +167,11 @@ func (h *emailHandler) create(
 	return res, nil
 }
 
-func (h *emailHandler) UpdateProviderReferenceID(ctx context.Context, id uuid.UUID, providerReferenceID string) error {
+// UpdateProvider records the provider that sent the email and its reference id.
+func (h *emailHandler) UpdateProvider(ctx context.Context, id uuid.UUID, providerType email.ProviderType, providerReferenceID string) error {
 
-	if errUpdate := h.db.EmailUpdateProviderReferenceID(ctx, id, providerReferenceID); errUpdate != nil {
-		return errors.Wrapf(errUpdate, "could not update provider reference id.")
+	if errUpdate := h.db.EmailUpdateProvider(ctx, id, providerType, providerReferenceID); errUpdate != nil {
+		return errors.Wrapf(errUpdate, "could not update provider.")
 	}
 
 	return nil

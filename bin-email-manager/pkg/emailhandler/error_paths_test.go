@@ -190,10 +190,10 @@ func Test_Hook_mailgunURI(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	// strict mocks without expectations: the mailgun hook must not touch the db or publish
+	// strict mocks without expectations: an event without the email id must not touch the db or publish
 	h, _ := newErrorPathHandler(mc)
 
-	if err := h.Hook(context.Background(), "hook.example.com/v1.0/emails/mailgun", []byte(`{}`)); err != nil {
+	if err := h.Hook(context.Background(), "hook.example.com/v1.0/emails/mailgun", []byte(`{"event":"delivered"}`)); err != nil {
 		t.Errorf("Expected nil for a mailgun uri. got: %v", err)
 	}
 }
