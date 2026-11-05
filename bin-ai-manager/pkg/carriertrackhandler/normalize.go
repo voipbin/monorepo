@@ -1,6 +1,7 @@
 package carriertrackhandler
 
 import (
+	"bytes"
 	"encoding/json"
 	"regexp"
 	"strings"
@@ -289,9 +290,12 @@ func (r *Result) buildDisplay() Display {
 
 // marshal serializes the result.
 func (r *Result) marshal() (string, error) {
-	b, err := json.Marshal(r)
-	if err != nil {
+	// The text goes to the model, not to a page: < > & stay one byte each.
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(r); err != nil {
 		return "", err
 	}
-	return string(b), nil
+	return strings.TrimSuffix(buf.String(), "\n"), nil
 }

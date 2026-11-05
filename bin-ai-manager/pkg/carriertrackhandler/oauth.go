@@ -136,7 +136,7 @@ func (d Deps) ExchangeClientCredentials(ctx context.Context, spec TokenSpec, cre
 	if err := json.Unmarshal(body, &parsed); err != nil {
 		return "", 0, unavailable
 	}
-	if parsed.AccessToken == "" || len(parsed.AccessToken) > tokenMaxBytes {
+	if parsed.AccessToken == "" || len(parsed.AccessToken) > tokenMaxBytes || !printableASCII(parsed.AccessToken) {
 		return "", 0, unavailable
 	}
 	if parsed.TokenType != "" && !strings.EqualFold(parsed.TokenType, "bearer") {
@@ -181,4 +181,15 @@ func tokenTTL(raw json.RawMessage) time.Duration {
 		ttl = tokenMaxTTL
 	}
 	return ttl
+}
+
+// printableASCII reports whether s holds only visible ASCII characters, the
+// only ones a bearer token may contain in a header.
+func printableASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] < 0x21 || s[i] > 0x7e {
+			return false
+		}
+	}
+	return true
 }

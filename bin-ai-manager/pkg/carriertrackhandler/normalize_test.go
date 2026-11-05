@@ -220,3 +220,14 @@ func Test_Result_finalize_keepsStructuredFieldsAndCapsThem(t *testing.T) {
 		t.Errorf("a result with hostile time fields is %d bytes", len(text))
 	}
 }
+
+func Test_Result_marshal_doesNotEscapeHTMLCharacters(t *testing.T) {
+	r := &Result{StatusText: "a<b>&c"}
+	text, err := r.marshal()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(text, `"status_text":"a<b>&c"`) || strings.HasSuffix(text, "\n") {
+		t.Errorf("unexpected encoding: %s", text)
+	}
+}

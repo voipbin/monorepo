@@ -52,6 +52,8 @@ func Test_ExchangeClientCredentials_status(t *testing.T) {
 		{"token type is compared without case", 200, `{"access_token":"tok1","token_type":"bearer","expires_in":3600}`, "tok1", "", 0, true},
 		{"token type absent is accepted", 200, `{"access_token":"tok1","expires_in":3600}`, "tok1", "", 0, true},
 		{"token type other than bearer", 200, `{"access_token":"tok1","token_type":"mac","expires_in":3600}`, "", CodeCarrierUnavailable, 0, false},
+		{"token with a line break", 200, `{"access_token":"tok\r\nX-Evil: 1","expires_in":3600}`, "", CodeCarrierUnavailable, 0, false},
+		{"token with a space", 200, `{"access_token":"tok 1","expires_in":3600}`, "", CodeCarrierUnavailable, 0, false},
 		{"empty token", 200, `{"access_token":"","token_type":"Bearer","expires_in":3600}`, "", CodeCarrierUnavailable, 0, false},
 		{"broken json", 200, `{"access_token":`, "", CodeCarrierUnavailable, 0, false},
 		{"not json", 200, `<html>`, "", CodeCarrierUnavailable, 0, false},
