@@ -500,6 +500,9 @@ func Test_fedex_lookupStatus(t *testing.T) {
 		{"200 no result and no alert", 200, `{"output":{"completeTrackResults":[]}}`, CodeCarrierUnavailable, 0, false, false},
 		{"200 an empty shell of a result", 200, fxBody(`{}`), CodeCarrierUnavailable, 0, false, false},
 		{"200 a result without usable information", 200, fxBody(`{"trackingNumberInfo":{"trackingNumber":"ABCD12345678"},"scanEvents":[{"date":"  "}]}`), CodeCarrierUnavailable, 0, false, false},
+		{"200 an empty result with a secured delivery alert", 200, `{"output":{"completeTrackResults":[{"trackResults":[{}]}],"alerts":[{"code":"` + fxFAD + `"}]}}`, "", 0, true, false},
+		{"200 an empty result with a no data alert", 200, `{"output":{"completeTrackResults":[{"trackResults":[{}]}],"alerts":[{"code":"` + fxNotFound + `"}]}}`, CodeNotFound, 0, true, false},
+		{"200 an error and an alert of another kind: the error decides", 200, `{"output":{"completeTrackResults":[{"trackResults":[{"error":{"code":"SYSTEM"}}]}],"alerts":[{"code":"` + fxNotFound + `"}]}}`, CodeCarrierUnavailable, 0, false, false},
 		{"200 another alert does not hide a result", 200, strings.Replace(fxBody(fxPickedUp), `"completeTrackResults"`, `"alerts":[{"code":"SOME.WARNING"}],"completeTrackResults"`, 1), "ok", 0, true, false},
 		{"200 a no data alert does not hide a result", 200, strings.Replace(fxBody(fxPickedUp), `"completeTrackResults"`, `"alerts":[{"code":"`+fxNotFound+`"}],"completeTrackResults"`, 1), "ok", 0, true, false},
 		{"200 body over the limit", 200, `{"output":{"pad":"` + strings.Repeat("a", 1<<20+10) + `"}}`, CodeCarrierUnavailable, 0, false, false},
@@ -851,6 +854,24 @@ func Test_fedex_fields(t *testing.T) {
 			func(t *testing.T, r Result) {
 				e := r.EstimatedDelivery
 				if e.From != nil || e.To != nil || e.Date == nil || *e.Date != "2026-01-11" {
+					t.Errorf("unexpected %+v", e)
+				}
+			},
+		},
+		{
+			"a result with a status code only is a result",
+			`{"latestStatusDetail":{"code":"HL"}}`,
+			func(t *testing.T, r Result) {
+				if r.Status != StatusUnknown || r.CarrierStatusCode == nil || *r.CarrierStatusCode != "HL" {
+					t.Errorf("unexpected %+v", r)
+				}
+			},
+		},
+		{
+			"a short estimated date is dropped without a panic",
+			`{"latestStatusDetail":{"code":"PU","description":"x"},"dateAndTimes":[{"type":"ESTIMATED_DELIVERY","dateTime":"2026-1-1"}]}`,
+			func(t *testing.T, r Result) {
+				if e := r.EstimatedDelivery; e.Date != nil || e.From != nil {
 					t.Errorf("unexpected %+v", e)
 				}
 			},

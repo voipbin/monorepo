@@ -278,8 +278,9 @@ func parseFedExOK(body io.Reader, maxBody int64, number string) (*Result, *Carri
 }
 
 // fedexOutcome decides a 200 answer: a chosen result with an error is decided
-// by its code; a chosen result without one is the answer and the alerts are
-// ignored; with no result the alerts decide.
+// by its code; a chosen result with information is the answer and the alerts
+// are ignored; with no result, or one without information, the alerts decide
+// (and without a known code the outcome is carrier_unavailable).
 func fedexOutcome(resp *fedexResponse, number string) (*Result, *CarrierError) {
 	r := selectFedExResult(resp, number)
 	if r == nil {
@@ -290,7 +291,8 @@ func fedexOutcome(resp *fedexResponse, number string) (*Result, *CarrierError) {
 	}
 	res := buildFedExResult(r)
 	if !hasUsableInfo(res) {
-		return nil, unavailable()
+		// a result with nothing in it: the alerts may say why
+		return codesOutcome(codesOf(resp.Output.Alerts), http.StatusOK)
 	}
 	return res, nil
 }
