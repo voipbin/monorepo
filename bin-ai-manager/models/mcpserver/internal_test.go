@@ -91,21 +91,30 @@ func Test_InternalCarrier(t *testing.T) {
 	}
 }
 
-func Test_DefaultCarrierTable_isEmpty(t *testing.T) {
+func Test_DefaultCarrierTable(t *testing.T) {
 	table := DefaultCarrierTable()
-	if len(table) != 0 {
-		t.Fatalf("the production table must be empty in this framework, got %d entries", len(table))
+	if len(table) != 1 {
+		t.Fatalf("the production table holds the open carriers only, got %d entries", len(table))
 	}
-	if _, ok := table.InternalCarrier("https://carrier.invalid/ups"); ok {
-		t.Errorf("an empty table must not recognize any carrier url")
+	if entry := table["/fedex"]; entry.Carrier != "fedex" || entry.Credential != CredentialClientIDSecret {
+		t.Errorf("unexpected fedex line %+v", entry)
 	}
-	if got := table.AllowedURLs(); len(got) != 0 {
-		t.Errorf("expected no allowed urls, got %v", got)
+	if entry, ok := table.InternalCarrier("https://carrier.invalid/fedex"); !ok || entry.Carrier != "fedex" {
+		t.Errorf("the fedex url must be recognized, got %+v %v", entry, ok)
+	}
+	for _, closed := range []string{"https://carrier.invalid/ups", "https://carrier.invalid/dhl"} {
+		if _, ok := table.InternalCarrier(closed); ok {
+			t.Errorf("%s must not be recognized while its carrier is closed", closed)
+		}
+	}
+	if got := table.AllowedURLs(); len(got) != 1 || got[0] != "https://carrier.invalid/fedex" {
+		t.Errorf("unexpected allowed urls %v", got)
 	}
 
 	// each call returns a new map, so a caller cannot change another caller's table.
 	table["/x"] = CarrierEntry{Carrier: "x"}
-	if len(DefaultCarrierTable()) != 0 {
+	delete(table, "/fedex")
+	if again := DefaultCarrierTable(); len(again) != 1 || again["/fedex"].Carrier != "fedex" {
 		t.Errorf("DefaultCarrierTable must return a new map on every call")
 	}
 }

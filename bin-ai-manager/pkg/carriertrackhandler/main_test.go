@@ -139,13 +139,13 @@ func Test_Tools(t *testing.T) {
 	}
 }
 
-func Test_New_hasNoAdaptersAndFixesTheTimeout(t *testing.T) {
+func Test_New_registersTheOpenCarriersAndFixesTheTimeout(t *testing.T) {
 	h, err := New(0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(h.adapters) != 0 {
-		t.Errorf("the framework registers no carrier, got %d", len(h.adapters))
+	if len(h.adapters) != 1 || h.adapters["fedex"] == nil {
+		t.Errorf("only the fedex adapter is registered, got %d", len(h.adapters))
 	}
 	if h.timeout != 10*time.Second {
 		t.Errorf("a timeout of 0 must become 10 seconds, got %v", h.timeout)
@@ -153,14 +153,24 @@ func Test_New_hasNoAdaptersAndFixesTheTimeout(t *testing.T) {
 	if h2, _ := New(7); h2.timeout != 7*time.Second {
 		t.Errorf("timeout = %v", h2.timeout)
 	}
+	if tools, ok := h.Tools("fedex"); !ok || len(tools) != 1 || tools[0].Name != "track_fedex" {
+		t.Errorf("unexpected tools %v %v", tools, ok)
+	}
 	if _, ok := h.Tools("ups"); ok {
 		t.Errorf("no tools without an adapter")
 	}
 
+	// a carrier that has no adapter is closed with the fixed text
 	text, isError, err := h.Call(context.Background(), makeCall("ups", testNumber, testSecret))
 	if err != nil || !isError || text != mcpserver.IntegrationUnavailableText {
 		t.Errorf("a call to an absent adapter must close with the fixed text, got %q %v %v", text, isError, err)
 	}
+
+	// the production adapter is only called here without a saved key, which
+	// ends the call before any request is made
+	call := makeCall("fedex", testNumber, "")
+	text, isError, err = h.Call(context.Background(), call)
+	expectError(t, text, isError, err, CodeCredentialNotConfigured, "fedex")
 }
 
 func Test_Call_success(t *testing.T) {

@@ -58,8 +58,10 @@ func Test_Create_carrierURL(t *testing.T) {
 		{"port on the reserved url", carrierTestTable(), "https://carrier.invalid:443/fake", "INVALID_MCP_SERVER_URL", "url must be one of:"},
 		{"upper case reserved host with a bad path", carrierTestTable(), "https://CARRIER.INVALID/x", "INVALID_MCP_SERVER_URL", "url must be one of:"},
 		{"ideographic stop in the reserved host", carrierTestTable(), "https://carrier\u3002invalid/x", "INVALID_MCP_SERVER_URL", "url must be one of:"},
-		{"empty production table refuses every reserved url", mcpserver.DefaultCarrierTable(), "https://carrier.invalid/ups", "INVALID_MCP_SERVER_URL", "no carrier integration is available"},
-		{"empty production table, trailing dots", mcpserver.DefaultCarrierTable(), "https://carrier.invalid../fake", "INVALID_MCP_SERVER_URL", "no carrier integration is available"},
+		{"the production table lists only the open carrier", mcpserver.DefaultCarrierTable(), "https://carrier.invalid/ups", "INVALID_MCP_SERVER_URL", "url must be one of: https://carrier.invalid/fedex"},
+		{"the production table, trailing dots on a closed carrier", mcpserver.DefaultCarrierTable(), "https://carrier.invalid../dhl", "INVALID_MCP_SERVER_URL", "url must be one of: https://carrier.invalid/fedex"},
+		{"an empty table refuses every reserved url", mcpserver.CarrierTable{}, "https://carrier.invalid/ups", "INVALID_MCP_SERVER_URL", "no carrier integration is available"},
+		{"an empty table, trailing dots", mcpserver.CarrierTable{}, "https://carrier.invalid../fake", "INVALID_MCP_SERVER_URL", "no carrier integration is available"},
 		{"nil table refuses every reserved url", nil, "https://carrier.invalid/fake", "INVALID_MCP_SERVER_URL", "no carrier integration is available"},
 	}
 
@@ -175,9 +177,9 @@ func Test_Update_carrierURLAndSecret(t *testing.T) {
 	}{
 		{"changing to an unknown reserved path is refused", carrierTestTable(), live("https://mcp.example.com/", ""), str("https://carrier.invalid/nope"), nil, nil, "INVALID_MCP_SERVER_URL"},
 		{"changing to a known reserved url is accepted", carrierTestTable(), live("https://mcp.example.com/", ""), str("https://carrier.invalid/fake"), nil, nil, ""},
-		{"an unchanged url is not checked again after the carrier was removed", mcpserver.DefaultCarrierTable(), live("https://carrier.invalid/fake", mcpserver.AuthTypeBearer), str("https://carrier.invalid/fake"), nil, nil, ""},
+		{"an unchanged url is not checked again after the carrier was removed from the table", mcpserver.DefaultCarrierTable(), live("https://carrier.invalid/fake", mcpserver.AuthTypeBearer), str("https://carrier.invalid/fake"), nil, nil, ""},
 		{"a rename without a url is not checked", mcpserver.DefaultCarrierTable(), live("https://carrier.invalid/fake", mcpserver.AuthTypeBearer), nil, nil, nil, ""},
-		{"changing to a reserved url while the table is empty is refused", mcpserver.DefaultCarrierTable(), live("https://mcp.example.com/", ""), str("https://carrier.invalid/fake"), nil, nil, "INVALID_MCP_SERVER_URL"},
+		{"changing to a reserved url that is not in the table is refused", mcpserver.DefaultCarrierTable(), live("https://mcp.example.com/", ""), str("https://carrier.invalid/fake"), nil, nil, "INVALID_MCP_SERVER_URL"},
 		{"a bad secret for the stored carrier url is refused", carrierTestTable(), live("https://carrier.invalid/fake", mcpserver.AuthTypeBearer), nil, nil, str("nocolon"), "INVALID_MCP_SERVER_SECRET"},
 		{"a good secret for the stored carrier url is accepted", carrierTestTable(), live("https://carrier.invalid/fake", mcpserver.AuthTypeBearer), nil, nil, str("id1:sec1"), ""},
 		{"a bad secret together with a new carrier url is refused", carrierTestTable(), live("https://mcp.example.com/", ""), str("https://carrier.invalid/fake"), &authBearer, str("nocolon"), "INVALID_MCP_SERVER_SECRET"},

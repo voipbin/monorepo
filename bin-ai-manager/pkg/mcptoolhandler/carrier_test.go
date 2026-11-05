@@ -256,7 +256,7 @@ func Test_CallTool_carrierIsUnavailable(t *testing.T) {
 		carriers func() *fakeCarriers
 	}{
 		{"the carrier was removed from the table", "https://carrier.invalid/fake", mcpserver.DefaultCarrierTable(), func() *fakeCarriers { return &fakeCarriers{text: "x"} }},
-		{"production table is empty", "https://carrier.invalid/ups", mcpserver.DefaultCarrierTable(), func() *fakeCarriers { return &fakeCarriers{text: "x"} }},
+		{"a carrier that is not in the production table", "https://carrier.invalid/ups", mcpserver.DefaultCarrierTable(), func() *fakeCarriers { return &fakeCarriers{text: "x"} }},
 		{"unknown path", "https://carrier.invalid/other", carrierTable(), func() *fakeCarriers { return &fakeCarriers{text: "x"} }},
 		{"trailing dots", "https://carrier.invalid../ups", mcpserver.DefaultCarrierTable(), func() *fakeCarriers { return &fakeCarriers{text: "x"} }},
 		{"query", "https://carrier.invalid/fake?a=b", carrierTable(), func() *fakeCarriers { return &fakeCarriers{text: "x"} }},

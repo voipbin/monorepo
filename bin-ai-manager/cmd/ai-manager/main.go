@@ -163,8 +163,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aiHandler := aihandler.NewAIHandler(requestHandler, notifyHandler, db, engineBaseKeyCrypto)
 	teamHandler := teamhandler.NewTeamHandler(requestHandler, notifyHandler, db)
 
-	// No carrier is open yet: the table is empty, so every url on the reserved
-	// carrier host is refused at registration and closed at call time.
+	// A url on the reserved carrier host is accepted only if it is a line of
+	// the table, and closed at call time if the carrier has no adapter.
 	carrierTable := mcpserver.DefaultCarrierTable()
 	mcpServerHandler, err := mcpserverhandler.NewMcpServerHandler(notifyHandler, db, cfg.McpSecretEncryptionKeys, carrierTable)
 	if err != nil {
