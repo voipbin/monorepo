@@ -200,7 +200,7 @@ preflight() {
     127.0.0.1|localhost|::1) ;;
     *) [ "${ALLOW_REMOTE_DB:-0}" = 1 ] || { echo "DB_HOST $DB_HOST is not loopback; set ALLOW_REMOTE_DB=1 to allow it"; return 1; } ;;
   esac
-  [ -n "$DB_PASSWORD" ] && export MYSQL_PWD="$DB_PASSWORD"
+  if [ -n "$DB_PASSWORD" ]; then export MYSQL_PWD="$DB_PASSWORD"; else unset MYSQL_PWD; fi
   local deadline=$((SECONDS + 120))
   until "${MYSQL[@]}" -e 'SELECT 1' >/dev/null 2>&1; do
     if [ "$SECONDS" -ge "$deadline" ]; then echo "the database did not accept connections in 120 seconds"; return 1; fi
@@ -231,8 +231,9 @@ run_target() {
   version_of() { ctl status 2>>"$log" | awk -F': ' '/Current version/{print $2}'; }
 
   if ! "${MYSQL[@]}" -e "CREATE DATABASE \`$db\` CHARACTER SET utf8" >"$log" 2>&1; then
-    echo "      (database $db may be left from a former run: DROP DATABASE \`$db\`)"
-    step_fail "$id" create "$log"; return
+    step_fail "$id" create "$log"
+    echo "        (database $db may be left from a former run: DROP DATABASE \`$db\`)"
+    return
   fi
   CREATED_DBS+=("$db")
 
