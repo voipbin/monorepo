@@ -54,32 +54,38 @@ func (h *handler) resolve(ctx context.Context, k Key, get rowGetter) (*resolutio
 	envVal, envSet := h.lookupEnv(k)
 
 	if dbMode {
-		row := anchorRow
-		if anchorName != k.Name {
-			row, err = get(ctx, k.Name)
-			if err != nil {
-				if !errors.Is(err, ErrNotFound) {
-					return nil, err
-				}
-				row = nil
-			}
-		}
-
-		if row != nil {
-			// shadowed only when the database is the source and the environment value is set.
-			r.res.EnvShadowed = envSet
-
-			return h.fromRow(k, row, r)
-		}
-
-		// a member of an atomic group without its own row: default only, never env.
-		return fromDefault(k, r), nil
+		return h.resolveFromDB(ctx, k, get, anchorName, anchorRow, envSet, r)
 	}
 
 	if envSet {
 		return fromEnv(k, envVal, r)
 	}
 
+	return fromDefault(k, r), nil
+}
+
+// resolveFromDB resolves a key whose group (or itself) has a row in the database.
+func (h *handler) resolveFromDB(ctx context.Context, k Key, get rowGetter, anchorName string, anchorRow *Row, envSet bool, r *resolution) (*resolution, error) {
+	row := anchorRow
+	if anchorName != k.Name {
+		var err error
+		row, err = get(ctx, k.Name)
+		if err != nil {
+			if !errors.Is(err, ErrNotFound) {
+				return nil, err
+			}
+			row = nil
+		}
+	}
+
+	if row != nil {
+		// shadowed only when the database is the source and the environment value is set.
+		r.res.EnvShadowed = envSet
+
+		return h.fromRow(k, row, r)
+	}
+
+	// a member of an atomic group without its own row: default only, never env.
 	return fromDefault(k, r), nil
 }
 

@@ -194,6 +194,19 @@ func findAnchor(group string, members []Key) (string, error) {
 }
 
 func validateKey(k Key) error {
+	for _, check := range []func(Key) error{
+		validateIdentity, validateEnv, validateShape, validateEnum, validateSecretRules, validateDefault,
+	} {
+		if err := check(k); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// validateIdentity checks the name, the kind and the type.
+func validateIdentity(k Key) error {
 	if !nameRegexp.MatchString(k.Name) {
 		return fmt.Errorf("config key name %q is malformed", k.Name)
 	}
@@ -210,10 +223,19 @@ func validateKey(k Key) error {
 		return fmt.Errorf("config key %q has an unknown type", k.Name)
 	}
 
+	return nil
+}
+
+func validateEnv(k Key) error {
 	if k.Env != "" && (reservedEnv[k.Env] || strings.HasSuffix(k.Env, reservedEnvSuffix)) {
 		return fmt.Errorf("config key %q uses a bootstrap environment variable name", k.Name)
 	}
 
+	return nil
+}
+
+// validateShape checks the group, bool placement and the numeric bounds.
+func validateShape(k Key) error {
 	if k.Atomic && k.Group == "" {
 		return fmt.Errorf("config key %q is atomic but has no group", k.Name)
 	}
@@ -229,12 +251,17 @@ func validateKey(k Key) error {
 		return fmt.Errorf("config key %q: min is greater than max", k.Name)
 	}
 
+	return nil
+}
+
+func validateEnum(k Key) error {
 	if k.Type == TypeEnum && len(k.Enum) == 0 {
 		return fmt.Errorf("config key %q: an enum needs values", k.Name)
 	}
 	if k.Type != TypeEnum && len(k.Enum) > 0 {
 		return fmt.Errorf("config key %q: enum values apply to the enum type only", k.Name)
 	}
+
 	seen := map[string]bool{}
 	for _, e := range k.Enum {
 		if e == "" || seen[e] {
@@ -243,24 +270,38 @@ func validateKey(k Key) error {
 		seen[e] = true
 	}
 
-	if k.Kind == KindSecret {
-		if k.Type != TypeString {
-			return fmt.Errorf("config key %q: a secret must be a string", k.Name)
+	return nil
+}
+
+// validateSecretRules checks the secret and the string limits.
+func validateSecretRules(k Key) error {
+	if k.Kind != KindSecret {
+		if k.Type == TypeString && k.MaxLen < 1 {
+			return fmt.Errorf("config key %q: a string needs max_len", k.Name)
 		}
-		if k.Default != nil {
-			return fmt.Errorf("config key %q: a secret can not have a default", k.Name)
-		}
-		if k.MaxLen < 1 || k.MaxLen > maxSecretLen {
-			return fmt.Errorf("config key %q: a secret needs max_len between 1 and %d", k.Name, maxSecretLen)
-		}
-	} else if k.Type == TypeString && k.MaxLen < 1 {
-		return fmt.Errorf("config key %q: a string needs max_len", k.Name)
+
+		return nil
 	}
 
+	if k.Type != TypeString {
+		return fmt.Errorf("config key %q: a secret must be a string", k.Name)
+	}
 	if k.Default != nil {
-		if _, err := checkTyped(k, k.Default); err != nil {
-			return fmt.Errorf("config key %q: the default does not fit the declaration", k.Name)
-		}
+		return fmt.Errorf("config key %q: a secret can not have a default", k.Name)
+	}
+	if k.MaxLen < 1 || k.MaxLen > maxSecretLen {
+		return fmt.Errorf("config key %q: a secret needs max_len between 1 and %d", k.Name, maxSecretLen)
+	}
+
+	return nil
+}
+
+func validateDefault(k Key) error {
+	if k.Default == nil {
+		return nil
+	}
+	if _, err := checkTyped(k, k.Default); err != nil {
+		return fmt.Errorf("config key %q: the default does not fit the declaration", k.Name)
 	}
 
 	return nil
