@@ -133,7 +133,7 @@ baseline 의 down 은 no-op(`SELECT 1`, "A baseline is never reverted")이고 up
 
 target 표기: `<service-dir>` 또는 `<service-dir>:<migrations-subdir>:<migrate-command>`. 기본 target 은 `<service-dir>` 이고 `migrations/`, 명령 `migrate`. 스크립트 안의 등록표(case 문 한 곳)에 `bin-timeline-manager:migrations/mysql:migrate-mysql` 한 줄이 있고, 제외 대상은 `bin-rag-manager` 와 timeline 의 ClickHouse 부모 디렉터리(`bin-timeline-manager/migrations/` 직속 파일)뿐이다.
 
-1. 목록 결정(`TARGETS` 비었을 때): 
+1. 목록 결정(`TARGETS` 비었을 때):
    - `CIRCLE_BRANCH=main` 이면 base 를 `HEAD~1`, 해석 실패 시 `git fetch --no-tags --deepen=1 origin main` 후 재시도, 그래도 실패하면 전체. 그 밖에는 `git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'`, `git merge-base origin/main HEAD` 실패 시 `--unshallow` 또는 `--deepen=1000`, 그래도 실패하면 전체.
    - 변경 파일: `git diff --name-only <base>...HEAD`(main 은 `<base> HEAD`). 모든 git 호출은 `if` 로 실패를 분기한다(`set -e` 로 죽지 않음).
    - 변경 파일에서 `^(bin-[^/]+)/migrations/(.+)$` 를 target 으로 매핑: `bin-timeline-manager` 의 `migrations/mysql/` 이하는 mysql target, 같은 서비스의 `migrations/` 직속은 제외, `bin-rag-manager` 는 제외(둘 다 "skipped: not MariaDB" 출력). 나머지는 서비스 target. 중복 제거, 정렬.
