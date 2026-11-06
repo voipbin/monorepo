@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/secretcrypto"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-number-manager/models/availablenumber"
@@ -19,7 +20,6 @@ import (
 	"monorepo/bin-number-manager/pkg/dbhandler"
 	"monorepo/bin-number-manager/pkg/numberhandlertelnyx"
 	"monorepo/bin-number-manager/pkg/numberhandlertwilio"
-	"monorepo/bin-number-manager/pkg/secretcrypto"
 )
 
 // Provider is the operations a number provider implements.
@@ -87,7 +87,7 @@ type ProviderHandler interface {
 type providerHandler struct {
 	utilHandler utilhandler.UtilHandler
 	db          dbhandler.DBHandler
-	crypto      *secretcrypto.SecretCrypto
+	crypto      *secretcrypto.Crypto
 
 	registry map[number.ProviderName]Descriptor
 
@@ -142,7 +142,7 @@ func ObservePurchase(name number.ProviderName, result string) {
 func NewProviderHandler(
 	r requesthandler.RequestHandler,
 	db dbhandler.DBHandler,
-	crypto *secretcrypto.SecretCrypto,
+	crypto *secretcrypto.Crypto,
 	env map[number.ProviderName]provider.Credentials,
 ) ProviderHandler {
 	return &providerHandler{

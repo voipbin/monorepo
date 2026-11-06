@@ -14,7 +14,6 @@ import (
 	"monorepo/bin-number-manager/pkg/dbhandler"
 	"monorepo/bin-number-manager/pkg/numberhandler"
 	"monorepo/bin-number-manager/pkg/providerhandler"
-	"monorepo/bin-number-manager/pkg/secretcrypto"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -70,7 +69,7 @@ func initNumberHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (numberha
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	// the CLI rejects a malformed key set at once (the daemon only logs it)
-	crypto, err := secretcrypto.New(config.Get().NumberSecretEncryptionKeys)
+	crypto, err := providerhandler.NewSecretCrypto(config.Get().NumberSecretEncryptionKeys)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not parse the number secret encryption keys")
 	}

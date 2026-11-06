@@ -13,7 +13,6 @@ import (
 	"monorepo/bin-number-manager/models/number"
 	"monorepo/bin-number-manager/models/provider"
 	"monorepo/bin-number-manager/pkg/dbhandler"
-	"monorepo/bin-number-manager/pkg/secretcrypto"
 )
 
 func invalid(format string, args ...any) error {
@@ -236,12 +235,12 @@ func (h *providerHandler) UpdateSecret(ctx context.Context, name number.Provider
 	if secret == "" {
 		return nil, invalid("secret is required")
 	}
-	if len(secret) > secretcrypto.MaxPlaintextBytes {
+	if len(secret) > maxSecretBytes {
 		return nil, invalid("secret is too long")
 	}
 
 	// encrypt first, so that a missing key does not leave a row behind
-	ciphertext, keyVersion, err := h.crypto.Encrypt(secret, string(name))
+	ciphertext, keyVersion, err := encryptSecret(h.crypto, secret, name)
 	if err != nil {
 		return nil, err
 	}
