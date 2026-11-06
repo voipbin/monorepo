@@ -3,6 +3,7 @@ package messagehandler
 import (
 	"context"
 	"errors"
+	"reflect"
 	"testing"
 	"time"
 
@@ -52,7 +53,7 @@ func newDispatchMocks(t *testing.T) *dispatchMocks {
 	t.Cleanup(mc.Finish)
 
 	m := &dispatchMocks{
-		util:   utilhandler.NewMockUtilHandler(mc),
+		util:   newTestUtil(mc),
 		db:     dbhandler.NewMockDBHandler(mc),
 		notify: notifyhandler.NewMockNotifyHandler(mc),
 		telnyx: NewMockMMSProvider(mc),
@@ -94,11 +95,11 @@ func Test_dispatchMMS(t *testing.T) {
 		source  string
 		targets []target.Target
 
-		telnyxOutcomes []MMSOutcome
+		telnyxOutcomes []SendResult
 
 		// the targets that are expected to reach messagebird, and its outcomes
 		expectBirdTargets []target.Target
-		birdOutcomes      []MMSOutcome
+		birdOutcomes      []SendResult
 
 		expectProvider message.ProviderName
 		expectFinal    []target.Target
@@ -107,7 +108,7 @@ func Test_dispatchMMS(t *testing.T) {
 			name:           "all accepted by telnyx",
 			source:         usSource,
 			targets:        testTargets(usDest1, usDest2),
-			telnyxOutcomes: []MMSOutcome{MMSOutcomeAccepted, MMSOutcomeAccepted},
+			telnyxOutcomes: outs(SendOutcomeAccepted, SendOutcomeAccepted),
 			expectProvider: message.ProviderNameTelnyx,
 			expectFinal:    testTargets(usDest1, usDest2),
 		},
@@ -115,9 +116,9 @@ func Test_dispatchMMS(t *testing.T) {
 			name:              "one refused by telnyx is accepted by messagebird",
 			source:            usSource,
 			targets:           testTargets(usDest1, usDest2),
-			telnyxOutcomes:    []MMSOutcome{MMSOutcomeAccepted, MMSOutcomeRejected},
+			telnyxOutcomes:    outs(SendOutcomeAccepted, SendOutcomeRejected),
 			expectBirdTargets: testTargets(usDest2),
-			birdOutcomes:      []MMSOutcome{MMSOutcomeAccepted},
+			birdOutcomes:      outs(SendOutcomeAccepted),
 			expectProvider:    message.ProviderNameTelnyx,
 			expectFinal:       testTargets(usDest1, usDest2),
 		},
@@ -125,9 +126,9 @@ func Test_dispatchMMS(t *testing.T) {
 			name:              "all refused by telnyx and accepted by messagebird records messagebird",
 			source:            usSource,
 			targets:           testTargets(usDest1, usDest2),
-			telnyxOutcomes:    []MMSOutcome{MMSOutcomeRejected, MMSOutcomeRejected},
+			telnyxOutcomes:    outs(SendOutcomeRejected, SendOutcomeRejected),
 			expectBirdTargets: testTargets(usDest1, usDest2),
-			birdOutcomes:      []MMSOutcome{MMSOutcomeAccepted, MMSOutcomeAccepted},
+			birdOutcomes:      outs(SendOutcomeAccepted, SendOutcomeAccepted),
 			expectProvider:    message.ProviderNameMessagebird,
 			expectFinal:       testTargets(usDest1, usDest2),
 		},
@@ -135,9 +136,9 @@ func Test_dispatchMMS(t *testing.T) {
 			name:              "refused by both is failed and never text only",
 			source:            usSource,
 			targets:           testTargets(usDest1),
-			telnyxOutcomes:    []MMSOutcome{MMSOutcomeRejected},
+			telnyxOutcomes:    outs(SendOutcomeRejected),
 			expectBirdTargets: testTargets(usDest1),
-			birdOutcomes:      []MMSOutcome{MMSOutcomeRejected},
+			birdOutcomes:      outs(SendOutcomeRejected),
 			expectProvider:    message.ProviderNameTelnyx,
 			expectFinal:       []target.Target{failedTarget(usDest1)},
 		},
@@ -145,9 +146,9 @@ func Test_dispatchMMS(t *testing.T) {
 			name:              "messagebird result is not known",
 			source:            usSource,
 			targets:           testTargets(usDest1),
-			telnyxOutcomes:    []MMSOutcome{MMSOutcomeRejected},
+			telnyxOutcomes:    outs(SendOutcomeRejected),
 			expectBirdTargets: testTargets(usDest1),
-			birdOutcomes:      []MMSOutcome{MMSOutcomeFailed},
+			birdOutcomes:      outs(SendOutcomeFailed),
 			expectProvider:    message.ProviderNameTelnyx,
 			expectFinal:       []target.Target{failedTarget(usDest1)},
 		},
@@ -155,7 +156,7 @@ func Test_dispatchMMS(t *testing.T) {
 			name:           "refused target outside the us and canada has no fallback",
 			source:         usSource,
 			targets:        testTargets(usDest1, krDest),
-			telnyxOutcomes: []MMSOutcome{MMSOutcomeAccepted, MMSOutcomeRejected},
+			telnyxOutcomes: outs(SendOutcomeAccepted, SendOutcomeRejected),
 			expectProvider: message.ProviderNameTelnyx,
 			expectFinal:    []target.Target{testTargets(usDest1)[0], failedTarget(krDest)},
 		},
@@ -163,7 +164,7 @@ func Test_dispatchMMS(t *testing.T) {
 			name:           "a source outside the us and canada has no fallback",
 			source:         "+8210****0001",
 			targets:        testTargets(usDest1),
-			telnyxOutcomes: []MMSOutcome{MMSOutcomeRejected},
+			telnyxOutcomes: outs(SendOutcomeRejected),
 			expectProvider: message.ProviderNameTelnyx,
 			expectFinal:    []target.Target{failedTarget(usDest1)},
 		},
@@ -171,7 +172,7 @@ func Test_dispatchMMS(t *testing.T) {
 			name:           "an unknown telnyx result never falls back, so it cannot be sent twice",
 			source:         usSource,
 			targets:        testTargets(usDest1, usDest2),
-			telnyxOutcomes: []MMSOutcome{MMSOutcomeFailed, MMSOutcomeAccepted},
+			telnyxOutcomes: outs(SendOutcomeFailed, SendOutcomeAccepted),
 			expectProvider: message.ProviderNameTelnyx,
 			expectFinal:    []target.Target{failedTarget(usDest1), testTargets(usDest2)[0]},
 		},
@@ -179,7 +180,7 @@ func Test_dispatchMMS(t *testing.T) {
 			name:           "all unknown",
 			source:         usSource,
 			targets:        testTargets(usDest1, usDest2),
-			telnyxOutcomes: []MMSOutcome{MMSOutcomeFailed, MMSOutcomeFailed},
+			telnyxOutcomes: outs(SendOutcomeFailed, SendOutcomeFailed),
 			expectProvider: message.ProviderNameTelnyx,
 			expectFinal:    []target.Target{failedTarget(usDest1), failedTarget(usDest2)},
 		},
@@ -187,9 +188,9 @@ func Test_dispatchMMS(t *testing.T) {
 			name:              "mixed: accepted, refused and fallback accepted, unknown, refused and fallback refused",
 			source:            usSource,
 			targets:           testTargets(usDest1, usDest2, krDest, "+1555****0005", "+1555****0006"),
-			telnyxOutcomes:    []MMSOutcome{MMSOutcomeAccepted, MMSOutcomeRejected, MMSOutcomeFailed, MMSOutcomeRejected, MMSOutcomeRejected},
+			telnyxOutcomes:    outs(SendOutcomeAccepted, SendOutcomeRejected, SendOutcomeFailed, SendOutcomeRejected, SendOutcomeRejected),
 			expectBirdTargets: testTargets(usDest2, "+1555****0005", "+1555****0006"),
-			birdOutcomes:      []MMSOutcome{MMSOutcomeAccepted, MMSOutcomeRejected, MMSOutcomeFailed},
+			birdOutcomes:      outs(SendOutcomeAccepted, SendOutcomeRejected, SendOutcomeFailed),
 			expectProvider:    message.ProviderNameTelnyx,
 			expectFinal: []target.Target{
 				testTargets(usDest1)[0],
@@ -206,29 +207,26 @@ func Test_dispatchMMS(t *testing.T) {
 			m := newDispatchMocks(t)
 			source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: tt.source}
 			urls := []string{"https://example.invalid/a.png"}
-			responseMessage := &message.Message{Identity: commonidentity.Identity{ID: testMessageID, CustomerID: testCustomerID}}
+			mem := newMemDB(m.db, storedMessage(append([]target.Target(nil), tt.targets...)))
+			ev := expectEvents(m.notify)
 
 			// each target is offered to telnyx exactly once, with all the urls and the text.
-			m.telnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, source, tt.targets, "hello", urls).Return(tt.telnyxOutcomes).Times(1)
+			m.telnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, source, tt.targets, "hello", urls, gomock.Any()).Return(tt.telnyxOutcomes).Times(1)
 			if len(tt.expectBirdTargets) > 0 {
-				m.bird.EXPECT().SendMMS(gomock.Any(), testMessageID, source, tt.expectBirdTargets, "hello", urls).Return(tt.birdOutcomes).Times(1)
+				m.bird.EXPECT().SendMMS(gomock.Any(), testMessageID, source, tt.expectBirdTargets, "hello", urls, gomock.Any()).Return(tt.birdOutcomes).Times(1)
 			}
 
-			hasFailed := false
-			for _, f := range tt.expectFinal {
-				if f.Status == target.StatusFailed {
-					hasFailed = true
-				}
-			}
-			if hasFailed {
-				m.util.EXPECT().TimeNow().Return(&now).Times(1)
-			}
+			m.handler.dispatchMMS(context.Background(), testMessageID, source, tt.targets, "hello", urls, false)
 
-			m.db.EXPECT().MessageUpdateTargets(gomock.Any(), testMessageID, tt.expectProvider, tt.expectFinal).Return(nil)
-			m.db.EXPECT().MessageGet(gomock.Any(), testMessageID).Return(responseMessage, nil)
-			m.notify.EXPECT().PublishWebhookEvent(gomock.Any(), testCustomerID, message.EventTypeMessageUpdated, responseMessage)
-
-			m.handler.dispatchMMS(context.Background(), testMessageID, source, tt.targets, "hello", urls)
+			if !reflect.DeepEqual(mem.targets(), tt.expectFinal) {
+				t.Errorf("Wrong final targets.\nexpect: %v\ngot: %v", tt.expectFinal, mem.targets())
+			}
+			if mem.providerName() != tt.expectProvider {
+				t.Errorf("Wrong provider. expect: %s, got: %s", tt.expectProvider, mem.providerName())
+			}
+			if ev.count() != 1 {
+				t.Errorf("Wrong event count. expect: 1, got: %d", ev.count())
+			}
 		})
 	}
 }
@@ -239,41 +237,46 @@ func Test_dispatchMMS_finalWriteSurvivesTheDispatchDeadline(t *testing.T) {
 	m := newDispatchMocks(t)
 	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+1555****0001"}
 	targets := testTargets("+1555****0002")
-	responseMessage := &message.Message{Identity: commonidentity.Identity{ID: testMessageID, CustomerID: testCustomerID}}
-	now := time.Date(2026, 11, 6, 1, 2, 3, 0, time.UTC)
+	mem := newMemDB(m.db, storedMessage(append([]target.Target(nil), targets...)))
+	ev := expectEvents(m.notify)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	m.telnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, source, targets, "", gomock.Any()).DoAndReturn(
-		func(_ context.Context, _ uuid.UUID, _ *commonaddress.Address, _ []target.Target, _ string, _ []string) []MMSOutcome {
+	m.telnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, source, targets, "", gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ uuid.UUID, _ *commonaddress.Address, _ []target.Target, _ string, _ []string, _ ResultCallback) []SendResult {
 			cancel() // the attempts ran out of time; the target was not attempted
-			return []MMSOutcome{MMSOutcomeFailed}
+			return outs(SendOutcomeFailed)
 		})
-	m.util.EXPECT().TimeNow().Return(&now)
-	m.db.EXPECT().MessageUpdateTargets(gomock.Any(), testMessageID, message.ProviderNameTelnyx, gomock.Any()).DoAndReturn(
-		func(writeCtx context.Context, _ uuid.UUID, _ message.ProviderName, final []target.Target) error {
-			if writeCtx.Err() != nil {
-				t.Errorf("The final write must not use a canceled context: %v", writeCtx.Err())
-			}
-			if len(final) != 1 || final[0].Status != target.StatusFailed {
-				t.Errorf("Wrong final targets: %v", final)
-			}
-			return nil
-		})
-	m.db.EXPECT().MessageGet(gomock.Any(), testMessageID).Return(responseMessage, nil)
-	m.notify.EXPECT().PublishWebhookEvent(gomock.Any(), testCustomerID, message.EventTypeMessageUpdated, responseMessage)
 
-	m.handler.dispatchMMS(ctx, testMessageID, source, targets, "", []string{"https://example.invalid/a.png"})
+	m.handler.dispatchMMS(ctx, testMessageID, source, targets, "", []string{"https://example.invalid/a.png"}, false)
+
+	got := mem.targets()
+	if len(got) != 1 || got[0].Status != target.StatusFailed {
+		t.Errorf("Wrong final targets: %v", got)
+	}
+	if ev.count() != 1 {
+		t.Errorf("Wrong event count. expect: 1, got: %d", ev.count())
+	}
 }
 
 func Test_dispatchMMS_finalWriteFailureIsOnlyLogged(t *testing.T) {
 	m := newDispatchMocks(t)
 	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+1555****0001"}
 	targets := testTargets("+1555****0002")
+	mem := newMemDB(m.db, storedMessage(append([]target.Target(nil), targets...)))
+	mem.failIfErr = errors.New("db down")
+	mem.failMergeErr = errors.New("db down")
+	ev := expectEvents(m.notify)
 
-	m.telnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, source, targets, "hello", gomock.Any()).Return([]MMSOutcome{MMSOutcomeAccepted})
-	m.db.EXPECT().MessageUpdateTargets(gomock.Any(), testMessageID, message.ProviderNameTelnyx, targets).Return(errors.New("db down"))
+	m.telnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, source, targets, "hello", gomock.Any(), gomock.Any()).Return(outs(SendOutcomeAccepted))
 
-	m.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "hello", []string{"https://example.invalid/a.png"})
+	m.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "hello", []string{"https://example.invalid/a.png"}, false)
+
+	if mem.mergeCalls != 1 {
+		t.Errorf("Wrong merge calls. expect: 1, got: %d", mem.mergeCalls)
+	}
+	if ev.count() != 0 {
+		t.Errorf("Wrong event count. nothing was written, so nothing is published. got: %d", ev.count())
+	}
 }
 
 type sendMMSFixture struct {
@@ -335,6 +338,7 @@ func Test_SendMMS(t *testing.T) {
 
 	expectSource := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15550100001"}
 	expectTargets := testTargets("+15550100002")
+	expectTargets[0].Parts = 1
 	expectMessage := &message.Message{
 		Identity:     commonidentity.Identity{ID: testMessageID, CustomerID: testCustomerID},
 		Type:         message.TypeMMS,
@@ -354,16 +358,15 @@ func Test_SendMMS(t *testing.T) {
 
 	f.db.EXPECT().MessageCreate(ctx, expectMessage).Return(nil)
 	f.db.EXPECT().MessageGet(ctx, testMessageID).Return(expectMessage, nil)
-	f.notify.EXPECT().PublishWebhookEvent(ctx, testCustomerID, message.EventTypeMessageCreated, expectMessage)
+	f.notify.EXPECT().PublishWebhookEvent(ctx, testCustomerID, message.EventTypeMessageCreated, expectMessage.EventCopy())
 
-	f.telnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, expectSource, expectTargets, "hello", urls).Return([]MMSOutcome{MMSOutcomeAccepted})
+	f.telnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, expectSource, expectTargets, "hello", urls, gomock.Any()).Return(outs(SendOutcomeAccepted))
 
 	// the last call of the goroutine is the event of the final update, and the test waits for it
 	// instead of sleeping.
 	done := make(chan struct{})
-	f.db.EXPECT().MessageUpdateTargets(gomock.Any(), testMessageID, message.ProviderNameTelnyx, expectTargets).Return(nil)
-	f.db.EXPECT().MessageGet(gomock.Any(), testMessageID).Return(expectMessage, nil)
-	f.notify.EXPECT().PublishWebhookEvent(gomock.Any(), testCustomerID, message.EventTypeMessageUpdated, expectMessage).Do(func(_ context.Context, _ uuid.UUID, _ string, _ any) { close(done) })
+	mem := newMemDB(f.db, storedMessage(append([]target.Target(nil), expectTargets...)))
+	f.notify.EXPECT().PublishWebhookEvent(gomock.Any(), testCustomerID, message.EventTypeMessageUpdated, gomock.Any()).Do(func(_ context.Context, _ uuid.UUID, _ string, _ any) { close(done) })
 
 	res, err := f.handler.SendMMS(ctx, testMessageID, testCustomerID, source, destinations, "hello", []uuid.UUID{testMediaID1})
 	if err != nil {
@@ -377,6 +380,9 @@ func Test_SendMMS(t *testing.T) {
 	case <-done:
 	case <-time.After(5 * time.Second):
 		t.Fatalf("The dispatch did not finish")
+	}
+	if mem.writes() != 1 {
+		t.Errorf("Wrong writes. expect: 1, got: %d", mem.writes())
 	}
 }
 
@@ -571,22 +577,16 @@ func Test_dispatchMMS_providerContractViolation(t *testing.T) {
 	m := newDispatchMocks(t)
 	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+1555****0001"}
 	targets := testTargets("+1555****0002", "+1555****0003")
-	responseMessage := &message.Message{Identity: commonidentity.Identity{ID: testMessageID, CustomerID: testCustomerID}}
-	now := time.Date(2026, 11, 6, 1, 2, 3, 0, time.UTC)
+	mem := newMemDB(m.db, storedMessage(append([]target.Target(nil), targets...)))
+	expectEvents(m.notify)
 
-	m.telnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, source, targets, "", gomock.Any()).Return([]MMSOutcome{MMSOutcomeRejected})
-	m.util.EXPECT().TimeNow().Return(&now)
-	m.db.EXPECT().MessageUpdateTargets(gomock.Any(), testMessageID, message.ProviderNameTelnyx, gomock.Any()).DoAndReturn(
-		func(_ context.Context, _ uuid.UUID, _ message.ProviderName, final []target.Target) error {
-			for _, f := range final {
-				if f.Status != target.StatusFailed {
-					t.Errorf("Wrong final target. expect: failed, got: %v", f.Status)
-				}
-			}
-			return nil
-		})
-	m.db.EXPECT().MessageGet(gomock.Any(), testMessageID).Return(responseMessage, nil)
-	m.notify.EXPECT().PublishWebhookEvent(gomock.Any(), testCustomerID, message.EventTypeMessageUpdated, responseMessage)
+	m.telnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, source, targets, "", gomock.Any(), gomock.Any()).Return(outs(SendOutcomeRejected))
 
-	m.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "", []string{"https://example.invalid/a.png"})
+	m.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "", []string{"https://example.invalid/a.png"}, false)
+
+	for _, f := range mem.targets() {
+		if f.Status != target.StatusFailed {
+			t.Errorf("Wrong final target. expect: failed, got: %v", f.Status)
+		}
+	}
 }

@@ -14,6 +14,7 @@ import (
 	message "monorepo/bin-message-manager/models/message"
 	target "monorepo/bin-message-manager/models/target"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -86,6 +87,21 @@ func (mr *MockDBHandlerMockRecorder) MessageGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGet", reflect.TypeOf((*MockDBHandler)(nil).MessageGet), ctx, id)
 }
 
+// MessageGetFromDB mocks base method.
+func (m *MockDBHandler) MessageGetFromDB(ctx context.Context, id uuid.UUID) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageGetFromDB", ctx, id)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageGetFromDB indicates an expected call of MessageGetFromDB.
+func (mr *MockDBHandlerMockRecorder) MessageGetFromDB(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).MessageGetFromDB), ctx, id)
+}
+
 // MessageList mocks base method.
 func (m *MockDBHandler) MessageList(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	m.ctrl.T.Helper()
@@ -99,6 +115,21 @@ func (m *MockDBHandler) MessageList(ctx context.Context, token string, size uint
 func (mr *MockDBHandlerMockRecorder) MessageList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageList", reflect.TypeOf((*MockDBHandler)(nil).MessageList), ctx, token, size, filters)
+}
+
+// MessageListByProviderReference mocks base method.
+func (m *MockDBHandler) MessageListByProviderReference(ctx context.Context, ref string, since time.Time) ([]*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageListByProviderReference", ctx, ref, since)
+	ret0, _ := ret[0].([]*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageListByProviderReference indicates an expected call of MessageListByProviderReference.
+func (mr *MockDBHandlerMockRecorder) MessageListByProviderReference(ctx, ref, since any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageListByProviderReference", reflect.TypeOf((*MockDBHandler)(nil).MessageListByProviderReference), ctx, ref, since)
 }
 
 // MessageUpdate mocks base method.
@@ -127,4 +158,19 @@ func (m *MockDBHandler) MessageUpdateTargets(ctx context.Context, id uuid.UUID, 
 func (mr *MockDBHandlerMockRecorder) MessageUpdateTargets(ctx, id, provider, targets any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageUpdateTargets", reflect.TypeOf((*MockDBHandler)(nil).MessageUpdateTargets), ctx, id, provider, targets)
+}
+
+// MessageUpdateTargetsIf mocks base method.
+func (m *MockDBHandler) MessageUpdateTargetsIf(ctx context.Context, id uuid.UUID, prevTMUpdate *time.Time, provider *message.ProviderName, targets []target.Target) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageUpdateTargetsIf", ctx, id, prevTMUpdate, provider, targets)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageUpdateTargetsIf indicates an expected call of MessageUpdateTargetsIf.
+func (mr *MockDBHandlerMockRecorder) MessageUpdateTargetsIf(ctx, id, prevTMUpdate, provider, targets any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageUpdateTargetsIf", reflect.TypeOf((*MockDBHandler)(nil).MessageUpdateTargetsIf), ctx, id, prevTMUpdate, provider, targets)
 }

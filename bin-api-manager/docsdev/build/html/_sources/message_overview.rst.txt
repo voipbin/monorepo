@@ -6,7 +6,7 @@ Overview
 .. note:: **AI Context**
 
    * **Complexity:** Low
-   * **Cost:** Chargeable (per message segment sent)
+   * **Cost:** Chargeable (per message and recipient; a text longer than one segment is an MMS)
    * **Async:** Yes. ``POST https://api.voipbin.net/v1.0/messages`` returns immediately with target status ``queued``. Poll ``GET https://api.voipbin.net/v1.0/messages/{id}`` or use webhooks to track delivery status changes.
 
 VoIPBin's Message API enables you to send and receive SMS (Short Message Service) messages globally. Whether you need to send notifications, alerts, verification codes, or marketing messages, the Message API provides a reliable solution for text-based communication.
@@ -52,13 +52,21 @@ When you send a message, VoIPBin routes it through carrier networks to reach the
    * - Type
      - Description
    * - SMS
-     - Text-only messages up to 160 characters (or 70 for Unicode). Longer messages are split and reassembled by the recipient.
+     - A text that fits one segment: up to 160 GSM-7 characters or up to 70 Unicode characters (see :ref:`Message Formatting <message-overview-formatting>`).
    * - MMS
-     - A message with media attachments (images, audio, PDF). Sent when ``POST /messages`` has a non-empty ``medias`` list.
+     - A message with media attachments (images, audio, PDF), sent when ``POST /messages`` has a non-empty ``medias`` list. A text without media that is longer than one segment is also sent as an MMS (see :ref:`Long texts <message-overview-long-text>`).
 
 .. note:: **AI Implementation Hint**
 
-   ``POST /messages`` accepts ``source``, ``destinations``, ``text`` and the optional ``medias`` (a list of file ids). Without ``medias`` (missing, ``null`` or an empty list) the message is an SMS, exactly as before. With ``medias`` it is an MMS.
+   ``POST /messages`` accepts ``source``, ``destinations``, ``text`` and the optional ``medias`` (a list of file ids). Without ``medias`` (missing, ``null`` or an empty list) a text of one segment or less is an SMS and a longer text is an MMS. With ``medias`` it is an MMS. Read ``type`` in the response.
+
+.. _message-overview-long-text:
+
+Long texts
+----------
+A text without media is counted in segments from the standard GSM-7 and UCS-2 rules, whatever the carrier reports. A text of one segment or less is sent as an SMS and charged at the SMS price. A text of more than one segment (more than 160 GSM-7 characters, or more than 70 characters when any character is outside GSM-7) is sent as an MMS without media. The response has ``type`` ``mms`` and each destination is charged one MMS message at the MMS price, whatever the number of segments. ``parts`` of each target holds the number of segments of the text.
+
+A text of more than 10 segments is rejected with ``TEXT_TOO_LONG`` and nothing is charged. A promoted text is sent as an MMS where the destination supports it. Where an MMS cannot be sent, the carrier route sends the text as SMS segments, and the charge stays the MMS price. The price is fixed when the message is created, so it does not change with the route.
 
 .. _message-overview-mms:
 
@@ -113,7 +121,7 @@ A request that is rejected with one of the reasons below creates no message, cha
    * - ``MEDIA_TOO_MANY``, ``MEDIA_DUPLICATE``, ``INVALID_MEDIA_ID``
      - More than 10 files, the same id listed twice, or an id that is not a valid UUID.
    * - ``TEXT_TOO_LONG``
-     - The text is longer than 2000 characters.
+     - The text is longer than 2000 characters with media, or longer than 10 segments without media.
    * - ``INSUFFICIENT_BALANCE`` (HTTP 402)
      - The credit balance is not enough for the message.
    * - ``MEDIA_CHECK_TIMEOUT`` (HTTP 503)
@@ -162,6 +170,8 @@ Every message moves through a predictable set of states from sending to delivery
     +------------+
     | delivered  |
     +------------+
+
+A ``message_updated`` event is published each time the status of a target of an outbound message changes, including the delivery receipts of the carrier (``sent``, ``delivered``, ``failed``, ``dlr_timeout``). A target never goes back from a final status to an earlier one, so a late or repeated receipt changes nothing.
 
 **Target Status Descriptions**
 
@@ -229,7 +239,7 @@ Send messages directly using the REST API.
 
 .. note:: **AI Implementation Hint**
 
-   All phone numbers must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces. For example, ``+15551234567`` (US) or ``+821012345678`` (Korea). The ``source`` must be a number you own, obtainable via ``GET https://api.voipbin.net/v1.0/numbers``. Unicode characters (emoji, non-Latin scripts) reduce the per-segment character limit from 160 to 70.
+   All phone numbers must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces. For example, ``+15551234567`` (US) or ``+821012345678`` (Korea). The ``source`` must be a number you own, obtainable via ``GET https://api.voipbin.net/v1.0/numbers``. Unicode characters (emoji, non-Latin scripts) reduce the single-segment limit from 160 to 70 and make a text over 70 characters an MMS.
 
 **Send SMS Example:**
 
@@ -382,6 +392,8 @@ The stored files use the file type ``media`` and count towards the storage quota
 
 Message Formatting
 ------------------
+.. _message-overview-formatting:
+
 Understanding message limits and encoding helps optimize delivery.
 
 **SMS Character Limits**
@@ -400,22 +412,11 @@ Understanding message limits and encoding helps optimize delivery.
      - 67 characters
 
 
+Some characters of GSM-7 (for example ``{``, ``}``, ``[``, ``]``, ``~``, ``|``, ``^``, ``\`` and the euro sign) take two positions. One character outside GSM-7, such as an emoji or a non-Latin letter, makes the whole text Unicode. A character is never split between two segments.
+
 **Long Message Handling**
 
-::
-
-    Your message: "This is a longer message that exceeds 160 characters..."
-                                        |
-                                        v
-    +-------------------------------------------------------------------+
-    | VoIPBin automatically splits into segments:                       |
-    |                                                                   |
-    | Segment 1: "This is a longer message that exceeds 160 char..."   |
-    | Segment 2: "...acters and continues here with more content..."   |
-    | Segment 3: "...and finally ends here."                           |
-    |                                                                   |
-    | Recipient's phone reassembles into single message                 |
-    +-------------------------------------------------------------------+
+A text of more than one segment is sent as an MMS, see :ref:`Long texts <message-overview-long-text>`. The ``parts`` field of the target is the number of segments of the text.
 
 
 Common Scenarios

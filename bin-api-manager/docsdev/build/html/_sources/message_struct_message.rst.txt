@@ -83,7 +83,7 @@ Target struct
 
 * ``destination`` (Object): Destination address info. See :ref:`Address <common-struct-address-address>`.
 * ``status`` (enum string): Delivery status for this specific destination. One of ``queued``, ``sent``, ``delivered``, ``gw_timeout``, ``dlr_timeout``, ``failed`` (outbound) or ``received``, ``delivered`` (inbound).
-* ``parts`` (Integer): Number of message segments. Long SMS messages are split into multiple parts (153 characters each for GSM-7 encoding).
+* ``parts`` (Integer): Number of segments of the text, counted by VoIPBin from the GSM-7 and UCS-2 rules (160 or 70 characters in one segment, 153 or 67 when concatenated). It is information and not the charged unit: the charge is one message for each destination.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last status update for this target.
 
 .. _message-struct-message-type:
@@ -98,9 +98,9 @@ Message's type.
    * - Type
      - Description
    * - sms
-     - Standard SMS text message. Limited to 160 characters per segment (GSM-7 encoding) or 70 characters (Unicode encoding).
+     - A text message of one segment: up to 160 characters (GSM-7 encoding) or 70 characters (Unicode encoding).
    * - mms
-     - A message with one or more media attachments (images, audio, PDF), listed in ``medias``. A message sent with ``medias`` is returned with type ``mms``, and so is a received message that carries media.
+     - A message with one or more media attachments (images, audio, PDF), listed in ``medias``, or a text without media that is longer than one segment. A message sent with ``medias`` is returned with type ``mms``, and so is a received message that carries media.
 
 
 .. _message-struct-message-direction:

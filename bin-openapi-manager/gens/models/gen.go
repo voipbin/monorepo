@@ -8493,7 +8493,7 @@ type MessageManagerMessage struct {
 	// Example: 2026-01-15T09:30:00.000000Z
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// Type Type of the message. A message sent with `medias` is `mms`, every other message is `sms`.
+	// Type Type of the message. A message sent with `medias` is `mms`, and so is a text of more than one segment (more than 160 GSM-7 characters or more than 70 characters with any non GSM-7 character). Every other message is `sms`.
 	//
 	// Example: sms
 	Type *MessageManagerMessageType `json:"type,omitempty"`
@@ -8509,7 +8509,7 @@ type MessageManagerMessageDirection string
 // Example: telnyx
 type MessageManagerMessageProviderName string
 
-// MessageManagerMessageType Type of the message. A message sent with `medias` is `mms`, every other message is `sms`.
+// MessageManagerMessageType Type of the message. A message sent with `medias` is `mms`, and so is a text of more than one segment (more than 160 GSM-7 characters or more than 70 characters with any non GSM-7 character). Every other message is `sms`.
 //
 // Example: sms
 type MessageManagerMessageType string
@@ -8519,7 +8519,7 @@ type MessageManagerTarget struct {
 	// Destination Contains source or destination detail info.
 	Destination *CommonAddress `json:"destination,omitempty"`
 
-	// Parts The number of message parts (if the message is split).
+	// Parts The number of segments of the text, counted from the GSM-7 and UCS-2 rules. It is information and not the charged unit; the charge is one message for each destination.
 	//
 	// Example: 1
 	Parts *int `json:"parts,omitempty"`
@@ -12519,7 +12519,7 @@ type PostMessagesJSONBody struct {
 	// Source Contains source or destination detail info.
 	Source CommonAddress `json:"source"`
 
-	// Text The content of the message. For a message with `medias` it can be an empty string.
+	// Text The content of the message. For a message with `medias` it can be an empty string. A text without `medias` of more than one segment is sent as an MMS and charged at the MMS price; more than 10 segments is rejected with `TEXT_TOO_LONG`.
 	Text string `json:"text"`
 }
 

@@ -17,26 +17,13 @@ import (
 	"monorepo/bin-message-manager/pkg/dbhandler"
 )
 
-// Create creates a new message.
-//
-// Create only persists the message; it does NOT perform identity-verification
-// gating. Outbound sends must route through Send (which gates before creating),
-// so any new outbound caller must call Send rather than Create directly. The
-// inbound webhook path (DirectionInbound) is intentionally ungated.
-func (h *messageHandler) Create(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, targets []target.Target, providerName message.ProviderName, text string, direction message.Direction) (*message.Message, error) {
-	return h.create(ctx, id, customerID, source, targets, providerName, text, direction, message.TypeSMS)
-}
-
 // create creates a new message of the given type. The medias of the message start empty.
 func (h *messageHandler) create(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, targets []target.Target, providerName message.ProviderName, text string, direction message.Direction, msgType message.Type) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "Create",
+		"func":          "create",
 		"id":            id,
 		"customer_id":   customerID,
-		"source":        source,
-		"targets":       targets,
 		"provider_name": providerName,
-		"text":          text,
 		"direction":     direction,
 		"type":          msgType,
 	})

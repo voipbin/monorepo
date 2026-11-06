@@ -1,9 +1,9 @@
 package messagehandler
 
-//go:generate mockgen -package messagehandler -destination ./mock_provider_messagebird.go -source provider_messagebird.go -build_flags=-mod=mod
-
 import (
 	"context"
+	"regexp"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-message-manager/models/target"
 	"monorepo/bin-message-manager/pkg/requestexternal"
@@ -12,54 +12,67 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// MessageHandlerMessagebird is interface for service handle
-type MessageHandlerMessagebird interface {
-	SendMessage(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string) ([]target.Target, error)
-}
-
-// messageHandlerMessagebird structure for service handle
-type messageHandlerMessagebird struct {
+type smsMessagebird struct {
 	requestExternal requestexternal.RequestExternal
 }
 
-// NewMessageHandlerMessagebird returns new service handler
-func NewMessageHandlerMessagebird(reqExternal requestexternal.RequestExternal) MessageHandlerMessagebird {
-	h := &messageHandlerMessagebird{
-		requestExternal: reqExternal,
-	}
-
-	return h
+// NewSMSMessagebird returns the messagebird sms provider.
+func NewSMSMessagebird(reqExternal requestexternal.RequestExternal) SMSProvider {
+	return &smsMessagebird{requestExternal: reqExternal}
 }
 
-// SendMessage sends the message.
-func (h *messageHandlerMessagebird) SendMessage(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string) ([]target.Target, error) {
+var nonDigit = regexp.MustCompile(`[^0-9]`)
+
+func digitsOf(s string) string {
+	return nonDigit.ReplaceAllString(s, "")
+}
+
+// SendSMS sends the sms with one request for all the targets. A request succeeds or fails as a whole, so every
+// target gets the same outcome. The recipients of the answer carry the status and the segment count; a target that is
+// missing in the answer was accepted with the request and stays queued. The callback is not used: there is no
+// per target request, and the results are written by the final write of the dispatch.
+func (h *smsMessagebird) SendSMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, _ ResultCallback) []SendResult {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "SendMessage",
+		"func":       "SendSMS",
+		"provider":   "messagebird",
 		"message_id": messageID,
-		"source":     source,
-		"targets":    targets,
-		"text":       text,
+		"recipients": len(targets),
 	})
 
-	sender := source.Target
-	receivers := []string{}
-	for _, target := range targets {
-		receivers = append(receivers, target.Destination.Target)
-	}
-	log.WithField("receivers", receivers).Debugf("Sending a messages by messagebird. message_id: %s, sender: %s", messageID, sender)
+	res := make([]SendResult, len(targets))
 
-	// send a request to messaging providers
-	m, err := h.requestExternal.MessagebirdSendMessage(ctx, sender, receivers, text)
+	receivers := make([]string, 0, len(targets))
+	for _, t := range targets {
+		receivers = append(receivers, t.Destination.Target)
+	}
+
+	m, err := h.requestExternal.MessagebirdSendMessage(ctx, source.Target, receivers, text)
 	if err != nil {
-		log.Errorf("Could not send message correctly to the messagebird. err: %v", err)
-		return nil, err
+		outcome := classifyError(err)
+		log.Errorf("Could not send the sms to messagebird. outcome: %d, err: %v", outcome, err)
+		for i := range res {
+			res[i] = SendResult{Outcome: outcome}
+		}
+		return res
 	}
-	log.WithField("message", m).Debugf("Received message sending response. message_id: %s", m.ID)
 
-	res := m.GetTargets()
+	promMessagebirdSendTotal.WithLabelValues("sms").Add(float64(len(targets)))
 
-	// currently, the only sms type we send
-	promMessagebirdSendTotal.WithLabelValues("sms").Add(float64(len(res)))
+	for i := range res {
+		res[i] = SendResult{Outcome: SendOutcomeAccepted, ProviderReferenceID: m.ID}
 
-	return res, nil
+		want := digitsOf(targets[i].Destination.Target)
+		for _, item := range m.Recipients.Items {
+			rt := item.ConvertTartget()
+			if digitsOf(rt.Destination.Target) != want {
+				continue
+			}
+
+			res[i].ProviderParts = item.MessagePartCount
+			res[i].Status = rt.Status
+			break
+		}
+	}
+
+	return res
 }

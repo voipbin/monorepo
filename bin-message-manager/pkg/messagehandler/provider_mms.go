@@ -21,32 +21,48 @@ const (
 	mmsRequestTimeout      = 30 * time.Second
 )
 
-// MMSOutcome is the result of one mms target at one provider.
-type MMSOutcome int
+// SendOutcome is the result of one target at one provider.
+type SendOutcome int
 
-// list of MMSOutcome
+// list of SendOutcome
 const (
-	// MMSOutcomeFailed means the provider did not confirm the target: an error without a proof of
+	// SendOutcomeFailed means the provider did not confirm the target: an error without a proof of
 	// refusal, or the target was not attempted. The message may exist at the provider.
-	MMSOutcomeFailed MMSOutcome = iota
-	// MMSOutcomeAccepted means the provider accepted the target.
-	MMSOutcomeAccepted
-	// MMSOutcomeRejected means the provider refused the target and nothing was queued.
-	MMSOutcomeRejected
+	SendOutcomeFailed SendOutcome = iota
+	// SendOutcomeAccepted means the provider accepted the target.
+	SendOutcomeAccepted
+	// SendOutcomeRejected means the provider refused the target and nothing was queued.
+	SendOutcomeRejected
 )
 
-// MMSProvider sends an mms through one provider. It never returns a Go error: the outcome of every
+// SendResult is the answer of a provider for one target.
+type SendResult struct {
+	Outcome SendOutcome
+
+	// ProviderReferenceID is the message id of the provider (set when accepted).
+	ProviderReferenceID string
+	// ProviderParts is the segment count that the provider reported (0 when it did not report one).
+	ProviderParts int
+	// Status is the delivery status that the provider reported at once. Empty keeps the target queued.
+	Status target.Status
+}
+
+// ResultCallback is called by a provider inside the goroutine of target i right after its request returned, with the
+// index in the slice that the provider was given. It may be nil.
+type ResultCallback func(i int, r SendResult)
+
+// MMSProvider sends an mms through one provider. It never returns a Go error: the result of every
 // target is reported by itself, in the order of the given targets, so that a partial failure cannot
 // hide an accepted target.
 type MMSProvider interface {
-	SendMMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, mediaURLs []string) []MMSOutcome
+	SendMMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, mediaURLs []string, onResult ResultCallback) []SendResult
 }
 
-// sendMMSTargets runs send for every target with at most mmsProviderConcurrency requests in flight
-// and returns the outcomes by index. A target whose turn does not come before the context ends is
-// not attempted and stays MMSOutcomeFailed.
-func sendMMSTargets(ctx context.Context, count int, send func(ctx context.Context, i int) MMSOutcome) []MMSOutcome {
-	res := make([]MMSOutcome, count)
+// sendTargets runs send for every target with at most mmsProviderConcurrency requests in flight
+// and returns the results by index. A target whose turn does not come before the context ends is
+// not attempted and stays SendOutcomeFailed. onResult (if not nil) is called for each attempted target.
+func sendTargets(ctx context.Context, count int, send func(ctx context.Context, i int) SendResult, onResult ResultCallback) []SendResult {
+	res := make([]SendResult, count)
 
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, mmsProviderConcurrency)
@@ -66,11 +82,23 @@ func sendMMSTargets(ctx context.Context, count int, send func(ctx context.Contex
 			defer cancel()
 
 			res[i] = send(reqCtx, i)
+			if onResult != nil {
+				onResult(i, res[i])
+			}
 		}(i)
 	}
 	wg.Wait()
 
 	return res
+}
+
+// classifyError converts the error of a request to the failed or rejected result.
+func classifyError(err error) SendOutcome {
+	if requestexternal.IsDefinitiveRejection(err) {
+		return SendOutcomeRejected
+	}
+
+	return SendOutcomeFailed
 }
 
 type mmsTelnyx struct {
@@ -83,28 +111,33 @@ func NewMMSTelnyx(reqExternal requestexternal.RequestExternal) MMSProvider {
 }
 
 // SendMMS sends the mms to every target, one request per target.
-func (h *mmsTelnyx) SendMMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, mediaURLs []string) []MMSOutcome {
+func (h *mmsTelnyx) SendMMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, mediaURLs []string, onResult ResultCallback) []SendResult {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "SendMMS",
 		"provider":   "telnyx",
 		"message_id": messageID,
 	})
 
-	return sendMMSTargets(ctx, len(targets), func(ctx context.Context, i int) MMSOutcome {
-		_, err := h.requestExternal.TelnyxSendMMS(ctx, source.Target, targets[i].Destination.Target, text, mediaURLs)
+	return sendTargets(ctx, len(targets), func(ctx context.Context, i int) SendResult {
+		m, err := h.requestExternal.TelnyxSendMMS(ctx, source.Target, targets[i].Destination.Target, text, mediaURLs)
 		if err == nil {
 			promTelnyxSendTotal.WithLabelValues("mms").Inc()
-			return MMSOutcomeAccepted
+			res := SendResult{Outcome: SendOutcomeAccepted}
+			if m != nil {
+				res.ProviderReferenceID = m.Data.ID
+				res.ProviderParts = m.Data.Parts
+			}
+			return res
 		}
 
-		if requestexternal.IsDefinitiveRejection(err) {
+		outcome := classifyError(err)
+		if outcome == SendOutcomeRejected {
 			log.Errorf("The provider refused the mms. target_index: %d, err: %v", i, err)
-			return MMSOutcomeRejected
+		} else {
+			log.Errorf("Could not send the mms. The result is not known. target_index: %d, err: %v", i, err)
 		}
-
-		log.Errorf("Could not send the mms. The result is not known. target_index: %d, err: %v", i, err)
-		return MMSOutcomeFailed
-	})
+		return SendResult{Outcome: outcome}
+	}, onResult)
 }
 
 type mmsMessagebird struct {
@@ -117,26 +150,30 @@ func NewMMSMessagebird(reqExternal requestexternal.RequestExternal) MMSProvider 
 }
 
 // SendMMS sends the mms to every target, one request per target.
-func (h *mmsMessagebird) SendMMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, mediaURLs []string) []MMSOutcome {
+func (h *mmsMessagebird) SendMMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, mediaURLs []string, onResult ResultCallback) []SendResult {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "SendMMS",
 		"provider":   "messagebird",
 		"message_id": messageID,
 	})
 
-	return sendMMSTargets(ctx, len(targets), func(ctx context.Context, i int) MMSOutcome {
-		_, err := h.requestExternal.MessagebirdSendMMS(ctx, source.Target, targets[i].Destination.Target, text, mediaURLs)
+	return sendTargets(ctx, len(targets), func(ctx context.Context, i int) SendResult {
+		m, err := h.requestExternal.MessagebirdSendMMS(ctx, source.Target, targets[i].Destination.Target, text, mediaURLs)
 		if err == nil {
 			promMessagebirdSendTotal.WithLabelValues("mms").Inc()
-			return MMSOutcomeAccepted
+			res := SendResult{Outcome: SendOutcomeAccepted}
+			if m != nil {
+				res.ProviderReferenceID = m.ID
+			}
+			return res
 		}
 
-		if requestexternal.IsDefinitiveRejection(err) {
+		outcome := classifyError(err)
+		if outcome == SendOutcomeRejected {
 			log.Errorf("The provider refused the mms. target_index: %d, err: %v", i, err)
-			return MMSOutcomeRejected
+		} else {
+			log.Errorf("Could not send the mms. The result is not known. target_index: %d, err: %v", i, err)
 		}
-
-		log.Errorf("Could not send the mms. The result is not known. target_index: %d, err: %v", i, err)
-		return MMSOutcomeFailed
-	})
+		return SendResult{Outcome: outcome}
+	}, onResult)
 }

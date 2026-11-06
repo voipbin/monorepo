@@ -128,9 +128,12 @@ func Test_TelnyxSendMessage_status(t *testing.T) {
 			if err == nil || res != nil {
 				t.Fatalf("Wrong match. expect: error, got: res: %v, err: %v", res, err)
 			}
-			expectMsg := fmt.Sprintf("API request failed with status code %d and body: %s", tt.status, tt.body)
-			if err.Error() != expectMsg {
-				t.Errorf("Wrong error.\nexpect: %s\ngot: %s", expectMsg, err.Error())
+			var pe *ProviderError
+			if !errors.As(err, &pe) || pe.StatusCode != tt.status || pe.Provider != providerTelnyx {
+				t.Errorf("Wrong error. expect: ProviderError with status %d, got: %v", tt.status, err)
+			}
+			if strings.Contains(err.Error(), tt.body) && tt.body != "{}" {
+				t.Errorf("The raw body must not be in the error. err: %v", err)
 			}
 		})
 	}

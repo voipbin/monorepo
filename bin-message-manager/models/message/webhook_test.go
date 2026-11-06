@@ -60,7 +60,7 @@ func TestConvertWebhookMessage(t *testing.T) {
 					Type:   commonaddress.TypeTel,
 					Target: "+1234567890",
 				},
-				Targets: []target.Target{
+				Targets: []target.WebhookTarget{
 					{
 						Destination: commonaddress.Address{
 							Type:   commonaddress.TypeTel,
@@ -239,7 +239,7 @@ func TestWebhookMessageStruct(t *testing.T) {
 			Type:   commonaddress.TypeTel,
 			Target: "+1234567890",
 		},
-		Targets: []target.Target{
+		Targets: []target.WebhookTarget{
 			{
 				Destination: commonaddress.Address{
 					Type:   commonaddress.TypeTel,

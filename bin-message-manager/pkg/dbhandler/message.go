@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -137,6 +139,11 @@ func (h *handler) messageGetFromDB(ctx context.Context, id uuid.UUID) (*message.
 	return res, nil
 }
 
+// MessageGetFromDB returns Message info from the DB and bypasses the cache.
+func (h *handler) MessageGetFromDB(ctx context.Context, id uuid.UUID) (*message.Message, error) {
+	return h.messageGetFromDB(ctx, id)
+}
+
 // MessageGet returns Message.
 func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error) {
 	res, err := h.messageGetFromCache(ctx, id)
@@ -191,6 +198,100 @@ func (h *handler) MessageUpdateTargets(ctx context.Context, id uuid.UUID, provid
 	}
 
 	return h.MessageUpdate(ctx, id, fields)
+}
+
+// MessageUpdateTargetsIf updates the targets, and the provider name if given, only if the tm_update of the row is still
+// prevTMUpdate. It returns true if a row was updated.
+func (h *handler) MessageUpdateTargetsIf(ctx context.Context, id uuid.UUID, prevTMUpdate *time.Time, provider *message.ProviderName, targets []target.Target) (bool, error) {
+	fields := map[message.Field]any{
+		message.FieldTargets:  targets,
+		message.FieldTMUpdate: h.utilHandler.TimeNow(),
+	}
+	if provider != nil {
+		fields[message.FieldProviderName] = *provider
+	}
+
+	data, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return false, errors.Wrap(err, "could not prepare fields. MessageUpdateTargetsIf")
+	}
+
+	builder := sq.Update(messageTable).
+		SetMap(data).
+		Where(sq.Eq{"id": id.Bytes()})
+	if prevTMUpdate == nil {
+		builder = builder.Where("tm_update IS NULL")
+	} else {
+		builder = builder.Where(sq.Eq{"tm_update": *prevTMUpdate})
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return false, errors.Wrap(err, "could not build query. MessageUpdateTargetsIf")
+	}
+
+	result, err := h.db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return false, errors.Wrap(err, "could not execute. MessageUpdateTargetsIf")
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return false, errors.Wrap(err, "could not get the affected rows. MessageUpdateTargetsIf")
+	}
+	if affected == 0 {
+		return false, nil
+	}
+
+	_ = h.messageUpdateToCache(ctx, id)
+
+	return true, nil
+}
+
+// MessageListByProviderReference returns the outbound, not deleted messages created since the given time whose
+// targets text contains the reference. The exact reference is compared by the caller.
+func (h *handler) MessageListByProviderReference(ctx context.Context, ref string, since time.Time) ([]*message.Message, error) {
+	columns := commondatabasehandler.GetDBFields(&message.Message{})
+
+	// the reference is placed inside a LIKE pattern, so it must not contain a wildcard character (the caller passes a UUID).
+	if ref == "" || strings.ContainsAny(ref, `%_\`) {
+		return nil, fmt.Errorf("invalid provider reference. MessageListByProviderReference")
+	}
+	pattern := "%" + ref + "%"
+
+	query, args, err := sq.Select(columns...).
+		From(messageTable).
+		Where(sq.Eq{"direction": string(message.DirectionOutbound)}).
+		Where("tm_delete IS NULL").
+		Where(sq.GtOrEq{"tm_create": since}).
+		Where("targets LIKE ?", pattern).
+		ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not build query. MessageListByProviderReference")
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not query. MessageListByProviderReference")
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	res := []*message.Message{}
+	for rows.Next() {
+		m, err := h.messageGetFromRow(rows)
+		if err != nil {
+			return nil, errors.Wrap(err, "could not scan the row. MessageListByProviderReference")
+		}
+
+		res = append(res, m)
+	}
+	if errRows := rows.Err(); errRows != nil {
+		return nil, fmt.Errorf("could not iterate the rows. MessageListByProviderReference. err: %w", errRows)
+	}
+
+	return res, nil
 }
 
 // MessageList returns a list of messages.

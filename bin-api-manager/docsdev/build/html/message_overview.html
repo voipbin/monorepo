@@ -653,7 +653,7 @@
 <p><strong>AI Context</strong></p>
 <ul class="simple">
 <li><p><strong>Complexity:</strong> Low</p></li>
-<li><p><strong>Cost:</strong> Chargeable (per message segment sent)</p></li>
+<li><p><strong>Cost:</strong> Chargeable (per message and recipient; a text longer than one segment is an MMS)</p></li>
 <li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/messages</span></code> returns immediately with target status <code class="docutils literal notranslate"><span class="pre">queued</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/messages/{id}</span></code> or use webhooks to track delivery status changes.</p></li>
 </ul>
 </div>
@@ -697,10 +697,10 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>SMS</p></td>
-<td><p>Text-only messages up to 160 characters (or 70 for Unicode). Longer messages are split and reassembled by the recipient.</p></td>
+<td><p>A text that fits one segment: up to 160 GSM-7 characters or up to 70 Unicode characters (see <a class="reference internal" href="#message-overview-formatting"><span class="std std-ref">Message Formatting</span></a>).</p></td>
 </tr>
 <tr class="row-odd"><td><p>MMS</p></td>
-<td><p>A message with media attachments (images, audio, PDF). Sent when <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code> has a non-empty <code class="docutils literal notranslate"><span class="pre">medias</span></code> list.</p></td>
+<td><p>A message with media attachments (images, audio, PDF), sent when <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code> has a non-empty <code class="docutils literal notranslate"><span class="pre">medias</span></code> list. A text without media that is longer than one segment is also sent as an MMS (see <a class="reference internal" href="#message-overview-long-text"><span class="std std-ref">Long texts</span></a>).</p></td>
 </tr>
 </tbody>
 </table>
@@ -708,8 +708,13 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code> accepts <code class="docutils literal notranslate"><span class="pre">source</span></code>, <code class="docutils literal notranslate"><span class="pre">destinations</span></code>, <code class="docutils literal notranslate"><span class="pre">text</span></code> and the optional <code class="docutils literal notranslate"><span class="pre">medias</span></code> (a list of file ids). Without <code class="docutils literal notranslate"><span class="pre">medias</span></code> (missing, <code class="docutils literal notranslate"><span class="pre">null</span></code> or an empty list) the message is an SMS, exactly as before. With <code class="docutils literal notranslate"><span class="pre">medias</span></code> it is an MMS.</p>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code> accepts <code class="docutils literal notranslate"><span class="pre">source</span></code>, <code class="docutils literal notranslate"><span class="pre">destinations</span></code>, <code class="docutils literal notranslate"><span class="pre">text</span></code> and the optional <code class="docutils literal notranslate"><span class="pre">medias</span></code> (a list of file ids). Without <code class="docutils literal notranslate"><span class="pre">medias</span></code> (missing, <code class="docutils literal notranslate"><span class="pre">null</span></code> or an empty list) a text of one segment or less is an SMS and a longer text is an MMS. With <code class="docutils literal notranslate"><span class="pre">medias</span></code> it is an MMS. Read <code class="docutils literal notranslate"><span class="pre">type</span></code> in the response.</p>
 </div>
+</section>
+<section id="long-texts">
+<span id="message-overview-long-text"></span><h2>Long texts<a class="headerlink" href="#long-texts" title="Link to this heading">¶</a></h2>
+<p>A text without media is counted in segments from the standard GSM-7 and UCS-2 rules, whatever the carrier reports. A text of one segment or less is sent as an SMS and charged at the SMS price. A text of more than one segment (more than 160 GSM-7 characters, or more than 70 characters when any character is outside GSM-7) is sent as an MMS without media. The response has <code class="docutils literal notranslate"><span class="pre">type</span></code> <code class="docutils literal notranslate"><span class="pre">mms</span></code> and each destination is charged one MMS message at the MMS price, whatever the number of segments. <code class="docutils literal notranslate"><span class="pre">parts</span></code> of each target holds the number of segments of the text.</p>
+<p>A text of more than 10 segments is rejected with <code class="docutils literal notranslate"><span class="pre">TEXT_TOO_LONG</span></code> and nothing is charged. A promoted text is sent as an MMS where the destination supports it. Where an MMS cannot be sent, the carrier route sends the text as SMS segments, and the charge stays the MMS price. The price is fixed when the message is created, so it does not change with the route.</p>
 </section>
 <section id="sending-an-mms">
 <span id="message-overview-mms"></span><h2>Sending an MMS<a class="headerlink" href="#sending-an-mms" title="Link to this heading">¶</a></h2>
@@ -776,7 +781,7 @@
 <td><p>More than 10 files, the same id listed twice, or an id that is not a valid UUID.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">TEXT_TOO_LONG</span></code></p></td>
-<td><p>The text is longer than 2000 characters.</p></td>
+<td><p>The text is longer than 2000 characters with media, or longer than 10 segments without media.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INSUFFICIENT_BALANCE</span></code> (HTTP 402)</p></td>
 <td><p>The credit balance is not enough for the message.</p></td>
@@ -825,6 +830,7 @@
 <span class="o">+------------+</span>
 </pre></div>
 </div>
+<p>A <code class="docutils literal notranslate"><span class="pre">message_updated</span></code> event is published each time the status of a target of an outbound message changes, including the delivery receipts of the carrier (<code class="docutils literal notranslate"><span class="pre">sent</span></code>, <code class="docutils literal notranslate"><span class="pre">delivered</span></code>, <code class="docutils literal notranslate"><span class="pre">failed</span></code>, <code class="docutils literal notranslate"><span class="pre">dlr_timeout</span></code>). A target never goes back from a final status to an earlier one, so a late or repeated receipt changes nothing.</p>
 <p><strong>Target Status Descriptions</strong></p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
@@ -896,7 +902,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>All phone numbers must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces. For example, <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code> (US) or <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code> (Korea). The <code class="docutils literal notranslate"><span class="pre">source</span></code> must be a number you own, obtainable via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>. Unicode characters (emoji, non-Latin scripts) reduce the per-segment character limit from 160 to 70.</p>
+<p>All phone numbers must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces. For example, <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code> (US) or <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code> (Korea). The <code class="docutils literal notranslate"><span class="pre">source</span></code> must be a number you own, obtainable via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>. Unicode characters (emoji, non-Latin scripts) reduce the single-segment limit from 160 to 70 and make a text over 70 characters an MMS.</p>
 </div>
 <p><strong>Send SMS Example:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/messages?token=&lt;token&gt;' \
@@ -1043,7 +1049,7 @@
 </section>
 <section id="message-formatting">
 <h2>Message Formatting<a class="headerlink" href="#message-formatting" title="Link to this heading">¶</a></h2>
-<p>Understanding message limits and encoding helps optimize delivery.</p>
+<p id="message-overview-formatting">Understanding message limits and encoding helps optimize delivery.</p>
 <p><strong>SMS Character Limits</strong></p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
@@ -1065,21 +1071,9 @@
 </tbody>
 </table>
 </div>
+<p>Some characters of GSM-7 (for example <code class="docutils literal notranslate"><span class="pre">{</span></code>, <code class="docutils literal notranslate"><span class="pre">}</span></code>, <code class="docutils literal notranslate"><span class="pre">[</span></code>, <code class="docutils literal notranslate"><span class="pre">]</span></code>, <code class="docutils literal notranslate"><span class="pre">~</span></code>, <code class="docutils literal notranslate"><span class="pre">|</span></code>, <code class="docutils literal notranslate"><span class="pre">^</span></code>, <code class="docutils literal notranslate"><span class="pre">\</span></code> and the euro sign) take two positions. One character outside GSM-7, such as an emoji or a non-Latin letter, makes the whole text Unicode. A character is never split between two segments.</p>
 <p><strong>Long Message Handling</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">message</span><span class="p">:</span> <span class="s2">"This is a longer message that exceeds 160 characters..."</span>
-                                    <span class="o">|</span>
-                                    <span class="n">v</span>
-<span class="o">+-------------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">VoIPBin</span> <span class="n">automatically</span> <span class="n">splits</span> <span class="n">into</span> <span class="n">segments</span><span class="p">:</span>                       <span class="o">|</span>
-<span class="o">|</span>                                                                   <span class="o">|</span>
-<span class="o">|</span> <span class="n">Segment</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">"This is a longer message that exceeds 160 char..."</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="n">Segment</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">"...acters and continues here with more content..."</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="n">Segment</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">"...and finally ends here."</span>                           <span class="o">|</span>
-<span class="o">|</span>                                                                   <span class="o">|</span>
-<span class="o">|</span> <span class="n">Recipient</span><span class="s1">'s phone reassembles into single message                 |</span>
-<span class="o">+-------------------------------------------------------------------+</span>
-</pre></div>
-</div>
+<p>A text of more than one segment is sent as an MMS, see <a class="reference internal" href="#message-overview-long-text"><span class="std std-ref">Long texts</span></a>. The <code class="docutils literal notranslate"><span class="pre">parts</span></code> field of the target is the number of segments of the text.</p>
 </section>
 <section id="common-scenarios">
 <h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading">¶</a></h2>
@@ -1296,6 +1290,7 @@
             <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#how-messaging-works">How Messaging Works</a></li>
+<li><a class="reference internal" href="#long-texts">Long texts</a></li>
 <li><a class="reference internal" href="#sending-an-mms">Sending an MMS</a></li>
 <li><a class="reference internal" href="#message-lifecycle">Message Lifecycle</a></li>
 <li><a class="reference internal" href="#sending-messages">Sending Messages</a></li>

@@ -16,7 +16,6 @@ import (
 
 	"monorepo/bin-message-manager/models/message"
 	"monorepo/bin-message-manager/pkg/dbhandler"
-	"monorepo/bin-message-manager/pkg/messagehandlermessagebird"
 )
 
 func Test_Hook(t *testing.T) {
@@ -118,15 +117,11 @@ func Test_Hook(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
-			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
 			h := &messageHandler{
 				utilHandler:   mockUtil,
 				db:            mockDB,
 				notifyHandler: mockNotify,
 				reqHandler:    mockReq,
-
-				messageHandlerMessagebird: mockMessagebird,
 			}
 			ctx := context.Background()
 

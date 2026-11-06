@@ -75,7 +75,7 @@ func Test_Create_generatesIDAndFailsClosed(t *testing.T) {
 		m.db.EXPECT().MessageGet(ctx, generatedID).Return(stored, nil)
 		m.notify.EXPECT().PublishWebhookEvent(ctx, customerID, message.EventTypeMessageCreated, stored)
 
-		res, err := h.Create(ctx, uuid.Nil, customerID, nil, nil, message.ProviderNameTelnyx, "text", message.DirectionInbound)
+		res, err := h.create(ctx, uuid.Nil, customerID, nil, nil, message.ProviderNameTelnyx, "text", message.DirectionInbound, message.TypeSMS)
 		if err != nil || res != stored {
 			t.Errorf("Wrong match. expect: stored message, got: res: %v, err: %v", res, err)
 		}
@@ -90,7 +90,7 @@ func Test_Create_generatesIDAndFailsClosed(t *testing.T) {
 		errDB := errors.New("create failed")
 		m.db.EXPECT().MessageCreate(ctx, gomock.Any()).Return(errDB)
 
-		res, err := h.Create(ctx, generatedID, customerID, nil, nil, message.ProviderNameTelnyx, "text", message.DirectionInbound)
+		res, err := h.create(ctx, generatedID, customerID, nil, nil, message.ProviderNameTelnyx, "text", message.DirectionInbound, message.TypeSMS)
 		if res != nil || !errors.Is(err, errDB) {
 			t.Errorf("Wrong match. expect: nil and %v, got: res: %v, err: %v", errDB, res, err)
 		}
@@ -106,7 +106,7 @@ func Test_Create_generatesIDAndFailsClosed(t *testing.T) {
 		m.db.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
 		m.db.EXPECT().MessageGet(ctx, generatedID).Return(nil, errDB)
 
-		res, err := h.Create(ctx, generatedID, customerID, nil, nil, message.ProviderNameTelnyx, "text", message.DirectionInbound)
+		res, err := h.create(ctx, generatedID, customerID, nil, nil, message.ProviderNameTelnyx, "text", message.DirectionInbound, message.TypeSMS)
 		if res != nil || !errors.Is(err, errDB) {
 			t.Errorf("Wrong match. expect: nil and %v, got: res: %v, err: %v", errDB, res, err)
 		}
@@ -249,42 +249,6 @@ func Test_Delete_errorPaths(t *testing.T) {
 	})
 }
 
-func Test_dbUpdateTargets_errorPaths(t *testing.T) {
-	id := uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4")
-	targets := []target.Target{{Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15550100002"}, Status: target.StatusSent}}
-
-	t.Run("update error stops before the lookup", func(t *testing.T) {
-		mc := gomock.NewController(t)
-		defer mc.Finish()
-		h, m := newErrorPathHandler(mc)
-		ctx := context.Background()
-
-		errDB := errors.New("update failed")
-		m.db.EXPECT().MessageUpdateTargets(ctx, id, message.ProviderNameTelnyx, targets).Return(errDB)
-
-		res, err := h.dbUpdateTargets(ctx, id, message.ProviderNameTelnyx, targets)
-		if res != nil || !errors.Is(err, errDB) {
-			t.Errorf("Wrong match. expect: nil and %v, got: res: %v, err: %v", errDB, res, err)
-		}
-	})
-
-	t.Run("lookup error after update publishes nothing", func(t *testing.T) {
-		mc := gomock.NewController(t)
-		defer mc.Finish()
-		h, m := newErrorPathHandler(mc)
-		ctx := context.Background()
-
-		errDB := errors.New("get failed")
-		m.db.EXPECT().MessageUpdateTargets(ctx, id, message.ProviderNameTelnyx, targets).Return(nil)
-		m.db.EXPECT().MessageGet(ctx, id).Return(nil, errDB)
-
-		res, err := h.dbUpdateTargets(ctx, id, message.ProviderNameTelnyx, targets)
-		if res != nil || !errors.Is(err, errDB) {
-			t.Errorf("Wrong match. expect: nil and %v, got: res: %v, err: %v", errDB, res, err)
-		}
-	})
-}
-
 func Test_dbList_dbGet_dbErrors(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -359,19 +323,31 @@ func Test_Hook_errorPaths(t *testing.T) {
 			expectErr: true,
 		},
 		{
-			name:      "empty destination is rejected before the event type check",
+			name:      "inbound event without a destination is rejected",
 			uri:       hookURI,
-			data:      telnyxHookPayload("message.sent"),
+			data:      telnyxHookPayload("message.received"),
 			expectErr: true,
 		},
 		{
-			name:      "sent event is ignored",
+			name:      "receipt without a recipient is ignored, the event type decides first",
+			uri:       hookURI,
+			data:      telnyxHookPayload("message.sent"),
+			expectErr: false,
+		},
+		{
+			name:      "unknown event type is ignored",
+			uri:       hookURI,
+			data:      telnyxHookPayload("message.something", number),
+			expectErr: false,
+		},
+		{
+			name:      "sent event of a message that is not outbound is ignored",
 			uri:       hookURI,
 			data:      telnyxHookPayload("message.sent", number),
 			expectErr: false,
 		},
 		{
-			name:      "finalized event is ignored",
+			name:      "finalized event of a message that is not outbound is ignored",
 			uri:       hookURI,
 			data:      telnyxHookPayload("message.finalized", number),
 			expectErr: false,
@@ -575,7 +551,7 @@ func Test_Hook_createsInboundMessage(t *testing.T) {
 		t.Errorf("Wrong source. got: %v", created.Source)
 	}
 	if len(created.Targets) != 1 || created.Targets[0].Destination.Target != "+15550100002" ||
-		created.Targets[0].Status != target.StatusReceived || created.Targets[0].Parts != 2 {
+		created.Targets[0].Status != target.StatusReceived || created.Targets[0].Parts != 1 || created.Targets[0].ProviderParts != 2 {
 		t.Errorf("Wrong targets. got: %v", created.Targets)
 	}
 }

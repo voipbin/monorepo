@@ -1,85 +1,55 @@
 package messagehandler
 
-//go:generate mockgen -package messagehandler -destination ./mock_provider_telnyx.go -source provider_telnyx.go -build_flags=-mod=mod
+//go:generate mockgen -package messagehandler -destination ./mock_provider_sms.go -source provider_telnyx.go -build_flags=-mod=mod
 
 import (
 	"context"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-message-manager/models/target"
 	"monorepo/bin-message-manager/pkg/requestexternal"
-	"sync"
 
 	"github.com/gofrs/uuid"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
-// MessageHandlerMessagebird is interface for service handle
-type MessageHandlerTelnyx interface {
-	SendMessage(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string) ([]target.Target, error)
+// SMSProvider sends an sms through one provider. Like MMSProvider it reports the result of every target by
+// itself, in the order of the given targets.
+type SMSProvider interface {
+	SendSMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, onResult ResultCallback) []SendResult
 }
 
-// messageHandlerMessagebird structure for service handle
-type messageHandlerTelnyx struct {
+type smsTelnyx struct {
 	requestExternal requestexternal.RequestExternal
 }
 
-// NewMessageHandlerMessagebird returns new service handler
-func NewMessageHandlerTelnyx(reqExternal requestexternal.RequestExternal) MessageHandlerTelnyx {
-	h := &messageHandlerTelnyx{
-		requestExternal: reqExternal,
-	}
-
-	return h
+// NewSMSTelnyx returns the telnyx sms provider.
+func NewSMSTelnyx(reqExternal requestexternal.RequestExternal) SMSProvider {
+	return &smsTelnyx{requestExternal: reqExternal}
 }
 
-// SendMessage sends the message.
-func (h *messageHandlerTelnyx) SendMessage(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string) ([]target.Target, error) {
+// SendSMS sends the sms to every target, one request per target.
+func (h *smsTelnyx) SendSMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, onResult ResultCallback) []SendResult {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "SendMessage",
+		"func":       "SendSMS",
+		"provider":   "telnyx",
 		"message_id": messageID,
-		"source":     source,
-		"targets":    targets,
-		"text":       text,
 	})
 
-	var (
-		mu   sync.Mutex
-		res  []target.Target
-		wg   sync.WaitGroup
-		errs []error
-	)
+	return sendTargets(ctx, len(targets), func(ctx context.Context, i int) SendResult {
+		m, err := h.requestExternal.TelnyxSendMessage(ctx, source.Target, targets[i].Destination.Target, text)
+		if err != nil {
+			outcome := classifyError(err)
+			log.Errorf("Could not send the sms to telnyx. target_index: %d, outcome: %d, err: %v", i, outcome, err)
+			return SendResult{Outcome: outcome}
+		}
 
-	for _, t := range targets {
-		wg.Add(1)
-		go func(sendTarget target.Target) {
-			defer wg.Done()
-
-			log.WithField("destination", sendTarget).Debugf("Sending a message by telnyx. message_id: %s, sender: %s", messageID, source.Target)
-
-			// send a request to messaging providers
-			m, err := h.requestExternal.TelnyxSendMessage(ctx, source.Target, sendTarget.Destination.Target, text)
-			if err != nil {
-				log.Errorf("Could not send message correctly to telnyx. err: %v", err)
-				mu.Lock()
-				errs = append(errs, err)
-				mu.Unlock()
-				return
-			}
-
-			log.WithField("message", m).Debugf("Received message sending response. message_id: %s", m.Data.ID)
-
-			mu.Lock()
-			res = append(res, sendTarget)
-			mu.Unlock()
-		}(t)
-	}
-	wg.Wait()
-
-	if len(errs) > 0 {
-		return nil, errors.Wrapf(errs[0], "could not send message to telnyx")
-	}
-	promTelnyxSendTotal.WithLabelValues("sms").Add(float64(len(res)))
-
-	return res, nil
+		promTelnyxSendTotal.WithLabelValues("sms").Inc()
+		res := SendResult{Outcome: SendOutcomeAccepted}
+		if m != nil {
+			res.ProviderReferenceID = m.Data.ID
+			res.ProviderParts = m.Data.Parts
+		}
+		return res
+	}, onResult)
 }

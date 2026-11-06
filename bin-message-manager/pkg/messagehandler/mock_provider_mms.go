@@ -44,15 +44,15 @@ func (m *MockMMSProvider) EXPECT() *MockMMSProviderMockRecorder {
 }
 
 // SendMMS mocks base method.
-func (m *MockMMSProvider) SendMMS(ctx context.Context, messageID uuid.UUID, source *address.Address, targets []target.Target, text string, mediaURLs []string) []MMSOutcome {
+func (m *MockMMSProvider) SendMMS(ctx context.Context, messageID uuid.UUID, source *address.Address, targets []target.Target, text string, mediaURLs []string, onResult ResultCallback) []SendResult {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendMMS", ctx, messageID, source, targets, text, mediaURLs)
-	ret0, _ := ret[0].([]MMSOutcome)
+	ret := m.ctrl.Call(m, "SendMMS", ctx, messageID, source, targets, text, mediaURLs, onResult)
+	ret0, _ := ret[0].([]SendResult)
 	return ret0
 }
 
 // SendMMS indicates an expected call of SendMMS.
-func (mr *MockMMSProviderMockRecorder) SendMMS(ctx, messageID, source, targets, text, mediaURLs any) *gomock.Call {
+func (mr *MockMMSProviderMockRecorder) SendMMS(ctx, messageID, source, targets, text, mediaURLs, onResult any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMMS", reflect.TypeOf((*MockMMSProvider)(nil).SendMMS), ctx, messageID, source, targets, text, mediaURLs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMMS", reflect.TypeOf((*MockMMSProvider)(nil).SendMMS), ctx, messageID, source, targets, text, mediaURLs, onResult)
 }

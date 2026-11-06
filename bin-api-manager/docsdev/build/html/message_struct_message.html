@@ -724,7 +724,7 @@
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">destination</span></code> (Object): Destination address info. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): Delivery status for this specific destination. One of <code class="docutils literal notranslate"><span class="pre">queued</span></code>, <code class="docutils literal notranslate"><span class="pre">sent</span></code>, <code class="docutils literal notranslate"><span class="pre">delivered</span></code>, <code class="docutils literal notranslate"><span class="pre">gw_timeout</span></code>, <code class="docutils literal notranslate"><span class="pre">dlr_timeout</span></code>, <code class="docutils literal notranslate"><span class="pre">failed</span></code> (outbound) or <code class="docutils literal notranslate"><span class="pre">received</span></code>, <code class="docutils literal notranslate"><span class="pre">delivered</span></code> (inbound).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">parts</span></code> (Integer): Number of message segments. Long SMS messages are split into multiple parts (153 characters each for GSM-7 encoding).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parts</span></code> (Integer): Number of segments of the text, counted by VoIPBin from the GSM-7 and UCS-2 rules (160 or 70 characters in one segment, 153 or 67 when concatenated). It is information and not the charged unit: the charge is one message for each destination.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last status update for this target.</p></li>
 </ul>
 </section>
@@ -740,10 +740,10 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>sms</p></td>
-<td><p>Standard SMS text message. Limited to 160 characters per segment (GSM-7 encoding) or 70 characters (Unicode encoding).</p></td>
+<td><p>A text message of one segment: up to 160 characters (GSM-7 encoding) or 70 characters (Unicode encoding).</p></td>
 </tr>
 <tr class="row-odd"><td><p>mms</p></td>
-<td><p>A message with one or more media attachments (images, audio, PDF), listed in <code class="docutils literal notranslate"><span class="pre">medias</span></code>. A message sent with <code class="docutils literal notranslate"><span class="pre">medias</span></code> is returned with type <code class="docutils literal notranslate"><span class="pre">mms</span></code>, and so is a received message that carries media.</p></td>
+<td><p>A message with one or more media attachments (images, audio, PDF), listed in <code class="docutils literal notranslate"><span class="pre">medias</span></code>, or a text without media that is longer than one segment. A message sent with <code class="docutils literal notranslate"><span class="pre">medias</span></code> is returned with type <code class="docutils literal notranslate"><span class="pre">mms</span></code>, and so is a received message that carries media.</p></td>
 </tr>
 </tbody>
 </table>

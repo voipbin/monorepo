@@ -208,10 +208,10 @@ All credit rates are stored internally as int64 micros.
      - $0.01
      - 10,000
      - Per message
-   * - MMS
+   * - MMS (media, or a text of more than one segment)
      - $0.03
      - 30,000
-     - Per message
+     - Per message and recipient, whatever the number of segments
    * - Email
      - $0.01
      - 10,000
@@ -396,7 +396,7 @@ Each billing entry has a ``reference_type`` linking the charge to its source:
 * ``call``: PSTN or VN call usage.
 * ``call_extension``: Extension-to-extension call (free).
 * ``sms``: SMS message sent or received.
-* ``mms``: MMS message (a message with media attachments) sent or received. A received MMS is charged at the MMS price, like a received SMS is charged at the SMS price.
+* ``mms``: MMS message sent or received (a message with media attachments, or a text of more than one segment). A received MMS is charged at the MMS price, like a received SMS is charged at the SMS price.
 * ``email``: Email message sent.
 * ``number``: Phone number purchase.
 * ``number_renew``: Phone number renewal.

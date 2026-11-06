@@ -18,16 +18,17 @@ import (
 	"monorepo/bin-message-manager/models/messagebird"
 )
 
+// messagebirdMessagesURI is the endpoint of the sms request; a variable so that a test can point it to a local server.
+var messagebirdMessagesURI = "https://rest.messagebird.com/messages"
+
 // MessagebirdSendMessage sends request to the messagebird to send the message.
 func (h *requestExternal) MessagebirdSendMessage(ctx context.Context, sender string, destinations []string, text string) (*messagebird.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "MessagebirdSendMessage",
-		"sender":       sender,
-		"destinations": destinations,
-		"text":         text,
+		"func":       "MessagebirdSendMessage",
+		"recipients": len(destinations),
 	})
 
-	uri := "https://rest.messagebird.com/messages"
+	uri := messagebirdMessagesURI
 
 	data := url.Values{}
 	recipents := strings.Join(destinations, ",")
@@ -66,9 +67,10 @@ func (h *requestExternal) MessagebirdSendMessage(ctx context.Context, sender str
 		_ = response.Body.Close()
 	}()
 
-	if response.StatusCode > 299 {
-		log.Errorf("Could not send the message request. status_code: %d, err: %v", response.StatusCode, response.Body)
-		return nil, fmt.Errorf("could not send the message request. status_code: %d, err: %v", response.StatusCode, response.Status)
+	if response.StatusCode < 200 || response.StatusCode > 299 {
+		pe := &ProviderError{Provider: providerMessagebird, StatusCode: response.StatusCode, Detail: providerErrorDetail(response.Body)}
+		log.Errorf("Could not send the message request. err: %v", pe)
+		return nil, pe
 	}
 
 	body, err := io.ReadAll(response.Body)
