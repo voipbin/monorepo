@@ -2,6 +2,7 @@ package dbhandler
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 	"time"
 
@@ -33,6 +34,11 @@ func newIfTestMessage(id string, direction message.Direction, targets []target.T
 }
 
 func Test_MessageUpdateTargetsIf(t *testing.T) {
+	checkMessageUpdateTargetsIf(t, dbTest)
+}
+
+// checkMessageUpdateTargetsIf runs on the sqlite of the unit tests and, with the build tag dbengine, on MariaDB and MySQL.
+func checkMessageUpdateTargetsIf(t *testing.T, db *sql.DB) {
 	t0 := timePtr(time.Date(2026, 11, 1, 10, 0, 0, 0, time.UTC))
 	t1 := timePtr(time.Date(2026, 11, 1, 10, 0, 1, 123456000, time.UTC))
 	t2 := timePtr(time.Date(2026, 11, 1, 10, 0, 2, 0, time.UTC))
@@ -42,7 +48,7 @@ func Test_MessageUpdateTargetsIf(t *testing.T) {
 
 	mockUtil := utilhandler.NewMockUtilHandler(mc)
 	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
+	h := handler{utilHandler: mockUtil, db: db, cache: mockCache}
 	ctx := context.Background()
 
 	m := newIfTestMessage("11111111-0000-4000-8000-000000000001", message.DirectionOutbound, []target.Target{
@@ -101,6 +107,11 @@ func Test_MessageUpdateTargetsIf(t *testing.T) {
 }
 
 func Test_MessageListByProviderReference(t *testing.T) {
+	checkMessageListByProviderReference(t, dbTest)
+}
+
+// checkMessageListByProviderReference runs on the sqlite of the unit tests and, with the build tag dbengine, on MariaDB and MySQL.
+func checkMessageListByProviderReference(t *testing.T, db *sql.DB) {
 	now := timePtr(time.Date(2026, 11, 2, 10, 0, 0, 0, time.UTC))
 	old := timePtr(time.Date(2026, 10, 1, 10, 0, 0, 0, time.UTC))
 	ref := "4031a1af-0000-4000-8000-00000000aaaa"
@@ -114,7 +125,7 @@ func Test_MessageListByProviderReference(t *testing.T) {
 
 	mockUtil := utilhandler.NewMockUtilHandler(mc)
 	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
+	h := handler{utilHandler: mockUtil, db: db, cache: mockCache}
 	ctx := context.Background()
 
 	create := func(m *message.Message, at *time.Time) {
