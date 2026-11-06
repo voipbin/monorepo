@@ -793,6 +793,24 @@ for IMAGE in "${ENGINES[@]}"; do
     tail -3 "$WORK/alembic-e7.err"; fail "$IMAGE service-first then Alembic failed for another reason"
   fi
 
+  # V13 database created with the engine default collation: only the character set is named, so
+  # MariaDB 12.x resolves it to utf8mb3_uca1400_ai_ci. A migration that compares a function result
+  # with a literal fails here (Error 1267) while the explicit utf8_general_ci databases above pass.
+  sql -e "CREATE DATABASE e8 CHARACTER SET utf8"
+  if ! ctl e8 up >"$WORK/e8.out" 2>&1 || [ "$(version_of e8)" != "$N" ]; then
+    tail -5 "$WORK/e8.out"; fail "$IMAGE V13 default-collation database up"
+  elif [ "$DESTRUCTIVE" = 1 ]; then
+    ok "$IMAGE V13 default-collation database: up ($N)"
+    skip "$IMAGE V13 down/up (DESTRUCTIVE migration)"
+  else
+    d=0; while [ "$d" -lt "$N" ] && ctl e8 down >>"$WORK/e8.out" 2>&1; do d=$((d+1)); done
+    if [ "$d" = "$N" ] && [ "$(version_of e8)" = "0" ] && ctl e8 up >>"$WORK/e8.out" 2>&1 && [ "$(version_of e8)" = "$N" ]; then
+      ok "$IMAGE V13 default-collation database: up/down/up ($N -> 0 -> $N)"
+    else
+      tail -5 "$WORK/e8.out"; fail "$IMAGE V13 default-collation database down/up"
+    fi
+  fi
+
   # V7 account without CREATE
   sql -e "CREATE USER 'ro'@'%' IDENTIFIED BY 'ropw'; GRANT SELECT ON e5.* TO 'ro'@'%'"
   if env "$DSN_VAR=ro:ropw@tcp(127.0.0.1:$PORT)/e5" "$WORK/$CONTROL" "$MIGRATE_CMD" up >"$WORK/ro.out" 2>&1; then
