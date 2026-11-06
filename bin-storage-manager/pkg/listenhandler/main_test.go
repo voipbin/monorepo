@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
+	"monorepo/bin-storage-manager/models/file"
 	"monorepo/bin-storage-manager/pkg/accounthandler"
 	"monorepo/bin-storage-manager/pkg/dbhandler"
 	"monorepo/bin-storage-manager/pkg/storagehandler"
@@ -103,6 +104,13 @@ func Test_processRequest_routing(t *testing.T) {
 			request: &sock.Request{URI: "/v1/compressfiles", Method: sock.RequestMethodPost, Data: []byte(`{"file_ids":["` + id + `"]}`)},
 			expect: func(s *storagehandler.MockStorageHandler, a *accounthandler.MockAccountHandler) {
 				s.EXPECT().CompressfileCreate(gomock.Any(), gomock.Nil(), []uuid.UUID{uid}).Return(nil, nil)
+			},
+		},
+		{
+			name:    "files content post",
+			request: &sock.Request{URI: "/v1/files/content", Method: sock.RequestMethodPost, Data: []byte(`{"customer_id":"` + id + `","type":"media","content":"YWJj"}`)},
+			expect: func(s *storagehandler.MockStorageHandler, a *accounthandler.MockAccountHandler) {
+				s.EXPECT().FileCreateContent(gomock.Any(), uid, uuid.Nil, file.TypeMedia, "", "", "", "", []byte("abc")).Return(&file.File{}, nil)
 			},
 		},
 		{
@@ -195,6 +203,8 @@ func Test_processRequest_notFound(t *testing.T) {
 		{"recording post", &sock.Request{URI: "/v1/recordings/" + id, Method: sock.RequestMethodPost}},
 		{"download refresh with get", &sock.Request{URI: "/v1/files/" + id + "/download_uri_refresh", Method: sock.RequestMethodGet}},
 		{"not a uuid", &sock.Request{URI: "/v1/files/not-a-uuid", Method: sock.RequestMethodGet}},
+		{"files content with get", &sock.Request{URI: "/v1/files/content", Method: sock.RequestMethodGet}},
+		{"files content sub resource", &sock.Request{URI: "/v1/files/content/extra", Method: sock.RequestMethodPost}},
 	}
 
 	for _, tt := range tests {

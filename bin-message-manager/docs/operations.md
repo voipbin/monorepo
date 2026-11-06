@@ -7,6 +7,7 @@
 | SMS not sent | Message created but target stays `queued` | Provider API credentials invalid or provider API down |
 | Balance rejection | `POST /v1/messages` returns 402 | Customer billing balance insufficient |
 | Webhook not processed | Target status never updates | `bin-hook-manager` not forwarding; or provider webhook URL misconfigured |
+| Inbound MMS has no `medias` | `message_updated` with attachments never arrives for an inbound `mms` | See the `inbound_media_total` results: `host` or `auth` means the media host of the provider is not the assumed one or needs credentials (change `mediaAllowedHostSuffixes` in `media_fetcher.go`), `storage` means bin-storage-manager failed or its quota is full, `busy` means more ingests than slots, `size` and `type` mean the attachment is outside the limits. The host name is in the logs for `host`, `auth` and `network`; URLs are never logged. |
 | MMS target `failed` | A message of type `mms` has a target in `failed` and the others are `queued` or `sent` | The provider refused the media or the destination (the `mms_target_failed_total` counter shows the provider and the reason), or the destination is outside the US and Canada and Telnyx refused it |
 | MessageBird auth failure | Targets fail with 401 | `authtoken_messagebird` expired or wrong |
 | Telnyx auth failure | Fallback provider fails | `authtoken_telnyx` expired or wrong |
@@ -113,11 +114,14 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `receive_request_process_time` | Histogram | `type`, `method` | RPC request processing duration |
 | `mms_target_failed_total` | Counter | `provider`, `reason` | MMS targets that no provider accepted (`rejected`, `error`, `ineligible`) |
 | `mms_media_check_seconds` | Histogram | none | Duration of the media validation and signed URL refresh of one MMS request |
+| `inbound_media_total` | Counter | `result` | Media of received messages by result: `stored`, `parse`, `type`, `host`, `size`, `auth`, `status`, `network`, `timeout`, `storage`, `overflow`, `busy` |
 | `request_external_process_time` | Histogram | `provider`, `method` | Provider API call duration |
 | `messagebird_number_send_total` | Counter | `type` | Total SMS sent via MessageBird |
 | `telnyx_number_send_total` | Counter | `type` | Total SMS sent via Telnyx |
 
 **Alert guidance:**
+- `inbound_media_total{result="host"}` or `{result="auth"}` rising → the assumptions about the media host or authentication of the provider are wrong; every attachment of a received MMS is skipped.
+- `inbound_media_total{result="storage"}` or `{result="busy"}` rising → storage-manager unavailable or full, or more received MMS than the process can ingest (two at a time; memory is the reason for the small limit).
 - `messagebird_number_send_total` dropping to zero → MessageBird auth failure or API down; SMS will fail silently.
 - `request_external_process_time` p99 > 10s → provider API slow; messages may time out.
 - `receive_request_process_time` rising → RabbitMQ queue backing up; check consumer health.

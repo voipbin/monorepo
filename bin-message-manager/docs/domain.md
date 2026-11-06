@@ -56,6 +56,19 @@ Provider webhooks arrive at `POST /v1/hooks` via `bin-hook-manager`. The URI suf
 
 Webhooks update the relevant Target's `status` field.
 
+### Inbound Message and Inbound MMS
+
+A Telnyx `message.received` event creates an inbound message at once (`direction` `inbound`, targets in status `received`). The type is `mms` when the provider says `MMS` or the payload lists media, otherwise `sms`; inbound messages are charged through the same `message_created` event as outbound ones (an inbound `mms` at the MMS rate).
+
+The media of an inbound MMS is not downloaded inside the hook: the hook must answer within the RPC timeout (the caller would otherwise answer the provider with an error and the provider delivers the event again). After the message is created, `hookTelnyx` starts one background ingest (`ingestInboundMedias` in `pkg/messagehandler/inbound_media.go`):
+
+1. The payload `media` list is decoded one item at a time (`telnyx.MessageEvent.GetMedias`); an unreadable item is skipped and counted, it never fails the event.
+2. Each media is fetched by the `MediaFetcher` (`media_fetcher.go`): https only, host on the allow list `mediaAllowedHostSuffixes` (assumption: `telnyx.com`), the dialled address must be a public address (checked in the dialer, after name resolution), no redirects, no credentials, no compression, content type from an allow list, at most 2 MiB per file, 5 MiB and 10 files per message, 20 seconds per file and 90 seconds for the whole ingest.
+3. Each downloaded file is stored through `StorageV1FileCreateContent` (storage-manager `POST /v1/files/content`, file type `media`, generated file name).
+4. The stored file ids are written to `medias` once (`dbUpdateMedias`) and `message_updated` is published. When nothing was stored there is no write.
+
+At most two ingests run at the same time in one process; when both slots are taken the message keeps an empty `medias` (result `busy`). The `message_created` event of an inbound MMS carries an empty `medias`; the final list comes with `message_updated`.
+
 ### Soft Deletes
 
 Messages and Targets use `tm_delete` for soft deletes. Default active sentinel: `9999-01-01 00:00:00.000000`.

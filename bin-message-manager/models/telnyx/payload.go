@@ -1,5 +1,7 @@
 package telnyx
 
+import "encoding/json"
+
 // Payload defines
 //
 //	{
@@ -47,12 +49,14 @@ type Payload struct {
 	// Errors // empty array
 	From FromTo `json:"from"`
 	ID   string `json:"id"`
-	// Media // empty array
-	MessagingProfileID string `json:"messaging_profile_id"`
-	OrganizationID     string `json:"organization_id"`
-	Parts              int    `json:"parts"`
-	ReceivedAt         string `json:"received_at"`
-	RecordType         string `json:"record_type"`
+	// Media is kept raw and decoded one item at a time (MessageEvent.GetMedias), so a media item of an
+	// unexpected shape never fails the whole event.
+	Media              json.RawMessage `json:"media"`
+	MessagingProfileID string          `json:"messaging_profile_id"`
+	OrganizationID     string          `json:"organization_id"`
+	Parts              int             `json:"parts"`
+	ReceivedAt         string          `json:"received_at"`
+	RecordType         string          `json:"record_type"`
 	// SentAt // null
 	Subject string `json:"subject"`
 	// Tags // empty array
@@ -62,4 +66,19 @@ type Payload struct {
 	// ValidUntil // null
 	// WebhookFailoverURL // null
 	WebhookURL string `json:"webhook_url"`
+}
+
+// PayloadMedia defines one item of the media list of a received message.
+//
+//	{
+//		"url": "https://media.telnyx.com/example/photo.jpg",
+//		"content_type": "image/jpeg",
+//		"size": 12345,
+//		"sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+//	}
+type PayloadMedia struct {
+	URL         string `json:"url"`
+	ContentType string `json:"content_type"`
+	Size        int64  `json:"size"`
+	SHA256      string `json:"sha256"`
 }

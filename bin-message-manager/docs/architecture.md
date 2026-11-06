@@ -53,4 +53,4 @@ The `listenhandler` consumes from queue `bin-manager.message-manager.request` an
 | GET | `/v1/messages?` | List messages (pagination) |
 | GET | `/v1/messages/{uuid}` | Get message details |
 | DELETE | `/v1/messages/{uuid}` | Delete message |
-| POST | `/v1/hooks` | Process provider webhook (delivery status update) |
+| POST | `/v1/hooks` | Process provider webhook (delivery status update, or an inbound message; for an inbound MMS the attachments are stored by a background ingest after the message is created) |

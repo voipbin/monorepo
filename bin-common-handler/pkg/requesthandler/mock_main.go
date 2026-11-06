@@ -7220,6 +7220,21 @@ func (mr *MockRequestHandlerMockRecorder) StorageV1FileCreate(ctx, customerID, o
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileCreate", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileCreate), ctx, customerID, ownerID, referenceType, referenceID, fileType, name, detail, filename, bucketName, filepath, requestTimeout)
 }
 
+// StorageV1FileCreateContent mocks base method.
+func (m *MockRequestHandler) StorageV1FileCreateContent(ctx context.Context, customerID, ownerID uuid.UUID, fileType file.Type, name, detail, filename, contentType string, content []byte, requestTimeout int) (*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1FileCreateContent", ctx, customerID, ownerID, fileType, name, detail, filename, contentType, content, requestTimeout)
+	ret0, _ := ret[0].(*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageV1FileCreateContent indicates an expected call of StorageV1FileCreateContent.
+func (mr *MockRequestHandlerMockRecorder) StorageV1FileCreateContent(ctx, customerID, ownerID, fileType, name, detail, filename, contentType, content, requestTimeout any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileCreateContent", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileCreateContent), ctx, customerID, ownerID, fileType, name, detail, filename, contentType, content, requestTimeout)
+}
+
 // StorageV1FileCreateWithDelay mocks base method.
 func (m *MockRequestHandler) StorageV1FileCreateWithDelay(ctx context.Context, customerID, ownerID uuid.UUID, referenceType file.ReferenceType, referenceID uuid.UUID, fileType file.Type, name, detail, filename, bucketName, filepath string, delay int) error {
 	m.ctrl.T.Helper()

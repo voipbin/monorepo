@@ -1473,6 +1473,18 @@ type RequestHandler interface {
 		filepath string,
 		requestTimeout int, // milliseconds
 	) (*smfile.File, error)
+	StorageV1FileCreateContent(
+		ctx context.Context,
+		customerID uuid.UUID,
+		ownerID uuid.UUID,
+		fileType smfile.Type,
+		name string,
+		detail string,
+		filename string,
+		contentType string,
+		content []byte,
+		requestTimeout int, // milliseconds
+	) (*smfile.File, error)
 	StorageV1FileCreateWithDelay(
 		ctx context.Context,
 		customerID uuid.UUID,

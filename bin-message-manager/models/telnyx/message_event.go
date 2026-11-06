@@ -1,6 +1,9 @@
 package telnyx
 
 import (
+	"encoding/json"
+	"strings"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	"monorepo/bin-message-manager/models/target"
@@ -120,4 +123,39 @@ func (h *MessageEvent) GetTargets() []target.Target {
 func (h *MessageEvent) GetText() string {
 	res := h.Data.Payload.Text
 	return res
+}
+
+// GetMedias returns the decoded media list of the message and the number of items that could not be decoded.
+// A missing, null or non array list is an empty list; an unreadable list counts as one skipped item.
+func (h *MessageEvent) GetMedias() (medias []PayloadMedia, skipped int) {
+	raw := h.Data.Payload.Media
+	if len(raw) == 0 || string(raw) == "null" {
+		return nil, 0
+	}
+
+	var items []json.RawMessage
+	if err := json.Unmarshal(raw, &items); err != nil {
+		return nil, 1
+	}
+
+	for _, item := range items {
+		var m PayloadMedia
+		if err := json.Unmarshal(item, &m); err != nil {
+			skipped++
+			continue
+		}
+		medias = append(medias, m)
+	}
+
+	return medias, skipped
+}
+
+// IsMMS returns true if the received message is a multimedia message: the provider says so, or media is attached.
+func (h *MessageEvent) IsMMS() bool {
+	if strings.EqualFold(h.Data.Payload.Type, "MMS") {
+		return true
+	}
+
+	medias, _ := h.GetMedias()
+	return len(medias) > 0
 }

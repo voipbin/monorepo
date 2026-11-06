@@ -395,8 +395,8 @@ Each billing entry has a ``reference_type`` linking the charge to its source:
 
 * ``call``: PSTN or VN call usage.
 * ``call_extension``: Extension-to-extension call (free).
-* ``sms``: SMS message sent.
-* ``mms``: MMS message (a message with media attachments) sent.
+* ``sms``: SMS message sent or received.
+* ``mms``: MMS message (a message with media attachments) sent or received. A received MMS is charged at the MMS price, like a received SMS is charged at the SMS price.
 * ``email``: Email message sent.
 * ``number``: Phone number purchase.
 * ``number_renew``: Phone number renewal.

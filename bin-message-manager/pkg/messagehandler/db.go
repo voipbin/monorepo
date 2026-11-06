@@ -71,6 +71,29 @@ func (h *messageHandler) dbUpdateTargets(ctx context.Context, id uuid.UUID, prov
 	return res, nil
 }
 
+// dbUpdateMedias updates the medias.
+func (h *messageHandler) dbUpdateMedias(ctx context.Context, id uuid.UUID, medias []string) (*message.Message, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "dbUpdateMedias",
+		"id":     id,
+		"medias": medias,
+	})
+
+	if errUpdate := h.db.MessageUpdate(ctx, id, map[message.Field]any{message.FieldMedias: medias}); errUpdate != nil {
+		log.Errorf("Could not update the message medias. err: %v", errUpdate)
+		return nil, errUpdate
+	}
+
+	res, err := h.db.MessageGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated message. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, message.EventTypeMessageUpdated, res)
+
+	return res, nil
+}
+
 // dbGet returns message info of the given id
 func (h *messageHandler) dbGet(ctx context.Context, id uuid.UUID) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{

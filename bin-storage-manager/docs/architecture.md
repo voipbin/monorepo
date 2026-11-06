@@ -55,6 +55,7 @@ Requests arrive on the RabbitMQ queue `bin-manager.storage-manager.request`. The
 | `/v1/accounts/<uuid>$` | Get/Delete account |
 | `/v1/files?` | List files (GET with query params) |
 | `/v1/files$` | Create file record (POST) |
+| `/v1/files/content$` | Create a file from bytes (POST; the content is written to the tmp bucket and registered through the same path as `/v1/files`) |
 | `/v1/files/<uuid>$` | Get/Delete file |
 | `/v1/files/<uuid>/download_uri_refresh$` | Refresh signed download URL |
 | `/v1/compressfiles$` | Create zip archive from multiple files |

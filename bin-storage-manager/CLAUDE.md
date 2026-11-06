@@ -58,6 +58,7 @@ The schema of `storage_accounts` and `storage_files` is owned by this service an
 | `/v1/accounts/<uuid>$` | GET, DELETE |
 | `/v1/files?` | GET (list) |
 | `/v1/files$` | POST (create) |
+| `/v1/files/content$` | POST (create from bytes, at most 2 MiB) |
 | `/v1/files/<uuid>$` | GET, DELETE |
 | `/v1/files/<uuid>/download_uri_refresh$` | POST (refresh URL) |
 | `/v1/compressfiles$` | POST (create zip) |

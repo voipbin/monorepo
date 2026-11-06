@@ -378,3 +378,52 @@ func Test_StorageV1FileDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_StorageV1FileCreateContent(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	reqHandler := requestHandler{
+		sock: mockSock,
+	}
+
+	expectRequest := &sock.Request{
+		URI:      "/v1/files/content",
+		Method:   sock.RequestMethodPost,
+		DataType: ContentTypeJSON,
+		Data:     []byte(`{"customer_id":"4edf2f7e-160e-11ef-9cee-7f2de117897d","owner_id":"00000000-0000-0000-0000-000000000000","type":"media","name":"test name","detail":"test detail","filename":"media-0.jpg","content_type":"image/jpeg","content":"YWJj"}`),
+	}
+	response := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       []byte(`{"id":"e4784552-160e-11ef-b04c-73e4a6f7f798"}`),
+	}
+	mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.storage-manager.request", expectRequest).Return(response, nil)
+
+	res, err := reqHandler.StorageV1FileCreateContent(context.Background(), uuid.FromStringOrNil("4edf2f7e-160e-11ef-9cee-7f2de117897d"), uuid.Nil, smfile.TypeMedia, "test name", "test detail", "media-0.jpg", "image/jpeg", []byte("abc"), 30000)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	expectResult := &smfile.File{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("e4784552-160e-11ef-b04c-73e4a6f7f798")}}
+	if !reflect.DeepEqual(expectResult, res) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", expectResult, res)
+	}
+}
+
+func Test_StorageV1FileCreateContent_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	reqHandler := requestHandler{
+		sock: mockSock,
+	}
+
+	mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.storage-manager.request", gomock.Any()).Return(&sock.Response{StatusCode: 500}, nil)
+
+	if res, err := reqHandler.StorageV1FileCreateContent(context.Background(), uuid.Nil, uuid.Nil, smfile.TypeMedia, "n", "d", "f", "image/jpeg", []byte("abc"), 30000); err == nil || res != nil {
+		t.Errorf("Wrong match. expect: error, got: %v, %v", res, err)
+	}
+}

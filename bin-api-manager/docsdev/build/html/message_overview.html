@@ -885,7 +885,7 @@
    <span class="o">|</span>                           <span class="o">|</span> <span class="n">Route</span> <span class="n">to</span> <span class="n">carrier</span>          <span class="o">|</span>
    <span class="o">|</span>                           <span class="o">+--------------------------&gt;|</span>
    <span class="o">|</span>  <span class="n">message_id</span>               <span class="o">|</span>                           <span class="o">|</span>
-   <span class="o">|</span>  <span class="n">target</span> <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;queued&quot;</span>  <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">target</span> <span class="n">status</span><span class="p">:</span> <span class="s2">"queued"</span>  <span class="o">|</span>                           <span class="o">|</span>
    <span class="o">|&lt;--------------------------+</span>                           <span class="o">|</span>
    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
    <span class="o">|</span> <span class="n">Webhook</span><span class="p">:</span> <span class="n">status</span> <span class="n">update</span>    <span class="o">|</span>   <span class="n">SMS</span> <span class="n">delivered</span>           <span class="o">|</span>
@@ -899,30 +899,30 @@
 <p>All phone numbers must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces. For example, <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code> (US) or <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code> (Korea). The <code class="docutils literal notranslate"><span class="pre">source</span></code> must be a number you own, obtainable via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>. Unicode characters (emoji, non-Latin scripts) reduce the per-segment character limit from 160 to 70.</p>
 </div>
 <p><strong>Send SMS Example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/messages?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15551234567&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/messages?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "source": {
+            "type": "tel",
+            "target": "+15551234567"
         },
-        &quot;destinations&quot;: [
+        "destinations": [
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+15559876543&quot;
+                "type": "tel",
+                "target": "+15559876543"
             }
         ],
-        &quot;text&quot;: &quot;Your verification code is 123456&quot;
-    }&#39;
+        "text": "Your verification code is 123456"
+    }'
 </pre></div>
 </div>
 <p><strong>Method 2: Via Flow Action</strong></p>
 <p>Send messages as part of an automated flow.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_send&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Your appointment is confirmed for tomorrow at 2pm.&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"message_send"</span><span class="p">,</span>
+    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"+15551234567"</span><span class="p">,</span>
+        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Your appointment is confirmed for tomorrow at 2pm."</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -963,43 +963,83 @@
 </div>
 <p><strong>Inbound Message Webhook Payload:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_created&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;msg-abc-123&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sms&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"message_created"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"msg-abc-123"</span><span class="p">,</span>
+        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sms"</span><span class="p">,</span>
+        <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+            <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+15559876543"</span>
         <span class="p">},</span>
-        <span class="s2">&quot;targets&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"targets"</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
+                <span class="s2">"destination"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                    <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+15551234567"</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;received&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;parts&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-                <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
+                <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"received"</span><span class="p">,</span>
+                <span class="s2">"parts"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2024-01-15T10:30:00Z"</span>
             <span class="p">}</span>
         <span class="p">],</span>
-        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, I need help with my order&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;inbound&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
+        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Hello, I need help with my order"</span><span class="p">,</span>
+        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"inbound"</span><span class="p">,</span>
+        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-15T10:30:00Z"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Status Update Webhook:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_updated&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;msg-abc-123&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;delivered&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:05Z&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"message_updated"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"msg-abc-123"</span><span class="p">,</span>
+        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"delivered"</span><span class="p">,</span>
+        <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2024-01-15T10:30:05Z"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
+<p id="message-overview-receiving-mms"><strong>Receiving an MMS</strong></p>
+<p>An inbound message that carries media is delivered with <code class="docutils literal notranslate"><span class="pre">type</span></code> <code class="docutils literal notranslate"><span class="pre">mms</span></code>. VoIPBin downloads each attachment from the carrier network and stores it as a file in your storage (see <a class="reference internal" href="storage_overview.html#storage-overview"><span class="std std-ref">Storage Overview</span></a>), so the <code class="docutils literal notranslate"><span class="pre">medias</span></code> field holds file ids that you can read with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}</span></code>.</p>
+<p>The attachments are stored after the message has been delivered to you. The <code class="docutils literal notranslate"><span class="pre">message_created</span></code> event of an inbound MMS therefore has an empty <code class="docutils literal notranslate"><span class="pre">medias</span></code> field, and the final list arrives in a <code class="docutils literal notranslate"><span class="pre">message_updated</span></code> event a few seconds later. The text of the message is always kept.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"message_updated"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"msg-abc-124"</span><span class="p">,</span>
+        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"mms"</span><span class="p">,</span>
+        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Here is the photo"</span><span class="p">,</span>
+        <span class="s2">"medias"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"&lt;file-id-1&gt;"</span><span class="p">,</span> <span class="s2">"&lt;file-id-2&gt;"</span><span class="p">],</span>
+        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"inbound"</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>An attachment is skipped, and is then missing from <code class="docutils literal notranslate"><span class="pre">medias</span></code>, when it is not a supported type, is larger than the limits below, could not be downloaded, or could not be stored. Attachments are also skipped when the service is handling many received messages at the same time, and a skipped attachment is not retried. Check <code class="docutils literal notranslate"><span class="pre">medias</span></code> when you need every attachment.</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Limit</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Attachments per message</p></td>
+<td><p>10 (more are ignored)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Size of one attachment</p></td>
+<td><p>2 MiB</p></td>
+</tr>
+<tr class="row-even"><td><p>Total size of one message</p></td>
+<td><p>5 MiB</p></td>
+</tr>
+<tr class="row-odd"><td><p>Supported types</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">image/jpeg</span></code>, <code class="docutils literal notranslate"><span class="pre">image/png</span></code>, <code class="docutils literal notranslate"><span class="pre">image/gif</span></code>, <code class="docutils literal notranslate"><span class="pre">audio/mpeg</span></code>, <code class="docutils literal notranslate"><span class="pre">audio/wav</span></code>, <code class="docutils literal notranslate"><span class="pre">application/pdf</span></code>, <code class="docutils literal notranslate"><span class="pre">text/vcard</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The stored files use the file type <code class="docutils literal notranslate"><span class="pre">media</span></code> and count towards the storage quota of your account. These limits are larger than the limits for sending (see <a class="reference internal" href="#message-overview-mms"><span class="std std-ref">Sending an MMS</span></a>), so a received attachment may need to be reduced before it can be sent again. A received MMS is charged like a received SMS, at the MMS price listed in <a class="reference internal" href="billing_account_overview.html#billing-account-overview"><span class="std std-ref">Billing Account Overview</span></a>, when the message is created.</p>
 </section>
 <section id="message-formatting">
 <h2>Message Formatting<a class="headerlink" href="#message-formatting" title="Link to this heading">¶</a></h2>
@@ -1026,17 +1066,17 @@
 </table>
 </div>
 <p><strong>Long Message Handling</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">message</span><span class="p">:</span> <span class="s2">&quot;This is a longer message that exceeds 160 characters...&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">message</span><span class="p">:</span> <span class="s2">"This is a longer message that exceeds 160 characters..."</span>
                                     <span class="o">|</span>
                                     <span class="n">v</span>
 <span class="o">+-------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">VoIPBin</span> <span class="n">automatically</span> <span class="n">splits</span> <span class="n">into</span> <span class="n">segments</span><span class="p">:</span>                       <span class="o">|</span>
 <span class="o">|</span>                                                                   <span class="o">|</span>
-<span class="o">|</span> <span class="n">Segment</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;This is a longer message that exceeds 160 char...&quot;</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="n">Segment</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;...acters and continues here with more content...&quot;</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="n">Segment</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;...and finally ends here.&quot;</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Segment</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">"This is a longer message that exceeds 160 char..."</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Segment</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">"...acters and continues here with more content..."</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Segment</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">"...and finally ends here."</span>                           <span class="o">|</span>
 <span class="o">|</span>                                                                   <span class="o">|</span>
-<span class="o">|</span> <span class="n">Recipient</span><span class="s1">&#39;s phone reassembles into single message                 |</span>
+<span class="o">|</span> <span class="n">Recipient</span><span class="s1">'s phone reassembles into single message                 |</span>
 <span class="o">+-------------------------------------------------------------------+</span>
 </pre></div>
 </div>
@@ -1054,7 +1094,7 @@
          <span class="o">|</span>
          <span class="n">v</span>
 <span class="n">POST</span> <span class="o">/</span><span class="n">messages</span>
-<span class="s2">&quot;Your code is 1234&quot;</span>
+<span class="s2">"Your code is 1234"</span>
          <span class="o">|</span>
          <span class="n">v</span>
 <span class="n">User</span> <span class="n">receives</span> <span class="n">SMS</span>
@@ -1072,7 +1112,7 @@
              <span class="o">|</span>
              <span class="n">v</span>
 <span class="n">POST</span> <span class="o">/</span><span class="n">messages</span>
-<span class="s2">&quot;Reminder: Appointment tomorrow at 2pm&quot;</span>
+<span class="s2">"Reminder: Appointment tomorrow at 2pm"</span>
              <span class="o">|</span>
              <span class="n">v</span>
 <span class="n">Customer</span> <span class="n">receives</span> <span class="n">SMS</span>
@@ -1082,14 +1122,14 @@
 <p>Enable customers to reply to messages.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                <span class="n">VoIPBin</span>                  <span class="n">Customer</span>
     <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
-    <span class="o">|</span> <span class="s2">&quot;Order shipped!&quot;</span>     <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">|</span> <span class="s2">"Order shipped!"</span>     <span class="o">|</span>                        <span class="o">|</span>
     <span class="o">+---------------------&gt;+-----------------------&gt;|</span>
     <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
-    <span class="o">|</span>                      <span class="o">|</span>    <span class="s2">&quot;When arrives?&quot;</span>     <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>    <span class="s2">"When arrives?"</span>     <span class="o">|</span>
     <span class="o">|&lt;---------------------+&lt;-----------------------+</span>
     <span class="o">|</span>  <span class="n">message_created</span>     <span class="o">|</span>                        <span class="o">|</span>
     <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
-    <span class="o">|</span> <span class="s2">&quot;Expected Friday&quot;</span>    <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">|</span> <span class="s2">"Expected Friday"</span>    <span class="o">|</span>                        <span class="o">|</span>
     <span class="o">+---------------------&gt;+-----------------------&gt;|</span>
     <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
 </pre></div>

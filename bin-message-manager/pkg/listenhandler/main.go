@@ -146,7 +146,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processRequest",
-		"request": m,
+		"request": loggableRequest(m),
 	})
 
 	var requestType string
@@ -202,7 +202,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		log.Errorf("Could not find corresponded message handler. data: %s", m.Data)
+		log.Errorf("Could not find corresponded message handler. data_size: %d", len(m.Data))
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"
@@ -213,7 +213,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	// default error handler — typed errors and ErrNotFound flow through
 	// errorResponse; other errors keep legacy 400 (mostly unmarshal failures).
 	if err != nil {
-		log.Errorf("Could not process the request correctly. data: %s, err: %v", m.Data, err)
+		log.Errorf("Could not process the request correctly. data_size: %d, err: %v", len(m.Data), err)
 		var ve *cerrors.VoipbinError
 		switch {
 		case stderrors.As(err, &ve):
@@ -228,4 +228,16 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	log.WithField("response", response).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
+}
+
+// loggableRequest returns the request to put in a log field. The body of a provider hook carries the numbers, the
+// text and the media urls of a received message, so it is left out for the hooks uri.
+func loggableRequest(m *sock.Request) *sock.Request {
+	if m == nil || !regV1Hooks.MatchString(m.URI) {
+		return m
+	}
+
+	res := *m
+	res.Data = nil
+	return &res
 }

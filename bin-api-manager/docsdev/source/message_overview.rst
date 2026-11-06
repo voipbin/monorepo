@@ -340,6 +340,45 @@ VoIPBin delivers inbound messages to your application via webhooks.
         }
     }
 
+.. _message-overview-receiving-mms:
+
+**Receiving an MMS**
+
+An inbound message that carries media is delivered with ``type`` ``mms``. VoIPBin downloads each attachment from the carrier network and stores it as a file in your storage (see :ref:`Storage Overview <storage_overview>`), so the ``medias`` field holds file ids that you can read with ``GET /storage_files/{id}``.
+
+The attachments are stored after the message has been delivered to you. The ``message_created`` event of an inbound MMS therefore has an empty ``medias`` field, and the final list arrives in a ``message_updated`` event a few seconds later. The text of the message is always kept.
+
+.. code::
+
+    {
+        "type": "message_updated",
+        "data": {
+            "id": "msg-abc-124",
+            "type": "mms",
+            "text": "Here is the photo",
+            "medias": ["<file-id-1>", "<file-id-2>"],
+            "direction": "inbound"
+        }
+    }
+
+An attachment is skipped, and is then missing from ``medias``, when it is not a supported type, is larger than the limits below, could not be downloaded, or could not be stored. Attachments are also skipped when the service is handling many received messages at the same time, and a skipped attachment is not retried. Check ``medias`` when you need every attachment.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Limit
+     - Value
+   * - Attachments per message
+     - 10 (more are ignored)
+   * - Size of one attachment
+     - 2 MiB
+   * - Total size of one message
+     - 5 MiB
+   * - Supported types
+     - ``image/jpeg``, ``image/png``, ``image/gif``, ``audio/mpeg``, ``audio/wav``, ``application/pdf``, ``text/vcard``
+
+The stored files use the file type ``media`` and count towards the storage quota of your account. These limits are larger than the limits for sending (see :ref:`Sending an MMS <message-overview-mms>`), so a received attachment may need to be reduced before it can be sent again. A received MMS is charged like a received SMS, at the MMS price listed in :ref:`Billing Account Overview <billing-account-overview>`, when the message is created.
+
 
 Message Formatting
 ------------------

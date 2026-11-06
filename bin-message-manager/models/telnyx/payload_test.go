@@ -58,6 +58,7 @@ func Test_payloadUnmarshal(t *testing.T) {
 				From: FromTo{
 					PhoneNumber: "+75973",
 				},
+				Media:              json.RawMessage("[]"),
 				ID:                 "5d7f9c50-330a-4d7a-9ca8-4157d7a09047",
 				MessagingProfileID: "40017f8e-49bd-4f16-9e3d-ef103f916228",
 				OrganizationID:     "a506eae0-f72c-449c-bbe5-19ce35f82e0b",

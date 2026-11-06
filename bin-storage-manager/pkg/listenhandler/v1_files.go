@@ -63,6 +63,51 @@ func (h *listenHandler) v1FilesPost(ctx context.Context, m *sock.Request) (*sock
 	return res, nil
 }
 
+// v1FilesContentPost handles /v1/files/content POST request
+// creates a new file from the given bytes and return the created file info.
+// The request is never logged because it carries the content.
+func (h *listenHandler) v1FilesContentPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1FilesContentPost",
+	})
+
+	var req request.V1DataFilesContentPost
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.storageHandler.FileCreateContent(
+		ctx,
+		req.CustomerID,
+		req.OwnerID,
+		req.Type,
+		req.Name,
+		req.Detail,
+		req.Filename,
+		req.ContentType,
+		req.Content,
+	)
+	if err != nil {
+		log.Errorf("Could not create a new file from content. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // v1FilesGet handles /v1/files GET request
 func (h *listenHandler) v1FilesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{

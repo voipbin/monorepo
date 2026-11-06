@@ -64,6 +64,52 @@ func (r *requestHandler) StorageV1FileCreate(
 	return &res, nil
 }
 
+// StorageV1FileCreateContent sends a request to storage-manager
+// to creating a file from the given bytes.
+// it returns created file if it succeed.
+func (r *requestHandler) StorageV1FileCreateContent(
+	ctx context.Context,
+	customerID uuid.UUID,
+	ownerID uuid.UUID,
+	fileType smfile.Type,
+	name string,
+	detail string,
+	filename string,
+	contentType string,
+	content []byte,
+	requestTimeout int, // milliseconds
+) (*smfile.File, error) {
+	uri := "/v1/files/content"
+
+	data := &smrequest.V1DataFilesContentPost{
+		CustomerID:  customerID,
+		OwnerID:     ownerID,
+		Type:        fileType,
+		Name:        name,
+		Detail:      detail,
+		Filename:    filename,
+		ContentType: contentType,
+		Content:     content,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodPost, "storage/files/content", requestTimeout, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res smfile.File
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // StorageV1FileCreateWithDelay sends a request to storage-manager
 // to creating a file with the given delay.
 // the request will be delievered after delay time.
