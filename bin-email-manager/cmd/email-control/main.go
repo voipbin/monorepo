@@ -10,7 +10,6 @@ import (
 	"os"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/confighandler"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -72,7 +71,7 @@ func initEmailHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (emailhand
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameEmailEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	configHandler, err := emailconfig.New(config.Get(), db.ConfigStore(), confighandler.WithSource(historySourceCLI))
+	configHandler, err := emailconfig.New(config.Get(), db.ConfigStore())
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create the config handler")
 	}
