@@ -228,6 +228,10 @@ parameters:
     type: boolean
     default: false
 
+  run-service-migration-collation:
+    type: boolean
+    default: false
+
 
 #########################################################################################################################################################################
 # workflows
@@ -969,6 +973,17 @@ workflows:
     when: << pipeline.parameters.run-lint-config-check >>
     jobs:
       - lint-config-check
+
+  # Applies the migrations of the changed services to a database created with
+  # the engine default collation (VOIP-1687). Runs on every branch like
+  # shell-tests (check-auto-deploy-config.rb rejects a branch ignore filter on a
+  # workflow outside the auto-deploy lists) and is not required by any build or
+  # deploy job. Design:
+  # docs/plans/2026-11-07-VOIP-1687-ci-default-collation-migration-check-design.md
+  service-migration-collation:
+    when: << pipeline.parameters.run-service-migration-collation >>
+    jobs:
+      - service-migration-collation
 
   # Runs on every pipeline: the gate inspects only the lines a branch adds,
   # so it is cheap, and scoping it to a path filter would let a branch that
@@ -2570,6 +2585,29 @@ jobs:
             fi
             bash -n /tmp/snippet.sh
             echo "Design doc snippet matches the gate script."
+
+  # service-migration-collation applies the migrations of the changed services
+  # (or the bin-tag-manager smoke target when none changed) to a database
+  # created with CHARACTER SET utf8 and no collation, on the mariadb secondary
+  # container. See .circleci/scripts/check-service-migration-default-collation.sh.
+  service-migration-collation:
+    docker:
+      - image: cimg/go:1.27.1
+      - image: mariadb:12.3
+        command: ["--innodb-flush-log-at-trx-commit=0", "--skip-log-bin"]
+        environment:
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "1"
+    steps:
+      - checkout
+      - run:
+          name: Install the MariaDB client
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y mariadb-client
+      - run:
+          name: Check migrations on a default-collation database
+          no_output_timeout: 20m
+          command: bash .circleci/scripts/check-service-migration-default-collation.sh
 
   # Runs the repo's bats test suites (.circleci/tests/*.bats,
   # docs/reference/tests/*.bats). Both suites are self-contained - they
