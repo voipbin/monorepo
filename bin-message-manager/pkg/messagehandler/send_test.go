@@ -2,14 +2,13 @@ package messagehandler
 
 import (
 	"context"
-	"fmt"
-	"reflect"
+	"strings"
 	"testing"
 	"time"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
-	commonidentity "monorepo/bin-common-handler/models/identity"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -23,325 +22,201 @@ import (
 	"monorepo/bin-message-manager/pkg/dbhandler"
 )
 
-func Test_Send(t *testing.T) {
+type sendFixture struct {
+	util   *utilhandler.MockUtilHandler
+	db     *dbhandler.MockDBHandler
+	req    *requesthandler.MockRequestHandler
+	notify *notifyhandler.MockNotifyHandler
 
+	smsTelnyx *MockSMSProvider
+	smsBird   *MockSMSProvider
+	mmsTelnyx *MockMMSProvider
+	mmsBird   *MockMMSProvider
+
+	handler *messageHandler
+}
+
+func newSendFixture(t *testing.T) *sendFixture {
+	t.Helper()
+
+	mc := gomock.NewController(t)
+	t.Cleanup(mc.Finish)
+
+	f := &sendFixture{
+		util:      newTestUtil(mc),
+		db:        dbhandler.NewMockDBHandler(mc),
+		req:       requesthandler.NewMockRequestHandler(mc),
+		notify:    notifyhandler.NewMockNotifyHandler(mc),
+		smsTelnyx: NewMockSMSProvider(mc),
+		smsBird:   NewMockSMSProvider(mc),
+		mmsTelnyx: NewMockMMSProvider(mc),
+		mmsBird:   NewMockMMSProvider(mc),
+	}
+	f.handler = &messageHandler{
+		utilHandler:   f.util,
+		db:            f.db,
+		reqHandler:    f.req,
+		notifyHandler: f.notify,
+		smsProviders: []namedSMSProvider{
+			{name: message.ProviderNameTelnyx, provider: f.smsTelnyx},
+			{name: message.ProviderNameMessagebird, provider: f.smsBird},
+		},
+		mmsTelnyx:      f.mmsTelnyx,
+		mmsMessagebird: f.mmsBird,
+	}
+
+	return f
+}
+
+func (f *sendFixture) expectVerified() {
+	f.req.EXPECT().CustomerV1CustomerGet(gomock.Any(), testCustomerID).Return(&cucustomer.Customer{
+		ID:                         testCustomerID,
+		IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+	}, nil)
+}
+
+// Test_Send_promotion checks the type, the parts and the balance check type that Send decides from the text, at the
+// boundaries of the standard. The expected numbers come from 3GPP TS 23.038: 160 septets or 70 UCS-2 units fit one
+// segment, 153 and 67 per segment of a longer message.
+func Test_Send_promotion(t *testing.T) {
 	tests := []struct {
 		name string
+		text string
 
-		id           uuid.UUID
-		customerID   uuid.UUID
-		source       *commonaddress.Address
-		destinations []commonaddress.Address
-		text         string
-
-		responseMessage *message.Message
-		responseSend    []target.Target
-
-		expectMessage *message.Message
-		expectTargets []target.Target
+		expectType   message.Type
+		expectRef    bmbilling.ReferenceType
+		expectParts  int
+		expectTooBig bool
 	}{
-		{
-			name: "normal",
-
-			id:         uuid.FromStringOrNil("804d4eb1-00ef-424b-9e14-e8d4c7a060e7"),
-			customerID: uuid.FromStringOrNil("feef3a64-4fab-46af-a61b-6a7ce31b84a9"),
-			source: &commonaddress.Address{
-				Type:   commonaddress.TypeTel,
-				Target: "+821100000001",
-			},
-			destinations: []commonaddress.Address{
-				{
-					Type:   commonaddress.TypeTel,
-					Target: "+821100000002",
-				},
-			},
-			text: "hello world",
-
-			responseMessage: &message.Message{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("804d4eb1-00ef-424b-9e14-e8d4c7a060e7"),
-					CustomerID: uuid.FromStringOrNil("feef3a64-4fab-46af-a61b-6a7ce31b84a9"),
-				},
-				Source: &commonaddress.Address{
-					Type:   commonaddress.TypeTel,
-					Target: "+821100000001",
-				},
-				Targets: []target.Target{
-					{
-						Destination: commonaddress.Address{
-							Type:   commonaddress.TypeTel,
-							Target: "+821100000002",
-						},
-						// Status:   target.StatusSent,
-						// Parts:    1,
-						// TMUpdate: "2022-03-18T03:22:17.995000Z",
-					},
-				},
-			},
-			responseSend: []target.Target{
-				{
-					Destination: commonaddress.Address{
-						Type:   commonaddress.TypeTel,
-						Target: "+821100000002",
-					},
-					Status: target.StatusSent,
-					Parts:  1,
-				},
-			},
-
-			expectMessage: &message.Message{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("804d4eb1-00ef-424b-9e14-e8d4c7a060e7"),
-					CustomerID: uuid.FromStringOrNil("feef3a64-4fab-46af-a61b-6a7ce31b84a9"),
-				},
-				Type: message.TypeSMS,
-				Source: &commonaddress.Address{
-					Type:   commonaddress.TypeTel,
-					Target: "+821100000001",
-				},
-				Targets: []target.Target{
-					{
-						Destination: commonaddress.Address{
-							Type:   commonaddress.TypeTel,
-							Target: "+821100000002",
-						},
-						Status: target.StatusQueued,
-						Parts:  0,
-					},
-				},
-				ProviderName: message.ProviderNameMessagebird,
-				Text:         "hello world",
-				Medias:       []string{},
-				Direction:    message.DirectionOutbound,
-			},
-			expectTargets: []target.Target{
-				{
-					Destination: commonaddress.Address{
-						Type:   commonaddress.TypeTel,
-						Target: "+821100000002",
-					},
-					Status: target.StatusQueued,
-					Parts:  0,
-				},
-			},
-		},
+		{"gsm7 160 is sms", strings.Repeat("a", 160), message.TypeSMS, bmbilling.ReferenceTypeSMS, 1, false},
+		{"gsm7 161 is promoted", strings.Repeat("a", 161), message.TypeMMS, bmbilling.ReferenceTypeMMS, 2, false},
+		{"ucs2 70 is sms", strings.Repeat("가", 70), message.TypeSMS, bmbilling.ReferenceTypeSMS, 1, false},
+		{"ucs2 71 is promoted", strings.Repeat("가", 71), message.TypeMMS, bmbilling.ReferenceTypeMMS, 2, false},
+		{"extension char making 160 is sms", strings.Repeat("a", 158) + "{", message.TypeSMS, bmbilling.ReferenceTypeSMS, 1, false},
+		{"extension char making 161 is promoted", strings.Repeat("a", 159) + "{", message.TypeMMS, bmbilling.ReferenceTypeMMS, 2, false},
+		{"emoji making 70 units is sms", strings.Repeat("가", 68) + "\U0001F600", message.TypeSMS, bmbilling.ReferenceTypeSMS, 1, false},
+		{"emoji making 71 units is promoted", strings.Repeat("가", 69) + "\U0001F600", message.TypeMMS, bmbilling.ReferenceTypeMMS, 2, false},
+		{"10 segments is promoted", strings.Repeat("a", 1530), message.TypeMMS, bmbilling.ReferenceTypeMMS, 10, false},
+		{"11 segments is refused", strings.Repeat("a", 1531), "", "", 0, true},
+		{"ucs2 671 units is refused", strings.Repeat("가", 671), "", "", 0, true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockBird := NewMockMessageHandlerMessagebird(mc)
-			mockTelnyx := NewMockMessageHandlerTelnyx(mc)
-
-			h := &messageHandler{
-				utilHandler:               mockUtil,
-				db:                        mockDB,
-				reqHandler:                mockReq,
-				notifyHandler:             mockNotify,
-				messageHandlerMessagebird: mockBird,
-				messageHandlerTelnyx:      mockTelnyx,
-			}
+			f := newSendFixture(t)
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
-				ID:                         tt.customerID,
-				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
-			}, nil)
-
-			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeSMS, "", len(tt.destinations)).Return(true, nil)
-
-			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseMessage, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
-
-			mockTelnyx.EXPECT().SendMessage(ctx, tt.id, tt.responseMessage.Source, tt.expectTargets, tt.text).Return(tt.responseSend, nil).AnyTimes()
-			mockBird.EXPECT().SendMessage(ctx, tt.id, tt.responseMessage.Source, tt.expectTargets, tt.text).Return(tt.responseSend, nil).AnyTimes()
-
-			mockDB.EXPECT().MessageUpdateTargets(ctx, tt.id, gomock.AnyOf(message.ProviderNameTelnyx, message.ProviderNameMessagebird), tt.responseSend).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseMessage, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageUpdated, tt.responseMessage)
-
-			res, err := h.Send(ctx, tt.id, tt.customerID, tt.source, tt.destinations, tt.text)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15550100001"}
+			destinations := []commonaddress.Address{
+				{Type: commonaddress.TypeTel, Target: "+15550100002"},
+				{Type: commonaddress.TypeTel, Target: "+821000000003"},
 			}
 
-			time.Sleep(time.Millisecond * 100)
+			f.expectVerified()
 
-			if !reflect.DeepEqual(tt.responseMessage, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseMessage, res)
+			if tt.expectTooBig {
+				res, err := f.handler.Send(ctx, testMessageID, testCustomerID, source, destinations, tt.text)
+				if res != nil {
+					t.Errorf("Wrong match. expect: nil, got: %v", res)
+				}
+				assertVoipbinError(t, err, cerrors.StatusInvalidArgument, "TEXT_TOO_LONG")
+				return
+			}
+
+			// the balance check asks for the type that is stored, once for each recipient.
+			f.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(gomock.Any(), testCustomerID, tt.expectRef, "", 2).Return(true, nil)
+
+			var created *message.Message
+			f.db.EXPECT().MessageCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, m *message.Message) error {
+				created = m
+				return nil
+			})
+			stored := storedMessage(testTargets("+15550100002", "+821000000003"))
+			newMemDB(f.db, stored)
+			f.db.EXPECT().MessageGet(ctx, testMessageID).DoAndReturn(func(_ context.Context, _ uuid.UUID) (*message.Message, error) {
+				return created, nil
+			})
+			f.notify.EXPECT().PublishWebhookEvent(ctx, testCustomerID, message.EventTypeMessageCreated, gomock.Any())
+
+			// the dispatch accepts everything, which is enough to finish it; the last call is the event of the final
+			// write and the test waits for it instead of sleeping.
+			done := make(chan struct{})
+			f.notify.EXPECT().PublishWebhookEvent(gomock.Any(), testCustomerID, message.EventTypeMessageUpdated, gomock.Any()).Do(func(_ context.Context, _ uuid.UUID, _ string, _ any) { close(done) })
+			accept := func(n int) []SendResult {
+				res := make([]SendResult, n)
+				for i := range res {
+					res[i] = SendResult{Outcome: SendOutcomeAccepted}
+				}
+				return res
+			}
+			if tt.expectType == message.TypeSMS {
+				f.smsTelnyx.EXPECT().SendSMS(gomock.Any(), testMessageID, gomock.Any(), gomock.Any(), tt.text, gomock.Any()).Return(accept(2))
+			} else {
+				// +1 to +1 goes to the mms stage first; the other target skips it and is sent as sms segments.
+				f.mmsTelnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, gomock.Any(), gomock.Any(), tt.text, gomock.Nil(), gomock.Any()).Return(accept(1))
+				f.smsTelnyx.EXPECT().SendSMS(gomock.Any(), testMessageID, gomock.Any(), gomock.Any(), tt.text, gomock.Any()).Return(accept(1))
+			}
+
+			// the stored message must have the decided type and parts when it is created, because the billing reads
+			// the created event.
+			_, err := f.handler.Send(ctx, testMessageID, testCustomerID, source, destinations, tt.text)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if created == nil {
+				t.Fatalf("The message was not created")
+			}
+			if created.Type != tt.expectType {
+				t.Errorf("Wrong type. expect: %s, got: %s", tt.expectType, created.Type)
+			}
+			if created.ProviderName != message.ProviderNameTelnyx {
+				t.Errorf("Wrong provider. expect: telnyx, got: %s", created.ProviderName)
+			}
+			if len(created.Targets) != 2 {
+				t.Fatalf("Wrong targets. got: %v", created.Targets)
+			}
+			for _, tg := range created.Targets {
+				if tg.Parts != tt.expectParts || tg.Status != target.StatusQueued {
+					t.Errorf("Wrong target. expect parts: %d, got: %v", tt.expectParts, tg)
+				}
+			}
+
+			select {
+			case <-done:
+			case <-time.After(5 * time.Second):
+				t.Fatalf("The dispatch did not finish")
 			}
 		})
 	}
 }
 
-// Test_Send_NormalizesAddress proves Send canonicalizes the persisted source
-// and destination targets through commonaddress.NormalizeTarget before handing
-// them to Create -> db.MessageCreate. The assertion is pinned to the
-// synchronous persist call (MessageCreate), which runs BEFORE the async
-// provider goroutine, so the canonical values are inspected directly on the
-// *message.Message passed to the db. The loss-proof row proves an alphanumeric
-// tel sender ("VOIPBIN", no digit) is preserved verbatim instead of blanked.
-func Test_Send_NormalizesAddress(t *testing.T) {
+func Test_Send_rejected(t *testing.T) {
+	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15550100001"}
+	dests := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+15550100002"}}
 
 	tests := []struct {
 		name string
 
-		id           uuid.UUID
-		customerID   uuid.UUID
-		source       *commonaddress.Address
-		destinations []commonaddress.Address
-		text         string
+		source *commonaddress.Address
+		dests  []commonaddress.Address
 
-		responseMessage *message.Message
-
-		expectSource       *commonaddress.Address
-		expectDestinations []commonaddress.Address
+		expectReason string
 	}{
-		{
-			name: "punctuated tel source and destination are canonicalized",
-
-			id:         uuid.FromStringOrNil("a3b6f2d4-1c5e-4a7b-9d8f-0e1a2b3c4d5e"),
-			customerID: uuid.FromStringOrNil("feef3a64-4fab-46af-a61b-6a7ce31b84a9"),
-			source: &commonaddress.Address{
-				Type:   commonaddress.TypeTel,
-				Target: "+1 (555) 123-4567",
-			},
-			destinations: []commonaddress.Address{
-				{
-					Type:   commonaddress.TypeTel,
-					Target: "+1.555.987.6543",
-				},
-			},
-			text: "hello world",
-
-			responseMessage: &message.Message{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("a3b6f2d4-1c5e-4a7b-9d8f-0e1a2b3c4d5e"),
-					CustomerID: uuid.FromStringOrNil("feef3a64-4fab-46af-a61b-6a7ce31b84a9"),
-				},
-			},
-
-			expectSource: &commonaddress.Address{
-				Type:   commonaddress.TypeTel,
-				Target: "+15551234567",
-			},
-			expectDestinations: []commonaddress.Address{
-				{
-					Type:   commonaddress.TypeTel,
-					Target: "+15559876543",
-				},
-			},
-		},
-		{
-			name: "alphanumeric tel sender is preserved verbatim (loss-proof)",
-
-			id:         uuid.FromStringOrNil("b4c7e3f5-2d6f-4b8c-8e9a-1f2b3c4d5e6f"),
-			customerID: uuid.FromStringOrNil("feef3a64-4fab-46af-a61b-6a7ce31b84a9"),
-			source: &commonaddress.Address{
-				Type:   commonaddress.TypeTel,
-				Target: "VOIPBIN",
-			},
-			destinations: []commonaddress.Address{
-				{
-					Type:   commonaddress.TypeTel,
-					Target: "+1 (555) 123-4567",
-				},
-			},
-			text: "hello world",
-
-			responseMessage: &message.Message{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("b4c7e3f5-2d6f-4b8c-8e9a-1f2b3c4d5e6f"),
-					CustomerID: uuid.FromStringOrNil("feef3a64-4fab-46af-a61b-6a7ce31b84a9"),
-				},
-			},
-
-			expectSource: &commonaddress.Address{
-				Type:   commonaddress.TypeTel,
-				Target: "VOIPBIN",
-			},
-			expectDestinations: []commonaddress.Address{
-				{
-					Type:   commonaddress.TypeTel,
-					Target: "+15551234567",
-				},
-			},
-		},
+		{"no source", nil, dests, "SOURCE_REQUIRED"},
+		{"no destination", source, nil, "DESTINATION_REQUIRED"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+			// no provider and no database call is expected: the mocks fail the test on any call.
+			f := newSendFixture(t)
+			f.expectVerified()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockBird := NewMockMessageHandlerMessagebird(mc)
-			mockTelnyx := NewMockMessageHandlerTelnyx(mc)
-
-			h := &messageHandler{
-				utilHandler:               mockUtil,
-				db:                        mockDB,
-				reqHandler:                mockReq,
-				notifyHandler:             mockNotify,
-				messageHandlerMessagebird: mockBird,
-				messageHandlerTelnyx:      mockTelnyx,
+			res, err := f.handler.Send(context.Background(), testMessageID, testCustomerID, tt.source, tt.dests, "hi")
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil, got: %v", res)
 			}
-			ctx := context.Background()
-
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
-				ID:                         tt.customerID,
-				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
-			}, nil)
-
-			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeSMS, "", len(tt.destinations)).Return(true, nil)
-
-			// Capture-by-matcher: inspect the *message.Message persisted by the
-			// synchronous Create -> MessageCreate path and assert that BOTH the
-			// source and every destination target are in canonical form.
-			expectSource := tt.expectSource
-			expectDestinations := tt.expectDestinations
-			mockDB.EXPECT().MessageCreate(ctx, gomock.Cond(func(m *message.Message) bool {
-				if m.Source == nil || m.Source.Target != expectSource.Target {
-					return false
-				}
-				if len(m.Targets) != len(expectDestinations) {
-					return false
-				}
-				for i := range m.Targets {
-					if m.Targets[i].Destination.Target != expectDestinations[i].Target {
-						return false
-					}
-				}
-				return true
-			})).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseMessage, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
-
-			// The async provider goroutine runs after persist; allow but do not
-			// require its calls so the focused persist assertion stays isolated.
-			mockTelnyx.EXPECT().SendMessage(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("ignored")).AnyTimes()
-			mockBird.EXPECT().SendMessage(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("ignored")).AnyTimes()
-
-			res, err := h.Send(ctx, tt.id, tt.customerID, tt.source, tt.destinations, tt.text)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			time.Sleep(time.Millisecond * 100)
-
-			if !reflect.DeepEqual(tt.responseMessage, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseMessage, res)
-			}
+			assertVoipbinError(t, err, cerrors.StatusInvalidArgument, tt.expectReason)
 		})
 	}
 }

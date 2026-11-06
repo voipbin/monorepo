@@ -293,3 +293,24 @@ func Test_IsDefinitiveRejection_nonProviderError(t *testing.T) {
 		t.Errorf("Wrong match. a nil or plain error is not a rejection")
 	}
 }
+
+// Test_TelnyxSendMMS_textOnly pins that a text only mms (a promoted text) is sent without the media_urls key.
+func Test_TelnyxSendMMS_textOnly(t *testing.T) {
+	var gotBody string
+	replaceDefaultTransport(t, roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		b, _ := io.ReadAll(req.Body)
+		gotBody = string(b)
+		return newResponse(200, io.NopCloser(strings.NewReader(`{"data":{"id":"fake-message-id","parts":1}}`))), nil
+	}))
+
+	h := NewRequestExternal("fake-token-mb", "fake-token-tn")
+	res, err := h.TelnyxSendMMS(context.Background(), "+15550100001", "+15550100002", "long text", nil)
+	if err != nil || res.Data.ID != "fake-message-id" {
+		t.Fatalf("Wrong match. expect: ok, got: res: %v, err: %v", res, err)
+	}
+
+	expect := `{"from":"+15550100001","to":"+15550100002","text":"long text","type":"MMS"}`
+	if gotBody != expect {
+		t.Errorf("Wrong body.\nexpect: %s\ngot: %s", expect, gotBody)
+	}
+}

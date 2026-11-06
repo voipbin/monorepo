@@ -7,7 +7,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-message-manager/models/message"
-	"monorepo/bin-message-manager/models/target"
 )
 
 // dbGets returns list of messages info with filters
@@ -43,30 +42,7 @@ func (h *messageHandler) dbCreate(ctx context.Context, m *message.Message) (*mes
 		log.Errorf("Could not get created message. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, message.EventTypeMessageCreated, res)
-
-	return res, nil
-}
-
-// dbUpdateTargets updates the targets.
-func (h *messageHandler) dbUpdateTargets(ctx context.Context, id uuid.UUID, providerName message.ProviderName, targets []target.Target) (*message.Message, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "dbUpdateTargets",
-		"id":      id,
-		"targets": targets,
-	})
-
-	if errCreate := h.db.MessageUpdateTargets(ctx, id, providerName, targets); errCreate != nil {
-		log.Errorf("Could not update the message targets. err: %v", errCreate)
-		return nil, errCreate
-	}
-
-	res, err := h.db.MessageGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated message. err: %v", err)
-		return nil, err
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, message.EventTypeMessageUpdated, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, message.EventTypeMessageCreated, res.EventCopy())
 
 	return res, nil
 }
@@ -89,7 +65,7 @@ func (h *messageHandler) dbUpdateMedias(ctx context.Context, id uuid.UUID, media
 		log.Errorf("Could not get updated message. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, message.EventTypeMessageUpdated, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, message.EventTypeMessageUpdated, res.EventCopy())
 
 	return res, nil
 }
@@ -128,7 +104,7 @@ func (h *messageHandler) dbDelete(ctx context.Context, id uuid.UUID) (*message.M
 		log.Errorf("Could not get deleted message info. message_id: %s, err: %v", id, err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, message.EventTypeMessageDeleted, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, message.EventTypeMessageDeleted, res.EventCopy())
 
 	return res, nil
 }

@@ -10,8 +10,44 @@ import (
 type Target struct {
 	Destination commonaddress.Address `json:"destination"`
 	Status      Status                `json:"status"`
-	Parts       int                   `json:"parts"` // number of messages
+	Parts       int                   `json:"parts"` // segment count of the text computed by the platform from the standard, not the charged unit.
 	TMUpdate    *time.Time            `json:"tm_update"`
+
+	// internal keys. They are not part of the API (see WebhookTarget) and are cleared from the events.
+	ProviderParts       int    `json:"provider_parts,omitempty"`        // segment count reported by the provider, for comparison only.
+	ProviderReferenceID string `json:"provider_reference_id,omitempty"` // message id of the provider for this target.
+}
+
+// WebhookTarget is the part of a Target that is visible outside the platform.
+type WebhookTarget struct {
+	Destination commonaddress.Address `json:"destination"`
+	Status      Status                `json:"status"`
+	Parts       int                   `json:"parts"`
+	TMUpdate    *time.Time            `json:"tm_update"`
+}
+
+// ConvertWebhookTarget converts to the WebhookTarget
+func (h *Target) ConvertWebhookTarget() WebhookTarget {
+	return WebhookTarget{
+		Destination: h.Destination,
+		Status:      h.Status,
+		Parts:       h.Parts,
+		TMUpdate:    h.TMUpdate,
+	}
+}
+
+// ConvertWebhookTargets converts the targets to the WebhookTargets
+func ConvertWebhookTargets(targets []Target) []WebhookTarget {
+	if targets == nil {
+		return nil
+	}
+
+	res := make([]WebhookTarget, 0, len(targets))
+	for i := range targets {
+		res = append(res, targets[i].ConvertWebhookTarget())
+	}
+
+	return res
 }
 
 // Status defines

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"monorepo/bin-message-manager/models/telnyx"
 	"net/http"
@@ -50,14 +49,14 @@ func (h *requestExternal) TelnyxSendMessage(ctx context.Context, source string, 
 		_ = resp.Body.Close()
 	}()
 
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		// the raw body carries the numbers, so only the error codes and descriptions are kept.
+		return nil, &ProviderError{Provider: providerTelnyx, StatusCode: resp.StatusCode, Detail: providerErrorDetail(resp.Body)}
+	}
+
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error reading response body")
-	}
-	bodyString := string(bodyBytes)
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("API request failed with status code %d and body: %s", resp.StatusCode, bodyString)
 	}
 
 	var messageResponse telnyx.MessageResponse

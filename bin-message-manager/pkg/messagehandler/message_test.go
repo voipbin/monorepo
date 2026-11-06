@@ -17,11 +17,10 @@ import (
 	"monorepo/bin-message-manager/models/message"
 	"monorepo/bin-message-manager/models/target"
 	"monorepo/bin-message-manager/pkg/dbhandler"
-	"monorepo/bin-message-manager/pkg/messagehandlermessagebird"
 	"monorepo/bin-message-manager/pkg/requestexternal"
 )
 
-func Test_Create(t *testing.T) {
+func Test_create(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -100,14 +99,11 @@ func Test_Create(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
 
 			h := &messageHandler{
 				utilHandler:   mockUtil,
 				db:            mockDB,
 				notifyHandler: mockNotify,
-
-				messageHandlerMessagebird: mockMessagebird,
 			}
 			ctx := context.Background()
 
@@ -119,7 +115,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
 
-			res, err := h.Create(ctx, tt.id, tt.customerID, tt.source, tt.targets, tt.providerName, tt.text, tt.direction)
+			res, err := h.create(ctx, tt.id, tt.customerID, tt.source, tt.targets, tt.providerName, tt.text, tt.direction, message.TypeSMS)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

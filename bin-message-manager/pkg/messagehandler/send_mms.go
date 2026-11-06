@@ -21,8 +21,7 @@ import (
 )
 
 const (
-	mmsDispatchTimeout   = 5 * time.Minute  // all the attempts of one message
-	mmsFinalWriteTimeout = 30 * time.Second // the final write of the result, which has its own context
+	mmsDispatchTimeout = 5 * time.Minute // all the attempts of one message, over all the stages
 )
 
 // SendMMS validates the medias, checks the balance and sends the message with the medias.
@@ -72,6 +71,7 @@ func (h *messageHandler) SendMMS(ctx context.Context, id uuid.UUID, customerID u
 		targets = append(targets, target.Target{
 			Destination: destination,
 			Status:      target.StatusQueued,
+			Parts:       1,
 		})
 	}
 
@@ -100,13 +100,13 @@ func (h *messageHandler) SendMMS(ctx context.Context, id uuid.UUID, customerID u
 	// the goroutine gets its own copies, so it shares nothing with the stored message.
 	sourceCopy := *source
 	targetsCopy := append([]target.Target(nil), targets...)
-	go h.dispatchMMS(ctx, res.ID, &sourceCopy, targetsCopy, text, urls)
+	go h.dispatchMMS(ctx, res.ID, &sourceCopy, targetsCopy, text, urls, false)
 
 	return res, nil
 }
 
 // createMMS creates the message record of an mms. The provider is the first one that is tried,
-// and dispatchMMS replaces it with the provider that accepted the targets.
+// and the final write of the dispatch replaces it with the provider that accepted the targets.
 func (h *messageHandler) createMMS(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, medias []uuid.UUID) (*message.Message, error) {
 	if id == uuid.Nil {
 		id = h.utilHandler.UUIDCreate()
@@ -142,110 +142,4 @@ func (h *messageHandler) createMMS(ctx context.Context, id uuid.UUID, customerID
 // sender and the destination must both be +1 numbers.
 func mmsFallbackEligible(source *commonaddress.Address, t target.Target) bool {
 	return strings.HasPrefix(source.Target, "+1") && strings.HasPrefix(t.Destination.Target, "+1")
-}
-
-// dispatchMMS sends the targets through telnyx and sends the targets that telnyx refused through
-// messagebird, then writes the final state once. Every target is sent to each provider at most
-// once, and only a definitive refusal leads to the fallback, so a target is never sent twice. A
-// target that no provider accepted becomes failed: an mms is never sent as text only.
-func (h *messageHandler) dispatchMMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, urls []string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "dispatchMMS",
-		"message_id": messageID,
-	})
-
-	sendCtx, cancel := context.WithTimeout(ctx, mmsDispatchTimeout)
-	defer cancel()
-
-	final := append([]target.Target(nil), targets...)
-	failed := make([]bool, len(final))
-	telnyxAccepted := 0
-	messagebirdAccepted := 0
-
-	// stage 1: telnyx
-	outcomes := normalizeOutcomes(h.mmsTelnyx.SendMMS(sendCtx, messageID, source, targets, text, urls), len(targets))
-
-	fallbackIndexes := []int{}
-	for i, outcome := range outcomes {
-		switch outcome {
-		case MMSOutcomeAccepted:
-			telnyxAccepted++
-
-		case MMSOutcomeRejected:
-			if mmsFallbackEligible(source, targets[i]) {
-				fallbackIndexes = append(fallbackIndexes, i)
-				continue
-			}
-			failed[i] = true
-			promMMSTargetFailedTotal.WithLabelValues("telnyx", "ineligible").Inc()
-
-		default:
-			failed[i] = true
-			promMMSTargetFailedTotal.WithLabelValues("telnyx", "error").Inc()
-		}
-	}
-
-	// stage 2: messagebird, only for the targets that telnyx refused
-	if len(fallbackIndexes) > 0 {
-		fallbackTargets := make([]target.Target, 0, len(fallbackIndexes))
-		for _, i := range fallbackIndexes {
-			fallbackTargets = append(fallbackTargets, targets[i])
-		}
-
-		fallbackOutcomes := normalizeOutcomes(h.mmsMessagebird.SendMMS(sendCtx, messageID, source, fallbackTargets, text, urls), len(fallbackTargets))
-		for j, i := range fallbackIndexes {
-			switch fallbackOutcomes[j] {
-			case MMSOutcomeAccepted:
-				messagebirdAccepted++
-
-			case MMSOutcomeRejected:
-				failed[i] = true
-				promMMSTargetFailedTotal.WithLabelValues("messagebird", "rejected").Inc()
-
-			default:
-				failed[i] = true
-				promMMSTargetFailedTotal.WithLabelValues("messagebird", "error").Inc()
-			}
-		}
-	}
-
-	// the final state
-	var tmFailed *time.Time
-	for i := range final {
-		if !failed[i] {
-			continue
-		}
-
-		if tmFailed == nil {
-			tmFailed = h.utilHandler.TimeNow()
-		}
-		final[i].Status = target.StatusFailed
-		final[i].TMUpdate = tmFailed
-	}
-
-	providerName := message.ProviderNameTelnyx
-	if telnyxAccepted == 0 && messagebirdAccepted > 0 {
-		providerName = message.ProviderNameMessagebird
-	}
-
-	// the write has its own context, so a dispatch that ran out of time still records the result.
-	writeCtx, writeCancel := context.WithTimeout(context.WithoutCancel(ctx), mmsFinalWriteTimeout)
-	defer writeCancel()
-
-	if _, err := h.dbUpdateTargets(writeCtx, messageID, providerName, final); err != nil {
-		log.Errorf("Could not update the message targets. err: %v", err)
-		return
-	}
-	log.Debugf("Dispatched the mms. telnyx_accepted: %d, messagebird_accepted: %d, total: %d", telnyxAccepted, messagebirdAccepted, len(final))
-}
-
-// normalizeOutcomes returns exactly count outcomes. A provider that returns a different number breaks
-// its contract, so every target is treated as not confirmed (failed) instead of guessing which
-// outcome belongs to which target.
-func normalizeOutcomes(outcomes []MMSOutcome, count int) []MMSOutcome {
-	if len(outcomes) == count {
-		return outcomes
-	}
-
-	return make([]MMSOutcome, count)
 }

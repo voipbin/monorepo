@@ -6289,7 +6289,7 @@ components:
         - MessageManagerMessageProviderNameMessagebird
     MessageManagerMessageType:
       type: string
-      description: Type of the message. A message sent with `medias` is `mms`, every other message is `sms`.
+      description: Type of the message. A message sent with `medias` is `mms`, and so is a text of more than one segment (more than 160 GSM-7 characters or more than 70 characters with any non GSM-7 character). Every other message is `sms`.
       example: "sms"
       enum:
         - sms
@@ -6391,7 +6391,7 @@ components:
           example: "delivered"
         parts:
           type: integer
-          description: The number of message parts (if the message is split).
+          description: The number of segments of the text, counted from the GSM-7 and UCS-2 rules. It is information and not the charged unit; the charge is one message for each destination.
           example: 1
         tm_update:
           type: string

@@ -127,3 +127,65 @@ func Test_BillingStart_retry_mms(t *testing.T) {
 		}
 	})
 }
+
+// Test_EventMMMessageCreated_promotedText checks the shape of a text promoted to an mms (no media, the targets carry the
+// segment count of the text in parts): the charge is one mms unit for each recipient at the mms rate, whatever the
+// segment count.
+func Test_EventMMMessageCreated_promotedText(t *testing.T) {
+	h, mockDB, mockNotify, mockAccount := newTestHandler(t)
+
+	messageID := uuid.FromStringOrNil("e3000000-0000-0000-0000-000000000001")
+	customerID := uuid.FromStringOrNil("e3000000-0000-0000-0000-000000000002")
+	accountID := uuid.FromStringOrNil("e3000000-0000-0000-0000-000000000003")
+	billIDs := []uuid.UUID{
+		uuid.FromStringOrNil("e3000000-0000-0000-0000-000000000004"),
+		uuid.FromStringOrNil("e3000000-0000-0000-0000-000000000005"),
+	}
+	tmCreate := time.Date(2026, 11, 6, 1, 2, 3, 0, time.UTC)
+
+	m := &mmmessage.Message{
+		Identity: commonidentity.Identity{ID: messageID, CustomerID: customerID},
+		Type:     mmmessage.TypeMMS,
+		Source:   &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+100****0001"},
+		Targets: []mmtarget.Target{
+			{Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+100****0002"}, Parts: 5},
+			{Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+100****0003"}, Parts: 5},
+		},
+		Medias:   []string{},
+		TMCreate: &tmCreate,
+	}
+
+	ctx := context.Background()
+	for i := range m.Targets {
+		targetRefID := uuid.NewV5(messageID, fmt.Sprintf("target-%d", i))
+		created := &billing.Billing{
+			Identity:          commonidentity.Identity{ID: billIDs[i]},
+			AccountID:         accountID,
+			Status:            billing.StatusProgressing,
+			ReferenceType:     billing.ReferenceTypeMMS,
+			CostType:          billing.CostTypeMMS,
+			RateCreditPerUnit: billing.DefaultCreditPerUnitMMS,
+		}
+		consumed := *created
+		consumed.Status = billing.StatusEnd
+
+		mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeMMS, targetRefID).Return(nil, dbhandler.ErrNotFound)
+		mockAccount.EXPECT().GetByCustomerID(ctx, customerID).Return(&account.Account{Identity: commonidentity.Identity{ID: accountID, CustomerID: customerID}}, nil)
+		h.utilHandler.(*utilhandler.MockUtilHandler).EXPECT().UUIDCreate().Return(billIDs[i])
+		mockDB.EXPECT().BillingCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, b *billing.Billing) error {
+			if b.ReferenceType != billing.ReferenceTypeMMS || b.CostType != billing.CostTypeMMS || b.RateCreditPerUnit != 30000 {
+				t.Errorf("Wrong billing record. reference: %s, cost: %s, rate: %d", b.ReferenceType, b.CostType, b.RateCreditPerUnit)
+			}
+			return nil
+		})
+		mockDB.EXPECT().BillingGet(ctx, billIDs[i]).Return(created, nil)
+		mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, created)
+		// one billable unit for each recipient, never the segment count of the text.
+		mockDB.EXPECT().BillingConsumeAndRecord(ctx, created, accountID, 1, 0, billing.GetCostInfo(billing.CostTypeMMS), gomock.Any()).Return(&consumed, nil)
+		mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingUpdated, &consumed)
+	}
+
+	if err := h.EventMMMessageCreated(ctx, m); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}

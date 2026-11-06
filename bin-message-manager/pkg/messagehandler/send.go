@@ -3,9 +3,12 @@ package messagehandler
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -13,15 +16,30 @@ import (
 
 	"monorepo/bin-message-manager/models/message"
 	"monorepo/bin-message-manager/models/target"
+	"monorepo/bin-message-manager/pkg/segmenthandler"
+)
+
+// limits of the text of a message without media, counted in segments (3GPP TS 23.038 and TS 23.040).
+const (
+	// smsPromoteSegments is the number of segments of an sms. A text that needs more is promoted to an mms (a text
+	// only mms, LMS) and charged the flat mms rate. The decision never looks at the destination or the provider.
+	smsPromoteSegments = 1
+	// smsMaxSegments is the most segments of a text without media (the documented limit of one of the providers).
+	// A longer text is refused.
+	smsMaxSegments = 10
 )
 
 // Send sends the message.
+//
+// A text that fits one segment is an sms. A longer text is promoted to a text only mms: the type is mms, the price is the
+// mms rate for each recipient (whatever the segment count and whatever the provider finally sends) and the targets
+// carry the segment count of the text in parts. The type and the parts are decided here, before the message is created,
+// because the message_created event, which the billing reads, is published when the message is created.
 func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "Send",
-		"customer_id":  customerID,
-		"source":       source,
-		"destinations": destinations,
+		"func":        "Send",
+		"customer_id": customerID,
+		"recipients":  len(destinations),
 	})
 	log.Debugf("Sending the message. message_len: %d", len(text))
 
@@ -31,27 +49,44 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 		return nil, fmt.Errorf("customer identity verification required to send message")
 	}
 
+	if source == nil {
+		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameMessageManager, "SOURCE_REQUIRED", "The source is required.")
+	}
+	if len(destinations) == 0 {
+		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameMessageManager, "DESTINATION_REQUIRED", "At least one destination is required.")
+	}
+
 	// Canonicalize source/destinations through the shared address normalization
 	// authority so BOTH the persisted message and the provider wire value are in
 	// canonical form. NormalizeTarget is loss-proof (an alphanumeric/sentinel
 	// sender with no digit is preserved verbatim), so the error is discarded.
-	// Nil-guard the source pointer; normalize destinations by index.
 	normalizeSendAddresses(source, destinations)
+
+	count := segmenthandler.Count(text)
+	if count.Segments > smsMaxSegments {
+		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameMessageManager, "TEXT_TOO_LONG", fmt.Sprintf("The text of a message without media can have at most %d segments.", smsMaxSegments))
+	}
+
+	promoted := count.Segments > smsPromoteSegments
+	msgType := message.TypeSMS
+	refType := bmbilling.ReferenceTypeSMS
+	if promoted {
+		msgType = message.TypeMMS
+		refType = bmbilling.ReferenceTypeMMS
+	}
 
 	// create targets
 	targets := []target.Target{}
 	for _, destination := range destinations {
-		t := target.Target{
+		targets = append(targets, target.Target{
 			Destination: destination,
 			Status:      target.StatusQueued,
-		}
-
-		targets = append(targets, t)
+			Parts:       count.Segments,
+		})
 	}
 
-	// check the balance
-	count := len(targets)
-	valid, err := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID, bmbilling.ReferenceTypeSMS, "", count)
+	// check the balance with the type that is stored
+	valid, err := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID, refType, "", len(targets))
 	if err != nil {
 		log.Errorf("Could not validate the customer's balance. err: %v", err)
 		return nil, errors.Wrap(err, "could not validate the customer's balance")
@@ -61,41 +96,26 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 		return nil, fmt.Errorf("insufficient balance for message")
 	}
 
-	// select provider
-	// currently, we use the messagebird only
-	provider := message.ProviderNameMessagebird
-
-	res, err := h.Create(ctx, id, customerID, source, targets, provider, text, message.DirectionOutbound)
+	// the first provider of the chain is recorded; the final write of the dispatch replaces it with the provider that
+	// accepted the most targets.
+	res, err := h.create(ctx, id, customerID, source, targets, message.ProviderNameTelnyx, text, message.DirectionOutbound, msgType)
 	if err != nil {
 		log.Errorf("Could not create a new message. err: %v", err)
 		return nil, err
 	}
 
-	// send the message
-	go func() {
+	if promoted {
+		promPromotedMessagesTotal.WithLabelValues(strconv.Itoa(count.Segments)).Inc()
+	}
 
-		handlers := map[message.ProviderName]func(context.Context, uuid.UUID, *commonaddress.Address, []target.Target, string) ([]target.Target, error){
-			message.ProviderNameTelnyx:      h.messageHandlerTelnyx.SendMessage,
-			message.ProviderNameMessagebird: h.messageHandlerMessagebird.SendMessage,
-		}
-
-		for providerName, handler := range handlers {
-			tmp, err := handler(ctx, res.ID, source, targets, text)
-			if err != nil {
-				log.Errorf("Could not send the message correctly. handler: %s, err: %v", providerName, err)
-				continue
-			}
-
-			updatedTmp, err := h.dbUpdateTargets(ctx, res.ID, providerName, tmp)
-			if err != nil {
-				log.Errorf("Could not update the message targets. handler: %s, err: %v", providerName, err)
-				return
-			}
-
-			log.Debugf("Sent the message correctly. provider_name: %s, message_id: %s", providerName, updatedTmp.ID)
-			return
-		}
-	}()
+	// the goroutine gets its own copies, so it shares nothing with the stored message.
+	sourceCopy := *source
+	targetsCopy := append([]target.Target(nil), targets...)
+	if promoted {
+		go h.dispatchMMS(ctx, res.ID, &sourceCopy, targetsCopy, text, nil, true)
+	} else {
+		go h.dispatchSMS(ctx, res.ID, &sourceCopy, targetsCopy, text)
+	}
 
 	return res, nil
 }

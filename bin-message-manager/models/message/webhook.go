@@ -18,7 +18,7 @@ type WebhookMessage struct {
 
 	// from/to info
 	Source  *commonaddress.Address `json:"source"`
-	Targets []target.Target        `json:"targets"`
+	Targets []target.WebhookTarget `json:"targets"`
 
 	// message info
 	Text      string    `json:"text"`             // Text delivered in the body of the message.
@@ -38,7 +38,7 @@ func (h *Message) ConvertWebhookMessage() *WebhookMessage {
 		Type: h.Type,
 
 		Source:  h.Source,
-		Targets: h.Targets,
+		Targets: target.ConvertWebhookTargets(h.Targets),
 
 		Text:      h.Text,
 		Medias:    h.Medias,

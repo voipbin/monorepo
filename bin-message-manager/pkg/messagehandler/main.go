@@ -15,7 +15,6 @@ import (
 
 	"monorepo/bin-message-manager/models/message"
 	"monorepo/bin-message-manager/pkg/dbhandler"
-	"monorepo/bin-message-manager/pkg/messagehandlermessagebird"
 	"monorepo/bin-message-manager/pkg/requestexternal"
 )
 
@@ -43,8 +42,9 @@ type messageHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	messageHandlerMessagebird messagehandlermessagebird.MessageHandlerMessagebird
-	messageHandlerTelnyx      MessageHandlerTelnyx
+	// smsProviders is the ordered sms provider chain: the first provider gets the sms, and only a definitive refusal
+	// goes on to the next one.
+	smsProviders []namedSMSProvider
 
 	mmsTelnyx      MMSProvider
 	mmsMessagebird MMSProvider
@@ -63,8 +63,10 @@ func NewMessageHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHa
 		reqHandler:    r,
 		notifyHandler: n,
 
-		messageHandlerMessagebird: NewMessageHandlerMessagebird(requestExternal),
-		messageHandlerTelnyx:      NewMessageHandlerTelnyx(requestExternal),
+		smsProviders: []namedSMSProvider{
+			{name: message.ProviderNameTelnyx, provider: NewSMSTelnyx(requestExternal)},
+			{name: message.ProviderNameMessagebird, provider: NewSMSMessagebird(requestExternal)},
+		},
 
 		mmsTelnyx:      NewMMSTelnyx(requestExternal),
 		mmsMessagebird: NewMMSMessagebird(requestExternal),
@@ -104,6 +106,66 @@ var (
 		[]string{"provider", "reason"},
 	)
 
+	promSegmentMismatchTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "segment_mismatch_total",
+			Help:      "Total number of targets whose segment count reported by an sms provider differs from the platform count.",
+		},
+		[]string{"provider"},
+	)
+
+	promReceiptUnmatchedTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "receipt_unmatched_total",
+			Help:      "Total number of delivery receipts that matched no message.",
+		},
+	)
+
+	promFinalWriteFailedTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "dispatch_final_write_failed_total",
+			Help:      "Total number of dispatches whose final result could not be written, so the targets stay queued.",
+		},
+	)
+
+	promEventDroppedTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "event_dropped_total",
+			Help:      "Total number of message_updated events that were dropped because the message could not be read.",
+		},
+	)
+
+	promPromotedMessagesTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "promoted_messages_total",
+			Help:      "Total number of texts promoted to a text only mms, by segment count.",
+		},
+		[]string{"segments"},
+	)
+
+	promPromotedMMSTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "promoted_mms_total",
+			Help:      "Total number of mms requests of promoted messages, by provider and outcome.",
+		},
+		[]string{"provider", "outcome"},
+	)
+
+	promPromotedFallbackTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "promoted_fallback_total",
+			Help:      "Total number of targets of promoted messages that were sent as sms segments, by reason and segment count.",
+		},
+		[]string{"reason", "segments"},
+	)
+
 	promInboundMediaTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
@@ -130,5 +192,12 @@ func init() {
 		promMMSTargetFailedTotal,
 		promMMSMediaCheckSeconds,
 		promInboundMediaTotal,
+		promSegmentMismatchTotal,
+		promReceiptUnmatchedTotal,
+		promFinalWriteFailedTotal,
+		promEventDroppedTotal,
+		promPromotedMessagesTotal,
+		promPromotedMMSTotal,
+		promPromotedFallbackTotal,
 	)
 }

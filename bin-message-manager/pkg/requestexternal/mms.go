@@ -31,14 +31,23 @@ const (
 // ProviderError is returned when a provider answered an MMS request with a non 2xx status.
 // It carries the provider name and the status only: the response body is dropped on purpose,
 // because it can echo the media URLs, which must not reach the logs.
+//
+// The SMS requests may also carry Detail: the error code and description that the provider gave, with
+// long digit runs masked and cut to a safe length (see providerErrorDetail). The MMS requests never set
+// it.
 type ProviderError struct {
 	Provider   string
 	StatusCode int
+	Detail     string
 }
 
 // Error implements the error interface.
 func (e *ProviderError) Error() string {
-	return fmt.Sprintf("%s refused the request. status_code: %d", e.Provider, e.StatusCode)
+	if e.Detail == "" {
+		return fmt.Sprintf("%s refused the request. status_code: %d", e.Provider, e.StatusCode)
+	}
+
+	return fmt.Sprintf("%s refused the request. status_code: %d, detail: %s", e.Provider, e.StatusCode, e.Detail)
 }
 
 // IsDefinitiveRejection returns true if the error proves that the provider refused the request,
@@ -61,7 +70,7 @@ func (h *requestExternal) TelnyxSendMMS(ctx context.Context, source string, dest
 		To        string   `json:"to"`
 		Text      string   `json:"text,omitempty"`
 		Type      string   `json:"type"`
-		MediaURLs []string `json:"media_urls"`
+		MediaURLs []string `json:"media_urls,omitempty"`
 	}{
 		From:      source,
 		To:        destination,
