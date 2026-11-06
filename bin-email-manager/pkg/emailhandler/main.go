@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-email-manager/models/email"
 	"monorepo/bin-email-manager/pkg/dbhandler"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -22,6 +23,13 @@ type emailHandler struct {
 
 	engineSendgrid EngineSendgrid
 	engineMailgun  EngineMailgun
+
+	// mailgunWebhookSigningKey verifies the Mailgun webhook signature.
+	// An empty key rejects every Mailgun webhook.
+	mailgunWebhookSigningKey string
+
+	// timeNow is the clock of the webhook timestamp check. nil means time.Now.
+	timeNow func() time.Time
 }
 
 type EmailHandler interface {
@@ -61,6 +69,7 @@ func NewEmailHandler(
 
 	sendgridAPIKey string,
 	mailgunAPIKey string,
+	mailgunWebhookSigningKey string,
 ) EmailHandler {
 
 	engineSendgrid := NewEngineSendgrid(reqHandler, sendgridAPIKey)
@@ -74,6 +83,8 @@ func NewEmailHandler(
 
 		engineSendgrid: engineSendgrid,
 		engineMailgun:  engineMailgun,
+
+		mailgunWebhookSigningKey: mailgunWebhookSigningKey,
 	}
 	return h
 }

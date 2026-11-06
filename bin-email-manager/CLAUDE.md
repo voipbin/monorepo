@@ -45,6 +45,7 @@ RABBITMQ_ADDRESS="amqp://guest:guest@localhost:5672" \
 REDIS_ADDRESS="127.0.0.1:6379" \
 SENDGRID_API_KEY="SG.xxx" \
 MAILGUN_API_KEY="xxx" \
+MAILGUN_WEBHOOK_SIGNING_KEY="xxx" \
 ./bin/email-manager
 ```
 

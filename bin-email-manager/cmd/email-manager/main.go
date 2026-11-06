@@ -148,7 +148,11 @@ func run(dbHandler dbhandler.DBHandler, cfg *config.Config) {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameEmailEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	emailHandler := emailhandler.NewEmailHandler(dbHandler, reqHandler, notifyHandler, cfg.SendgridAPIKey, cfg.MailgunAPIKey)
+	if cfg.MailgunWebhookSigningKey == "" {
+		log.Warn("The mailgun webhook signing key is not configured. All the mailgun webhooks will be rejected.")
+	}
+
+	emailHandler := emailhandler.NewEmailHandler(dbHandler, reqHandler, notifyHandler, cfg.SendgridAPIKey, cfg.MailgunAPIKey, cfg.MailgunWebhookSigningKey)
 
 	// run listen
 	if errListen := runListen(sockHandler, emailHandler); errListen != nil {
