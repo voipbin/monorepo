@@ -55,7 +55,7 @@ Impact and hidden assumptions found (each one is resolved in section 2):
 4. `config.Config` accepts the three values as command line flags too (viper). The env source of the resolver
    is the viper value (flag or env). Otherwise a flag-only deployment would change silently (decision E3).
 5. The master key env is new (decision M1 to M3). `bin-email-manager/komodo/docker-compose.yml` cannot name a
-   Komodo variable that may not exist yet. `k8s/deployment.yml` carries `SENDGRID_API_KEY` and
+   deployment variable that may not exist yet. `k8s/deployment.yml` carries `SENDGRID_API_KEY` and
    `MAILGUN_API_KEY` (lines 64-73) but not the signing key, and is the legacy manifest; the master key is not
    added there.
 6. `email-control` today builds Redis and RabbitMQ for every email command (`initHandler`). The new `config`
@@ -85,7 +85,7 @@ Impact and hidden assumptions found (each one is resolved in section 2):
     update: `bin-email-manager/CLAUDE.md`, `docs/operations.md` (config table), `docs/domain.md`,
     `docs/dependencies.md`, and `bin-common-handler/CLAUDE.md` plus `docs/architecture.md`.
 
-Unverified: runtime behavior of Komodo with an undefined `[[VARIABLE]]` reference, and the replica count
+Unverified: runtime behavior of the deployment tool with an undefined `[[VARIABLE]]` reference, and the number of running copies
 (not checked from the repository). Both are avoided by decision M3 (the compose file is not changed in this PR).
 
 ## 2. Design (direction and decisions)
@@ -202,7 +202,7 @@ Adapters (no data migration): `JoinSplit`/`SplitBlob` (ai MCP columns), `PackVer
   CLI can write what the daemon reads). Existing key lists are not reused (rotation scope stays separate).
 - M2: no key, an unparsable key, or a missing table never stops the daemon. Only secret writes are refused,
   and a secret row cannot be read.
-- M3: `komodo/docker-compose.yml` is not changed in this PR, because naming a Komodo variable that does not
+- M3: `komodo/docker-compose.yml` is not changed in this PR, because naming a deployment variable that does not
   exist yet may break the stack deploy, and that behavior was not checked. Before the first DB write, the operator
   creates the variable and the compose line is added in a follow-up change. This is called out in the PR description.
 

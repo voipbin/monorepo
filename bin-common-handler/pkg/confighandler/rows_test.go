@@ -3,8 +3,14 @@ package confighandler_test
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/gofrs/uuid"
 
 	"monorepo/bin-common-handler/pkg/confighandler"
 )
@@ -107,17 +113,180 @@ func Test_resolve_boolMember(t *testing.T) {
 	}
 }
 
-func Test_describe_storeErrorOnWriteResult(t *testing.T) {
+// failAfterStore fails every Get from the n-th call on.
+type failAfterStore struct {
+	confighandler.Store
+
+	n     int
+	calls int
+}
+
+func (s *failAfterStore) Get(ctx context.Context, key string) (*confighandler.Row, error) {
+	s.calls++
+	if s.calls >= s.n {
+		return nil, errors.New("database is down")
+	}
+
+	return s.Store.Get(ctx, key)
+}
+
+// A write that is committed but cannot be read back is reported as stored, not as a failed write,
+// so that a caller does not retry a change that already happened.
+func Test_write_readBackFailureIsReportedAsStored(t *testing.T) {
+	ctx := context.Background()
+
+	tests := []struct {
+		name string
+		run  func(h confighandler.Handler) error
+		// failAt is the number of the Get call that fails: the first one is the read of the existing row.
+		failAt int
+	}{
+		{name: "set", failAt: 2, run: func(h confighandler.Handler) error {
+			_, err := h.Set(ctx, testActor, "a.limit", "5")
+			return err
+		}},
+		{name: "clear", failAt: 2, run: func(h confighandler.Handler) error {
+			_, err := h.Clear(ctx, testActor, "a.limit")
+			return err
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture(t, testKeyList(1, 1))
+			f.putValueRow("a.limit", "int", `3`)
+
+			wrapped := &failAfterStore{Store: f.store, n: tt.failAt}
+			h := confighandler.NewHandler(testRegistry(t), wrapped, f.crypto, func(string) (string, bool) { return "", false }, testTable)
+
+			err := tt.run(h)
+			if err == nil || !strings.Contains(err.Error(), "is stored, but reading it back failed") {
+				t.Errorf("Wrong match. expect: stored but unreadable, got: %v", err)
+			}
+			if len(f.store.Histories()) != 1 {
+				t.Errorf("Wrong match. expect: the change to be committed, histories: %d", len(f.store.Histories()))
+			}
+		})
+	}
+}
+
+func Test_write_canceledContext(t *testing.T) {
+	f := newFixture(t, testKeyList(1, 1))
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	if _, err := f.h.Set(ctx, testActor, "a.limit", "5"); !errors.Is(err, context.Canceled) {
+		t.Errorf("Wrong match. expect: canceled, got: %v", err)
+	}
+	if _, err := f.h.Clear(ctx, testActor, "a.limit"); !errors.Is(err, context.Canceled) {
+		t.Errorf("Wrong match. expect: canceled, got: %v", err)
+	}
+	if f.store.GetCalls != 0 || len(f.store.Histories()) != 0 {
+		t.Errorf("Wrong match. a canceled write touched the store: %d, %d", f.store.GetCalls, len(f.store.Histories()))
+	}
+}
+
+// Members of an atomic group: a read error of the member row is an error, never "no row", and
+// env_shadowed follows the source (a member without its own row is default and not shadowed).
+func Test_resolve_groupMemberRows(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("member read error is an error", func(t *testing.T) {
+		f := newFixture(t, testKeyList(1, 1))
+		f.putSecretRow(t, "p.api_key", "db-key", testTable, 1)
+		f.store.GetErrByKey = map[string]error{"p.model": errors.New("database is down")}
+		f.env["P_MODEL"] = "env-model"
+
+		model, res, err := f.h.String(ctx, "p.model")
+		if err == nil || model != "" || res.Source == confighandler.SourceDefault || res.Source == confighandler.SourceEnv {
+			t.Errorf("Wrong match. expect: error and no value, got: %q %s %v", model, res.Source, err)
+		}
+	})
+
+	t.Run("member without a row is default and not shadowed", func(t *testing.T) {
+		f := newFixture(t, testKeyList(1, 1))
+		f.putSecretRow(t, "p.api_key", "db-key", testTable, 1)
+		f.env["P_MODEL"] = "env-model"
+
+		model, res, err := f.h.String(ctx, "p.model")
+		if err != nil || model != "model-default" || res.Source != confighandler.SourceDefault || res.EnvShadowed {
+			t.Errorf("Wrong match. got: %q %s shadowed=%v %v", model, res.Source, res.EnvShadowed, err)
+		}
+	})
+
+	t.Run("member with a row and an environment value is shadowed", func(t *testing.T) {
+		f := newFixture(t, testKeyList(1, 1))
+		f.putSecretRow(t, "p.api_key", "db-key", testTable, 1)
+		f.putValueRow("p.model", "string", `"db-model"`)
+		f.env["P_MODEL"] = "env-model"
+
+		model, res, err := f.h.String(ctx, "p.model")
+		if err != nil || model != "db-model" || res.Source != confighandler.SourceDB || !res.EnvShadowed {
+			t.Errorf("Wrong match. got: %q %s shadowed=%v %v", model, res.Source, res.EnvShadowed, err)
+		}
+	})
+}
+
+// The create time is kept by later writes while the update time follows the clock.
+func Test_write_keepsCreateTime(t *testing.T) {
 	ctx := context.Background()
 	f := newFixture(t, testKeyList(1, 1))
 
-	// the write succeeds, then reading back for the result fails: the error is returned.
-	f.store.GetErr = nil
-	if _, err := f.h.Set(ctx, testActor, "a.limit", "5"); err != nil {
+	if _, err := f.h.Set(ctx, testActor, "a.limit", "10"); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	f.store.GetErr = errors.New("database is down")
-	if _, err := f.h.Clear(ctx, testActor, "a.limit"); err == nil {
-		t.Errorf("Wrong match. expect: error, got: nil")
+	later := testNow.Add(time.Hour)
+	n := 100
+	confighandler.SetClock(f.h, func() time.Time { return later }, func() uuid.UUID {
+		n++
+		return uuid.FromStringOrNil(fmt.Sprintf("00000000-0000-4000-8000-%012d", n))
+	})
+	if _, err := f.h.Set(ctx, testActor, "a.limit", "20"); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	row, _ := f.store.Get(ctx, "a.limit")
+	if !row.TMCreate.Equal(testNow) || !row.TMUpdate.Equal(later) {
+		t.Errorf("Wrong match. expect: create %v update %v, got: %v %v", testNow, later, row.TMCreate, row.TMUpdate)
+	}
+}
+
+// Concurrent writers are last-writer-wins: every write succeeds or reports a conflict, nothing
+// is lost silently and the race detector stays quiet.
+func Test_write_concurrent(t *testing.T) {
+	ctx := context.Background()
+	f := newFixture(t, testKeyList(1, 1))
+
+	// the id source of the fixture is not safe for concurrent use
+	var idCounter atomic.Int64
+	confighandler.SetClock(f.h, func() time.Time { return testNow }, func() uuid.UUID {
+		return uuid.FromStringOrNil(fmt.Sprintf("00000000-0000-4000-8000-%012d", idCounter.Add(1)))
+	})
+
+	var wg sync.WaitGroup
+	results := make(chan error, 8)
+	for i := 0; i < 8; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			_, err := f.h.Set(ctx, testActor, "a.limit", fmt.Sprintf("%d", 10+i))
+			results <- err
+		}(i)
+	}
+	wg.Wait()
+	close(results)
+
+	ok := 0
+	for err := range results {
+		switch {
+		case err == nil:
+			ok++
+		case !errors.Is(err, confighandler.ErrConflict):
+			t.Errorf("Wrong match. expect: ok or conflict, got: %v", err)
+		}
+	}
+
+	row, err := f.store.Get(ctx, "a.limit")
+	if err != nil || int(row.Revision) != ok || len(f.store.Histories()) != ok {
+		t.Errorf("Wrong match. expect: revision and histories equal to the %d successful writes, got: %v %v %d", ok, row, err, len(f.store.Histories()))
 	}
 }

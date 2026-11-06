@@ -210,6 +210,18 @@ func Test_configStore_errors(t *testing.T) {
 	}
 }
 
+func Test_nullValues(t *testing.T) {
+	if nullString(nil) != nil || nullString([]byte{}) != nil || nullBytes(nil) != nil || nullBytes([]byte{}) != nil {
+		t.Errorf("Wrong match. expect: NULL for nil and empty input")
+	}
+	if nullString([]byte(`"x"`)) != `"x"` {
+		t.Errorf("Wrong match. expect: the JSON as text")
+	}
+	if b, ok := nullBytes([]byte{1, 2}).([]byte); !ok || len(b) != 2 {
+		t.Errorf("Wrong match. expect: the bytes")
+	}
+}
+
 func Test_isDuplicateKey(t *testing.T) {
 	tests := []struct {
 		name string

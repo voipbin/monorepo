@@ -54,8 +54,6 @@ func (h *handler) resolve(ctx context.Context, k Key, get rowGetter) (*resolutio
 	envVal, envSet := h.lookupEnv(k)
 
 	if dbMode {
-		r.res.EnvShadowed = envSet
-
 		row := anchorRow
 		if anchorName != k.Name {
 			row, err = get(ctx, k.Name)
@@ -68,6 +66,9 @@ func (h *handler) resolve(ctx context.Context, k Key, get rowGetter) (*resolutio
 		}
 
 		if row != nil {
+			// shadowed only when the database is the source and the environment value is set.
+			r.res.EnvShadowed = envSet
+
 			return h.fromRow(k, row, r)
 		}
 

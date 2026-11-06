@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -30,6 +31,11 @@ func openMySQLForConfigs(t *testing.T) *sql.DB {
 	dsn := os.Getenv("EMAIL_CONFIG_TEST_MYSQL_DSN")
 	if dsn == "" {
 		t.Skip("EMAIL_CONFIG_TEST_MYSQL_DSN is not set")
+	}
+
+	// the tests empty the configs tables, so only a local database is accepted.
+	if !strings.Contains(dsn, "@tcp(127.0.0.1:") && !strings.Contains(dsn, "@tcp(localhost:") {
+		t.Fatalf("Wrong match. the test database must be local")
 	}
 
 	db, err := sql.Open("mysql", dsn)
@@ -106,6 +112,27 @@ func Test_configStore_mysql_constraints(t *testing.T) {
 	bad2 := &confighandler.Row{Key: "bad-plain", ValueType: "string", ValueJSON: []byte(`"x"`), SecretCiphertext: []byte("0123456789012345678901234567890123456789"), KeyVersion: 1, Revision: 1, TMCreate: now, TMUpdate: now}
 	if err := s.Insert(ctx, bad2, hist("bad-plain")); err == nil {
 		t.Errorf("Wrong match. expect: the CHECK constraint to refuse a plain row with a secret")
+	}
+
+	// more constraints of the row and of the history
+	checks := []struct {
+		name string
+		stmt string
+	}{
+		{"secret row with key version 0", "insert into email_configs (config_key, value_type, secret_ciphertext, key_version, revision, tm_create, tm_update) values ('c1', 'secret', 'x', 0, 1, now(6), now(6))"},
+		{"plain row with a key version", "insert into email_configs (config_key, value_type, value_json, key_version, revision, tm_create, tm_update) values ('c2', 'string', '\"x\"', 1, 1, now(6), now(6))"},
+		{"JSON null value", "insert into email_configs (config_key, value_type, value_json, key_version, revision, tm_create, tm_update) values ('c3', 'string', 'null', 0, 1, now(6), now(6))"},
+		{"unknown value type", "insert into email_configs (config_key, value_type, value_json, key_version, revision, tm_create, tm_update) values ('c4', 'blob', '\"x\"', 0, 1, now(6), now(6))"},
+		{"unknown history action", "insert into email_config_histories (id, config_key, action, is_secret, old_key_version, new_key_version, actor_id, source, tm_create) values (unhex(replace(uuid(),'-','')), 'k', 'drop', 0, 0, 0, unhex(replace(uuid(),'-','')), 'cli', now(6))"},
+		{"unknown history source", "insert into email_config_histories (id, config_key, action, is_secret, old_key_version, new_key_version, actor_id, source, tm_create) values (unhex(replace(uuid(),'-','')), 'k', 'set', 0, 0, 0, unhex(replace(uuid(),'-','')), 'web', now(6))"},
+	}
+	for _, c := range checks {
+		if _, err := db.Exec(c.stmt); err == nil {
+			t.Errorf("Wrong match. %s: expect the constraint to refuse the row", c.name)
+		}
+	}
+	if _, err := db.Exec("insert into email_config_histories (id, config_key, action, is_secret, old_value_json, new_value_json, old_key_version, new_key_version, actor_id, source, tm_create) values (unhex(replace(uuid(),'-','')), 'k', 'set', 0, '1', '2', 0, 0, unhex(replace(uuid(),'-','')), 'cli', now(6))"); err != nil {
+		t.Errorf("Wrong match. a plain history row with values must be accepted, got: %v", err)
 	}
 
 	// a history row of a secret that carries a value is refused, and the row insert is undone

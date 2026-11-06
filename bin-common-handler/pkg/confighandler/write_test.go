@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -451,5 +450,4 @@ func Test_NewHandler_nilEnvAndCrypto(t *testing.T) {
 	if _, err := h.SetSecret(ctx, testActor, "s.token", "abc"); !errors.Is(err, confighandler.ErrKeyNotConfigured) {
 		t.Errorf("Wrong match. expect: ErrKeyNotConfigured, got: %v", err)
 	}
-	_ = time.Now
 }

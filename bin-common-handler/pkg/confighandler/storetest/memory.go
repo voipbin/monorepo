@@ -18,8 +18,10 @@ type Memory struct {
 	hists []*confighandler.History
 
 	// GetErr and ListErr are returned by Get and List when set.
-	GetErr  error
-	ListErr error
+	GetErr error
+	// GetErrByKey is returned by Get for the given key only.
+	GetErrByKey map[string]error
+	ListErr     error
 
 	// ConflictWrites is the number of following Insert, Update and Delete calls that return
 	// ErrConflict without changing anything.
@@ -66,6 +68,9 @@ func (m *Memory) Get(_ context.Context, key string) (*confighandler.Row, error) 
 	m.GetCalls++
 	if m.GetErr != nil {
 		return nil, m.GetErr
+	}
+	if err := m.GetErrByKey[key]; err != nil {
+		return nil, err
 	}
 
 	r, ok := m.rows[key]

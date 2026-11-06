@@ -57,7 +57,7 @@ func isDuplicateKey(err error) bool {
 }
 
 func nullString(b []byte) any {
-	if b == nil {
+	if len(b) == 0 {
 		return nil
 	}
 
@@ -66,7 +66,7 @@ func nullString(b []byte) any {
 }
 
 func nullBytes(b []byte) any {
-	if b == nil {
+	if len(b) == 0 {
 		return nil
 	}
 

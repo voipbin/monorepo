@@ -440,10 +440,18 @@ func Test_PackUnpackVersioned(t *testing.T) {
 	if _, err := PackVersioned(1, blob[:27]); !errors.Is(err, ErrMalformed) {
 		t.Errorf("Wrong match. expect: ErrMalformed, got: %v", err)
 	}
-	if _, _, err := UnpackVersioned(make([]byte, 29)); !errors.Is(err, ErrMalformed) {
+	if _, _, err := UnpackVersioned(make([]byte, 60)); !errors.Is(err, ErrMalformed) {
 		t.Errorf("Wrong match. version 0 expect: ErrMalformed, got: %v", err)
 	}
 	if _, _, err := UnpackVersioned(append([]byte{0, 1}, make([]byte, 27)...)); !errors.Is(err, ErrMalformed) {
 		t.Errorf("Wrong match. short expect: ErrMalformed, got: %v", err)
+	}
+}
+
+func Test_New_onlyEmptyEntries(t *testing.T) {
+	for _, raw := range []string{",", " , ,", ",,,"} {
+		if _, err := New(raw); !errors.Is(err, ErrInvalidKeySet) {
+			t.Errorf("Wrong match. raw %q expect: ErrInvalidKeySet, got: %v", raw, err)
+		}
 	}
 }

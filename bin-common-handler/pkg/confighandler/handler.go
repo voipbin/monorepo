@@ -19,6 +19,10 @@ type writeFn func(existing *Row) (*Row, *History)
 // and every write keeps its own history row.
 func (h *handler) write(ctx context.Context, k Key, build writeFn) (*Resolved, error) {
 	for i := 0; i < maxWriteAttempts; i++ {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+
 		existing, err := h.store.Get(ctx, k.Name)
 		if err != nil {
 			if !errors.Is(err, ErrNotFound) {
@@ -44,10 +48,21 @@ func (h *handler) write(ctx context.Context, k Key, build writeFn) (*Resolved, e
 			return nil, err
 		}
 
-		return h.describeOne(ctx, k)
+		return h.describeStored(ctx, k)
 	}
 
 	return nil, fmt.Errorf("%w: key %q", ErrConflict, k.Name)
+}
+
+// describeStored reads back the result of a write that is already committed. A failure here must
+// not look like a failed write, because a caller may retry a failed write.
+func (h *handler) describeStored(ctx context.Context, k Key) (*Resolved, error) {
+	res, err := h.describeOne(ctx, k)
+	if err != nil {
+		return nil, fmt.Errorf("the change of key %q is stored, but reading it back failed: %w", k.Name, err)
+	}
+
+	return res, nil
 }
 
 func (h *handler) newHistory(k Key, action string, actor uuid.UUID) *History {
@@ -169,6 +184,10 @@ func (h *handler) Clear(ctx context.Context, actor uuid.UUID, key string) (*Reso
 	}
 
 	for i := 0; i < maxWriteAttempts; i++ {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+
 		existing, err := h.store.Get(ctx, k.Name)
 		if err != nil {
 			if errors.Is(err, ErrNotFound) {
@@ -193,7 +212,7 @@ func (h *handler) Clear(ctx context.Context, actor uuid.UUID, key string) (*Reso
 			return nil, err
 		}
 
-		return h.describeOne(ctx, k)
+		return h.describeStored(ctx, k)
 	}
 
 	return nil, fmt.Errorf("%w: key %q", ErrConflict, k.Name)

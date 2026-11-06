@@ -31,6 +31,8 @@ printf '%s' "$VALUE" | ./bin/email-control config set --key mailgun.api_key --ac
 ```
 The value is read from stdin only. The tables are created by the daemon's migration at its start (on a local database run `./bin/email-control migrate up` first). `EMAIL_CONFIG_ENCRYPTION_KEYS` must be set for `set`.
 
+The credentials are read from the database at the time of use. Two consequences: `email-control email ...` commands that send need the two tables too, so deploy the daemon (which applies the migration) first; and a database outage makes a send fail with an error instead of using the environment variable (it is never replaced by an empty key). A database without rows behaves as before.
+
 **Delete an email:**
 ```bash
 ./bin/email-control email delete --id <uuid>

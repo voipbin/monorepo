@@ -168,7 +168,9 @@ func Test_readValue(t *testing.T) {
 		{name: "plain", in: "abc", expect: "abc"},
 		{name: "one newline", in: "abc\n", expect: "abc"},
 		{name: "crlf", in: "abc\r\n", expect: "abc"},
-		{name: "two newlines keep one", in: "abc\n\n", expect: "abc\n"},
+		{name: "two newlines are refused", in: "abc\n\n", expectErr: true},
+		{name: "inner newline is refused", in: "ab\ncd\n", expectErr: true},
+		{name: "inner carriage return is refused", in: "ab\rcd", expectErr: true},
 		{name: "exactly the limit", in: strings.Repeat("a", maxStdinBytes), expect: strings.Repeat("a", maxStdinBytes)},
 		{name: "one over the limit", in: strings.Repeat("a", maxStdinBytes+1), expectErr: true},
 	}

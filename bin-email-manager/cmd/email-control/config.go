@@ -83,7 +83,8 @@ func cmdConfigSet() *cobra.Command {
 		Use:   "set",
 		Short: "Store the value of a key; the value is read from stdin",
 		Long: `Store the value of a key. The value is read from stdin, never from an argument, so it does
-not appear in the process list or in the shell history. One trailing newline is removed.`,
+not appear in the process list or in the shell history. Pipe the value in, or end the input with
+Ctrl-D. One trailing newline is removed; a value with more than one line is refused.`,
 		RunE: runConfigSet,
 	}
 
@@ -150,6 +151,12 @@ func readValue(r io.Reader) (string, error) {
 	val := string(data)
 	val = strings.TrimSuffix(val, "\n")
 	val = strings.TrimSuffix(val, "\r")
+
+	// a credential is one line; a pasted multi-line text is a mistake that would surface only as an
+	// authentication error at the provider.
+	if strings.ContainsAny(val, "\r\n") {
+		return "", errors.New("the value on stdin has more than one line")
+	}
 
 	return val, nil
 }

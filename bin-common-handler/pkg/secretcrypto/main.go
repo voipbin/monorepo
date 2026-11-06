@@ -125,6 +125,10 @@ func New(raw string, opts ...Option) (*Crypto, error) {
 		res.keys[version] = key
 	}
 
+	if len(res.keys) == 0 {
+		return nil, fmt.Errorf("%w: the list has no entry", ErrInvalidKeySet)
+	}
+
 	versions := res.Versions()
 	if len(versions) > 0 {
 		res.currentVersion = versions[len(versions)-1]
