@@ -192,8 +192,11 @@ func Test_Hook_mailgunURI(t *testing.T) {
 
 	// strict mocks without expectations: an event without the email id must not touch the db or publish
 	h, _ := newErrorPathHandler(mc)
+	h.mailgunWebhookSigningKey = testMailgunSigningKey
+	h.timeNow = testMailgunNow
 
-	if err := h.Hook(context.Background(), "hook.example.com/v1.0/emails/mailgun", []byte(`{"event":"delivered"}`)); err != nil {
+	data := []byte(`{"signature":` + mailgunTestSignature() + `,"event":"delivered"}`)
+	if err := h.Hook(context.Background(), "hook.example.com/v1.0/emails/mailgun", data); err != nil {
 		t.Errorf("Expected nil for a mailgun uri. got: %v", err)
 	}
 }

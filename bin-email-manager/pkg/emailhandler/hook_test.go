@@ -2,6 +2,9 @@ package emailhandler
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -11,6 +14,7 @@ import (
 	"monorepo/bin-email-manager/pkg/dbhandler"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -140,16 +144,58 @@ func Test_hookSendgrid(t *testing.T) {
 
 const testMailgunEmailID = "5e8f0f0a-8888-4888-8888-000000000001"
 
-// mailgunTestPayload builds a webhook body with fixed, synthetic values.
-func mailgunTestPayload(event string, severity string, vars string, wrapped bool) []byte {
+const (
+	testMailgunSigningKey = "synthetic-signing-key"
+	testMailgunTimestamp  = "1770146431"
+	testMailgunToken      = "synthetic-token-0123456789"
+)
+
+// testMailgunNow is 69 seconds after testMailgunTimestamp.
+func testMailgunNow() time.Time { return time.Unix(1770146500, 0) }
+
+// mailgunTestSign returns the hex HMAC-SHA256 of timestamp+token.
+func mailgunTestSign(key string, timestamp string, token string) string {
+	mac := hmac.New(sha256.New, []byte(key))
+	mac.Write([]byte(timestamp + token))
+	return hex.EncodeToString(mac.Sum(nil))
+}
+
+// mailgunTestSignature returns a valid "signature" object (JSON) for the test key.
+func mailgunTestSignature() string {
+	return mailgunTestSignatureWith(`"`+testMailgunTimestamp+`"`, testMailgunToken, mailgunTestSign(testMailgunSigningKey, testMailgunTimestamp, testMailgunToken))
+}
+
+// mailgunTestSignatureWith builds the "signature" object from raw JSON timestamp, token and signature.
+func mailgunTestSignatureWith(timestampJSON string, token string, signature string) string {
+	return `{"timestamp":` + timestampJSON + `,"token":"` + token + `","signature":"` + signature + `"}`
+}
+
+// mailgunTestPayloadSigned builds a webhook body with fixed, synthetic values
+// and the given "signature" object (JSON, empty for none).
+func mailgunTestPayloadSigned(event string, severity string, vars string, wrapped bool, signature string) []byte {
 	ev := `"event":"` + event + `","id":"synthetic-event-id","timestamp":1770146431.65,"recipient":"user@example.com","message":{"headers":{"message-id":"synthetic-message-id@example.com"}},"user-variables":` + vars
 	if severity != "" {
 		ev += `,"severity":"` + severity + `","reason":"generic"`
 	}
-	if wrapped {
-		return []byte(`{"signature":{"timestamp":"1770146431","token":"synthetic-token","signature":"synthetic-signature"},"event-data":{` + ev + `}}`)
+	sig := ""
+	if signature != "" {
+		sig = `"signature":` + signature
 	}
-	return []byte(`{` + ev + `}`)
+	if wrapped {
+		if sig != "" {
+			sig += ","
+		}
+		return []byte(`{` + sig + `"event-data":{` + ev + `}}`)
+	}
+	if sig != "" {
+		sig += ","
+	}
+	return []byte(`{` + sig + ev + `}`)
+}
+
+// mailgunTestPayload builds a webhook body signed with the test key.
+func mailgunTestPayload(event string, severity string, vars string, wrapped bool) []byte {
+	return mailgunTestPayloadSigned(event, severity, vars, wrapped, mailgunTestSignature())
 }
 
 func Test_hookMailgun_status(t *testing.T) {
@@ -183,8 +229,10 @@ func Test_hookMailgun_status(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &emailHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				db:                       mockDB,
+				mailgunWebhookSigningKey: testMailgunSigningKey,
+				timeNow:                  testMailgunNow,
+				notifyHandler:            mockNotify,
 			}
 			ctx := context.Background()
 			customerID := uuid.FromStringOrNil("5e8f0f0a-8888-4888-8888-0000000000c1")
@@ -219,7 +267,7 @@ func Test_hookMailgun_noUpdate(t *testing.T) {
 		{"user_variables_missing_id", mailgunTestPayload("delivered", "", `{"other":"x"}`, true), false},
 		{"user_variables_invalid_id", mailgunTestPayload("delivered", "", `{"voipbin_message_id":"not-a-uuid"}`, true), false},
 		{"user_variables_not_a_string", mailgunTestPayload("delivered", "", `{"voipbin_message_id":123}`, true), false},
-		{"user_variables_absent", []byte(`{"event":"delivered"}`), false},
+		{"user_variables_absent", []byte(`{"signature":` + mailgunTestSignature() + `,"event":"delivered"}`), false},
 	}
 
 	for _, tt := range tests {
@@ -230,8 +278,10 @@ func Test_hookMailgun_noUpdate(t *testing.T) {
 			// strict mocks: no notify, no get
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			h := &emailHandler{
-				db:            mockDB,
-				notifyHandler: notifyhandler.NewMockNotifyHandler(mc),
+				db:                       mockDB,
+				mailgunWebhookSigningKey: testMailgunSigningKey,
+				timeNow:                  testMailgunNow,
+				notifyHandler:            notifyhandler.NewMockNotifyHandler(mc),
 			}
 			ctx := context.Background()
 
@@ -257,7 +307,7 @@ func Test_hookMailgun_errors(t *testing.T) {
 		setup func(db *dbhandler.MockDBHandler)
 	}{
 		{"invalid_json", []byte(`not json`), func(db *dbhandler.MockDBHandler) {}},
-		{"no_event", []byte(`{}`), func(db *dbhandler.MockDBHandler) {}},
+		{"no_event", []byte(`{"signature":` + mailgunTestSignature() + `}`), func(db *dbhandler.MockDBHandler) {}},
 		{"update_fails", data, func(db *dbhandler.MockDBHandler) {
 			db.EXPECT().EmailUpdateStatusFrom(gomock.Any(), id, email.StatusDelivered, gomock.Any()).Return(false, errors.New("db down"))
 		}},
@@ -274,8 +324,10 @@ func Test_hookMailgun_errors(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			h := &emailHandler{
-				db:            mockDB,
-				notifyHandler: notifyhandler.NewMockNotifyHandler(mc),
+				db:                       mockDB,
+				mailgunWebhookSigningKey: testMailgunSigningKey,
+				timeNow:                  testMailgunNow,
+				notifyHandler:            notifyhandler.NewMockNotifyHandler(mc),
 			}
 			tt.setup(mockDB)
 

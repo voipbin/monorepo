@@ -92,6 +92,7 @@ func TestInitConfig(t *testing.T) {
 			rootCmd.Flags().String("redis_password", "", "")
 			rootCmd.Flags().String("sendgrid_api_key", "SG.test", "")
 			rootCmd.Flags().String("mailgun_api_key", "mg-test", "")
+			rootCmd.Flags().String("mailgun_webhook_signing_key", "mg-signing-test", "")
 
 			// First call should initialize
 			InitConfig(rootCmd)
@@ -192,5 +193,22 @@ func TestRegisterFlags(t *testing.T) {
 				t.Errorf("Expected database_dsn flag to be registered")
 			}
 		})
+	}
+}
+
+func Test_bindConfig_MailgunWebhookSigningKey(t *testing.T) {
+	t.Setenv("MAILGUN_WEBHOOK_SIGNING_KEY", "synthetic-signing-key")
+
+	once = sync.Once{}
+	globalConfig = Config{}
+
+	rootCmd := &cobra.Command{}
+	if err := bindConfig(rootCmd); err != nil {
+		t.Fatalf("Unexpected error from bindConfig: %v", err)
+	}
+	LoadGlobalConfig()
+
+	if Get().MailgunWebhookSigningKey != "synthetic-signing-key" {
+		t.Errorf("Wrong MailgunWebhookSigningKey. expect: set from the env, got: %q", Get().MailgunWebhookSigningKey)
 	}
 }

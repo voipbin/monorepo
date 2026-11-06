@@ -2,11 +2,16 @@ package emailhandler
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"monorepo/bin-email-manager/models/email"
 	mmailgun "monorepo/bin-email-manager/models/mailgun"
 	"monorepo/bin-email-manager/models/sendgrid"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -149,6 +154,65 @@ func mailgunEmailID(e *mmailgun.Event) uuid.UUID {
 	return uuid.FromStringOrNil(value)
 }
 
+// Mailgun webhook signature timestamp window. Mailgun retries a rejected
+// delivery for about 8 hours, so the window is wider than that.
+const (
+	mailgunSignatureMaxAge  = 24 * time.Hour
+	mailgunSignatureMaxSkew = 5 * time.Minute
+)
+
+// verifyMailgunSignature checks the signature of a Mailgun webhook request:
+// hex(HMAC-SHA256(key=signing key, msg=timestamp+token)) must equal the
+// signature, and the timestamp must be close to the current time.
+// The error never contains the key, the signature, the token or the timestamp.
+func (h *emailHandler) verifyMailgunSignature(sig *mmailgun.Signature) error {
+	if h.mailgunWebhookSigningKey == "" {
+		return errors.New("the mailgun webhook signing key is not configured")
+	}
+	if sig == nil {
+		return errors.New("the signature is missing")
+	}
+	if sig.Token == "" || sig.Signature == "" || len(sig.Timestamp) == 0 {
+		return errors.New("the signature is incomplete")
+	}
+
+	// the timestamp is a string in the documented payload; a bare number is accepted too.
+	// the text is used as is, because it is what was signed.
+	timestamp := string(sig.Timestamp)
+	if strings.HasPrefix(timestamp, `"`) {
+		if errUnmarshal := json.Unmarshal(sig.Timestamp, &timestamp); errUnmarshal != nil {
+			return errors.New("the signature timestamp is invalid")
+		}
+	}
+	seconds, err := strconv.ParseInt(timestamp, 10, 64)
+	if err != nil {
+		return errors.New("the signature timestamp is invalid")
+	}
+
+	got, err := hex.DecodeString(sig.Signature)
+	if err != nil {
+		return errors.New("the signature is not hexadecimal")
+	}
+
+	mac := hmac.New(sha256.New, []byte(h.mailgunWebhookSigningKey))
+	mac.Write([]byte(timestamp + sig.Token))
+	if !hmac.Equal(got, mac.Sum(nil)) {
+		return errors.New("the signature does not match")
+	}
+
+	// checked after the signature so that only a genuine request tells the reason.
+	now := time.Now()
+	if h.timeNow != nil {
+		now = h.timeNow()
+	}
+	age := now.Sub(time.Unix(seconds, 0))
+	if age > mailgunSignatureMaxAge || age < -mailgunSignatureMaxSkew {
+		return errors.New("the signature timestamp is out of the allowed range")
+	}
+
+	return nil
+}
+
 func (h *emailHandler) hookMailgun(ctx context.Context, data []byte) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "hookMailgun",
@@ -160,6 +224,12 @@ func (h *emailHandler) hookMailgun(ctx context.Context, data []byte) error {
 		// the data is not logged because it contains the recipient address.
 		return errors.Wrapf(errUnmarshal, "could not unmarshal the mailgun webhook.")
 	}
+	if errVerify := h.verifyMailgunSignature(hook.Signature); errVerify != nil {
+		// nothing from the request is logged: it carries the recipient address and the signature material.
+		log.Warnf("Rejected the mailgun webhook. reason: %v", errVerify)
+		return errors.Wrapf(errVerify, "could not verify the mailgun webhook signature.")
+	}
+
 	e := &hook.Event
 	if hook.EventData != nil {
 		e = hook.EventData

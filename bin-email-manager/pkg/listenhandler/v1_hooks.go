@@ -11,14 +11,14 @@ import (
 
 // processV1HooksPost handles POST /v1/hooks request
 func (h *listenHandler) processV1HooksPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	// the request is not logged: the hook body carries recipient addresses and webhook signatures.
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1HooksPost",
-		"request": m,
+		"func": "processV1HooksPost",
 	})
 
 	var req request.V1DataHooksPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. err: %v", err)
 		return simpleResponse(400), nil
 	}
 

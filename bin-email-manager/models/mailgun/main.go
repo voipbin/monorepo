@@ -26,8 +26,17 @@ const UserVariableMessageID = "voipbin_message_id"
 // Webhook is the body of a Mailgun webhook request. The event is either under
 // "event-data" (next to "signature") or the body itself.
 type Webhook struct {
-	EventData *Event `json:"event-data,omitempty"`
+	Signature *Signature `json:"signature,omitempty"`
+	EventData *Event     `json:"event-data,omitempty"`
 	Event
+}
+
+// Signature is the "signature" object of a Mailgun webhook request.
+// Timestamp is kept raw because it is the exact text that was signed.
+type Signature struct {
+	Timestamp json.RawMessage `json:"timestamp"`
+	Token     string          `json:"token"`
+	Signature string          `json:"signature"`
 }
 
 // Event is the part of a Mailgun event used by the email manager.

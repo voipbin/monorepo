@@ -8,7 +8,7 @@
 | Mailgun auth failure | Primary provider rejected; SendGrid is tried | `mailgun_api_key` invalid or expired |
 | SendGrid auth failure | Fallback also fails; email stuck | `sendgrid_api_key` invalid or expired |
 | Attachment failure | Email stays `initiated`; no provider sends it | `bin-storage-manager` RPC failed, recording not found or download failed |
-| Webhook status not updated | Email stays at `initiated` or `processed` | `bin-hook-manager` not forwarding; or provider webhook URL misconfigured |
+| Webhook status not updated | Email stays at `initiated` or `processed` | `bin-hook-manager` not forwarding; or provider webhook URL misconfigured; or (Mailgun) `mailgun_webhook_signing_key` empty or different from the key in the Mailgun account (look for `Rejected the mailgun webhook` warnings, which name the reason only) |
 | Cache stale | Old email data returned | Redis out of sync; restart clears cache |
 
 ## Debugging Guide
@@ -91,6 +91,11 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | Metrics listen address |
 | `sendgrid_api_key` | `SENDGRID_API_KEY` | required | SendGrid API key |
 | `mailgun_api_key` | `MAILGUN_API_KEY` | required | Mailgun API key |
+| `mailgun_webhook_signing_key` | `MAILGUN_WEBHOOK_SIGNING_KEY` | required | Mailgun webhook signing key. Used to verify the signature of every Mailgun webhook request |
+
+**Mailgun webhook signature:** a Mailgun webhook is processed only when its `signature` (hex HMAC-SHA256 of `timestamp` + `token` with the signing key) matches and its `timestamp` is within 24 hours in the past and 5 minutes in the future. A request that fails the check changes no email status and publishes no `email_updated` event. If `mailgun_webhook_signing_key` is empty, every Mailgun webhook is rejected and the service logs a warning at start.
+
+**Key rotation:** only one signing key is supported. After the key is changed on the Mailgun side, set the new value and redeploy the service. Webhooks signed with the old key are rejected until the redeploy has finished.
 
 ## Prometheus Metrics
 

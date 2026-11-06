@@ -17,15 +17,16 @@ var (
 
 // Config holds all configuration for the email-manager service
 type Config struct {
-	RabbitMQAddress         string
-	PrometheusEndpoint      string
-	PrometheusListenAddress string
-	DatabaseDSN             string
-	RedisAddress            string
-	RedisPassword           string
-	RedisDatabase           int
-	SendgridAPIKey          string
-	MailgunAPIKey           string
+	RabbitMQAddress          string
+	PrometheusEndpoint       string
+	PrometheusListenAddress  string
+	DatabaseDSN              string
+	RedisAddress             string
+	RedisPassword            string
+	RedisDatabase            int
+	SendgridAPIKey           string
+	MailgunAPIKey            string
+	MailgunWebhookSigningKey string
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -51,17 +52,19 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("redis_database", 0, "Redis database index")
 	f.String("sendgrid_api_key", "", "SendGrid API key")
 	f.String("mailgun_api_key", "", "Mailgun API key")
+	f.String("mailgun_webhook_signing_key", "", "Mailgun webhook signing key")
 
 	bindings := map[string]string{
-		"rabbitmq_address":          "RABBITMQ_ADDRESS",
-		"prometheus_endpoint":       "PROMETHEUS_ENDPOINT",
-		"prometheus_listen_address": "PROMETHEUS_LISTEN_ADDRESS",
-		"database_dsn":              "DATABASE_DSN",
-		"redis_address":             "REDIS_ADDRESS",
-		"redis_password":            "REDIS_PASSWORD",
-		"redis_database":            "REDIS_DATABASE",
-		"sendgrid_api_key":          "SENDGRID_API_KEY",
-		"mailgun_api_key":           "MAILGUN_API_KEY",
+		"rabbitmq_address":            "RABBITMQ_ADDRESS",
+		"prometheus_endpoint":         "PROMETHEUS_ENDPOINT",
+		"prometheus_listen_address":   "PROMETHEUS_LISTEN_ADDRESS",
+		"database_dsn":                "DATABASE_DSN",
+		"redis_address":               "REDIS_ADDRESS",
+		"redis_password":              "REDIS_PASSWORD",
+		"redis_database":              "REDIS_DATABASE",
+		"sendgrid_api_key":            "SENDGRID_API_KEY",
+		"mailgun_api_key":             "MAILGUN_API_KEY",
+		"mailgun_webhook_signing_key": "MAILGUN_WEBHOOK_SIGNING_KEY",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -86,15 +89,16 @@ func Get() *Config {
 func LoadGlobalConfig() {
 	once.Do(func() {
 		globalConfig = Config{
-			RabbitMQAddress:         viper.GetString("rabbitmq_address"),
-			PrometheusEndpoint:      viper.GetString("prometheus_endpoint"),
-			PrometheusListenAddress: viper.GetString("prometheus_listen_address"),
-			DatabaseDSN:             viper.GetString("database_dsn"),
-			RedisAddress:            viper.GetString("redis_address"),
-			RedisPassword:           viper.GetString("redis_password"),
-			RedisDatabase:           viper.GetInt("redis_database"),
-			SendgridAPIKey:          viper.GetString("sendgrid_api_key"),
-			MailgunAPIKey:           viper.GetString("mailgun_api_key"),
+			RabbitMQAddress:          viper.GetString("rabbitmq_address"),
+			PrometheusEndpoint:       viper.GetString("prometheus_endpoint"),
+			PrometheusListenAddress:  viper.GetString("prometheus_listen_address"),
+			DatabaseDSN:              viper.GetString("database_dsn"),
+			RedisAddress:             viper.GetString("redis_address"),
+			RedisPassword:            viper.GetString("redis_password"),
+			RedisDatabase:            viper.GetInt("redis_database"),
+			SendgridAPIKey:           viper.GetString("sendgrid_api_key"),
+			MailgunAPIKey:            viper.GetString("mailgun_api_key"),
+			MailgunWebhookSigningKey: viper.GetString("mailgun_webhook_signing_key"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})
