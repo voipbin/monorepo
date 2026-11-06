@@ -20,7 +20,8 @@
 # Environment (defaults in brackets):
 #   TARGETS         space separated target ids replacing the git scan [none]; no smoke fallback
 #   LIST_ONLY       1 prints one line per target after the validation and exits [0]
-#   DB_HOST DB_PORT DB_USER DB_PASSWORD  [127.0.0.1 3306 root empty]
+#   DB_HOST DB_PORT DB_USER DB_PASSWORD  [127.0.0.1 3306 root empty]; the password goes into a
+#                   DSN as is, so a local password must not contain @ / : or other URL characters
 #   ALLOW_REMOTE_DB 1 allows a DB_HOST that is not loopback [0]
 #   CIRCLE_BRANCH   main selects the HEAD~1 range [unset]
 set -uo pipefail
@@ -292,6 +293,7 @@ if [ "${LIST_ONLY:-0}" = 1 ]; then
 fi
 
 if [ "$CHECKED" -eq 0 ]; then
+  [ -n "${TARGETS:-}" ] && echo "warning: TARGETS named no existing MariaDB target (check the spelling)"
   echo "checked 0, failed 0 (no target)"
   exit 0
 fi
