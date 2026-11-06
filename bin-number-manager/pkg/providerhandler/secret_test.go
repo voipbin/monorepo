@@ -18,7 +18,7 @@ import (
 // version 2 is the bytes 0x90+i (i = 0..31). The nonce of each vector starts at 0x10 (A), 0x20 (B),
 // 0x30 (C), 0x40 (D) and 0x50 (E) and counts up. They pin the stored layout of
 // number_providers.secret_ciphertext (nonce || ciphertext || tag): every row that exists in a
-// database must keep decrypting.
+// database in this layout must keep decrypting.
 const (
 	vectorTwoKeyA = "101112131415161718191a1bf1f36c58d0f79aa581ef2b3f3687a7e81ba82f048bdd543115f267191e72aa854269626dbafd71149c948b36d9d8db78cb5a7b71104b"
 	vectorTwoKeyB = "202122232425262728292a2b97a302f472df370e5475daf876ec0d9860c3412320c2eb93e092aec202707932d1da17e18d0799abd9bf540506dc6e82f14e8d1bd002"
