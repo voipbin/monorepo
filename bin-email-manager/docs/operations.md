@@ -23,6 +23,16 @@
 ./bin/email-control email list --customer_id <uuid> [--limit 100] [--token]
 ```
 
+**Stored provider credentials (database only):**
+```bash
+./bin/email-control config list     # key, source (db, env, none, ...), env_shadowed; never a value
+printf '%s' "$VALUE" | ./bin/email-control config set --key mailgun.api_key --actor-id <uuid>
+./bin/email-control config clear --key mailgun.api_key --actor-id <uuid>
+```
+The value is read from stdin only. The tables are created by the daemon's migration at its start (on a local database run `./bin/email-control migrate up` first). `EMAIL_CONFIG_ENCRYPTION_KEYS` must be set for `set`.
+
+The credentials are read from the database at the time of use. Consequence: a database outage makes a send (or a Mailgun webhook verification) fail with an error instead of using the environment variable; the credential is never replaced by an empty key. A database without rows behaves as before. The tables are created by the daemon at its start, so `email-control config` needs the daemon to have been deployed first.
+
 **Delete an email:**
 ```bash
 ./bin/email-control email delete --id <uuid>
@@ -93,9 +103,13 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `mailgun_api_key` | `MAILGUN_API_KEY` | required | Mailgun API key |
 | `mailgun_webhook_signing_key` | `MAILGUN_WEBHOOK_SIGNING_KEY` | required | Mailgun webhook signing key. Used to verify the signature of every Mailgun webhook request |
 
-**Mailgun webhook signature:** a Mailgun webhook is processed only when its `signature` (hex HMAC-SHA256 of `timestamp` + `token` with the signing key) matches and its `timestamp` is within 24 hours in the past and 5 minutes in the future. A request that fails the check changes no email status and publishes no `email_updated` event. If `mailgun_webhook_signing_key` is empty, every Mailgun webhook is rejected and the service logs a warning at start.
+| `email_config_encryption_keys` | `EMAIL_CONFIG_ENCRYPTION_KEYS` | `""` (environment only, no flag) | Master key list for the stored secrets, `<version>:<base64 of 32 bytes>[,...]`, the entry with the highest version encrypts. Without it secrets can not be stored |
 
-**Key rotation:** only one signing key is supported. After the key is changed on the Mailgun side, set the new value and redeploy the service. Webhooks signed with the old key are rejected until the redeploy has finished.
+**Stored values:** each of the three credentials above can also be stored in `email_configs` (`email-control config set`). A stored value wins over the environment variable and is used by the next call without a restart; `config clear` makes the environment variable apply again. `email-control config list` shows the source and `env_shadowed` (the environment value is set but not used). A stored secret that can not be decrypted (wrong or missing master key) is an error and never falls back to the environment variable.
+
+**Mailgun webhook signature:** a Mailgun webhook is processed only when its `signature` (hex HMAC-SHA256 of `timestamp` + `token` with the signing key) matches and its `timestamp` is within 24 hours in the past and 5 minutes in the future. A request that fails the check changes no email status and publishes no `email_updated` event. If the signing key is empty, every Mailgun webhook is rejected and the service logs a warning at start (source `none`). If the key can not be read (database error) or can not be decrypted, the webhook is rejected as well.
+
+**Key rotation:** only one signing key is supported. After the key is changed on the Mailgun side, store the new value with `email-control config set --key mailgun.webhook_signing_key`; the next webhook uses it, with no redeploy. Webhooks signed with the old key are rejected until the value is changed.
 
 ## Prometheus Metrics
 

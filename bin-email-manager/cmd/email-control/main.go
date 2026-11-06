@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"os"
 
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -14,6 +16,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-email-manager/internal/config"
+	"monorepo/bin-email-manager/internal/configkeys"
+	"monorepo/bin-email-manager/internal/emailconfig"
 	"monorepo/bin-email-manager/migrations"
 	"monorepo/bin-email-manager/models/email"
 	"monorepo/bin-email-manager/pkg/cachehandler"
@@ -67,7 +71,17 @@ func initEmailHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (emailhand
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameEmailEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	return emailhandler.NewEmailHandler(db, reqHandler, notifyHandler, config.Get().SendgridAPIKey, config.Get().MailgunAPIKey, config.Get().MailgunWebhookSigningKey), nil
+	configHandler, err := emailconfig.New(config.Get(), db.ConfigStore())
+	if err != nil {
+		return nil, errors.Wrap(err, "could not create the config handler")
+	}
+
+	return emailhandler.NewEmailHandler(
+		db, reqHandler, notifyHandler,
+		emailconfig.Supplier(configHandler, configkeys.KeySendgridAPIKey),
+		emailconfig.Supplier(configHandler, configkeys.KeyMailgunAPIKey),
+		emailconfig.Supplier(configHandler, configkeys.KeyMailgunWebhookSigningKey),
+	), nil
 }
 
 func initCommand() *cobra.Command {
@@ -94,6 +108,7 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdDelete())
 
 	cmdRoot.AddCommand(cmdSub)
+	cmdRoot.AddCommand(cmdConfig())
 	// the migrate commands open only the database, so they do not depend on Redis or RabbitMQ
 	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {
 		return migrationhandler.New(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable)
@@ -116,11 +131,15 @@ func resolveUUID(flagName string, label string) (uuid.UUID, error) {
 }
 
 func printJSON(v any) error {
+	return printJSONTo(os.Stdout, v)
+}
+
+func printJSONTo(w io.Writer, v any) error {
 	data, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal JSON")
 	}
-	fmt.Println(string(data))
+	_, _ = fmt.Fprintln(w, string(data))
 	return nil
 }
 

@@ -22,7 +22,7 @@ The `bin-manager` Alembic stream is frozen read-only history (last head `b030752
 | bin-conversation-manager | conversation_accounts, conversation_conversations, conversation_medias, conversation_messages | `bin-conversation-manager/migrations/` |
 | bin-customer-manager | customer_accesskeys, customer_customers | `bin-customer-manager/migrations/` |
 | bin-direct-manager | direct_directs | `bin-direct-manager/migrations/` |
-| bin-email-manager | email_emails | `bin-email-manager/migrations/` |
+| bin-email-manager | email_config_histories, email_configs, email_emails | `bin-email-manager/migrations/` |
 | bin-flow-manager | flow_activeflows, flow_flows | `bin-flow-manager/migrations/` |
 | bin-message-manager | message_messages | `bin-message-manager/migrations/` |
 | bin-number-manager | number_numbers, number_providers | `bin-number-manager/migrations/` |
@@ -91,6 +91,8 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | customer_accesskeys | bin-customer-manager | API access key credentials |
 | customer_customers | bin-customer-manager | Customer account records |
 | direct_directs | bin-direct-manager | Direct SIP trunk definitions |
+| email_config_histories | bin-email-manager | Change history of the stored settings (never a value) |
+| email_configs | bin-email-manager | Platform-wide stored settings (provider credentials, encrypted) |
 | email_emails | bin-email-manager | Outbound email records |
 | flow_activeflows | bin-flow-manager | Currently executing flow instances |
 | flow_flows | bin-flow-manager | Flow definitions |

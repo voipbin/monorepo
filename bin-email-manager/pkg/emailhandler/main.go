@@ -24,13 +24,17 @@ type emailHandler struct {
 	engineSendgrid EngineSendgrid
 	engineMailgun  EngineMailgun
 
-	// mailgunWebhookSigningKey verifies the Mailgun webhook signature.
-	// An empty key rejects every Mailgun webhook.
-	mailgunWebhookSigningKey string
+	// mailgunWebhookSigningKey returns the key that verifies the Mailgun webhook signature at the
+	// time of use. A nil function or an empty key rejects every Mailgun webhook.
+	mailgunWebhookSigningKey SecretFunc
 
 	// timeNow is the clock of the webhook timestamp check. nil means time.Now.
 	timeNow func() time.Time
 }
+
+// SecretFunc returns the current value of a credential at the time of use, so that a rotated
+// credential is used by the next call without a restart. An empty value means "not configured".
+type SecretFunc func(ctx context.Context) (string, error)
 
 type EmailHandler interface {
 	Create(
@@ -67,9 +71,9 @@ func NewEmailHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 
-	sendgridAPIKey string,
-	mailgunAPIKey string,
-	mailgunWebhookSigningKey string,
+	sendgridAPIKey SecretFunc,
+	mailgunAPIKey SecretFunc,
+	mailgunWebhookSigningKey SecretFunc,
 ) EmailHandler {
 
 	engineSendgrid := NewEngineSendgrid(reqHandler, sendgridAPIKey)

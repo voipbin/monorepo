@@ -37,7 +37,7 @@ func TestNewEmailHandler(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-			h := NewEmailHandler(mockDB, mockReq, mockNotify, tt.sendgridAPIKey, tt.mailgunAPIKey, "test-signing-key")
+			h := NewEmailHandler(mockDB, mockReq, mockNotify, staticSecret(tt.sendgridAPIKey), staticSecret(tt.mailgunAPIKey), staticSecret("test-signing-key"))
 
 			if h == nil {
 				t.Errorf("Expected non-nil handler")

@@ -58,7 +58,7 @@ func Test_hookMailgun_signature_rejected(t *testing.T) {
 			h := &emailHandler{
 				db:                       dbhandler.NewMockDBHandler(mc),
 				notifyHandler:            notifyhandler.NewMockNotifyHandler(mc),
-				mailgunWebhookSigningKey: tt.key,
+				mailgunWebhookSigningKey: staticSecret(tt.key),
 				timeNow:                  testMailgunNow,
 			}
 
@@ -99,7 +99,7 @@ func Test_hookMailgun_signature_accepted(t *testing.T) {
 			h := &emailHandler{
 				db:                       mockDB,
 				notifyHandler:            notifyhandler.NewMockNotifyHandler(mc),
-				mailgunWebhookSigningKey: testMailgunSigningKey,
+				mailgunWebhookSigningKey: staticSecret(testMailgunSigningKey),
 				timeNow:                  testMailgunNow,
 			}
 
@@ -122,7 +122,7 @@ func Test_hookMailgun_signature_defaultClock(t *testing.T) {
 	h := &emailHandler{
 		db:                       dbhandler.NewMockDBHandler(mc),
 		notifyHandler:            notifyhandler.NewMockNotifyHandler(mc),
-		mailgunWebhookSigningKey: testMailgunSigningKey,
+		mailgunWebhookSigningKey: staticSecret(testMailgunSigningKey),
 	}
 
 	data := mailgunTestPayload("delivered", "", `{"voipbin_message_id":"`+testMailgunEmailID+`"}`, true)
@@ -138,7 +138,7 @@ func Test_Hook_mailgun_rejected(t *testing.T) {
 	h := &emailHandler{
 		db:                       dbhandler.NewMockDBHandler(mc),
 		notifyHandler:            notifyhandler.NewMockNotifyHandler(mc),
-		mailgunWebhookSigningKey: testMailgunSigningKey,
+		mailgunWebhookSigningKey: staticSecret(testMailgunSigningKey),
 		timeNow:                  testMailgunNow,
 	}
 

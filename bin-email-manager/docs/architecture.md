@@ -15,8 +15,8 @@ cmd/email-manager/main.go
 ```
 
 Supporting binary:
-- `cmd/email-control/` — CLI for direct DB/cache operations, bypasses RabbitMQ RPC; `migrate` command for the schema migrations (database only).
-- `migrations/` — embedded golang-migrate SQL files (service-owned schema of `email_emails`), applied by `cmd/email-manager` right after the DB connection and before the cache and RabbitMQ.
+- `cmd/email-control/` — CLI for direct DB/cache operations, bypasses RabbitMQ RPC; `migrate` command for the schema migrations (database only); `config list|set|clear` for the stored provider credentials (database only).
+- `migrations/` — embedded golang-migrate SQL files (service-owned schema of `email_emails`, `email_configs` and `email_config_histories`), applied by `cmd/email-manager` right after the DB connection and before the cache and RabbitMQ.
 
 **No SubscribeHandler.** Provider delivery status events arrive via inbound `POST /v1/hooks` webhooks forwarded through `bin-hook-manager`.
 
