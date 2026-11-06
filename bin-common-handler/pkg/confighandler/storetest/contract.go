@@ -10,7 +10,7 @@ import (
 
 	"monorepo/bin-common-handler/pkg/confighandler"
 )
-// leave no history behind.
+
 // contractEnv holds what every case of the contract needs.
 type contractEnv struct {
 	ctx       context.Context
