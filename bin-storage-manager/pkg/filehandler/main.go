@@ -51,6 +51,17 @@ type FileHandler interface {
 		bucketName string,
 		filepath string,
 	) (*file.File, error)
+	CreateFromContent(
+		ctx context.Context,
+		customerID uuid.UUID,
+		ownerID uuid.UUID,
+		fileType file.Type,
+		name string,
+		detail string,
+		filename string,
+		contentType string,
+		content []byte,
+	) (*file.File, error)
 	Get(ctx context.Context, id uuid.UUID) (*file.File, error)
 	List(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error)
 	Delete(ctx context.Context, id uuid.UUID) (*file.File, error)

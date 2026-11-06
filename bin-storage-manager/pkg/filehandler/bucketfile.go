@@ -52,6 +52,23 @@ func (h *fileHandler) bucketfileMove(ctx context.Context, sourceBucketName strin
 	return res, nil
 }
 
+// bucketfileWrite writes the content to the given object.
+func (h *fileHandler) bucketfileWrite(ctx context.Context, bucketName string, filepath string, contentType string, content []byte) error {
+	w := h.client.Bucket(bucketName).Object(filepath).NewWriter(ctx)
+	w.ContentType = contentType
+	w.ChunkSize = fileContentChunkSize
+
+	if _, errWrite := w.Write(content); errWrite != nil {
+		_ = w.Close()
+		return errors.Wrapf(errWrite, "could not write the file. bucket_name: %s", bucketName)
+	}
+	if errClose := w.Close(); errClose != nil {
+		return errors.Wrapf(errClose, "could not finish writing the file. bucket_name: %s", bucketName)
+	}
+
+	return nil
+}
+
 // bucketfileDelete deletes the given bucketfile from the bucket
 func (h *fileHandler) bucketfileDelete(ctx context.Context, bucketName string, filepath string) error {
 

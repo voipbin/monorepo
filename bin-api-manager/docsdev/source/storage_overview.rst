@@ -58,6 +58,7 @@ VoIPBin storage provides cloud-based file management with quota limits.
 - **Storage Account**: Your allocated storage space with quota
 - **Files**: Individual stored items with metadata
 - **Quota**: Maximum storage limit (currently 10GB)
+- **Files from received messages**: The attachments of a received MMS are stored as files of type ``media`` in your storage and count towards the quota. See :ref:`Receiving an MMS <message-overview-receiving-mms>`.
 - **Download URL**: Secure link to access file content
 
 

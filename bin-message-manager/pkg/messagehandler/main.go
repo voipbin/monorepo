@@ -48,6 +48,10 @@ type messageHandler struct {
 
 	mmsTelnyx      MMSProvider
 	mmsMessagebird MMSProvider
+
+	// mediaFetcher downloads the media of a received message and ingestSlots limits the ingests that run at the same time.
+	mediaFetcher MediaFetcher
+	ingestSlots  chan struct{}
 }
 
 // NewMessageHandler returns a new MessageHandler
@@ -64,6 +68,9 @@ func NewMessageHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHa
 
 		mmsTelnyx:      NewMMSTelnyx(requestExternal),
 		mmsMessagebird: NewMMSMessagebird(requestExternal),
+
+		mediaFetcher: NewMediaFetcher(),
+		ingestSlots:  make(chan struct{}, inboundMediaMaxIngest),
 	}
 }
 
@@ -97,6 +104,15 @@ var (
 		[]string{"provider", "reason"},
 	)
 
+	promInboundMediaTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "inbound_media_total",
+			Help:      "Total number of media of received messages by result.",
+		},
+		[]string{"result"},
+	)
+
 	promMMSMediaCheckSeconds = prometheus.NewHistogram(
 		prometheus.HistogramOpts{
 			Namespace: metricsNamespace,
@@ -113,5 +129,6 @@ func init() {
 		promMessagebirdSendTotal,
 		promMMSTargetFailedTotal,
 		promMMSMediaCheckSeconds,
+		promInboundMediaTotal,
 	)
 }

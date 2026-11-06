@@ -50,9 +50,13 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 
 	hm := telnyx.MessageEvent{}
 	if errUnmarshal := json.Unmarshal(data, &hm); errUnmarshal != nil {
-		return nil, nil, errors.Wrapf(errUnmarshal, "Could not unmarshal the data. data: %s", string(data))
+		// the body is not part of the error: it carries the numbers, the text and the media urls.
+		return nil, nil, errors.Wrapf(errUnmarshal, "Could not unmarshal the data. data_size: %d", len(data))
 	}
-	log = log.WithField("hook_message", hm)
+	log = log.WithFields(logrus.Fields{
+		"event_type": hm.Data.EventType,
+		"event_id":   hm.Data.ID,
+	})
 	log.Debugf("Unmarshalled hook message. event_type: %s", hm.Data.EventType)
 
 	if len(hm.Data.Payload.To) == 0 {
@@ -99,11 +103,27 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 		targets[i].Destination.Target, _ = commonaddress.NormalizeTarget(targets[i].Destination.Type, targets[i].Destination.Target)
 	}
 
-	res, err := h.Create(ctx, uuid.Nil, num.CustomerID, source, targets, message.ProviderNameTelnyx, text, message.DirectionInbound)
+	// the media is not downloaded here: the hook has to answer within the rpc timeout and the provider delivers the
+	// event again when it does not. The message is created at once and the media is stored in the background.
+	medias, skipped := hm.GetMedias()
+	if skipped > 0 {
+		promInboundMediaTotal.WithLabelValues(string(FetchResultParse)).Add(float64(skipped))
+	}
+
+	msgType := message.TypeSMS
+	if hm.IsMMS() {
+		msgType = message.TypeMMS
+	}
+
+	res, err := h.create(ctx, uuid.Nil, num.CustomerID, source, targets, message.ProviderNameTelnyx, text, message.DirectionInbound, msgType)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "Could not create a message. number_id: %s, number: %s", num.ID, num.Number)
 	}
+	log.Debugf("Created message. message_id: %s, type: %s", res.ID, res.Type)
 
-	log.WithField("message", res).Debugf("Created message. message_id: %s", res.ID)
+	if len(medias) > 0 {
+		h.startInboundMediaIngest(ctx, res, medias)
+	}
+
 	return res, &num, nil
 }

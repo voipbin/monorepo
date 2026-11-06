@@ -15,12 +15,12 @@ import (
 func (h *listenHandler) processV1HooksPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1HooksPost",
-		"request": m,
+		"request": loggableRequest(m),
 	})
 
 	var req request.V1DataHooksPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data_size: %d, err: %v", len(m.Data), err)
 		return simpleResponse(400), nil
 	}
 

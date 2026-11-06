@@ -18,6 +18,7 @@ This service has **no SubscribeHandler** and subscribes to no external events. P
 |----------------|------|---------|
 | `bin-billing-manager` | Before SMS or MMS send | Validate customer has sufficient balance |
 | `bin-storage-manager` | Before MMS send | Read the media files (owner, type, size) and request a fresh signed download URL for each |
+| `bin-storage-manager` | After an inbound MMS is created | Create a storage file from the downloaded bytes (`POST /v1/files/content`) for each attachment |
 
 ## Local Monorepo Dependencies
 

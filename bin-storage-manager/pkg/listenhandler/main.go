@@ -50,6 +50,7 @@ var (
 	// files
 	regV1FilesGet                  = regexp.MustCompile(`/v1/files\?`)
 	regV1Files                     = regexp.MustCompile("/v1/files$")
+	regV1FilesContent              = regexp.MustCompile("/v1/files/content$")
 	regV1FilesID                   = regexp.MustCompile("/v1/files/" + regUUID + "$")
 	regV1FilesIDDownloadURIRefresh = regexp.MustCompile("/v1/files/" + regUUID + "/download_uri_refresh$")
 
@@ -193,6 +194,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		requestType = "/files"
 		response, err = h.v1FilesPost(ctx, m)
 
+	case regV1FilesContent.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/files/content"
+		response, err = h.v1FilesContentPost(ctx, m)
+
 	case regV1FilesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/files"
 		response, err = h.v1FilesGet(ctx, m)
@@ -226,7 +231,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		logrus.WithFields(logrus.Fields{
 			"uri":    m.URI,
 			"method": m.Method,
-		}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
+		}).Errorf("Could not find corresponded message handler. data_size: %d", len(m.Data))
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"

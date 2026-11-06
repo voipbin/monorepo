@@ -75,6 +75,21 @@ func (mr *MockFileHandlerMockRecorder) Create(ctx, customerID, ownerID, referenc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockFileHandler)(nil).Create), ctx, customerID, ownerID, referenceType, referenceID, fileType, name, detail, filename, bucketName, filepath)
 }
 
+// CreateFromContent mocks base method.
+func (m *MockFileHandler) CreateFromContent(ctx context.Context, customerID, ownerID uuid.UUID, fileType file.Type, name, detail, filename, contentType string, content []byte) (*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateFromContent", ctx, customerID, ownerID, fileType, name, detail, filename, contentType, content)
+	ret0, _ := ret[0].(*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateFromContent indicates an expected call of CreateFromContent.
+func (mr *MockFileHandlerMockRecorder) CreateFromContent(ctx, customerID, ownerID, fileType, name, detail, filename, contentType, content any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFromContent", reflect.TypeOf((*MockFileHandler)(nil).CreateFromContent), ctx, customerID, ownerID, fileType, name, detail, filename, contentType, content)
+}
+
 // Delete mocks base method.
 func (m *MockFileHandler) Delete(ctx context.Context, id uuid.UUID) (*file.File, error) {
 	m.ctrl.T.Helper()

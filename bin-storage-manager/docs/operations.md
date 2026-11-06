@@ -4,6 +4,7 @@
 
 | Symptom | Likely Cause | Resolution |
 |---------|-------------|-----------|
+| `POST /v1/files/content` rejected | `FILE_CONTENT_INVALID` (empty content or more than 2 MiB), or the quota error of `Create` | The caller (bin-message-manager for received MMS attachments) counts it; a rolled back storage-manager image answers 404 for this route. The request body is never logged. |
 | File upload rejected | Customer storage quota (10 GB) exceeded | Check account usage; delete old files or contact customer |
 | Signed URL expired | Default 24 h expiry passed | Call `POST /v1/files/<uuid>/download_uri_refresh` |
 | GCS signed URL generation fails (`503` / reason `SIGNING_NOT_CONFIGURED`) | `GOOGLE_APPLICATION_CREDENTIALS` is not set, so the handler has no private key | Expected degraded mode — the service still runs. Set the env var to a valid service account key file with `storage.objects.get`/`storage.signUrl` and restart to restore signed URLs. See "Signing degradation" below. |

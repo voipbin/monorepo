@@ -45,6 +45,35 @@ func (h *storageHandler) FileCreate(
 	return res, nil
 }
 
+// FileCreateContent creates a new file from the given bytes and returns created file info.
+// The content is never logged.
+func (h *storageHandler) FileCreateContent(
+	ctx context.Context,
+	customerID uuid.UUID,
+	ownerID uuid.UUID,
+	fileType file.Type,
+	name string,
+	detail string,
+	filename string,
+	contentType string,
+	content []byte,
+) (*file.File, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "FileCreateContent",
+		"customer_id":  customerID,
+		"file_type":    fileType,
+		"content_size": len(content),
+	})
+
+	res, err := h.fileHandler.CreateFromContent(ctx, customerID, ownerID, fileType, name, detail, filename, contentType, content)
+	if err != nil {
+		log.Errorf("Could not create file from content. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // FileGet returns given file info.
 func (h *storageHandler) FileGet(ctx context.Context, id uuid.UUID) (*file.File, error) {
 	log := logrus.WithFields(logrus.Fields{

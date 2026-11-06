@@ -108,7 +108,8 @@ type storageFake struct {
 	uploadStatus int               // status code of the upload request
 	deleted      []string
 	uploaded     int
-	rewrites     int // copy requests received
+	rewrites     int      // copy requests received
+	uploadBodies []string // bodies of the upload requests
 }
 
 func newStorageFake(t *testing.T, f *storageFake) *storage.Client {
@@ -135,7 +136,8 @@ func newStorageFake(t *testing.T, f *storageFake) *storage.Client {
 
 		// upload
 		if r.Method == http.MethodPost && strings.Contains(path, "/upload/") {
-			_, _ = io.Copy(io.Discard, r.Body)
+			body, _ := io.ReadAll(r.Body)
+			f.uploadBodies = append(f.uploadBodies, string(body))
 			f.uploaded++
 			if f.uploadStatus >= 400 {
 				w.WriteHeader(f.uploadStatus)

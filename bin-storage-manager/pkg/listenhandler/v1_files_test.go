@@ -1,6 +1,10 @@
 package listenhandler
 
 import (
+	"errors"
+	"strings"
+
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -278,5 +282,88 @@ func Test_v1FilesIDDelete(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+func Test_v1FilesContentPost(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockStorage := storagehandler.NewMockStorageHandler(mc)
+	h := &listenHandler{
+		sockHandler:    sockhandler.NewMockSockHandler(mc),
+		storageHandler: mockStorage,
+	}
+
+	customerID := uuid.FromStringOrNil("4d85dc7a-153e-11ef-9221-13c46bd56c4c")
+	ownerID := uuid.FromStringOrNil("4dc51b42-153e-11ef-94b6-63fbe2cffaae")
+
+	mockStorage.EXPECT().FileCreateContent(
+		gomock.Any(), customerID, ownerID, file.TypeMedia, "test", "test detail", "media-0.jpg", "image/jpeg", []byte("abc"),
+	).Return(&file.File{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("9de3d544-1739-11ef-acf1-e7fe99b5d7d0")}}, nil)
+
+	res, err := h.processRequest(&sock.Request{
+		URI:      "/v1/files/content",
+		Method:   sock.RequestMethodPost,
+		DataType: "application/json",
+		Data:     []byte(`{"customer_id":"4d85dc7a-153e-11ef-9221-13c46bd56c4c","owner_id":"4dc51b42-153e-11ef-94b6-63fbe2cffaae","type":"media","name":"test","detail":"test detail","filename":"media-0.jpg","content_type":"image/jpeg","content":"YWJj"}`),
+	})
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res == nil || res.StatusCode != 200 || !strings.Contains(string(res.Data), "9de3d544-1739-11ef-acf1-e7fe99b5d7d0") {
+		t.Errorf("Wrong match. got: %v", res)
+	}
+}
+
+func Test_v1FilesContentPost_errors(t *testing.T) {
+	t.Run("malformed body", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		h := &listenHandler{storageHandler: storagehandler.NewMockStorageHandler(mc)}
+		_, err := h.processRequest(&sock.Request{URI: "/v1/files/content", Method: sock.RequestMethodPost, Data: []byte(`{"content": 5`)})
+		if err == nil {
+			t.Errorf("Wrong match. expect: error, got: nil")
+		}
+	})
+
+	t.Run("handler error", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockStorage := storagehandler.NewMockStorageHandler(mc)
+		h := &listenHandler{storageHandler: mockStorage}
+		mockStorage.EXPECT().FileCreateContent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("simulated"))
+
+		_, err := h.processRequest(&sock.Request{URI: "/v1/files/content", Method: sock.RequestMethodPost, Data: []byte(`{}`)})
+		if err == nil {
+			t.Errorf("Wrong match. expect: error, got: nil")
+		}
+	})
+}
+
+// Test_processRequest_contentNotLogged checks that neither the content handler nor the unknown route line
+// writes the request data to the log.
+func Test_processRequest_contentNotLogged(t *testing.T) {
+	logHook := logrustest.NewGlobal()
+	defer logHook.Reset()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockStorage := storagehandler.NewMockStorageHandler(mc)
+	h := &listenHandler{storageHandler: mockStorage}
+	mockStorage.EXPECT().FileCreateContent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("simulated"))
+
+	fakeContent := "ZmFrZQ=="
+	_, _ = h.processRequest(&sock.Request{URI: "/v1/files/content", Method: sock.RequestMethodPost, Data: []byte(`{"content":"` + fakeContent + `"}`)})
+	_, _ = h.processRequest(&sock.Request{URI: "/v1/unknown", Method: sock.RequestMethodPost, Data: []byte(`{"content":"` + fakeContent + `"}`)})
+
+	for _, e := range logHook.AllEntries() {
+		line, _ := e.String()
+		if strings.Contains(line, fakeContent) {
+			t.Errorf("Wrong match. the log carries the request data: %s", line)
+		}
 	}
 }

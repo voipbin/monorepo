@@ -2,6 +2,7 @@ package storagehandler
 
 import (
 	"context"
+	"fmt"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -262,4 +263,39 @@ func Test_FileDelete(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_FileCreateContent(t *testing.T) {
+	customerID := uuid.FromStringOrNil("85e112c4-1534-11ef-8b98-bf28503ca953")
+	responseFile := &file.File{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("86940b22-1534-11ef-81e6-cf09fa8054e4")}}
+
+	t.Run("normal", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockFile := filehandler.NewMockFileHandler(mc)
+		h := &storageHandler{fileHandler: mockFile}
+
+		mockFile.EXPECT().CreateFromContent(gomock.Any(), customerID, uuid.Nil, file.TypeMedia, "n", "d", "media-0.jpg", "image/jpeg", []byte("abc")).Return(responseFile, nil)
+
+		res, err := h.FileCreateContent(context.Background(), customerID, uuid.Nil, file.TypeMedia, "n", "d", "media-0.jpg", "image/jpeg", []byte("abc"))
+		if err != nil || res != responseFile {
+			t.Errorf("Wrong match. expect: ok, got: %v, %v", res, err)
+		}
+	})
+
+	t.Run("error", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockFile := filehandler.NewMockFileHandler(mc)
+		h := &storageHandler{fileHandler: mockFile}
+
+		mockFile.EXPECT().CreateFromContent(gomock.Any(), customerID, uuid.Nil, file.TypeMedia, "n", "d", "f", "image/jpeg", []byte("abc")).Return(nil, fmt.Errorf("simulated"))
+
+		res, err := h.FileCreateContent(context.Background(), customerID, uuid.Nil, file.TypeMedia, "n", "d", "f", "image/jpeg", []byte("abc"))
+		if err == nil || res != nil {
+			t.Errorf("Wrong match. expect: error, got: %v, %v", res, err)
+		}
+	})
 }
