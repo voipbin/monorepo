@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-common-handler/pkg/confighandler"
@@ -34,7 +34,11 @@ func openMySQLForConfigs(t *testing.T) *sql.DB {
 	}
 
 	// the tests empty the configs tables, so only a local database is accepted.
-	if !strings.Contains(dsn, "@tcp(127.0.0.1:") && !strings.Contains(dsn, "@tcp(localhost:") {
+	cfg, err := mysql.ParseDSN(dsn)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: a valid DSN, got: %v", err)
+	}
+	if !strings.HasPrefix(cfg.Addr, "127.0.0.1:") && !strings.HasPrefix(cfg.Addr, "localhost:") {
 		t.Fatalf("Wrong match. the test database must be local")
 	}
 

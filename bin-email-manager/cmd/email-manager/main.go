@@ -152,7 +152,8 @@ func run(dbHandler dbhandler.DBHandler, cfg *config.Config) {
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameEmailEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	// the provider credentials are resolved at the time of use: the stored value first, then the
-	// environment as before. A failing setup of the configs never stops the service.
+	// environment as before. Only an invalid registry (a programming error) fails here; a bad master
+	// key or an unreadable table never does.
 	configHandler, errConfig := emailconfig.New(cfg, dbHandler.ConfigStore())
 	if errConfig != nil {
 		log.Errorf("Could not create the config handler. err: %v", errConfig)
