@@ -24,26 +24,55 @@ const (
 type engineMailgun struct {
 	reqHandler requesthandler.RequestHandler
 
+	// apiKey returns the API key at the time of the send.
+	apiKey SecretFunc
+
+	// client, when set, is used as is (tests inject a client with a test base URL).
 	client *mailgun.MailgunImpl
+
+	// newClient builds the client from the API key. nil means newMailgunClient.
+	newClient func(apiKey string) *mailgun.MailgunImpl
 }
 
 type EngineMailgun interface {
 	Send(ctx context.Context, m *email.Email) (string, error)
 }
 
-func NewEngineMailgun(reqHandler requesthandler.RequestHandler, apiKey string) EngineMailgun {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "NewEngineMailgun",
-	})
-
-	log.Debugf("Initializing Mailgun client. domain: %s", defaultMailgunDomain)
-	mg := mailgun.NewMailgun(defaultMailgunDomain, apiKey)
-
+func NewEngineMailgun(reqHandler requesthandler.RequestHandler, apiKey SecretFunc) EngineMailgun {
 	return &engineMailgun{
 		reqHandler: reqHandler,
 
-		client: mg,
+		apiKey: apiKey,
 	}
+}
+
+func newMailgunClient(apiKey string) *mailgun.MailgunImpl {
+	return mailgun.NewMailgun(defaultMailgunDomain, apiKey)
+}
+
+// getClient returns the client of the send. The API key is read now, not at construction, so a
+// rotated key is used by the next send. An empty key builds the client as before and the send
+// fails at the provider.
+func (h *engineMailgun) getClient(ctx context.Context) (*mailgun.MailgunImpl, error) {
+	if h.client != nil {
+		return h.client, nil
+	}
+	if h.apiKey == nil {
+		return nil, errors.New("the mailgun api key supplier is not set")
+	}
+
+	key, err := h.apiKey(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get the mailgun api key")
+	}
+
+	build := h.newClient
+	if build == nil {
+		build = newMailgunClient
+	}
+
+	logrus.WithField("func", "getClient").Debugf("Initializing Mailgun client. domain: %s", defaultMailgunDomain)
+	return build(key), nil
 }
 
 func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error) {
@@ -90,10 +119,15 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 		message.AddBufferAttachment(filename, data)
 	}
 
+	client, err := h.getClient(ctx)
+	if err != nil {
+		return "", err
+	}
+
 	cctx, cancel := context.WithTimeout(ctx, defaultMailgunRequestTimeout)
 	defer cancel()
 
-	resp, id, err := h.client.Send(cctx, message)
+	resp, id, err := client.Send(cctx, message)
 	if err != nil {
 		return "", errors.Wrapf(err, "could not send mailgun email. email_id: %s", m.ID)
 	}

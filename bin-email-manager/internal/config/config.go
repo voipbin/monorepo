@@ -27,6 +27,40 @@ type Config struct {
 	SendgridAPIKey           string
 	MailgunAPIKey            string
 	MailgunWebhookSigningKey string
+
+	// ConfigEncryptionKeys is the master key list of the stored secrets
+	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
+	// command line flag.
+	ConfigEncryptionKeys string
+}
+
+// Names of the environment variables that the config registry reads through EnvValue.
+const (
+	envSendgridAPIKey           = "SENDGRID_API_KEY"
+	envMailgunAPIKey            = "MAILGUN_API_KEY"
+	envMailgunWebhookSigningKey = "MAILGUN_WEBHOOK_SIGNING_KEY"
+
+	// EnvConfigEncryptionKeys is the environment variable of the master key list.
+	EnvConfigEncryptionKeys = "EMAIL_CONFIG_ENCRYPTION_KEYS"
+)
+
+// EnvValue returns the loaded value (flag or environment) of a variable name. It is the
+// environment lookup of the config registry, so the stored configs and the old direct reads see the
+// same values. A name that is not loaded is "not set".
+func (c *Config) EnvValue(name string) (string, bool) {
+	var v string
+	switch name {
+	case envSendgridAPIKey:
+		v = c.SendgridAPIKey
+	case envMailgunAPIKey:
+		v = c.MailgunAPIKey
+	case envMailgunWebhookSigningKey:
+		v = c.MailgunWebhookSigningKey
+	default:
+		return "", false
+	}
+
+	return v, v != ""
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -67,6 +101,11 @@ func bindConfig(cmd *cobra.Command) error {
 		"mailgun_webhook_signing_key": "MAILGUN_WEBHOOK_SIGNING_KEY",
 	}
 
+	// the master key list has no flag: a flag value would show in the process list.
+	if errBind := viper.BindEnv("email_config_encryption_keys", EnvConfigEncryptionKeys); errBind != nil {
+		return errors.Wrapf(errBind, "could not bind the env. key: %s", EnvConfigEncryptionKeys)
+	}
+
 	for flagKey, envKey := range bindings {
 		if errBind := viper.BindPFlag(flagKey, f.Lookup(flagKey)); errBind != nil {
 			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
@@ -99,6 +138,7 @@ func LoadGlobalConfig() {
 			SendgridAPIKey:           viper.GetString("sendgrid_api_key"),
 			MailgunAPIKey:            viper.GetString("mailgun_api_key"),
 			MailgunWebhookSigningKey: viper.GetString("mailgun_webhook_signing_key"),
+			ConfigEncryptionKeys:     viper.GetString("email_config_encryption_keys"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

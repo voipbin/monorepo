@@ -54,3 +54,41 @@ func Test_baselineCreatesOwnedTables(t *testing.T) {
 		t.Errorf("Wrong match. expect: %d, got: %d", len(tests), got)
 	}
 }
+
+// Test_configTables checks that the two configs tables are created by their own files, one
+// statement per file, and that their down files carry the lossy marker.
+func Test_configTables(t *testing.T) {
+	tests := []struct {
+		file  string
+		table string
+	}{
+		{file: "000002_email_configs_create_table_all", table: "email_configs"},
+		{file: "000003_email_config_histories_create_table_all", table: "email_config_histories"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.table, func(t *testing.T) {
+			up, err := fs.ReadFile(FS, tt.file+".up.sql")
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if !strings.HasPrefix(string(up), "CREATE TABLE IF NOT EXISTS "+tt.table+" (") {
+				t.Errorf("Wrong match. the up file does not create %s", tt.table)
+			}
+			if got := len(createTableRegexp.FindAllString(string(up), -1)); got != 1 {
+				t.Errorf("Wrong match. expect: 1 statement, got: %d", got)
+			}
+			if strings.Contains(string(up), "customer") {
+				t.Errorf("Wrong match. the configs tables are platform wide and have no customer column")
+			}
+
+			down, err := fs.ReadFile(FS, tt.file+".down.sql")
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if !strings.HasPrefix(string(down), "-- DOWN-LOSSY: ") || !strings.Contains(string(down), "DROP TABLE IF EXISTS "+tt.table+";") {
+				t.Errorf("Wrong match. the down file is wrong: %s", down)
+			}
+		})
+	}
+}

@@ -154,6 +154,25 @@ func mailgunEmailID(e *mmailgun.Event) uuid.UUID {
 	return uuid.FromStringOrNil(value)
 }
 
+// getMailgunWebhookSigningKey returns the signing key. A missing supplier or an empty key means
+// that the key is not configured, which rejects every Mailgun webhook. A supplier error also
+// rejects the request: an unverified request is never accepted.
+func (h *emailHandler) getMailgunWebhookSigningKey(ctx context.Context) (string, error) {
+	if h.mailgunWebhookSigningKey == nil {
+		return "", errors.New("the mailgun webhook signing key is not configured")
+	}
+
+	key, err := h.mailgunWebhookSigningKey(ctx)
+	if err != nil {
+		return "", errors.Wrap(err, "could not get the mailgun webhook signing key")
+	}
+	if key == "" {
+		return "", errors.New("the mailgun webhook signing key is not configured")
+	}
+
+	return key, nil
+}
+
 // Mailgun webhook signature timestamp window. Mailgun retries a rejected
 // delivery for about 8 hours, so the window is wider than that.
 const (
@@ -165,10 +184,10 @@ const (
 // hex(HMAC-SHA256(key=signing key, msg=timestamp+token)) must equal the
 // signature, and the timestamp must be close to the current time.
 // The error never contains the key, the signature, the token or the timestamp.
-func (h *emailHandler) verifyMailgunSignature(sig *mmailgun.Signature) error {
-	if h.mailgunWebhookSigningKey == "" {
-		return errors.New("the mailgun webhook signing key is not configured")
-	}
+//
+// The structure of the signature is checked first, so a malformed request causes no key lookup.
+// The key is read right before the HMAC, at the time of use.
+func (h *emailHandler) verifyMailgunSignature(ctx context.Context, sig *mmailgun.Signature) error {
 	if sig == nil {
 		return errors.New("the signature is missing")
 	}
@@ -194,7 +213,12 @@ func (h *emailHandler) verifyMailgunSignature(sig *mmailgun.Signature) error {
 		return errors.New("the signature is not hexadecimal")
 	}
 
-	mac := hmac.New(sha256.New, []byte(h.mailgunWebhookSigningKey))
+	key, err := h.getMailgunWebhookSigningKey(ctx)
+	if err != nil {
+		return err
+	}
+
+	mac := hmac.New(sha256.New, []byte(key))
 	mac.Write([]byte(timestamp + sig.Token))
 	if !hmac.Equal(got, mac.Sum(nil)) {
 		return errors.New("the signature does not match")
@@ -224,7 +248,7 @@ func (h *emailHandler) hookMailgun(ctx context.Context, data []byte) error {
 		// the data is not logged because it contains the recipient address.
 		return errors.Wrapf(errUnmarshal, "could not unmarshal the mailgun webhook.")
 	}
-	if errVerify := h.verifyMailgunSignature(hook.Signature); errVerify != nil {
+	if errVerify := h.verifyMailgunSignature(ctx, hook.Signature); errVerify != nil {
 		// nothing from the request is logged: it carries the recipient address and the signature material.
 		log.Warnf("Rejected the mailgun webhook. reason: %v", errVerify)
 		return errors.Wrapf(errVerify, "could not verify the mailgun webhook signature.")

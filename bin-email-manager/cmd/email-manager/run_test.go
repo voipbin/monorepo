@@ -12,6 +12,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/confighandler/storetest"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -234,6 +235,7 @@ func Test_run(t *testing.T) {
 
 	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockDB.EXPECT().ConfigStore().Return(storetest.NewMemory()).Times(1)
 	consumed := expectListen(mockSock)
 
 	cfg := useConfig(t, func(cfg *config.Config) {
@@ -262,6 +264,7 @@ func Test_run_queueCreateFails(t *testing.T) {
 
 	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockDB.EXPECT().ConfigStore().Return(storetest.NewMemory()).Times(1)
 
 	mockSock.EXPECT().Connect()
 	mockSock.EXPECT().TopicCreateWithKind(gomock.Any(), gomock.Any()).Return(nil)

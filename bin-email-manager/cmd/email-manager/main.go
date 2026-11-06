@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,6 +15,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-email-manager/internal/config"
+	"monorepo/bin-email-manager/internal/configkeys"
+	"monorepo/bin-email-manager/internal/emailconfig"
 	"monorepo/bin-email-manager/migrations"
 	"monorepo/bin-email-manager/pkg/emailhandler"
 
@@ -148,11 +151,21 @@ func run(dbHandler dbhandler.DBHandler, cfg *config.Config) {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameEmailEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	if cfg.MailgunWebhookSigningKey == "" {
-		log.Warn("The mailgun webhook signing key is not configured. All the mailgun webhooks will be rejected.")
+	// the provider credentials are resolved at the time of use: the stored value first, then the
+	// environment as before. A failing setup of the configs never stops the service.
+	configHandler, errConfig := emailconfig.New(cfg, dbHandler.ConfigStore())
+	if errConfig != nil {
+		log.Errorf("Could not create the config handler. err: %v", errConfig)
+		return
 	}
+	emailconfig.LogSources(context.Background(), configHandler)
 
-	emailHandler := emailhandler.NewEmailHandler(dbHandler, reqHandler, notifyHandler, cfg.SendgridAPIKey, cfg.MailgunAPIKey, cfg.MailgunWebhookSigningKey)
+	emailHandler := emailhandler.NewEmailHandler(
+		dbHandler, reqHandler, notifyHandler,
+		emailconfig.Supplier(configHandler, configkeys.KeySendgridAPIKey),
+		emailconfig.Supplier(configHandler, configkeys.KeyMailgunAPIKey),
+		emailconfig.Supplier(configHandler, configkeys.KeyMailgunWebhookSigningKey),
+	)
 
 	// run listen
 	if errListen := runListen(sockHandler, emailHandler); errListen != nil {

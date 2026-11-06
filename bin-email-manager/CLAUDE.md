@@ -36,6 +36,11 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 ./bin/email-control email list --customer_id <uuid> [--limit 100] [--token]
 ./bin/email-control email delete --id <uuid>
 
+# Stored provider credentials (database only; the value is read from stdin, never from an argument)
+./bin/email-control config list
+./bin/email-control config set --key mailgun.api_key --actor-id <uuid> < value-file
+./bin/email-control config clear --key mailgun.api_key --actor-id <uuid>
+
 # Migration status (database only, no Redis or RabbitMQ)
 ./bin/email-control migrate status
 
@@ -87,3 +92,13 @@ The schema of `email_emails` is owned by this service and applied at startup (go
 ## Database Tables
 
 - `email_emails` — email records with provider info, status, attachments (soft-delete with `tm_delete`)
+- `email_configs` — platform-wide stored settings: provider credentials, encrypted with the master key. One row per key (`config_key`), optimistic lock by `revision`
+- `email_config_histories` — one row per change (action, actor, key versions, time). Never holds a value, a hash or a length of a secret
+
+## Provider credentials
+
+The SendGrid API key, the Mailgun API key and the Mailgun webhook signing key are resolved when they are used: the stored value (`email_configs`) first, then the environment variable (`SENDGRID_API_KEY`, `MAILGUN_API_KEY`, `MAILGUN_WEBHOOK_SIGNING_KEY`), so a database without rows behaves exactly as before. A change made with `email-control config set` is used by the next call without a restart. The key declarations are in `internal/configkeys`; the shared library is `bin-common-handler/pkg/confighandler`.
+
+- A stored secret that can not be decrypted is an error; the environment value is never used instead. A database read error is an error as well, and a Mailgun webhook is then rejected (the provider retries).
+- Master key list: environment variable `EMAIL_CONFIG_ENCRYPTION_KEYS` (`<version>:<base64 of 32 bytes>[,...]`, the first entry encrypts). It is environment only, there is no flag. Without it the service starts, secrets can not be stored and a stored secret is reported as undecryptable.
+- Adding a setting means a new key in `internal/configkeys` and the golden test there; a key never changes its kind.

@@ -230,7 +230,7 @@ func Test_hookMailgun_status(t *testing.T) {
 
 			h := &emailHandler{
 				db:                       mockDB,
-				mailgunWebhookSigningKey: testMailgunSigningKey,
+				mailgunWebhookSigningKey: staticSecret(testMailgunSigningKey),
 				timeNow:                  testMailgunNow,
 				notifyHandler:            mockNotify,
 			}
@@ -279,7 +279,7 @@ func Test_hookMailgun_noUpdate(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			h := &emailHandler{
 				db:                       mockDB,
-				mailgunWebhookSigningKey: testMailgunSigningKey,
+				mailgunWebhookSigningKey: staticSecret(testMailgunSigningKey),
 				timeNow:                  testMailgunNow,
 				notifyHandler:            notifyhandler.NewMockNotifyHandler(mc),
 			}
@@ -325,7 +325,7 @@ func Test_hookMailgun_errors(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			h := &emailHandler{
 				db:                       mockDB,
-				mailgunWebhookSigningKey: testMailgunSigningKey,
+				mailgunWebhookSigningKey: staticSecret(testMailgunSigningKey),
 				timeNow:                  testMailgunNow,
 				notifyHandler:            notifyhandler.NewMockNotifyHandler(mc),
 			}

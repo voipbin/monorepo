@@ -192,7 +192,7 @@ func Test_Hook_mailgunURI(t *testing.T) {
 
 	// strict mocks without expectations: an event without the email id must not touch the db or publish
 	h, _ := newErrorPathHandler(mc)
-	h.mailgunWebhookSigningKey = testMailgunSigningKey
+	h.mailgunWebhookSigningKey = staticSecret(testMailgunSigningKey)
 	h.timeNow = testMailgunNow
 
 	data := []byte(`{"signature":` + mailgunTestSignature() + `,"event":"delivered"}`)

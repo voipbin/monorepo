@@ -41,6 +41,21 @@ rootCmd.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrat
 }))
 ```
 
+### Stored settings and secrets (`secretcrypto`, `confighandler`)
+
+```go
+reg, _ := confighandler.NewRegistry(keys)          // declarations: name, kind, type, env name
+crypto, _ := secretcrypto.New(masterKeyList, secretcrypto.WithMaxPlaintext(2020))
+h := confighandler.NewHandler(reg, store, crypto, envLookup, "<svc>_configs")
+secret, resolved, err := h.Secret(ctx, "provider.api_key") // db, then env, then default
+```
+
+- The service provides the `Store` (two tables: `<svc>_configs` and `<svc>_config_histories`) and the migrations; the library provides the registry, the resolver and the cipher. Reference: `bin-email-manager/internal/configkeys`, `internal/emailconfig`, `pkg/dbhandler/config_store.go`.
+- A read error is an error, not "no row". A stored secret that can not be decrypted is never replaced by the environment value.
+- A general on/off flag is not a setting of this library; bool keys exist only as a provider selection inside an atomic group.
+- `pkg/confighandler/storetest` holds an in-memory store and the contract every `Store` must pass.
+- These packages were added while only the first service used them, because two more services are planned to adopt them (number-manager, ai-manager). This is a deviation from the 3 services rule, not a precedent.
+
 ## Common Patterns
 
 ### Constructing a RequestHandler

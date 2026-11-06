@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"monorepo/bin-common-handler/pkg/confighandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-email-manager/models/email"
 	"monorepo/bin-email-manager/pkg/cachehandler"
@@ -23,6 +24,9 @@ type DBHandler interface {
 	EmailUpdateStatus(ctx context.Context, id uuid.UUID, status email.Status) error
 	EmailUpdateProvider(ctx context.Context, id uuid.UUID, providerType email.ProviderType, providerReferenceID string) error
 	EmailUpdateStatusFrom(ctx context.Context, id uuid.UUID, status email.Status, from []email.Status) (bool, error)
+
+	// ConfigStore returns the store of the configs tables (provider credentials).
+	ConfigStore() confighandler.Store
 }
 
 // handler database handler

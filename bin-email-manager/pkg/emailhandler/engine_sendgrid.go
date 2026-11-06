@@ -20,22 +20,51 @@ type engineSendgrid struct {
 	utilHandler utilhandler.UtilHandler
 	reqHandler  requesthandler.RequestHandler
 
+	// apiKey returns the API key at the time of the send.
+	apiKey SecretFunc
+
+	// client, when set, is used as is (tests inject a client with a test base URL).
 	client *sendgrid.Client
+
+	// newClient builds the client from the API key. nil means sendgrid.NewSendClient.
+	newClient func(apiKey string) *sendgrid.Client
 }
 
 type EngineSendgrid interface {
 	Send(ctx context.Context, m *email.Email) (string, error)
 }
 
-func NewEngineSendgrid(reqHandler requesthandler.RequestHandler, apikey string) EngineSendgrid {
-	client := sendgrid.NewSendClient(apikey)
-
+func NewEngineSendgrid(reqHandler requesthandler.RequestHandler, apiKey SecretFunc) EngineSendgrid {
 	return &engineSendgrid{
 		utilHandler: utilhandler.NewUtilHandler(),
 		reqHandler:  reqHandler,
 
-		client: client,
+		apiKey: apiKey,
 	}
+}
+
+// getClient returns the client of the send. The API key is read now, not at construction, so a
+// rotated key is used by the next send. An empty key builds the client as before and the send
+// fails at the provider.
+func (h *engineSendgrid) getClient(ctx context.Context) (*sendgrid.Client, error) {
+	if h.client != nil {
+		return h.client, nil
+	}
+	if h.apiKey == nil {
+		return nil, errors.New("the sendgrid api key supplier is not set")
+	}
+
+	key, err := h.apiKey(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get the sendgrid api key")
+	}
+
+	build := h.newClient
+	if build == nil {
+		build = sendgrid.NewSendClient
+	}
+
+	return build(key), nil
 }
 
 // Send sends the email using sendgrid
@@ -81,7 +110,12 @@ func (h *engineSendgrid) Send(ctx context.Context, m *email.Email) (string, erro
 	}
 
 	// Send the email
-	resp, err := h.client.Send(message)
+	client, err := h.getClient(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := client.Send(message)
 	if err != nil {
 		return "", errors.Wrapf(err, "could not send email.")
 	}
