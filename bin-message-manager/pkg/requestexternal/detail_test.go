@@ -15,6 +15,7 @@ func Test_providerErrorDetail(t *testing.T) {
 		{"telnyx", `{"errors":[{"code":"40301","title":"Not allowed","detail":"The sender is not allowed"}]}`, "code 40301 Not allowed"},
 		{"telnyx detail only", `{"errors":[{"detail":"fake not found"}]}`, "fake not found"},
 		{"messagebird", `{"errors":[{"code":2,"description":"request not allowed (incorrect access_key)","parameter":"access_key"}]}`, "code 2 request not allowed (incorrect access_key)"},
+		{"five digits stay and six digits are masked", `{"errors":[{"code":9,"description":"a 12345 b 123456 c"}]}`, "code 9 a 12345 b <num> c"},
 		{"digit runs are masked", `{"errors":[{"code":9,"description":"recipient 15555550100 is invalid, code 12345"}]}`, "code 9 recipient <num> is invalid, code 12345"},
 		{"not json", `<html>+15555550100</html>`, ""},
 		{"no errors", `{"ok":true}`, ""},

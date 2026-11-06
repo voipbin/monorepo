@@ -830,6 +830,7 @@
 <span class="o">+------------+</span>
 </pre></div>
 </div>
+<p>A <code class="docutils literal notranslate"><span class="pre">message_updated</span></code> event is published each time the status of a target of an outbound message changes, including the delivery receipts of the carrier (<code class="docutils literal notranslate"><span class="pre">sent</span></code>, <code class="docutils literal notranslate"><span class="pre">delivered</span></code>, <code class="docutils literal notranslate"><span class="pre">failed</span></code>, <code class="docutils literal notranslate"><span class="pre">dlr_timeout</span></code>). A target never goes back from a final status to an earlier one, so a late or repeated receipt changes nothing.</p>
 <p><strong>Target Status Descriptions</strong></p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">

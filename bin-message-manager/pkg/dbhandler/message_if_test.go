@@ -99,6 +99,13 @@ func checkMessageUpdateTargetsIf(t *testing.T, db *sql.DB) {
 		t.Fatalf("Wrong match. expect: true, got: %v, err: %v", ok, err)
 	}
 
+	// 4. a writer that still holds the tm_update that was read before the last write loses, and nothing is written.
+	mockUtil.EXPECT().TimeNow().Return(t0)
+	ok, err = h.MessageUpdateTargetsIf(ctx, m.ID, got.TMUpdate, nil, newTargets)
+	if err != nil || ok {
+		t.Fatalf("Wrong match. expect: false, got: %v, err: %v", ok, err)
+	}
+
 	// the provider name was not given, so it is kept.
 	got, _ = h.messageGetFromDB(ctx, m.ID)
 	if got.ProviderName != message.ProviderNameTelnyx {

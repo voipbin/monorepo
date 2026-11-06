@@ -139,6 +139,15 @@ func TestNewMessageHandler(t *testing.T) {
 	h := NewMessageHandler(mockReq, mockNotify, mockDB, mockExternal)
 
 	if h == nil {
-		t.Error("Expected non-nil handler")
+		t.Fatal("Expected non-nil handler")
+	}
+
+	// the order of the sms chain is a rule: telnyx first, messagebird for the targets telnyx refused.
+	names := []message.ProviderName{}
+	for _, np := range h.(*messageHandler).smsProviders {
+		names = append(names, np.name)
+	}
+	if !reflect.DeepEqual(names, []message.ProviderName{message.ProviderNameTelnyx, message.ProviderNameMessagebird}) {
+		t.Errorf("Wrong sms provider order. got: %v", names)
 	}
 }

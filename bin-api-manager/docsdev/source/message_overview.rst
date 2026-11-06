@@ -171,6 +171,8 @@ Every message moves through a predictable set of states from sending to delivery
     | delivered  |
     +------------+
 
+A ``message_updated`` event is published each time the status of a target of an outbound message changes, including the delivery receipts of the carrier (``sent``, ``delivered``, ``failed``, ``dlr_timeout``). A target never goes back from a final status to an earlier one, so a late or repeated receipt changes nothing.
+
 **Target Status Descriptions**
 
 .. list-table::
