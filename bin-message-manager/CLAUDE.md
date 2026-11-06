@@ -1,6 +1,6 @@
 # bin-message-manager
 
-SMS and MMS messaging service — sends messages via Telnyx and MessageBird (an MMS goes to Telnyx first, and to MessageBird only for the targets Telnyx refused), tracks per-target delivery status, and processes provider webhooks for delivery updates.
+SMS and MMS messaging service — sends messages via Telnyx and MessageBird (both SMS and MMS go to Telnyx first, and to MessageBird only for the targets Telnyx refused), counts the segments of a text itself (3GPP TS 23.038), sends a text of more than one segment as a text-only MMS, tracks per-target delivery status from the Telnyx receipts, and processes inbound provider webhooks.
 
 > Cross-cutting rules (verification workflow, branch/commit format, worktrees, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md).
 
@@ -61,7 +61,7 @@ AUTHTOKEN_TELNYX="token" \
 
 - **No SubscribeHandler** — webhook events arrive via `POST /v1/hooks` from bin-hook-manager
 - **ListenHandler**: consumes `bin-manager.message-manager.request`
-- **Provider dispatch**: SMS starts with MessageBird (see `pkg/messagehandler/send.go`); MMS goes to Telnyx first and to MessageBird only for the targets Telnyx refused; goroutine-based async send
+- **Provider dispatch**: an ordered chain, Telnyx first and MessageBird for the targets Telnyx definitively refused (see `pkg/messagehandler/dispatch.go`); a text of more than one segment is promoted to an MMS (`pkg/segmenthandler` counts the segments); goroutine-based async send
 - **Database**: Squirrel SQL builder (not raw SQL); Targets tracked separately per recipient
 
 ## Testing

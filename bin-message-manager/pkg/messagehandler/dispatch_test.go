@@ -174,7 +174,7 @@ func Test_dispatchSMS(t *testing.T) {
 // that the provider count is stored beside the platform count and does not replace it.
 func Test_dispatchSMS_segmentMismatch(t *testing.T) {
 	source := addr(usSource)
-	targets := withParts(testTargets(usDest1, usDest2), 1)
+	targets := withParts(testTargets(usDest1, usDest2, krDest), 1)
 
 	f := newChainFixture(t, targets)
 	before := promValue(t, "message_manager_segment_mismatch_total", map[string]string{"provider": "telnyx"})
@@ -182,12 +182,13 @@ func Test_dispatchSMS_segmentMismatch(t *testing.T) {
 	f.smsTelnyx.EXPECT().SendSMS(gomock.Any(), testMessageID, source, targets, "hello", gomock.Any()).Return([]SendResult{
 		result(SendOutcomeAccepted, "t-1", 1), // same as the platform count
 		result(SendOutcomeAccepted, "t-2", 2), // different
+		result(SendOutcomeAccepted, "t-3", 3), // different
 	})
 
 	f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "hello")
 
-	if got := promValue(t, "message_manager_segment_mismatch_total", map[string]string{"provider": "telnyx"}) - before; got != 1 {
-		t.Errorf("Wrong mismatch count. expect: 1, got: %v", got)
+	if got := promValue(t, "message_manager_segment_mismatch_total", map[string]string{"provider": "telnyx"}) - before; got != 2 {
+		t.Errorf("Wrong mismatch count. expect: 2, got: %v", got)
 	}
 	stored := f.mem.targets()
 	if stored[1].Parts != 1 || stored[1].ProviderParts != 2 || stored[0].ProviderParts != 1 {
