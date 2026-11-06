@@ -10,9 +10,6 @@ import (
 
 	"monorepo/bin-common-handler/pkg/confighandler"
 )
-
-// Contract runs the behavior every confighandler.Store must have. newStore returns an empty store;
-// histories returns how many history rows that store holds, so that a failed write is shown to
 // leave no history behind.
 // contractEnv holds what every case of the contract needs.
 type contractEnv struct {
