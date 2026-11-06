@@ -124,12 +124,20 @@ func NewRegistry(keys []Key) (*Registry, error) {
 	}
 
 	groups := map[string][]Key{}
+	envs := map[string]string{}
 	for _, k := range keys {
 		if err := validateKey(k); err != nil {
 			return nil, err
 		}
 		if _, ok := res.byName[k.Name]; ok {
 			return nil, fmt.Errorf("config key %q is declared more than once", k.Name)
+		}
+
+		if k.Env != "" {
+			if other, ok := envs[k.Env]; ok {
+				return nil, fmt.Errorf("config keys %q and %q declare the same environment name", other, k.Name)
+			}
+			envs[k.Env] = k.Name
 		}
 
 		k.Default = normalizeDefault(k)
@@ -226,6 +234,13 @@ func validateKey(k Key) error {
 	}
 	if k.Type != TypeEnum && len(k.Enum) > 0 {
 		return fmt.Errorf("config key %q: enum values apply to the enum type only", k.Name)
+	}
+	seen := map[string]bool{}
+	for _, e := range k.Enum {
+		if e == "" || seen[e] {
+			return fmt.Errorf("config key %q: enum values must be non-empty and unique", k.Name)
+		}
+		seen[e] = true
 	}
 
 	if k.Kind == KindSecret {

@@ -103,7 +103,7 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `mailgun_api_key` | `MAILGUN_API_KEY` | required | Mailgun API key |
 | `mailgun_webhook_signing_key` | `MAILGUN_WEBHOOK_SIGNING_KEY` | required | Mailgun webhook signing key. Used to verify the signature of every Mailgun webhook request |
 
-| `email_config_encryption_keys` | `EMAIL_CONFIG_ENCRYPTION_KEYS` | `""` (environment only, no flag) | Master key list for the stored secrets, `<version>:<base64 of 32 bytes>[,...]`, first entry encrypts. Without it secrets can not be stored |
+| `email_config_encryption_keys` | `EMAIL_CONFIG_ENCRYPTION_KEYS` | `""` (environment only, no flag) | Master key list for the stored secrets, `<version>:<base64 of 32 bytes>[,...]`, the entry with the highest version encrypts. Without it secrets can not be stored |
 
 **Stored values:** each of the three credentials above can also be stored in `email_configs` (`email-control config set`). A stored value wins over the environment variable and is used by the next call without a restart; `config clear` makes the environment variable apply again. `email-control config list` shows the source and `env_shadowed` (the environment value is set but not used). A stored secret that can not be decrypted (wrong or missing master key) is an error and never falls back to the environment variable.
 

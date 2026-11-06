@@ -29,6 +29,9 @@ func Test_NewRegistry(t *testing.T) {
 		{name: "valid duration", keys: []confighandler.Key{{Name: "a.timeout", Kind: confighandler.KindParam, Type: confighandler.TypeDuration, Default: 3 * time.Second, Min: ptr(int64(time.Second))}}},
 
 		{name: "duplicate name", keys: []confighandler.Key{secretKey("a.k"), secretKey("a.k")}, expectErr: "more than once"},
+		{name: "same environment name", keys: []confighandler.Key{secretKey("a.k1"), secretKey("a.k2")}, expectErr: "same environment name"},
+		{name: "enum value repeated", keys: []confighandler.Key{{Name: "a.k", Kind: confighandler.KindParam, Type: confighandler.TypeEnum, Enum: []string{"x", "x"}}}, expectErr: "non-empty and unique"},
+		{name: "enum value empty", keys: []confighandler.Key{{Name: "a.k", Kind: confighandler.KindParam, Type: confighandler.TypeEnum, Enum: []string{"x", ""}}}, expectErr: "non-empty and unique"},
 		{name: "upper case name", keys: []confighandler.Key{secretKey("A.k")}, expectErr: "malformed"},
 		{name: "name with dash", keys: []confighandler.Key{secretKey("a-k")}, expectErr: "malformed"},
 		{name: "empty name", keys: []confighandler.Key{secretKey("")}, expectErr: "malformed"},
