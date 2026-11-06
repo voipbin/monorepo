@@ -64,6 +64,10 @@ workflows:
             docs/reference/extractor\.sh run-shell-tests true
             docs/reference/tests/.*     run-shell-tests true
 
+            bin-[^/]+/migrations/.*     run-service-migration-collation true
+            \.circleci/scripts/check-service-migration-default-collation\.sh run-service-migration-collation true
+            \.circleci/config_work\.yml run-service-migration-collation true
+
             \.golangci\.yml             run-lint-config-check true
             \.golangci-errorlint\.yml run-lint-config-check true
             \.circleci/config_work\.yml run-lint-config-check true
