@@ -115,6 +115,13 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `mms_target_failed_total` | Counter | `provider`, `reason` | MMS targets that no provider accepted (`rejected`, `error`, `ineligible`) |
 | `mms_media_check_seconds` | Histogram | none | Duration of the media validation and signed URL refresh of one MMS request |
 | `inbound_media_total` | Counter | `result` | Media of received messages by result: `stored`, `parse`, `type`, `host`, `size`, `auth`, `status`, `network`, `timeout`, `storage`, `overflow`, `busy` |
+| `segment_mismatch_total` | Counter | `provider` | Targets whose segment count reported by an SMS provider differs from the platform count |
+| `receipt_unmatched_total` | Counter | none | Delivery receipts that matched no message |
+| `dispatch_final_write_failed_total` | Counter | none | Dispatches whose final result could not be written (the targets stay `queued`) |
+| `event_dropped_total` | Counter | none | `message_updated` events dropped because the message could not be read |
+| `promoted_messages_total` | Counter | `segments` | Texts promoted to a text-only MMS |
+| `promoted_mms_total` | Counter | `provider`, `outcome` | MMS requests of promoted messages by outcome |
+| `promoted_fallback_total` | Counter | `reason`, `segments` | Targets of promoted messages sent as SMS segments (`ineligible`, `rejected`) |
 | `request_external_process_time` | Histogram | `provider`, `method` | Provider API call duration |
 | `messagebird_number_send_total` | Counter | `type` | Total SMS sent via MessageBird |
 | `telnyx_number_send_total` | Counter | `type` | Total SMS sent via Telnyx |
@@ -124,4 +131,6 @@ All flags can also be set via environment variable (uppercase, underscores).
 - `inbound_media_total{result="storage"}` or `{result="busy"}` rising → storage-manager unavailable or full, or more received MMS than the process can ingest (two at a time; memory is the reason for the small limit).
 - `messagebird_number_send_total` dropping to zero → MessageBird auth failure or API down; SMS will fail silently.
 - `request_external_process_time` p99 > 10s → provider API slow; messages may time out.
+- `promoted_fallback_total{reason="rejected"}` rising → providers refuse a text-only MMS; the promoted traffic is sent as SMS segments but charged the MMS price.
+- `dispatch_final_write_failed_total` rising → database trouble during dispatch; targets stay `queued` without a result.
 - `receive_request_process_time` rising → RabbitMQ queue backing up; check consumer health.

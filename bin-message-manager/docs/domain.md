@@ -44,7 +44,9 @@ An individual recipient within a message. Each destination address maps to one T
 
 ### Provider Selection
 
-SMS: the send logic starts with MessageBird and goes through the SMS provider handlers; see `pkg/messagehandler/send.go`.
+SMS: an ordered chain, Telnyx first and MessageBird for the targets Telnyx definitively refused (`pkg/messagehandler/dispatch.go`). A result that is unknown is never sent again.
+Segments: `pkg/segmenthandler` counts the segments of a text from the GSM-7 and UCS-2 rules (3GPP TS 23.038 and TS 23.040), whatever the provider reports. A text of more than one segment is created as an `mms` without media, charged the MMS rate for each recipient; more than 10 segments is refused as `TEXT_TOO_LONG`. A promoted text is sent as an MMS to a +1 destination from a +1 source (Telnyx, then MessageBird) and as SMS segments otherwise or when the MMS is refused.
+`Target.Parts` is the platform count; `ProviderParts` and `ProviderReferenceID` are internal and removed from the API and the events.
 MMS: Telnyx is the first provider and MessageBird is used only for the targets Telnyx definitively refused (see the MMS Send Flow below).
 The provider identifier is stored on the Message record for webhook routing.
 
@@ -54,7 +56,7 @@ Provider webhooks arrive at `POST /v1/hooks` via `bin-hook-manager`. The URI suf
 - URI ending in `/telnyx` → Telnyx webhook handler
 - URI ending in `/messagebird` → MessageBird webhook handler
 
-Webhooks update the relevant Target's `status` field.
+Telnyx `message.sent` and `message.finalized` events update the Target found by the provider reference id (status never moves back from a final state; a receipt that cannot be applied is answered with 500 so the provider sends it again). Only `message.received` creates a message.
 
 ### Inbound Message and Inbound MMS
 
