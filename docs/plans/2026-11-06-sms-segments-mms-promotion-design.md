@@ -113,7 +113,7 @@ Per target outcomes, as the MMS path already has: `SendResult{Outcome, ProviderR
 
 ### 8. Out of scope (suggestions only)
 
-- Correcting old `queued` Telnyx messages (separate ticket, no production write here).
+- Correcting old `queued` Telnyx messages (follow-up work, no production write here).
 - Messagebird receipts (no hook route exists), normalizing the Messagebird raw status strings.
 - Inbound messages are charged at the SMS rate today (`EventMMMessageCreated` ignores `direction`); this change keeps that.
 - Failed sends are charged at creation and not refunded (existing model).
