@@ -18,7 +18,7 @@ A service that owns its tables applies its schema migrations itself at startup (
 - Merged files are immutable and numbers are never reused. Fix a mistake with a new number.
 - Expand/contract: the old code must work on the new schema. Drop a column in a later PR than the one that stops using it; replace instead of rename or retype.
 - The baseline down is the no-op `SELECT 1`.
-- Do not compare the result of a string function (`JSON_TYPE`, `LOWER`, `CONCAT`, ...) with a literal in a `CHECK` or default. The result carries the system collation and the literal the database default, so the statement fails with Error 1267 on a database whose default differs (MariaDB 12.x resolves `CHARACTER SET utf8` to `utf8mb3_uca1400_ai_ci`). Cast both sides to binary: `CAST(JSON_TYPE(c) AS BINARY) <> CAST('NULL' AS BINARY)`. `scripts/verify-service-migrations.sh` (V13) applies the files to a database created with the engine default collation.
+- Do not compare the result of a string function (`JSON_TYPE`, `LOWER`, `CONCAT`, ...) with a literal in a `CHECK` or default. The result carries the system collation and the literal the database default, so the statement fails with Error 1267 on a database whose default differs (MariaDB 12.x resolves `CHARACTER SET utf8` to `utf8mb3_uca1400_ai_ci`). Cast both sides to binary: `CAST(JSON_TYPE(c) AS BINARY) <> CAST('NULL' AS BINARY)`. `scripts/verify-service-migrations.sh` (V13) applies the files to a database created with the engine default collation, for every service; `bin-email-manager/migrations` additionally has a static test for the function calls.
 
 ## Baseline from the Alembic head
 
