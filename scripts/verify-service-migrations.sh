@@ -800,6 +800,7 @@ for IMAGE in "${ENGINES[@]}"; do
   if ! ctl e8 up >"$WORK/e8.out" 2>&1 || [ "$(version_of e8)" != "$N" ]; then
     tail -5 "$WORK/e8.out"; fail "$IMAGE V13 default-collation database up"
   elif [ "$DESTRUCTIVE" = 1 ]; then
+    ok "$IMAGE V13 default-collation database: up ($N)"
     skip "$IMAGE V13 down/up (DESTRUCTIVE migration)"
   else
     d=0; while [ "$d" -lt "$N" ] && ctl e8 down >>"$WORK/e8.out" 2>&1; do d=$((d+1)); done

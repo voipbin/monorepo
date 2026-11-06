@@ -10,7 +10,7 @@ Verdict: valid. Checked against main and scratch containers (MariaDB 12.3.3, MyS
 - The same engines with `utf8mb4`, with an explicit `utf8_general_ci`, and MySQL 8.0 with `utf8` all pass, which is why the existing checks (they create the database with `utf8_general_ci`) did not see it.
 - Other services: a case-insensitive grep over all `*.sql` finds a function result compared with a string literal only in this file.
 
-Not verified: step V13 was run only against bin-email-manager (the other services were not run; a generated column using `JSON_UNQUOTE(JSON_EXTRACT(...))` in another baseline is not checked here); the exact engine version and database collation of any deployed environment beyond what the error text shows.
+Not verified: step V13 applies to every service by script, but it was run (by hand, same steps on scratch containers) only against bin-email-manager (the other services were not run; a generated column using `JSON_UNQUOTE(JSON_EXTRACT(...))` in another baseline is not checked here); the exact engine version and database collation of any deployed environment beyond what the error text shows.
 
 ## 2. Design
 
