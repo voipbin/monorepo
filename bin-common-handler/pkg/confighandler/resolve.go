@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"time"
-
-	"monorepo/bin-common-handler/pkg/secretcrypto"
 )
 
 // rowGetter returns the row of a key or ErrNotFound.
@@ -141,7 +139,7 @@ func (h *handler) fromRow(k Key, row *Row, r *resolution) (*resolution, error) {
 			return r, fmt.Errorf("%w: the stored secret of key %q is empty", ErrInvalid, k.Name)
 		}
 
-		pt, err := h.crypto.Decrypt(row.SecretCiphertext, row.KeyVersion, secretcrypto.AAD(h.table, k.Name))
+		pt, err := h.crypto.Decrypt(row.SecretCiphertext, row.KeyVersion)
 		if err != nil {
 			r.res.Source = SourceDBUndecryptable
 			return r, fmt.Errorf("%w: key %q: %w", ErrUndecryptable, k.Name, err)

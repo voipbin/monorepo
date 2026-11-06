@@ -8,8 +8,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"monorepo/bin-common-handler/pkg/secretcrypto"
-
 	"monorepo/bin-number-manager/models/number"
 	"monorepo/bin-number-manager/models/provider"
 )
@@ -27,7 +25,7 @@ func twilioRow(t *testing.T, enabled bool, priority int, config map[string]strin
 	if err != nil {
 		t.Fatal(err)
 	}
-	ct, ver, err := crypto.Encrypt("twilio-db-token", secretcrypto.AADLiteral(string(number.ProviderNameTwilio)))
+	ct, ver, err := crypto.Encrypt("twilio-db-token")
 	if err != nil {
 		t.Fatal(err)
 	}

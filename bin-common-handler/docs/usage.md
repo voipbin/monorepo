@@ -46,7 +46,7 @@ rootCmd.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrat
 ```go
 reg, _ := confighandler.NewRegistry(keys)          // declarations: name, kind, type, env name
 crypto, _ := secretcrypto.New(masterKeyList, secretcrypto.WithMaxPlaintext(2020))
-h := confighandler.NewHandler(reg, store, crypto, envLookup, "<svc>_configs")
+h := confighandler.NewHandler(reg, store, crypto, envLookup)
 secret, resolved, err := h.Secret(ctx, "provider.api_key") // db, then env, then default
 ```
 

@@ -1,5 +1,7 @@
 # VOIP-1685 shared secretcrypto / confighandler and email_configs (PR1)
 
+> Superseded in part (VOIP-1688): the additional authenticated data described below was removed. A stored ciphertext is plain AES-256-GCM and is not bound to its row; ciphertexts written with the data no longer decrypt and the secret must be entered again.
+
 Scope of this PR: `bin-common-handler/pkg/secretcrypto`, `bin-common-handler/pkg/confighandler`,
 compatibility tests, and the first adopter `bin-email-manager` (tables `email_configs` and
 `email_config_histories`, a key-supplier refactor of the email handler, and `email-control config`).

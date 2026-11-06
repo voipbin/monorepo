@@ -10,42 +10,46 @@ import (
 
 	"monorepo/bin-common-handler/pkg/secretcrypto"
 
-	"monorepo/bin-number-manager/models/number"
 	"monorepo/bin-number-manager/models/provider"
 )
 
-// The vectors below were produced once by the previous service copy of the cipher code
-// (bin-number-manager/pkg/secretcrypto, unchanged on origin/main d43e84007) under fake keys:
-// version 1 is the bytes 0x40+i and version 2 is the bytes 0x90+i (i = 0..31). They pin the stored
-// layout of number_providers.secret_ciphertext (nonce || ciphertext || tag, AAD = provider name):
-// every row that exists in a database must keep decrypting.
+// The vectors below were sealed once with the standard library alone (crypto/aes, cipher.NewGCM,
+// Seal with a fixed nonce and no associated data) under fake keys: version 1 is the bytes 0x40+i and
+// version 2 is the bytes 0x90+i (i = 0..31). The nonce of each vector starts at 0x10 (A), 0x20 (B),
+// 0x30 (C), 0x40 (D) and 0x50 (E) and counts up. They pin the stored layout of
+// number_providers.secret_ciphertext (nonce || ciphertext || tag): every row that exists in a
+// database must keep decrypting.
 const (
-	vectorTwoKeyA = "1f3d9d300d26711ff38e185ae943659cb74f8a1ccd87a0bd877e02bf0feca56d8431defd89fbfe00326fbc14d8bf725e32a7a793909af912bc3803995323d4d7104f"
-	vectorTwoKeyB = "c2c58809b756f16f395d18959abf223f2fe573a889844fd64ebe22cb619b0e7c8844aca01f1e4fe207fc6d85fd095979a79f9a1574a5750469115ef8073f99c8756e"
-	vectorOneKeyC = "140fa1ecb76a9b2f8c49638cd41bbd3d7ad2190fcec42286e4498c77e29a9a4b7419cf04a7d19a4dadf00f84a9a594b04b8777bd7da3002f0289e44a206331d1d4f91de0d1"
-	vectorOneKeyD = "ddab6d66374d2de68ba3dc16daff85067c295a7b49141fb7e4fb13695dae865f812de3e8000df51221394ee2d6a5e7492c9074e6e6b72d04"
-	vectorOneKeyE = "50d3725dd561250029596c5ca49d6e7a64abef90d872623b72bbc5b980d81d4c758fc8455fa3920f8e0a9a8620268a5e" +
-		"769fe494b36ea5c9e951357864976136e12fb645578ed6b92150a1d439bae71006194a7c0892cb5171d42f833abce1c3" +
-		"90ee2fb979fe8ea01bb0bca072f3b3e5fd0abc4bb08d521721bf4699151510ab48aca5b875b4fcce4caeeb2e5ef6a98b" +
-		"048d8938034110eb8d17e7e93493e4d9fc14be64009aa6de4fe388c7cf8c7fb62e7db07567b0f520ca815c0e39c73dc7" +
-		"c5e4c17b811ec21679cdaa9b530a2d2ae75f88807f5bec9574c779c7c5dc26e494c9d958ef56bef52213a49278e7e254" +
-		"379a1603d22b15e49bfa354e862d601b15f05a1b8bc8b35fbf20a50470c49328740ace720f60f8ab78ba5642ed4568a7" +
-		"d62517d859a7b8a8c2a1d392f23ab7e04b119944c486972666e2ed59cea6b7ee65a64fe469bfab84c116f605a83d4bc7" +
-		"90b44884ebca42eb75e0eb2a33d5b1103daf774d96ebf1b2d3c5255405271ce1d0dcf93e0a3d8cc02067b6f1d62963b6" +
-		"1f44d2c0711269a4d780f49b318c11608b7f8242d194c0de791dd0fb20f5ff393989b0b8fe4c6f9a012dcdd3587a8203" +
-		"5a0ef38eacea54338a73590c81a941d4c840b77ed59c2a46795980c54f3ac377d5e20df673bdae292cfd3e3cdf62ccff" +
-		"3cdce571322822d75e5e70ed6a0e2f9bba08e1be7353c24d89e4a874debaa77a6bb37d32f1870d898243a490439675e5" +
-		"fcb824a00fb1938c29284a22822fc6e59a07da162638cea631efbbd8338487705e24ac0dab355096d19d0380a0c898f3" +
-		"ceb2ace304e4226a773735fc1468a1a57cab3cdac8080fb7e13eb183b42018abbfe61218e05c2247a382ff5bbe72343d" +
-		"1f8babcd663b898f070fc65e36d3fbbd82507d2fef8cdc21071ea3ef713a8bf91b3ceed13ff12d3d369120ea5d100aa0" +
-		"e88081eac087fb015004c5ca9c9b933b9ae3e631dc3a514b9e2e7518b760f24d2a9d283e764608caf344059fd9424605" +
-		"a1671ac0c2b7a2cb29d2bc6d375c610a5fe953a1c48d6ab7d4c972fd424356dc31c261369623943329aeb5773d1e054c" +
-		"93a255860167d9da504ce235282ba1db64908732f94a754a1be2486307dad53a59c05ab111b4814e839c1fca7f5e721a" +
-		"53feabc4e00d783e739886ecdf65581a1d984eff9c445a6740fcc6f5387d14e916c90560ded5c7377235cbfa17be7a0b" +
-		"a127a9c0e3c1af312042bdbd856162471e8031068e2a5dbb5f8e02929c27484c0c793b960722060df2b25dbc3f794752" +
-		"d9a35735197c92cdd8a8374986eea6d9da1ad945976355d8885ce1d83599bea65997cf92d00c534eac65d12a91e400c4" +
-		"7101e9d39a3a39cf6edb11b2bae400666707847385f775918bb740aba2da2c84205887574b0d74ffe012acaef5ea4b2e" +
-		"dc2cad25cd3160711f6df91d39aa668174b2ee4a0257645246255c4557e029a4988d339d2c6cee64de5d3f94"
+	vectorTwoKeyA = "101112131415161718191a1bf1f36c58d0f79aa581ef2b3f3687a7e81ba82f048bdd543115f267191e72aa854269626dbafd71149c948b36d9d8db78cb5a7b71104b"
+	vectorTwoKeyB = "202122232425262728292a2b97a302f472df370e5475daf876ec0d9860c3412320c2eb93e092aec202707932d1da17e18d0799abd9bf540506dc6e82f14e8d1bd002"
+	vectorOneKeyC = "303132333435363738393a3be7b6895a55c8b98c8370b06e98789e9cfb4b2111c9fcbe17efc8516bad7da0dbbbf1129202e13c28846ebe20e2013ea73328e04ceb85fbc3c9"
+	vectorOneKeyD = "404142434445464748494a4b07162248b1ac5a8be485d51dad5659dd20b498d22e7b9022ae751005cee368396dc7232c5405e9d810800187"
+	vectorOneKeyE = "505152535455565758595a5bf72a7363b9d0135dba8aa24aff25e2dc002b69b258195dbba588ecac571022a1df0a7478" +
+		"cd7fb049312f2599e0d1d22a8e12880f0e21fe9a84b73a277ae00cf32bf4b4607f55e3b00bc968aa4ef75026ec037900" +
+		"fa4f2e5f35aac26429829c5fc0ba957d23520cff77cd02f0643414bbea32a83c90b8e49383d0f4d9ad26e3bc6555f5f2" +
+		"9437822389dbef16bdd0d69d2a326e540f072b89c772b6af0c794f15584060686b97442ed3d8d58badbcabce77cd5a1e" +
+		"002c0317c85fdf0fa402d3bf23222c7115304885559f176974a567c920512e380f01bfd6f416fd863a70b28b52171499" +
+		"e1cde8d778142f4954b675bba9a2f43873113b91c5d8792f216b9a1478a73a9544301452cd4ed36d049ed5e400b6d50e" +
+		"788c8c605dbe8c47c63add97a728a9a9f4fc647a936838a75df187be3776e32f62874bd201b2c5331e29c9d4774cde9e" +
+		"7630ab215388521d1355a3a9089aae036ef9def2db11788f3acae5bdf102e3b44e175251495f332fd6f220200e51430d" +
+		"a8d69ad13cc9f25b4cdab28c99a0d7bf7072d56864ceafd03474f9ad0d20e683e3e1b32b41c33dcfb3828ff9b99311a1" +
+		"53cd6e4d8f1ab3cfd75a832f72b761fceea79d70ba23b7499d762d3514e6f051515ea71c4dabd1155629c694420bc58b" +
+		"fee8ea50a1094db6e3f7ce636b885c25dca59c0e6226ac656e45e39a53a4b609bed95e19ee78d74c2589f6dbaa479e5b" +
+		"9734d439a54cef792f4d0f95c9fa4f307b2c5c85fad51ebb6952c976c67f951e0702c0bda7567710cbfd8e9abc478c2f" +
+		"7b41fd16fd5e3b42f4b38debaace9f7278f1014bc1d5440179b903c9a92b2a572249ae017a47c143217c2c34640bf966" +
+		"98b3c43ad0fe0d15f8680869b36357a8035b429d2d67df2e0b31b97795033bef00ad8cbc0c8e3fd25ae043044a1c208e" +
+		"e3dabbc22e40cd09223b4d66189393a297aec0d982dbcfa299010564fad5f28c0f0b4a26c3c0aa6843fa64c2d2bf40f1" +
+		"2c8ce581b3e1d6268742e394b9368a34a444bb62f2f4507b6f2bced04e07b68757531a1022c33d003c2bfda7bc42ccf4" +
+		"90a2f25f4bab5fe2f2ec7d1144e4ac28ca63f6ccfd2d48411a10d92a28cee24637101bfb4198e714f385cc37e9d9717a" +
+		"baa577ed805661a8de6db367d35805fe524a1ac5154fe2fb37816d4e118f56f9dfbd680225177a013a12a2308ecd9a41" +
+		"211e6c24a7c5a32737f5726ea227d6d5425afd21e3ee735e36626dd35eec55067e19da0f333d797d2b8ab2ffed13919d" +
+		"270091f81f19bdc21349378a07ac831eda16af1cdfd78d9be5579bb9185182d1d83bcef72ca4f9bff88dabc2a27803e8" +
+		"f1ecdd6ef159c75c3f0eae142ed99863508ffd1099a5f9d0e1c337da5bf670d085da9da38993852df92cc2004bad879b" +
+		"1a6389cf560a5f4a1ef75ebf292047fd9df0eda01f5b30e3dd6414c80ac693c17256c7b4c88b3ded47c395f3"
+
+	// legacyAADVectorTwoKeyA is the plaintext of vectorTwoKeyA sealed under the same key with the
+	// provider name "telnyx" as associated data, which the earlier layout used. It must not decrypt.
+	legacyAADVectorTwoKeyA = "1f3d9d300d26711ff38e185ae943659cb74f8a1ccd87a0bd877e02bf0feca56d8431defd89fbfe00326fbc14d8bf725e32a7a793909af912bc3803995323d4d7104f"
 )
 
 func fakeKeyList(versions ...int) string {
@@ -83,19 +87,18 @@ func Test_decryptSecret_storedVectors(t *testing.T) {
 	tests := []struct {
 		name string
 
-		crypto       *secretcrypto.Crypto
-		vector       string
-		version      int
-		providerName number.ProviderName
+		crypto  *secretcrypto.Crypto
+		vector  string
+		version int
 
 		expectRes string
 	}{
-		{"telnyx version 2", two, vectorTwoKeyA, 2, number.ProviderNameTelnyx, "fake-provider-secret-for-vector-telnyx"},
-		{"twilio version 2", two, vectorTwoKeyB, 2, number.ProviderNameTwilio, "fake-provider-secret-for-vector-twilio"},
-		{"telnyx version 1", one, vectorOneKeyC, 1, number.ProviderNameTelnyx, "fake-provider-secret-for-vector-telnyx-v1"},
-		{"non-ASCII plaintext", one, vectorOneKeyD, 1, number.ProviderNameTwilio, "가짜-비밀-ünïcode-fake"},
-		{"plaintext at the limit", one, vectorOneKeyE, 1, number.ProviderNameTelnyx, strings.Repeat("a", maxSecretBytes)},
-		{"old row after a rotation", two, vectorOneKeyC, 1, number.ProviderNameTelnyx, "fake-provider-secret-for-vector-telnyx-v1"},
+		{"telnyx version 2", two, vectorTwoKeyA, 2, "fake-provider-secret-for-vector-telnyx"},
+		{"twilio version 2", two, vectorTwoKeyB, 2, "fake-provider-secret-for-vector-twilio"},
+		{"telnyx version 1", one, vectorOneKeyC, 1, "fake-provider-secret-for-vector-telnyx-v1"},
+		{"non-ASCII plaintext", one, vectorOneKeyD, 1, "가짜-비밀-ünïcode-fake"},
+		{"plaintext at the limit", one, vectorOneKeyE, 1, strings.Repeat("a", maxSecretBytes)},
+		{"old row after a rotation", two, vectorOneKeyC, 1, "fake-provider-secret-for-vector-telnyx-v1"},
 	}
 
 	for _, tt := range tests {
@@ -105,7 +108,7 @@ func Test_decryptSecret_storedVectors(t *testing.T) {
 				t.Fatalf("Wrong match. bad vector: %v", err)
 			}
 
-			res, err := decryptSecret(tt.crypto, blob, tt.version, tt.providerName)
+			res, err := decryptSecret(tt.crypto, blob, tt.version)
 			if err != nil {
 				t.Fatalf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -123,6 +126,7 @@ func Test_decryptSecret_failures(t *testing.T) {
 
 	blobA, _ := hex.DecodeString(vectorTwoKeyA)
 	blobC, _ := hex.DecodeString(vectorOneKeyC)
+	blobLegacy, _ := hex.DecodeString(legacyAADVectorTwoKeyA)
 	damaged := append([]byte{}, blobA...)
 	damaged[len(damaged)-1] ^= 0xff
 
@@ -132,22 +136,21 @@ func Test_decryptSecret_failures(t *testing.T) {
 		crypto  *secretcrypto.Crypto
 		blob    []byte
 		version int
-		pname   number.ProviderName
 	}{
-		{"another provider name", two, blobA, 2, number.ProviderNameTwilio},
-		{"damaged blob", two, damaged, 2, number.ProviderNameTelnyx},
-		{"key version removed", onlyTwo, blobC, 1, number.ProviderNameTelnyx},
-		{"wrong row version", two, blobA, 1, number.ProviderNameTelnyx},
-		{"no key configured", none, blobA, 2, number.ProviderNameTelnyx},
-		{"nil crypto", nil, blobA, 2, number.ProviderNameTelnyx},
-		{"blob of 12 bytes", two, make([]byte, 12), 2, number.ProviderNameTelnyx},
-		{"blob of 27 bytes", two, make([]byte, 27), 2, number.ProviderNameTelnyx},
-		{"empty blob", two, nil, 2, number.ProviderNameTelnyx},
+		{"sealed with associated data by an earlier layout", two, blobLegacy, 2},
+		{"damaged blob", two, damaged, 2},
+		{"key version removed", onlyTwo, blobC, 1},
+		{"wrong row version", two, blobA, 1},
+		{"no key configured", none, blobA, 2},
+		{"nil crypto", nil, blobA, 2},
+		{"blob of 12 bytes", two, make([]byte, 12), 2},
+		{"blob of 27 bytes", two, make([]byte, 27), 2},
+		{"empty blob", two, nil, 2},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := decryptSecret(tt.crypto, tt.blob, tt.version, tt.pname)
+			res, err := decryptSecret(tt.crypto, tt.blob, tt.version)
 			if err == nil {
 				t.Fatalf("Wrong match. expect: error, got: nil")
 			}
@@ -161,7 +164,7 @@ func Test_decryptSecret_failures(t *testing.T) {
 func Test_encryptSecret(t *testing.T) {
 	c := mustNewSecretCrypto(t, fakeKeyList(1, 2))
 
-	blob, version, err := encryptSecret(c, "fake-secret-value", number.ProviderNameTelnyx)
+	blob, version, err := encryptSecret(c, "fake-secret-value")
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -172,12 +175,9 @@ func Test_encryptSecret(t *testing.T) {
 		t.Errorf("Wrong match. the ciphertext holds the plaintext")
 	}
 
-	res, err := decryptSecret(c, blob, version, number.ProviderNameTelnyx)
+	res, err := decryptSecret(c, blob, version)
 	if err != nil || res != "fake-secret-value" {
 		t.Fatalf("Wrong match. expect: round trip, got: %q, %v", res, err)
-	}
-	if _, err := decryptSecret(c, blob, version, number.ProviderNameTwilio); err == nil {
-		t.Errorf("Wrong match. expect: failure for another provider name, got: nil")
 	}
 }
 
@@ -186,34 +186,34 @@ func Test_encryptSecret_errors(t *testing.T) {
 	noKey := mustNewSecretCrypto(t, "")
 
 	t.Run("no key", func(t *testing.T) {
-		_, _, err := encryptSecret(noKey, "x", number.ProviderNameTelnyx)
+		_, _, err := encryptSecret(noKey, "x")
 		if !errors.Is(err, provider.ErrSecretKeyNotConfigured) {
 			t.Errorf("Wrong match. expect: ErrSecretKeyNotConfigured, got: %v", err)
 		}
 	})
 
 	t.Run("nil crypto", func(t *testing.T) {
-		_, _, err := encryptSecret(nil, "x", number.ProviderNameTelnyx)
+		_, _, err := encryptSecret(nil, "x")
 		if !errors.Is(err, provider.ErrSecretKeyNotConfigured) {
 			t.Errorf("Wrong match. expect: ErrSecretKeyNotConfigured, got: %v", err)
 		}
 	})
 
 	t.Run("key text of the sentinel", func(t *testing.T) {
-		_, _, err := encryptSecret(noKey, "x", number.ProviderNameTelnyx)
+		_, _, err := encryptSecret(noKey, "x")
 		if err == nil || err.Error() != "secret encryption key is not configured" {
 			t.Errorf("Wrong match. expect: the unchanged text, got: %v", err)
 		}
 	})
 
 	t.Run("longest secret is accepted", func(t *testing.T) {
-		if _, _, err := encryptSecret(withKey, strings.Repeat("a", maxSecretBytes), number.ProviderNameTelnyx); err != nil {
+		if _, _, err := encryptSecret(withKey, strings.Repeat("a", maxSecretBytes)); err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}
 	})
 
 	t.Run("one byte more is invalid", func(t *testing.T) {
-		_, _, err := encryptSecret(withKey, strings.Repeat("a", maxSecretBytes+1), number.ProviderNameTelnyx)
+		_, _, err := encryptSecret(withKey, strings.Repeat("a", maxSecretBytes+1))
 		if !errors.Is(err, provider.ErrInvalidArgument) {
 			t.Fatalf("Wrong match. expect: ErrInvalidArgument, got: %v", err)
 		}
@@ -223,7 +223,7 @@ func Test_encryptSecret_errors(t *testing.T) {
 	})
 
 	t.Run("no key wins over the length, as before", func(t *testing.T) {
-		_, _, err := encryptSecret(noKey, strings.Repeat("a", maxSecretBytes+1), number.ProviderNameTelnyx)
+		_, _, err := encryptSecret(noKey, strings.Repeat("a", maxSecretBytes+1))
 		if !errors.Is(err, provider.ErrSecretKeyNotConfigured) {
 			t.Errorf("Wrong match. expect: ErrSecretKeyNotConfigured, got: %v", err)
 		}
@@ -302,7 +302,7 @@ func Test_NewSecretCrypto_daemonFallback(t *testing.T) {
 		t.Errorf("Wrong match. expect: no key, got: a key")
 	}
 
-	if _, _, err := encryptSecret(fallback, "x", number.ProviderNameTelnyx); !errors.Is(err, provider.ErrSecretKeyNotConfigured) {
+	if _, _, err := encryptSecret(fallback, "x"); !errors.Is(err, provider.ErrSecretKeyNotConfigured) {
 		t.Errorf("Wrong match. expect: ErrSecretKeyNotConfigured, got: %v", err)
 	}
 }

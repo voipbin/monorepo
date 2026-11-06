@@ -59,7 +59,7 @@ func Test_resolve_storedValues(t *testing.T) {
 			f.putValueRow(tt.key, tt.valueType, tt.json)
 			if tt.key == "p.model" {
 				// a member of an atomic group is read from the database only when the anchor has a row.
-				f.putSecretRow(t, "p.api_key", "db-key", testTable, 1)
+				f.putSecretRow(t, "p.api_key", "db-key", 1)
 			}
 
 			var err error
@@ -102,7 +102,7 @@ func Test_resolve_boolMember(t *testing.T) {
 	}
 	delete(f.env, "P_ENABLED")
 
-	f.putSecretRow(t, "p.api_key", "db-key", testTable, 1)
+	f.putSecretRow(t, "p.api_key", "db-key", 1)
 	f.putValueRow("p.enabled", "bool", `false`)
 	if b, res, err := f.h.Bool(ctx, "p.enabled"); err != nil || b || res.Source != confighandler.SourceDB {
 		t.Errorf("Wrong match. got: %v %s %v", b, res.Source, err)
@@ -156,7 +156,7 @@ func Test_write_readBackFailureIsReportedAsStored(t *testing.T) {
 			f.putValueRow("a.limit", "int", `3`)
 
 			wrapped := &failAfterStore{Store: f.store, n: tt.failAt}
-			h := confighandler.NewHandler(testRegistry(t), wrapped, f.crypto, func(string) (string, bool) { return "", false }, testTable)
+			h := confighandler.NewHandler(testRegistry(t), wrapped, f.crypto, func(string) (string, bool) { return "", false })
 
 			err := tt.run(h)
 			if err == nil || !strings.Contains(err.Error(), "is stored, but reading it back failed") {
@@ -192,7 +192,7 @@ func Test_resolve_groupMemberRows(t *testing.T) {
 
 	t.Run("member read error is an error", func(t *testing.T) {
 		f := newFixture(t, testKeyList(1, 1))
-		f.putSecretRow(t, "p.api_key", "db-key", testTable, 1)
+		f.putSecretRow(t, "p.api_key", "db-key", 1)
 		f.store.GetErrByKey = map[string]error{"p.model": errors.New("database is down")}
 		f.env["P_MODEL"] = "env-model"
 
@@ -204,7 +204,7 @@ func Test_resolve_groupMemberRows(t *testing.T) {
 
 	t.Run("member without a row is default and not shadowed", func(t *testing.T) {
 		f := newFixture(t, testKeyList(1, 1))
-		f.putSecretRow(t, "p.api_key", "db-key", testTable, 1)
+		f.putSecretRow(t, "p.api_key", "db-key", 1)
 		f.env["P_MODEL"] = "env-model"
 
 		model, res, err := f.h.String(ctx, "p.model")
@@ -215,7 +215,7 @@ func Test_resolve_groupMemberRows(t *testing.T) {
 
 	t.Run("member with a row and an environment value is shadowed", func(t *testing.T) {
 		f := newFixture(t, testKeyList(1, 1))
-		f.putSecretRow(t, "p.api_key", "db-key", testTable, 1)
+		f.putSecretRow(t, "p.api_key", "db-key", 1)
 		f.putValueRow("p.model", "string", `"db-model"`)
 		f.env["P_MODEL"] = "env-model"
 

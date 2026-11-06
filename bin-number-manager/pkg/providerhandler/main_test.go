@@ -3,6 +3,7 @@ package providerhandler
 import (
 	"context"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"reflect"
@@ -11,8 +12,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/secretcrypto"
 
 	"monorepo/bin-number-manager/models/number"
 	"monorepo/bin-number-manager/models/provider"
@@ -138,12 +137,25 @@ func envTelnyx() map[number.ProviderName]provider.Credentials {
 	return NewEnvCredentials("env-conn", "env-prof", "env-token", "", "")
 }
 
+// legacyAADRow returns a row whose secret was sealed with the provider name as associated data by
+// an earlier layout (the fixed vector of secret_test.go). It does not decrypt.
+func legacyAADRow(t *testing.T, config map[string]string) *provider.Provider {
+	t.Helper()
+
+	ct, err := hex.DecodeString(legacyAADVectorTwoKeyA)
+	if err != nil {
+		t.Fatalf("Wrong match. bad vector: %v", err)
+	}
+
+	return &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, Priority: 5, Config: config, SecretCiphertext: ct, KeyVersion: 2}
+}
+
 func Test_resolve(t *testing.T) {
 	ctx := context.Background()
 
 	// a row with a DB secret is built by the handler itself, so it is encrypted with the test keys
 	cryptoV1, _ := NewSecretCrypto(testKeys(1))
-	ct, ver, _ := cryptoV1.Encrypt("db-token", secretcrypto.AADLiteral("telnyx"))
+	ct, ver, _ := cryptoV1.Encrypt("db-token")
 
 	dbRow := func(enabled bool, config map[string]string) *provider.Provider {
 		return &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: enabled, Priority: 5, Config: config, SecretCiphertext: ct, KeyVersion: ver}
@@ -212,6 +224,12 @@ func Test_resolve(t *testing.T) {
 			name: "undecryptable secret never falls back to env",
 			row:  dbRow(true, map[string]string{"connection_id": "row-conn"}),
 			keys: testKeys(2), env: envTelnyx(),
+			expectSource: provider.CredentialSourceDBUndecryptable, expectUsable: false, expectEnabled: true, expectPriority: 5,
+		},
+		{
+			name: "secret sealed with associated data by an earlier layout is undecryptable and never falls back to env",
+			row:  legacyAADRow(t, map[string]string{"connection_id": "row-conn"}),
+			keys: fakeKeyList(1, 2), env: envTelnyx(),
 			expectSource: provider.CredentialSourceDBUndecryptable, expectUsable: false, expectEnabled: true, expectPriority: 5,
 		},
 		{
@@ -357,7 +375,7 @@ func Test_ForRelease(t *testing.T) {
 
 	t.Run("a DB secret without the required config can still release and search", func(t *testing.T) {
 		cryptoV1, _ := NewSecretCrypto(testKeys(1))
-		ct, ver, _ := cryptoV1.Encrypt("db-token", secretcrypto.AADLiteral("telnyx"))
+		ct, ver, _ := cryptoV1.Encrypt("db-token")
 		db := newFakeDB()
 		db.rows[number.ProviderNameTelnyx] = &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, SecretCiphertext: ct, KeyVersion: ver, Config: map[string]string{}}
 		h := newTestHandler(t, db, testKeys(1), envTelnyx())
@@ -377,7 +395,7 @@ func Test_ForRelease(t *testing.T) {
 
 	t.Run("undecryptable secret", func(t *testing.T) {
 		cryptoV1, _ := NewSecretCrypto(testKeys(1))
-		ct, ver, _ := cryptoV1.Encrypt("db-token", secretcrypto.AADLiteral("telnyx"))
+		ct, ver, _ := cryptoV1.Encrypt("db-token")
 		db := newFakeDB()
 		db.rows[number.ProviderNameTelnyx] = &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, SecretCiphertext: ct, KeyVersion: ver}
 		h := newTestHandler(t, db, testKeys(2), envTelnyx())

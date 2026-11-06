@@ -2,8 +2,9 @@
 //
 // The key list format is "<version>:<base64 of 32 bytes>[,...]". The highest version is used for
 // new writes and every configured version stays available for reading the rows written under it.
-// The additional authenticated data (AAD) is optional: a nil AAD is the legacy mode that is
-// byte-identical to gcm.Seal(nil, nonce, plaintext, nil).
+// The stored value is plain AES-256-GCM with no additional authenticated data, so it is
+// byte-identical to gcm.Seal(nil, nonce, plaintext, nil). A ciphertext is not bound to its row: any
+// row written under the same key version decrypts.
 //
 // Three stored layouts exist in the services; the adapter functions map them to the standard
 // blob (nonce || ciphertext || tag) without any data migration:
@@ -39,7 +40,7 @@ var (
 	ErrTooLong = errors.New("secret is longer than the limit")
 
 	// ErrDecrypt is returned when the blob cannot be decrypted: unknown key version, too short,
-	// or the authentication failed (wrong key, wrong AAD, modified data).
+	// or the authentication failed (wrong key, modified data).
 	ErrDecrypt = errors.New("could not decrypt the secret")
 
 	// ErrInvalidKeySet is returned when the key list cannot be parsed.
@@ -180,8 +181,8 @@ func newGCM(key []byte) (cipher.AEAD, error) {
 }
 
 // Encrypt encrypts the plaintext under the current key and returns nonce || ciphertext || tag and
-// the key version. aad binds the ciphertext to its row; nil is the legacy no-AAD mode.
-func (c *Crypto) Encrypt(plaintext string, aad []byte) ([]byte, int, error) {
+// the key version.
+func (c *Crypto) Encrypt(plaintext string) ([]byte, int, error) {
 	if !c.HasKey() {
 		return nil, 0, ErrKeyNotConfigured
 	}
@@ -199,14 +200,14 @@ func (c *Crypto) Encrypt(plaintext string, aad []byte) ([]byte, int, error) {
 		return nil, 0, errors.New("could not generate a nonce")
 	}
 
-	return gcm.Seal(nonce, nonce, []byte(plaintext), aad), c.currentVersion, nil
+	return gcm.Seal(nonce, nonce, []byte(plaintext), nil), c.currentVersion, nil
 }
 
 // Decrypt decrypts a blob produced by Encrypt using the key of the given (row) version, never the
 // current version, so rotating the key list does not break older rows.
 // A nil Crypto or a Crypto without any key returns ErrKeyNotConfigured; every other failure
 // returns ErrDecrypt.
-func (c *Crypto) Decrypt(blob []byte, version int, aad []byte) (string, error) {
+func (c *Crypto) Decrypt(blob []byte, version int) (string, error) {
 	if !c.HasKey() {
 		return "", ErrKeyNotConfigured
 	}
@@ -225,29 +226,12 @@ func (c *Crypto) Decrypt(blob []byte, version int, aad []byte) (string, error) {
 		return "", ErrDecrypt
 	}
 
-	pt, err := gcm.Open(nil, blob[:nonceLen], blob[nonceLen:], aad)
+	pt, err := gcm.Open(nil, blob[:nonceLen], blob[nonceLen:], nil)
 	if err != nil {
 		return "", ErrDecrypt
 	}
 
 	return string(pt), nil
-}
-
-// AAD builds the additional authenticated data of a configs row: the UTF-8 bytes of the table
-// name, a single 0x00 byte, then the UTF-8 bytes of the key name. The rule is a storage contract
-// and must not change once data exists.
-func AAD(table, key string) []byte {
-	res := make([]byte, 0, len(table)+1+len(key))
-	res = append(res, table...)
-	res = append(res, 0x00)
-	res = append(res, key...)
-
-	return res
-}
-
-// AADLiteral returns the bytes of s as is (for example the provider name of number_providers).
-func AADLiteral(s string) []byte {
-	return []byte(s)
 }
 
 // JoinSplit joins the two columns of the ciphertext-and-nonce layout into the standard blob.

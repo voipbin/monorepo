@@ -2,6 +2,8 @@ package secretcrypto
 
 import (
 	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -110,10 +112,10 @@ func Test_nilCrypto(t *testing.T) {
 	if c.Versions() != nil {
 		t.Errorf("Wrong match. expect: nil, got: %v", c.Versions())
 	}
-	if _, _, err := c.Encrypt("x", nil); !errors.Is(err, ErrKeyNotConfigured) {
+	if _, _, err := c.Encrypt("x"); !errors.Is(err, ErrKeyNotConfigured) {
 		t.Errorf("Wrong match. expect: ErrKeyNotConfigured, got: %v", err)
 	}
-	if _, err := c.Decrypt(make([]byte, 40), 1, nil); !errors.Is(err, ErrKeyNotConfigured) {
+	if _, err := c.Decrypt(make([]byte, 40), 1); !errors.Is(err, ErrKeyNotConfigured) {
 		t.Errorf("Wrong match. expect: ErrKeyNotConfigured, got: %v", err)
 	}
 }
@@ -121,10 +123,10 @@ func Test_nilCrypto(t *testing.T) {
 func Test_noKey(t *testing.T) {
 	c := mustNew(t, "")
 
-	if _, _, err := c.Encrypt("x", nil); !errors.Is(err, ErrKeyNotConfigured) {
+	if _, _, err := c.Encrypt("x"); !errors.Is(err, ErrKeyNotConfigured) {
 		t.Errorf("Wrong match. expect: ErrKeyNotConfigured, got: %v", err)
 	}
-	if _, err := c.Decrypt(make([]byte, 40), 1, nil); !errors.Is(err, ErrKeyNotConfigured) {
+	if _, err := c.Decrypt(make([]byte, 40), 1); !errors.Is(err, ErrKeyNotConfigured) {
 		t.Errorf("Wrong match. expect: ErrKeyNotConfigured, got: %v", err)
 	}
 }
@@ -133,22 +135,16 @@ func Test_EncryptDecrypt(t *testing.T) {
 	tests := []struct {
 		name string
 		raw  string
-		aad  []byte
 		pt   string
 		opts []Option
 
-		decryptAAD []byte
 		decryptVer int // 0: use the version Encrypt returned
 
 		expectEncryptErr error
 		expectDecryptErr error
 	}{
-		{name: "round trip without aad", raw: fakeKeyList(1, 1), pt: "plain value"},
-		{name: "round trip with aad", raw: fakeKeyList(1, 1), aad: AAD("t", "k"), decryptAAD: AAD("t", "k"), pt: "plain value"},
+		{name: "round trip", raw: fakeKeyList(1, 1), pt: "plain value"},
 		{name: "empty plaintext", raw: fakeKeyList(1, 1), pt: ""},
-		{name: "nil aad equals empty aad", raw: fakeKeyList(1, 1), aad: nil, decryptAAD: []byte{}, pt: "v"},
-		{name: "wrong aad", raw: fakeKeyList(1, 1), aad: AAD("t", "k"), decryptAAD: AAD("t", "other"), pt: "v", expectDecryptErr: ErrDecrypt},
-		{name: "aad missing on read", raw: fakeKeyList(1, 1), aad: AAD("t", "k"), decryptAAD: nil, pt: "v", expectDecryptErr: ErrDecrypt},
 		{name: "unknown version", raw: fakeKeyList(1, 1), pt: "v", decryptVer: 9, expectDecryptErr: ErrDecrypt},
 		{name: "too long", raw: fakeKeyList(1, 1), pt: "12345", opts: []Option{WithMaxPlaintext(4)}, expectEncryptErr: ErrTooLong},
 		{name: "exactly the limit", raw: fakeKeyList(1, 1), pt: "1234", opts: []Option{WithMaxPlaintext(4)}},
@@ -159,7 +155,7 @@ func Test_EncryptDecrypt(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c := mustNew(t, tt.raw, tt.opts...)
 
-			blob, ver, err := c.Encrypt(tt.pt, tt.aad)
+			blob, ver, err := c.Encrypt(tt.pt)
 			if tt.expectEncryptErr != nil {
 				if !errors.Is(err, tt.expectEncryptErr) {
 					t.Fatalf("Wrong match. expect: %v, got: %v", tt.expectEncryptErr, err)
@@ -178,7 +174,7 @@ func Test_EncryptDecrypt(t *testing.T) {
 				useVer = tt.decryptVer
 			}
 
-			got, err := c.Decrypt(blob, useVer, tt.decryptAAD)
+			got, err := c.Decrypt(blob, useVer)
 			if tt.expectDecryptErr != nil {
 				if !errors.Is(err, tt.expectDecryptErr) {
 					t.Fatalf("Wrong match. expect: %v, got: %v", tt.expectDecryptErr, err)
@@ -198,8 +194,8 @@ func Test_EncryptDecrypt(t *testing.T) {
 func Test_EncryptUsesFreshNonce(t *testing.T) {
 	c := mustNew(t, fakeKeyList(1, 1))
 
-	a, _, _ := c.Encrypt("same", nil)
-	b, _, _ := c.Encrypt("same", nil)
+	a, _, _ := c.Encrypt("same")
+	b, _, _ := c.Encrypt("same")
 
 	if bytes.Equal(a[:12], b[:12]) {
 		t.Errorf("Wrong match. the nonce was reused")
@@ -211,7 +207,7 @@ func Test_EncryptUsesFreshNonce(t *testing.T) {
 
 func Test_DecryptRejectsDamage(t *testing.T) {
 	c := mustNew(t, fakeKeyList(1, 1))
-	blob, ver, _ := c.Encrypt("value", AAD("t", "k"))
+	blob, ver, _ := c.Encrypt("value")
 
 	tests := []struct {
 		name string
@@ -227,7 +223,7 @@ func Test_DecryptRejectsDamage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := c.Decrypt(tt.blob(), ver, AAD("t", "k")); !errors.Is(err, ErrDecrypt) {
+			if _, err := c.Decrypt(tt.blob(), ver); !errors.Is(err, ErrDecrypt) {
 				t.Errorf("Wrong match. expect: ErrDecrypt, got: %v", err)
 			}
 		})
@@ -236,72 +232,91 @@ func Test_DecryptRejectsDamage(t *testing.T) {
 
 func Test_rotation(t *testing.T) {
 	oldC := mustNew(t, fakeKeyList(1, 0x01))
-	blob, ver, _ := oldC.Encrypt("value", nil)
+	blob, ver, _ := oldC.Encrypt("value")
 
 	// the new key list adds version 2; the row written under version 1 is still readable.
 	newC := mustNew(t, fakeKeyList(1, 0x01)+","+fakeKeyList(2, 0x40))
-	got, err := newC.Decrypt(blob, ver, nil)
+	got, err := newC.Decrypt(blob, ver)
 	if err != nil || got != "value" {
 		t.Errorf("Wrong match. expect: value, got: %q, %v", got, err)
 	}
 
-	_, newVer, _ := newC.Encrypt("x", nil)
+	_, newVer, _ := newC.Encrypt("x")
 	if newVer != 2 {
 		t.Errorf("Wrong match. expect: 2, got: %d", newVer)
 	}
 
 	// version 1 removed: the old row can not be read.
 	only2 := mustNew(t, fakeKeyList(2, 0x40))
-	if _, err := only2.Decrypt(blob, ver, nil); !errors.Is(err, ErrDecrypt) {
+	if _, err := only2.Decrypt(blob, ver); !errors.Is(err, ErrDecrypt) {
 		t.Errorf("Wrong match. expect: ErrDecrypt, got: %v", err)
 	}
 }
 
-func Test_AAD(t *testing.T) {
-	got := AAD("email_configs", "mailgun.api_key")
-	expect := append(append([]byte("email_configs"), 0x00), []byte("mailgun.api_key")...)
-	if !bytes.Equal(got, expect) {
-		t.Errorf("Wrong match. expect: %x, got: %x", expect, got)
+// Test_stdlibInterop pins that the stored blob is plain AES-256-GCM with no associated data: a blob
+// made here opens with the standard library alone, and a blob sealed with the standard library alone
+// opens here. Any associated data would break both directions.
+func Test_stdlibInterop(t *testing.T) {
+	c := mustNew(t, fakeKeyList(1, 0x01))
+
+	key := make([]byte, 32)
+	for i := range key {
+		key[i] = 0x01 + byte(i)
+	}
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 
-	// a different split of the same characters is a different AAD
-	if bytes.Equal(AAD("ab", "c"), AAD("a", "bc")) {
-		t.Errorf("Wrong match. the separator does not separate")
+	blob, ver, err := c.Encrypt("value")
+	if err != nil || ver != 1 {
+		t.Fatalf("Wrong match. got: %d, %v", ver, err)
 	}
-	if !bytes.Equal(AADLiteral("telnyx"), []byte("telnyx")) {
-		t.Errorf("Wrong match. AADLiteral changed the bytes")
+	pt, err := gcm.Open(nil, blob[:12], blob[12:], nil)
+	if err != nil || string(pt) != "value" {
+		t.Errorf("Wrong match. the standard library could not open the blob: %q, %v", pt, err)
+	}
+
+	nonce := make([]byte, 12)
+	for i := range nonce {
+		nonce[i] = 0xa0 + byte(i)
+	}
+	sealed := gcm.Seal(nonce, nonce, []byte("sealed elsewhere"), nil)
+	got, err := c.Decrypt(sealed, 1)
+	if err != nil || got != "sealed elsewhere" {
+		t.Errorf("Wrong match. expect: sealed elsewhere, got: %q, %v", got, err)
 	}
 }
 
-func Test_AADBindsRow(t *testing.T) {
-	c := mustNew(t, fakeKeyList(1, 1))
-	blob, ver, _ := c.Encrypt("value", AAD("email_configs", "mailgun.api_key"))
+// Test_stdlibWithAADFails pins that a blob sealed with any associated data does not decrypt.
+func Test_stdlibWithAADFails(t *testing.T) {
+	c := mustNew(t, fakeKeyList(1, 0x01))
 
-	tests := []struct {
-		name string
-		aad  []byte
-	}{
-		{name: "other key", aad: AAD("email_configs", "sendgrid.api_key")},
-		{name: "other table", aad: AAD("ai_configs", "mailgun.api_key")},
-		{name: "table part missing", aad: AADLiteral("mailgun.api_key")},
-		{name: "no aad", aad: nil},
+	key := make([]byte, 32)
+	for i := range key {
+		key[i] = 0x01 + byte(i)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if _, err := c.Decrypt(blob, ver, tt.aad); !errors.Is(err, ErrDecrypt) {
-				t.Errorf("Wrong match. expect: ErrDecrypt, got: %v", err)
-			}
-		})
+	block, _ := aes.NewCipher(key)
+	gcm, _ := cipher.NewGCM(block)
+
+	nonce := make([]byte, 12)
+	sealed := gcm.Seal(nonce, nonce, []byte("value"), []byte("some data"))
+	if _, err := c.Decrypt(sealed, 1); !errors.Is(err, ErrDecrypt) {
+		t.Errorf("Wrong match. expect: ErrDecrypt, got: %v", err)
 	}
 }
 
 func Test_ErrorsCarryNoSecretText(t *testing.T) {
 	c := mustNew(t, fakeKeyList(1, 1))
 	plain := "PLAINTEXT-MARKER-VALUE"
-	blob, ver, _ := c.Encrypt(plain, nil)
+	blob, ver, _ := c.Encrypt(plain)
 	blob[14] ^= 0x01
 
-	_, err := c.Decrypt(blob, ver, nil)
+	_, err := c.Decrypt(blob, ver)
 	if err == nil {
 		t.Fatalf("Wrong match. expect: error, got: nil")
 	}
@@ -310,7 +325,7 @@ func Test_ErrorsCarryNoSecretText(t *testing.T) {
 	}
 
 	c2 := mustNew(t, fakeKeyList(1, 1), WithMaxPlaintext(3))
-	_, _, err = c2.Encrypt(plain, nil)
+	_, _, err = c2.Encrypt(plain)
 	if err == nil || strings.Contains(err.Error(), plain) {
 		t.Errorf("Wrong match. got: %v", err)
 	}
@@ -366,7 +381,7 @@ func Test_JoinSplit(t *testing.T) {
 
 func Test_SplitBlob(t *testing.T) {
 	c := mustNew(t, fakeKeyList(1, 1))
-	blob, ver, _ := c.Encrypt("value", nil)
+	blob, ver, _ := c.Encrypt("value")
 
 	ct, nonce, err := SplitBlob(blob)
 	if err != nil {
@@ -387,7 +402,7 @@ func Test_SplitBlob(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if got, err := c.Decrypt(joined, ver, nil); err != nil || got != "value" {
+	if got, err := c.Decrypt(joined, ver); err != nil || got != "value" {
 		t.Errorf("Wrong match. expect: value, got: %q, %v", got, err)
 	}
 
@@ -400,7 +415,7 @@ func Test_SplitBlob(t *testing.T) {
 
 func Test_PackUnpackVersioned(t *testing.T) {
 	c := mustNew(t, fakeKeyList(1, 1))
-	blob, _, _ := c.Encrypt("value", nil)
+	blob, _, _ := c.Encrypt("value")
 
 	tests := []struct {
 		name    string

@@ -1,5 +1,7 @@
 # VOIP-1654 Multi-provider number purchase (bin-number-manager)
 
+> Superseded in part (VOIP-1688): the additional authenticated data described below was removed. A stored ciphertext is plain AES-256-GCM and is not bound to its row; ciphertexts written with the data no longer decrypt and the secret must be entered again.
+
 ## 1. 착수 전 티켓 검토 (적대적 재확인) : 부분 유효
 
 origin/main 6bbe6b7fd 기준으로 직접 읽어 확인했습니다.

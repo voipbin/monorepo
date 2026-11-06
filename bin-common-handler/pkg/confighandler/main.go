@@ -6,8 +6,8 @@
 // per key and one history row per change. The package is not a feature flag store: a bool key is
 // accepted only as a provider selection inside an atomic group.
 //
-// Secrets are encrypted with the shared secretcrypto package. The additional authenticated data
-// of a stored secret is "<table> 0x00 <key>", so a ciphertext does not decrypt under another row.
+// Secrets are encrypted with the shared secretcrypto package; a stored ciphertext is not bound to
+// its row.
 // A secret that is stored but cannot be decrypted is never replaced by the environment value:
 // the read fails with ErrUndecryptable and the resolved source is db_undecryptable.
 //
@@ -135,23 +135,20 @@ type handler struct {
 	store  Store
 	crypto *secretcrypto.Crypto
 	env    EnvLookup
-	table  string
 	source string
 
 	now   func() time.Time
 	newID func() uuid.UUID
 }
 
-// NewHandler creates a Handler. table is the name of the configs table and is part of the AAD of
-// the stored secrets. crypto may be nil or hold no key: secrets can not be written, and a stored
-// secret is reported as undecryptable.
-func NewHandler(reg *Registry, store Store, crypto *secretcrypto.Crypto, env EnvLookup, table string, opts ...Option) Handler {
+// NewHandler creates a Handler. crypto may be nil or hold no key: secrets can not be written, and a
+// stored secret is reported as undecryptable.
+func NewHandler(reg *Registry, store Store, crypto *secretcrypto.Crypto, env EnvLookup, opts ...Option) Handler {
 	h := &handler{
 		reg:    reg,
 		store:  store,
 		crypto: crypto,
 		env:    env,
-		table:  table,
 		source: defaultHistorySource,
 
 		now:   time.Now,

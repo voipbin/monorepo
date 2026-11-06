@@ -31,7 +31,7 @@ Supporting binary:
 | Business | `pkg/numberhandler` | Number CRUD, provider dispatch, billing validation |
 | Provider | `pkg/numberhandlertelnyx` | Telnyx API: purchase, release, list available numbers |
 | Provider registry | `pkg/providerhandler` | Known providers, priority order, credentials (DB secret or environment), admin settings |
-| Secret crypto | `pkg/providerhandler/secret.go` over `bin-common-handler/pkg/secretcrypto` | Encrypts and decrypts the provider secrets stored in `number_providers` (AES-256-GCM, versioned keys, AAD = provider name, 1024 byte limit); the adapter maps the library errors to the `provider` package errors |
+| Secret crypto | `pkg/providerhandler/secret.go` over `bin-common-handler/pkg/secretcrypto` | Encrypts and decrypts the provider secrets stored in `number_providers` (AES-256-GCM, versioned keys, no associated data, 1024 byte limit); the adapter maps the library errors to the `provider` package errors |
 | Provider | `pkg/numberhandlertwilio` | Twilio API: purchase, release, list available numbers (tag update is a no-op) |
 | External | `pkg/requestexternal` | HTTP client wrapper for provider APIs |
 | Data | `pkg/dbhandler` | MySQL queries for numbers |

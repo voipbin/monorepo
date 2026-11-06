@@ -1,5 +1,7 @@
 # VOIP-1685 PR2: bin-number-manager uses the shared secretcrypto
 
+> Superseded in part (VOIP-1688): the additional authenticated data described below was removed. A stored ciphertext is plain AES-256-GCM and is not bound to its row; ciphertexts written with the data no longer decrypt and the secret must be entered again.
+
 ## 1. Ticket review (against origin/main d43e84007)
 - `bin-common-handler/pkg/secretcrypto` is on main (`Crypto`, `New(raw, ...Option)`, `Encrypt(pt, aad []byte)`, `Decrypt(blob, version, aad []byte)`, `AADLiteral`, `WithMaxPlaintext`, sentinels `ErrKeyNotConfigured`, `ErrTooLong`, `ErrDecrypt`, `ErrInvalidKeySet`). The signatures differ from the service copy (`aad` is `[]byte`, errors are library sentinels), so the service needs a thin adapter.
 - With this PR the shared library has two consumers (email-manager, number-manager). This is not a precedent for other packages.
