@@ -12,10 +12,11 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-common-handler/pkg/secretcrypto"
+
 	"monorepo/bin-number-manager/models/number"
 	"monorepo/bin-number-manager/models/provider"
 	"monorepo/bin-number-manager/pkg/dbhandler"
-	"monorepo/bin-number-manager/pkg/secretcrypto"
 )
 
 var (
@@ -121,7 +122,7 @@ func (f *fakeDB) NumberProviderUpdate(_ context.Context, name number.ProviderNam
 func newTestHandler(t *testing.T, db *fakeDB, keys string, env map[number.ProviderName]provider.Credentials) *providerHandler {
 	t.Helper()
 
-	crypto, err := secretcrypto.New(keys)
+	crypto, err := NewSecretCrypto(keys)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,8 +142,8 @@ func Test_resolve(t *testing.T) {
 	ctx := context.Background()
 
 	// a row with a DB secret is built by the handler itself, so it is encrypted with the test keys
-	cryptoV1, _ := secretcrypto.New(testKeys(1))
-	ct, ver, _ := cryptoV1.Encrypt("db-token", "telnyx")
+	cryptoV1, _ := NewSecretCrypto(testKeys(1))
+	ct, ver, _ := cryptoV1.Encrypt("db-token", secretcrypto.AADLiteral("telnyx"))
 
 	dbRow := func(enabled bool, config map[string]string) *provider.Provider {
 		return &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: enabled, Priority: 5, Config: config, SecretCiphertext: ct, KeyVersion: ver}
@@ -355,8 +356,8 @@ func Test_ForRelease(t *testing.T) {
 	})
 
 	t.Run("a DB secret without the required config can still release and search", func(t *testing.T) {
-		cryptoV1, _ := secretcrypto.New(testKeys(1))
-		ct, ver, _ := cryptoV1.Encrypt("db-token", "telnyx")
+		cryptoV1, _ := NewSecretCrypto(testKeys(1))
+		ct, ver, _ := cryptoV1.Encrypt("db-token", secretcrypto.AADLiteral("telnyx"))
 		db := newFakeDB()
 		db.rows[number.ProviderNameTelnyx] = &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, SecretCiphertext: ct, KeyVersion: ver, Config: map[string]string{}}
 		h := newTestHandler(t, db, testKeys(1), envTelnyx())
@@ -375,8 +376,8 @@ func Test_ForRelease(t *testing.T) {
 	})
 
 	t.Run("undecryptable secret", func(t *testing.T) {
-		cryptoV1, _ := secretcrypto.New(testKeys(1))
-		ct, ver, _ := cryptoV1.Encrypt("db-token", "telnyx")
+		cryptoV1, _ := NewSecretCrypto(testKeys(1))
+		ct, ver, _ := cryptoV1.Encrypt("db-token", secretcrypto.AADLiteral("telnyx"))
 		db := newFakeDB()
 		db.rows[number.ProviderNameTelnyx] = &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, SecretCiphertext: ct, KeyVersion: ver}
 		h := newTestHandler(t, db, testKeys(2), envTelnyx())

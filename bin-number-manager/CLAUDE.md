@@ -56,7 +56,7 @@ NUMBER_SECRET_ENCRYPTION_KEYS="1:<base64 of 32 random bytes>" \
 
 - **ListenHandler**: consumes `bin-manager.number-manager.request`; routes to numberhandler
 - **SubscribeHandler**: `customer_deleted` → release all customer numbers; `flow_deleted` → clear flow references
-- **Provider dispatch**: numberhandler asks `providerhandler` (registry of `numberhandlertelnyx` and `numberhandlertwilio`, both implementing the provider interface; Twilio is disabled by default and purchases only with the DB credential and the `sid`/`trunk_sid` config, priority and credentials from `number_providers`, `secretcrypto` for the stored secrets)
+- **Provider dispatch**: numberhandler asks `providerhandler` (registry of `numberhandlertelnyx` and `numberhandlertwilio`, both implementing the provider interface; Twilio is disabled by default and purchases only with the DB credential and the `sid`/`trunk_sid` config, priority and credentials from `number_providers`; the stored secrets use the shared `bin-common-handler/pkg/secretcrypto` through the adapter `providerhandler/secret.go`)
 - **ProviderNumber record**: created alongside Number; holds provider's own reference ID for release operations
 
 ## Testing

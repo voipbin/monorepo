@@ -10,8 +10,7 @@ cmd/number-manager/main.go
     ├── pkg/cachehandler            (Redis — number lookups)
     ├── pkg/dbhandler               (MySQL — number records)
     ├── pkg/requestexternal         (HTTP clients for the Telnyx and Twilio APIs; Twilio over plain HTTP with basic auth, no SDK)
-    ├── pkg/providerhandler         (provider registry, credential resolution, purchase candidates, admin settings)
-    ├── pkg/secretcrypto            (AES-256-GCM encryption of the provider secrets, versioned keys)
+    ├── pkg/providerhandler         (provider registry, credential resolution, purchase candidates, admin settings; secret.go adapts the shared bin-common-handler/pkg/secretcrypto)
     ├── pkg/numberhandlertelnyx     (Telnyx provider implementation)
     ├── pkg/numberhandlertwilio     (Twilio provider implementation)
     ├── pkg/numberhandler           (Core business logic, provider dispatch)
@@ -32,7 +31,7 @@ Supporting binary:
 | Business | `pkg/numberhandler` | Number CRUD, provider dispatch, billing validation |
 | Provider | `pkg/numberhandlertelnyx` | Telnyx API: purchase, release, list available numbers |
 | Provider registry | `pkg/providerhandler` | Known providers, priority order, credentials (DB secret or environment), admin settings |
-| Secret crypto | `pkg/secretcrypto` | Encrypts and decrypts the provider secrets stored in `number_providers` |
+| Secret crypto | `pkg/providerhandler/secret.go` over `bin-common-handler/pkg/secretcrypto` | Encrypts and decrypts the provider secrets stored in `number_providers` (AES-256-GCM, versioned keys, AAD = provider name, 1024 byte limit); the adapter maps the library errors to the `provider` package errors |
 | Provider | `pkg/numberhandlertwilio` | Twilio API: purchase, release, list available numbers (tag update is a no-op) |
 | External | `pkg/requestexternal` | HTTP client wrapper for provider APIs |
 | Data | `pkg/dbhandler` | MySQL queries for numbers |

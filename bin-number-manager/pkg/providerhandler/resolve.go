@@ -87,7 +87,7 @@ func (h *providerHandler) resolve(ctx context.Context, name number.ProviderName)
 	}
 
 	if hasDBSecret(row) {
-		secret, errDecrypt := h.crypto.Decrypt(row.SecretCiphertext, row.KeyVersion, string(name))
+		secret, errDecrypt := decryptSecret(h.crypto, row.SecretCiphertext, row.KeyVersion, name)
 		if errDecrypt != nil {
 			log.WithField("key_version", row.KeyVersion).Errorf("Could not decrypt the provider secret. err: %v", errDecrypt)
 			res.source = provider.CredentialSourceDBUndecryptable

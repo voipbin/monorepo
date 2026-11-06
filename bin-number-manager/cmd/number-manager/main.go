@@ -30,7 +30,6 @@ import (
 	"monorepo/bin-number-manager/pkg/listenhandler"
 	"monorepo/bin-number-manager/pkg/numberhandler"
 	"monorepo/bin-number-manager/pkg/providerhandler"
-	"monorepo/bin-number-manager/pkg/secretcrypto"
 	"monorepo/bin-number-manager/pkg/subscribehandler"
 )
 
@@ -148,10 +147,10 @@ func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// A malformed key set must not stop the daemon: other services depend on the numbers. The
 	// provider secrets of the DB stay unusable (fail closed) and the environment credentials apply.
-	crypto, errCrypto := secretcrypto.New(config.Get().NumberSecretEncryptionKeys)
+	crypto, errCrypto := providerhandler.NewSecretCrypto(config.Get().NumberSecretEncryptionKeys)
 	if errCrypto != nil {
 		logrus.Errorf("The number secret encryption keys are malformed. The provider secrets of the DB cannot be used. err: %v", errCrypto)
-		crypto, _ = secretcrypto.New("")
+		crypto, _ = providerhandler.NewSecretCrypto("")
 	}
 
 	env := providerhandler.NewEnvCredentials(
