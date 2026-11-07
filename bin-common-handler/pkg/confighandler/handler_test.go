@@ -2,6 +2,8 @@ package confighandler_test
 
 import (
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -15,8 +17,6 @@ import (
 	"monorepo/bin-common-handler/pkg/confighandler/storetest"
 	"monorepo/bin-common-handler/pkg/secretcrypto"
 )
-
-const testTable = "svc_configs"
 
 var (
 	testActor = uuid.FromStringOrNil("11111111-1111-4111-8111-111111111111")
@@ -78,7 +78,7 @@ func newFixture(t *testing.T, keyList string, opts ...confighandler.Option) *fix
 		v, ok := f.env[name]
 		return v, ok
 	}
-	f.h = confighandler.NewHandler(testRegistry(t), f.store, f.crypto, lookup, testTable, opts...)
+	f.h = confighandler.NewHandler(testRegistry(t), f.store, f.crypto, lookup, opts...)
 
 	n := 0
 	confighandler.SetClock(f.h, func() time.Time { return testNow }, func() uuid.UUID {
@@ -90,14 +90,39 @@ func newFixture(t *testing.T, keyList string, opts ...confighandler.Option) *fix
 }
 
 // putSecretRow stores a secret row as an earlier version of the service would have.
-func (f *fixture) putSecretRow(t *testing.T, key, plaintext, table string, revision uint32) {
+func (f *fixture) putSecretRow(t *testing.T, key, plaintext string, revision uint32) {
 	t.Helper()
 
-	blob, ver, err := f.crypto.Encrypt(plaintext, secretcrypto.AAD(table, key))
+	blob, ver, err := f.crypto.Encrypt(plaintext)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 	f.store.Put(&confighandler.Row{Key: key, ValueType: "secret", SecretCiphertext: blob, KeyVersion: ver, Revision: revision, TMCreate: testNow, TMUpdate: testNow})
+}
+
+// putLegacyAADRow stores a secret row sealed with associated data, as the earlier layout did. It
+// is made with the standard library alone under the key of testKeyList(1, 1).
+func (f *fixture) putLegacyAADRow(t *testing.T, key, plaintext string, revision uint32) {
+	t.Helper()
+
+	k := make([]byte, 32)
+	for i := range k {
+		k[i] = 1 + byte(i)
+	}
+	block, err := aes.NewCipher(k)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	for i := range nonce {
+		nonce[i] = 0x70 + byte(i)
+	}
+	blob := gcm.Seal(nonce, nonce, []byte(plaintext), []byte("svc_configs\x00"+key))
+	f.store.Put(&confighandler.Row{Key: key, ValueType: "secret", SecretCiphertext: blob, KeyVersion: 1, Revision: revision, TMCreate: testNow, TMUpdate: testNow})
 }
 
 func (f *fixture) putValueRow(key, valueType, json string) {
@@ -243,39 +268,34 @@ func Test_resolve_secret(t *testing.T) {
 		{name: "env works without any master key", keyList: "", setup: func(f *fixture) { f.env["S_TOKEN"] = "env-token" }, expectValue: "env-token", expectSource: confighandler.SourceEnv, expectHas: true},
 		{name: "db wins over env", keyList: testKeyList(1, 1), setup: func(f *fixture) {
 			f.env["S_TOKEN"] = "env-token"
-			f.putSecretRow(t, "s.token", "db-token", testTable, 3)
+			f.putSecretRow(t, "s.token", "db-token", 3)
 		}, expectValue: "db-token", expectSource: confighandler.SourceDB, expectShadow: true, expectHas: true},
 		{name: "no master key never falls back to env", keyList: "", setup: func(f *fixture) {
 			f.env["S_TOKEN"] = "env-token"
 			// the row was written when a key existed
 			g := newFixture(t, testKeyList(1, 1))
-			g.putSecretRow(t, "s.token", "db-token", testTable, 1)
+			g.putSecretRow(t, "s.token", "db-token", 1)
 			row, _ := g.store.Get(ctx, "s.token")
 			f.store.Put(row)
 		}, expectSource: confighandler.SourceDBUndecryptable, expectShadow: true, expectErr: confighandler.ErrUndecryptable, expectHas: true},
 		{name: "unknown key version never falls back to env", keyList: testKeyList(2, 1), setup: func(f *fixture) {
 			f.env["S_TOKEN"] = "env-token"
 			g := newFixture(t, testKeyList(1, 1))
-			g.putSecretRow(t, "s.token", "db-token", testTable, 1)
+			g.putSecretRow(t, "s.token", "db-token", 1)
 			row, _ := g.store.Get(ctx, "s.token")
 			f.store.Put(row)
 		}, expectSource: confighandler.SourceDBUndecryptable, expectShadow: true, expectErr: confighandler.ErrUndecryptable, expectHas: true},
 		{name: "damaged ciphertext", keyList: testKeyList(1, 1), setup: func(f *fixture) {
 			f.env["S_TOKEN"] = "env-token"
-			f.putSecretRow(t, "s.token", "db-token", testTable, 1)
+			f.putSecretRow(t, "s.token", "db-token", 1)
 			row, _ := f.store.Get(ctx, "s.token")
 			row.SecretCiphertext[14] ^= 0x01
 			f.store.Put(row)
 		}, expectSource: confighandler.SourceDBUndecryptable, expectShadow: true, expectErr: confighandler.ErrUndecryptable, expectHas: true},
-		{name: "ciphertext made for another table", keyList: testKeyList(1, 1), setup: func(f *fixture) {
-			f.putSecretRow(t, "s.token", "db-token", "other_configs", 1)
-		}, expectSource: confighandler.SourceDBUndecryptable, expectErr: confighandler.ErrUndecryptable, expectHas: true},
-		{name: "ciphertext copied from another key", keyList: testKeyList(1, 1), setup: func(f *fixture) {
-			f.putSecretRow(t, "p.api_key", "db-token", testTable, 1)
-			row, _ := f.store.Get(ctx, "p.api_key")
-			row.Key = "s.token"
-			f.store.Put(row)
-		}, expectSource: confighandler.SourceDBUndecryptable, expectErr: confighandler.ErrUndecryptable, expectHas: true},
+		{name: "ciphertext sealed with associated data by an earlier layout", keyList: testKeyList(1, 1), setup: func(f *fixture) {
+			f.env["S_TOKEN"] = "env-token"
+			f.putLegacyAADRow(t, "s.token", "db-token", 1)
+		}, expectSource: confighandler.SourceDBUndecryptable, expectShadow: true, expectErr: confighandler.ErrUndecryptable, expectHas: true},
 		{name: "secret row without ciphertext", keyList: testKeyList(1, 1), setup: func(f *fixture) {
 			f.store.Put(&confighandler.Row{Key: "s.token", ValueType: "secret", KeyVersion: 1, Revision: 1})
 		}, expectSource: confighandler.SourceDBInvalid, expectErr: confighandler.ErrInvalid, expectHas: true},
@@ -328,7 +348,7 @@ func Test_resolve_undecryptableWrapsLibraryError(t *testing.T) {
 	ctx := context.Background()
 
 	g := newFixture(t, testKeyList(1, 1))
-	g.putSecretRow(t, "s.token", "v", testTable, 1)
+	g.putSecretRow(t, "s.token", "v", 1)
 	row, _ := g.store.Get(ctx, "s.token")
 
 	noKey := newFixture(t, "")
@@ -354,7 +374,7 @@ func Test_resolve_atomicGroup(t *testing.T) {
 		f.env["P_API_KEY"] = "env-key"
 		f.env["P_MODEL"] = "env-model"
 		f.env["P_ENABLED"] = "false"
-		f.putSecretRow(t, "p.api_key", "db-key", testTable, 1)
+		f.putSecretRow(t, "p.api_key", "db-key", 1)
 
 		key, res, err := f.h.Secret(ctx, "p.api_key")
 		if err != nil || key.Reveal() != "db-key" || res.Source != confighandler.SourceDB {
@@ -401,7 +421,7 @@ func Test_resolve_atomicGroup(t *testing.T) {
 	t.Run("undecryptable anchor makes the whole group unusable", func(t *testing.T) {
 		f := newFixture(t, testKeyList(2, 1))
 		g := newFixture(t, testKeyList(1, 1))
-		g.putSecretRow(t, "p.api_key", "db-key", testTable, 1)
+		g.putSecretRow(t, "p.api_key", "db-key", 1)
 		row, _ := g.store.Get(ctx, "p.api_key")
 		f.store.Put(row)
 		f.env["P_MODEL"] = "env-model"
@@ -462,7 +482,7 @@ func Test_Describe(t *testing.T) {
 	f := newFixture(t, testKeyList(1, 1))
 
 	f.env["S_TOKEN"] = "env-token"
-	f.putSecretRow(t, "p.api_key", "db-key", testTable, 4)
+	f.putSecretRow(t, "p.api_key", "db-key", 4)
 	f.putValueRow("a.limit", "int", "40")
 	f.putValueRow("a.timeout", "duration", `"bad"`)
 	f.putValueRow("unregistered.key", "string", `"x"`)

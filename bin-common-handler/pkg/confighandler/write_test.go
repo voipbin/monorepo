@@ -10,7 +10,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-common-handler/pkg/confighandler"
-	"monorepo/bin-common-handler/pkg/secretcrypto"
 )
 
 func Test_Set(t *testing.T) {
@@ -169,7 +168,7 @@ func Test_SetSecret(t *testing.T) {
 	ctx := context.Background()
 	const value = "SECRET-VAL-12345"
 
-	t.Run("stores a ciphertext bound to the row and a history without values", func(t *testing.T) {
+	t.Run("stores a ciphertext and a history without values", func(t *testing.T) {
 		f := newFixture(t, testKeyList(1, 1)+","+testKeyList(2, 0x40), confighandler.WithSource("cli"))
 
 		res, err := f.h.SetSecret(ctx, testActor, "s.token", value)
@@ -188,14 +187,9 @@ func Test_SetSecret(t *testing.T) {
 			t.Errorf("Wrong match. the stored bytes hold the plaintext")
 		}
 
-		// the row decrypts only under its own table and key name.
-		if got, err := f.crypto.Decrypt(row.SecretCiphertext, row.KeyVersion, secretcrypto.AAD(testTable, "s.token")); err != nil || got != value {
+		// the stored value is plain AES-256-GCM: it decrypts without any associated data.
+		if got, err := f.crypto.Decrypt(row.SecretCiphertext, row.KeyVersion); err != nil || got != value {
 			t.Errorf("Wrong match. got: %q %v", got, err)
-		}
-		for _, other := range [][]byte{secretcrypto.AAD(testTable, "p.api_key"), secretcrypto.AAD("other_configs", "s.token"), nil} {
-			if _, err := f.crypto.Decrypt(row.SecretCiphertext, row.KeyVersion, other); !errors.Is(err, secretcrypto.ErrDecrypt) {
-				t.Errorf("Wrong match. another AAD expect: ErrDecrypt, got: %v", err)
-			}
 		}
 
 		got, _, err := f.h.Secret(ctx, "s.token")
@@ -215,9 +209,9 @@ func Test_SetSecret(t *testing.T) {
 
 	t.Run("overwrite records the key versions", func(t *testing.T) {
 		f := newFixture(t, testKeyList(1, 1))
-		f.putSecretRow(t, "s.token", "old", testTable, 5)
+		f.putSecretRow(t, "s.token", "old", 5)
 
-		f2 := confighandler.NewHandler(testRegistry(t), f.store, testCrypto(t, testKeyList(1, 1)+","+testKeyList(2, 0x40)), nil, testTable)
+		f2 := confighandler.NewHandler(testRegistry(t), f.store, testCrypto(t, testKeyList(1, 1)+","+testKeyList(2, 0x40)), nil)
 		res, err := f2.SetSecret(ctx, testActor, "s.token", value)
 		if err != nil || res.Revision != 6 || res.KeyVersion != 2 {
 			t.Fatalf("Wrong match. got: %+v %v", res, err)
@@ -442,7 +436,7 @@ func Test_defaultSource(t *testing.T) {
 
 func Test_NewHandler_nilEnvAndCrypto(t *testing.T) {
 	ctx := context.Background()
-	h := confighandler.NewHandler(testRegistry(t), newFixture(t, "").store, nil, nil, testTable)
+	h := confighandler.NewHandler(testRegistry(t), newFixture(t, "").store, nil, nil)
 
 	if n, res, err := h.Int(ctx, "a.limit"); err != nil || n != 10 || res.Source != confighandler.SourceDefault {
 		t.Errorf("Wrong match. got: %d %+v %v", n, res, err)

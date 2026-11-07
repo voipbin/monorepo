@@ -169,7 +169,7 @@ func Test_configStore_mysql_endToEnd(t *testing.T) {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 	env := func(name string) (string, bool) { return "", false }
-	h := confighandler.NewHandler(reg, NewConfigStore(db), crypto, env, configkeys.Table, confighandler.WithSource("cli"))
+	h := confighandler.NewHandler(reg, NewConfigStore(db), crypto, env, confighandler.WithSource("cli"))
 
 	const value = "synthetic-credential-value"
 	actor := uuid.Must(uuid.NewV4())

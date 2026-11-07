@@ -107,6 +107,8 @@ All flags can also be set via environment variable (uppercase, underscores).
 
 **Stored values:** each of the three credentials above can also be stored in `email_configs` (`email-control config set`). A stored value wins over the environment variable and is used by the next call without a restart; `config clear` makes the environment variable apply again. `email-control config list` shows the source and `env_shadowed` (the environment value is set but not used). A stored secret that can not be decrypted (wrong or missing master key) is an error and never falls back to the environment variable.
 
+**Upgrade note:** a stored secret written by an earlier version (its ciphertext was bound to its row) cannot be decrypted by this version. Enter it again with `email-control config set` from the new image once every instance runs it; `config clear` returns the key to the environment variable meanwhile.
+
 **Mailgun webhook signature:** a Mailgun webhook is processed only when its `signature` (hex HMAC-SHA256 of `timestamp` + `token` with the signing key) matches and its `timestamp` is within 24 hours in the past and 5 minutes in the future. A request that fails the check changes no email status and publishes no `email_updated` event. If the signing key is empty, every Mailgun webhook is rejected and the service logs a warning at start (source `none`). If the key can not be read (database error) or can not be decrypted, the webhook is rejected as well.
 
 **Key rotation:** only one signing key is supported. After the key is changed on the Mailgun side, store the new value with `email-control config set --key mailgun.webhook_signing_key`; the next webhook uses it, with no redeploy. Webhooks signed with the old key are rejected until the value is changed.

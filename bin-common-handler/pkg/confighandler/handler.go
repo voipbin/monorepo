@@ -6,8 +6,6 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/secretcrypto"
 )
 
 // writeFn builds the row and the history for one attempt from the freshly read row (nil when the
@@ -142,7 +140,7 @@ func (h *handler) SetSecret(ctx context.Context, actor uuid.UUID, key, secret st
 		return nil, fmt.Errorf("%w: key %q", ErrTooLong, key)
 	}
 
-	blob, version, err := h.crypto.Encrypt(secret, secretcrypto.AAD(h.table, k.Name))
+	blob, version, err := h.crypto.Encrypt(secret)
 	if err != nil {
 		// the library errors carry no secret text
 		return nil, fmt.Errorf("could not encrypt the secret of key %q: %w", key, err)

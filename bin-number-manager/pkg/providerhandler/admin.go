@@ -240,7 +240,7 @@ func (h *providerHandler) UpdateSecret(ctx context.Context, name number.Provider
 	}
 
 	// encrypt first, so that a missing key does not leave a row behind
-	ciphertext, keyVersion, err := encryptSecret(h.crypto, secret, name)
+	ciphertext, keyVersion, err := encryptSecret(h.crypto, secret)
 	if err != nil {
 		return nil, err
 	}

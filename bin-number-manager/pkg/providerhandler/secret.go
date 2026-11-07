@@ -7,7 +7,6 @@ import (
 
 	"monorepo/bin-common-handler/pkg/secretcrypto"
 
-	"monorepo/bin-number-manager/models/number"
 	"monorepo/bin-number-manager/models/provider"
 )
 
@@ -35,10 +34,10 @@ func NewSecretCrypto(raw string) (*secretcrypto.Crypto, error) {
 	return secretcrypto.New(raw, secretcrypto.WithMaxPlaintext(maxSecretBytes))
 }
 
-// encryptSecret encrypts the secret of a provider; the provider name is the AAD that binds the
-// ciphertext to its row. The library errors are mapped to the errors of the provider package.
-func encryptSecret(c *secretcrypto.Crypto, secret string, name number.ProviderName) ([]byte, int, error) {
-	res, version, err := c.Encrypt(secret, secretcrypto.AADLiteral(string(name)))
+// encryptSecret encrypts the secret of a provider. The library errors are mapped to the errors of
+// the provider package.
+func encryptSecret(c *secretcrypto.Crypto, secret string) ([]byte, int, error) {
+	res, version, err := c.Encrypt(secret)
 	switch {
 	case errors.Is(err, secretcrypto.ErrKeyNotConfigured):
 		return nil, 0, provider.ErrSecretKeyNotConfigured
@@ -51,6 +50,6 @@ func encryptSecret(c *secretcrypto.Crypto, secret string, name number.ProviderNa
 }
 
 // decryptSecret decrypts the secret of a provider row with the key of the version stored in the row.
-func decryptSecret(c *secretcrypto.Crypto, blob []byte, version int, name number.ProviderName) (string, error) {
-	return c.Decrypt(blob, version, secretcrypto.AADLiteral(string(name)))
+func decryptSecret(c *secretcrypto.Crypto, blob []byte, version int) (string, error) {
+	return c.Decrypt(blob, version)
 }

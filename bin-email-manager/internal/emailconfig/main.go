@@ -46,7 +46,7 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 		crypto, _ = secretcrypto.New("", secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
 	}
 
-	return confighandler.NewHandler(reg, store, crypto, cfg.EnvValue, configkeys.Table, opts...), nil
+	return confighandler.NewHandler(reg, store, crypto, cfg.EnvValue, opts...), nil
 }
 
 // supplierConfig is the setting of a supplier.
