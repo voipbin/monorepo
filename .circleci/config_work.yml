@@ -1758,6 +1758,37 @@ jobs:
               echo "ERROR: Generated models differ from committed. Run 'go generate ./...' and commit changes."
               exit 1
             fi
+      - run:
+          # The public spec (api.voipbin.net/openapi.json) is served from the
+          # committed bin-api-manager/gens/openapi_redoc/openapi.json, which is
+          # a redocly bundle of openapi.yaml. VOIP-1689. Only the bundle is
+          # compared: api.html is not byte-deterministic. The redocly version is
+          # pinned here, not in generate.go, so a newer local redocly can differ
+          # byte-for-byte; the error message gives the pinned command.
+          # Known gap (accepted): a PR that edits only the committed json or
+          # config_redoc/ does not arm this workflow, because every observed
+          # drift came from a yaml-only change.
+          name: Verify OpenAPI bundle matches committed
+          command: |
+            set -euo pipefail
+            NODE_VERSION=22.23.4
+            NODE_SHA256=b8492284c76a54baf58d61668dd0e41ee0fc98adabf9503d30f05d08f55b4406
+            REDOCLY_VERSION=2.76.0
+            TARBALL=node-v${NODE_VERSION}-linux-x64.tar.gz
+            curl -sSfL -o "${TARBALL}" "https://nodejs.org/dist/v${NODE_VERSION}/${TARBALL}"
+            echo "${NODE_SHA256}  ${TARBALL}" | sha256sum -c -
+            sudo tar xzf "${TARBALL}" -C /usr/local --strip-components=1
+            node --version
+            cd bin-api-manager/openapi/config_redoc
+            npx --yes "@redocly/cli@${REDOCLY_VERSION}" bundle --force \
+              ../../../bin-openapi-manager/openapi/openapi.yaml \
+              --output /tmp/openapi.bundle.json
+            if ! cmp -s /tmp/openapi.bundle.json ../../gens/openapi_redoc/openapi.json; then
+              echo "ERROR: bin-api-manager/gens/openapi_redoc/openapi.json differs from the bundle of openapi.yaml."
+              echo "Regenerate with: cd bin-api-manager/openapi/config_redoc && npx @redocly/cli@${REDOCLY_VERSION} bundle --force ../../../bin-openapi-manager/openapi/openapi.yaml --output ../../gens/openapi_redoc/openapi.json"
+              echo "If the diff is unrelated to your change, a transitive npm dependency may have changed the output; report it instead of editing the committed file by hand."
+              exit 1
+            fi
 
   # bin-outdial-manager
   bin-outdial-manager-test:
