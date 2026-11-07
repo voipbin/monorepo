@@ -1765,6 +1765,9 @@ jobs:
           # compared: api.html is not byte-deterministic. The redocly version is
           # pinned here, not in generate.go, so a newer local redocly can differ
           # byte-for-byte; the error message gives the pinned command.
+          # Known gap (accepted): a PR that edits only the committed json or
+          # config_redoc/ does not arm this workflow, because every observed
+          # drift came from a yaml-only change.
           name: Verify OpenAPI bundle matches committed
           command: |
             set -euo pipefail
