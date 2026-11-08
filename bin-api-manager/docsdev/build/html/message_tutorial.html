@@ -653,7 +653,7 @@
 <p>Before sending messages, you need:</p>
 <ul class="simple">
 <li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
-<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). This must be a number you own. Obtain your numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>Optionally, a source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). When given, it must be a number you own; obtain your numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>. When left out, the default outgoing source number of the account is used (<code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code> of the outbound config); if the account has none, the request fails with <code class="docutils literal notranslate"><span class="pre">SOURCE_REQUIRED</span></code>.</p></li>
 <li><p>A destination phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>).</p></li>
 </ul>
 <div class="admonition note">

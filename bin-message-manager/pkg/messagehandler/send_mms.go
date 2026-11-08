@@ -43,15 +43,27 @@ func (h *messageHandler) SendMMS(ctx context.Context, id uuid.UUID, customerID u
 		return nil, fmt.Errorf("customer identity verification required to send message")
 	}
 
-	if source == nil {
-		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameMessageManager, "SOURCE_REQUIRED", "The source is required.")
-	}
 	if len(destinations) == 0 {
 		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameMessageManager, "DESTINATION_REQUIRED", "At least one destination is required.")
 	}
-	normalizeSendAddresses(source, destinations)
+
+	// the format of the source is checked on the raw input, before anything is normalized, and without any call to
+	// another service. A missing source is nil here and is resolved to the default of the customer below.
+	preparedSource, err := prepareSource(source)
+	if err != nil {
+		return nil, err
+	}
+	normalizeDestinations(destinations)
 
 	if err := validateMMSText(text); err != nil {
+		return nil, err
+	}
+
+	// the sender must be a number of the customer. The lookups use the parent context and run before the deadline of the
+	// media check starts, so a slow number-manager can neither end the media check with MEDIA_CHECK_TIMEOUT nor skew its
+	// metric.
+	source, err = h.resolveSource(ctx, customerID, preparedSource)
+	if err != nil {
 		return nil, err
 	}
 

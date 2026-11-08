@@ -708,7 +708,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code> accepts <code class="docutils literal notranslate"><span class="pre">source</span></code>, <code class="docutils literal notranslate"><span class="pre">destinations</span></code>, <code class="docutils literal notranslate"><span class="pre">text</span></code> and the optional <code class="docutils literal notranslate"><span class="pre">medias</span></code> (a list of file ids). Without <code class="docutils literal notranslate"><span class="pre">medias</span></code> (missing, <code class="docutils literal notranslate"><span class="pre">null</span></code> or an empty list) a text of one segment or less is an SMS and a longer text is an MMS. With <code class="docutils literal notranslate"><span class="pre">medias</span></code> it is an MMS. Read <code class="docutils literal notranslate"><span class="pre">type</span></code> in the response.</p>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code> accepts <code class="docutils literal notranslate"><span class="pre">destinations</span></code>, <code class="docutils literal notranslate"><span class="pre">text</span></code>, the optional <code class="docutils literal notranslate"><span class="pre">source</span></code> and the optional <code class="docutils literal notranslate"><span class="pre">medias</span></code> (a list of file ids). Without <code class="docutils literal notranslate"><span class="pre">source</span></code> the default outgoing source number of the account is used. Without <code class="docutils literal notranslate"><span class="pre">medias</span></code> (missing, <code class="docutils literal notranslate"><span class="pre">null</span></code> or an empty list) a text of one segment or less is an SMS and a longer text is an MMS. With <code class="docutils literal notranslate"><span class="pre">medias</span></code> it is an MMS. Read <code class="docutils literal notranslate"><span class="pre">type</span></code> in the response.</p>
 </div>
 </section>
 <section id="long-texts">
@@ -783,10 +783,25 @@
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">TEXT_TOO_LONG</span></code></p></td>
 <td><p>The text is longer than 2000 characters with media, or longer than 10 segments without media.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INSUFFICIENT_BALANCE</span></code> (HTTP 402)</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SOURCE_REQUIRED</span></code> (HTTP 400)</p></td>
+<td><p>The request has no <code class="docutils literal notranslate"><span class="pre">source</span></code> and the account has no default outgoing source number. Send a <code class="docutils literal notranslate"><span class="pre">source</span></code>, or set <code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code> in the outbound config.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SOURCE_INVALID</span></code> (HTTP 400)</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> is not a phone number in E.164 format (a <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by 7 to 15 digits, <code class="docutils literal notranslate"><span class="pre">type</span></code> <code class="docutils literal notranslate"><span class="pre">tel</span></code>). An alphanumeric sender id is not accepted.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SOURCE_NOT_OWNED</span></code> (HTTP 403)</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> is not a normal, active number of the account. The message is not sent and the default number is not used instead.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">DEFAULT_SOURCE_INVALID</span></code> (HTTP 409)</p></td>
+<td><p>The request has no <code class="docutils literal notranslate"><span class="pre">source</span></code> and the default outgoing source number of the outbound config is not an active number of the account any more (released, deactivated, virtual or owned by another account). Update <code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SOURCE_LOOKUP_FAILED</span></code> (HTTP 500)</p></td>
+<td><p>The source number could not be verified. Retry the request.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">INSUFFICIENT_BALANCE</span></code> (HTTP 402)</p></td>
 <td><p>The credit balance is not enough for the message.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">MEDIA_CHECK_TIMEOUT</span></code> (HTTP 503)</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MEDIA_CHECK_TIMEOUT</span></code> (HTTP 503)</p></td>
 <td><p>The files could not be checked in time. Retry the request.</p></td>
 </tr>
 </tbody>
@@ -902,7 +917,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>All phone numbers must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces. For example, <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code> (US) or <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code> (Korea). The <code class="docutils literal notranslate"><span class="pre">source</span></code> must be a number you own, obtainable via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>. Unicode characters (emoji, non-Latin scripts) reduce the single-segment limit from 160 to 70 and make a text over 70 characters an MMS.</p>
+<p>All phone numbers must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces. For example, <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code> (US) or <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code> (Korea). The <code class="docutils literal notranslate"><span class="pre">source</span></code> is optional. When it is left out, the default outgoing source number of the account (<code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code> of the outbound config) is used. When it is given, it must be a normal, active number you own, obtainable via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>; any other value is rejected and is not replaced by the default. Unicode characters (emoji, non-Latin scripts) reduce the single-segment limit from 160 to 70 and make a text over 70 characters an MMS.</p>
 </div>
 <p><strong>Send SMS Example:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/messages?token=&lt;token&gt;' \

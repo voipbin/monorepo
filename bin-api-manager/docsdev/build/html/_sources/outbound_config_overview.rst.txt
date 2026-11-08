@@ -13,7 +13,7 @@ OutboundConfig controls per-customer outbound call behaviour:
 
 - ``destination_whitelist`` — ISO 3166 alpha-2 country codes permitted for outbound PSTN calls. **Always enforced** — an empty list denies all PSTN calls. Customers must populate this before making any outbound PSTN call.
 - ``codecs`` — Comma-separated codec preference list applied to **SIP outgoing calls** (e.g. ``PCMU,PCMA,G729``). Empty string = server default. **Not applied to PSTN calls** — PSTN trunks negotiate codecs directly with the carrier via SDP.
-- ``default_outgoing_source_number_id`` — Fallback source number used when an outgoing call is placed without a valid customer-owned source (e.g., a SIP caller dialling out, or a missing/non-E.164 source). Must be the UUID of a normal active number owned by the same customer; ``00000000-0000-0000-0000-000000000000`` disables the fallback so such calls are rejected.
+- ``default_outgoing_source_number_id`` — Fallback source number used when an outgoing call is placed without a valid customer-owned source (e.g., a SIP caller dialling out, or a missing/non-E.164 source). It is also the source of a message sent without a ``source`` (``POST /messages``, the ``message_send`` flow action and the ``send_message`` AI tool); a message with an invalid ``source`` is rejected and never falls back to it. Must be the UUID of a normal active number owned by the same customer; ``00000000-0000-0000-0000-000000000000`` disables the fallback so such calls and messages are rejected.
 
 There is exactly one OutboundConfig per customer. It is **automatically created** (with an empty ``destination_whitelist``) when a customer account is created. All outbound PSTN calls remain blocked until the customer populates ``destination_whitelist``.
 

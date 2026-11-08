@@ -58,7 +58,7 @@ When you send a message, VoIPBin routes it through carrier networks to reach the
 
 .. note:: **AI Implementation Hint**
 
-   ``POST /messages`` accepts ``source``, ``destinations``, ``text`` and the optional ``medias`` (a list of file ids). Without ``medias`` (missing, ``null`` or an empty list) a text of one segment or less is an SMS and a longer text is an MMS. With ``medias`` it is an MMS. Read ``type`` in the response.
+   ``POST /messages`` accepts ``destinations``, ``text``, the optional ``source`` and the optional ``medias`` (a list of file ids). Without ``source`` the default outgoing source number of the account is used. Without ``medias`` (missing, ``null`` or an empty list) a text of one segment or less is an SMS and a longer text is an MMS. With ``medias`` it is an MMS. Read ``type`` in the response.
 
 .. _message-overview-long-text:
 
@@ -122,6 +122,16 @@ A request that is rejected with one of the reasons below creates no message, cha
      - More than 10 files, the same id listed twice, or an id that is not a valid UUID.
    * - ``TEXT_TOO_LONG``
      - The text is longer than 2000 characters with media, or longer than 10 segments without media.
+   * - ``SOURCE_REQUIRED`` (HTTP 400)
+     - The request has no ``source`` and the account has no default outgoing source number. Send a ``source``, or set ``default_outgoing_source_number_id`` in the outbound config.
+   * - ``SOURCE_INVALID`` (HTTP 400)
+     - The ``source`` is not a phone number in E.164 format (a ``+`` followed by 7 to 15 digits, ``type`` ``tel``). An alphanumeric sender id is not accepted.
+   * - ``SOURCE_NOT_OWNED`` (HTTP 403)
+     - The ``source`` is not a normal, active number of the account. The message is not sent and the default number is not used instead.
+   * - ``DEFAULT_SOURCE_INVALID`` (HTTP 409)
+     - The request has no ``source`` and the default outgoing source number of the outbound config is not an active number of the account any more (released, deactivated, virtual or owned by another account). Update ``default_outgoing_source_number_id``.
+   * - ``SOURCE_LOOKUP_FAILED`` (HTTP 500)
+     - The source number could not be verified. Retry the request.
    * - ``INSUFFICIENT_BALANCE`` (HTTP 402)
      - The credit balance is not enough for the message.
    * - ``MEDIA_CHECK_TIMEOUT`` (HTTP 503)
@@ -239,7 +249,7 @@ Send messages directly using the REST API.
 
 .. note:: **AI Implementation Hint**
 
-   All phone numbers must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces. For example, ``+15551234567`` (US) or ``+821012345678`` (Korea). The ``source`` must be a number you own, obtainable via ``GET https://api.voipbin.net/v1.0/numbers``. Unicode characters (emoji, non-Latin scripts) reduce the single-segment limit from 160 to 70 and make a text over 70 characters an MMS.
+   All phone numbers must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces. For example, ``+15551234567`` (US) or ``+821012345678`` (Korea). The ``source`` is optional. When it is left out, the default outgoing source number of the account (``default_outgoing_source_number_id`` of the outbound config) is used. When it is given, it must be a normal, active number you own, obtainable via ``GET https://api.voipbin.net/v1.0/numbers``; any other value is rejected and is not replaced by the default. Unicode characters (emoji, non-Latin scripts) reduce the single-segment limit from 160 to 70 and make a text over 70 characters an MMS.
 
 **Send SMS Example:**
 

@@ -79,7 +79,12 @@ func (h *server) PostMessages(c *gin.Context) {
 		return
 	}
 
-	source := ConvertCommonAddress(req.Source)
+	// a missing source stays nil down to message-manager, which uses the default outgoing source number of the customer.
+	var source *commonaddress.Address
+	if req.Source != nil {
+		tmp := ConvertCommonAddress(*req.Source)
+		source = &tmp
+	}
 	destinations := []commonaddress.Address{}
 	for _, v := range req.Destinations {
 		destinations = append(destinations, ConvertCommonAddress(v))
@@ -100,9 +105,9 @@ func (h *server) PostMessages(c *gin.Context) {
 			medias = append(medias, id)
 		}
 
-		res, err = h.serviceHandler.MessageSendMMS(c.Request.Context(), a, &source, destinations, req.Text, medias)
+		res, err = h.serviceHandler.MessageSendMMS(c.Request.Context(), a, source, destinations, req.Text, medias)
 	} else {
-		res, err = h.serviceHandler.MessageSend(c.Request.Context(), a, &source, destinations, req.Text)
+		res, err = h.serviceHandler.MessageSend(c.Request.Context(), a, source, destinations, req.Text)
 	}
 	if err != nil {
 		log.Errorf("Could not send the message. err: %v", err)

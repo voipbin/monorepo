@@ -47,7 +47,7 @@ Message struct
 * ``id`` (UUID): The message's unique identifier. Returned when creating via ``POST /messages`` or listing via ``GET /messages``.
 * ``customer_id`` (UUID): The customer's ID. Obtained from the ``id`` field of ``GET /customers``.
 * ``type`` (enum string): The message type. See :ref:`Type <message-struct-message-type>`.
-* ``source`` (Object): Source address info. See :ref:`Address <common-struct-address-address>`.
+* ``source`` (Object): Source address info: the number the message was sent from, which is the default outgoing source number of the account when the request had no source. See :ref:`Address <common-struct-address-address>`.
 * ``targets`` (Array of Object): List of delivery targets with per-destination status. See :ref:`Target <message-struct-message-target>`.
 * ``text`` (String): The message body text content.
 * ``medias`` (Array of UUID): The ids of the media files attached to the message, from the ``POST /storage_files`` response. Present only when the message has medias (type ``mms``); omitted for an SMS. For an inbound MMS the list is filled after the message was delivered, see :ref:`Receiving an MMS <message-overview-receiving-mms>`.

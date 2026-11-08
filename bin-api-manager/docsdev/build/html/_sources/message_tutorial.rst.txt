@@ -9,7 +9,7 @@ Prerequisites
 Before sending messages, you need:
 
 * An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
-* A source phone number in E.164 format (e.g., ``+15551234567``). This must be a number you own. Obtain your numbers via ``GET /numbers``.
+* Optionally, a source phone number in E.164 format (e.g., ``+15551234567``). When given, it must be a number you own; obtain your numbers via ``GET /numbers``. When left out, the default outgoing source number of the account is used (``default_outgoing_source_number_id`` of the outbound config); if the account has none, the request fails with ``SOURCE_REQUIRED``.
 * A destination phone number in E.164 format (e.g., ``+15559876543``).
 
 .. note:: **AI Implementation Hint**

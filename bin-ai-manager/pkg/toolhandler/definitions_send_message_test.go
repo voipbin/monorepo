@@ -63,3 +63,39 @@ func Test_sendMessageDefinitionMedias(t *testing.T) {
 		}
 	}
 }
+
+// Test_sendMessageDefinitionSource pins that the source of send_message is optional and that the description tells the
+// model to leave it out, because a source that is not a number of the account makes the send fail.
+func Test_sendMessageDefinitionSource(t *testing.T) {
+	var def *tool.Tool
+	for i := range toolDefinitions {
+		if toolDefinitions[i].Name == tool.ToolNameSendMessage {
+			def = &toolDefinitions[i]
+			break
+		}
+	}
+	if def == nil {
+		t.Fatalf("send_message tool definition not found")
+	}
+
+	props, ok := def.Parameters["properties"].(map[string]any)
+	if !ok {
+		t.Fatalf("send_message parameters has no properties map")
+	}
+	source, ok := props["source"].(map[string]any)
+	if !ok {
+		t.Fatalf("send_message has no source property")
+	}
+	if d, _ := source["description"].(string); !strings.Contains(d, "Optional") || !strings.Contains(d, "default outgoing number") {
+		t.Errorf("source description must say that it is optional and that the default outgoing number is used. got: %q", d)
+	}
+	required, ok := def.Parameters["required"].([]string)
+	if !ok {
+		t.Fatalf("send_message parameters has no required list")
+	}
+	for _, r := range required {
+		if r == "source" {
+			t.Errorf("source must stay optional")
+		}
+	}
+}

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	cmoutboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -113,6 +114,9 @@ func Test_Send_promotion(t *testing.T) {
 			}
 
 			f.expectVerified()
+			if !tt.expectTooBig {
+				f.expectSourceOwned()
+			}
 
 			if tt.expectTooBig {
 				res, err := f.handler.Send(ctx, testMessageID, testCustomerID, source, destinations, tt.text)
@@ -211,6 +215,10 @@ func Test_Send_rejected(t *testing.T) {
 			// no provider and no database call is expected: the mocks fail the test on any call.
 			f := newSendFixture(t)
 			f.expectVerified()
+			if tt.source == nil && tt.dests != nil {
+				// a missing source asks the default of the customer, which is not set here.
+				f.expectOutboundConfig([]cmoutboundconfig.OutboundConfig{}, nil)
+			}
 
 			res, err := f.handler.Send(context.Background(), testMessageID, testCustomerID, tt.source, tt.dests, "hi")
 			if res != nil {

@@ -12517,7 +12517,7 @@ type PostMessagesJSONBody struct {
 	Medias *[]string `json:"medias,omitempty"`
 
 	// Source Contains source or destination detail info.
-	Source CommonAddress `json:"source"`
+	Source *CommonAddress `json:"source,omitempty"`
 
 	// Text The content of the message. For a message with `medias` it can be an empty string. A text without `medias` of more than one segment is sent as an MMS and charged at the MMS price; more than 10 segments is rejected with `TEXT_TOO_LONG`.
 	Text string `json:"text"`

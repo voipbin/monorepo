@@ -5743,7 +5743,10 @@ components:
         source:
           type: object
           $ref: '#/components/schemas/CommonAddress'
-          description: Source address for the outbound message.
+          description: >-
+            Optional. Source address for the outbound message. When omitted, the default outgoing source number of
+            the customer's outbound config is used. When given it must be a normal, active number of the customer
+            in E.164 format; any other value fails the action.
         destinations:
           type: array
           items:

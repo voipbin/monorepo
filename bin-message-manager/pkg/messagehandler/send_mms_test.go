@@ -8,6 +8,7 @@ import (
 	"time"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	cmoutboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -352,6 +353,7 @@ func Test_SendMMS(t *testing.T) {
 	urls := []string{"https://example.invalid/a.png"}
 
 	f.expectVerifiedCustomer()
+	f.expectSourceOwned()
 	f.expectValidMedia()
 	f.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(gomock.Any(), testCustomerID, bmbilling.ReferenceTypeMMS, "", 1).Return(true, nil)
 	f.req.EXPECT().StorageV1FileDownloadURIRefresh(gomock.Any(), testMediaID1).Return(urls[0], nil)
@@ -389,7 +391,7 @@ func Test_SendMMS(t *testing.T) {
 // Test_SendMMS_rejected checks that every rejection happens before the message is created and before any
 // provider is called, and that the checks that cost something run last.
 func Test_SendMMS_rejected(t *testing.T) {
-	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+1555****0001"}
+	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: testSourceOwned}
 	destinations := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+1555****0002"}}
 
 	tests := []struct {
@@ -423,6 +425,8 @@ func Test_SendMMS_rejected(t *testing.T) {
 			medias: []uuid.UUID{testMediaID1},
 			setup: func(f *sendMMSFixture) {
 				f.expectVerifiedCustomer()
+				// a missing source asks the default of the customer, which is not set here.
+				f.req.EXPECT().CallV1OutboundConfigList(gomock.Any(), testCustomerID, uint64(1), "").Return([]cmoutboundconfig.OutboundConfig{}, nil)
 			},
 			expectStatus: cerrors.StatusInvalidArgument,
 			expectReason: "SOURCE_REQUIRED",
@@ -454,6 +458,7 @@ func Test_SendMMS_rejected(t *testing.T) {
 			medias: nil,
 			setup: func(f *sendMMSFixture) {
 				f.expectVerifiedCustomer()
+				f.expectSourceOwned()
 			},
 			expectStatus: cerrors.StatusInvalidArgument,
 			expectReason: "MEDIA_REQUIRED",
@@ -464,6 +469,7 @@ func Test_SendMMS_rejected(t *testing.T) {
 			medias: []uuid.UUID{testMediaID1},
 			setup: func(f *sendMMSFixture) {
 				f.expectVerifiedCustomer()
+				f.expectSourceOwned()
 				f.req.EXPECT().StorageV1FileGet(gomock.Any(), testMediaID1).Return(testMediaFile(testMediaID1, testOtherID, "a.png", 10), nil)
 			},
 			expectStatus: cerrors.StatusInvalidArgument,
@@ -475,6 +481,7 @@ func Test_SendMMS_rejected(t *testing.T) {
 			medias: []uuid.UUID{testMediaID1},
 			setup: func(f *sendMMSFixture) {
 				f.expectVerifiedCustomer()
+				f.expectSourceOwned()
 				f.expectValidMedia()
 				f.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(gomock.Any(), testCustomerID, bmbilling.ReferenceTypeMMS, "", 1).Return(false, nil)
 			},
@@ -487,6 +494,7 @@ func Test_SendMMS_rejected(t *testing.T) {
 			medias: []uuid.UUID{testMediaID1},
 			setup: func(f *sendMMSFixture) {
 				f.expectVerifiedCustomer()
+				f.expectSourceOwned()
 				f.expectValidMedia()
 				f.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(gomock.Any(), testCustomerID, bmbilling.ReferenceTypeMMS, "", 1).Return(false, errors.New("billing down"))
 			},
@@ -498,6 +506,7 @@ func Test_SendMMS_rejected(t *testing.T) {
 			medias: []uuid.UUID{testMediaID1},
 			setup: func(f *sendMMSFixture) {
 				f.expectVerifiedCustomer()
+				f.expectSourceOwned()
 				f.expectValidMedia()
 				f.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(gomock.Any(), testCustomerID, bmbilling.ReferenceTypeMMS, "", 1).Return(true, nil)
 				f.req.EXPECT().StorageV1FileDownloadURIRefresh(gomock.Any(), testMediaID1).Return("", cerrors.Unavailable("storage-manager", "SIGNING_NOT_CONFIGURED", "no key"))
@@ -511,6 +520,7 @@ func Test_SendMMS_rejected(t *testing.T) {
 			medias: []uuid.UUID{testMediaID1},
 			setup: func(f *sendMMSFixture) {
 				f.expectVerifiedCustomer()
+				f.expectSourceOwned()
 				f.expectValidMedia()
 				f.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(gomock.Any(), testCustomerID, bmbilling.ReferenceTypeMMS, "", 1).Return(true, nil)
 				f.req.EXPECT().StorageV1FileDownloadURIRefresh(gomock.Any(), testMediaID1).Return("https://example.invalid/a.png", nil)
@@ -557,11 +567,12 @@ func Test_SendMMS_usesTheMMSBalanceType(t *testing.T) {
 	f := newSendMMSFixture(t)
 
 	f.expectVerifiedCustomer()
+	f.expectSourceOwned()
 	f.expectValidMedia()
 	// two destinations are two billed targets
 	f.req.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(gomock.Any(), testCustomerID, bmbilling.ReferenceTypeMMS, "", 2).Return(false, nil)
 
-	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+1555****0001"}
+	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: testSourceOwned}
 	destinations := []commonaddress.Address{
 		{Type: commonaddress.TypeTel, Target: "+1555****0002"},
 		{Type: commonaddress.TypeTel, Target: "+1555****0003"},

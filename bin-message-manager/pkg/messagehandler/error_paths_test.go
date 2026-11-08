@@ -441,6 +441,8 @@ func Test_Send_errorPaths(t *testing.T) {
 			ID:                         customerID,
 			IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
 		}, nil)
+		// the source is a number of the customer.
+		m.req.EXPECT().NumberV1NumberList(ctx, "", uint64(1), gomock.Any()).Return([]nmnumber.Number{{}}, nil)
 	}
 
 	tests := []struct {

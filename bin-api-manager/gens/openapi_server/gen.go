@@ -9900,7 +9900,7 @@ type PostMessagesJSONBody struct {
 	Medias *[]string `json:"medias,omitempty"`
 
 	// Source Contains source or destination detail info.
-	Source CommonAddress `json:"source"`
+	Source *CommonAddress `json:"source,omitempty"`
 
 	// Text The content of the message. For a message with `medias` it can be an empty string. A text without `medias` of more than one segment is sent as an MMS and charged at the MMS price; more than 10 segments is rejected with `TEXT_TOO_LONG`.
 	Text string `json:"text"`
@@ -43666,6 +43666,34 @@ func (response PostMessages402JSONResponse) VisitPostMessagesResponse(w http.Res
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(402)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMessages403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostMessages403JSONResponse) VisitPostMessagesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMessages409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostMessages409JSONResponse) VisitPostMessagesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
 	_, err := buf.WriteTo(w)
 	return err
 }

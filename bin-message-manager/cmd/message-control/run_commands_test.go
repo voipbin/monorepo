@@ -512,6 +512,10 @@ func Test_runSend_sendFails(t *testing.T) {
 						billingCalls.Add(1)
 						return tt.billing()
 					}
+					// the source is a number of the customer.
+					if strings.Contains(req.URI, "/v1/numbers") {
+						return &sock.Response{StatusCode: 200, DataType: "application/json", Data: json.RawMessage(`[{}]`)}, nil
+					}
 					// the customer lookup fails, which lets the send continue to the balance check.
 					return nil, errors.New("customer service unavailable")
 				}).AnyTimes()
@@ -534,5 +538,38 @@ func Test_runSend_sendFails(t *testing.T) {
 				t.Errorf("Wrong stored count. expect: 0, got: %d, err: %v", count, errCount)
 			}
 		})
+	}
+}
+
+// Test_runSend_invalidSource checks that a sender that is not in E.164 format is refused without a number lookup.
+func Test_runSend_invalidSource(t *testing.T) {
+	env := newControlEnv(t)
+	env.expectHandler()
+
+	viper.Set("customer-id", testMessageCustomer)
+	viper.Set("source", "Acme")
+	viper.Set("destinations", []string{"+15550100002"})
+	viper.Set("text", testMessageText)
+
+	// the identity gate asks the customer first; a failed lookup lets the send continue to the source check.
+	var numberCalls atomic.Int32
+	env.sock.EXPECT().RequestPublish(gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ string, req *sock.Request) (*sock.Response, error) {
+			if strings.Contains(req.URI, "/v1/numbers") {
+				numberCalls.Add(1)
+			}
+			return nil, errors.New("customer service unavailable")
+		}).AnyTimes()
+
+	var err error
+	out := captureStdout(t, func() { err = runSend(nil, nil) })
+	if got := numberCalls.Load(); got != 0 {
+		t.Errorf("Wrong number lookup count. expect: 0, got: %d", got)
+	}
+	if err == nil || !strings.Contains(err.Error(), "SOURCE_INVALID") {
+		t.Fatalf("Wrong match. expect: SOURCE_INVALID, got: %v", err)
+	}
+	if out != "" {
+		t.Errorf("Wrong match. expect: no output, got: %q", out)
 	}
 }

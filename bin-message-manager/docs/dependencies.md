@@ -17,6 +17,8 @@ This service has **no SubscribeHandler** and subscribes to no external events. P
 | Target Service | When | Purpose |
 |----------------|------|---------|
 | `bin-billing-manager` | Before SMS or MMS send | Validate customer has sufficient balance |
+| `bin-number-manager` | Before SMS or MMS send | List the customer's numbers to check that the source (or the default outgoing source number) is a normal, active number of the customer |
+| `bin-call-manager` | Before SMS or MMS send, only when the request has no source | Read the customer's outbound config for `default_outgoing_source_number_id` |
 | `bin-storage-manager` | Before MMS send | Read the media files (owner, type, size) and request a fresh signed download URL for each |
 | `bin-storage-manager` | After an inbound MMS is created | Create a storage file from the downloaded bytes (`POST /v1/files/content`) for each attachment |
 
@@ -27,10 +29,10 @@ This service has **no SubscribeHandler** and subscribes to no external events. P
 | `monorepo/bin-common-handler` | sockhandler, requesthandler, notifyhandler, databasehandler |
 | `monorepo/bin-billing-manager` | Billing RPC for balance validation before send |
 | `monorepo/bin-storage-manager` | File model (media validation) |
-| `monorepo/bin-number-manager` | Phone number models (indirect dependency) |
+| `monorepo/bin-number-manager` | Phone number models (source ownership check) |
 | `monorepo/bin-hook-manager` | Webhook models; hooks proxied through bin-hook-manager |
 | `monorepo/bin-agent-manager` | Agent models (indirect dependency) |
-| `monorepo/bin-call-manager` | Call models (indirect dependency) |
+| `monorepo/bin-call-manager` | Outbound config model (default outgoing source number) |
 | `monorepo/bin-direct-manager` | Direct models (indirect dependency) |
 | `monorepo/bin-contact-manager` | Contact models (indirect dependency) |
 | `monorepo/bin-talk-manager` | Talk models (indirect dependency) |
