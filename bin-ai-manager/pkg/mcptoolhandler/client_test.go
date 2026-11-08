@@ -201,7 +201,7 @@ func Test_CallTool_Success(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not build crypto: %v", err)
 	}
-	ct, nonce, ver, err := crypto.Encrypt("my-secret-token")
+	ct, nonce, ver, err := mcpserverhandler.EncryptSecret(crypto, "my-secret-token")
 	if err != nil {
 		t.Fatalf("could not encrypt: %v", err)
 	}

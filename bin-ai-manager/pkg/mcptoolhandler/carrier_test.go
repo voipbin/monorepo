@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-ai-manager/internal/logtest"
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 )
 
 const carrierSecret = "SENTINEL-ID:SENTINEL-SECRET"
@@ -90,7 +91,7 @@ func carrierServer(t *testing.T, url string, auth mcpserver.AuthType, secret str
 		AuthType: auth,
 	}
 	if secret != "" {
-		ct, nonce, version, err := newCoverageCrypto(t).Encrypt(secret)
+		ct, nonce, version, err := mcpserverhandler.EncryptSecret(newCoverageCrypto(t), secret)
 		if err != nil {
 			t.Fatal(err)
 		}

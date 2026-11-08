@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/mcpoauthhandler"
 	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
+	"monorepo/bin-common-handler/pkg/secretcrypto"
 )
 
 // McpTool is one tool definition returned by a remote MCP server's
@@ -61,7 +62,7 @@ type McpToolHandler interface {
 
 type mcpToolHandler struct {
 	db      dbhandler.DBHandler
-	crypto  *mcpserverhandler.SecretCrypto
+	crypto  *secretcrypto.Crypto
 	timeout time.Duration
 
 	// oauthHandler resolves a valid (transparently refreshed if needed)

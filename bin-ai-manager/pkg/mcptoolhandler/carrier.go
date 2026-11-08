@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/models/mcpserver"
+	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 )
 
 // CarrierHandler runs the tool calls of the built-in carrier adapters. It is
@@ -89,7 +90,7 @@ func (h *mcpToolHandler) carrierSecret(m *mcpserver.McpServer) func() (string, b
 		if (m.AuthType != mcpserver.AuthTypeBearer && m.AuthType != mcpserver.AuthTypeAPIKey) || len(m.SecretCiphertext) == 0 {
 			return "", false, nil
 		}
-		secret, err := h.crypto.Decrypt(m.SecretCiphertext, m.SecretNonce, m.KeyVersion)
+		secret, err := mcpserverhandler.DecryptSecret(h.crypto, m.SecretCiphertext, m.SecretNonce, m.KeyVersion)
 		if err != nil {
 			return "", false, errSecretDecrypt
 		}

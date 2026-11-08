@@ -7,6 +7,7 @@ import (
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/secretcrypto"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -14,7 +15,6 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
-	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 )
 
 // AIHandler interface
@@ -97,7 +97,7 @@ type aiHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
-	crypto        *mcpserverhandler.SecretCrypto
+	crypto        *secretcrypto.Crypto
 }
 
 // NewAIHandler define
@@ -105,7 +105,7 @@ func NewAIHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
-	crypto *mcpserverhandler.SecretCrypto,
+	crypto *secretcrypto.Crypto,
 ) AIHandler {
 	return &aiHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),

@@ -15,13 +15,14 @@ import (
 	"monorepo/bin-ai-manager/models/mcpoauthstate"
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 	commonerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 // newTestHandler builds an *mcpOAuthHandler wired to mocks, with a real
-// SecretCrypto (not exercised by Start/CallbackExists, only relevant for
+// crypto (not exercised by Start/CallbackExists, only relevant for
 // Complete's token-encryption path).
 func newTestHandler(t *testing.T, db dbhandler.DBHandler) *mcpOAuthHandler {
 	t.Helper()
@@ -512,7 +513,7 @@ func Test_Complete_ReconnectSuccessPersistsTokens(t *testing.T) {
 			// The persisted ciphertext must be the token the vendor actually
 			// returned -- not a leftover, not an empty column.
 			if kvOK && len(accessCT) > 0 && len(accessNonce) > 0 {
-				decrypted, err := h.crypto.Decrypt(accessCT, accessNonce, kv)
+				decrypted, err := mcpserverhandler.DecryptSecret(h.crypto, accessCT, accessNonce, kv)
 				if err != nil {
 					t.Errorf("could not decrypt persisted access token: %v", err)
 				} else if decrypted != "reconnect-access-token" {

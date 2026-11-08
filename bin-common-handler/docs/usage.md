@@ -54,7 +54,7 @@ secret, resolved, err := h.Secret(ctx, "provider.api_key") // db, then env, then
 - A read error is an error, not "no row". A stored secret that can not be decrypted is never replaced by the environment value.
 - A general on/off flag is not a setting of this library; bool keys exist only as a provider selection inside an atomic group.
 - `pkg/confighandler/storetest` holds an in-memory store and the contract every `Store` must pass.
-- These packages were added while only the first service used them, because two more services are planned to adopt them (number-manager, ai-manager). This is a deviation from the 3 services rule, not a precedent.
+- `secretcrypto` is used by bin-email-manager, bin-number-manager and bin-ai-manager. `confighandler` was added while only bin-email-manager used it. That is a deviation from the 3 services rule, not a precedent.
 
 ## Common Patterns
 

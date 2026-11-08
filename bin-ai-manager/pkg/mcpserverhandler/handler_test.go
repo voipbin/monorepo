@@ -24,13 +24,13 @@ func statusPtr(s mcpserver.Status) *mcpserver.Status       { return &s }
 func authTypePtr(a mcpserver.AuthType) *mcpserver.AuthType { return &a }
 
 // newTestHandlerWithCrypto builds an *mcpServerHandler wired to real mocks
-// plus a real *SecretCrypto (not mocked -- this suite verifies the actual
+// plus a real *secretcrypto.Crypto (not mocked -- this suite verifies the actual
 // encrypt/store/clear translation, which is the point of these tests).
 func newTestHandlerWithCrypto(t *testing.T, db *dbhandler.MockDBHandler, notify *notifyhandler.MockNotifyHandler) *mcpServerHandler {
 	t.Helper()
 	crypto, err := NewSecretCrypto("1:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=")
 	if err != nil {
-		t.Fatalf("could not build test SecretCrypto: %v", err)
+		t.Fatalf("could not build test crypto: %v", err)
 	}
 	return &mcpServerHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),

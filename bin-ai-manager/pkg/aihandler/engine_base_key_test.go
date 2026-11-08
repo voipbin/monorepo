@@ -24,6 +24,7 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
+	"monorepo/bin-common-handler/pkg/secretcrypto"
 )
 
 const (
@@ -34,7 +35,7 @@ const (
 	testURLSecret   = "SENTINEL-URL-PATH-MUST-NOT-LEAK"
 )
 
-func newTestCrypto(t *testing.T, versions ...int) *mcpserverhandler.SecretCrypto {
+func newTestCrypto(t *testing.T, versions ...int) *secretcrypto.Crypto {
 	t.Helper()
 
 	parts := []string{}

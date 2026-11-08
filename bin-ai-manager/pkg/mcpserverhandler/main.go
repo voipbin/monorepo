@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/secretcrypto"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-ai-manager/models/mcpserver"
@@ -53,7 +54,7 @@ type mcpServerHandler struct {
 	utilHandler   utilhandler.UtilHandler
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
-	crypto        *SecretCrypto
+	crypto        *secretcrypto.Crypto
 
 	// carrierTable lists the reserved urls that route to a built-in carrier
 	// adapter. A reserved url that is not in it is refused at registration.

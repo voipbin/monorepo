@@ -31,7 +31,7 @@ func Test_GetValidAccessToken_NoExpiryReturnsAsIs(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	h := newTestHandler(t, mockDB)
 
-	ct, nonce, ver, err := h.crypto.Encrypt("gho_livetoken")
+	ct, nonce, ver, err := mcpserverhandler.EncryptSecret(h.crypto, "gho_livetoken")
 	if err != nil {
 		t.Fatalf("could not encrypt: %v", err)
 	}
@@ -65,7 +65,7 @@ func Test_GetValidAccessToken_StillValidReturnsAsIs(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	h := newTestHandler(t, mockDB)
 
-	ct, nonce, ver, err := h.crypto.Encrypt("linear-access-token")
+	ct, nonce, ver, err := mcpserverhandler.EncryptSecret(h.crypto, "linear-access-token")
 	if err != nil {
 		t.Fatalf("could not encrypt: %v", err)
 	}
@@ -99,7 +99,7 @@ func Test_GetValidAccessToken_ExpiredNoRefreshTokenFails(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	h := newTestHandler(t, mockDB)
 
-	ct, nonce, ver, err := h.crypto.Encrypt("stale-token")
+	ct, nonce, ver, err := mcpserverhandler.EncryptSecret(h.crypto, "stale-token")
 	if err != nil {
 		t.Fatalf("could not encrypt: %v", err)
 	}
@@ -155,11 +155,11 @@ func Test_GetValidAccessToken_RefreshesAndPersists(t *testing.T) {
 	}
 	h.httpClient = &http.Client{Timeout: 2 * time.Second}
 
-	accessCT, accessNonce, ver, err := h.crypto.Encrypt("stale-access-token")
+	accessCT, accessNonce, ver, err := mcpserverhandler.EncryptSecret(h.crypto, "stale-access-token")
 	if err != nil {
 		t.Fatalf("could not encrypt access token: %v", err)
 	}
-	refreshCT, refreshNonce, _, err := h.crypto.Encrypt("old-refresh-token")
+	refreshCT, refreshNonce, _, err := mcpserverhandler.EncryptSecret(h.crypto, "old-refresh-token")
 	if err != nil {
 		t.Fatalf("could not encrypt refresh token: %v", err)
 	}
@@ -198,7 +198,7 @@ func Test_GetValidAccessToken_RefreshesAndPersists(t *testing.T) {
 			if !ok {
 				t.Fatalf("FieldKeyVersion missing or wrong type")
 			}
-			decrypted, err := h.crypto.Decrypt(ct, nonce, kv)
+			decrypted, err := mcpserverhandler.DecryptSecret(h.crypto, ct, nonce, kv)
 			if err != nil {
 				t.Fatalf("could not decrypt persisted access token: %v", err)
 			}
@@ -249,11 +249,11 @@ func Test_GetValidAccessToken_RefreshFailureSetsBackoff(t *testing.T) {
 	}
 	h.httpClient = &http.Client{Timeout: 2 * time.Second}
 
-	accessCT, accessNonce, ver, err := h.crypto.Encrypt("stale-access-token")
+	accessCT, accessNonce, ver, err := mcpserverhandler.EncryptSecret(h.crypto, "stale-access-token")
 	if err != nil {
 		t.Fatalf("could not encrypt access token: %v", err)
 	}
-	refreshCT, refreshNonce, _, err := h.crypto.Encrypt("revoked-refresh-token")
+	refreshCT, refreshNonce, _, err := mcpserverhandler.EncryptSecret(h.crypto, "revoked-refresh-token")
 	if err != nil {
 		t.Fatalf("could not encrypt refresh token: %v", err)
 	}
@@ -363,11 +363,11 @@ func expiredOAuthServer(t *testing.T, mockDB *dbhandler.MockDBHandler, vendor ht
 	}
 	h.httpClient = &http.Client{Timeout: 5 * time.Second}
 
-	accessCT, accessNonce, ver, err := h.crypto.Encrypt("stale-access-token")
+	accessCT, accessNonce, ver, err := mcpserverhandler.EncryptSecret(h.crypto, "stale-access-token")
 	if err != nil {
 		t.Fatalf("could not encrypt access token: %v", err)
 	}
-	refreshCT, refreshNonce, _, err := h.crypto.Encrypt(refreshToken)
+	refreshCT, refreshNonce, _, err := mcpserverhandler.EncryptSecret(h.crypto, refreshToken)
 	if err != nil {
 		t.Fatalf("could not encrypt refresh token: %v", err)
 	}
@@ -446,7 +446,7 @@ func Test_GetValidAccessToken_RefreshOutlivesCaller(t *testing.T) {
 	case fields := <-stored:
 		ct, _ := fields[mcpserver.FieldRefreshTokenCiphertext].([]byte)
 		nonce, _ := fields[mcpserver.FieldRefreshTokenNonce].([]byte)
-		got, err := h.crypto.Decrypt(ct, nonce, m.KeyVersion)
+		got, err := mcpserverhandler.DecryptSecret(h.crypto, ct, nonce, m.KeyVersion)
 		if err != nil || got != "refresh-1" {
 			t.Fatalf("stored refresh token = %q (err %v), want the rotated refresh-1", got, err)
 		}
@@ -616,7 +616,7 @@ func Test_GetValidAccessToken_SameTokenDifferentCiphertextShares(t *testing.T) {
 	h, m1 := expiredOAuthServer(t, mockDB, vendor, "refresh-0")
 
 	m2 := *m1
-	ct, nonce, _, err := h.crypto.Encrypt("refresh-0")
+	ct, nonce, _, err := mcpserverhandler.EncryptSecret(h.crypto, "refresh-0")
 	if err != nil {
 		t.Fatalf("could not encrypt: %v", err)
 	}
@@ -699,8 +699,8 @@ func Test_GetValidAccessToken_NonRotatingVendorSurvivesKeyRotation(t *testing.T)
 	if err != nil {
 		t.Fatalf("could not build crypto: %v", err)
 	}
-	m.AccessTokenCiphertext, m.AccessTokenNonce, m.KeyVersion, _ = oldCrypto.Encrypt("stale-access-token")
-	m.RefreshTokenCiphertext, m.RefreshTokenNonce, _, _ = oldCrypto.Encrypt("refresh-0")
+	m.AccessTokenCiphertext, m.AccessTokenNonce, m.KeyVersion, _ = mcpserverhandler.EncryptSecret(oldCrypto, "stale-access-token")
+	m.RefreshTokenCiphertext, m.RefreshTokenNonce, _, _ = mcpserverhandler.EncryptSecret(oldCrypto, "refresh-0")
 
 	// The operator then adds key 2, which becomes current.
 	h.crypto, err = mcpserverhandler.NewSecretCrypto(keyV1 + "," + keyV2)
@@ -728,7 +728,7 @@ func Test_GetValidAccessToken_NonRotatingVendorSurvivesKeyRotation(t *testing.T)
 	}
 	rct, _ := stored[mcpserver.FieldRefreshTokenCiphertext].([]byte)
 	rnonce, _ := stored[mcpserver.FieldRefreshTokenNonce].([]byte)
-	got, err := h.crypto.Decrypt(rct, rnonce, kv)
+	got, err := mcpserverhandler.DecryptSecret(h.crypto, rct, rnonce, kv)
 	if err != nil || got != "refresh-0" {
 		t.Fatalf("stored refresh token does not decrypt under the stored key version: %q, %v", got, err)
 	}
