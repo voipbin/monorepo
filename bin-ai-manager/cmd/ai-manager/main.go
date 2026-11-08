@@ -152,8 +152,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// storing an endpoint key then fails.
 	engineBaseKeyCrypto, err := mcpserverhandler.NewSecretCrypto(cfg.EngineBaseKeyEncryptionKeys)
 	if err != nil {
-		// The error text of the parser quotes the malformed entry, which is the key itself when the
-		// version prefix is missing, so only a fixed text is logged and returned.
+		// Only a fixed text is logged and returned, so the log never depends on what the parser puts
+		// in its error (an entry without a version prefix is the key itself).
 		log.Errorf("Could not parse ENGINE_BASE_KEY_ENCRYPTION_KEYS. Expected <version>:<base64 32 bytes>[,...].")
 		return errors.New("invalid engine base key encryption keys")
 	}

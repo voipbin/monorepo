@@ -83,7 +83,7 @@ func (h *mcpServerHandler) Create(
 	}
 
 	if secret != "" {
-		ciphertext, nonce, version, err := h.crypto.Encrypt(secret)
+		ciphertext, nonce, version, err := EncryptSecret(h.crypto, secret)
 		if err != nil {
 			return nil, errors.Wrap(err, "could not encrypt secret")
 		}
@@ -328,7 +328,7 @@ func (h *mcpServerHandler) Update(
 			fields[mcpserver.FieldSecretNonce] = []byte(nil)
 			fields[mcpserver.FieldKeyVersion] = 0
 		} else {
-			ciphertext, nonce, version, err := h.crypto.Encrypt(*secret)
+			ciphertext, nonce, version, err := EncryptSecret(h.crypto, *secret)
 			if err != nil {
 				return nil, errors.Wrap(err, "could not encrypt secret")
 			}

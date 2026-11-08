@@ -20,6 +20,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 )
 
 // tokenResponse is the JSON shape returned by the vendors' token
@@ -122,14 +123,14 @@ func (h *mcpOAuthHandler) Complete(ctx context.Context, customerID uuid.UUID, st
 		return nil, errors.Wrap(err, "could not exchange oauth code for tokens")
 	}
 
-	accessCiphertext, accessNonce, keyVersion, err := h.crypto.Encrypt(tok.AccessToken)
+	accessCiphertext, accessNonce, keyVersion, err := mcpserverhandler.EncryptSecret(h.crypto, tok.AccessToken)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not encrypt access token")
 	}
 
 	var refreshCiphertext, refreshNonce []byte
 	if tok.RefreshToken != "" {
-		refreshCiphertext, refreshNonce, _, err = h.crypto.Encrypt(tok.RefreshToken)
+		refreshCiphertext, refreshNonce, _, err = mcpserverhandler.EncryptSecret(h.crypto, tok.RefreshToken)
 		if err != nil {
 			return nil, errors.Wrap(err, "could not encrypt refresh token")
 		}

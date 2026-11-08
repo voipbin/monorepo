@@ -12,6 +12,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 )
 
 // accessTokenExpiryMargin is the safety margin subtracted from
@@ -67,7 +68,7 @@ const persistRotatedTokenTimeout = 5 * time.Second
 // for m, refreshing it first if it has expired (or is about to) and a
 // refresh token is available.
 func (h *mcpOAuthHandler) GetValidAccessToken(ctx context.Context, m *mcpserver.McpServer) (string, error) {
-	accessToken, err := h.crypto.Decrypt(m.AccessTokenCiphertext, m.AccessTokenNonce, m.KeyVersion)
+	accessToken, err := mcpserverhandler.DecryptSecret(h.crypto, m.AccessTokenCiphertext, m.AccessTokenNonce, m.KeyVersion)
 	if err != nil {
 		return "", errors.Wrap(err, "could not decrypt oauth access token")
 	}
@@ -86,7 +87,7 @@ func (h *mcpOAuthHandler) GetValidAccessToken(ctx context.Context, m *mcpserver.
 		return "", errors.New("oauth access token expired and no refresh token is available; reconnect required")
 	}
 
-	refreshToken, err := h.crypto.Decrypt(m.RefreshTokenCiphertext, m.RefreshTokenNonce, m.KeyVersion)
+	refreshToken, err := mcpserverhandler.DecryptSecret(h.crypto, m.RefreshTokenCiphertext, m.RefreshTokenNonce, m.KeyVersion)
 	if err != nil {
 		return "", errors.Wrap(err, "could not decrypt oauth refresh token")
 	}
@@ -217,7 +218,7 @@ func (h *mcpOAuthHandler) exchangeAndStore(ctx context.Context, m *mcpserver.Mcp
 		return "", nil, errors.Wrap(err, "could not refresh oauth access token")
 	}
 
-	accessCiphertext, accessNonce, keyVersion, err := h.crypto.Encrypt(tok.AccessToken)
+	accessCiphertext, accessNonce, keyVersion, err := mcpserverhandler.EncryptSecret(h.crypto, tok.AccessToken)
 	if err != nil {
 		return "", nil, errors.Wrap(err, "could not encrypt refreshed access token")
 	}
@@ -236,7 +237,7 @@ func (h *mcpOAuthHandler) exchangeAndStore(ctx context.Context, m *mcpserver.Mcp
 	if keptRefreshToken == "" {
 		keptRefreshToken = refreshToken
 	}
-	refreshCiphertext, refreshNonce, refreshKeyVersion, err := h.crypto.Encrypt(keptRefreshToken)
+	refreshCiphertext, refreshNonce, refreshKeyVersion, err := mcpserverhandler.EncryptSecret(h.crypto, keptRefreshToken)
 	if err != nil {
 		return "", nil, errors.Wrap(err, "could not encrypt oauth refresh token")
 	}

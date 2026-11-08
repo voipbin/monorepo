@@ -1,21 +1,13 @@
 package aihandler
 
 import (
-	"encoding/binary"
 	"errors"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/models/ai"
-)
-
-// Packed ciphertext of an engine base key: version(2, big endian) | nonce(12) | ciphertext+tag.
-const (
-	packedVersionLen = 2
-	packedNonceLen   = 12
-	packedTagLen     = 16
-	packedMinLen     = packedVersionLen + packedNonceLen + packedTagLen
+	"monorepo/bin-common-handler/pkg/secretcrypto"
 )
 
 var (
@@ -24,27 +16,23 @@ var (
 	errEngineBaseKeyBadCiphertext     = errors.New("engine base key ciphertext is malformed")
 )
 
-// sealEngineBaseKey encrypts the key under the current key version. The errors carry no key material.
+// sealEngineBaseKey encrypts the key under the current key version and returns the stored value,
+// version(2, big endian) | nonce(12) | ciphertext+tag (secretcrypto.PackVersioned). The errors carry
+// no key material.
 func (h *aiHandler) sealEngineBaseKey(key string) ([]byte, error) {
 	if h.crypto == nil {
 		return nil, errEngineBaseKeyCryptoUnavailable
 	}
 
-	ct, nonce, version, err := h.crypto.Encrypt(key)
+	blob, version, err := h.crypto.Encrypt(key)
 	if err != nil {
 		return nil, errEngineBaseKeyCryptoUnavailable
 	}
-	if version <= 0 || version > 65535 {
+
+	res, err := secretcrypto.PackVersioned(version, blob)
+	if err != nil {
 		return nil, errEngineBaseKeyBadVersion
 	}
-	if len(nonce) != packedNonceLen {
-		return nil, errEngineBaseKeyBadCiphertext
-	}
-
-	res := make([]byte, 0, packedVersionLen+len(nonce)+len(ct))
-	res = binary.BigEndian.AppendUint16(res, uint16(version))
-	res = append(res, nonce...)
-	res = append(res, ct...)
 
 	return res, nil
 }
@@ -54,15 +42,13 @@ func (h *aiHandler) openEngineBaseKey(packed []byte) (string, error) {
 	if h.crypto == nil {
 		return "", errEngineBaseKeyCryptoUnavailable
 	}
-	if len(packed) < packedMinLen {
+
+	version, blob, err := secretcrypto.UnpackVersioned(packed)
+	if err != nil {
 		return "", errEngineBaseKeyBadCiphertext
 	}
 
-	version := int(binary.BigEndian.Uint16(packed[:packedVersionLen]))
-	nonce := packed[packedVersionLen : packedVersionLen+packedNonceLen]
-	ct := packed[packedVersionLen+packedNonceLen:]
-
-	res, err := h.crypto.Decrypt(ct, nonce, version)
+	res, err := h.crypto.Decrypt(blob, version)
 	if err != nil {
 		return "", fmt.Errorf("could not decrypt the engine base key (version %d)", version)
 	}

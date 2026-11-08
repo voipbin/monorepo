@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
+	"monorepo/bin-common-handler/pkg/secretcrypto"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
@@ -56,7 +57,7 @@ const stateTTL = 10 * time.Minute
 type mcpOAuthHandler struct {
 	utilHandler utilhandler.UtilHandler
 	db          dbhandler.DBHandler
-	crypto      *mcpserverhandler.SecretCrypto
+	crypto      *secretcrypto.Crypto
 	vendors     map[string]vendorConfig
 
 	// httpClient performs the outbound vendor token-endpoint POST in

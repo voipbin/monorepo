@@ -318,7 +318,7 @@ func Test_carrierTools_aKeyNeverReachesTheLogsOrTheMessage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ct, nonce, version, err := crypto.Encrypt(secret)
+	ct, nonce, version, err := mcpserverhandler.EncryptSecret(crypto, secret)
 	if err != nil {
 		t.Fatal(err)
 	}

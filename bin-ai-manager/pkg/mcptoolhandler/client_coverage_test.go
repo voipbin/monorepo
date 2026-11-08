@@ -18,11 +18,12 @@ import (
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
+	"monorepo/bin-common-handler/pkg/secretcrypto"
 )
 
 const coverageTestKeys = "1:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="
 
-func newCoverageCrypto(t *testing.T) *mcpserverhandler.SecretCrypto {
+func newCoverageCrypto(t *testing.T) *secretcrypto.Crypto {
 	t.Helper()
 	c, err := mcpserverhandler.NewSecretCrypto(coverageTestKeys)
 	if err != nil {
@@ -33,7 +34,7 @@ func newCoverageCrypto(t *testing.T) *mcpserverhandler.SecretCrypto {
 
 func Test_buildAuthHeader_branches(t *testing.T) {
 	crypto := newCoverageCrypto(t)
-	ct, nonce, version, err := crypto.Encrypt("fake-secret-value")
+	ct, nonce, version, err := mcpserverhandler.EncryptSecret(crypto, "fake-secret-value")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -114,7 +115,7 @@ func Test_ListTools_apiKeyHeaderIsSent(t *testing.T) {
 	defer mc.Finish()
 
 	crypto := newCoverageCrypto(t)
-	ct, nonce, version, err := crypto.Encrypt("fake-secret-value")
+	ct, nonce, version, err := mcpserverhandler.EncryptSecret(crypto, "fake-secret-value")
 	if err != nil {
 		t.Fatal(err)
 	}

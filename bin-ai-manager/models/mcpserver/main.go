@@ -89,7 +89,8 @@ type McpServer struct {
 
 	// AccessTokenCiphertext/-Nonce hold the encrypted OAuth access token,
 	// same AES-256-GCM envelope and KeyVersion column as SecretCiphertext
-	// above (reuses mcpserverhandler.SecretCrypto, not a new key set).
+	// above (the shared secretcrypto package through mcpserverhandler.EncryptSecret
+	// and DecryptSecret, not a new key set).
 	AccessTokenCiphertext []byte     `json:"-" db:"access_token_ciphertext"`
 	AccessTokenNonce      []byte     `json:"-" db:"access_token_nonce"`
 	AccessTokenExpiresAt  *time.Time `json:"-" db:"access_token_expires_at"` // nil = vendor did not report an expiry (treat as long-lived, e.g. GitHub)

@@ -62,21 +62,21 @@ type toolsCallResult struct {
 
 // buildAuthHeader returns the header name/value to set on the outbound
 // request per the server's AuthType, decrypting the stored secret via
-// h.crypto.Decrypt. Returns ("", "", nil) for AuthTypeNone.
+// mcpserverhandler.DecryptSecret. Returns ("", "", nil) for AuthTypeNone.
 func (h *mcpToolHandler) buildAuthHeader(ctx context.Context, m *mcpserver.McpServer) (headerName string, headerValue string, err error) {
 	switch m.AuthType {
 	case mcpserver.AuthTypeNone:
 		return "", "", nil
 
 	case mcpserver.AuthTypeBearer:
-		secret, err := h.crypto.Decrypt(m.SecretCiphertext, m.SecretNonce, m.KeyVersion)
+		secret, err := mcpserverhandler.DecryptSecret(h.crypto, m.SecretCiphertext, m.SecretNonce, m.KeyVersion)
 		if err != nil {
 			return "", "", fmt.Errorf("could not decrypt secret: %w", err)
 		}
 		return "Authorization", "Bearer " + secret, nil
 
 	case mcpserver.AuthTypeAPIKey:
-		secret, err := h.crypto.Decrypt(m.SecretCiphertext, m.SecretNonce, m.KeyVersion)
+		secret, err := mcpserverhandler.DecryptSecret(h.crypto, m.SecretCiphertext, m.SecretNonce, m.KeyVersion)
 		if err != nil {
 			return "", "", fmt.Errorf("could not decrypt secret: %w", err)
 		}

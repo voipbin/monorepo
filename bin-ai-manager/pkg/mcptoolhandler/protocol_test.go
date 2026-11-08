@@ -638,7 +638,7 @@ func listToolsBearer(t *testing.T, fake *fakeMCPServer, token string) ([]McpTool
 	if err != nil {
 		t.Fatalf("could not build crypto: %v", err)
 	}
-	ct, nonce, ver, err := crypto.Encrypt(token)
+	ct, nonce, ver, err := mcpserverhandler.EncryptSecret(crypto, token)
 	if err != nil {
 		t.Fatalf("could not encrypt: %v", err)
 	}
