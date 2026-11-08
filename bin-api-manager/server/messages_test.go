@@ -544,3 +544,70 @@ func Test_messagesPOST_medias(t *testing.T) {
 		})
 	}
 }
+
+// Test_messagesPOST_withoutSource checks that a request without a source reaches the service handler with a nil
+// source, so that message-manager can use the default outgoing source number of the customer, and that a given source
+// is passed on unchanged.
+func Test_messagesPOST_withoutSource(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("c96bf1c2-a2e9-11ec-a8e3-a716ee72ed9d"),
+		},
+	})
+	media1 := uuid.FromStringOrNil("3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d")
+	rest := `"destinations":[{"type":"tel","target":"+15550100002"}],"text":"hello"`
+
+	tests := []struct {
+		name string
+
+		body string
+
+		expectCall   string // "sms" or "mms"
+		expectSource *commonaddress.Address
+	}{
+		{"sms, source left out", `{` + rest + `}`, "sms", nil},
+		{"sms, source null", `{"source":null,` + rest + `}`, "sms", nil},
+		{"mms, source left out", `{` + rest + `,"medias":["3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"]}`, "mms", nil},
+		{
+			"sms, source given",
+			`{"source":{"type":"tel","target":"+15550100001"},` + rest + `}`,
+			"sms",
+			&commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15550100001"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{serviceHandler: mockSvc}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+			r.Use(middleware.RequestID())
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest(http.MethodPost, "/messages", bytes.NewBufferString(tt.body))
+			req.Header.Set("Content-Type", "application/json")
+
+			res := &mmmessage.WebhookMessage{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("d0b1f3f4-a2e9-11ec-8b3b-4b3b3b3b3b3b")}}
+			if tt.expectCall == "mms" {
+				mockSvc.EXPECT().MessageSendMMS(gomock.Any(), agent, tt.expectSource, gomock.Any(), "hello", []uuid.UUID{media1}).Return(res, nil)
+			} else {
+				mockSvc.EXPECT().MessageSend(gomock.Any(), agent, tt.expectSource, gomock.Any(), "hello").Return(res, nil)
+			}
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d, body: %s", http.StatusOK, w.Code, w.Body.String())
+			}
+		})
+	}
+}

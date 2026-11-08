@@ -37,7 +37,11 @@ post:
           type: object
           properties:
             source:
-              description: The source of the message.
+              description: >-
+                The source of the message. Optional. When it is omitted, the default outgoing source number of the
+                customer's outbound config (`default_outgoing_source_number_id`) is used. When it is given it must be
+                a normal, active number of the customer in E.164 format; any other value is rejected and is never
+                replaced by the default.
               $ref: '#/components/schemas/CommonAddress'
             destinations:
               description: List of destinations for the message.
@@ -65,7 +69,6 @@ post:
                 x-go-type: string
                 example: "3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
           required:
-            - source
             - destinations
             - text
   responses:
@@ -81,5 +84,9 @@ post:
       $ref: '#/components/responses/Unauthenticated'
     '402':
       $ref: '#/components/responses/PaymentRequired'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '409':
+      $ref: '#/components/responses/Conflict'
     '500':
       $ref: '#/components/responses/InternalError'

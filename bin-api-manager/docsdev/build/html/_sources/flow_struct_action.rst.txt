@@ -1085,7 +1085,7 @@ Parameters
         }
     }
 
-* ``source`` (Object): Source address for the message. See :ref:`Address <common-struct-address-address>`. Must be a number you own, obtained from ``GET /numbers``.
+* ``source`` (Object, optional): Source address for the message. See :ref:`Address <common-struct-address-address>`. When left out, the default outgoing source number of the account is used (``default_outgoing_source_number_id`` of the outbound config). When given, it must be a normal, active number you own, obtained from ``GET /numbers``, in E.164 format; any other value makes the action fail and nothing is sent.
 * ``destinations`` (Array of Object): Array of destination addresses. See :ref:`Address <common-struct-address-address>`.
 * ``text`` (String): Message text content. Supports ``${variable}`` substitution.
 * ``medias`` (Array of UUID, optional): Ids of the files to attach, returned from the ``POST /storage_files`` response (uploaded with ``type=media``). When the list is not empty the message is sent as an MMS. Without it (missing or an empty list) the message is an SMS. URLs are not accepted and ``${variable}`` substitution is not supported in this list. The limits, the owner check and the price are described in :ref:`Sending an MMS <message-overview-mms>`. If the files cannot be attached, the action fails and no message is sent.

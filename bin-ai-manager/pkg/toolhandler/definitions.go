@@ -192,7 +192,8 @@ run_llm: Set true to confirm ("I've texted you the details"), false for silent s
 					"default":     false,
 				},
 				"source": map[string]any{
-					"type": "object",
+					"type":        "object",
+					"description": "Optional. Leave it out to send from the default outgoing number of the account. Set it only when your instructions give a specific number, which must be an active number of the account; any other number makes the send fail.",
 					"properties": map[string]any{
 						"type": map[string]any{
 							"type":        "string",

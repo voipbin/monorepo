@@ -193,7 +193,7 @@ Sends an SMS text message to a phone number. When ``medias`` is given, the messa
 
    ``medias`` takes storage file ids only, each the ``id`` of a file uploaded with ``POST /storage_files`` using ``type=media``. The LLM must use only ids that it was given in its instructions or by the caller; it must not invent an id and must not pass a URL (a URL makes the tool call fail and nothing is sent). Files that do not belong to your account are rejected. Leave ``medias`` out for a plain text message.
 
-   Phone numbers in ``source.target`` and ``destinations[].target`` must be in E.164 format (e.g., ``+15551234567``). If the user provides a local number like ``555-1234``, the LLM must normalize it to E.164 before invoking this tool. The ``source`` phone number must be a number owned by your VoIPBin account (obtainable via ``GET /numbers``).
+   Phone numbers in ``source.target`` and ``destinations[].target`` must be in E.164 format (e.g., ``+15551234567``). If the user provides a local number like ``555-1234``, the LLM must normalize it to E.164 before invoking this tool. ``source`` is optional: leave it out to send from the default outgoing number of the account (``default_outgoing_source_number_id`` of the outbound config). Set it only when the instructions give a specific number, which must be a normal, active number owned by your VoIPBin account (obtainable via ``GET /numbers``); any other number makes the tool call fail and nothing is sent.
 
 **When to use:**
 
@@ -215,6 +215,7 @@ Sends an SMS text message to a phone number. When ``medias`` is given, the messa
             },
             "source": {
                 "type": "object",
+                "description": "Optional. Leave it out to send from the default outgoing number of the account.",
                 "properties": {
                     "type": { "type": "string", "enum": ["tel"] },
                     "target": { "type": "string", "description": "Source phone number (+E.164)" },

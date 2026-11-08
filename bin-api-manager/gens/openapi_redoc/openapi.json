@@ -13928,7 +13928,7 @@
                 "type": "object",
                 "properties": {
                   "source": {
-                    "description": "The source of the message.",
+                    "description": "The source of the message. Optional. When it is omitted, the default outgoing source number of the customer's outbound config (`default_outgoing_source_number_id`) is used. When it is given it must be a normal, active number of the customer in E.164 format; any other value is rejected and is never replaced by the default.",
                     "$ref": "#/components/schemas/CommonAddress"
                   },
                   "destinations": {
@@ -13956,7 +13956,6 @@
                   }
                 },
                 "required": [
-                  "source",
                   "destinations",
                   "text"
                 ]
@@ -13983,6 +13982,12 @@
           },
           "402": {
             "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
@@ -32798,7 +32803,7 @@
           "source": {
             "type": "object",
             "$ref": "#/components/schemas/CommonAddress",
-            "description": "Source address for the outbound message."
+            "description": "Optional. Source address for the outbound message. When omitted, the default outgoing source number of the customer's outbound config is used. When given it must be a normal, active number of the customer in E.164 format; any other value fails the action."
           },
           "destinations": {
             "type": "array",

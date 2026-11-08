@@ -290,6 +290,21 @@ Reasons fired by SMS message endpoints (``/messages``, ``/messages/{id}``). ``PO
    * - ``MESSAGE_NOT_FOUND``
      - 404
      - Message ID does not exist or belongs to another customer. Fired by ``GET /messages/{id}`` and ``DELETE /messages/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /messages`` list call.
+   * - ``SOURCE_REQUIRED``
+     - 400
+     - ``POST /messages`` without a ``source`` and the account has no default outgoing source number. **Fix:** Send a ``source``, or set ``default_outgoing_source_number_id`` in the outbound config.
+   * - ``SOURCE_INVALID``
+     - 400
+     - The message ``source`` is not a phone number in E.164 format. **Fix:** Use a number you own in the form ``+`` followed by 7 to 15 digits.
+   * - ``SOURCE_NOT_OWNED``
+     - 403
+     - The message ``source`` is not a normal, active number of the account. **Fix:** Use a number from ``GET /numbers``.
+   * - ``DEFAULT_SOURCE_INVALID``
+     - 409
+     - The message has no ``source`` and the default outgoing source number of the outbound config is not an active number of the account. **Fix:** Update ``default_outgoing_source_number_id``.
+   * - ``SOURCE_LOOKUP_FAILED``
+     - 500
+     - The message source could not be verified. **Fix:** Retry the request.
 
 Email Reasons
 ^^^^^^^^^^^^^

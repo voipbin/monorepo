@@ -42,6 +42,16 @@ An individual recipient within a message. Each destination address maps to one T
 6. Target statuses updated in database after provider response.
 7. Prometheus counters incremented per provider.
 
+### Sender (source) check
+
+Before the balance check, `Send` and `SendMMS` (a long text promoted to an MMS goes through `Send`) check the source (`pkg/messagehandler/source.go`):
+
+- A source is missing when it is nil or its target is blank. The default outgoing source number of the customer (`default_outgoing_source_number_id` of the call-manager outbound config) is then used. No config, or the nil id, is `SOURCE_REQUIRED` (400).
+- A given source must be of type `tel` (an empty type is read as `tel`) and in E.164 format (`SOURCE_INVALID`, 400; alphanumeric sender ids are refused), and a normal, active, not deleted number of the customer (`SOURCE_NOT_OWNED`, 403); a virtual number is not accepted as a sender. It is never replaced by the default.
+- The default number is checked with the same filter on every send, because the stored id can be stale (`DEFAULT_SOURCE_INVALID`, 409).
+- A failed lookup is `SOURCE_LOOKUP_FAILED` (500), also when the request context is cancelled; it never turns into a pass or a fallback. A hung up client therefore raises the 500 count.
+- The caller's address is not modified. The stored message and the provider call use the resolved address.
+
 ### Provider Selection
 
 SMS: an ordered chain, Telnyx first and MessageBird for the targets Telnyx definitively refused (`pkg/messagehandler/dispatch.go`). A result that is unknown is never sent again.

@@ -49,22 +49,31 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 		return nil, fmt.Errorf("customer identity verification required to send message")
 	}
 
-	if source == nil {
-		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameMessageManager, "SOURCE_REQUIRED", "The source is required.")
-	}
 	if len(destinations) == 0 {
 		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameMessageManager, "DESTINATION_REQUIRED", "At least one destination is required.")
 	}
 
-	// Canonicalize source/destinations through the shared address normalization
-	// authority so BOTH the persisted message and the provider wire value are in
-	// canonical form. NormalizeTarget is loss-proof (an alphanumeric/sentinel
-	// sender with no digit is preserved verbatim), so the error is discarded.
-	normalizeSendAddresses(source, destinations)
+	// the format of the source is checked on the raw input, before anything is normalized, and without any call to
+	// another service. A missing source is nil here and is resolved to the default of the customer below.
+	preparedSource, err := prepareSource(source)
+	if err != nil {
+		return nil, err
+	}
+
+	// Canonicalize the destinations through the shared address normalization authority so BOTH the persisted message
+	// and the provider wire value are in canonical form. NormalizeTarget is loss-proof, so the error is discarded.
+	normalizeDestinations(destinations)
 
 	count := segmenthandler.Count(text)
 	if count.Segments > smsMaxSegments {
 		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameMessageManager, "TEXT_TOO_LONG", fmt.Sprintf("The text of a message without media can have at most %d segments.", smsMaxSegments))
+	}
+
+	// the sender must be a number of the customer; this is the first check that calls another service, so a rejected
+	// request has no side effect and costs nothing.
+	source, err = h.resolveSource(ctx, customerID, preparedSource)
+	if err != nil {
+		return nil, err
 	}
 
 	promoted := count.Segments > smsPromoteSegments
@@ -120,12 +129,8 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 	return res, nil
 }
 
-// normalizeSendAddresses canonicalizes the source and the destinations in place. The source pointer
-// is nil guarded and the destinations are normalized by index.
-func normalizeSendAddresses(source *commonaddress.Address, destinations []commonaddress.Address) {
-	if source != nil {
-		source.Target, _ = commonaddress.NormalizeTarget(source.Type, source.Target)
-	}
+// normalizeDestinations canonicalizes the destinations in place, by index.
+func normalizeDestinations(destinations []commonaddress.Address) {
 	for i := range destinations {
 		destinations[i].Target, _ = commonaddress.NormalizeTarget(destinations[i].Type, destinations[i].Target)
 	}

@@ -1056,6 +1056,26 @@
 <td><p>404</p></td>
 <td><p>Message ID does not exist or belongs to another customer. Fired by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/messages/{id}</span></code> and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/messages/{id}</span></code>. <strong>Fix:</strong> Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/messages</span></code> list call.</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SOURCE_REQUIRED</span></code></p></td>
+<td><p>400</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code> without a <code class="docutils literal notranslate"><span class="pre">source</span></code> and the account has no default outgoing source number. <strong>Fix:</strong> Send a <code class="docutils literal notranslate"><span class="pre">source</span></code>, or set <code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code> in the outbound config.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SOURCE_INVALID</span></code></p></td>
+<td><p>400</p></td>
+<td><p>The message <code class="docutils literal notranslate"><span class="pre">source</span></code> is not a phone number in E.164 format. <strong>Fix:</strong> Use a number you own in the form <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by 7 to 15 digits.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SOURCE_NOT_OWNED</span></code></p></td>
+<td><p>403</p></td>
+<td><p>The message <code class="docutils literal notranslate"><span class="pre">source</span></code> is not a normal, active number of the account. <strong>Fix:</strong> Use a number from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">DEFAULT_SOURCE_INVALID</span></code></p></td>
+<td><p>409</p></td>
+<td><p>The message has no <code class="docutils literal notranslate"><span class="pre">source</span></code> and the default outgoing source number of the outbound config is not an active number of the account. <strong>Fix:</strong> Update <code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SOURCE_LOOKUP_FAILED</span></code></p></td>
+<td><p>500</p></td>
+<td><p>The message source could not be verified. <strong>Fix:</strong> Retry the request.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
