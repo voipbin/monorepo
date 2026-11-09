@@ -32,7 +32,14 @@ func (h *flowBuilderHandler) Chat(ctx context.Context, customerID uuid.UUID, req
 	})
 	defer func() { promFlowBuilderChatDuration.Observe(time.Since(start).Seconds()) }()
 
-	if !h.opts.KeyConfigured {
+	// The key check comes before the counter: a key that is not configured, or can not be read, never
+	// spends the customer's allowance.
+	configured, errKey := h.opts.keyConfigured(ctx)
+	if errKey != nil {
+		log.WithError(errKey).Warn("Could not read the builder key.")
+		return nil, h.fail(log, resultKeyError, cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonUnavailable, "the flow builder could not read its key, try again"))
+	}
+	if !configured {
 		return nil, h.fail(log, resultUnavailable, cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonUnavailable, "the flow builder is not available"))
 	}
 
@@ -120,6 +127,11 @@ func (h *flowBuilderHandler) mapTurnError(log *logrus.Entry, err error) error {
 	var llm *LLMError
 
 	switch {
+	case errors.Is(err, ErrKeyUnavailable):
+		// The key read inside the model call failed; see the Assistant Builder's mapTurnError.
+		log.WithError(err).Warn("Could not read the builder key.")
+		return h.fail(log, resultKeyError, cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonUnavailable, "the flow builder could not read its key, try again"))
+
 	case errors.Is(err, ErrTimeout):
 		return h.fail(log, resultLLMError, cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonTimeout, "the flow builder took too long, try again"))
 

@@ -8,8 +8,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	openai "github.com/sashabaranov/go-openai"
 )
 
 const cov90ValidEvaluation = `{"overall_score":4,"dimensions":{` +
@@ -23,10 +21,10 @@ func newCov90Handler(t *testing.T, serve http.HandlerFunc) *geminiAuditHandler {
 	srv := httptest.NewServer(serve)
 	t.Cleanup(srv.Close)
 
-	cfg := openai.DefaultConfig("test-key-0001")
-	cfg.BaseURL = srv.URL
-
-	return &geminiAuditHandler{client: openai.NewClientWithConfig(cfg)}
+	return &geminiAuditHandler{
+		keyFunc: func(context.Context) (string, error) { return "test-key-0001", nil },
+		baseURL: srv.URL,
+	}
 }
 
 func Test_BuildPrompt_TruncationNotice(t *testing.T) {

@@ -48,10 +48,15 @@ func (s *errPathSock) RequestPublishWithDelay(queueName string, req *sock.Reques
 
 // errPathNoSockCall lists the methods that reject a zero-valued argument set
 // before ever reaching the broker. They are covered by their own tests below
-// (Test_AgentV1AgentGetsByTagIDs_Errors).
+// (Test_AgentV1AgentGetsByTagIDs_Errors). The config wrappers pick the queue by the service
+// name, and the empty name is refused (Test_config_unknownService).
 var errPathNoSockCall = map[string]bool{
 	"AgentV1AgentGetsByTagIDs":          true,
 	"AgentV1AgentGetsByTagIDsAndStatus": true,
+	"ConfigV1ServiceGet":                true,
+	"ConfigV1KeySecretSet":              true,
+	"ConfigV1KeyClear":                  true,
+	"ConfigV1KeyHistoryList":            true,
 }
 
 // errPathNotRPC lists the exported methods that publish an event rather than

@@ -20,6 +20,7 @@ package confighandler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -62,6 +63,15 @@ var (
 	// ErrInvalid is returned for a value that is malformed or violates the declaration of the key.
 	ErrInvalid = errors.New("invalid config value")
 
+	// ErrStale is returned by a write with ExpectRevision when the stored revision is not the
+	// expected one, or when the row changed between the read and the write. It wraps ErrConflict
+	// and the write is not retried.
+	ErrStale = fmt.Errorf("%w: the revision does not match", ErrConflict)
+
+	// ErrWriteVerify is returned when a write is committed but reading the result back failed.
+	// The change is stored, so a caller must not treat the write as failed.
+	ErrWriteVerify = errors.New("config change is stored but could not be read back")
+
 	// ErrKeyNotConfigured is returned when a secret is written and no master key exists.
 	ErrKeyNotConfigured = secretcrypto.ErrKeyNotConfigured
 
@@ -100,10 +110,20 @@ type Handler interface {
 	Secret(ctx context.Context, key string) (Secret, Resolved, error)
 
 	// Set, SetSecret and Clear are overwrites: the last writer wins and every write has its own
-	// history row. actor must not be uuid.Nil.
-	Set(ctx context.Context, actor uuid.UUID, key, raw string) (*Resolved, error)
-	SetSecret(ctx context.Context, actor uuid.UUID, key, secret string) (*Resolved, error)
-	Clear(ctx context.Context, actor uuid.UUID, key string) (*Resolved, error)
+	// history row. actor must not be uuid.Nil. With ExpectRevision a write is conditional instead:
+	// it is tried once and returns ErrStale when the stored revision is not the expected one.
+	Set(ctx context.Context, actor uuid.UUID, key, raw string, opts ...WriteOption) (*Resolved, error)
+	SetSecret(ctx context.Context, actor uuid.UUID, key, secret string, opts ...WriteOption) (*Resolved, error)
+	Clear(ctx context.Context, actor uuid.UUID, key string, opts ...WriteOption) (*Resolved, error)
+
+	// Histories lists the changes of a key, the newest first. pageToken is empty for the first page
+	// and is the token returned by the previous page otherwise; the returned token is empty on the
+	// last page. pageSize 0 means the default (20), the largest is 100. The history of a secret
+	// never holds a value.
+	Histories(ctx context.Context, key, pageToken string, pageSize int) ([]*History, string, error)
+
+	// SecretWritable reports whether a master key exists, so that a secret can be written.
+	SecretWritable() bool
 
 	// Describe lists every registered key in registry order, with or without a row, and never a
 	// value. Rows of keys that are not registered are ignored.

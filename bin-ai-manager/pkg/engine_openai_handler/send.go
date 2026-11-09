@@ -12,7 +12,15 @@ func (h *engineOpenaiHandler) Send(ctx context.Context, req *openai.ChatCompleti
 	return h.send(ctx, req)
 }
 
+// send resolves the key once, before the first attempt, and the retries use the client built with
+// it. The backoff does not take a context, so a request that started before a key rotation keeps
+// the old key for up to its one minute of retries; the next call uses the new key.
 func (h *engineOpenaiHandler) send(ctx context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+	client, err := h.newClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	expBackoff := backoff.NewExponentialBackOff()
 	expBackoff.InitialInterval = 1 * time.Second
 	expBackoff.MaxInterval = 10 * time.Second
@@ -21,7 +29,7 @@ func (h *engineOpenaiHandler) send(ctx context.Context, req *openai.ChatCompleti
 	var resp openai.ChatCompletionResponse
 	operation := func() error {
 		var errOp error
-		resp, errOp = h.client.CreateChatCompletion(ctx, *req)
+		resp, errOp = client.CreateChatCompletion(ctx, *req)
 		return errOp
 	}
 

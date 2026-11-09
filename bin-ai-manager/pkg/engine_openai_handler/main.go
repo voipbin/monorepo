@@ -4,6 +4,7 @@ package engine_openai_handler
 
 import (
 	"context"
+	"errors"
 
 	"github.com/sashabaranov/go-openai"
 
@@ -24,17 +25,24 @@ type EngineOpenaiHandler interface {
 	StreamingSend(ctx context.Context, cc *aicall.AIcall, messages []*message.Message) (<-chan string, <-chan *message.ToolCall, error)
 }
 
+// KeyFunc hands the API key to the engine at the time of a call. An empty value with no error is
+// "no key configured" and the request is sent without one, as before. An error stops the call.
+type KeyFunc = func(ctx context.Context) (string, error)
+
 // engineOpenaiHandler define
+//
+// The key is resolved when a request is sent, not when the handler is built, so a rotated key is
+// used by the next request. The client is cheap to create: the SDK client shares the default HTTP
+// transport, so the connection pool is shared.
 type engineOpenaiHandler struct {
-	client *openai.Client
+	keyFunc KeyFunc
+	baseURL string
 }
 
 // NewEngineOpenaiHandler define
-func NewEngineOpenaiHandler(apiKey string) EngineOpenaiHandler {
-	client := openai.NewClient(apiKey)
-
+func NewEngineOpenaiHandler(keyFunc KeyFunc) EngineOpenaiHandler {
 	return &engineOpenaiHandler{
-		client: client,
+		keyFunc: keyFunc,
 	}
 }
 
@@ -42,15 +50,31 @@ func NewEngineOpenaiHandler(apiKey string) EngineOpenaiHandler {
 // (e.g. the Gemini OpenAI-compatible endpoint). Used by the analysis gateway so
 // the provider is selectable by config. When baseURL is empty the SDK default
 // (OpenAI, https://api.openai.com/v1) is used.
-func NewEngineOpenaiHandlerWithConfig(apiKey, baseURL string) EngineOpenaiHandler {
-	cfg := openai.DefaultConfig(apiKey)
-	if baseURL != "" {
-		cfg.BaseURL = baseURL
+func NewEngineOpenaiHandlerWithConfig(keyFunc KeyFunc, baseURL string) EngineOpenaiHandler {
+	return &engineOpenaiHandler{
+		keyFunc: keyFunc,
+		baseURL: baseURL,
+	}
+}
+
+// newClient resolves the key now and builds a client with it. The error is the error of the key
+// function, unchanged, so a caller can tell a key that could not be read from a provider error.
+func (h *engineOpenaiHandler) newClient(ctx context.Context) (*openai.Client, error) {
+	if h.keyFunc == nil {
+		return nil, errors.New("engine_openai_handler: no key function")
 	}
 
-	return &engineOpenaiHandler{
-		client: openai.NewClientWithConfig(cfg),
+	apiKey, err := h.keyFunc(ctx)
+	if err != nil {
+		return nil, err
 	}
+
+	cfg := openai.DefaultConfig(apiKey)
+	if h.baseURL != "" {
+		cfg.BaseURL = h.baseURL
+	}
+
+	return openai.NewClientWithConfig(cfg), nil
 }
 
 const (

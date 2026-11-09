@@ -68,6 +68,10 @@ type Key struct {
 	Kind Kind
 	Type Type
 
+	// Description is one line of English text that tells an operator what the key is for. It is
+	// shown to operators and never holds a value.
+	Description string
+
 	// Env is the name of the environment variable that is used when the database has no row.
 	// Empty skips the env step.
 	Env string

@@ -8,8 +8,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	openai "github.com/sashabaranov/go-openai"
 )
 
 func newCov90Handler(t *testing.T, status int, body string) (*geminiProposalHandler, *map[string]any) {
@@ -24,16 +22,16 @@ func newCov90Handler(t *testing.T, status int, body string) (*geminiProposalHand
 	}))
 	t.Cleanup(srv.Close)
 
-	cfg := openai.DefaultConfig("test-key-0001")
-	cfg.BaseURL = srv.URL
-
-	return &geminiProposalHandler{client: openai.NewClientWithConfig(cfg)}, &gotRequest
+	return &geminiProposalHandler{
+		keyFunc: func(context.Context) (string, error) { return "test-key-0001", nil },
+		baseURL: srv.URL,
+	}, &gotRequest
 }
 
 func Test_NewGeminiProposalHandler(t *testing.T) {
-	h, ok := NewGeminiProposalHandler("test-key-0001").(*geminiProposalHandler)
-	if !ok || h.client == nil {
-		t.Fatalf("expected a proposal handler with a client, got: %T", h)
+	h, ok := NewGeminiProposalHandler(func(context.Context) (string, error) { return "test-key-0001", nil }).(*geminiProposalHandler)
+	if !ok || h.keyFunc == nil || h.baseURL != geminiEndpoint {
+		t.Fatalf("expected a proposal handler with a key function and the Gemini endpoint, got: %T", h)
 	}
 }
 

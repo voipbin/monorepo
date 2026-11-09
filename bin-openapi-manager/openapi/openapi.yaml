@@ -119,6 +119,12 @@ tags:
       description: Find more about number provider
       url: https://api.voipbin.net/docs/number_provider.html
 
+  - name: ServiceConfig
+    description: Operations related to the config keys of a service (admin-only, for example the credentials of the email providers)
+    externalDocs:
+      description: Find more about service config
+      url: https://api.voipbin.net/docs/service_config.html
+
   - name: Outdial
     description: Operations related to outdial
     externalDocs:
@@ -234,6 +240,22 @@ components:
       required: false
       schema:
         type: string
+    ServiceConfigService:
+      name: service
+      in: path
+      required: true
+      description: "The service whose config keys are managed. Only the services that support stored config keys are accepted (for example `email`)."
+      schema:
+        $ref: '#/components/schemas/ServiceConfigServiceName'
+    ServiceConfigKeyName:
+      name: key
+      in: path
+      required: true
+      description: "The name of the config key. Returned from the `key` field of the `GET /service_configs/{service}` response."
+      schema:
+        type: string
+        pattern: '^[a-z0-9][a-z0-9._]{0,127}$'
+        example: mailgun.api_key
 
 
   schemas:
@@ -6526,6 +6548,247 @@ components:
         - NumberManagerNumberProviderCredentialSourceEnv
         - NumberManagerNumberProviderCredentialSourceNone
         - NumberManagerNumberProviderCredentialSourceDBUndecryptable
+    ServiceConfigServiceName:
+      type: string
+      description: The name of a service that has config keys.
+      example: "email"
+      enum:
+        - email
+      x-enum-varnames:
+        - ServiceConfigServiceNameEmail
+    ServiceConfigKeyKind:
+      type: string
+      description: The role of the key. A `secret` is encrypted and write-only.
+      example: "secret"
+      enum:
+        - secret
+        - param
+        - select
+      x-enum-varnames:
+        - ServiceConfigKeyKindSecret
+        - ServiceConfigKeyKindParam
+        - ServiceConfigKeyKindSelect
+    ServiceConfigKeyType:
+      type: string
+      description: The value type of the key.
+      example: "string"
+      enum:
+        - string
+        - int
+        - bool
+        - duration
+        - enum
+      x-enum-varnames:
+        - ServiceConfigKeyTypeString
+        - ServiceConfigKeyTypeInt
+        - ServiceConfigKeyTypeBool
+        - ServiceConfigKeyTypeDuration
+        - ServiceConfigKeyTypeEnum
+    ServiceConfigKeySource:
+      type: string
+      description: |
+        Where the value that the service uses comes from. `db` is the stored value, `env` the environment of the service, `default` the default of the key, `none` that the key has no value anywhere.
+        `db_undecryptable` means that the stored secret cannot be decrypted (for example the encryption key was lost) and `db_invalid` that the stored value does not fit the declaration of the key. The service does not fall back to the environment in these two cases; store a new value or delete the stored value to recover.
+      example: "db"
+      enum:
+        - db
+        - env
+        - default
+        - none
+        - db_undecryptable
+        - db_invalid
+      x-enum-varnames:
+        - ServiceConfigKeySourceDB
+        - ServiceConfigKeySourceEnv
+        - ServiceConfigKeySourceDefault
+        - ServiceConfigKeySourceNone
+        - ServiceConfigKeySourceDBUndecryptable
+        - ServiceConfigKeySourceDBInvalid
+    ServiceConfigHistoryAction:
+      type: string
+      description: What was done. `set` stores a value, `clear` deletes the stored value.
+      example: "set"
+      enum:
+        - set
+        - clear
+      x-enum-varnames:
+        - ServiceConfigHistoryActionSet
+        - ServiceConfigHistoryActionClear
+    ServiceConfigHistorySource:
+      type: string
+      description: Where the change was made from. `api` is this API, `cli` the command line tool of the service.
+      example: "api"
+      enum:
+        - api
+        - cli
+      x-enum-varnames:
+        - ServiceConfigHistorySourceAPI
+        - ServiceConfigHistorySourceCLI
+    ServiceConfig:
+      type: object
+      description: The config keys of a service. It never contains a secret, a length or a hash of a secret, or the value of an environment variable.
+      required:
+        - service
+        - secret_writable
+        - keys
+      properties:
+        service:
+          $ref: '#/components/schemas/ServiceConfigServiceName'
+        secret_writable:
+          type: boolean
+          description: Whether the platform has an encryption key, which is needed to store a secret.
+          example: true
+        keys:
+          type: array
+          description: The keys of the service, in the order the service declares them.
+          items:
+            $ref: '#/components/schemas/ServiceConfigKey'
+    ServiceConfigKey:
+      type: object
+      description: One config key and its current state. It never contains a secret, a length or a hash of a secret, or the value of an environment variable.
+      required:
+        - key
+        - kind
+        - type
+        - description
+        - source
+        - has_secret
+        - env_shadowed
+        - key_version
+        - revision
+      properties:
+        key:
+          type: string
+          pattern: '^[a-z0-9][a-z0-9._]{0,127}$'
+          description: The name of the key.
+          example: "mailgun.api_key"
+        kind:
+          $ref: '#/components/schemas/ServiceConfigKeyKind'
+        type:
+          $ref: '#/components/schemas/ServiceConfigKeyType'
+        description:
+          type: string
+          description: One line that tells what the key is for.
+          example: "API key of the Mailgun account that sends email."
+        source:
+          $ref: '#/components/schemas/ServiceConfigKeySource'
+        has_secret:
+          type: boolean
+          description: Whether a secret value exists, stored or in the environment. The secret itself is never returned.
+          example: true
+        env_name:
+          type: string
+          description: The name of the environment variable that the service reads when no value is stored. It is the name only, never the value. Omitted when the key has no environment variable.
+          example: "MAILGUN_API_KEY"
+        env_shadowed:
+          type: boolean
+          description: Whether the environment variable is set but not used, because a stored value takes precedence.
+          example: false
+        key_version:
+          type: integer
+          description: The version of the encryption key that encrypted the stored secret. 0 when no secret is stored.
+          example: 1
+        revision:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 4294967295
+          description: The revision of the stored value, to be sent back when the key is changed. 0 when no value is stored. It starts at 1 again when a key is deleted and set again.
+          example: 3
+        updated_by:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The agent who last changed the stored value. The agent ID returned from the `GET /agents` response. Omitted when no value is stored.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        tm_update:
+          type: string
+          format: date-time
+          description: The timestamp of the last change of the stored value. Omitted when no value is stored.
+          example: "2026-01-02T03:04:05.000000Z"
+    ServiceConfigKeySecretRequest:
+      type: object
+      description: The secret to store. It is write-only and never returned.
+      required:
+        - secret
+        - revision
+      properties:
+        secret:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 2020
+          description: The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte); a key can declare a shorter limit (the email keys allow 512 bytes), and a longer secret is rejected with 400. It must not start or end with white space or contain a line break; it is rejected, not trimmed. The request body is limited to 4 KB.
+          example: "example-secret-token"
+        revision:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 4294967295
+          description: The `revision` of the key returned from the `GET /service_configs/{service}` response. 0 means that the key has no stored value.
+          example: 3
+    ServiceConfigHistory:
+      type: object
+      description: One change of a config key. A change of a secret has the key versions only, never a value.
+      required:
+        - id
+        - key
+        - action
+        - is_secret
+        - old_key_version
+        - new_key_version
+        - actor_id
+        - source
+        - tm_create
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The ID of the history entry returned from the `GET /service_configs/{service}/keys/{key}/histories` response.
+          example: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        key:
+          type: string
+          description: The name of the key.
+          example: "mailgun.api_key"
+        action:
+          $ref: '#/components/schemas/ServiceConfigHistoryAction'
+        is_secret:
+          type: boolean
+          description: Whether the key is a secret. The history of a secret never holds a value.
+          example: true
+        old_key_version:
+          type: integer
+          description: The version of the encryption key of the secret before the change. 0 when there was none.
+          example: 0
+        new_key_version:
+          type: integer
+          description: The version of the encryption key of the secret after the change. 0 when the value was deleted.
+          example: 1
+        actor_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The agent who made the change. The agent ID returned from the `GET /agents` response.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        source:
+          $ref: '#/components/schemas/ServiceConfigHistorySource'
+        tm_create:
+          type: string
+          format: date-time
+          description: The timestamp of the change.
+          example: "2026-01-02T03:04:05.000000Z"
+    ServiceConfigHistoryList:
+      allOf:
+        - $ref: '#/components/schemas/CommonPagination'
+        - type: object
+          required:
+            - result
+          properties:
+            result:
+              type: array
+              items:
+                $ref: '#/components/schemas/ServiceConfigHistory'
     NumberManagerNumberProvider:
       type: object
       description: The setting of a number provider. It never contains a secret.
@@ -9453,6 +9716,15 @@ paths:
     $ref: './paths/numbers/main.yaml'
   /numbers/renew:
     $ref: './paths/numbers/renew.yaml'
+
+  /service_configs/{service}:
+    $ref: './paths/service_configs/service.yaml'
+  /service_configs/{service}/keys/{key}:
+    $ref: './paths/service_configs/key.yaml'
+  /service_configs/{service}/keys/{key}/secret:
+    $ref: './paths/service_configs/key_secret.yaml'
+  /service_configs/{service}/keys/{key}/histories:
+    $ref: './paths/service_configs/key_histories.yaml'
 
   /number_providers/{provider_name}/secret:
     $ref: './paths/number_providers/id_secret.yaml'

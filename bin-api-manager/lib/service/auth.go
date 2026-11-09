@@ -65,7 +65,6 @@ func PostLogin(c *gin.Context) {
 		abortLoginFailure(c, err)
 		return
 	}
-	log.Debugf("Created token string. token: %v", token)
 
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     "token",

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/confighandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	uuid "github.com/gofrs/uuid"
@@ -107,6 +108,9 @@ type DBHandler interface {
 	AIPromptProposalDelete(ctx context.Context, id uuid.UUID) error
 	AIPromptProposalCountProgressing(ctx context.Context, customerID uuid.UUID) (int64, error)
 	AIAcceptProposal(ctx context.Context, proposalID uuid.UUID, newHistoryID uuid.UUID, proposedPrompt string) error
+
+	// ConfigStore returns the store of the configs tables (platform LLM keys).
+	ConfigStore() confighandler.Store
 }
 
 // handler database handler

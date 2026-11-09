@@ -21,7 +21,7 @@ cmd/ai-manager/main.go
 
 **Supporting binaries:**
 - `cmd/ai-control/` — CLI tool for direct DB/cache operations (bypasses RabbitMQ); `migrate` command for the schema migrations
-- `migrations/` — embedded golang-migrate SQL files (service-owned schema of the eleven `ai_*` tables); `cmd/ai-manager` applies them right after the database connection, before the cache and RabbitMQ
+- `migrations/` — embedded golang-migrate SQL files (service-owned schema of the thirteen `ai_*` tables, including the stored platform settings `ai_configs` and `ai_config_histories`); `cmd/ai-manager` applies them right after the database connection, before the cache and RabbitMQ
 
 ## Layer Responsibilities
 
@@ -37,6 +37,7 @@ cmd/ai-manager/main.go
 | Domain | `pkg/toolhandler` | LLM tool definitions; dispatches tool calls to downstream managers |
 | Engine | `pkg/engine_openai_handler` | OpenAI Chat Completions API (also Grok via base URL override) |
 | Engine | `pkg/engine_dialogflow_handler` | Google Dialogflow CX/ES |
+| Config | `internal/aiconfig`, `internal/configkeys`, `pkg/dbhandler/config_store.go` | Stored platform LLM keys (encrypted) with the environment fallback. `aiconfig.KeyForBaseURL` and `GeminiKey` return a function that reads the key when it is called (nothing is cached); the engines, the Gemini handlers and the Builder availability check call it per request |
 | Data | `pkg/dbhandler` | MySQL CRUD via Squirrel SQL builder |
 | Data | `pkg/cachehandler` | Redis cache for AI/AIcall lookups |
 

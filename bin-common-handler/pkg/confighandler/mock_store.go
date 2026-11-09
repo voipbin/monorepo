@@ -98,6 +98,21 @@ func (mr *MockStoreMockRecorder) List(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockStore)(nil).List), ctx)
 }
 
+// ListHistories mocks base method.
+func (m *MockStore) ListHistories(ctx context.Context, key string, after HistoryCursor, limit int) ([]*History, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListHistories", ctx, key, after, limit)
+	ret0, _ := ret[0].([]*History)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListHistories indicates an expected call of ListHistories.
+func (mr *MockStoreMockRecorder) ListHistories(ctx, key, after, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListHistories", reflect.TypeOf((*MockStore)(nil).ListHistories), ctx, key, after, limit)
+}
+
 // Update mocks base method.
 func (m *MockStore) Update(ctx context.Context, row *Row, expectRevision uint32, hist *History) error {
 	m.ctrl.T.Helper()
