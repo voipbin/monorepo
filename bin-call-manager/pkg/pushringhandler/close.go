@@ -23,7 +23,9 @@ func (h *pushRingHandler) Close(ctx context.Context, sessionID uuid.UUID) error 
 // closeSession closes the session once. The keys stay with the state closed until the cache ttl, so the gate refuses
 // the late arrivals.
 //
-// With a confirmed winner only the tickets are deleted. Without a winner every path of the session ends: the
+// With a confirmed winner only the tickets are deleted. At the window end a session without a recorded winner whose
+// confbridge holds two or more channels is a connected call: the notifications are cancelled and nothing else is
+// touched. Without a winner every path of the session ends: the
 // notifications are cancelled, the tickets are deleted, the calls of the session are hung up, the master call is hung
 // up with the no answer reason (window end only) and the confbridge is terminated, because a push only call leaves
 // the confbridge with no channel left, which the auto terminate of the last leave does not cover.
@@ -53,6 +55,11 @@ func (h *pushRingHandler) closeSession(ctx context.Context, sessionID uuid.UUID,
 
 	h.goAsync(ctx, func(ctx context.Context) { h.sendCancel(ctx, s, uuid.Nil) })
 
+	if hangupMaster && h.sipAnswered(ctx, s) {
+		log.Infof("The session has no recorded winner but the confbridge has a connected leg. Keeping the call.")
+		return nil
+	}
+
 	h.hangupSessionCalls(ctx, s)
 
 	if hangupMaster {
@@ -66,6 +73,23 @@ func (h *pushRingHandler) closeSession(ctx context.Context, sessionID uuid.UUID,
 	}
 
 	return nil
+}
+
+// sipAnswered returns true when the confbridge of a session without a recorded winner already holds the caller and
+// another channel. That is a connected call whose winner was not recorded (a cache update that failed, or a join
+// handled by a call-manager that does not know the session), so the end of the window must not cut it. A confbridge that
+// cannot be read is not taken as connected: the window end then keeps its meaning.
+func (h *pushRingHandler) sipAnswered(ctx context.Context, s *pushring.Session) bool {
+	cb, err := h.db.ConfbridgeGet(ctx, s.ConfbridgeID)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"func":       "sipAnswered",
+			"session_id": s.ID,
+		}).Infof("Could not get the confbridge. err: %v", err)
+		return false
+	}
+
+	return len(cb.ChannelCallIDs) >= 2
 }
 
 // hangupSessionCalls hangs up the calls of a session that has no winner: the lease holder, the calls of the tickets

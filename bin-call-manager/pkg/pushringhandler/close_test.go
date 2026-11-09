@@ -10,6 +10,7 @@ import (
 
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/pushring"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 func Test_Expire(t *testing.T) {
@@ -94,6 +95,75 @@ func Test_Expire(t *testing.T) {
 		}
 		if len(e.terminated) != 0 {
 			t.Errorf("the confbridge of a connected call must stay: %v", e.terminated)
+		}
+	})
+
+	t.Run("no recorded winner but two channels in the confbridge: the connected call is kept", func(t *testing.T) {
+		e, sid := sessionEnv(t)
+		e.cb.ChannelCallIDs = map[string]uuid.UUID{
+			"channel-caller": tMasterCall,
+			"channel-leg":    tLegCallA,
+		}
+
+		if err := e.h.Expire(ctx, sid); err != nil {
+			t.Fatalf("expire: %v", err)
+		}
+		e.h.wg.Wait()
+
+		if s := e.session(sid); s.State != pushring.StateClosed {
+			t.Errorf("the session must be closed: %s", s.State)
+		}
+		if len(e.hangupIDs()) != 0 {
+			t.Errorf("nothing may be hung up: %v", e.hangupIDs())
+		}
+		if len(e.terminated) != 0 {
+			t.Errorf("the confbridge of a connected call must stay: %v", e.terminated)
+		}
+		if len(e.sendsOf(pmnotification.KindCallCancelled)) != 1 {
+			t.Errorf("the devices must still be told to stop ringing")
+		}
+	})
+
+	t.Run("no recorded winner and only the caller in the confbridge: the call ends", func(t *testing.T) {
+		e, sid := sessionEnv(t)
+		e.cb.ChannelCallIDs = map[string]uuid.UUID{"channel-caller": tMasterCall}
+
+		if err := e.h.Expire(ctx, sid); err != nil {
+			t.Fatalf("expire: %v", err)
+		}
+		e.h.wg.Wait()
+
+		if e.hangupIDs()[tMasterCall] != call.HangupReasonNoanswer || len(e.terminated) != 1 {
+			t.Errorf("the master must end with no answer and the confbridge must be terminated: %v, %v", e.hangupIDs(), e.terminated)
+		}
+	})
+
+	t.Run("the confbridge cannot be read: the window end keeps its meaning", func(t *testing.T) {
+		e, sid := sessionEnv(t)
+		e.cb = nil
+		e.cbErr = dbhandler.ErrNotFound
+
+		if err := e.h.Expire(ctx, sid); err != nil {
+			t.Fatalf("expire: %v", err)
+		}
+		e.h.wg.Wait()
+
+		if e.hangupIDs()[tMasterCall] != call.HangupReasonNoanswer {
+			t.Errorf("the master must end with no answer: %v", e.hangupIDs())
+		}
+	})
+
+	t.Run("a close without the window end never looks at the confbridge", func(t *testing.T) {
+		e, sid := sessionEnv(t)
+		e.cb.ChannelCallIDs = map[string]uuid.UUID{"a": tMasterCall, "b": tLegCallA}
+
+		if err := e.h.Close(ctx, sid); err != nil {
+			t.Fatalf("close: %v", err)
+		}
+		e.h.wg.Wait()
+
+		if len(e.terminated) != 1 {
+			t.Errorf("a close keeps its behaviour: %v", e.terminated)
 		}
 	})
 

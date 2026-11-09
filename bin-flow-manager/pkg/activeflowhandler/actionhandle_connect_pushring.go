@@ -25,6 +25,10 @@ type connectPushRing struct {
 
 // connectPushRingStart starts a push ring session when the connect action has a single extension destination.
 //
+// An early media connect never starts a session: its SIP leg is executed in early execution, so it joins the confbridge
+// while it is still ringing, before any answer. That join would take the lease and win the ring window at once, so the
+// app would get no push and the other contacts would be refused. Such a connect runs exactly as it did before.
+//
 // The session lets the app of the agent answer the call through a push notification. Every failure, an unknown route
 // of an older call-manager and a timeout included, is "no session": the connect then runs exactly as it did before. A
 // timeout leaves the start unknown; a session that was created is ended by its own expire requests.
@@ -34,7 +38,7 @@ func (h *activeflowHandler) connectPushRingStart(ctx context.Context, af *active
 		"activeflow_id": af.ID,
 	})
 
-	if len(opt.Destinations) != 1 || opt.Destinations[0].Type != commonaddress.TypeExtension {
+	if opt.EarlyMedia || len(opt.Destinations) != 1 || opt.Destinations[0].Type != commonaddress.TypeExtension {
 		return &connectPushRing{}
 	}
 

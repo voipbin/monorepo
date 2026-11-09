@@ -54,6 +54,7 @@ func Test_actionHandleConnect_pushRing(t *testing.T) {
 
 		destinations []commonaddress.Address
 		relayReason  bool
+		earlyMedia   bool
 
 		expectStart      bool
 		responseStart    *cmpushring.StartResult
@@ -88,6 +89,13 @@ func Test_actionHandleConnect_pushRing(t *testing.T) {
 			destinations:   []commonaddress.Address{extension},
 			expectStart:    true,
 			responseStart:  &cmpushring.StartResult{},
+			responseGroups: []*cmgroupcall.Groupcall{{Identity: commonidentity.Identity{ID: callID}}},
+			expectPushed:   true,
+		},
+		{
+			name:           "early media never starts a session: the leg joins before it answers and would win the ring window",
+			destinations:   []commonaddress.Address{extension},
+			earlyMedia:     true,
 			responseGroups: []*cmgroupcall.Groupcall{{Identity: commonidentity.Identity{ID: callID}}},
 			expectPushed:   true,
 		},
@@ -208,6 +216,7 @@ func Test_actionHandleConnect_pushRing(t *testing.T) {
 						Source:       source,
 						Destinations: tt.destinations,
 						RelayReason:  tt.relayReason,
+						EarlyMedia:   tt.earlyMedia,
 					}),
 				},
 			}
@@ -225,7 +234,7 @@ func Test_actionHandleConnect_pushRing(t *testing.T) {
 					Return(tt.responseStart, tt.responseStartErr)
 			}
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, customerID, flowID, referenceID, &source, tt.destinations, false, gomock.Any(), "", nil, nil).
+			mockReq.EXPECT().CallV1CallsCreate(ctx, customerID, flowID, referenceID, &source, tt.destinations, tt.earlyMedia, gomock.Any(), "", nil, nil).
 				Return(tt.responseCalls, tt.responseGroups, tt.responseCallsErr)
 
 			if tt.expectClose {

@@ -81,6 +81,7 @@ type env struct {
 	contactErr error
 	flagErr    error
 	cb         *confbridge.Confbridge
+	cbErr      error // the error of the confbridge lookup
 	sendResult func(kind pmnotification.Kind, deviceID uuid.UUID) (*pmnotification.SendResult, error)
 
 	calls      map[uuid.UUID]*call.Call
@@ -170,6 +171,9 @@ func newEnv(t *testing.T) *env {
 
 	e.db.EXPECT().ConfbridgeGet(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
+			if e.cbErr != nil {
+				return nil, e.cbErr
+			}
 			return e.cb, nil
 		}).AnyTimes()
 	e.db.EXPECT().ConfbridgeSetFlags(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
