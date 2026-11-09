@@ -470,8 +470,8 @@ func Test_PushRingTicketNotRecreated(t *testing.T) {
 		t.Fatalf("delete: %v", err)
 	}
 
-	if err := h.PushRingTicketBind(ctx, s.ID, flowID, "hash-a"); err != nil {
-		t.Fatalf("bind: %v", err)
+	if err := h.PushRingTicketBind(ctx, s.ID, flowID, "hash-a"); !errors.Is(err, pushring.ErrTicketRefused) {
+		t.Fatalf("bind of a deleted ticket: expected refused, got %v", err)
 	}
 	if mr.Exists("call:pushticket:hash-a") {
 		t.Errorf("the bind must not create a deleted ticket again")
