@@ -61,11 +61,11 @@ func Test_ListByTarget_SameProviderPrefersTargetRoute(t *testing.T) {
 	routeAllSameProvider := &route.Route{ID: uuid.FromStringOrNil("d2000000-0000-0000-0000-000000000012"), ProviderID: providerA}
 	routeAllOtherProvider := &route.Route{ID: uuid.FromStringOrNil("d2000000-0000-0000-0000-000000000013"), ProviderID: providerB}
 
-	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), map[route.Field]any{
+	mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), map[route.Field]any{
 		route.FieldCustomerID: customerID,
 		route.FieldTarget:     "+82",
 	}).Return([]*route.Route{routeTarget}, nil)
-	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), map[route.Field]any{
+	mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), map[route.Field]any{
 		route.FieldCustomerID: customerID,
 		route.FieldTarget:     route.TargetAll,
 	}).Return([]*route.Route{routeAllSameProvider, routeAllOtherProvider}, nil)
@@ -99,21 +99,21 @@ func Test_DialrouteList_SameProviderPrefersCustomerRoute(t *testing.T) {
 	defaultOtherProvider := &route.Route{ID: uuid.FromStringOrNil("d2000000-0000-0000-0000-000000000023"), CustomerID: route.CustomerIDBasicRoute, ProviderID: providerB}
 
 	// customer side: one route for the target, none for "all"
-	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), map[route.Field]any{
+	mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), map[route.Field]any{
 		route.FieldCustomerID: customerID,
 		route.FieldTarget:     "+82",
 	}).Return([]*route.Route{customerRoute}, nil)
-	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), map[route.Field]any{
+	mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), map[route.Field]any{
 		route.FieldCustomerID: customerID,
 		route.FieldTarget:     route.TargetAll,
 	}).Return([]*route.Route{}, nil)
 
 	// default side: the first provider overlaps with the customer route, the second does not
-	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), map[route.Field]any{
+	mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), map[route.Field]any{
 		route.FieldCustomerID: route.CustomerIDBasicRoute,
 		route.FieldTarget:     "+82",
 	}).Return([]*route.Route{defaultSameProvider}, nil)
-	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), map[route.Field]any{
+	mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), map[route.Field]any{
 		route.FieldCustomerID: route.CustomerIDBasicRoute,
 		route.FieldTarget:     route.TargetAll,
 	}).Return([]*route.Route{defaultOtherProvider}, nil)

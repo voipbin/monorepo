@@ -28,7 +28,7 @@ Route
 * ``name`` (String): A human-readable label for the route. Free-form text for organizational use.
 * ``detail`` (String): A longer description of the route's purpose or configuration notes.
 * ``provider_id`` (UUID): The provider used for outbound calls on this route. Obtained from the ``id`` field of ``GET /providers``.
-* ``priority`` (Integer): Route priority for failover ordering. Lower values are attempted first (1 = highest priority). Multiple routes with different priorities enable automatic failover.
+* ``priority`` (Integer): Route priority for failover ordering. Lower values are attempted first (1 = highest priority). Routes with the same priority are attempted newest first, and a route without a priority is attempted last. Multiple routes with different priorities enable automatic failover.
 * ``target`` (String): Target country code prefix for destination matching (e.g., ``+82``, ``+1``). Set to ``"all"`` to match every destination.
 * ``tm_create`` (string, ISO 8601): Timestamp when the route was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to any route property.

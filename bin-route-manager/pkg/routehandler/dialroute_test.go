@@ -105,13 +105,13 @@ func Test_DialrouteList(t *testing.T) {
 				route.FieldCustomerID: tt.customerID,
 				route.FieldTarget:     tt.target,
 			}
-			mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersCustomerTarget).Return(tt.responseRoutesCustomerTarget, nil)
+			mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), filtersCustomerTarget).Return(tt.responseRoutesCustomerTarget, nil)
 			// Second call: filtersAll with customerID and TargetAll
 			filtersCustomerAll := map[route.Field]any{
 				route.FieldCustomerID: tt.customerID,
 				route.FieldTarget:     route.TargetAll,
 			}
-			mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersCustomerAll).Return(tt.responseRoutesCustomerAll, nil)
+			mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), filtersCustomerAll).Return(tt.responseRoutesCustomerAll, nil)
 
 			// ListByTarget for default route base
 			// First call: filtersTarget with CustomerIDBasicRoute and target
@@ -119,13 +119,13 @@ func Test_DialrouteList(t *testing.T) {
 				route.FieldCustomerID: route.CustomerIDBasicRoute,
 				route.FieldTarget:     tt.target,
 			}
-			mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersDefaultTarget).Return(tt.responseRoutesDefaultTarget, nil)
+			mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), filtersDefaultTarget).Return(tt.responseRoutesDefaultTarget, nil)
 			// Second call: filtersAll with CustomerIDBasicRoute and TargetAll
 			filtersDefaultAll := map[route.Field]any{
 				route.FieldCustomerID: route.CustomerIDBasicRoute,
 				route.FieldTarget:     route.TargetAll,
 			}
-			mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersDefaultAll).Return(tt.responseRoutesDefaultAll, nil)
+			mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), filtersDefaultAll).Return(tt.responseRoutesDefaultAll, nil)
 
 			res, err := h.DialrouteList(ctx, tt.customerID, tt.target, nil)
 			if err != nil {
@@ -158,7 +158,7 @@ func Test_DialrouteList_CustomerRouteError(t *testing.T) {
 		route.FieldTarget:     "+82",
 	}
 
-	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersTarget).Return(nil, fmt.Errorf("database error"))
+	mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), filtersTarget).Return(nil, fmt.Errorf("database error"))
 
 	res, err := h.DialrouteList(ctx, customerID, "+82", nil)
 	if err == nil {
@@ -196,9 +196,9 @@ func Test_DialrouteList_DefaultRouteError(t *testing.T) {
 		route.FieldTarget:     "+82",
 	}
 
-	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersCustomerTarget).Return([]*route.Route{}, nil)
-	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersCustomerAll).Return([]*route.Route{}, nil)
-	mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersDefaultTarget).Return(nil, fmt.Errorf("database error"))
+	mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), filtersCustomerTarget).Return([]*route.Route{}, nil)
+	mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), filtersCustomerAll).Return([]*route.Route{}, nil)
+	mockDB.EXPECT().RouteListForDial(ctx, uint64(1000), filtersDefaultTarget).Return(nil, fmt.Errorf("database error"))
 
 	res, err := h.DialrouteList(ctx, customerID, "+82", nil)
 	if err == nil {

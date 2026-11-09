@@ -3,6 +3,7 @@ package routehandler
 import (
 	"context"
 	stderrors "errors"
+	"sort"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -107,7 +108,9 @@ func (h *routeHandler) ListByCustomerID(ctx context.Context, customerID uuid.UUI
 	return res, nil
 }
 
-// ListByTarget returns list of routes
+// ListByTarget returns the routes of the target and the "all" target in the order they are tried:
+// priority ascending (lower is tried first, a route without a priority is last), and for the same priority
+// the target routes first, then the newest first.
 func (h *routeHandler) ListByTarget(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -122,7 +125,7 @@ func (h *routeHandler) ListByTarget(ctx context.Context, customerID uuid.UUID, t
 		route.FieldCustomerID: customerID,
 		route.FieldTarget:     target,
 	}
-	routeTargets, err := h.db.RouteList(ctx, "", 1000, filtersTarget)
+	routeTargets, err := h.db.RouteListForDial(ctx, 1000, filtersTarget)
 	if err != nil {
 		log.Errorf("Could not get routes for target. err: %v", err)
 		return nil, err
@@ -133,12 +136,13 @@ func (h *routeHandler) ListByTarget(ctx context.Context, customerID uuid.UUID, t
 		route.FieldCustomerID: customerID,
 		route.FieldTarget:     route.TargetAll,
 	}
-	routeAll, err := h.db.RouteList(ctx, "", 1000, filtersAll)
+	routeAll, err := h.db.RouteListForDial(ctx, 1000, filtersAll)
 	if err != nil {
 		log.Errorf("Could not get routes for all target. err: %v", err)
 	}
 
-	res := routeTargets
+	res := make([]*route.Route, 0, len(routeTargets)+len(routeAll))
+	res = append(res, routeTargets...)
 	for _, r := range routeAll {
 		exist := false
 		for _, rr := range res {
@@ -152,6 +156,12 @@ func (h *routeHandler) ListByTarget(ctx context.Context, customerID uuid.UUID, t
 			res = append(res, r)
 		}
 	}
+
+	// attempt order: priority ascending. The sort is stable, so routes with the same priority keep
+	// the order of the merge (target routes first, then "all" routes, each in tm_create DESC, id DESC).
+	sort.SliceStable(res, func(i, j int) bool {
+		return res[i].Priority < res[j].Priority
+	})
 
 	return res, nil
 }

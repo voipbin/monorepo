@@ -65,7 +65,7 @@ The schema of `route_providercalls`, `route_providers` and `route_routes` is own
 - **No event subscriptions.** Events published: route_*, provider_*, providercall_* — published solely to the global topic exchange `bin-manager.event` as of VOIP-1407 (see docs/architecture.md)
 - **Dialroute merge**: customer routes + `CustomerIDBasicRoute` (`00000000-0000-0000-0000-000000000001`) defaults — customer wins on provider overlap
 - **Target values:** country code string (e.g., `"1"` for US) or `"all"` for catch-all
-- **Route priority:** lower integer = higher priority
+- **Route priority:** lower integer = tried first, NULL last; equal priority keeps `target` routes before `all` routes, newest first (`routehandler.ListByTarget`, `dbhandler.RouteListForDial`)
 - **Provider types:** `sip` (only type currently)
 - **Soft deletes:** `tm_delete = '9999-01-01 00:00:00.000000'` for both providers and routes
 - **Config required:** `external_sip_gateway_addresses` for provider setup

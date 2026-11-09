@@ -35,7 +35,7 @@ curl -s http://<pod-ip>:2112/metrics | grep route_manager
 SELECT id, target, provider_id, priority FROM route_manager_routes
 WHERE customer_id = '00000000-0000-0000-0000-000000000001'
   AND tm_delete = '9999-01-01 00:00:00.000000'
-ORDER BY target, priority;
+ORDER BY target, (priority IS NULL), priority, tm_create DESC, id DESC;
 ```
 
 **Check RabbitMQ queue depth:**
@@ -50,7 +50,7 @@ SELECT r.id, r.target, p.hostname, r.priority FROM route_manager_routes r
 JOIN route_manager_providers p ON r.provider_id = p.id
 WHERE r.customer_id = '<uuid>' AND r.target IN ('<country_code>', 'all')
   AND r.tm_delete = '9999-01-01 00:00:00.000000'
-ORDER BY r.priority;
+ORDER BY (r.priority IS NULL), r.priority, r.tm_create DESC, r.id DESC;
 
 -- Default routes for same target
 SELECT r.id, r.target, p.hostname, r.priority FROM route_manager_routes r
@@ -58,7 +58,7 @@ JOIN route_manager_providers p ON r.provider_id = p.id
 WHERE r.customer_id = '00000000-0000-0000-0000-000000000001'
   AND r.target IN ('<country_code>', 'all')
   AND r.tm_delete = '9999-01-01 00:00:00.000000'
-ORDER BY r.priority;
+ORDER BY (r.priority IS NULL), r.priority, r.tm_create DESC, r.id DESC;
 ```
 
 ## Deployment

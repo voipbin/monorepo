@@ -15,6 +15,10 @@ import (
 
 const (
 	routesTable = "route_routes"
+
+	// priorityNullValue is the priority a route without a stored priority (SQL NULL) is read as,
+	// so that it is tried after every route that has a priority.
+	priorityNullValue = 2147483647
 )
 
 // routeGetFromRow gets the route from the row.
@@ -194,6 +198,68 @@ func (h *handler) RouteList(ctx context.Context, token string, limit uint64, fil
 	}
 	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("rows iteration error. RouteGets. err: %w", err)
+	}
+
+	return res, nil
+}
+
+// RouteListForDial returns the routes in the order they are tried for dialing:
+// priority ascending (a NULL priority is read as the largest value, so it comes last),
+// then tm_create DESC and id DESC.
+// The same ordering is applied before the limit, so the limit drops the lowest priority routes.
+// A route without a stored priority is returned with Priority set to priorityNullValue.
+func (h *handler) RouteListForDial(ctx context.Context, limit uint64, filters map[route.Field]any) ([]*route.Route, error) {
+	priorityExpr := fmt.Sprintf("COALESCE(%s.%s, %d)", routesTable, route.FieldPriority, priorityNullValue)
+
+	fields := commondatabasehandler.GetDBFields(&route.Route{})
+	found := false
+	for i, f := range fields {
+		if f == string(route.FieldPriority) {
+			fields[i] = priorityExpr + " AS " + string(route.FieldPriority)
+			found = true
+			break
+		}
+	}
+	if !found {
+		return nil, fmt.Errorf("could not find the priority field. RouteListForDial")
+	}
+
+	sb := squirrel.
+		Select(fields...).
+		From(routesTable).
+		Where(squirrel.Eq{string(route.FieldTMDelete): nil}).
+		OrderBy(priorityExpr+" ASC", string(route.FieldTMCreate)+" DESC", string(route.FieldID)+" DESC").
+		Limit(limit).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. RouteListForDial. err: %w", err)
+	}
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. RouteListForDial. err: %w", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. RouteListForDial. err: %w", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	res := []*route.Route{}
+	for rows.Next() {
+		u, err := h.routeGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. RouteListForDial, err: %w", err)
+		}
+		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. RouteListForDial. err: %w", err)
 	}
 
 	return res, nil

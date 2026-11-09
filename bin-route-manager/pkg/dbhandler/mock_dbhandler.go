@@ -247,6 +247,21 @@ func (mr *MockDBHandlerMockRecorder) RouteList(ctx, token, limit, filters any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteList", reflect.TypeOf((*MockDBHandler)(nil).RouteList), ctx, token, limit, filters)
 }
 
+// RouteListForDial mocks base method.
+func (m *MockDBHandler) RouteListForDial(ctx context.Context, limit uint64, filters map[route.Field]any) ([]*route.Route, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RouteListForDial", ctx, limit, filters)
+	ret0, _ := ret[0].([]*route.Route)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RouteListForDial indicates an expected call of RouteListForDial.
+func (mr *MockDBHandlerMockRecorder) RouteListForDial(ctx, limit, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteListForDial", reflect.TypeOf((*MockDBHandler)(nil).RouteListForDial), ctx, limit, filters)
+}
+
 // RouteUpdate mocks base method.
 func (m *MockDBHandler) RouteUpdate(ctx context.Context, id uuid.UUID, fields map[route.Field]any) error {
 	m.ctrl.T.Helper()
