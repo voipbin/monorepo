@@ -13,7 +13,7 @@ The `bin-manager` Alembic stream is frozen read-only history (last head `b030752
 | service | tables | schema source |
 |---|---|---|
 | bin-agent-manager | agent_addresses, agent_agents | `bin-agent-manager/migrations/` |
-| bin-ai-manager | ai_ai_audits, ai_ai_prompt_histories, ai_ai_prompt_proposals, ai_aicall_participants, ai_aicalls, ai_ais, ai_mcp_oauth_states, ai_mcp_servers, ai_messages, ai_summaries, ai_teams | `bin-ai-manager/migrations/` |
+| bin-ai-manager | ai_ai_audits, ai_ai_prompt_histories, ai_ai_prompt_proposals, ai_aicall_participants, ai_aicalls, ai_ais, ai_config_histories, ai_configs, ai_mcp_oauth_states, ai_mcp_servers, ai_messages, ai_summaries, ai_teams | `bin-ai-manager/migrations/` |
 | bin-billing-manager | billing_accounts, billing_billings, billing_failed_events | `bin-billing-manager/migrations/` |
 | bin-call-manager | call_bridges, call_calls, call_channels, call_confbridges, call_groupcalls, call_outbound_configs, call_recordings | `bin-call-manager/migrations/` |
 | bin-campaign-manager | campaign_campaigncalls, campaign_campaigns, campaign_outplans | `bin-campaign-manager/migrations/` |
@@ -54,6 +54,8 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | ai_aicall_participants | bin-ai-manager | Participants of AI call sessions |
 | ai_aicalls | bin-ai-manager | Active AI call sessions |
 | ai_ais | bin-ai-manager | AI configuration records |
+| ai_config_histories | bin-ai-manager | Change history of the platform-wide stored settings (no values) |
+| ai_configs | bin-ai-manager | Platform-wide stored settings (platform LLM API keys, encrypted) |
 | ai_mcp_oauth_states | bin-ai-manager | OAuth state for MCP server authorization |
 | ai_mcp_servers | bin-ai-manager | MCP server registrations used by AI configurations |
 | ai_messages | bin-ai-manager | AI conversation messages |

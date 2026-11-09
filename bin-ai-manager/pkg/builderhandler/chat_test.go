@@ -80,6 +80,11 @@ func chatReq() *builder.ChatRequest {
 	return &builder.ChatRequest{Messages: []builder.Message{{Role: builder.RoleUser, Content: "I run a clinic"}}}
 }
 
+// staticKeyCheck is a key check with a fixed answer.
+func staticKeyCheck(configured bool) func(context.Context) (bool, error) {
+	return func(context.Context) (bool, error) { return configured, nil }
+}
+
 func testCfg() Config {
 	cfg := DefaultConfig()
 	cfg.LLMTimeout = 2 * time.Second
@@ -92,7 +97,7 @@ func newTestHandler(t *testing.T, s Sender, cfg Config, dailyLimit, maxConcurren
 	mc := gomock.NewController(t)
 	cache := cachehandler.NewMockCacheHandler(mc)
 	h := NewBuilderHandler(s, cache, cfg, Options{
-		KeyConfigured: keyConfigured,
+		KeyConfigured: staticKeyCheck(keyConfigured),
 		DailyLimit:    dailyLimit,
 		MaxConcurrent: maxConcurrent,
 	})
@@ -412,7 +417,7 @@ func Test_Status(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h, _ := newTestHandler(t, &chatSender{}, testCfg(), 200, 3, tt.keyConfigured)
-			st := h.Status()
+			st := h.Status(context.Background())
 			if st.Available != tt.available {
 				t.Errorf("available: got %v, want %v", st.Available, tt.available)
 			}

@@ -22,7 +22,7 @@ func Test_NewEngineOpenaiHandlerWithConfig_custom_base_url(t *testing.T) {
 	t.Cleanup(srv.Close)
 
 	key := "test-key-synthetic"
-	h := NewEngineOpenaiHandlerWithConfig(key, srv.URL+"/v1beta/openai")
+	h := NewEngineOpenaiHandlerWithConfig(StaticKey(key), srv.URL+"/v1beta/openai")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

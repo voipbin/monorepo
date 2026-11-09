@@ -19,7 +19,7 @@ const dailyWindow = 24 * time.Hour
 
 // Chat runs one Builder turn.
 //
-// ORDER (design 4.3): key, ValidateRequest, semaphore,
+// ORDER (design 4.3): key check (read now), ValidateRequest, semaphore,
 // daily counter, model call. The order is what keeps a request that was never
 // processed from spending the customer's daily allowance:
 //
@@ -43,7 +43,14 @@ func (h *builderHandler) Chat(ctx context.Context, customerID uuid.UUID, req *bu
 	})
 	defer func() { promBuilderChatDuration.Observe(time.Since(start).Seconds()) }()
 
-	if !h.opts.KeyConfigured {
+	// The key check comes before the counter: a key that is not configured, or can not be read, never
+	// spends the customer's allowance.
+	configured, errKey := h.opts.keyConfigured(ctx)
+	if errKey != nil {
+		log.WithError(errKey).Warn("Could not read the builder key.")
+		return nil, h.fail(log, resultKeyError, cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonUnavailable, "the assistant builder could not read its key, try again"))
+	}
+	if !configured {
 		return nil, h.fail(log, resultUnavailable, cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonUnavailable, "the assistant builder is not available"))
 	}
 
@@ -101,6 +108,14 @@ func (h *builderHandler) mapTurnError(log *logrus.Entry, err error) error {
 	var llm *LLMError
 
 	switch {
+	case errors.Is(err, ErrKeyUnavailable):
+		// The key was read inside the model call and the read failed. It is not a provider
+		// answer, so it is neither the llm_error metric nor the auth classification. The turn was
+		// counted before the call (as every failure after the counter is) and is not refunded:
+		// there is no refund path, and a read that fails right after the check passed is rare.
+		log.WithError(err).Warn("Could not read the builder key.")
+		return h.fail(log, resultKeyError, cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonUnavailable, "the assistant builder could not read its key, try again"))
+
 	case errors.Is(err, ErrTimeout):
 		return h.fail(log, resultLLMError, cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonTimeout, "the assistant builder took too long, try again"))
 

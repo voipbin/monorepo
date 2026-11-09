@@ -5,6 +5,7 @@ package geminiaudithandler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"strings"
@@ -76,15 +77,36 @@ type GeminiAuditHandler interface {
 	ParseEvaluationResponse(data []byte) (*EvaluationResponse, error)
 }
 
+// KeyFunc hands the API key at the time of a call. An empty value with no error is "no key
+// configured"; an error stops the call.
+type KeyFunc = func(ctx context.Context) (string, error)
+
 type geminiAuditHandler struct {
-	client *openai.Client
+	keyFunc KeyFunc
+	baseURL string
 }
 
-// NewGeminiAuditHandler creates a new GeminiAuditHandler using the given API key.
-func NewGeminiAuditHandler(apiKey string) GeminiAuditHandler {
+// NewGeminiAuditHandler creates a new GeminiAuditHandler. The API key is resolved on every
+// evaluation, so a rotated key is used by the next call.
+func NewGeminiAuditHandler(keyFunc KeyFunc) GeminiAuditHandler {
+	return &geminiAuditHandler{keyFunc: keyFunc, baseURL: geminiEndpoint}
+}
+
+// newClient resolves the key now and builds the client. The error is the one of the key function.
+func (h *geminiAuditHandler) newClient(ctx context.Context) (*openai.Client, error) {
+	if h.keyFunc == nil {
+		return nil, errors.New("geminiaudithandler: no key function")
+	}
+
+	apiKey, err := h.keyFunc(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	cfg := openai.DefaultConfig(apiKey)
-	cfg.BaseURL = geminiEndpoint
-	return &geminiAuditHandler{client: openai.NewClientWithConfig(cfg)}
+	cfg.BaseURL = h.baseURL
+
+	return openai.NewClientWithConfig(cfg), nil
 }
 
 // Sanitize replaces all '---' triple-dash sequences with [DELIMITER_ESCAPED].
@@ -248,8 +270,13 @@ func (h *geminiAuditHandler) Evaluate(ctx context.Context, promptText, transcrip
 	fullPrompt := h.BuildPrompt(promptText, transcript, language, false)
 	logrus.Debugf("gemini Evaluate: model=%s prompt_len=%d transcript_len=%d language=%s hasTools=%v", geminiModel, len(promptText), len(transcript), language, hasTools)
 
+	client, errClient := h.newClient(ctx)
+	if errClient != nil {
+		return nil, nil, fmt.Errorf("could not get the API key: %w", errClient)
+	}
+
 	logrus.Debugf("gemini Evaluate: calling API with json_schema response format")
-	resp, err := h.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+	resp, err := client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		Model:           geminiModel,
 		ReasoningEffort: geminiReasoningEffort,
 		Messages: []openai.ChatCompletionMessage{

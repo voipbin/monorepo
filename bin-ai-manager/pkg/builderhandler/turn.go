@@ -64,6 +64,14 @@ func RunTurn(ctx context.Context, sender Sender, cfg Config, req *builder.ChatRe
 
 	resp, err := sender.SendOnce(callCtx, chatReq)
 	if err != nil {
+		// The engine resolves the key inside SendOnce, so a key that can not be read comes back
+		// here. It is checked first: it is neither a provider answer nor the LLM deadline. The
+		// error is passed on as it is (errors.Is holds, and the cause is kept for the log; it
+		// holds no key text). A caller context that is cancelled while the key is being read is
+		// counted here too, so it shows as key_error in the metric.
+		if errors.Is(err, ErrKeyUnavailable) {
+			return nil, err
+		}
 		// The deadline we set is the LLM timeout. A deadline or cancellation that
 		// belongs to the caller (for example the RPC timeout api-manager owns) is
 		// reported as *LLMError with Code "timeout" or "canceled"; the handler

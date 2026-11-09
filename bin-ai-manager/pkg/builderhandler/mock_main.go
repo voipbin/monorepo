@@ -58,15 +58,15 @@ func (mr *MockBuilderHandlerMockRecorder) Chat(ctx, customerID, req any) *gomock
 }
 
 // Status mocks base method.
-func (m *MockBuilderHandler) Status() *builder.StatusResponse {
+func (m *MockBuilderHandler) Status(ctx context.Context) *builder.StatusResponse {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Status")
+	ret := m.ctrl.Call(m, "Status", ctx)
 	ret0, _ := ret[0].(*builder.StatusResponse)
 	return ret0
 }
 
 // Status indicates an expected call of Status.
-func (mr *MockBuilderHandlerMockRecorder) Status() *gomock.Call {
+func (mr *MockBuilderHandlerMockRecorder) Status(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockBuilderHandler)(nil).Status))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockBuilderHandler)(nil).Status), ctx)
 }

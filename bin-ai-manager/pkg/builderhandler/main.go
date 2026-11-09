@@ -4,6 +4,7 @@ package builderhandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -21,16 +22,41 @@ type BuilderHandler interface {
 	// return as is; it never carries the customer's input.
 	Chat(ctx context.Context, customerID uuid.UUID, req *builder.ChatRequest) (*builder.ChatResponse, error)
 
-	// Status reports whether the Builder is usable and its input limits.
-	Status() *builder.StatusResponse
+	// Status reports whether the Builder is usable and its input limits. The key is read at the
+	// time of the call; a key that can not be read is reported as available=false.
+	Status(ctx context.Context) *builder.StatusResponse
 }
 
 // Options are the operational settings of the handler. Config (turn.go) is the
 // per-turn model behaviour; Options is what surrounds a turn: the key, the daily limit and the concurrency cap.
 type Options struct {
-	KeyConfigured bool // false makes Chat fail with BUILDER_UNAVAILABLE and Status report available=false
-	DailyLimit    int  // per-customer turns per 24 hour window
-	MaxConcurrent int  // per-process cap of calls running at once
+	// KeyConfigured tells, at the time of the call, whether the platform key the Builder needs has
+	// a value. It is read on every Chat and Status (the key can be changed while the service
+	// runs). false makes Chat fail with BUILDER_UNAVAILABLE and Status report available=false; an
+	// error means the key could not be read, which is not the same as "not configured": Chat
+	// stops before it counts the turn. A nil function means "not configured".
+	KeyConfigured func(ctx context.Context) (bool, error)
+	DailyLimit    int // per-customer turns per 24 hour window
+	MaxConcurrent int // per-process cap of calls running at once
+}
+
+// keyCheckTimeout bounds the key check that Chat and Status run before anything else. Chat is
+// called with a context that has no deadline, and the key read of the model call has its own
+// budget inside the call deadline (at most 50 seconds), so this check is the only extra time. It
+// must stay short: 2 seconds plus the longest call deadline is below the 55 seconds that
+// api-manager waits (see config.Validate for the 5 seconds of headroom this uses).
+const keyCheckTimeout = 2 * time.Second
+
+// keyConfigured runs the key check of the options within keyCheckTimeout.
+func (o Options) keyConfigured(ctx context.Context) (bool, error) {
+	if o.KeyConfigured == nil {
+		return false, nil
+	}
+
+	cctx, cancel := context.WithTimeout(ctx, keyCheckTimeout)
+	defer cancel()
+
+	return o.KeyConfigured(cctx)
 }
 
 type builderHandler struct {
@@ -90,10 +116,14 @@ func init() {
 
 // Result label values of ai_manager_builder_chat_total.
 const (
-	resultOK              = "ok"
-	resultDailyLimit      = "daily_limit"
-	resultBusy            = "busy"
-	resultUnavailable     = "unavailable"
+	resultOK          = "ok"
+	resultDailyLimit  = "daily_limit"
+	resultBusy        = "busy"
+	resultUnavailable = "unavailable"
+	// resultKeyError is a platform key that could not be read (database error, a stored secret
+	// that can not be decrypted, or a read that ran out of time). It is kept apart from
+	// unavailable (the key is not configured) and llm_error (the provider answered).
+	resultKeyError        = "key_error"
 	resultInvalidResponse = "invalid_response"
 	resultLLMError        = "llm_error"
 	// resultInvalidArgument is not in design 4.8's list. A request that fails

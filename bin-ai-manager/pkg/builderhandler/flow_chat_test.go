@@ -37,7 +37,7 @@ func newFlowTestHandler(t *testing.T, s Sender, dailyLimit, maxConcurrent int, k
 	mc := gomock.NewController(t)
 	cache := cachehandler.NewMockCacheHandler(mc)
 	assistant, flow := NewBuilderHandlers(s, cache, testCfg(), Options{
-		KeyConfigured: keyConfigured,
+		KeyConfigured: staticKeyCheck(keyConfigured),
 		DailyLimit:    dailyLimit,
 		MaxConcurrent: maxConcurrent,
 	})

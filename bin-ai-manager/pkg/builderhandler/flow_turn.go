@@ -141,6 +141,9 @@ func RunFlowTurn(ctx context.Context, sender Sender, cfg Config, req *flowbuilde
 	resp, err := sender.SendOnce(callCtx, chatReq)
 	res.Diag.Elapsed = time.Since(callStart)
 	if err != nil {
+		if errors.Is(err, ErrKeyUnavailable) {
+			return res, err
+		}
 		if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == nil {
 			return res, ErrTimeout
 		}
