@@ -9,6 +9,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -169,7 +170,8 @@ func run(dbHandler dbhandler.DBHandler, cfg *config.Config) {
 	)
 
 	// run listen
-	if errListen := runListen(sockHandler, emailHandler); errListen != nil {
+	configServer := configrpc.NewServer(configHandler, serviceName)
+	if errListen := runListen(sockHandler, emailHandler, configServer); errListen != nil {
 		log.Errorf("Could not run the listen correctly. err: %v", errListen)
 		return
 	}
@@ -181,10 +183,11 @@ func runListen(
 	sockListen sockhandler.SockHandler,
 
 	emailHandler emailhandler.EmailHandler,
+	configServer *configrpc.Server,
 ) error {
 	log := logrus.WithField("func", "runListen")
 
-	listenHandler := listenhandler.NewListenHandler(sockListen, emailHandler)
+	listenHandler := listenhandler.NewListenHandler(sockListen, emailHandler, configServer)
 
 	// run the service
 	if errRun := listenHandler.Run(string(commonoutline.QueueNameEmailRequest), string(commonoutline.QueueNameDelay)); errRun != nil {

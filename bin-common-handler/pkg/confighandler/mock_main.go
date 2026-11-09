@@ -59,18 +59,23 @@ func (mr *MockHandlerMockRecorder) Bool(ctx, key any) *gomock.Call {
 }
 
 // Clear mocks base method.
-func (m *MockHandler) Clear(ctx context.Context, actor uuid.UUID, key string) (*Resolved, error) {
+func (m *MockHandler) Clear(ctx context.Context, actor uuid.UUID, key string, opts ...WriteOption) (*Resolved, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Clear", ctx, actor, key)
+	varargs := []any{ctx, actor, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Clear", varargs...)
 	ret0, _ := ret[0].(*Resolved)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Clear indicates an expected call of Clear.
-func (mr *MockHandlerMockRecorder) Clear(ctx, actor, key any) *gomock.Call {
+func (mr *MockHandlerMockRecorder) Clear(ctx, actor, key any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clear", reflect.TypeOf((*MockHandler)(nil).Clear), ctx, actor, key)
+	varargs := append([]any{ctx, actor, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clear", reflect.TypeOf((*MockHandler)(nil).Clear), varargs...)
 }
 
 // Describe mocks base method.
@@ -102,6 +107,22 @@ func (m *MockHandler) Duration(ctx context.Context, key string) (time.Duration, 
 func (mr *MockHandlerMockRecorder) Duration(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Duration", reflect.TypeOf((*MockHandler)(nil).Duration), ctx, key)
+}
+
+// Histories mocks base method.
+func (m *MockHandler) Histories(ctx context.Context, key, pageToken string, pageSize int) ([]*History, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Histories", ctx, key, pageToken, pageSize)
+	ret0, _ := ret[0].([]*History)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Histories indicates an expected call of Histories.
+func (mr *MockHandlerMockRecorder) Histories(ctx, key, pageToken, pageSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Histories", reflect.TypeOf((*MockHandler)(nil).Histories), ctx, key, pageToken, pageSize)
 }
 
 // Int mocks base method.
@@ -150,34 +171,58 @@ func (mr *MockHandlerMockRecorder) Secret(ctx, key any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Secret", reflect.TypeOf((*MockHandler)(nil).Secret), ctx, key)
 }
 
-// Set mocks base method.
-func (m *MockHandler) Set(ctx context.Context, actor uuid.UUID, key, raw string) (*Resolved, error) {
+// SecretWritable mocks base method.
+func (m *MockHandler) SecretWritable() bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Set", ctx, actor, key, raw)
+	ret := m.ctrl.Call(m, "SecretWritable")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// SecretWritable indicates an expected call of SecretWritable.
+func (mr *MockHandlerMockRecorder) SecretWritable() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SecretWritable", reflect.TypeOf((*MockHandler)(nil).SecretWritable))
+}
+
+// Set mocks base method.
+func (m *MockHandler) Set(ctx context.Context, actor uuid.UUID, key, raw string, opts ...WriteOption) (*Resolved, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, actor, key, raw}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Set", varargs...)
 	ret0, _ := ret[0].(*Resolved)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Set indicates an expected call of Set.
-func (mr *MockHandlerMockRecorder) Set(ctx, actor, key, raw any) *gomock.Call {
+func (mr *MockHandlerMockRecorder) Set(ctx, actor, key, raw any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockHandler)(nil).Set), ctx, actor, key, raw)
+	varargs := append([]any{ctx, actor, key, raw}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockHandler)(nil).Set), varargs...)
 }
 
 // SetSecret mocks base method.
-func (m *MockHandler) SetSecret(ctx context.Context, actor uuid.UUID, key, secret string) (*Resolved, error) {
+func (m *MockHandler) SetSecret(ctx context.Context, actor uuid.UUID, key, secret string, opts ...WriteOption) (*Resolved, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetSecret", ctx, actor, key, secret)
+	varargs := []any{ctx, actor, key, secret}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetSecret", varargs...)
 	ret0, _ := ret[0].(*Resolved)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SetSecret indicates an expected call of SetSecret.
-func (mr *MockHandlerMockRecorder) SetSecret(ctx, actor, key, secret any) *gomock.Call {
+func (mr *MockHandlerMockRecorder) SetSecret(ctx, actor, key, secret any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSecret", reflect.TypeOf((*MockHandler)(nil).SetSecret), ctx, actor, key, secret)
+	varargs := append([]any{ctx, actor, key, secret}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSecret", reflect.TypeOf((*MockHandler)(nil).SetSecret), varargs...)
 }
 
 // String mocks base method.

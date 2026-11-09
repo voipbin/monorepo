@@ -3,6 +3,7 @@
 package storetest
 
 import (
+	"bytes"
 	"context"
 	"sort"
 	"sync"
@@ -22,6 +23,9 @@ type Memory struct {
 	// GetErrByKey is returned by Get for the given key only.
 	GetErrByKey map[string]error
 	ListErr     error
+
+	// ListHistoriesErr is returned by ListHistories when set.
+	ListHistoriesErr error
 
 	// ConflictWrites is the number of following Insert, Update and Delete calls that return
 	// ErrConflict without changing anything.
@@ -190,4 +194,47 @@ func (m *Memory) Put(row *confighandler.Row) {
 	defer m.mu.Unlock()
 
 	m.rows[row.Key] = cloneRow(row)
+}
+
+// ListHistories implements confighandler.Store.
+func (m *Memory) ListHistories(_ context.Context, key string, after confighandler.HistoryCursor, limit int) ([]*confighandler.History, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.ListHistoriesErr != nil {
+		return nil, m.ListHistoriesErr
+	}
+
+	var rows []*confighandler.History
+	for _, h := range m.hists {
+		if h.Key != key {
+			continue
+		}
+		if !after.TMCreate.IsZero() {
+			older := h.TMCreate.Before(after.TMCreate)
+			sameTimeSmallerID := h.TMCreate.Equal(after.TMCreate) && bytes.Compare(h.ID.Bytes(), after.ID.Bytes()) < 0
+			if !older && !sameTimeSmallerID {
+				continue
+			}
+		}
+		rows = append(rows, h)
+	}
+
+	sort.SliceStable(rows, func(i, j int) bool {
+		if !rows[i].TMCreate.Equal(rows[j].TMCreate) {
+			return rows[i].TMCreate.After(rows[j].TMCreate)
+		}
+
+		return bytes.Compare(rows[i].ID.Bytes(), rows[j].ID.Bytes()) > 0
+	})
+	if limit >= 0 && len(rows) > limit {
+		rows = rows[:limit]
+	}
+
+	res := make([]*confighandler.History, 0, len(rows))
+	for _, h := range rows {
+		res = append(res, cloneHistory(h))
+	}
+
+	return res, nil
 }

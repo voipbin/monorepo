@@ -1,6 +1,7 @@
 package configkeys
 
 import (
+	"strings"
 	"testing"
 
 	"monorepo/bin-common-handler/pkg/confighandler"
@@ -42,6 +43,18 @@ func Test_goldenKinds(t *testing.T) {
 		}
 		if k.Default != nil {
 			t.Errorf("Wrong match. %s must have no default", k.Name)
+		}
+	}
+}
+
+// Every key has a one line description for operators, and it never names a value.
+func Test_descriptions(t *testing.T) {
+	for _, k := range Keys() {
+		if k.Description == "" {
+			t.Errorf("Wrong match. %s has no description", k.Name)
+		}
+		if strings.ContainsAny(k.Description, "\r\n") || len(k.Description) > 200 {
+			t.Errorf("Wrong match. %s: the description must be one short line, got: %q", k.Name, k.Description)
 		}
 	}
 }

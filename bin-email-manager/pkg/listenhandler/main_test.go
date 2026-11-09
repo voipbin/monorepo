@@ -26,7 +26,7 @@ func TestNewListenHandler(t *testing.T) {
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockEmail := emailhandler.NewMockEmailHandler(mc)
 
-			h := NewListenHandler(mockSock, mockEmail)
+			h := NewListenHandler(mockSock, mockEmail, nil)
 
 			if h == nil {
 				t.Errorf("Expected non-nil handler")

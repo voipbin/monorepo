@@ -276,6 +276,89 @@ func (s *configStore) Delete(ctx context.Context, key string, expectRevision uin
 	})
 }
 
+var historyColumns = []string{
+	"id", "config_key", "action", "is_secret", "old_value_json", "new_value_json", "old_key_version", "new_key_version", "actor_id", "source", "tm_create",
+}
+
+func scanConfigHistory(rows *sql.Rows) (*confighandler.History, error) {
+	var (
+		res                    confighandler.History
+		id, actor              []byte
+		oldValue, newValue     []byte
+		oldVersion, newVersion int64
+		isSecret               bool
+		tmCreate               any
+	)
+
+	if err := rows.Scan(&id, &res.Key, &res.Action, &isSecret, &oldValue, &newValue, &oldVersion, &newVersion, &actor, &res.Source, &tmCreate); err != nil {
+		return nil, fmt.Errorf("could not scan the config history row: %w", err)
+	}
+
+	res.ID = uuid.FromBytesOrNil(id)
+	res.ActorID = uuid.FromBytesOrNil(actor)
+	res.IsSecret = isSecret
+	res.OldValueJSON = oldValue
+	res.NewValueJSON = newValue
+	res.OldKeyVersion = int(oldVersion)
+	res.NewKeyVersion = int(newVersion)
+
+	var err error
+	if res.TMCreate, err = parseTime(tmCreate); err != nil {
+		return nil, fmt.Errorf("could not read tm_create of the config history row: %w", err)
+	}
+
+	return &res, nil
+}
+
+// historiesQuery builds the query of ListHistories. The condition after the cursor is written as
+// an OR of two terms, so that the index (config_key, tm_create) is used.
+func historiesQuery(key string, after confighandler.HistoryCursor, limit int) (string, []any, error) {
+	builder := sq.Select(historyColumns...).From(configkeys.HistoryTable).Where(sq.Eq{"config_key": key})
+	if !after.TMCreate.IsZero() {
+		tm := after.TMCreate.UTC()
+		builder = builder.Where(sq.Or{
+			sq.Lt{"tm_create": tm},
+			sq.And{sq.Eq{"tm_create": tm}, sq.Lt{"id": after.ID.Bytes()}},
+		})
+	}
+
+	return builder.OrderBy("tm_create DESC", "id DESC").Limit(uint64(limit)).ToSql() //nolint:gosec // limit is positive here
+}
+
+// ListHistories implements confighandler.Store.
+func (s *configStore) ListHistories(ctx context.Context, key string, after confighandler.HistoryCursor, limit int) ([]*confighandler.History, error) {
+	if limit <= 0 {
+		return []*confighandler.History{}, nil
+	}
+
+	query, args, err := historiesQuery(key, after, limit)
+	if err != nil {
+		return nil, fmt.Errorf("could not build the query. ConfigListHistories. err: %w", err)
+	}
+
+	rows, err := s.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. ConfigListHistories. err: %w", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	res := []*confighandler.History{}
+	for rows.Next() {
+		hist, errScan := scanConfigHistory(rows)
+		if errScan != nil {
+			return nil, errScan
+		}
+		res = append(res, hist)
+	}
+	if errRows := rows.Err(); errRows != nil {
+		return nil, fmt.Errorf("could not iterate the rows. ConfigListHistories. err: %w", errRows)
+	}
+
+	return res, nil
+}
+
 // inTx runs fn in a transaction that is committed when fn returns nil.
 func (s *configStore) inTx(ctx context.Context, fn func(tx *sql.Tx) error) error {
 	tx, err := s.db.BeginTx(ctx, nil)
