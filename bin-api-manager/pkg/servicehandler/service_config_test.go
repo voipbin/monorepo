@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -314,7 +315,7 @@ func Test_ServiceConfigKeySecretSet_secretIsNotLogged(t *testing.T) {
 	errs = append(errs, err)
 
 	for _, e := range hook.AllEntries() {
-		if strings.Contains(e.Message+fmt.Sprint(e.Data), testServiceConfigSecret) {
+		if fields, _ := json.Marshal(e.Data); strings.Contains(e.Message+string(fields), testServiceConfigSecret) {
 			t.Errorf("Wrong match. a log line holds the secret: %s", e.Message)
 		}
 	}

@@ -3,7 +3,6 @@ package listenhandler
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"strings"
 	"testing"
 
@@ -153,7 +152,9 @@ func Test_processRequest_logsHoldNoSecret(t *testing.T) {
 			}
 
 			for _, e := range hook.AllEntries() {
-				line := e.Message + " " + fmt.Sprint(e.Data)
+				// the fields hold pointers (the request): the content is marshaled, not the address
+				fields, _ := json.Marshal(e.Data)
+				line := e.Message + " " + string(fields)
 				if strings.Contains(line, configTestSecret) {
 					t.Errorf("Wrong match. a log line holds the secret: %s", line)
 				}

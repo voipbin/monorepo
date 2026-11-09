@@ -763,7 +763,8 @@ func Test_handle_logsHoldNoSecret(t *testing.T) {
 	}
 
 	for _, e := range hook.AllEntries() {
-		line := e.Message + " " + fmt.Sprint(e.Data)
+		fields, _ := json.Marshal(e.Data)
+		line := e.Message + " " + string(fields)
 		if strings.Contains(line, fakeSecret) || strings.Contains(strings.ToLower(line), "test-secret") {
 			t.Errorf("Wrong match. a log line holds the secret: %s", line)
 		}
@@ -777,7 +778,7 @@ func Test_handle_logsHoldNoSecret(t *testing.T) {
 		t.Errorf("Wrong match. expect: 500, got: %d", res.StatusCode)
 	}
 	for _, e := range hook.AllEntries() {
-		if strings.Contains(e.Message+fmt.Sprint(e.Data), fakeSecret) {
+		if fields, _ := json.Marshal(e.Data); strings.Contains(e.Message+string(fields), fakeSecret) {
 			t.Errorf("Wrong match. a log line holds the secret")
 		}
 	}

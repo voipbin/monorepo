@@ -2,6 +2,7 @@ package requesthandler
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -293,7 +294,7 @@ func Test_config_secretIsNotLogged(t *testing.T) {
 		}
 	}
 	for _, e := range hook.AllEntries() {
-		if strings.Contains(e.Message+fmt.Sprint(e.Data), testConfigSecret) {
+		if fields, _ := json.Marshal(e.Data); strings.Contains(e.Message+string(fields), testConfigSecret) {
 			t.Errorf("Wrong match. a log line holds the secret: %s", e.Message)
 		}
 	}
