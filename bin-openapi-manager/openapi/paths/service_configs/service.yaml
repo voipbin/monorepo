@@ -21,5 +21,7 @@ get:
       $ref: '#/components/responses/PermissionDenied'
     '404':
       $ref: '#/components/responses/NotFound'
+    '503':
+      $ref: '#/components/responses/Unavailable'
     '500':
       $ref: '#/components/responses/InternalError'

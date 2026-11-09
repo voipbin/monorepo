@@ -58677,6 +58677,20 @@ func (response GetServiceConfigsService500JSONResponse) VisitGetServiceConfigsSe
 	return err
 }
 
+type GetServiceConfigsService503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response GetServiceConfigsService503JSONResponse) VisitGetServiceConfigsServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type DeleteServiceConfigsServiceKeysKeyRequestObject struct {
 	Service ServiceConfigService `json:"service"`
 	Key     ServiceConfigKeyName `json:"key"`
@@ -58785,6 +58799,20 @@ func (response DeleteServiceConfigsServiceKeysKey500JSONResponse) VisitDeleteSer
 	return err
 }
 
+type DeleteServiceConfigsServiceKeysKey503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response DeleteServiceConfigsServiceKeysKey503JSONResponse) VisitDeleteServiceConfigsServiceKeysKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetServiceConfigsServiceKeysKeyHistoriesRequestObject struct {
 	Service ServiceConfigService `json:"service"`
 	Key     ServiceConfigKeyName `json:"key"`
@@ -58875,6 +58903,20 @@ func (response GetServiceConfigsServiceKeysKeyHistories500JSONResponse) VisitGet
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceConfigsServiceKeysKeyHistories503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response GetServiceConfigsServiceKeysKeyHistories503JSONResponse) VisitGetServiceConfigsServiceKeysKeyHistoriesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
 	_, err := buf.WriteTo(w)
 	return err
 }

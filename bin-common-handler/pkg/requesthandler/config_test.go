@@ -299,3 +299,69 @@ func Test_config_secretIsNotLogged(t *testing.T) {
 		}
 	}
 }
+
+// Every method hands the response through the typed error path. The probe of the secret write
+// depends on it: a manager that does not know the route answers a bare 404, and that has to
+// reach the caller as ErrNotFound, whatever method sent the request.
+func Test_config_responseErrors(t *testing.T) {
+	type call func(r *requestHandler) error
+	calls := map[string]call{
+		"service get": func(r *requestHandler) error {
+			_, err := r.ConfigV1ServiceGet(context.Background(), "email")
+			return err
+		},
+		"secret set": func(r *requestHandler) error {
+			_, err := r.ConfigV1KeySecretSet(context.Background(), "email", "k", testConfigActor, testConfigSecret, 1)
+			return err
+		},
+		"key clear": func(r *requestHandler) error {
+			_, err := r.ConfigV1KeyClear(context.Background(), "email", "k", testConfigActor, 1)
+			return err
+		},
+		"history list": func(r *requestHandler) error {
+			_, err := r.ConfigV1KeyHistoryList(context.Background(), "email", "k", "", 0)
+			return err
+		},
+	}
+
+	tests := []struct {
+		name   string
+		resp   *sock.Response
+		sock   error
+		expect error
+		reason string
+	}{
+		{name: "a manager that does not know the route", resp: &sock.Response{StatusCode: 404}, expect: ErrNotFound},
+		{name: "a bare conflict", resp: &sock.Response{StatusCode: 409}, expect: ErrConflict},
+		{name: "a bare server error", resp: &sock.Response{StatusCode: 500}, expect: ErrInternal},
+		{name: "a typed error", resp: mustResponse(t, cerrors.FailedPrecondition("email-manager", "REVISION_MISMATCH", "stale")), reason: "REVISION_MISMATCH"},
+		{name: "a body that is not json", resp: &sock.Response{StatusCode: 200, DataType: "application/json", Data: []byte(`{not json`)}},
+		{name: "the request fails to send", sock: fmt.Errorf("could not publish")},
+	}
+	for name, c := range calls {
+		for _, tt := range tests {
+			t.Run(name+"/"+tt.name, func(t *testing.T) {
+				mc := gomock.NewController(t)
+				defer mc.Finish()
+
+				mockSock := sockhandler.NewMockSockHandler(mc)
+				reqHandler := requestHandler{sock: mockSock}
+				mockSock.EXPECT().RequestPublish(gomock.Any(), testConfigTarget, gomock.Any()).Return(tt.resp, tt.sock)
+
+				err := c(&reqHandler)
+				if err == nil {
+					t.Fatalf("Wrong match. expect: an error, got: nil")
+				}
+				if tt.expect != nil && !errors.Is(err, tt.expect) {
+					t.Errorf("Wrong match. expect: %v, got: %v", tt.expect, err)
+				}
+				if tt.reason != "" {
+					var ve *cerrors.VoipbinError
+					if !errors.As(err, &ve) || ve.Reason != tt.reason {
+						t.Errorf("Wrong match. expect: a typed error %s, got: %v", tt.reason, err)
+					}
+				}
+			})
+		}
+	}
+}

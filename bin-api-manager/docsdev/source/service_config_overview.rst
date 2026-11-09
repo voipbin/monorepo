@@ -77,7 +77,7 @@ Errors
    * - Status
      - Meaning
    * - 400
-     - The request is invalid: a body that is not JSON, a missing ``secret`` or ``revision``, a ``revision`` outside 0 to 4294967295, a secret that is empty, too long, has surrounding white space or a line break, a key that is not a secret, a body larger than 4 KB, a ``page_size`` below 0, or a key name that does not match ``^[a-z0-9][a-z0-9._]{0,127}$``.
+     - The request is invalid: a body that is not JSON, a missing ``secret`` or ``revision``, a ``revision`` outside 0 to 4294967295, a secret that is empty, too long, has surrounding white space or a line break, a key that is not a secret, a body larger than 4 KB, a ``page_size`` below 0, a ``page_token`` that was not returned for the key, or a key name that does not match ``^[a-z0-9][a-z0-9._]{0,127}$``.
    * - 401
      - The request is not authenticated.
    * - 403
@@ -87,6 +87,8 @@ Errors
    * - 409
      - The ``revision`` is not the stored one (``REVISION_MISMATCH``).
    * - 503
-     - The platform has no secret encryption key (``ENCRYPTION_KEY_NOT_CONFIGURED``), or the service does not support the API yet.
+     - The platform has no secret encryption key (``ENCRYPTION_KEY_NOT_CONFIGURED``), the service does not support the API yet, or the service did not answer in time.
+
+The default ``page_size`` of the history is 20 and the largest is 100. A larger value is lowered to 100.
 
 The response of an error does not say which rule failed for a 400, so check the list above.

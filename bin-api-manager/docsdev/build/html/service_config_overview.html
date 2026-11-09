@@ -731,7 +731,7 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>400</p></td>
-<td><p>The request is invalid: a body that is not JSON, a missing <code class="docutils literal notranslate"><span class="pre">secret</span></code> or <code class="docutils literal notranslate"><span class="pre">revision</span></code>, a <code class="docutils literal notranslate"><span class="pre">revision</span></code> outside 0 to 4294967295, a secret that is empty, too long, has surrounding white space or a line break, a key that is not a secret, a body larger than 4 KB, a <code class="docutils literal notranslate"><span class="pre">page_size</span></code> below 0, or a key name that does not match <code class="docutils literal notranslate"><span class="pre">^[a-z0-9][a-z0-9._]{0,127}$</span></code>.</p></td>
+<td><p>The request is invalid: a body that is not JSON, a missing <code class="docutils literal notranslate"><span class="pre">secret</span></code> or <code class="docutils literal notranslate"><span class="pre">revision</span></code>, a <code class="docutils literal notranslate"><span class="pre">revision</span></code> outside 0 to 4294967295, a secret that is empty, too long, has surrounding white space or a line break, a key that is not a secret, a body larger than 4 KB, a <code class="docutils literal notranslate"><span class="pre">page_size</span></code> below 0, a <code class="docutils literal notranslate"><span class="pre">page_token</span></code> that was not returned for the key, or a key name that does not match <code class="docutils literal notranslate"><span class="pre">^[a-z0-9][a-z0-9._]{0,127}$</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p>401</p></td>
 <td><p>The request is not authenticated.</p></td>
@@ -746,11 +746,12 @@
 <td><p>The <code class="docutils literal notranslate"><span class="pre">revision</span></code> is not the stored one (<code class="docutils literal notranslate"><span class="pre">REVISION_MISMATCH</span></code>).</p></td>
 </tr>
 <tr class="row-odd"><td><p>503</p></td>
-<td><p>The platform has no secret encryption key (<code class="docutils literal notranslate"><span class="pre">ENCRYPTION_KEY_NOT_CONFIGURED</span></code>), or the service does not support the API yet.</p></td>
+<td><p>The platform has no secret encryption key (<code class="docutils literal notranslate"><span class="pre">ENCRYPTION_KEY_NOT_CONFIGURED</span></code>), the service does not support the API yet, or the service did not answer in time.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<p>The default <code class="docutils literal notranslate"><span class="pre">page_size</span></code> of the history is 20 and the largest is 100. A larger value is lowered to 100.</p>
 <p>The response of an error does not say which rule failed for a 400, so check the list above.</p>
 </section>
 </section>

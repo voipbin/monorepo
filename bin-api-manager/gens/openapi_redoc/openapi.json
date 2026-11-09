@@ -14508,6 +14508,9 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
           }
         }
       }
@@ -14568,6 +14571,9 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
           }
         }
       }
@@ -14635,7 +14641,7 @@
     "/service_configs/{service}/keys/{key}/histories": {
       "get": {
         "summary": "List the changes of a config key",
-        "description": "Returns the changes of the key, the newest first. A change of a secret has the key versions only, never a value.\nThe time of an entry is the time at which the change was made; two changes that are made at the same moment can appear in either order.\nRequires the project super admin permission.\n",
+        "description": "Returns the changes of the key, the newest first. A change of a secret has the key versions only, never a value. The default page size is 20 and the largest is 100; a larger value is lowered to 100. A `page_token` that was not returned by this API for this key is rejected with 400.\nThe time of an entry is the time at which the change was made; two changes that are made at the same moment can appear in either order.\nRequires the project super admin permission.\n",
         "tags": [
           "ServiceConfig"
         ],
@@ -14678,6 +14684,9 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
           }
         }
       }

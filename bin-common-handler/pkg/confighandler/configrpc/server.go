@@ -310,6 +310,8 @@ func (s *Server) errorResponse(op string, err error) *sock.Response {
 	switch {
 	// the write is stored: this comes before every other check, whatever the cause was
 	case errors.Is(err, confighandler.ErrWriteVerify):
+		// the error holds no value: it is logged so that an operator can see the cause
+		logrus.WithField("func", op).Errorf("The config change may have been stored, but it could not be confirmed. err: %v", err)
 		return s.typed(cerrors.Internal(s.domain, reasonWriteVerify, "The change may have been stored, but it could not be confirmed. Reload to check the current state before you try again."))
 	case errors.Is(err, confighandler.ErrConflict):
 		return s.typed(cerrors.FailedPrecondition(s.domain, reasonMismatch, "The value was changed by someone else. Reload to see the current state."))
