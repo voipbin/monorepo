@@ -73,7 +73,7 @@ The monorepo includes many backend services under separate directories:
 | `bin-contact-manager`      | Customer contact records and lookup           |
 | `bin-conversation-manager` | Multi-channel conversation tracking           |
 | `bin-customer-manager`     | Customer accounts and relationships           |
-| `bin-dbscheme-manager`     | Database schemas and migrations               |
+| `bin-dbscheme-manager`     | Asterisk database schema and migrations       |
 | `bin-direct-manager`       | SIP URI hash routing and direct dial logic    |
 | `bin-email-manager`        | Email sending and inbox parsing               |
 | `bin-flow-manager`         | Flow execution engine                         |

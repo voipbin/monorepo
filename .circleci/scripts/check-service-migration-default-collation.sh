@@ -5,7 +5,8 @@
 # Why: a migration that compares a function result with a literal fails with Error 1267 on a
 # MariaDB 12.x database whose character set is utf8 and whose collation is not named
 # (default utf8mb3_uca1400_ai_ci), while a database created with an explicit utf8_general_ci
-# passes (VOIP-1686). This is step V13 of scripts/verify-service-migrations.sh, run in CI.
+# passes (VOIP-1686). The same check is step V13 of scripts/verify-service-migrations.sh,
+# which is a manual script and is not run in CI.
 #
 # Per target (a service migrations directory, plus bin-timeline-manager@mysql):
 #   create database (CHARACTER SET utf8 only) -> assert the default collation is uca1400 ->

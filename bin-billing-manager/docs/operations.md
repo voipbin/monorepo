@@ -25,7 +25,7 @@ Migrations run at startup, before the service connects the cache and the message
 
 `billing-control migrate status` shows the applied version, the image version and the dirty flag (it creates the version table when it is missing).
 
-On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates the billing tables first, the Alembic migration that creates them fails with `Table 'billing_accounts' already exists` (checked by `scripts/verify-service-migrations.sh`). The service account also needs permission to create tables (for the version table). The database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`, like the install scripts do.
+On a new database the service creates its tables at startup (the baseline is `CREATE TABLE IF NOT EXISTS`); no other schema tool runs first. The service account also needs permission to create tables (for the version table). The database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`, like the install scripts do.
 
 ## Debugging Guide
 

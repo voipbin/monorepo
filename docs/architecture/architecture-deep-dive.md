@@ -61,7 +61,7 @@ This document provides detailed architectural information about the VoIPbin mono
 - `bin-webhook-manager` - Webhook sender for customer notifications
 - `bin-hook-manager` - Webhook receivers
 - `bin-tag-manager` - Resource labeling and tagging
-- `bin-dbscheme-manager` - Database schemas and migrations
+- `bin-dbscheme-manager` - Asterisk database schema and migrations
 - `bin-sentinel-manager` - Monitoring and health checks
 - `bin-timeline-manager` - Per-resource timeline events
 

@@ -163,7 +163,6 @@ Keep the bin-common-handler admission rule inline (CRITICAL — 3+ services requ
 
 ### docs/ structure:
 - `docs/migrations.md` — How to create migrations. Required H2: `## Creating a Migration`, `## Naming Conventions`, `## Example Migration`
-- `docs/schema-ownership.md` — Table: table name → owning service. Required H2: `## Table Ownership`
 - `docs/operations.md` — Environment access matrix. Required H2: `## Environment Access`, `## Emergency Rollback`, `## Common Failures`
 
 ### CLAUDE.md

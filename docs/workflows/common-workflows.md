@@ -178,10 +178,10 @@ For full implementation details, see:
 
 Two mechanisms change database schemas, one per database:
 
-- `bin_manager`: every application table is owned by one service and changes only through that service's `migrations/` directory (golang-migrate, applied when the service starts, version table `<prefix>_schema_migrations`). The rules and the procedure are in `docs/workflows/service-owned-migrations.md`; the services and their tables are listed in `bin-dbscheme-manager/docs/schema-ownership.md`.
+- `bin_manager`: every application table is owned by one service and changes only through that service's `migrations/` directory (golang-migrate, applied when the service starts, version table `<prefix>_schema_migrations`). The rules and the procedure are in `docs/workflows/service-owned-migrations.md`; the services and their tables are listed in the same document.
 - `asterisk`: the `asterisk_config` stream in `bin-dbscheme-manager` keeps using Alembic (see [Alembic for the asterisk database](#alembic-for-the-asterisk-database) below).
 
-The `bin-manager` Alembic stream in `bin-dbscheme-manager` is frozen read-only history: never add a revision to it. The directory stays because the install scripts still run that chain to catch up existing installations and older pins, and `scripts/verify-service-migrations.sh` builds its Alembic head (E1) reference from it. The migration hooks (`.githooks/pre-commit`, `.claude/settings.json`, `.claude/scripts/check-migration-*.sh`) behave as before and still check that tree.
+`bin-dbscheme-manager` manages only the `asterisk` database and holds no `bin_manager` migrations. The migration hooks (`.githooks/pre-commit`, `.claude/settings.json`, `.claude/scripts/check-migration-*.sh`) check the `asterisk_config` tree.
 
 Never run manual SQL DDL statements against shared databases.
 
@@ -195,8 +195,7 @@ Never run manual SQL DDL statements against shared databases.
 
 **What AI MUST NEVER do:**
 - 🚫 Run a service's migration command (`<name>-control migrate` with `up`, `down` or `force`; for `bin-timeline-manager` also `migrate-mysql`) against anything other than a local throwaway database
-- 🚫 Run `alembic upgrade` or `alembic downgrade` for either stream (`asterisk_config` or the frozen `bin-manager`) against anything other than a local throwaway database
-- 🚫 Add a revision to the frozen `bin-manager` Alembic stream
+- 🚫 Run `alembic upgrade` or `alembic downgrade` (`asterisk_config`) against anything other than a local throwaway database
 - 🚫 Execute any SQL that modifies a database schema
 
 **Why:** Schema changes on shared databases can lose data or stop services, so they need human review before they reach those databases.

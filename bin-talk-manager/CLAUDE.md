@@ -34,10 +34,10 @@ The schema of `talk_chats`, `talk_messages`, `talk_participants`, `talk_pins` an
 - `cmd/talk-manager` runs the migrations right after the database connection, before the message broker and the Redis client. Failure stops the start. Version table: `talk_schema_migrations`.
 - `talk-control migrate status|up|down|force <version>` talks to the database only. Run `up|down|force` only against a local throwaway database.
 - Recovery from a dirty database: stop the crash-looping container, check whether the failed file's statement was applied, then `talk-control migrate force <N-1 or N>` (`talk-control migrate force -- -1` resets to unversioned). For the baseline either force target is safe (all three statements are `CREATE TABLE IF NOT EXISTS`). A termination signal does not interrupt a running migration.
-- A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do); other defaults make the table definitions differ from the Alembic head.
-- New database order: Alembic first, then this service, while the Alembic stream still creates the tables. The reverse is unsupported: Alembic then fails at revision `3ffdc562b708` (it drops every existing index, and the talk foreign keys need `idx_chat_id`).
+- A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do).
+- New database: the service creates its tables at startup (the baseline is `CREATE TABLE IF NOT EXISTS`); no other schema tool runs first.
 - The sqlite test schema (`scripts/database_scripts/table_*.sql`) is a hand maintained copy; update it when the schema changes.
-- Structure checks: `go test ./migrations/`. Git relative check: `scripts/check-service-migrations.sh bin-talk-manager` (repo root, after `git fetch origin main`). Dynamic check on scratch containers: `ALEMBIC_VENV=<venv> scripts/verify-service-migrations.sh bin-talk-manager` (repo root).
+- Structure checks: `go test ./migrations/`. Git relative check: `scripts/check-service-migrations.sh bin-talk-manager` (repo root, after `git fetch origin main`). Dynamic check on scratch containers: `scripts/verify-service-migrations.sh bin-talk-manager` (repo root).
 
 ## talk-control CLI
 

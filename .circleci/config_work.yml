@@ -438,11 +438,11 @@ workflows:
           serial-group: << pipeline.project.slug >>/deploy-bin-customer-manager
           requires:
             - bin-customer-manager-build
-  # bin-dbscheme-manager: CI does not apply migrations. The production
-  # bin_manager / asterisk databases are not reachable from CircleCI's
-  # executors (confirmed 2026-07-11, VOIP-1246: a read-only DSN probe on
-  # a throwaway branch timed out connecting to the production DB host --
-  # it is intentionally not exposed to the public internet). alembic
+  # bin-dbscheme-manager (the asterisk database only): CI does not apply
+  # migrations. The production asterisk database is not reachable from
+  # CircleCI's executors (confirmed 2026-07-11, VOIP-1246: a read-only DSN
+  # probe on a throwaway branch timed out connecting to the production DB
+  # host -- it is intentionally not exposed to the public internet). alembic
   # upgrade/downgrade against staging or production remains a manual,
   # VPN-only, human-only procedure -- see
   # bin-dbscheme-manager/docs/operations.md. migration-applied-checkpoint
@@ -457,7 +457,7 @@ workflows:
   # touches bin-dbscheme-manager/**, with no approval gate. It performs a
   # lightweight, DB-connection-free structural validation of every Alembic
   # migration file via `alembic heads`/`alembic history` (parses revision
-  # files, confirms exactly one head per stream, confirms no broken
+  # files, confirms exactly one head, confirms no broken
   # down_revision references). See
   # bin-dbscheme-manager/docs/migrations.md for what it checks and
   # docs/plans/2026-07-18-dbscheme-pr-migration-validation-job-design.md
@@ -466,7 +466,6 @@ workflows:
     when: << pipeline.parameters.run-bin-dbscheme-manager >>
     jobs:
       - migration-lint
-      - bin-dbscheme-manager-test
       - migration-applied-checkpoint:
           type: approval
           filters:
@@ -1454,52 +1453,8 @@ jobs:
   # approval attesting a migration was manually applied).
   #
   # migration-lint is a lightweight, DB-connection-free structural validation
-  # of the Alembic migration chain, run on every branch. See
+  # of the asterisk_config Alembic migration chain, run on every branch. See
   # bin-dbscheme-manager/docs/migrations.md.
-  #
-  # bin-dbscheme-manager-test runs `pytest bin-dbscheme-manager/tests` by
-  # directory against a throwaway MariaDB secondary container, so new test
-  # files need no change here. The server is only a scratch database that
-  # exists for the duration of the job.
-  bin-dbscheme-manager-test:
-    docker:
-      - image: python:3.11-slim
-      - image: mariadb:12.3
-        command: ["--innodb-flush-log-at-trx-commit=0", "--skip-log-bin"]
-        environment:
-          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "1"
-    steps:
-      - checkout
-      - run:
-          name: Install pinned test requirements
-          no_output_timeout: 5m
-          command: pip install --no-cache-dir --require-hashes -r bin-dbscheme-manager/requirements-dev.txt
-      - run:
-          name: Wait until the scratch database accepts connections
-          command: |
-            python -c '
-            import sys, time
-            import pymysql
-            deadline = time.time() + 120
-            while True:
-                try:
-                    pymysql.connect(host="127.0.0.1", port=3306, user="root", password="").close()
-                    print("scratch database is ready")
-                    break
-                except pymysql.err.OperationalError as exc:
-                    if time.time() > deadline:
-                        print("scratch database did not become ready:", exc)
-                        sys.exit(1)
-                    time.sleep(2)
-            '
-      - run:
-          name: Run bin-dbscheme-manager tests
-          no_output_timeout: 15m
-          environment:
-            DBSCHEME_TEST_DB_URL: mariadb+pymysql://root@127.0.0.1:3306
-            DBSCHEME_TEST_REQUIRE_DB: "1"
-          command: python -m pytest bin-dbscheme-manager/tests -q -p no:cacheprovider -p no:warnings
-
   migration-lint:
     docker:
       - image: python:3.11-slim
@@ -1509,23 +1464,6 @@ jobs:
           name: Install alembic (metadata-only, no DB driver needed)
           no_output_timeout: 2m
           command: pip install --no-cache-dir "sqlalchemy<2.0" alembic
-      - run:
-          name: Validate bin-manager migration chain (voipbin DB)
-          command: |
-            cd bin-dbscheme-manager/bin-manager
-            cp alembic.ini.sample alembic.ini
-            # alembic.ini requires a sqlalchemy.url key to parse, but
-            # `heads`/`history` never open it -- a syntactically valid but
-            # unreachable placeholder is sufficient and deliberately used
-            # instead of a real credential.
-            HEAD_COUNT=$(alembic -c alembic.ini heads | grep -c '(head)')
-            echo "Detected $HEAD_COUNT head(s):"
-            alembic -c alembic.ini heads --verbose
-            if [ "$HEAD_COUNT" -ne 1 ]; then
-              echo "ERROR: expected exactly 1 head, found $HEAD_COUNT. Multiple heads means two migrations were authored against the same down_revision without rebasing -- see bin-dbscheme-manager/docs/migrations.md."
-              exit 1
-            fi
-            alembic -c alembic.ini history --verbose > /dev/null
       - run:
           name: Validate asterisk_config migration chain (asterisk DB)
           command: |
