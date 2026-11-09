@@ -11,8 +11,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// serviceConfigMaxBodyBytes caps the request body of the secret update. The largest valid body (a
-// secret of 2020 bytes and the revision) is far below it.
+// serviceConfigMaxBodyBytes caps the request body of the secret update. The largest secret that a
+// key accepts today (512 bytes for the email keys, up to 6 bytes per byte once JSON escaped) fits in
+// it with room. Check it again when a service with a longer secret limit is added.
 const serviceConfigMaxBodyBytes = 4 * 1024
 
 // serviceConfigSecretBody is the body of the secret update. The fields are pointers so that a

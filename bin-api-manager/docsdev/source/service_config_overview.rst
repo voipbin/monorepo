@@ -64,9 +64,9 @@ Secret Rules
 ------------
 A secret is 1 to 2020 bytes long (multi-byte characters count per byte). A key can declare a shorter limit: the email keys allow 512 bytes, and a longer secret is rejected with ``400 Bad Request``. A secret that starts or ends with white space, or that contains a line break, is rejected with ``400 Bad Request``; it is not trimmed. The request body is limited to 4 KB, and a larger body is rejected with ``400 Bad Request``.
 
-After a timeout, or an answer of ``500`` or ``503``, check the key with ``GET /service_configs/{service}`` before you send the secret again. The answer ``500`` with the reason ``CONFIG_WRITE_VERIFY_FAILED`` means that the change may have been stored.
+After a timeout, or an answer of ``500`` or ``503``, check the key with ``GET /service_configs/{service}`` before you send the secret again. The answer ``500`` with the reason ``CONFIG_WRITE_VERIFY_FAILED`` means that the change may have been stored, and any other ``500`` can leave the state unknown in the same way.
 
-The request is also refused with ``503 Service Unavailable`` while the email service has not been updated to a version that supports this API, so that a secret is never sent to a service that cannot handle it.
+The request is also refused with ``503 Service Unavailable`` while the email service has not been updated to a version that supports this API. This check lowers the chance that a secret reaches a service that cannot handle it during a rollout, but it does not rule it out: store a secret only after every instance of the service has been updated.
 
 
 Errors
