@@ -1,6 +1,6 @@
 # VOIP-1699 bin-api-manager: stop logging the login JWT
 
-## 1. Ticket review (adversarial, against origin/main 774241e88)
+## 1. Ticket review (adversarial, against current main)
 Valid. `bin-api-manager/lib/service/auth.go` `PostLogin` logs the whole JWT with
 `log.Debugf("Created token string. token: %v", token)` right after `AuthLogin`
 succeeds. The same token is returned in the cookie and the response body. The
@@ -42,11 +42,8 @@ Previously written logs were not checked.
   variants `log.Debug(token)` and `WithField("token", token)`, and a `Warnf` level variant; each must fail
   the test, and the failing assertion is recorded.
 - Repo verification workflow for bin-api-manager.
-- Known unrelated finding, not changed: `PostLogin` passes
-  `"request_address": c.ClientIP` (method value, not a call); joonix silently drops func-valued fields, so
-  `request_address` is not in the log output. Reported only.
 
 ## 5. Not covered (stated in the PR)
-The test covers `PostLogin` only. Out of scope: the `WithField("agent", a)`
-Debug dump in `servicehandler.AuthLogin` (includes `direct_hash`), other
-services' request/response dumps, and logs already written.
+The test covers `PostLogin` only. Other log lines that are not the login token
+(for example object dumps in other handlers and services) are outside this
+change, and logs already written were not checked.
