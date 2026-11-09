@@ -400,14 +400,36 @@ func (h *handler) PushRingTicketClaim(ctx context.Context, ticketHash string, no
 	return nil, pushring.ErrTicketRefused
 }
 
+// pushRingTicketBind binds the ticket to its flow only while the ticket key exists. A ticket that was deleted in the
+// meantime is not created again, so no key is left without a TTL. KEYS: ticket key, session key. ARGV: flow id, ticket
+// hash, flow index key, session id, index TTL (seconds), session field prefix.
+var pushRingTicketBind = redis.NewScript(`
+if redis.call('EXISTS', KEYS[1]) == 0 then return 0 end
+redis.call('HSET', KEYS[1], 'in_use_flow_id', ARGV[1])
+if redis.call('EXISTS', KEYS[2]) == 1 then
+  redis.call('HSET', KEYS[2], ARGV[6] .. ARGV[1], ARGV[2])
+end
+redis.call('SET', ARGV[3], ARGV[4], 'EX', tonumber(ARGV[5]))
+return 1
+`)
+
+// pushRingTicketMarkConsumed marks the ticket consumed only while the ticket key exists. KEYS: ticket key.
+var pushRingTicketMarkConsumed = redis.NewScript(`
+if redis.call('EXISTS', KEYS[1]) == 0 then return 0 end
+redis.call('HSET', KEYS[1], 'state', ARGV[1])
+return 1
+`)
+
 // PushRingTicketBind binds the in use ticket to the temporary flow of its call and indexes the flow, so the call
-// is identified before it runs its first action and the hangup hook finds the ticket.
+// is identified before it runs its first action and the hangup hook finds the ticket. A ticket or session that was
+// deleted in the meantime is not created again.
 func (h *handler) PushRingTicketBind(ctx context.Context, sessionID, flowID uuid.UUID, ticketHash string) error {
-	pipe := h.Cache.TxPipeline()
-	pipe.HSet(ctx, pushRingTicketKey(ticketHash), "in_use_flow_id", flowID.String())
-	pipe.HSet(ctx, pushRingSessionKey(sessionID), pushRingFieldTicketFlowPrefix+flowID.String(), ticketHash)
-	pipe.Set(ctx, pushRingIndexKey(pushring.IndexFlow, flowID), sessionID.String(), pushring.KeyTTL)
-	if _, err := pipe.Exec(ctx); err != nil {
+	err := pushRingTicketBind.Run(ctx, h.Cache,
+		[]string{pushRingTicketKey(ticketHash), pushRingSessionKey(sessionID)},
+		flowID.String(), ticketHash, pushRingIndexKey(pushring.IndexFlow, flowID), sessionID.String(),
+		int(pushring.KeyTTL.Seconds()), pushRingFieldTicketFlowPrefix,
+	).Err()
+	if err != nil {
 		return errors.Wrap(err, "could not bind the push ticket to the flow")
 	}
 
@@ -429,7 +451,7 @@ func (h *handler) PushRingTicketConsume(ctx context.Context, sessionID, flowID u
 		return err
 	}
 
-	return h.Cache.HSet(ctx, pushRingTicketKey(hash), "state", string(pushring.TicketStateConsumed)).Err()
+	return pushRingTicketMarkConsumed.Run(ctx, h.Cache, []string{pushRingTicketKey(hash)}, string(pushring.TicketStateConsumed)).Err()
 }
 
 // PushRingTicketsDelete deletes the tickets of the session except the ticket of the given device (uuid.Nil keeps none).

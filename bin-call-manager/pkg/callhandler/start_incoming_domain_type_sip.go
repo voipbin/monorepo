@@ -130,7 +130,6 @@ func (h *callHandler) startIncomingDomainTypeSIPDirect(ctx context.Context, cn *
 	}
 }
 
-// startIncomingDomainTypeSIPDirectExtension handles direct hash call routed to an extension.
 // startIncomingDomainTypeSIPDirectPushTicket handles the call of the app to the one-time join address of a push ring
 // session. The call runs a temporary flow that joins the confbridge of the session. The flow is bound to the ticket
 // before the call exists, so the call is recognized at its first join.
@@ -186,6 +185,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDirectPushTicket(ctx context.Con
 	return nil
 }
 
+// startIncomingDomainTypeSIPDirectExtension handles direct hash call routed to an extension.
 func (h *callHandler) startIncomingDomainTypeSIPDirectExtension(ctx context.Context, cn *channel.Channel, d *dmdirect.Direct, source *commonaddress.Address) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "startIncomingDomainTypeSIPDirectExtension",

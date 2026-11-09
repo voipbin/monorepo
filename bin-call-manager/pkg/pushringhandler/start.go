@@ -159,8 +159,10 @@ func (h *pushRingHandler) Start(
 	if errFlag := h.addFlag(ctx, req.confbridgeID); errFlag != nil {
 		log.Errorf("Could not mark the confbridge. err: %v", errFlag)
 		// the call continues as before. Nothing has been sent, so only the keys are removed.
-		if closed, errClose := h.cache.PushRingClose(ctx, s.ID); errClose == nil && closed != nil {
-			_ = h.cache.PushRingTicketsDelete(ctx, closed, uuid.Nil)
+		// the cleanup does not depend on the request context, which may be what failed.
+		cleanCtx := context.WithoutCancel(ctx)
+		if closed, errClose := h.cache.PushRingClose(cleanCtx, s.ID); errClose == nil && closed != nil {
+			_ = h.cache.PushRingTicketsDelete(cleanCtx, closed, uuid.Nil)
 		}
 		return notStarted, nil
 	}

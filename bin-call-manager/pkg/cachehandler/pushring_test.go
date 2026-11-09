@@ -155,6 +155,23 @@ func Test_PushRingLeaseConfirm(t *testing.T) {
 			},
 		},
 		{
+			name: "a late confirm of the old owner is refused after another call became the winner",
+			steps: []step{
+				{"a takes", func(h *handler, s *pushring.Session, now time.Time) (bool, error) {
+					return h.PushRingLeaseTake(ctx, s.ID, callA, now, now.Add(pushring.LeaseTTL))
+				}, true},
+				{"b takes after the lease of a expired", func(h *handler, s *pushring.Session, now time.Time) (bool, error) {
+					return h.PushRingLeaseTake(ctx, s.ID, callB, now.Add(pushring.LeaseTTL+time.Second), now.Add(2*pushring.LeaseTTL))
+				}, true},
+				{"b confirms", func(h *handler, s *pushring.Session, now time.Time) (bool, error) {
+					return h.PushRingConfirm(ctx, s.ID, callB, now.Add(pushring.LeaseTTL+2*time.Second), "sip")
+				}, true},
+				{"a confirms after every lease expired", func(h *handler, s *pushring.Session, now time.Time) (bool, error) {
+					return h.PushRingConfirm(ctx, s.ID, callA, now.Add(3*pushring.LeaseTTL), "sip")
+				}, false},
+			},
+		},
+		{
 			name: "a late confirm re-takes an expired lease nobody else took",
 			steps: []step{
 				{"a takes", func(h *handler, s *pushring.Session, now time.Time) (bool, error) {
@@ -428,5 +445,63 @@ func Test_PushRingCacheFailureIsReported(t *testing.T) {
 	}
 	if _, err := h.PushRingSessionIDGet(ctx, pushring.IndexConfbridge, s.ConfbridgeID); err == nil || errors.Is(err, pushring.ErrSessionNotFound) {
 		t.Errorf("a cache failure must not look like a missing key. err %v", err)
+	}
+}
+
+// A ticket that was deleted while its call was being started is not created again by the bind or the consume. A key
+// without a TTL would stay in Redis.
+func Test_PushRingTicketNotRecreated(t *testing.T) {
+	ctx := context.Background()
+	h, mr := newCovHandler(t)
+	now := time.Now().Truncate(time.Millisecond)
+	s := pushRingTestSession(now)
+	flowID := uuid.FromStringOrNil("c0000000-0000-0000-0000-0000000000f1")
+
+	if err := h.PushRingSessionCreate(ctx, s); err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	if err := h.PushRingCallerJoined(ctx, s.ID); err != nil {
+		t.Fatalf("caller joined: %v", err)
+	}
+	if _, err := h.PushRingTicketClaim(ctx, "hash-a", now, now.Add(pushring.TicketInUseTTL)); err != nil {
+		t.Fatalf("claim: %v", err)
+	}
+	if err := h.PushRingTicketsDelete(ctx, s, uuid.Nil); err != nil {
+		t.Fatalf("delete: %v", err)
+	}
+
+	if err := h.PushRingTicketBind(ctx, s.ID, flowID, "hash-a"); err != nil {
+		t.Fatalf("bind: %v", err)
+	}
+	if mr.Exists("call:pushticket:hash-a") {
+		t.Errorf("the bind must not create a deleted ticket again")
+	}
+	if mr.Exists("call:pushring:flow:" + flowID.String()) {
+		t.Errorf("the bind of a deleted ticket must not index the flow")
+	}
+
+	// the consume of the flow that was never bound is a no-op as well
+	if err := h.PushRingTicketConsume(ctx, s.ID, flowID); err != nil {
+		t.Fatalf("consume: %v", err)
+	}
+	if mr.Exists("call:pushticket:hash-a") {
+		t.Errorf("the consume must not create a deleted ticket again")
+	}
+
+	// the session field of a bound flow whose ticket is deleted afterwards: consume must not recreate the key
+	if err := h.PushRingSessionCreate(ctx, s); err != nil {
+		t.Fatalf("create again: %v", err)
+	}
+	if err := h.PushRingTicketBind(ctx, s.ID, flowID, "hash-a"); err != nil {
+		t.Fatalf("bind again: %v", err)
+	}
+	if err := h.PushRingTicketsDelete(ctx, s, uuid.Nil); err != nil {
+		t.Fatalf("delete again: %v", err)
+	}
+	if err := h.PushRingTicketConsume(ctx, s.ID, flowID); err != nil {
+		t.Fatalf("consume bound: %v", err)
+	}
+	if mr.Exists("call:pushticket:hash-a") {
+		t.Errorf("the consume must not create a deleted ticket again")
 	}
 }

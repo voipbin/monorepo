@@ -201,6 +201,30 @@ func Test_Joined_pushRing(t *testing.T) {
 		}
 	})
 
+	t.Run("a session confbridge: an answer failure after the accept hangs up the channel and releases the lease", func(t *testing.T) {
+		h, m := newCov2Handler(t)
+		expectUpToUpdate(m, cbPush)
+		m.push.EXPECT().Joined(ctx, cbPush, cov2CallID).Return(nil)
+		m.channel.EXPECT().Answer(ctx, cn.ID).Return(errCov2)
+		m.channel.EXPECT().HangingUp(ctx, cn.ID, ari.ChannelCauseUnallocated).Return(&channel.Channel{}, nil)
+		m.push.EXPECT().Release(ctx, cov2CallID)
+
+		if err := h.Joined(ctx, cn, br); !stderrors.Is(err, errCov2) {
+			t.Errorf("Wrong match. expect: errCov2, got: %v", err)
+		}
+	})
+
+	t.Run("an ordinary confbridge: an answer failure is only returned", func(t *testing.T) {
+		h, m := newCov2Handler(t)
+		cbPlain := cov2CB(func(c *confbridge.Confbridge) { c.Type = confbridge.TypeConference })
+		expectUpToUpdate(m, cbPlain)
+		m.channel.EXPECT().Answer(ctx, cn.ID).Return(errCov2)
+
+		if err := h.Joined(ctx, cn, br); !stderrors.Is(err, errCov2) {
+			t.Errorf("Wrong match. expect: errCov2, got: %v", err)
+		}
+	})
+
 	t.Run("an ordinary confbridge never reads the session", func(t *testing.T) {
 		h, m := newCov2Handler(t)
 		cbPlain := cov2CB(func(c *confbridge.Confbridge) { c.Type = confbridge.TypeConference })
