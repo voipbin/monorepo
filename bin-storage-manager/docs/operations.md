@@ -32,7 +32,7 @@ A failed first migration shows as version 1 dirty; only a failed down of the fir
 
 ## Order on a New Database
 
-On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates `storage_accounts` and `storage_files` first, `alembic upgrade head` fails with `already exists` on one of them (checked by `scripts/verify-service-migrations.sh`). The service account also needs permission to create tables (for the version table). A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do).
+On a new database the service creates its tables at startup (the baseline is `CREATE TABLE IF NOT EXISTS`); no other schema tool runs first. The service account also needs permission to create tables (for the version table). A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do).
 
 ## Debugging Guide
 

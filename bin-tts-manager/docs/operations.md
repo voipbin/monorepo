@@ -29,7 +29,7 @@ Migrations run at startup, before the service connects the cache and the message
 
 `tts-control migrate status` shows the applied version, the image version and the dirty flag (it creates the version table when it is missing).
 
-On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates `tts_manager_speaking` first, the Alembic migration that creates it fails with `Table 'tts_manager_speaking' already exists` (checked by `scripts/verify-service-migrations.sh`). The service account also needs permission to create tables (for the version table). The database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`, like the install scripts do.
+On a new database the service creates its tables at startup (the baseline is `CREATE TABLE IF NOT EXISTS`); no other schema tool runs first. The service account also needs permission to create tables (for the version table). The database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`, like the install scripts do.
 
 ## Debugging Guide
 

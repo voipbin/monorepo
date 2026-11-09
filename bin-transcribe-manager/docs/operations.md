@@ -29,7 +29,7 @@ Migrations run at startup, before the service listens. A failure exits the proce
 
 ## Order on a New Database
 
-On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates the tables first, `alembic upgrade head` fails with `Table 'transcribe_transcribes' already exists`. The service account also needs permission to create tables (for the version table). Create the database with `CHARACTER SET utf8 COLLATE utf8_general_ci`, like the install scripts do.
+On a new database the service creates its tables at startup (the baseline is `CREATE TABLE IF NOT EXISTS`); no other schema tool runs first. The service account also needs permission to create tables (for the version table). Create the database with `CHARACTER SET utf8 COLLATE utf8_general_ci`, like the install scripts do.
 
 ## Zombie-Session Invariant and Recovery
 

@@ -27,7 +27,7 @@ Run the `campaign-control migrate` commands with the DSN in the `DATABASE_DSN` e
 
 ### Order on a New Database
 
-On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates the campaign tables first, `alembic upgrade head` fails with `Table 'campaign_campaigns' already exists`. The new database must be created with the default character set `utf8` (collation `utf8_general_ci`), because the baseline gives no table options. The service account also needs permission to create tables (for the version table).
+On a new database the service creates its tables at startup (the baseline is `CREATE TABLE IF NOT EXISTS`); no other schema tool runs first. The new database must be created with the default character set `utf8` (collation `utf8_general_ci`), because the baseline gives no table options. The service account also needs permission to create tables (for the version table).
 
 ## Debugging Guide
 
@@ -134,10 +134,10 @@ window (`window`, `scanLimit` — compiled constants in
 whose owning campaign is deleted but whose flow is still live — closing the
 gap left when `Delete()`'s best-effort `FlowV1FlowDelete` call (VOIP-1443)
 fails silently. It is dispatched by the `bin-schedule-manager`
-`campaign-flow-reconcile` schedule (seeded via a `bin-dbscheme-manager`
-Alembic migration, shipped **disabled** at seed time — see the migration's
-own docstring and the PR's rollout-sequencing note for the manual smoke
-test and enable step) on its `cron` interval, or via a manual
+`campaign-flow-reconcile` schedule (seeded by the `bin-schedule-manager`
+migration `000002_schedule_schedules_seed_platform_jobs`, shipped
+**disabled** at seed time; enabling it is a manual step after a smoke
+test) on its `cron` interval, or via a manual
 `POST /v1/schedules/{id}/execute` RPC (there is no `schedule-control
 execute` subcommand — `schedule-control` only supports
 `list`/`get`/`enable`/`disable` for schedules).

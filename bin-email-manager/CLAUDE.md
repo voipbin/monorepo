@@ -84,10 +84,10 @@ The schema of `email_emails` is owned by this service and applied at startup (go
 - `cmd/email-manager` runs `migrationhandler.Run` in `createDBHandler`, right after the database connection and before the cache and RabbitMQ. Failure stops the start (non-zero exit).
 - `email-control migrate status|up|down|force <version>` talks to the database only. Run `up`, `down` and `force` only against a local throwaway database.
 - The migration code is the shared `bin-common-handler/pkg/migrationhandler`. Rules for new files (one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract), the checks and the recovery steps are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
-- A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do); other defaults make the table definitions differ from the Alembic head.
-- New database order: Alembic first, then this service. The reverse fails in the Alembic stream (`Table 'email_emails' already exists`) and is unsupported while the Alembic stream still creates the email table.
+- A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do).
+- New database: the service creates its tables at startup (the baseline is `CREATE TABLE IF NOT EXISTS`); no other schema tool runs first.
 - Update `scripts/database_scripts/table_*.sql` (the sqlite test schema) by hand when the schema changes.
-- Structure checks: `go test ./migrations/`. Git relative check: `scripts/check-service-migrations.sh bin-email-manager` after `git fetch origin main`. Dynamic check on scratch containers: `ALEMBIC_VENV=<venv> scripts/verify-service-migrations.sh bin-email-manager` (repo root).
+- Structure checks: `go test ./migrations/`. Git relative check: `scripts/check-service-migrations.sh bin-email-manager` after `git fetch origin main`. Dynamic check on scratch containers: `scripts/verify-service-migrations.sh bin-email-manager` (repo root).
 
 ## Database Tables
 

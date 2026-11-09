@@ -26,7 +26,7 @@ Migrations run at startup, before the service connects the cache and the message
 
 `flow-control migrate status` shows the applied version, the image version and the dirty flag (it creates the version table when it is missing).
 
-On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates the tables first, the Alembic migration that renames `activeflows` to `flow_activeflows` (and `flows` to `flow_flows`) fails with `Table 'flow_activeflows' already exists` (error 1050). The service account also needs permission to create tables (for the version table). The database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`, like the install scripts do.
+On a new database the service creates its tables at startup (the baseline is `CREATE TABLE IF NOT EXISTS`); no other schema tool runs first. The service account also needs permission to create tables (for the version table). The database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`, like the install scripts do.
 
 ## Debugging Guide
 

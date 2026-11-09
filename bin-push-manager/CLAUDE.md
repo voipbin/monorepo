@@ -28,7 +28,7 @@ Stores the push devices of agents and delivers push notifications (FCM) to them.
 
 ## Database migrations
 
-The schema of `push_devices` is owned by this service and applied at startup (golang-migrate). Rules and checks are those of [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md). This service has no Alembic history: run the dynamic check as `NO_ALEMBIC=1 DAEMON_BLOCKS=1 scripts/verify-service-migrations.sh bin-push-manager` (`DAEMON_BLOCKS=1` because this service has no cache to fail on, so the daemon keeps retrying the broker after it migrated). Update `scripts/database_scripts_test/table_push_devices.sql` (the sqlite test schema) by hand when the schema changes.
+The schema of `push_devices` is owned by this service and applied at startup (golang-migrate). Rules and checks are those of [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md). Run the dynamic check as `DAEMON_BLOCKS=1 scripts/verify-service-migrations.sh bin-push-manager` (`DAEMON_BLOCKS=1` because this service has no cache to fail on, so the daemon keeps retrying the broker after it migrated). Update `scripts/database_scripts_test/table_push_devices.sql` (the sqlite test schema) by hand when the schema changes.
 
 ## Adding a notification kind
 

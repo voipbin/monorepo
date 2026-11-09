@@ -1,16 +1,13 @@
-# dbscheme-bin-manager
+# bin-dbscheme-manager
 
-Database schema management for **VoIPBin**.
-
-This project is divided into two directories, each managing its own
-database resources:
+Database schema management of the **Asterisk** database for **VoIPBin**.
 
 -   **asterisk_config** -- Manages Asterisk-related database
-    schema.
--   **bin-manager** -- The original schema history of the `bin_manager`
-    database. Frozen read-only history: the tables are now owned by the
-    services. The install scripts still run this chain to catch up
-    existing installations and older pins.
+    schema (Alembic).
+
+The application tables of the services are not managed here: each service
+owns its tables and applies its own `migrations/` directory at startup
+(see `docs/workflows/service-owned-migrations.md`).
 
 When this project runs via **GitLab CI/CD** or other CI/CD, the associated pod and job
 remain until the next pipeline execution, at which point they are
@@ -24,48 +21,24 @@ Run the following SQL commands:
 
 ```sql
 CREATE DATABASE asterisk CHARACTER SET utf8 COLLATE utf8_general_ci;
-CREATE DATABASE bin_manager CHARACTER SET utf8 COLLATE utf8_general_ci;
 ```
 
 ## Initial Setup
 
-Each directory contains an **alembic.ini.sample** file. Before
-running Alembic commands, you **must** copy it to `alembic.ini` and
+The `asterisk_config` directory contains an **alembic.ini.sample** file.
+Before running Alembic commands, you **must** copy it to `alembic.ini` and
 update the database connection settings.
-
-For **bin-manager**:
-
-``` sh
-cd bin-manager
-cp alembic.ini.sample alembic.ini
-```
-
-For **asterisk_config**:
 
 ``` sh
 cd asterisk_config
 cp alembic.ini.sample alembic.ini
 ```
 
-Then, edit `alembic.ini` in each directory to set the correct database
-connection details.
+Then, edit `alembic.ini` to set the correct database connection
+details.
 
 
 ## Adding a Database Change
-
-The **bin-manager** stream is frozen read-only history (last head
-`b0307529af4a`): do not create new migrations in it. Every application
-table of the `bin_manager` database is owned by a service and changes
-through that service's `migrations/` directory (see
-[docs/schema-ownership.md](docs/schema-ownership.md)).
-
-The directory is kept, not deleted. The install scripts still run this
-chain for existing installations and older pins (catch-up, and today a
-new installation also creates the `bin_manager` schema with it before
-the services start; the service baselines then find the tables and do
-nothing), `scripts/verify-service-migrations.sh` builds its E1 (Alembic
-head) reference from it, and `tests/` uses it as real revisions. The
-migration hooks and scripts that check it behave as before.
 
 To create a new migration for **asterisk_config**:
 
@@ -94,15 +67,6 @@ alembic -c alembic.ini revision -m "ps_example create table"
 
 Ensure you are connected to the **VPN** before running migrations.
 
-For **bin-manager** (frozen; this only catches an older database up to the last revision):
-
-``` sh
-cd bin-manager
-alembic -c alembic.ini upgrade head
-```
-
-For **asterisk_config**:
-
 ``` sh
 cd asterisk_config
 alembic -c alembic.ini upgrade head
@@ -129,10 +93,7 @@ Example:
 alembic -c alembic.ini downgrade ae1027a6acf
 ```
 
-Run these commands inside `asterisk_config` only. Do not downgrade the
-frozen `bin-manager` stream: its tables are owned by the services, and a
-service migration is reverted through that service (see
-`docs/workflows/service-owned-migrations.md`).
+Run these commands inside `asterisk_config`.
 
 
 ## Checking Migration Status
@@ -148,20 +109,19 @@ Example output:
 ``` text
 INFO  [alembic.runtime.migration] Context impl MySQLImpl.
 INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
-Current revision(s) for mysql://<db-user>:XXXXX@<db-host>/bin_manager:
-Rev: c939ba877f8f
-Parent: 6a7807e971e1
-Path: <repo-root>/bin-dbscheme-manager/bin-manager/main/versions/c939ba877f8f_add_table_extensions.py
+Current revision(s) for mysql://<db-user>:<db-password>@<db-host>/asterisk:
+Rev: <revision-id>
+Parent: <parent-revision-id>
+Path: <repo-root>/bin-dbscheme-manager/asterisk_config/config/versions/<revision-id>_<title>.py
 
-    add table extensions
+    <title>
 
-    Revision ID: c939ba877f8f
-    Revises: 6a7807e971e1
-    Create Date: 2021-02-23 14:17:17.716292
+    Revision ID: <revision-id>
+    Revises: <parent-revision-id>
+    Create Date: <date>
 ```
 
-Run this inside `bin-manager` or `asterisk_config` to check the status
-for each database.
+Run this inside `asterisk_config` to check the status.
 
 ## Viewing Migration History
 
@@ -174,20 +134,19 @@ alembic history --verbose
 Example output:
 
 ``` text
-Rev: 5d2aab77fd9d (head)
-Parent: c939ba877f8f
-Path: <repo-root>/bin-dbscheme-manager/bin-manager/main/versions/5d2aab77fd9d_add_provider_info.py
+Rev: <revision-id> (head)
+Parent: <parent-revision-id>
+Path: <repo-root>/bin-dbscheme-manager/asterisk_config/config/versions/<revision-id>_<title>.py
 
-    add provider info
+    <title>
 
-    Revision ID: 5d2aab77fd9d
-    Revises: c939ba877f8f
-    Create Date: 2021-03-01 01:53:00.395262
+    Revision ID: <revision-id>
+    Revises: <parent-revision-id>
+    Create Date: <date>
 ...
 ```
 
-Run this inside `bin-manager` or `asterisk_config` to check migration
-history for each database.
+Run this inside `asterisk_config` to check the migration history.
 
 ## Database Details
 
@@ -195,8 +154,20 @@ history for each database.
 - Manages **Asterisk-related** database schema. 
 - Uses a **fixed Alembic table name**: `alembic_version_config → alembic_version`
 
-**VoIPBin Database (bin-manager)**
-- The original schema history of the `bin_manager` database. Frozen read-only history: the tables are now owned by the services; the install scripts still run it for catch-up.
+These tables are managed by `asterisk_config/` and owned by the Asterisk PBX configuration subsystem. They are written by Kamailio/Asterisk at runtime, not by Go services.
+
+| table_name | owning_service | notes |
+|---|---|---|
+| ps_endpoints | asterisk-config | PJSIP endpoint definitions |
+| ps_auths | asterisk-config | PJSIP authentication records |
+| ps_aors | asterisk-config | PJSIP address-of-record bindings |
+| ps_contacts | asterisk-config | PJSIP contact registrations |
+| ps_domain_aliases | asterisk-config | PJSIP domain alias mappings |
+| ps_globals | asterisk-config | PJSIP global settings |
+| ps_identify | asterisk-config | PJSIP endpoint identification rules |
+| ps_transports | asterisk-config | PJSIP transport configurations |
+
+> The Asterisk schema is sourced from `asterisk/contrib/ast-db-manage`. When upgrading Asterisk, copy the new version files from the Asterisk repo into `asterisk_config/config/versions/`.
 
 ## Updating Asterisk Database Schema
 

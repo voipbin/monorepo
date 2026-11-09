@@ -27,7 +27,7 @@ Migrations run at startup, before the service listens. A failure exits the proce
 
 ## Order on a New Database
 
-On a new database run the Alembic stream first and start the service afterwards. The reverse order is not supported: if the service creates the tables first, the Alembic `schedule_schedules_create_table` revision fails with `Table 'schedule_schedules' already exists`. The seed file `000002` inserts the nine platform schedules only when `schedule_schedules` has no row; after the Alembic stream the table already holds them, so nothing is inserted. The service account also needs permission to create tables (for the version table).
+On a new database the service creates its tables at startup (the baseline is `CREATE TABLE IF NOT EXISTS`); no other schema tool runs first. The seed file `000002` inserts the nine platform schedules only when `schedule_schedules` has no row. The service account also needs permission to create tables (for the version table).
 
 ## Debugging Guide
 

@@ -1,14 +1,12 @@
 # Operations
 
-> **Freeze notice:** The `bin-manager` stream is frozen read-only history (last head `b0307529af4a`), used for install catch-up and the verify E1 reference. Do not add new Alembic migrations for the `bin_manager` database; every application table there is changed only through the owning service's `migrations/` directory (see [schema-ownership.md](schema-ownership.md)). The `asterisk_config` stream is not frozen and keeps using Alembic. The directory stays because the install scripts still run this chain to catch up existing installations and older pins, `scripts/verify-service-migrations.sh` builds its E1 (Alembic head) reference from it, and `tests/` uses it as real revisions. The migration hooks and scripts that check it behave as before.
-
 Operational reference for applying, verifying, and recovering Alembic migrations.
 
 ## Environment Access
 
 Only humans may run `alembic upgrade` or `alembic downgrade` against staging or production, manually, over VPN. AI agents may assist with local development only.
 
-**Why this is manual-only (confirmed 2026-07-11, VOIP-1246):** the production `bin_manager` and `asterisk` databases are intentionally not reachable from the public internet, and CircleCI's executors are not inside VoIPBin's VPC. A CI job attempting to connect times out at the TCP level — this was verified directly with a throwaway, read-only probe (DSN parsing succeeded; `SHOW TABLES` connection attempt timed out). CI-driven automatic migration application was explored and abandoned for this reason; see "Explored and rejected: CI-driven migration" below before re-attempting this.
+**Why this is manual-only (confirmed 2026-07-11, VOIP-1246):** the production `asterisk` database is intentionally not reachable from the public internet, and CircleCI's executors are not inside VoIPBin's VPC. A CI job attempting to connect times out at the TCP level — this was verified directly with a throwaway, read-only probe (DSN parsing succeeded; `SHOW TABLES` connection attempt timed out). CI-driven automatic migration application was explored and abandoned for this reason; see "Explored and rejected: CI-driven migration" below before re-attempting this.
 
 | Environment | alembic upgrade allowed? | alembic downgrade allowed? | Who can run? |
 |---|---|---|---|
@@ -26,7 +24,7 @@ Only humans may run `alembic upgrade` or `alembic downgrade` against staging or 
 
 `bin-dbscheme-manager`'s CircleCI workflow has a single `migration-applied-checkpoint` approval gate (restricted to `main`) with no job behind it. It does not build, push, apply, or touch anything. Its purpose is to give the migration a visible, recorded checkpoint in CI history — click approve once you have manually applied and verified the migration over VPN per the procedure in this document. There is nothing to configure or debug here; if this gate is confusing operators more than helping, it can be removed entirely without any other CI impact.
 
-Separately from that gate, the same workflow runs two automatic jobs on every branch: `migration-lint` and `bin-dbscheme-manager-test`. The second one runs the classifier tests described in `docs/migrations.md` against a throwaway scratch database server created for the run; neither job connects to any real database.
+Separately from that gate, the same workflow runs the automatic job `migration-lint` on every branch. It does not connect to any real database.
 
 ## Explored and rejected: CI-driven migration (VOIP-1246, 2026-07-11)
 
@@ -38,7 +36,7 @@ If CI-driven migration is revisited in the future, do the network-reachability c
 
 ## Emergency Rollback
 
-Use `alembic downgrade` only for the `asterisk_config` stream, and only when a migration has caused a production incident and reverting is the fastest path to restore service. Never downgrade the frozen `bin-manager` stream: its tables are owned by the services, and a service migration is reverted through that service (see `docs/workflows/service-owned-migrations.md`).
+Use `alembic downgrade` only when a migration has caused a production incident and reverting is the fastest path to restore service.
 
 **Procedure:**
 
@@ -69,16 +67,16 @@ alembic -c alembic.ini downgrade <target_revision_id>
 **What to check before rolling back:**
 
 - Does the `downgrade()` function actually exist and reverse the change cleanly? Verify in the migration file before running.
-- Are any Go services currently writing to the affected table? If yes, drain or stop them first to avoid a mixed-state window.
+- Are Asterisk or Kamailio currently writing to the affected table? If yes, drain or stop them first to avoid a mixed-state window.
 - Does rolling back drop a column that a newer code version still reads? Coordinate with the deployment plan.
 
 ## Common Failures
 
 ### Missing column at runtime
 
-**Symptom:** Go service logs `Error 1054: Unknown column 'X' in 'field list'` or panics on startup.
+**Symptom:** A component that reads the asterisk database (Asterisk or Kamailio) logs `Error 1054: Unknown column 'X' in 'field list'`.
 
-**Cause:** A migration that added column `X` was not yet applied to this environment, but a new code version that references it was deployed.
+**Cause:** A migration that added column `X` was not yet applied to this environment, but a new version of the component that references it was deployed.
 
 **Fix:**
 1. Run `alembic current` on the target database to find the applied head.

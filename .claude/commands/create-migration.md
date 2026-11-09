@@ -2,7 +2,7 @@
 
 Create an Alembic database migration file following VoIPbin naming conventions.
 
-⚠️ **Only the `asterisk` schema is accepted.** The `bin-manager` stream is frozen: every application table of the `bin_manager` database is owned by a service and changes through that service's `migrations/` directory (see `docs/workflows/service-owned-migrations.md`). Refuse `bin-manager` as the schema argument.
+⚠️ **Only the `asterisk` schema is accepted.** Application tables are owned by the services and change through the owning service's `migrations/` directory (see `docs/workflows/service-owned-migrations.md`). Refuse any other schema argument.
 
 ⚠️ **CRITICAL: This command ONLY creates the migration file. It does NOT apply migrations to the database.**
 
@@ -17,7 +17,7 @@ Create an Alembic database migration file following VoIPbin naming conventions.
 ## Arguments
 
 - `schema`: Which database schema
-  - `asterisk` - Asterisk configuration database (the only accepted value; `bin-manager` is frozen)
+  - `asterisk` - Asterisk configuration database (the only accepted value)
 - `table`: Table name (e.g., "ps_endpoints", "ps_aors")
 - `action`: Type of change
   - `add` - Adding columns, indexes, constraints
@@ -31,7 +31,7 @@ Create an Alembic database migration file following VoIPbin naming conventions.
 
 **This command ONLY creates a migration file. It does NOT modify the database.**
 
-1. Validates the schema argument (only `asterisk`; `bin-manager` is refused because the stream is frozen)
+1. Validates the schema argument (only `asterisk` is accepted)
 2. Navigates to `bin-dbscheme-manager/asterisk_config/`
 3. Checks if `alembic.ini` exists (errors if missing)
 4. Generates migration with proper naming: `<table>_<action>_<description>`
@@ -103,10 +103,10 @@ Edit alembic.ini and set your database connection:
 
 **Invalid schema:**
 ```
-✗ ERROR: Invalid schema 'bin-manager'
+✗ ERROR: Invalid schema '<value>'
 
-The bin-manager stream is frozen. Change bin_manager tables through the owning
-service's migrations/ directory. Valid schema:
+Only the asterisk schema is managed here. Change application tables through the
+owning service's migrations/ directory. Valid schema:
   - asterisk (for asterisk database)
 ```
 

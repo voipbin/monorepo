@@ -52,7 +52,7 @@ The MySQL table `timeline_analyses` is owned by this service and created at star
 - Rules for every new migration (one DDL statement per file, down for every up, `-- DOWN-LOSSY:` and `-- DESTRUCTIVE:` markers, immutable merged files, expand/contract) are the ones in [bin-tag-manager/CLAUDE.md](../bin-tag-manager/CLAUDE.md) and [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md). The baseline carries the table option `DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci` for `timeline_analyses`, which pins the collation independent of the server default.
 - Recovery: `timeline-control migrate-mysql status|up|down|force <version>` talks to the MySQL database only (no ClickHouse, no RabbitMQ). Run it only against a local throwaway database. `timeline-control migrate ...` remains the ClickHouse command.
 - Update `scripts/database_scripts_test/table_timeline_analyses.sql` (the sqlite test schema) by hand when the schema changes.
-- Structure check: `go test ./migrations/mysql/`. Dynamic check on scratch containers: `ALEMBIC_VENV=<venv> MIGRATE_CMD=migrate-mysql scripts/verify-service-migrations.sh bin-timeline-manager migrations/mysql` (repo root).
+- Structure check: `go test ./migrations/mysql/`. Dynamic check on scratch containers: `MIGRATE_CMD=migrate-mysql scripts/verify-service-migrations.sh bin-timeline-manager migrations/mysql` (repo root).
 
 **Uses Cobra + Viper** (not pflag directly) — see `internal/config/` for configuration loading.
 

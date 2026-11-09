@@ -266,7 +266,7 @@ sb, _ = commondatabasehandler.ApplyFields(sb, filters)
 
 ## 7.6a Schema Changes
 
-Every application table in `bin_manager` changes only through the owning service's `migrations/` directory (see `docs/workflows/service-owned-migrations.md` for the rules: one statement per file, up and down pairs, expand/contract, immutable merged files). The services are listed in `bin-dbscheme-manager/docs/schema-ownership.md`. The `bin-manager` Alembic stream is frozen read-only history (install catch-up and the verify E1 reference still use it); the `asterisk_config` stream in `bin-dbscheme-manager` keeps using Alembic. The `binary(16)` rule of 7.0a applies to both.
+Every application table in `bin_manager` changes only through the owning service's `migrations/` directory (see `docs/workflows/service-owned-migrations.md` for the rules: one statement per file, up and down pairs, expand/contract, immutable merged files). The services and their tables are listed in `docs/workflows/service-owned-migrations.md`. The `asterisk` database is managed by the `asterisk_config` stream in `bin-dbscheme-manager` (Alembic). The `binary(16)` rule of 7.0a applies to the service migrations.
 
 ## 7.7 DB Operations Location
 

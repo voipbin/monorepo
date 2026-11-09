@@ -160,7 +160,7 @@ This keeps the main repository directory in sync with remote so new worktrees st
 
 ## CRITICAL: Database schema changes: Alembic or service-owned migrations
 
-**CRITICAL: Every application table in `bin_manager` changes ONLY through the owning service's `migrations/` directory (golang-migrate, applied at service startup). Only the `asterisk` database (`asterisk_config` stream in `bin-dbscheme-manager`) changes through Alembic migrations.** The services and their tables are listed in `bin-dbscheme-manager/docs/schema-ownership.md`. The `bin-manager` Alembic stream is frozen read-only history: never add a revision to it. Its directory stays because the install scripts still run it to catch up existing installations and older pins, and `scripts/verify-service-migrations.sh` builds its E1 (Alembic head) reference from it. The migration hooks and scripts behave as before.
+**CRITICAL: Every application table in `bin_manager` changes ONLY through the owning service's `migrations/` directory (golang-migrate, applied at service startup). Only the `asterisk` database (`asterisk_config` stream in `bin-dbscheme-manager`) changes through Alembic migrations.** The services and their tables are listed in `docs/workflows/service-owned-migrations.md`. `bin-dbscheme-manager` manages only the `asterisk` database and holds no `bin_manager` migrations.
 
 **What AI CAN do:**
 - ✅ Create service migration files, and `asterisk_config` revisions with `alembic -c alembic.ini revision -m "..."`

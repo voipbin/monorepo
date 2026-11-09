@@ -2,19 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-`bin-dbscheme-manager` is the canonical home for database schema management in VoIPbin using Alembic migrations. It holds two independent Alembic streams: `asterisk_config/` for the Asterisk PJSIP config database, and `bin-manager/` for the `bin_manager` database, which is frozen read-only history because every application table there is now owned by a service (see below).
+`bin-dbscheme-manager` manages the Asterisk PJSIP config database of VoIPbin with Alembic migrations (`asterisk_config/`). It does not manage any other database: the application tables are owned by the services (see "Monorepo Context").
 
 > Cross-cutting rules (verification workflow, branch/commit format, worktree usage, RST sync, the general "Database schema changes: Alembic or service-owned migrations" rule) live in the root [CLAUDE.md](../CLAUDE.md). This file is the authoritative reference for Alembic-specific procedures.
 
 ## Documentation Index
 
 - [docs/migrations.md](docs/migrations.md) — How to create migration files, naming conventions, and a worked example
-- [docs/schema-ownership.md](docs/schema-ownership.md) — Which service owns each database table
 - [docs/operations.md](docs/operations.md) — Environment access rules, emergency rollback, and common failure recovery
-
-## CRITICAL: bin-manager stream is frozen
-
-The `bin-manager/` stream is read-only history (last head `b0307529af4a`), used for install catch-up and the verify E1 reference. Do not add new Alembic migrations to `bin-manager/` (the `bin_manager` database). Every application table in `bin_manager` (except the unused legacy `users` table) is owned by a service that keeps its own `migrations/` directory and applies it at startup; the services are listed in [docs/schema-ownership.md](docs/schema-ownership.md). Never write an Alembic migration for those tables. The `asterisk_config/` stream is not frozen and keeps using Alembic. The directory stays because the install scripts still run this chain to catch up existing installations and older pins, `scripts/verify-service-migrations.sh` builds its E1 (Alembic head) reference from it, and `tests/` uses it as real revisions. The migration hooks and scripts that check it behave as before.
 
 ## CRITICAL: AI Agent Prohibition on alembic upgrade / alembic downgrade
 
@@ -42,7 +37,7 @@ The `bin-manager/` stream is read-only history (last head `b0307529af4a`), used 
 Always use `alembic revision` to generate migration files — it creates unique revision IDs automatically and correctly chains `down_revision` to the current head.
 
 ```bash
-# CORRECT: always use alembic revision to generate the file (asterisk_config only; bin-manager/ is frozen)
+# CORRECT: always use alembic revision to generate the file (asterisk_config)
 cd asterisk_config
 alembic -c alembic.ini revision -m "ps_endpoints_add_column_dtls_auto_gen"
 # Then edit the generated file to add SQL in upgrade()/downgrade()
@@ -54,7 +49,7 @@ alembic -c alembic.ini revision -m "ps_endpoints_add_column_dtls_auto_gen"
 **Why:** Revision IDs must be globally unique across all migration files. Manually chosen IDs often collide with existing migrations, causing Alembic to fail with "Multiple head revisions" or "Revision is present more than once" errors.
 
 **After generating the file:**
-1. Open the generated file in `config/versions/` (the `bin-manager` stream and its `main/versions/` are frozen)
+1. Open the generated file in `config/versions/`
 2. Add your SQL to the `upgrade()` and `downgrade()` functions
 3. Verify with `alembic -c alembic.ini heads` — should show exactly one head
 
@@ -62,15 +57,11 @@ alembic -c alembic.ini revision -m "ps_endpoints_add_column_dtls_auto_gen"
 
 ```bash
 # --- Setup (one-time per environment) ---
-cd bin-manager
-cp alembic.ini.sample alembic.ini
-# Edit alembic.ini: set sqlalchemy.url = mysql://user:pass@host/bin_manager
-
 cd asterisk_config
 cp alembic.ini.sample alembic.ini
 # Edit alembic.ini: set sqlalchemy.url = mysql://user:pass@host/asterisk
 
-# --- Creating a migration (asterisk_config only; bin-manager/ is frozen) ---
+# --- Creating a migration ---
 # run from bin-dbscheme-manager/asterisk_config
 alembic -c alembic.ini revision -m "table_name_verb_what"
 
@@ -88,33 +79,12 @@ alembic -c alembic.ini downgrade -1
 
 ## Architecture
 
-**Two independent migration streams:**
-- `bin-manager/` → the `bin_manager` MySQL database; migrations in `main/versions/`. Frozen: no new migrations, the tables are owned by services
-- `asterisk_config/` → manages `asterisk` MySQL database; migrations in `config/versions/`
+**One migration stream:** `asterisk_config/` manages the `asterisk` MySQL database; migrations in `config/versions/`. Always `cd` into `asterisk_config` and pass `-c alembic.ini`.
 
-Never mix migrations between the two streams. Always `cd` into the correct subdirectory and pass `-c alembic.ini`.
-
-**No packaged/deployed image.** This project previously shipped a `Dockerfile` that baked a temporary-MariaDB-built schema dump into a `mysql:8.0`-based image via `/docker-entrypoint-initdb.d/`, plus a `k8s/` Job manifest to run it — both removed in VOIP-1398 as dead: no CircleCI job ever built or pushed the image, and `voipbin/voipbin`'s `install/scripts/migrate.sh` never referenced it (it sparse-checks-out this directory's alembic *source* at a pinned commit and runs `alembic upgrade head` directly, in its own container). This directory's actual consumers are: `migrate.sh` (source checkout), CircleCI's `migration-lint` job (structural validation only), the `bin-dbscheme-manager-test` job (see "Classifier and tests" below), and humans running `alembic` manually per `docs/operations.md`.
-
-## CRITICAL: UUID columns must be `BINARY(16)`
-
-Every UUID column (`id`, `customer_id`, `agent_id`, any `_id` foreign key) **must** be declared as `BINARY(16)`. Never use `VARCHAR(36)`.
-
-Go's MySQL driver sends `uuid.UUID` values as 16 raw bytes. `VARCHAR(36)` silently stores them as garbage characters and JOINs never match. Full rationale and ALTER-fix template are in [docs/conventions/database.md §7.0a](../docs/conventions/database.md).
+**No packaged/deployed image.** This project previously shipped a `Dockerfile` that baked a temporary-MariaDB-built schema dump into a `mysql:8.0`-based image via `/docker-entrypoint-initdb.d/`, plus a `k8s/` Job manifest to run it — both removed in VOIP-1398 as dead: no CircleCI job ever built or pushed the image, and `voipbin/voipbin`'s `install/scripts/migrate.sh` never referenced it (it sparse-checks-out this directory's alembic *source* at a pinned commit and runs `alembic upgrade head` directly, in its own container). This directory's actual consumers are: `migrate.sh` (source checkout), CircleCI's `migration-lint` job (structural validation only), and humans running `alembic` manually per `docs/operations.md`.
 
 ## Monorepo Context
 
-The schema of each `bin_manager` table lives in the owning service's `migrations/` directory (see [docs/schema-ownership.md](docs/schema-ownership.md) and [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md)). When adding a `db:` tag to a Go model, add a migration to that service's `migrations/`, not here. Updating schema in the service's test SQL files without a migration breaks production.
+The application tables are not managed here. Each service owns its tables and keeps the schema in its own `migrations/` directory (see [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md), which also lists which service owns which table). When adding a `db:` tag to a Go model, add a migration to that service's `migrations/`, not here. Updating schema in the service's test SQL files without a migration breaks production.
 
-## Classifier and tests
-
-`classifier/` decides whether a pending Alembic range is provably additive. It is a library plus tests; nothing here connects to or changes a real database.
-
-- `source_gate.py`: default-deny gate over the revision files (directory listing, encoding, import-time code, the body of `upgrade()`).
-- `render.py`, `sqltext.py`, `statements.py`: offline render of one step, a quote-aware tokenizer with `normalize()`, and the statement allow-list.
-- `replay.py`: a guard that lets only the classified statements, in order, reach a server.
-- `classify.py`: ties them together per stream. `module_level_exceptions.txt` lists, by sha256, files that predate the import-time rules; a changed file is not covered.
-
-Anything outside the allow-list is reported as not provably additive (a person applies it); it is never guessed at. The authoring rules are in `docs/migrations.md`.
-
-Tests: `pip install --require-hashes -r requirements-dev.txt`, start a MariaDB 12.3 server, export `DBSCHEME_TEST_DB_URL=mariadb+pymysql://root@127.0.0.1:3306`, then `pytest bin-dbscheme-manager/tests`. Without the variable the server tests are skipped. `requirements.txt` is hash pinned (`alembic`, `sqlalchemy<2.0`, `pymysql`); regenerate it with `uv pip compile requirements.in --generate-hashes --universal --python-version 3.11 -o requirements.txt`.
+`requirements.txt` is hash pinned (`alembic`, `sqlalchemy<2.0`, `pymysql`); regenerate it with `uv pip compile requirements.in --generate-hashes --universal --python-version 3.11 -o requirements.txt`.

@@ -228,7 +228,7 @@ The service applies the migrations of its thirteen tables itself (`migrations/`,
 | `CREATE command denied ... ai_schema_migrations` | The database account cannot create tables | Grant CREATE to the service account |
 | `db version N is ahead of this image (max M); skipping migrations` (warning) | An older image started after a newer one migrated | Expected during a rollback; no action |
 
-`ai-control migrate status` shows the applied version, the image version and the dirty flag (database only, no Redis or RabbitMQ). The new database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`. On a new database run the Alembic stream first and start the service afterwards; the reverse order is not supported. File rules and checks: [docs/workflows/service-owned-migrations.md](../../docs/workflows/service-owned-migrations.md).
+`ai-control migrate status` shows the applied version, the image version and the dirty flag (database only, no Redis or RabbitMQ). The new database must be created with `CHARACTER SET utf8 COLLATE utf8_general_ci`. On a new database the service creates its tables at startup (the baseline is `CREATE TABLE IF NOT EXISTS`); no other schema tool runs first. File rules and checks: [docs/workflows/service-owned-migrations.md](../../docs/workflows/service-owned-migrations.md).
 
 ## CLI Tool: ai-control
 

@@ -10,6 +10,6 @@ Process documentation for git operations, verification, common multi-service wor
 | [special-cases.md](special-cases.md) | bin-common-handler updates (cross-monorepo verification), OpenAPI sync, and other workflows that span multiple services |
 | [development-guide.md](development-guide.md) | Local build commands, testing patterns, code generation, and linting reference |
 | [common-gotchas.md](common-gotchas.md) | Hard-won production lessons: shared-library signature updates, Prometheus metric collisions, UUID `db:` tags, model/OpenAPI sync, RST docs sync |
-| [service-owned-migrations.md](service-owned-migrations.md) | Schema migrations applied at startup by the owning service: shared `migrationhandler`, file rules, baseline from the Alembic head, check and verify scripts, impact analysis |
+| [service-owned-migrations.md](service-owned-migrations.md) | Schema migrations applied at startup by the owning service: shared `migrationhandler`, file rules, baseline text rules, check and verify scripts, service-owned table list, impact analysis |
 | [manager-replica-scaling.md](manager-replica-scaling.md) | The repeatable recipe for scaling a bin-*-manager Komodo stack to 2 replicas: eligibility checklist, the compose change, deploy verification (the CI gate can't prove 2-of-2), rollback |
 | [public-repo-hygiene.md](public-repo-hygiene.md) | What must never be committed to this public repository (personal data, credentials, real infrastructure, security posture, internal notes), the placeholders to use, and the pre-commit check |
