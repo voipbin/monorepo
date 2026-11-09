@@ -857,6 +857,48 @@
 <p>This endpoint requires no request body. The <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> in the response is the new hash (already prefixed with <code class="docutils literal notranslate"><span class="pre">direct.</span></code>) — the previous hash is permanently invalidated. The direct SIP URI is formed directly from it: <code class="docutils literal notranslate"><span class="pre">sip:&lt;direct_hash&gt;&#64;sip.voipbin.net</span></code>.</p>
 </div>
 </section>
+<section id="register-a-push-device">
+<h3>Register a push device<a class="headerlink" href="#register-a-push-device" title="Link to this heading">¶</a></h3>
+<p>Register the push token of the agent’s mobile app. This requires an agent token (a token of a signed-in agent).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/service_agents/push_devices?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "platform": "android",
+        "token": "&lt;PUSH_TOKEN_FROM_THE_APP&gt;"
+    }'
+
+{
+    "id": "3f6c1d2e-8a4b-4c7d-9e10-5b2a7c8d9e01",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "agent_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+    "platform": "android",
+    "tm_create": "2026-11-09T09:15:30.123456Z",
+    "tm_update": "2026-11-09T09:15:30.123456Z"
+}
+</pre></div>
+</div>
+</section>
+<section id="delete-a-push-device">
+<h3>Delete a push device<a class="headerlink" href="#delete-a-push-device" title="Link to this heading">¶</a></h3>
+<p>Delete one of the calling agent’s push devices. A device of another agent or customer, or an unknown id, returns <code class="docutils literal notranslate"><span class="pre">404</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/service_agents/push_devices/3f6c1d2e-8a4b-4c7d-9e10-5b2a7c8d9e01?token=&lt;YOUR_AUTH_TOKEN&gt;'
+
+{
+    "id": "3f6c1d2e-8a4b-4c7d-9e10-5b2a7c8d9e01",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "agent_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+    "platform": "android",
+    "tm_create": "2026-11-09T09:15:30.123456Z",
+    "tm_update": "2026-11-09T09:15:30.123456Z"
+}
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The response never contains the push token. Registering again with the same token refreshes the device and returns the same <code class="docutils literal notranslate"><span class="pre">id</span></code>.</p>
+</div>
+</section>
 </section>
 </section>
 
@@ -931,6 +973,8 @@
 <li><a class="reference internal" href="#update-agent-s-status">Update agent’s status</a></li>
 <li><a class="reference internal" href="#update-agent-s-addresses">Update agent’s addresses</a></li>
 <li><a class="reference internal" href="#regenerate-direct-agent-hash">Regenerate direct agent hash</a></li>
+<li><a class="reference internal" href="#register-a-push-device">Register a push device</a></li>
+<li><a class="reference internal" href="#delete-a-push-device">Delete a push device</a></li>
 </ul>
 </li>
 </ul>

@@ -585,6 +585,8 @@ Managed locally by api-manager (no RabbitMQ RPC to a backend service).
 | DELETE | `/service_agents/contacts/:id/tags/:tag_id` | bin-contact-manager | Remove tag |
 | PUT | `/service_agents/contacts/:id/star` | bin-contact-manager | Star a contact (private to the agent) |
 | DELETE | `/service_agents/contacts/:id/star` | bin-contact-manager | Remove the star |
+| POST | `/service_agents/push_devices` | bin-push-manager | Register or refresh the calling agent's push device (agent only, no token in the response) |
+| DELETE | `/service_agents/push_devices/:id` | bin-push-manager | Delete the calling agent's push device (404 for any other agent's, customer's or unknown device) |
 | GET | `/service_agents/contact_stars` | bin-contact-manager | List the caller's stars |
 | GET | `/service_agents/conversations` | bin-conversation-manager | List conversations |
 | GET | `/service_agents/conversations/:id` | bin-conversation-manager | Get conversation |

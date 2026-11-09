@@ -22853,6 +22853,114 @@
         }
       }
     },
+    "/service_agents/push_devices/{id}": {
+      "delete": {
+        "summary": "Delete a push device",
+        "description": "Deletes a push device of the calling agent and returns the deleted device. A device that does\nnot exist, or that belongs to another agent or another customer, is reported identically as\n`404 DEVICE_NOT_FOUND`.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The device ID returned from POST /service_agents/push_devices.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "3f6c1d2e-8a4b-4c7d-9e10-5b2a7c8d9e01"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The deleted device.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushManagerDevice"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/service_agents/push_devices": {
+      "post": {
+        "summary": "Register a push device",
+        "description": "Registers the push device of the calling agent, or refreshes it when the same token is already\nregistered. The call is idempotent: both a new and a refreshed device return 200. The device\nalways belongs to the authenticated agent; the owner is never taken from the request. A token\nthat was registered by another agent is moved to the calling agent.\n\nThe push token is a credential and is never returned in any response.\n\nReturns 400 when the platform is not supported, or when the token is empty or longer than 512 bytes.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "platform",
+                  "token"
+                ],
+                "properties": {
+                  "platform": {
+                    "$ref": "#/components/schemas/PushManagerDevicePlatform"
+                  },
+                  "token": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512,
+                    "description": "The push token issued to the app by the platform's push service. 1 to 512 bytes.",
+                    "example": "fcm-token-example-0123456789"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The registered device.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushManagerDevice"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/service_agents/contacts/{id}/tags/{tag_id}": {
       "delete": {
         "summary": "Remove tag from contact",
@@ -31245,6 +31353,53 @@
             "example": "2026-06-01T09:30:01.000000Z"
           }
         }
+      },
+      "PushManagerDevice": {
+        "type": "object",
+        "description": "A push device of the calling agent: one installed app that can receive notifications. The push token is never returned.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The device ID returned from POST /service_agents/push_devices.",
+            "example": "3f6c1d2e-8a4b-4c7d-9e10-5b2a7c8d9e01"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The customer ID of the owner agent, returned from GET /service_agents/me.",
+            "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          },
+          "agent_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The owner agent ID, returned from GET /service_agents/me.",
+            "example": "2ddf1c90-bbc1-11ef-b991-1bd6ee52cbc5"
+          },
+          "platform": {
+            "$ref": "#/components/schemas/PushManagerDevicePlatform"
+          },
+          "tm_create": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the device was first registered.",
+            "example": "2026-11-09T09:15:30.123456Z"
+          },
+          "tm_update": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the device was last registered or refreshed.",
+            "example": "2026-11-09T09:15:30.123456Z"
+          }
+        }
+      },
+      "PushManagerDevicePlatform": {
+        "type": "string",
+        "description": "The platform of the push device. Only `android` is supported.",
+        "enum": [
+          "android"
+        ],
+        "example": "android"
       },
       "ContactManagerContactStar": {
         "type": "object",

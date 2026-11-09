@@ -61,6 +61,7 @@ import (
 	provider "monorepo/bin-number-manager/models/provider"
 	outdial "monorepo/bin-outdial-manager/models/outdial"
 	outdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
+	device "monorepo/bin-push-manager/models/device"
 	queue "monorepo/bin-queue-manager/models/queue"
 	queuecall "monorepo/bin-queue-manager/models/queuecall"
 	rag "monorepo/bin-rag-manager/models/rag"
@@ -5709,6 +5710,36 @@ func (m *MockServiceHandler) ServiceAgentPeerEventList(ctx context.Context, a *a
 func (mr *MockServiceHandlerMockRecorder) ServiceAgentPeerEventList(ctx, a, contactID, peerAddress, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentPeerEventList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentPeerEventList), ctx, a, contactID, peerAddress, pageToken, pageSize)
+}
+
+// ServiceAgentPushDeviceCreate mocks base method.
+func (m *MockServiceHandler) ServiceAgentPushDeviceCreate(ctx context.Context, a *auth.AuthIdentity, platform device.Platform, token string) (*device.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentPushDeviceCreate", ctx, a, platform, token)
+	ret0, _ := ret[0].(*device.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentPushDeviceCreate indicates an expected call of ServiceAgentPushDeviceCreate.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentPushDeviceCreate(ctx, a, platform, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentPushDeviceCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentPushDeviceCreate), ctx, a, platform, token)
+}
+
+// ServiceAgentPushDeviceDelete mocks base method.
+func (m *MockServiceHandler) ServiceAgentPushDeviceDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*device.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentPushDeviceDelete", ctx, a, id)
+	ret0, _ := ret[0].(*device.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentPushDeviceDelete indicates an expected call of ServiceAgentPushDeviceDelete.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentPushDeviceDelete(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentPushDeviceDelete", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentPushDeviceDelete), ctx, a, id)
 }
 
 // ServiceAgentTagGet mocks base method.

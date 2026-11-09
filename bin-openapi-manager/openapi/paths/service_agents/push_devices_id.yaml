@@ -1,0 +1,34 @@
+delete:
+  summary: Delete a push device
+  description: |
+    Deletes a push device of the calling agent and returns the deleted device. A device that does
+    not exist, or that belongs to another agent or another customer, is reported identically as
+    `404 DEVICE_NOT_FOUND`.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: "The device ID returned from POST /service_agents/push_devices."
+      schema:
+        type: string
+        format: uuid
+        example: "3f6c1d2e-8a4b-4c7d-9e10-5b2a7c8d9e01"
+  responses:
+    '200':
+      description: The deleted device.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PushManagerDevice'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

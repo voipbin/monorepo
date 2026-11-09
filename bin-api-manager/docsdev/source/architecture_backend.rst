@@ -5,9 +5,9 @@ Backend Microservices
 
 .. note:: **AI Context**
 
-   This page describes VoIPBin's 34 Go microservices, their organization by domain, the API gateway (bin-api-manager), and special service architectures (pipecat hybrid Go/Python, sentinel Kubernetes monitoring). Relevant when an AI agent needs to understand which service handles a specific domain, the routing table from HTTP endpoints to backend services, or the authentication/authorization flow.
+   This page describes VoIPBin's 35 Go microservices, their organization by domain, the API gateway (bin-api-manager), and special service architectures (pipecat hybrid Go/Python, sentinel Kubernetes monitoring). Relevant when an AI agent needs to understand which service handles a specific domain, the routing table from HTTP endpoints to backend services, or the authentication/authorization flow.
 
-VoIPBin's backend consists of 34 specialized Go microservices organized into functional domains. Each service owns its specific business logic and communicates with others through a message queue, enabling independent scaling, deployment, and development.
+VoIPBin's backend consists of 35 specialized Go microservices organized into functional domains. Each service owns its specific business logic and communicates with others through a message queue, enabling independent scaling, deployment, and development.
 
 Microservices Organization
 ---------------------------
@@ -61,6 +61,7 @@ Services are organized by functional domain:
     |  bin-number-manager      |  Phone number management         |
     |  bin-tag-manager         |  Customer tag management         |
     |  bin-timeline-manager    |  Per-resource timeline events    |
+    |  bin-push-manager        |  Agent push device tokens        |
     +-------------------------------------------------------------+
 
     +-------------------------------------------------------------+
@@ -289,29 +290,30 @@ The gateway routes requests to appropriate backend services:
 
 **Routing Table:**
 
-===============================  ===========================
-HTTP Endpoint                    Backend Service
-===============================  ===========================
-/v1.0/calls                      bin-call-manager
-/v1.0/conferences                bin-conference-manager
-/v1.0/messages                   bin-message-manager
-/v1.0/service_agents/talk_chats  bin-talk-manager
-/v1.0/emails                     bin-email-manager
-/v1.0/agents                     bin-agent-manager
-/v1.0/queues                     bin-queue-manager
-/v1.0/campaigns                  bin-campaign-manager
-/v1.0/outdials                   bin-outdial-manager
-/v1.0/flows                      bin-flow-manager
-/v1.0/conversations              bin-conversation-manager
-/v1.0/billings                   bin-billing-manager
-/v1.0/customers                  bin-customer-manager
-/v1.0/transcribes                bin-transcribe-manager
-/v1.0/numbers                    bin-number-manager
-/v1.0/routes                     bin-route-manager
-/v1.0/tags                       bin-tag-manager
-/v1.0/storage_accounts           bin-storage-manager
-/v1.0/transfers                  bin-transfer-manager
-===============================  ===========================
+===================================  ===========================
+HTTP Endpoint                        Backend Service
+===================================  ===========================
+/v1.0/calls                          bin-call-manager
+/v1.0/conferences                    bin-conference-manager
+/v1.0/messages                       bin-message-manager
+/v1.0/service_agents/talk_chats      bin-talk-manager
+/v1.0/emails                         bin-email-manager
+/v1.0/agents                         bin-agent-manager
+/v1.0/queues                         bin-queue-manager
+/v1.0/campaigns                      bin-campaign-manager
+/v1.0/outdials                       bin-outdial-manager
+/v1.0/flows                          bin-flow-manager
+/v1.0/conversations                  bin-conversation-manager
+/v1.0/billings                       bin-billing-manager
+/v1.0/customers                      bin-customer-manager
+/v1.0/transcribes                    bin-transcribe-manager
+/v1.0/numbers                        bin-number-manager
+/v1.0/routes                         bin-route-manager
+/v1.0/tags                           bin-tag-manager
+/v1.0/storage_accounts               bin-storage-manager
+/v1.0/transfers                      bin-transfer-manager
+/v1.0/service_agents/push_devices    bin-push-manager
+===================================  ===========================
 
 .. note::
 
@@ -788,7 +790,7 @@ Services deploy to Kubernetes on Google Cloud Platform:
     |  |  |  Replicas: 3    HPA: 3-20                   |  |  |
     |  |  +---------------------------------------------+  |  |
     |  |                                                   |  |
-    |  |  ... 34 deployments total                         |  |
+    |  |  ... 35 deployments total                         |  |
     |  |                                                   |  |
     |  +---------------------------------------------------+  |
     |                                                         |
@@ -822,7 +824,7 @@ Comprehensive monitoring across all services:
     Metrics Pipeline:
 
     Services                Prometheus              Grafana
-    (34 services)               |                      |
+    (35 services)               |                      |
          |                      |                      |
          |  Expose /metrics     |                      |
          |  endpoint            |                      |

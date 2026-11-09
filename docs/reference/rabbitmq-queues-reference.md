@@ -140,6 +140,14 @@ QueueNamePipecatRequest   = "bin-manager.pipecat-manager.request"
 QueueNamePipecatSubscribe = "bin-manager.pipecat-manager.subscribe"
 ```
 
+### Push Manager
+```go
+QueueNamePushRequest   = "bin-manager.push-manager.request"
+QueueNamePushSubscribe = "bin-manager.push-manager.subscribe"
+```
+
+Push Manager publishes no events, so it has no `QueueNamePushEvent` constant and no event exchange.
+
 ### Queue Manager
 ```go
 QueueNameQueueEvent     = "bin-manager.queue-manager.event"

@@ -75,6 +75,8 @@ import (
 	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 	pmmessage "monorepo/bin-pipecat-manager/models/message"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	pmdevice "monorepo/bin-push-manager/models/device"
+	pmnotification "monorepo/bin-push-manager/models/notification"
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 
@@ -1624,6 +1626,15 @@ type RequestHandler interface {
 	// webhook-manager webhooks
 	WebhookV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType wmwebhook.DataType, messageType string, messageData []byte) error
 	WebhookV1WebhookSendToDestination(ctx context.Context, customerID uuid.UUID, destination string, method wmwebhook.MethodType, dataType wmwebhook.DataType, messageData []byte) error
+
+	// push-manager devices
+	PushV1DeviceCreate(ctx context.Context, customerID, agentID uuid.UUID, platform pmdevice.Platform, token string) (*pmdevice.Device, error)
+	PushV1DeviceGet(ctx context.Context, id uuid.UUID) (*pmdevice.Device, error)
+	PushV1DeviceDelete(ctx context.Context, id uuid.UUID) (*pmdevice.Device, error)
+	PushV1DeviceList(ctx context.Context, customerID, agentID uuid.UUID) ([]pmdevice.Device, error)
+
+	// push-manager notifications
+	PushV1NotificationSend(ctx context.Context, customerID, agentID, deviceID uuid.UUID, kind pmnotification.Kind, data map[string]string) (*pmnotification.SendResult, error)
 
 	// webchat-manager widgets
 	WebchatV1WidgetCreate(

@@ -100,3 +100,31 @@ Permission     Description
 64             (0x0040) Customer-level manager.
 240            (0x00F0) All customer-level permissions.
 ============== ================
+
+.. _agent-struct-agent-push_device:
+
+Push device
+-----------
+A push device of an agent: one installed app that can receive notifications. Returned by ``POST /service_agents/push_devices`` and ``DELETE /service_agents/push_devices/{id}``.
+
+.. code::
+
+    {
+        "id": "<string>",
+        "customer_id": "<string>",
+        "agent_id": "<string>",
+        "platform": "<string>",
+        "tm_create": "<string>",
+        "tm_update": "<string>"
+    }
+
+* ``id`` (UUID): The device's unique identifier. Returned from the ``POST /service_agents/push_devices`` response.
+* ``customer_id`` (UUID): The customer ID of the owner agent. Obtained from ``GET /service_agents/me``.
+* ``agent_id`` (UUID): The owner agent's ID. Obtained from ``GET /service_agents/me``.
+* ``platform`` (enum string): The platform of the app. Only ``android`` is supported.
+* ``tm_create`` (string, ISO 8601): Timestamp when the device was first registered.
+* ``tm_update`` (string, ISO 8601): Timestamp when the device was last registered or refreshed.
+
+.. note:: **AI Implementation Hint**
+
+   The push token is never part of a response. Registering the same token again keeps the ``id`` and moves ``tm_update``.

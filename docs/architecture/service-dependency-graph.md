@@ -4,7 +4,7 @@
 
 ## Overview
 
-The monorepo contains 35 services organized into layers:
+The monorepo contains 41 services organized into layers:
 - **Core Services** - Depended on by many services
 - **Utility Services** - Medium dependency count
 - **Leaf Services** - Consume but aren't consumed
@@ -54,6 +54,7 @@ graph TD
     subgraph Gateway["Gateway & Utilities"]
         API[bin-api-manager]
         TAG[bin-tag-manager]
+        PUSH[bin-push-manager]
         SENT[bin-sentinel-manager]
         TALK[bin-talk-manager]
         AI[bin-ai-manager]
@@ -79,6 +80,8 @@ graph TD
     %% Business dependencies
     CUST --> AGENT
     CUST --> BILL
+    CUST --> PUSH
+    AGENT --> PUSH
     AGENT --> REC
     CALL --> CAMP
     FLOW --> CAMP
@@ -107,6 +110,7 @@ graph TD
     API -.-> CUST
     API -.-> AGENT
     API -.-> BILL
+    API -.-> PUSH
 
     %% Scheduler dispatch (DB-driven RPC targets; Phase 1 seeds)
     SCHED --> NUM
@@ -141,6 +145,7 @@ graph TD
 | Service | Type | Description |
 |---------|------|-------------|
 | `bin-api-manager` | Gateway | REST API gateway (calls 15+ services) |
+| `bin-push-manager` | Notification | FCM push to agent devices; subscribes to `agent_deleted` and `customer_deleted`, publishes no events |
 | `bin-sentinel-manager` | Monitoring | Container lifecycle events |
 | `bin-openapi-manager` | Tooling | OpenAPI spec (not a runtime service) |
 | `bin-schedule-manager` | Scheduler | Platform cron dispatch engine (seeded targets: number-manager renew, self-RPC housekeeping/backup; future RPC consumers: VOIP-1280 doctor, api-manager Phase 3) |
@@ -171,7 +176,8 @@ Services subscribe to events via RabbitMQ:
 |-----------|-------|-------------|
 | `call-manager` | `call_hungup` | billing, ai, campaign, queue, transfer |
 | `call-manager` | `confbridge_joined` | conference, queue |
-| `customer-manager` | `customer_deleted` | billing, agent, tag, webhook, registrar |
+| `customer-manager` | `customer_deleted` | billing, agent, tag, webhook, registrar, push |
+| `agent-manager` | `agent_deleted` | push |
 | `flow-manager` | `activeflow_deleted` | campaign |
 | `message-manager` | `message_created` | billing, conversation |
 
@@ -199,7 +205,7 @@ asterisk-proxy                call-manager              flow-manager
 **Impact: ALL SERVICES**
 
 ```bash
-# Must update and test all 35 services
+# Must update and test all 41 services
 ls -d bin-*/ | xargs -I {} bash -c "cd '{}' && go mod tidy && go mod vendor && go test ./..."
 ```
 

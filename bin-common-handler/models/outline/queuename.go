@@ -108,6 +108,10 @@ const (
 	QueueNamePipecatRequest   QueueName = "bin-manager.pipecat-manager.request"
 	QueueNamePipecatSubscribe QueueName = "bin-manager.pipecat-manager.subscribe"
 
+	// push-manager
+	QueueNamePushRequest   QueueName = "bin-manager.push-manager.request"
+	QueueNamePushSubscribe QueueName = "bin-manager.push-manager.subscribe"
+
 	// queue-manager
 	QueueNameQueueEvent     QueueName = "bin-manager.queue-manager.event"
 	QueueNameQueueRequest   QueueName = "bin-manager.queue-manager.request"
@@ -215,6 +219,7 @@ func QueueNameRequestAll() []QueueName {
 		QueueNameNumberRequest,
 		QueueNameOutdialRequest,
 		QueueNamePipecatRequest,
+		QueueNamePushRequest,
 		QueueNameQueueRequest,
 		QueueNameRagRequest,
 		QueueNameRegistrarRequest,

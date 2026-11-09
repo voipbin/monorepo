@@ -4401,6 +4401,45 @@ components:
           description: Pagination token for the next page. Empty when no further pages exist.
           example: "2026-06-01T09:30:01.000000Z"
 
+    PushManagerDevice:
+      type: object
+      description: "A push device of the calling agent: one installed app that can receive notifications. The push token is never returned."
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: "The device ID returned from POST /service_agents/push_devices."
+          example: "3f6c1d2e-8a4b-4c7d-9e10-5b2a7c8d9e01"
+        customer_id:
+          type: string
+          format: uuid
+          description: "The customer ID of the owner agent, returned from GET /service_agents/me."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        agent_id:
+          type: string
+          format: uuid
+          description: "The owner agent ID, returned from GET /service_agents/me."
+          example: "2ddf1c90-bbc1-11ef-b991-1bd6ee52cbc5"
+        platform:
+          $ref: '#/components/schemas/PushManagerDevicePlatform'
+        tm_create:
+          type: string
+          format: date-time
+          description: "When the device was first registered."
+          example: "2026-11-09T09:15:30.123456Z"
+        tm_update:
+          type: string
+          format: date-time
+          description: "When the device was last registered or refreshed."
+          example: "2026-11-09T09:15:30.123456Z"
+
+    PushManagerDevicePlatform:
+      type: string
+      description: "The platform of the push device. Only `android` is supported."
+      enum:
+        - android
+      example: "android"
+
     ContactManagerContactStar:
       type: object
       required: [contact_id, starred]
@@ -9630,6 +9669,10 @@ paths:
     $ref: './paths/service_agents/contacts_id_case_notes.yaml'
   /service_agents/contacts/{id}/star:
     $ref: './paths/service_agents/contacts_id_star.yaml'
+  /service_agents/push_devices/{id}:
+    $ref: './paths/service_agents/push_devices_id.yaml'
+  /service_agents/push_devices:
+    $ref: './paths/service_agents/push_devices.yaml'
 
   /service_agents/contacts/{id}/tags/{tag_id}:
     $ref: './paths/service_agents/contacts_id_tags_id.yaml'

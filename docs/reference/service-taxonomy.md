@@ -26,6 +26,7 @@
 | bin-openapi-manager | E | OpenAPI codegen, no runtime |
 | bin-outdial-manager | A | Standard Go RPC manager |
 | bin-pipecat-manager | A | Standard Go RPC manager |
+| bin-push-manager | A | Standard Go RPC manager |
 | bin-queue-manager | A | Standard Go RPC manager |
 | bin-rag-manager | A | Standard Go RPC manager |
 | bin-registrar-manager | A | Standard Go RPC manager |

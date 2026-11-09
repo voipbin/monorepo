@@ -2627,6 +2627,21 @@ func (e OutdialManagerOutdialtargetStatus) Valid() bool {
 	}
 }
 
+// Defines values for PushManagerDevicePlatform.
+const (
+	Android PushManagerDevicePlatform = "android"
+)
+
+// Valid indicates whether the value is a known member of the PushManagerDevicePlatform enum.
+func (e PushManagerDevicePlatform) Valid() bool {
+	switch e {
+	case Android:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for QueueManagerQueueRoutingMethod.
 const (
 	QueueManagerQueueRoutingMethodNone   QueueManagerQueueRoutingMethod = ""
@@ -8930,6 +8945,44 @@ type OutdialManagerOutdialtarget struct {
 // Example: idle
 type OutdialManagerOutdialtargetStatus string
 
+// PushManagerDevice A push device of the calling agent: one installed app that can receive notifications. The push token is never returned.
+type PushManagerDevice struct {
+	// AgentId The owner agent ID, returned from GET /service_agents/me.
+	//
+	// Example: 2ddf1c90-bbc1-11ef-b991-1bd6ee52cbc5
+	AgentId *openapi_types.UUID `json:"agent_id,omitempty"`
+
+	// CustomerId The customer ID of the owner agent, returned from GET /service_agents/me.
+	//
+	// Example: 7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// Id The device ID returned from POST /service_agents/push_devices.
+	//
+	// Example: 3f6c1d2e-8a4b-4c7d-9e10-5b2a7c8d9e01
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// Platform The platform of the push device. Only `android` is supported.
+	//
+	// Example: android
+	Platform *PushManagerDevicePlatform `json:"platform,omitempty"`
+
+	// TmCreate When the device was first registered.
+	//
+	// Example: 2026-11-09T09:15:30.123456Z
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmUpdate When the device was last registered or refreshed.
+	//
+	// Example: 2026-11-09T09:15:30.123456Z
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// PushManagerDevicePlatform The platform of the push device. Only `android` is supported.
+//
+// Example: android
+type PushManagerDevicePlatform string
+
 // QueueManagerQueue defines model for QueueManagerQueue.
 type QueueManagerQueue struct {
 	// CustomerId The unique identifier of the customer who owns this queue. Returned from the `GET /customers` response.
@@ -13612,6 +13665,19 @@ type PutServiceAgentsMeStatusJSONBody struct {
 	Status AgentManagerAgentStatus `json:"status"`
 }
 
+// PostServiceAgentsPushDevicesJSONBody defines parameters for PostServiceAgentsPushDevices.
+type PostServiceAgentsPushDevicesJSONBody struct {
+	// Platform The platform of the push device. Only `android` is supported.
+	//
+	// Example: android
+	Platform PushManagerDevicePlatform `json:"platform"`
+
+	// Token The push token issued to the app by the platform's push service. 1 to 512 bytes.
+	//
+	// Example: fcm-token-example-0123456789
+	Token string `json:"token"`
+}
+
 // GetServiceAgentsTagsParams defines parameters for GetServiceAgentsTags.
 type GetServiceAgentsTagsParams struct {
 	// PageSize Number of results to return per page.
@@ -14650,6 +14716,9 @@ type PutServiceAgentsMePasswordJSONRequestBody PutServiceAgentsMePasswordJSONBod
 
 // PutServiceAgentsMeStatusJSONRequestBody defines body for PutServiceAgentsMeStatus for application/json ContentType.
 type PutServiceAgentsMeStatusJSONRequestBody PutServiceAgentsMeStatusJSONBody
+
+// PostServiceAgentsPushDevicesJSONRequestBody defines body for PostServiceAgentsPushDevices for application/json ContentType.
+type PostServiceAgentsPushDevicesJSONRequestBody PostServiceAgentsPushDevicesJSONBody
 
 // PostServiceAgentsTalkChatsJSONRequestBody defines body for PostServiceAgentsTalkChats for application/json ContentType.
 type PostServiceAgentsTalkChatsJSONRequestBody PostServiceAgentsTalkChatsJSONBody

@@ -4,6 +4,7 @@
 # usage:
 #   ALEMBIC_VENV=<venv with the pinned alembic> scripts/verify-service-migrations.sh <service-dir> [<migrations-subdir>]
 #   scripts/verify-service-migrations.sh --dump <service-dir> <database> [<migrations-subdir>]
+#   NO_ALEMBIC=1 scripts/verify-service-migrations.sh <service-dir> [<migrations-subdir>]
 #   scripts/verify-service-migrations.sh --self-test
 #
 # For each engine (mariadb:12.3, mysql:8.0) it starts a throwaway container and checks:
@@ -19,6 +20,22 @@
 #   - the migrations package structure check of the service
 #   - with HELPER_TESTS=1 the migrationhandler integration tests (including the lock wait case)
 # It never touches a real database: only containers created here are used and removed on exit.
+#
+# NO_ALEMBIC=1 is for a service whose tables never existed in the Alembic history (a new service
+# with new tables): there is no Alembic head to compare with. ALEMBIC_VENV is not needed and these
+# checks print a SKIP line instead of running: the Alembic upgrade and the E1 dump (and its
+# dump_complete), the V2 existing database step (row counts and dump comparison), every comparison
+# that uses the E1 dump (V1/V3 E1 vs E2, REFERENCE_DUMP, E1_ALLOWED_DIFF, SEED_COMPARE_SQL, and
+# EXISTING_ROWS_SQL, which only feeds V2) and the E7 Alembic-after-service order check. The variables
+# named here are ignored when set. Everything else runs on both engines as without the variable: up,
+# down, up and the dump equality of E2 before and after, status, concurrent start, dirty refusal,
+# force recovery, a database ahead of the image, a restricted account, a special-character password,
+# the daemon start, the default collation database (V13) and the structure check. A run in this mode
+# is not evidence that a baseline equals the Alembic head.
+#
+# DAEMON_BLOCKS=1 is for a service that has no cache to fail on: after migrating it keeps retrying the
+# message broker and never exits by itself, so the daemon start check (V1) accepts a daemon that is
+# stopped by the timeout, as long as it migrated the empty database first.
 #
 # Optional reference dump: REFERENCE_DUMP=<file> compares E2 with an externally produced
 # extended normalized dump (made with the --dump mode) in addition to E1. The two engines print
@@ -54,7 +71,8 @@
 # script does not open connections by itself in that mode.
 #
 # Environment (defaults in brackets):
-#   ALEMBIC_VENV      venv with alembic 1.11.3, SQLAlchemy 1.4.52, PyMySQL 1.1.0 (required)
+#   ALEMBIC_VENV      venv with alembic 1.11.3, SQLAlchemy 1.4.52, PyMySQL 1.1.0 (required unless NO_ALEMBIC=1)
+#   NO_ALEMBIC        1 skips every check that needs the Alembic head (see above) [off]
 #   ENGINES_OVERRIDE  engines to run [mariadb:12.3 mysql:8.0]; any other value is not evidence
 #   HELPER_TESTS      1 runs the migrationhandler integration tests [off]
 #   CONTROL_BIN       control binary name [<name>-control]   SERVICE_BIN [<name>-manager]
@@ -62,6 +80,8 @@
 #   MIGRATE_CMD       control subcommand [migrate]           DSN_VAR [DATABASE_DSN]
 #   DAEMON_ENV        space separated KEY=VALUE for the daemon start; @DSN@ is replaced by the
 #                     database DSN [REDIS_ADDRESS=127.0.0.1:1 RABBITMQ_ADDRESS=... PROMETHEUS_LISTEN_ADDRESS=127.0.0.1:0]
+#   DAEMON_BLOCKS    1 for a service without a cache: the daemon keeps retrying the broker and is stopped
+#                     by the timeout, which the daemon start check (V1) accepts [off]
 #   EXISTING_ROWS_SQL file with INSERT statements run against the Alembic database before the
 #                     service migrations [built in rows for tag_tags]
 #   REFERENCE_ENGINE engine image the REFERENCE_DUMP was made with (required with REFERENCE_DUMP)
@@ -622,6 +642,15 @@ if [ "$DUMP_ONLY" = 1 ]; then
   exit
 fi
 
+NO_ALEMBIC="${NO_ALEMBIC:-0}"
+case "$NO_ALEMBIC" in 0|1) ;; *) echo "NO_ALEMBIC must be 1 or unset"; exit 1;; esac
+NA_IGNORED=""
+if [ "$NO_ALEMBIC" = 1 ]; then
+  # Everything that compares with the Alembic head or feeds that comparison is ignored.
+  for v in REFERENCE_DUMP ALLOWED_DIFF E1_ALLOWED_DIFF SEED_COMPARE_SQL EXISTING_ROWS_SQL; do
+    if [ -n "${!v:-}" ]; then NA_IGNORED="$NA_IGNORED $v"; unset "$v"; fi
+  done
+fi
 if [ -n "${ALLOWED_DIFF:-}" ] && [ -z "${REFERENCE_DUMP:-}" ]; then echo "ALLOWED_DIFF is set without REFERENCE_DUMP (E1_ALLOWED_DIFF is the list of the Alembic head comparison)"; exit 1; fi
 if [ -n "${E1_ALLOWED_DIFF:-}" ]; then
   E1_MSG=$(check_allowed_file "$E1_ALLOWED_DIFF") || { echo "E1_ALLOWED_DIFF: $E1_MSG"; exit 1; }
@@ -633,7 +662,9 @@ if [ -n "${REFERENCE_DUMP:-}" ]; then
   if [ -n "${ALLOWED_DIFF:-}" ] && [ ! -f "$ALLOWED_DIFF" ]; then echo "ALLOWED_DIFF $ALLOWED_DIFF is not a regular file"; exit 1; fi
   [[ " ${ENGINES[*]} " == *" $REFERENCE_ENGINE "* ]] || { echo "REFERENCE_ENGINE $REFERENCE_ENGINE is not one of the engines being run: ${ENGINES[*]}"; exit 1; }
 fi
-: "${ALEMBIC_VENV:?set ALEMBIC_VENV to a venv with alembic 1.11.3, SQLAlchemy 1.4.52, PyMySQL 1.1.0}"
+if [ "$NO_ALEMBIC" != 1 ]; then
+  : "${ALEMBIC_VENV:?set ALEMBIC_VENV to a venv with alembic 1.11.3, SQLAlchemy 1.4.52, PyMySQL 1.1.0 (or NO_ALEMBIC=1 for a service with no Alembic history)}"
+fi
 
 # expected version: the highest up file number
 N=$(ls "$MIG_DIR"/*.up.sql | sed -E 's#.*/([0-9]{6})_.*#\1#' | sort -n | tail -1 | sed -E 's/^0+//')
@@ -666,51 +697,66 @@ for IMAGE in "${ENGINES[@]}"; do
   rowcounts() { local t; for t in $TABLES; do echo "$t $(sql -e "SELECT COUNT(*) FROM $1.$t")"; done; }
   seed_of() { sql -e "${SEED_COMPARE_SQL//@DB@/$1}"; }
 
-  # E1: Alembic head
-  ALE="$WORK/alembic-$TAG"; cp -r "$ROOT/bin-dbscheme-manager/bin-manager" "$ALE"
-  sed "s#^sqlalchemy.url = .*#sqlalchemy.url = mysql+pymysql://root:$PASS@127.0.0.1:$PORT/e1#" "$ALE/alembic.ini.sample" > "$ALE/alembic.ini"
-  (cd "$ALE" && "$ALEMBIC_VENV/bin/alembic" -c alembic.ini upgrade head >/dev/null 2>"$WORK/alembic.err") || { cat "$WORK/alembic.err"; fail "$IMAGE alembic upgrade head"; continue; }
-  ok "$IMAGE E1 built by the Alembic head: $(sql -e "SELECT version_num FROM e1.alembic_version")"
-  dump_db e1 > "$WORK/e1-before.txt"
+  if [ "$NO_ALEMBIC" = 1 ]; then
+    skip "$IMAGE E1 Alembic upgrade and dump (NO_ALEMBIC=1)"
+    skip "$IMAGE V2 existing database step: row counts and dump (NO_ALEMBIC=1)"
+    [ -z "$NA_IGNORED" ] || skip "$IMAGE ignored in NO_ALEMBIC=1 mode:$NA_IGNORED"
+  else
+    # E1: Alembic head
+    ALE="$WORK/alembic-$TAG"; cp -r "$ROOT/bin-dbscheme-manager/bin-manager" "$ALE"
+    sed "s#^sqlalchemy.url = .*#sqlalchemy.url = mysql+pymysql://root:$PASS@127.0.0.1:$PORT/e1#" "$ALE/alembic.ini.sample" > "$ALE/alembic.ini"
+    (cd "$ALE" && "$ALEMBIC_VENV/bin/alembic" -c alembic.ini upgrade head >/dev/null 2>"$WORK/alembic.err") || { cat "$WORK/alembic.err"; fail "$IMAGE alembic upgrade head"; continue; }
+    ok "$IMAGE E1 built by the Alembic head: $(sql -e "SELECT version_num FROM e1.alembic_version")"
+    dump_db e1 > "$WORK/e1-before.txt"
 
-  # V2 existing database with data
-  if [ -n "${EXISTING_ROWS_SQL:-}" ]; then
-    sql -D e1 < "$EXISTING_ROWS_SQL"
-  elif [ "$FIRST_TABLE" = "tag_tags" ]; then
-    ID='0x00112233445566778899aabbccddeeff'
-    sql -e "INSERT INTO e1.tag_tags (id, customer_id, name) VALUES ($ID, $ID, 'existing')"
-  else
-    skip "$IMAGE V2 no rows inserted: set EXISTING_ROWS_SQL for $SERVICE"
-  fi
-  rowcounts e1 > "$WORK/rows-before.txt"
-  ctl e1 up >/dev/null
-  dump_db e1 > "$WORK/e1-after.txt"
-  rowcounts e1 > "$WORK/rows-after.txt"
-  [ "$(version_of e1)" = "$N" ] && ok "$IMAGE V2 existing database migrated to version $N" || fail "$IMAGE V2 version"
-  if [ "$DESTRUCTIVE" = 1 ]; then
-    skip "$IMAGE V2 row count (DESTRUCTIVE migration)"
-  elif diff -q "$WORK/rows-before.txt" "$WORK/rows-after.txt" >/dev/null; then
-    ok "$IMAGE V2 row counts unchanged ($(tr '\n' ';' < "$WORK/rows-after.txt"))"
-  else
-    fail "$IMAGE V2 row counts changed"
-  fi
-  if [ "$N" = 1 ]; then
-    if diff -q "$WORK/e1-before.txt" "$WORK/e1-after.txt" >/dev/null; then ok "$IMAGE V2 dump of the existing database identical"; else fail "$IMAGE V2 dump changed"; fi
-  else
-    skip "$IMAGE V2 baseline-only dump check (N=$N>1)"
+    # V2 existing database with data
+    if [ -n "${EXISTING_ROWS_SQL:-}" ]; then
+      sql -D e1 < "$EXISTING_ROWS_SQL"
+    elif [ "$FIRST_TABLE" = "tag_tags" ]; then
+      ID='0x00112233445566778899aabbccddeeff'
+      sql -e "INSERT INTO e1.tag_tags (id, customer_id, name) VALUES ($ID, $ID, 'existing')"
+    else
+      skip "$IMAGE V2 no rows inserted: set EXISTING_ROWS_SQL for $SERVICE"
+    fi
+    rowcounts e1 > "$WORK/rows-before.txt"
+    ctl e1 up >/dev/null
+    dump_db e1 > "$WORK/e1-after.txt"
+    rowcounts e1 > "$WORK/rows-after.txt"
+    [ "$(version_of e1)" = "$N" ] && ok "$IMAGE V2 existing database migrated to version $N" || fail "$IMAGE V2 version"
+    if [ "$DESTRUCTIVE" = 1 ]; then
+      skip "$IMAGE V2 row count (DESTRUCTIVE migration)"
+    elif diff -q "$WORK/rows-before.txt" "$WORK/rows-after.txt" >/dev/null; then
+      ok "$IMAGE V2 row counts unchanged ($(tr '\n' ';' < "$WORK/rows-after.txt"))"
+    else
+      fail "$IMAGE V2 row counts changed"
+    fi
+    if [ "$N" = 1 ]; then
+      if diff -q "$WORK/e1-before.txt" "$WORK/e1-after.txt" >/dev/null; then ok "$IMAGE V2 dump of the existing database identical"; else fail "$IMAGE V2 dump changed"; fi
+    else
+      skip "$IMAGE V2 baseline-only dump check (N=$N>1)"
+    fi
   fi
 
   # V1/V3 empty database, dump equals E1 with the service migrations applied
   ctl e2 up >/dev/null
   dump_db e2 > "$WORK/e2.txt"
-  if [ -n "${E1_ALLOWED_DIFF:-}" ]; then
-    cmp_rc=0
-    compare_e1 "$WORK/e1-after.txt" "$WORK/e2.txt" "$E1_ALLOWED_DIFF" >"$WORK/cmp.out" || cmp_rc=$?
-    cat "$WORK/cmp.out"
-    if [ "$cmp_rc" = 0 ]; then ok "$IMAGE V1/V3 normalized dump E1 vs E2: diff 0 apart from E1_ALLOWED_DIFF ($(grep -c '^ALLOWED-DIFF ' "$WORK/cmp.out" || true) accepted lines used, $(grep -c '^UNUSED-ALLOWED-DIFF ' "$WORK/cmp.out" || true) unused)"; else fail "$IMAGE V3 dump differs outside E1_ALLOWED_DIFF"; fi
-  elif diff "$WORK/e1-after.txt" "$WORK/e2.txt" >"$WORK/diff.txt"; then ok "$IMAGE V1/V3 normalized dump E1 vs E2: diff 0 ($(wc -l < "$WORK/e2.txt") lines)"; else cat "$WORK/diff.txt"; fail "$IMAGE V3 dump differs"; fi
+  if [ "$NO_ALEMBIC" = 1 ]; then
+    skip "$IMAGE V1/V3 dump E1 vs E2 (NO_ALEMBIC=1)"
+  else
+    if [ -n "${E1_ALLOWED_DIFF:-}" ]; then
+      cmp_rc=0
+      compare_e1 "$WORK/e1-after.txt" "$WORK/e2.txt" "$E1_ALLOWED_DIFF" >"$WORK/cmp.out" || cmp_rc=$?
+      cat "$WORK/cmp.out"
+      if [ "$cmp_rc" = 0 ]; then ok "$IMAGE V1/V3 normalized dump E1 vs E2: diff 0 apart from E1_ALLOWED_DIFF ($(grep -c '^ALLOWED-DIFF ' "$WORK/cmp.out" || true) accepted lines used, $(grep -c '^UNUSED-ALLOWED-DIFF ' "$WORK/cmp.out" || true) unused)"; else fail "$IMAGE V3 dump differs outside E1_ALLOWED_DIFF"; fi
+    elif diff "$WORK/e1-after.txt" "$WORK/e2.txt" >"$WORK/diff.txt"; then ok "$IMAGE V1/V3 normalized dump E1 vs E2: diff 0 ($(wc -l < "$WORK/e2.txt") lines)"; else cat "$WORK/diff.txt"; fail "$IMAGE V3 dump differs"; fi
+  fi
   [ "$(version_of e2)" = "$N" ] && ok "$IMAGE V1 version $N" || fail "$IMAGE V1 version"
-  if dump_complete "$WORK/e1-after.txt" && dump_complete "$WORK/e2.txt"; then :; else fail "$IMAGE V3 a dump holds no columns"; fi
+  if [ "$NO_ALEMBIC" = 1 ]; then
+    if dump_complete "$WORK/e2.txt"; then :; else fail "$IMAGE V3 the E2 dump holds no columns"; fi
+    skip "$IMAGE V3 reference dump and seed comparison (NO_ALEMBIC=1)"
+  else
+    if dump_complete "$WORK/e1-after.txt" && dump_complete "$WORK/e2.txt"; then :; else fail "$IMAGE V3 a dump holds no columns"; fi
+  fi
   if [ -n "${REFERENCE_DUMP:-}" ]; then
     if [ "$IMAGE" = "$REFERENCE_ENGINE" ]; then
       REFERENCE_USED=1
@@ -771,7 +817,17 @@ for IMAGE in "${ENGINES[@]}"; do
   DAEMON_KV=()
   for kv in $DAEMON_ENV; do DAEMON_KV+=("${kv//@DSN@/$(dsn e6)}"); done
   rc=0
-  env "$DSN_VAR=$(dsn e6)" "${DAEMON_KV[@]}" timeout 60 "$WORK/$SERVICE_BIN" >"$WORK/daemon.out" 2>&1 || rc=$?
+  # A service without a cache connects the broker next and keeps retrying, so it never exits by itself.
+  # DAEMON_BLOCKS=1 accepts that: the daemon is stopped by the timeout (the daemon traps TERM, so the
+  # timeout also sends KILL after a grace period) and the check is that it migrated first.
+  if [ "${DAEMON_BLOCKS:-}" = 1 ]; then
+    env "$DSN_VAR=$(dsn e6)" "${DAEMON_KV[@]}" timeout -k 5 30 "$WORK/$SERVICE_BIN" >"$WORK/daemon.out" 2>&1 || rc=$?
+    if [ "$rc" = 124 ] || [ "$rc" = 137 ]; then
+      rc=1
+    fi
+  else
+    env "$DSN_VAR=$(dsn e6)" "${DAEMON_KV[@]}" timeout 60 "$WORK/$SERVICE_BIN" >"$WORK/daemon.out" 2>&1 || rc=$?
+  fi
   if [ "$rc" = 0 ] || [ "$rc" = 124 ]; then
     fail "$IMAGE V1 daemon did not exit by itself with an error (rc=$rc)"
   elif [ "$(version_of e6)" = "$N" ] && [ "$(sql -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='e6' AND TABLE_NAME='$FIRST_TABLE'")" = "1" ]; then
@@ -780,17 +836,21 @@ for IMAGE in "${ENGINES[@]}"; do
     tail -5 "$WORK/daemon.out"; fail "$IMAGE V1 daemon start did not migrate"
   fi
 
-  # Order on a new database: Alembic first, then the service. The reverse order is unsupported:
-  # the Alembic history creates the tables and fails when the service already created them.
-  sql -e "CREATE DATABASE e7 CHARACTER SET utf8 COLLATE utf8_general_ci"
-  ctl e7 up >/dev/null
-  sed "s#/e1\$#/e7#" "$ALE/alembic.ini" > "$ALE/alembic-e7.ini"
-  if (cd "$ALE" && "$ALEMBIC_VENV/bin/alembic" -c alembic-e7.ini upgrade head >/dev/null 2>"$WORK/alembic-e7.err"); then
-    fail "$IMAGE Alembic after the service unexpectedly succeeded"
-  elif grep -qi "already exists" "$WORK/alembic-e7.err" && grep -qE "$(echo "$TABLES" | paste -sd'|')" "$WORK/alembic-e7.err"; then
-    ok "$IMAGE service-first then Alembic fails with 'already exists' (unsupported order, documented)"
+  if [ "$NO_ALEMBIC" = 1 ]; then
+    skip "$IMAGE E7 Alembic-after-service order check (NO_ALEMBIC=1)"
   else
-    tail -3 "$WORK/alembic-e7.err"; fail "$IMAGE service-first then Alembic failed for another reason"
+    # Order on a new database: Alembic first, then the service. The reverse order is unsupported:
+    # the Alembic history creates the tables and fails when the service already created them.
+    sql -e "CREATE DATABASE e7 CHARACTER SET utf8 COLLATE utf8_general_ci"
+    ctl e7 up >/dev/null
+    sed "s#/e1\$#/e7#" "$ALE/alembic.ini" > "$ALE/alembic-e7.ini"
+    if (cd "$ALE" && "$ALEMBIC_VENV/bin/alembic" -c alembic-e7.ini upgrade head >/dev/null 2>"$WORK/alembic-e7.err"); then
+      fail "$IMAGE Alembic after the service unexpectedly succeeded"
+    elif grep -qi "already exists" "$WORK/alembic-e7.err" && grep -qE "$(echo "$TABLES" | paste -sd'|')" "$WORK/alembic-e7.err"; then
+      ok "$IMAGE service-first then Alembic fails with 'already exists' (unsupported order, documented)"
+    else
+      tail -3 "$WORK/alembic-e7.err"; fail "$IMAGE service-first then Alembic failed for another reason"
+    fi
   fi
 
   # V13 database created with the engine default collation: only the character set is named, so
@@ -833,6 +893,7 @@ for IMAGE in "${ENGINES[@]}"; do
 done
 
 echo "== engines: ${ENGINES[*]}$([ -n "${ENGINES_OVERRIDE:-}" ] && echo ' (ENGINES_OVERRIDE is set: not evidence)')"
+[ "$NO_ALEMBIC" != 1 ] || echo "== NO_ALEMBIC=1: not compared with the Alembic head; only for a service whose tables never existed in the Alembic history"
 [ "${REFERENCE_USED:-0}" = 1 ] || echo "== reference dump not given: the result is not compared with an existing database (REFERENCE_DUMP)"
 [ "${HELPER_TESTS:-0}" = 1 ] || echo "== migrationhandler integration tests not run (HELPER_TESTS=1 is required for the helper change evidence)"
 echo "== failures: $FAILS, skipped: $SKIPS"

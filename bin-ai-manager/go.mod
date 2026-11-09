@@ -42,6 +42,8 @@ replace monorepo/bin-outdial-manager => ../bin-outdial-manager
 
 replace monorepo/bin-pipecat-manager => ../bin-pipecat-manager
 
+replace monorepo/bin-push-manager => ../bin-push-manager
+
 replace monorepo/bin-queue-manager => ../bin-queue-manager
 
 replace monorepo/bin-rag-manager => ../bin-rag-manager
@@ -171,6 +173,7 @@ require (
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect
 	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183 // indirect
 	monorepo/bin-outdial-manager v0.0.0-20240313064601-888fe8578646 // indirect
+	monorepo/bin-push-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d // indirect
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24 // indirect
 	monorepo/bin-schedule-manager v0.0.0-00010101000000-000000000000 // indirect

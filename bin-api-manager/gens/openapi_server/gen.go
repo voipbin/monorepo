@@ -2635,6 +2635,21 @@ func (e OutdialManagerOutdialtargetStatus) Valid() bool {
 	}
 }
 
+// Defines values for PushManagerDevicePlatform.
+const (
+	Android PushManagerDevicePlatform = "android"
+)
+
+// Valid indicates whether the value is a known member of the PushManagerDevicePlatform enum.
+func (e PushManagerDevicePlatform) Valid() bool {
+	switch e {
+	case Android:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for QueueManagerQueueRoutingMethod.
 const (
 	QueueManagerQueueRoutingMethodNone   QueueManagerQueueRoutingMethod = ""
@@ -7178,6 +7193,30 @@ type OutdialManagerOutdialtarget struct {
 // OutdialManagerOutdialtargetStatus The status of the outdial.
 type OutdialManagerOutdialtargetStatus string
 
+// PushManagerDevice A push device of the calling agent: one installed app that can receive notifications. The push token is never returned.
+type PushManagerDevice struct {
+	// AgentId The owner agent ID, returned from GET /service_agents/me.
+	AgentId *openapi_types.UUID `json:"agent_id,omitempty"`
+
+	// CustomerId The customer ID of the owner agent, returned from GET /service_agents/me.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// Id The device ID returned from POST /service_agents/push_devices.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// Platform The platform of the push device. Only `android` is supported.
+	Platform *PushManagerDevicePlatform `json:"platform,omitempty"`
+
+	// TmCreate When the device was first registered.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmUpdate When the device was last registered or refreshed.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// PushManagerDevicePlatform The platform of the push device. Only `android` is supported.
+type PushManagerDevicePlatform string
+
 // QueueManagerQueue defines model for QueueManagerQueue.
 type QueueManagerQueue struct {
 	// CustomerId The unique identifier of the customer who owns this queue. Returned from the `GET /customers` response.
@@ -10868,6 +10907,15 @@ type PutServiceAgentsMeStatusJSONBody struct {
 	Status AgentManagerAgentStatus `json:"status"`
 }
 
+// PostServiceAgentsPushDevicesJSONBody defines parameters for PostServiceAgentsPushDevices.
+type PostServiceAgentsPushDevicesJSONBody struct {
+	// Platform The platform of the push device. Only `android` is supported.
+	Platform PushManagerDevicePlatform `json:"platform"`
+
+	// Token The push token issued to the app by the platform's push service. 1 to 512 bytes.
+	Token string `json:"token"`
+}
+
 // GetServiceAgentsTagsParams defines parameters for GetServiceAgentsTags.
 type GetServiceAgentsTagsParams struct {
 	// PageSize Number of results to return per page.
@@ -11827,6 +11875,9 @@ type PutServiceAgentsMePasswordJSONRequestBody PutServiceAgentsMePasswordJSONBod
 
 // PutServiceAgentsMeStatusJSONRequestBody defines body for PutServiceAgentsMeStatus for application/json ContentType.
 type PutServiceAgentsMeStatusJSONRequestBody PutServiceAgentsMeStatusJSONBody
+
+// PostServiceAgentsPushDevicesJSONRequestBody defines body for PostServiceAgentsPushDevices for application/json ContentType.
+type PostServiceAgentsPushDevicesJSONRequestBody PostServiceAgentsPushDevicesJSONBody
 
 // PostServiceAgentsTalkChatsJSONRequestBody defines body for PostServiceAgentsTalkChats for application/json ContentType.
 type PostServiceAgentsTalkChatsJSONRequestBody PostServiceAgentsTalkChatsJSONBody
@@ -13030,6 +13081,12 @@ type ServerInterface interface {
 	// Update authenticated agent's status
 	// (PUT /service_agents/me/status)
 	PutServiceAgentsMeStatus(c *gin.Context)
+	// Register a push device
+	// (POST /service_agents/push_devices)
+	PostServiceAgentsPushDevices(c *gin.Context)
+	// Delete a push device
+	// (DELETE /service_agents/push_devices/{id})
+	DeleteServiceAgentsPushDevicesId(c *gin.Context, id openapi_types.UUID)
 	// Retrieve a list of tags
 	// (GET /service_agents/tags)
 	GetServiceAgentsTags(c *gin.Context, params GetServiceAgentsTagsParams)
@@ -22883,6 +22940,44 @@ func (siw *ServerInterfaceWrapper) PutServiceAgentsMeStatus(c *gin.Context) {
 	siw.Handler.PutServiceAgentsMeStatus(c)
 }
 
+// PostServiceAgentsPushDevices operation middleware
+func (siw *ServerInterfaceWrapper) PostServiceAgentsPushDevices(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostServiceAgentsPushDevices(c)
+}
+
+// DeleteServiceAgentsPushDevicesId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteServiceAgentsPushDevicesId(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteServiceAgentsPushDevicesId(c, id)
+}
+
 // GetServiceAgentsTags operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsTags(c *gin.Context) {
 
@@ -25599,6 +25694,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/service_agents/me/addresses", wrapper.PutServiceAgentsMeAddresses)
 	router.PUT(options.BaseURL+"/service_agents/me/password", wrapper.PutServiceAgentsMePassword)
 	router.PUT(options.BaseURL+"/service_agents/me/status", wrapper.PutServiceAgentsMeStatus)
+	router.POST(options.BaseURL+"/service_agents/push_devices", wrapper.PostServiceAgentsPushDevices)
+	router.DELETE(options.BaseURL+"/service_agents/push_devices/:id", wrapper.DeleteServiceAgentsPushDevicesId)
 	router.GET(options.BaseURL+"/service_agents/tags", wrapper.GetServiceAgentsTags)
 	router.GET(options.BaseURL+"/service_agents/tags/:id", wrapper.GetServiceAgentsTagsId)
 	router.GET(options.BaseURL+"/service_agents/talk_channels", wrapper.GetServiceAgentsTalkChannels)
@@ -56015,6 +56112,176 @@ func (response PutServiceAgentsMeStatus500JSONResponse) VisitPutServiceAgentsMeS
 	return err
 }
 
+type PostServiceAgentsPushDevicesRequestObject struct {
+	Body *PostServiceAgentsPushDevicesJSONRequestBody
+}
+
+type PostServiceAgentsPushDevicesResponseObject interface {
+	VisitPostServiceAgentsPushDevicesResponse(w http.ResponseWriter) error
+}
+
+type PostServiceAgentsPushDevices200JSONResponse PushManagerDevice
+
+func (response PostServiceAgentsPushDevices200JSONResponse) VisitPostServiceAgentsPushDevicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsPushDevices400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsPushDevices400JSONResponse) VisitPostServiceAgentsPushDevicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsPushDevices401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsPushDevices401JSONResponse) VisitPostServiceAgentsPushDevicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsPushDevices403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostServiceAgentsPushDevices403JSONResponse) VisitPostServiceAgentsPushDevicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsPushDevices500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsPushDevices500JSONResponse) VisitPostServiceAgentsPushDevicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsPushDevicesIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type DeleteServiceAgentsPushDevicesIdResponseObject interface {
+	VisitDeleteServiceAgentsPushDevicesIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteServiceAgentsPushDevicesId200JSONResponse PushManagerDevice
+
+func (response DeleteServiceAgentsPushDevicesId200JSONResponse) VisitDeleteServiceAgentsPushDevicesIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsPushDevicesId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteServiceAgentsPushDevicesId400JSONResponse) VisitDeleteServiceAgentsPushDevicesIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsPushDevicesId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteServiceAgentsPushDevicesId401JSONResponse) VisitDeleteServiceAgentsPushDevicesIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsPushDevicesId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteServiceAgentsPushDevicesId403JSONResponse) VisitDeleteServiceAgentsPushDevicesIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsPushDevicesId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteServiceAgentsPushDevicesId404JSONResponse) VisitDeleteServiceAgentsPushDevicesIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsPushDevicesId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteServiceAgentsPushDevicesId500JSONResponse) VisitDeleteServiceAgentsPushDevicesIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetServiceAgentsTagsRequestObject struct {
 	Params GetServiceAgentsTagsParams
 }
@@ -64444,6 +64711,12 @@ type StrictServerInterface interface {
 	// Update authenticated agent's status
 	// (PUT /service_agents/me/status)
 	PutServiceAgentsMeStatus(ctx context.Context, request PutServiceAgentsMeStatusRequestObject) (PutServiceAgentsMeStatusResponseObject, error)
+	// Register a push device
+	// (POST /service_agents/push_devices)
+	PostServiceAgentsPushDevices(ctx context.Context, request PostServiceAgentsPushDevicesRequestObject) (PostServiceAgentsPushDevicesResponseObject, error)
+	// Delete a push device
+	// (DELETE /service_agents/push_devices/{id})
+	DeleteServiceAgentsPushDevicesId(ctx context.Context, request DeleteServiceAgentsPushDevicesIdRequestObject) (DeleteServiceAgentsPushDevicesIdResponseObject, error)
 	// Retrieve a list of tags
 	// (GET /service_agents/tags)
 	GetServiceAgentsTags(ctx context.Context, request GetServiceAgentsTagsRequestObject) (GetServiceAgentsTagsResponseObject, error)
@@ -75125,6 +75398,63 @@ func (sh *strictHandler) PutServiceAgentsMeStatus(ctx *gin.Context) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(PutServiceAgentsMeStatusResponseObject); ok {
 		if err := validResponse.VisitPutServiceAgentsMeStatusResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostServiceAgentsPushDevices operation middleware
+func (sh *strictHandler) PostServiceAgentsPushDevices(ctx *gin.Context) {
+	var request PostServiceAgentsPushDevicesRequestObject
+
+	var body PostServiceAgentsPushDevicesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostServiceAgentsPushDevices(ctx, request.(PostServiceAgentsPushDevicesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostServiceAgentsPushDevices")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostServiceAgentsPushDevicesResponseObject); ok {
+		if err := validResponse.VisitPostServiceAgentsPushDevicesResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteServiceAgentsPushDevicesId operation middleware
+func (sh *strictHandler) DeleteServiceAgentsPushDevicesId(ctx *gin.Context, id openapi_types.UUID) {
+	var request DeleteServiceAgentsPushDevicesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteServiceAgentsPushDevicesId(ctx, request.(DeleteServiceAgentsPushDevicesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteServiceAgentsPushDevicesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(DeleteServiceAgentsPushDevicesIdResponseObject); ok {
+		if err := validResponse.VisitDeleteServiceAgentsPushDevicesIdResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

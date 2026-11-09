@@ -870,6 +870,43 @@ queue calls?</p></th>
 </pre></div>
 </div>
 </section>
+<section id="push-devices">
+<h2>Push Devices<a class="headerlink" href="#push-devices" title="Link to this heading">¶</a></h2>
+<p>An agent can register the push token of its mobile app, so that VoIPbin can notify the app. The registration is private to the agent and exists only on the agent surface (<code class="docutils literal notranslate"><span class="pre">/service_agents/*</span></code>). The owner of a device is always the authenticated agent; it is never taken from the request.</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Endpoint</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/push_devices</span></code></p></td>
+<td><p>Register the push device, or refresh it when the same token is already registered.</p></td>
+</tr>
+<tr class="row-odd"><td><p>DELETE</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/push_devices/{id}</span></code></p></td>
+<td><p>Delete one of the calling agent’s push devices.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The request body of <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/push_devices</span></code> has two fields:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">platform</span></code> (enum string): The platform of the app. Only <code class="docutils literal notranslate"><span class="pre">android</span></code> is supported.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">token</span></code> (String): The push token issued to the app by the platform’s push service. 1 to 512 bytes.</p></li>
+</ul>
+<p>Registering returns <code class="docutils literal notranslate"><span class="pre">200</span></code> with the device both for a new device and for a refreshed one. A token that was registered by another agent moves to the calling agent. The response never contains the token. An unsupported <code class="docutils literal notranslate"><span class="pre">platform</span></code>, or an empty or longer than 512 bytes <code class="docutils literal notranslate"><span class="pre">token</span></code>, returns <code class="docutils literal notranslate"><span class="pre">400</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/service_agents/push_devices/{id}</span></code> returns the deleted device. A device that does not exist, or that belongs to another agent or another customer, is reported identically as <code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">DEVICE_NOT_FOUND</span></code>.</p>
+<p>See <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent-push-device"><span class="std std-ref">Push device struct</span></a> for the response fields.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Both endpoints need an agent token (a token of a signed-in agent). An access key or any other non-agent token gets <code class="docutils literal notranslate"><span class="pre">401</span></code>. The <code class="docutils literal notranslate"><span class="pre">id</span></code> for the delete call is the <code class="docutils literal notranslate"><span class="pre">id</span></code> returned by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/push_devices</span></code>. The push token is a credential: store it only on the device and never log it.</p>
+</div>
+</section>
 <section id="call-to-agent">
 <h2>Call to agent<a class="headerlink" href="#call-to-agent" title="Link to this heading">¶</a></h2>
 <p>To reach an agent, VoIPBin employs a system that allows the agent to have multiple addresses. When a call is initiated to agents, VoIPBin generates calls to every agent’s address simultaneously. If an agent answers one of the calls, VoIPBin automatically terminates the other calls, streamlining the communication process and ensuring that only one connection is established with the available agent.</p>
@@ -1354,6 +1391,7 @@ receiving calls, check <code class="docutils literal notranslate"><span class="p
 <li><a class="reference internal" href="#agent-status">Agent Status</a></li>
 <li><a class="reference internal" href="#agent-tags-skills">Agent Tags (Skills)</a></li>
 <li><a class="reference internal" href="#contact-addresses">Contact Addresses</a></li>
+<li><a class="reference internal" href="#push-devices">Push Devices</a></li>
 <li><a class="reference internal" href="#call-to-agent">Call to agent</a></li>
 <li><a class="reference internal" href="#agent-lifecycle">Agent Lifecycle</a></li>
 <li><a class="reference internal" href="#how-agents-receive-queue-calls">How Agents Receive Queue Calls</a></li>
