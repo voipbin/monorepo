@@ -24,11 +24,11 @@ func (h *pushRingHandler) Close(ctx context.Context, sessionID uuid.UUID) error 
 // the late arrivals.
 //
 // With a confirmed winner only the tickets are deleted. At the window end a session without a recorded winner whose
-// confbridge holds two or more channels is a connected call: the notifications are cancelled and nothing else is
-// touched. Without a winner every path of the session ends: the
-// notifications are cancelled, the tickets are deleted, the calls of the session are hung up, the master call is hung
-// up with the no answer reason (window end only) and the confbridge is terminated, because a push only call leaves
-// the confbridge with no channel left, which the auto terminate of the last leave does not cover.
+// confbridge holds two or more channels (of any kind) is a connected call: the notifications are cancelled and nothing
+// else is touched. Without a winner every path of the session ends: the notifications are cancelled, the tickets are
+// deleted, the calls of the session are hung up, the master call is hung up with the no answer reason (window end
+// only) and the confbridge is terminated, because a push only call leaves the confbridge with no channel left, which
+// the auto terminate of the last leave does not cover.
 func (h *pushRingHandler) closeSession(ctx context.Context, sessionID uuid.UUID, hangupMaster bool) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "closeSession",
