@@ -243,13 +243,16 @@ func (e *contractEnv) listHistories(t *testing.T) {
 			t.Errorf("Wrong match. position %d expect: %s, got: %s %s", i, expect[i], h.ID, h.Key)
 		}
 	}
-	first := got[1]
-	if first.Action != "set" || !first.IsSecret || first.NewKeyVersion != 2 || first.Source != "api" ||
-		first.ActorID != e.actor || !first.TMCreate.Equal(at(10)) || first.OldValueJSON != nil || first.NewValueJSON != nil {
-		t.Errorf("Wrong match. got: %+v", first)
-	}
+	e.checkHistoryFields(t, got[1], at(10))
 
-	// walk with a limit of 2 and the cursor of the last row of each page
+	e.walkHistories(t, s, expect)
+
+	e.checkHistoryEdges(t, s, at(10), id(2), id(1), id(5))
+}
+
+// walkHistories walks the history of "k" with a limit of 2 and the cursor of the last row of each
+// page, and expects the rows in the given order.
+func (e *contractEnv) walkHistories(t *testing.T, s confighandler.Store, expect []uuid.UUID) {
 	var walked []uuid.UUID
 	cursor := confighandler.HistoryCursor{}
 	for page := 0; page < 10; page++ {
@@ -274,11 +277,23 @@ func (e *contractEnv) listHistories(t *testing.T) {
 			t.Errorf("Wrong match. position %d expect: %s, got: %s", i, expect[i], walked[i])
 		}
 	}
+}
 
+// checkHistoryFields checks the fields that a history row keeps (a secret row keeps no value).
+func (e *contractEnv) checkHistoryFields(t *testing.T, first *confighandler.History, at time.Time) {
+	if first.Action != "set" || !first.IsSecret || first.NewKeyVersion != 2 || first.Source != "api" ||
+		first.ActorID != e.actor || !first.TMCreate.Equal(at) || first.OldValueJSON != nil || first.NewValueJSON != nil {
+		t.Errorf("Wrong match. got: %+v", first)
+	}
+}
+
+// checkHistoryEdges checks that a cursor in another time zone selects the same rows, and that a key
+// without a change has no rows.
+func (e *contractEnv) checkHistoryEdges(t *testing.T, s confighandler.Store, at time.Time, after, expectFirst, expectSecond uuid.UUID) {
 	// a cursor in another time zone selects the same rows
 	zone := time.FixedZone("test", 9*60*60)
-	rows, err := s.ListHistories(e.ctx, "k", confighandler.HistoryCursor{TMCreate: at(10).In(zone), ID: id(2)}, 10)
-	if err != nil || len(rows) != 2 || rows[0].ID != id(1) || rows[1].ID != id(5) {
+	rows, err := s.ListHistories(e.ctx, "k", confighandler.HistoryCursor{TMCreate: at.In(zone), ID: after}, 10)
+	if err != nil || len(rows) != 2 || rows[0].ID != expectFirst || rows[1].ID != expectSecond {
 		t.Errorf("Wrong match. got: %v %v", rows, err)
 	}
 
