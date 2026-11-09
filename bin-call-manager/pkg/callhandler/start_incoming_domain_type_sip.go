@@ -18,6 +18,7 @@ import (
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/pushring"
 )
 
 // startIncomingDomainTypeSIP handles sip domain type incoming call.
@@ -84,6 +85,19 @@ func (h *callHandler) startIncomingDomainTypeSIPDirect(ctx context.Context, cn *
 
 	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeTel)
 
+	// a one-time join ticket of a push ring session. A value that is no ticket continues with the direct lookup.
+	if h.pushRingHandler != nil {
+		claim, errClaim := h.pushRingHandler.TicketClaim(ctx, hash)
+		if errClaim != nil {
+			log.Infof("The push ticket is refused. err: %v", errClaim)
+			_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
+			return nil
+		}
+		if claim != nil {
+			return h.startIncomingDomainTypeSIPDirectPushTicket(ctx, cn, claim, source)
+		}
+	}
+
 	// resolve hash to direct record
 	d, err := h.reqHandler.DirectV1DirectGetByHash(ctx, hash)
 	if err != nil {
@@ -114,6 +128,61 @@ func (h *callHandler) startIncomingDomainTypeSIPDirect(ctx context.Context, cn *
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
 		return nil
 	}
+}
+
+// startIncomingDomainTypeSIPDirectPushTicket handles the call of the app to the one-time join address of a push ring
+// session. The call runs a temporary flow that joins the confbridge of the session. The flow is bound to the ticket
+// before the call exists, so the call is recognized at its first join.
+//
+// A failure before the call exists leaves the ticket in use; it returns to issued by its own timeout (the retry of the
+// same device is allowed inside the window).
+func (h *callHandler) startIncomingDomainTypeSIPDirectPushTicket(ctx context.Context, cn *channel.Channel, claim *pushring.TicketClaim, source *commonaddress.Address) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "startIncomingDomainTypeSIPDirectPushTicket",
+		"channel_id": cn.ID,
+		"session_id": claim.SessionID,
+	})
+
+	s, err := h.pushRingHandler.TicketSessionGet(ctx, claim)
+	if err != nil {
+		log.Errorf("Could not get the session. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return nil
+	}
+
+	actions := []fmaction.Action{
+		{
+			Type: fmaction.TypeConfbridgeJoin,
+			Option: fmaction.ConvertOption(fmaction.OptionConfbridgeJoin{
+				ConfbridgeID: s.ConfbridgeID,
+			}),
+		},
+		{
+			// a join that is rejected ends the call.
+			Type: fmaction.TypeHangup,
+		},
+	}
+
+	f, err := h.reqHandler.FlowV1FlowCreate(ctx, s.CustomerID, fmflow.TypeFlow, "tmp", "tmp flow for push ring join", actions, uuid.Nil, false)
+	if err != nil {
+		log.Errorf("Could not create flow. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder)
+		return nil
+	}
+
+	if errBind := h.pushRingHandler.TicketBind(ctx, claim, f.ID); errBind != nil {
+		log.Errorf("Could not bind the ticket to the flow. err: %v", errBind)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder)
+		return nil
+	}
+
+	destination := &commonaddress.Address{
+		Type:   commonaddress.TypeExtension,
+		Target: s.ExtensionID.String(),
+	}
+
+	h.startCallTypeFlow(ctx, cn, s.CustomerID, f.ID, source, destination, nil)
+	return nil
 }
 
 // startIncomingDomainTypeSIPDirectExtension handles direct hash call routed to an extension.

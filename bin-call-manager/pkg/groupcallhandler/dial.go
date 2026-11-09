@@ -20,7 +20,7 @@ import (
 )
 
 // ReasonExtensionNotRegistered is the error reason returned when the destination extension has no registered contact.
-const ReasonExtensionNotRegistered = "EXTENSION_NOT_REGISTERED"
+const ReasonExtensionNotRegistered = groupcall.ReasonExtensionNotRegistered
 
 // dialNextDestination dials the next destination of the given groupcall.
 func (h *groupcallHandler) dialNextDestination(ctx context.Context, gc *groupcall.Groupcall) (*groupcall.Groupcall, error) {

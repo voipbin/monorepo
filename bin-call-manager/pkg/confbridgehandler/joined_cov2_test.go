@@ -34,6 +34,8 @@ func Test_Joined_cov2_errors(t *testing.T) {
 			setup: func(m *cov2Mocks) {
 				m.db.EXPECT().ConfbridgeAddChannelCallID(ctx, cov2CBID, cn.ID, cov2CallID).Return(errCov2)
 				m.channel.EXPECT().HangingUp(ctx, cn.ID, ari.ChannelCauseUnallocated).Return(nil, errCov2)
+				// the failure path looks at the flags of the confbridge to release a push ring lease.
+				m.db.EXPECT().ConfbridgeGet(ctx, cov2CBID).Return(cov2CB(nil), nil)
 			},
 		},
 		{
@@ -41,9 +43,11 @@ func Test_Joined_cov2_errors(t *testing.T) {
 			setup: func(m *cov2Mocks) {
 				cb := cov2CB(func(c *confbridge.Confbridge) { c.Type = confbridge.TypeConference })
 				m.db.EXPECT().ConfbridgeAddChannelCallID(ctx, cov2CBID, cn.ID, cov2CallID).Return(nil)
-				m.db.EXPECT().ConfbridgeGet(ctx, cov2CBID).Return(cb, nil)
+				m.db.EXPECT().ConfbridgeGet(ctx, cov2CBID).Return(cb, nil).Times(2) // the second one is the flag check of the failure path
 				m.notify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeJoined, &confbridge.EventConfbridgeJoined{Confbridge: *cb, JoinedCallID: cov2CallID})
 				m.req.EXPECT().CallV1CallUpdateConfbridgeID(ctx, cov2CallID, cov2CBID).Return(nil, errCov2)
+				// the channel is already in the bridge, so the failure ends it (VOIP-1693 C1).
+				m.channel.EXPECT().HangingUp(ctx, cn.ID, ari.ChannelCauseUnallocated).Return(&channel.Channel{}, nil)
 			},
 		},
 		{

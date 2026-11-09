@@ -15,9 +15,12 @@ import (
 func (h *eventHandler) EventHandlerChannelCreated(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelCreated)
 
+	// the dialplan extension of a push ring call is a one-time join ticket, so the logs get a masked copy.
+	logEvent := *e
+	logEvent.Channel.Dialplan.Exten = maskPushRingTicket(e.Channel.Dialplan.Exten)
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "EventHandlerChannelCreated",
-		"event": e,
+		"event": &logEvent,
 	})
 
 	tech := channel.GetTech(e.Channel.Name)
@@ -41,7 +44,9 @@ func (h *eventHandler) EventHandlerChannelCreated(ctx context.Context, evt inter
 		log.Errorf("Could not create a channel info. channel_id: %s, err: %v", cn.ID, err)
 		return err
 	}
-	log.WithField("channel", cn).Debugf("Created a channel info. channel_id: %s", cn.ID)
+	logChannel := *cn
+	logChannel.DestinationNumber = maskPushRingTicket(cn.DestinationNumber)
+	log.WithField("channel", &logChannel).Debugf("Created a channel info. channel_id: %s", cn.ID)
 
 	return nil
 }

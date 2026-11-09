@@ -34,24 +34,51 @@ func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br 
 	if err != nil {
 		log.Errorf("Could not add the channel/call info to the confbridge. err: %v", err)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseUnallocated)
+		h.pushRingReleaseByID(ctx, confbridgeID, callID)
 		return errors.Wrap(err, "could not add the confbridge's channel/call info")
 	}
 
 	c, err := h.reqHandler.CallV1CallUpdateConfbridgeID(ctx, callID, confbridgeID)
 	if err != nil {
 		log.Errorf("Could not update the confbridge id. call_id: %s, confbridge_id: %s", callID, confbridgeID)
+
+		// the channel is already in the bridge. Without the hangup the call would keep a channel in the confbridge that
+		// the confbridge does not know about.
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseUnallocated)
+		h.pushRingReleaseByID(ctx, confbridgeID, callID)
 		return errors.Wrap(err, "could not update the confbridge id")
 	}
 
-	switch cb.Type {
-	case confbridge.TypeConnect:
-		return h.joinedTypeConnect(ctx, cn.ID, c, cb)
-
-	case confbridge.TypeConference:
-		return h.joinedTypeConference(ctx, cn.ID, c, cb)
+	// a confbridge of a push ring session: the caller is marked as joined, a session call becomes the winner. A call
+	// that may not win is hung up before it is answered and its lease is released.
+	if h.flagExist(ctx, cb.Flags, confbridge.FlagPushRing) {
+		if errPush := h.pushRingHandler.Joined(ctx, cb, callID); errPush != nil {
+			log.Infof("The push ring session does not accept the join. err: %v", errPush)
+			_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseUnallocated)
+			h.pushRingHandler.Release(ctx, callID)
+			return errors.Wrap(errPush, "the push ring session does not accept the join")
+		}
 	}
 
-	return nil
+	var errType error
+	switch cb.Type {
+	case confbridge.TypeConnect:
+		errType = h.joinedTypeConnect(ctx, cn.ID, c, cb)
+
+	case confbridge.TypeConference:
+		errType = h.joinedTypeConference(ctx, cn.ID, c, cb)
+	}
+
+	if errType != nil && h.flagExist(ctx, cb.Flags, confbridge.FlagPushRing) {
+		// the join was accepted and a winner may be set, but the channel could not be handled. A winner that stays
+		// unanswered would keep the ring window without anyone on the line, so the channel is hung up. Its hangup ends
+		// the session.
+		log.Infof("The join of a push ring session failed after the accept. Hanging up. err: %v", errType)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseUnallocated)
+		h.pushRingHandler.Release(ctx, callID)
+	}
+
+	return errType
 }
 
 // joinedTypeConnect handles confbridge connect type joining channel
@@ -120,4 +147,17 @@ func (h *confbridgeHandler) joinedTypeConference(ctx context.Context, channelID 
 	}
 
 	return nil
+}
+
+// pushRingReleaseByID releases the lease of the call when the confbridge belongs to a push ring session. It runs only
+// on a failure path.
+func (h *confbridgeHandler) pushRingReleaseByID(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) {
+	cb, err := h.db.ConfbridgeGet(ctx, confbridgeID)
+	if err != nil {
+		return
+	}
+
+	if h.flagExist(ctx, cb.Flags, confbridge.FlagPushRing) {
+		h.pushRingHandler.Release(ctx, callID)
+	}
 }

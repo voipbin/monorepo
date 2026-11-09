@@ -84,6 +84,11 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) (*call.Ca
 		return cur, nil
 	}
 
+	// the call really ended. A call of a push ring session closes the session or releases what it held.
+	if h.pushRingHandler != nil {
+		h.pushRingHandler.CallHangup(ctx, res)
+	}
+
 	// RTP debug: stop recording if enabled for this call
 	if rtpDebug, _ := res.Metadata[call.MetadataKeyRTPDebug].(bool); rtpDebug {
 		h.rtpDebugStopRecording(ctx, res)

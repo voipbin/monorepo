@@ -19,6 +19,7 @@ import (
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
 	"monorepo/bin-call-manager/pkg/outboundconfighandler"
+	"monorepo/bin-call-manager/pkg/pushringhandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -78,12 +79,19 @@ func initCallHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (callhandle
 	bridgeHandler := bridgehandler.NewBridgeHandler(reqHandler, notifyHandler, db)
 	externalMediaHandler := externalmediahandler.NewExternalMediaHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler, cache, config.Get().AsteriskWSPort)
 	recordingHandlerInst := recordinghandler.NewRecordingHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler)
-	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, channelHandler, bridgeHandler, recordingHandlerInst, externalMediaHandler)
+	pushRingHandler := pushringhandler.NewPushRingHandler(reqHandler, db, cache)
+	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, channelHandler, bridgeHandler, recordingHandlerInst, externalMediaHandler, pushRingHandler)
 	groupcallHandler := groupcallhandler.NewGroupcallHandler(reqHandler, notifyHandler, db)
 	recoveryHandler := callhandler.NewRecoveryHandler(reqHandler, config.Get().HomerAPIAddress, config.Get().HomerAuthToken, config.Get().HomerWhitelist)
 	outboundConfigHandlerInst := outboundconfighandler.NewOutboundConfigHandler(utilhandler.NewUtilHandler(), db, cache, reqHandler)
 
-	return callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandlerInst, externalMediaHandler, groupcallHandler, recoveryHandler, outboundConfigHandlerInst), nil
+	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandlerInst, externalMediaHandler, groupcallHandler, recoveryHandler, outboundConfigHandlerInst, pushRingHandler)
+	pushRingHandler.SetHangup(func(ctx context.Context, id uuid.UUID, reason call.HangupReason) error {
+		_, errHangup := callHandler.HangingUp(ctx, id, reason)
+		return errHangup
+	})
+
+	return callHandler, nil
 }
 
 func initCommand() *cobra.Command {

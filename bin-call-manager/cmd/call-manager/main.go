@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"net/http"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
@@ -26,6 +28,7 @@ import (
 
 	"monorepo/bin-call-manager/internal/config"
 	"monorepo/bin-call-manager/migrations"
+	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-call-manager/pkg/arieventhandler"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
@@ -38,6 +41,7 @@ import (
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
 	"monorepo/bin-call-manager/pkg/listenhandler"
 	"monorepo/bin-call-manager/pkg/outboundconfighandler"
+	"monorepo/bin-call-manager/pkg/pushringhandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
 	"monorepo/bin-call-manager/pkg/subscribehandler"
 )
@@ -153,11 +157,17 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	bridgeHandler := bridgehandler.NewBridgeHandler(reqHandler, notifyHandler, db)
 	externalMediaHandler := externalmediahandler.NewExternalMediaHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler, cache, cfg.AsteriskWSPort)
 	recordingHandler := recordinghandler.NewRecordingHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler)
-	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
+	pushRingHandler := pushringhandler.NewPushRingHandler(reqHandler, db, cache)
+	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler, pushRingHandler)
 	groupcallHandler := groupcallhandler.NewGroupcallHandler(reqHandler, notifyHandler, db)
 	recoveryHandler := callhandler.NewRecoveryHandler(reqHandler, cfg.HomerAPIAddress, cfg.HomerAuthToken, cfg.HomerWhitelist)
 	outboundConfigHandler := outboundconfighandler.NewOutboundConfigHandler(utilhandler.NewUtilHandler(), db, cache, reqHandler)
-	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler, groupcallHandler, recoveryHandler, outboundConfigHandler)
+	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler, groupcallHandler, recoveryHandler, outboundConfigHandler, pushRingHandler)
+	// the call handler is built after the push ring handler, which needs it to hang up calls.
+	pushRingHandler.SetHangup(func(ctx context.Context, id uuid.UUID, reason call.HangupReason) error {
+		_, errHangup := callHandler.HangingUp(ctx, id, reason)
+		return errHangup
+	})
 	ariEventHandler := arieventhandler.NewEventHandler(sockHandler, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 
 	// run subscribe listener
@@ -166,7 +176,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	}
 
 	// run request listener
-	if errListen := runRequestListen(sockHandler, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler, outboundConfigHandler); errListen != nil {
+	if errListen := runRequestListen(sockHandler, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler, outboundConfigHandler, pushRingHandler); errListen != nil {
 		return errors.Wrapf(errListen, "could not start request listener correctly")
 	}
 
@@ -208,8 +218,9 @@ func runRequestListen(
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 	groupcallHandler groupcallhandler.GroupcallHandler,
 	outboundConfigHandler outboundconfighandler.OutboundConfigHandler,
+	pushRingHandler pushringhandler.PushRingHandler,
 ) error {
-	listenHandler := listenhandler.NewListenHandler(sockHandler, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler, outboundConfigHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler, outboundConfigHandler, pushRingHandler)
 
 	// run
 	if errRun := listenHandler.Run(string(commonoutline.QueueNameCallRequest), string(commonoutline.QueueNameDelay)); errRun != nil {

@@ -16,6 +16,7 @@ import (
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	cmoutboundconfig "monorepo/bin-call-manager/models/outboundconfig"
+	cmpushring "monorepo/bin-call-manager/models/pushring"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	ememail "monorepo/bin-email-manager/models/email"
 
@@ -698,6 +699,18 @@ type RequestHandler interface {
 	CallV1ExternalMediaStop(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
 
 	// call-manager groupcall
+	CallV1PushRingStart(
+		ctx context.Context,
+		customerID uuid.UUID,
+		destination commonaddress.Address,
+		confbridgeID uuid.UUID,
+		masterCallID uuid.UUID,
+		flowID uuid.UUID,
+		source commonaddress.Address,
+	) (*cmpushring.StartResult, error)
+	CallV1PushRingExpire(ctx context.Context, sessionID uuid.UUID, delay int) error
+	CallV1PushRingClose(ctx context.Context, sessionID uuid.UUID) error
+
 	CallV1GroupcallCreate(
 		ctx context.Context,
 		id uuid.UUID,

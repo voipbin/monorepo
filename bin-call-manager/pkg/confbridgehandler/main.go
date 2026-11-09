@@ -28,6 +28,7 @@ import (
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
+	"monorepo/bin-call-manager/pkg/pushringhandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
 )
 
@@ -100,6 +101,7 @@ type confbridgeHandler struct {
 	bridgeHandler        bridgehandler.BridgeHandler
 	recordingHandler     recordinghandler.RecordingHandler
 	externalMediaHandler externalmediahandler.ExternalMediaHandler
+	pushRingHandler      pushringhandler.PushRingHandler
 }
 
 var (
@@ -160,6 +162,7 @@ func NewConfbridgeHandler(
 	bridgeHandler bridgehandler.BridgeHandler,
 	recordingHandler recordinghandler.RecordingHandler,
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
+	pushRingHandler pushringhandler.PushRingHandler,
 ) ConfbridgeHandler {
 
 	h := &confbridgeHandler{
@@ -172,6 +175,7 @@ func NewConfbridgeHandler(
 		bridgeHandler:        bridgeHandler,
 		recordingHandler:     recordingHandler,
 		externalMediaHandler: externalMediaHandler,
+		pushRingHandler:      pushRingHandler,
 	}
 
 	return h

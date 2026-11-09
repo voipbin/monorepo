@@ -73,4 +73,5 @@ type Flag string
 // list of flags
 const (
 	FlagNoAutoLeave Flag = "no_auto_leave" // blocks auto leave for connect type of confbridge. if this sets, it blocks the last call leave in the confbridge.
+	FlagPushRing    Flag = "push_ring"     // the confbridge belongs to a push ring session. only a flagged confbridge reads the session on a join.
 )
