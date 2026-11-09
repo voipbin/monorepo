@@ -541,18 +541,29 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 		}
 	}
 
+	// a single extension destination may also be answered by the app through a push notification.
+	ring := h.connectPushRingStart(ctx, af, cb.ID, f.ID, &opt)
+
 	// create a call for connect
 	resCalls, resGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, f.CustomerID, f.ID, af.ReferenceID, &opt.Source, opt.Destinations, earlyExecution, executeNext, opt.Anonymous, nil, nil)
+	pushOnly := false
 	if err != nil {
-		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
-		return err
+		if !ring.pushOnlyAllowed(err) {
+			log.Errorf("Could not create a outgoing call for connect. err: %v", err)
+			h.connectPushRingClose(ctx, ring)
+			return err
+		}
+
+		// no registered contact, but the app can answer: the caller waits in the confbridge for the push.
+		log.Infof("The extension has no registered contact. Continuing with the push ring session only. session_id: %s", ring.sessionID)
+		pushOnly = true
 	}
 	log.WithFields(logrus.Fields{
 		"calls":      resCalls,
 		"groupcalls": resGroupcalls,
 	}).Debugf("Created outgoing calls for connect. call_count: %d, groupcall_count: %d", len(resCalls), len(resGroupcalls))
 
-	if len(resCalls) == 0 && len(resGroupcalls) == 0 {
+	if !pushOnly && len(resCalls) == 0 && len(resGroupcalls) == 0 {
 		log.WithFields(logrus.Fields{
 			"calls":      resCalls,
 			"groupcalls": resGroupcalls,
@@ -572,7 +583,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 		},
 	}
 
-	if len(resGroupcalls) == 0 && opt.RelayReason {
+	if !pushOnly && len(resGroupcalls) == 0 && opt.RelayReason {
 		// get reference id
 		// we consider the first call of get the reference
 		referenceID := resCalls[0].ID

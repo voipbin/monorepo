@@ -19,6 +19,7 @@ import (
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
 	"monorepo/bin-call-manager/pkg/outboundconfighandler"
+	"monorepo/bin-call-manager/pkg/pushringhandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
 )
 
@@ -62,14 +63,15 @@ func Test_runSubscribe(t *testing.T) {
 }
 
 func Test_runRequestListen(t *testing.T) {
-	newHandlers := func(mc *gomock.Controller) (callhandler.CallHandler, confbridgehandler.ConfbridgeHandler, channelhandler.ChannelHandler, recordinghandler.RecordingHandler, externalmediahandler.ExternalMediaHandler, groupcallhandler.GroupcallHandler, outboundconfighandler.OutboundConfigHandler) {
+	newHandlers := func(mc *gomock.Controller) (callhandler.CallHandler, confbridgehandler.ConfbridgeHandler, channelhandler.ChannelHandler, recordinghandler.RecordingHandler, externalmediahandler.ExternalMediaHandler, groupcallhandler.GroupcallHandler, outboundconfighandler.OutboundConfigHandler, pushringhandler.PushRingHandler) {
 		return callhandler.NewMockCallHandler(mc),
 			confbridgehandler.NewMockConfbridgeHandler(mc),
 			channelhandler.NewMockChannelHandler(mc),
 			recordinghandler.NewMockRecordingHandler(mc),
 			externalmediahandler.NewMockExternalMediaHandler(mc),
 			groupcallhandler.NewMockGroupcallHandler(mc),
-			outboundconfighandler.NewMockOutboundConfigHandler(mc)
+			outboundconfighandler.NewMockOutboundConfigHandler(mc),
+			pushringhandler.NewMockPushRingHandler(mc)
 	}
 
 	t.Run("queue create failure is reported", func(t *testing.T) {
@@ -79,8 +81,8 @@ func Test_runRequestListen(t *testing.T) {
 		mockSock := sockhandler.NewMockSockHandler(mc)
 		mockSock.EXPECT().QueueCreate(string(commonoutline.QueueNameCallRequest), "normal").Return(fmt.Errorf("broker unavailable"))
 
-		call, conf, channel, rec, ext, group, outbound := newHandlers(mc)
-		err := runRequestListen(mockSock, call, conf, channel, rec, ext, group, outbound)
+		call, conf, channel, rec, ext, group, outbound, pushRing := newHandlers(mc)
+		err := runRequestListen(mockSock, call, conf, channel, rec, ext, group, outbound, pushRing)
 		if err == nil || !strings.Contains(err.Error(), "could not run the listenhandler correctly") || !strings.Contains(err.Error(), "broker unavailable") {
 			t.Errorf("Wrong match. expect: listen handler error with the cause, got: %v", err)
 		}
@@ -100,8 +102,8 @@ func Test_runRequestListen(t *testing.T) {
 				return nil
 			})
 
-		call, conf, channel, rec, ext, group, outbound := newHandlers(mc)
-		if err := runRequestListen(mockSock, call, conf, channel, rec, ext, group, outbound); err != nil {
+		call, conf, channel, rec, ext, group, outbound, pushRing := newHandlers(mc)
+		if err := runRequestListen(mockSock, call, conf, channel, rec, ext, group, outbound, pushRing); err != nil {
 			t.Fatalf("Wrong match. expect: ok, got: %v", err)
 		}
 

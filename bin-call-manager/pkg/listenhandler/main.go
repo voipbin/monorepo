@@ -28,6 +28,7 @@ import (
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
 	"monorepo/bin-call-manager/pkg/outboundconfighandler"
+	"monorepo/bin-call-manager/pkg/pushringhandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
 )
 
@@ -52,6 +53,7 @@ type listenHandler struct {
 	externalMediaHandler  externalmediahandler.ExternalMediaHandler
 	groupcallHandler      groupcallhandler.GroupcallHandler
 	outboundConfigHandler outboundconfighandler.OutboundConfigHandler
+	pushRingHandler       pushringhandler.PushRingHandler
 }
 
 var (
@@ -122,6 +124,11 @@ var (
 
 	// recovery
 	regV1Recovery = regexp.MustCompile("/v1/recovery$")
+
+	// push-rings
+	regV1PushRings         = regexp.MustCompile("/v1/push-rings$")
+	regV1PushRingsIDExpire = regexp.MustCompile("/v1/push-rings/" + regUUID + "/expire$")
+	regV1PushRingsIDClose  = regexp.MustCompile("/v1/push-rings/" + regUUID + "/close$")
 
 	// recordings
 	regV1RecordingsGet    = regexp.MustCompile(`/v1/recordings\?`)
@@ -208,6 +215,7 @@ func NewListenHandler(
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 	groupcallHandler groupcallhandler.GroupcallHandler,
 	outboundConfigHandler outboundconfighandler.OutboundConfigHandler,
+	pushRingHandler pushringhandler.PushRingHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		utilHandler:           utilhandler.NewUtilHandler(),
@@ -219,6 +227,7 @@ func NewListenHandler(
 		externalMediaHandler:  externalMediaHandler,
 		groupcallHandler:      groupcallHandler,
 		outboundConfigHandler: outboundConfigHandler,
+		pushRingHandler:       pushRingHandler,
 	}
 
 	return h
@@ -609,6 +618,24 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Recovery.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1RecoveryPost(ctx, m)
 		requestType = "/v1/recovery"
+
+	//////////////
+	// push-rings
+	//////////////
+	// POST /push-rings
+	case regV1PushRings.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1PushRingsPost(ctx, m)
+		requestType = "/v1/push-rings"
+
+	// POST /push-rings/<push-ring-id>/expire
+	case regV1PushRingsIDExpire.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1PushRingsIDExpirePost(ctx, m)
+		requestType = "/v1/push-rings/<push-ring-id>/expire"
+
+	// POST /push-rings/<push-ring-id>/close
+	case regV1PushRingsIDClose.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1PushRingsIDClosePost(ctx, m)
+		requestType = "/v1/push-rings/<push-ring-id>/close"
 
 	//////////////
 	// recordings

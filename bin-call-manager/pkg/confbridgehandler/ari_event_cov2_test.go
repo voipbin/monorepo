@@ -50,6 +50,8 @@ func Test_ARIChannelEnteredBridge_cov2(t *testing.T) {
 			if tt.expectHup {
 				m.db.EXPECT().ConfbridgeAddChannelCallID(ctx, cov2CBID, tt.cn.ID, cov2CallID).Return(tt.addErr)
 				m.channel.EXPECT().HangingUp(ctx, tt.cn.ID, ari.ChannelCauseUnallocated).Return(&channel.Channel{}, nil)
+				// the failure path looks at the flags of the confbridge to release a push ring lease.
+				m.db.EXPECT().ConfbridgeGet(ctx, cov2CBID).Return(cov2CB(nil), nil)
 			}
 
 			err := h.ARIChannelEnteredBridge(ctx, tt.cn, &bridge.Bridge{ID: "c2-bridge-1"})

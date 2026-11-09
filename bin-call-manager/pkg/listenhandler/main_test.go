@@ -25,6 +25,7 @@ import (
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
 	"monorepo/bin-call-manager/pkg/outboundconfighandler"
+	"monorepo/bin-call-manager/pkg/pushringhandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
 )
 
@@ -40,6 +41,7 @@ func TestNewListenHandler(t *testing.T) {
 	mockExternalMedia := externalmediahandler.NewMockExternalMediaHandler(mc)
 	mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 	mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
+	mockPushRing := pushringhandler.NewMockPushRingHandler(mc)
 
 	h := NewListenHandler(
 		mockSock,
@@ -50,6 +52,7 @@ func TestNewListenHandler(t *testing.T) {
 		mockExternalMedia,
 		mockGroupcall,
 		mockOutboundConfig,
+		mockPushRing,
 	)
 
 	if h == nil {

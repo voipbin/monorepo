@@ -203,6 +203,7 @@ func TestFlagConstants(t *testing.T) {
 		expected string
 	}{
 		{"flag_no_auto_leave", FlagNoAutoLeave, "no_auto_leave"},
+		{"flag_push_ring", FlagPushRing, "push_ring"},
 	}
 
 	for _, tt := range tests {

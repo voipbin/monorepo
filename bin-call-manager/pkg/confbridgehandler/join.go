@@ -19,7 +19,7 @@ import (
 // Join handles call's join request.
 // 1. Creates a bridge(confbridge joining type) and put the call's channel into the bridge
 // 2. Creates a new channel for joining to the confbridge.
-func (h *confbridgeHandler) Join(ctx context.Context, id uuid.UUID, callID uuid.UUID) error {
+func (h *confbridgeHandler) Join(ctx context.Context, id uuid.UUID, callID uuid.UUID) (err error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "Join",
 		"confbridge_id": id,
@@ -39,6 +39,22 @@ func (h *confbridgeHandler) Join(ctx context.Context, id uuid.UUID, callID uuid.
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
 		return errors.Wrap(err, "could not get call info")
+	}
+
+	// a confbridge of a push ring session lets only one path of the session join. The gate reads the session only for
+	// a confbridge that the start of a session marked, so ordinary confbridges never touch it.
+	if h.flagExist(ctx, cb.Flags, confbridge.FlagPushRing) {
+		if errGate := h.pushRingHandler.JoinGate(ctx, cb, callID); errGate != nil {
+			log.Infof("The join is refused by the push ring session. err: %v", errGate)
+			return errGate
+		}
+
+		// the lease is released when the join does not go on.
+		defer func() {
+			if err != nil {
+				h.pushRingHandler.Release(ctx, callID)
+			}
+		}()
 	}
 
 	// check the confbridge's bridge does exist

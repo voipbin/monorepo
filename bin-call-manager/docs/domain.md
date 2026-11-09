@@ -54,6 +54,10 @@ Answer methods: `hangup_others` (when one answers, hang up the rest), `none` (do
 
 Statuses: `progressing`, `hangingup`, `hangup`.
 
+### PushRing (cache only)
+
+A push ring session owns the ring window of an incoming extension call that the mobile app of the agent can answer through a push notification while the registered SIP legs ring. The session lives only in Redis (`call:pushring:*`, `call:pushticket:*`), every state change is a single Lua script, and the keys expire after the window plus the redundant expire delay. Each device gets a one-time join ticket (`direct.` plus 32 hex characters) that is stored as a sha256 hash and claimed on the incoming direct INVITE. The first path to enter the confbridge wins; the others are cancelled when the window ends.
+
 ### OutboundConfig
 
 Per-customer configuration for outbound dialing: source number override, permitted codec list, and SIP-provider constraints. Looked up at call creation time.

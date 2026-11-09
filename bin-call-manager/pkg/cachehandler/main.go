@@ -17,6 +17,7 @@ import (
 	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/models/groupcall"
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
+	"monorepo/bin-call-manager/models/pushring"
 	"monorepo/bin-call-manager/models/recording"
 )
 
@@ -58,6 +59,22 @@ type CacheHandler interface {
 
 	ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	ConfbridgeSet(ctx context.Context, data *confbridge.Confbridge) error
+
+	PushRingSessionCreate(ctx context.Context, s *pushring.Session) error
+	PushRingSessionGet(ctx context.Context, id uuid.UUID) (*pushring.Session, error)
+	PushRingSessionIDGet(ctx context.Context, kind string, id uuid.UUID) (uuid.UUID, error)
+	PushRingSessionIDsGet(ctx context.Context, masterCallID, flowID uuid.UUID) (uuid.UUID, uuid.UUID, error)
+	PushRingLeaseTake(ctx context.Context, sessionID, callID uuid.UUID, now, until time.Time) (bool, error)
+	PushRingLeaseRelease(ctx context.Context, sessionID, callID uuid.UUID) error
+	PushRingConfirm(ctx context.Context, sessionID, callID uuid.UUID, now time.Time, winner string) (bool, error)
+	PushRingCallerJoined(ctx context.Context, sessionID uuid.UUID) error
+	PushRingFailed(ctx context.Context, sessionID uuid.UUID) (bool, error)
+	PushRingClose(ctx context.Context, sessionID uuid.UUID) (*pushring.Session, error)
+	PushRingTicketClaim(ctx context.Context, ticketHash string, now, inUseUntil time.Time) (*pushring.TicketClaim, error)
+	PushRingTicketBind(ctx context.Context, sessionID, flowID uuid.UUID, ticketHash string) error
+	PushRingTicketReturn(ctx context.Context, sessionID, flowID uuid.UUID) error
+	PushRingTicketConsume(ctx context.Context, sessionID, flowID uuid.UUID) error
+	PushRingTicketsDelete(ctx context.Context, s *pushring.Session, exceptDeviceID uuid.UUID) error
 
 	GroupcallGet(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
 	GroupcallSet(ctx context.Context, data *groupcall.Groupcall) error

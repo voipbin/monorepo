@@ -36,6 +36,7 @@ import (
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
 	"monorepo/bin-call-manager/pkg/outboundconfighandler"
+	"monorepo/bin-call-manager/pkg/pushringhandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
 )
 
@@ -162,6 +163,7 @@ type callHandler struct {
 	groupcallHandler      groupcallhandler.GroupcallHandler
 	recoveryHandler       RecoveryHandler
 	outboundConfigHandler outboundconfighandler.OutboundConfigHandler
+	pushRingHandler       pushringhandler.PushRingHandler
 }
 
 // contextType
@@ -317,6 +319,7 @@ func NewCallHandler(
 	groupcallHandler groupcallhandler.GroupcallHandler,
 	recoveryHandler RecoveryHandler,
 	outboundConfigHandler outboundconfighandler.OutboundConfigHandler,
+	pushRingHandler pushringhandler.PushRingHandler,
 ) CallHandler {
 
 	h := &callHandler{
@@ -332,6 +335,7 @@ func NewCallHandler(
 		groupcallHandler:      groupcallHandler,
 		recoveryHandler:       recoveryHandler,
 		outboundConfigHandler: outboundConfigHandler,
+		pushRingHandler:       pushRingHandler,
 	}
 
 	return h

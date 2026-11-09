@@ -37,6 +37,7 @@ import (
 	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	groupcall "monorepo/bin-call-manager/models/groupcall"
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
+	pushring "monorepo/bin-call-manager/models/pushring"
 	recording "monorepo/bin-call-manager/models/recording"
 	campaign "monorepo/bin-campaign-manager/models/campaign"
 	campaigncall "monorepo/bin-campaign-manager/models/campaigncall"
@@ -3055,6 +3056,49 @@ func (m *MockRequestHandler) CallV1OutboundConfigUpdate(ctx context.Context, id 
 func (mr *MockRequestHandlerMockRecorder) CallV1OutboundConfigUpdate(ctx, id, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1OutboundConfigUpdate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1OutboundConfigUpdate), ctx, id, req)
+}
+
+// CallV1PushRingClose mocks base method.
+func (m *MockRequestHandler) CallV1PushRingClose(ctx context.Context, sessionID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1PushRingClose", ctx, sessionID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1PushRingClose indicates an expected call of CallV1PushRingClose.
+func (mr *MockRequestHandlerMockRecorder) CallV1PushRingClose(ctx, sessionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1PushRingClose", reflect.TypeOf((*MockRequestHandler)(nil).CallV1PushRingClose), ctx, sessionID)
+}
+
+// CallV1PushRingExpire mocks base method.
+func (m *MockRequestHandler) CallV1PushRingExpire(ctx context.Context, sessionID uuid.UUID, delay int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1PushRingExpire", ctx, sessionID, delay)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1PushRingExpire indicates an expected call of CallV1PushRingExpire.
+func (mr *MockRequestHandlerMockRecorder) CallV1PushRingExpire(ctx, sessionID, delay any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1PushRingExpire", reflect.TypeOf((*MockRequestHandler)(nil).CallV1PushRingExpire), ctx, sessionID, delay)
+}
+
+// CallV1PushRingStart mocks base method.
+func (m *MockRequestHandler) CallV1PushRingStart(ctx context.Context, customerID uuid.UUID, destination address.Address, confbridgeID, masterCallID, flowID uuid.UUID, source address.Address) (*pushring.StartResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1PushRingStart", ctx, customerID, destination, confbridgeID, masterCallID, flowID, source)
+	ret0, _ := ret[0].(*pushring.StartResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1PushRingStart indicates an expected call of CallV1PushRingStart.
+func (mr *MockRequestHandlerMockRecorder) CallV1PushRingStart(ctx, customerID, destination, confbridgeID, masterCallID, flowID, source any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1PushRingStart", reflect.TypeOf((*MockRequestHandler)(nil).CallV1PushRingStart), ctx, customerID, destination, confbridgeID, masterCallID, flowID, source)
 }
 
 // CallV1RecordingDelete mocks base method.

@@ -19,6 +19,7 @@ import (
 	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	groupcall "monorepo/bin-call-manager/models/groupcall"
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
+	pushring "monorepo/bin-call-manager/models/pushring"
 	recording "monorepo/bin-call-manager/models/recording"
 	reflect "reflect"
 	time "time"
@@ -426,6 +427,225 @@ func (m *MockCacheHandler) OutboundConfigSetNotFound(ctx context.Context, custom
 func (mr *MockCacheHandlerMockRecorder) OutboundConfigSetNotFound(ctx, customerID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigSetNotFound", reflect.TypeOf((*MockCacheHandler)(nil).OutboundConfigSetNotFound), ctx, customerID)
+}
+
+// PushRingCallerJoined mocks base method.
+func (m *MockCacheHandler) PushRingCallerJoined(ctx context.Context, sessionID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingCallerJoined", ctx, sessionID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PushRingCallerJoined indicates an expected call of PushRingCallerJoined.
+func (mr *MockCacheHandlerMockRecorder) PushRingCallerJoined(ctx, sessionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingCallerJoined", reflect.TypeOf((*MockCacheHandler)(nil).PushRingCallerJoined), ctx, sessionID)
+}
+
+// PushRingClose mocks base method.
+func (m *MockCacheHandler) PushRingClose(ctx context.Context, sessionID uuid.UUID) (*pushring.Session, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingClose", ctx, sessionID)
+	ret0, _ := ret[0].(*pushring.Session)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushRingClose indicates an expected call of PushRingClose.
+func (mr *MockCacheHandlerMockRecorder) PushRingClose(ctx, sessionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingClose", reflect.TypeOf((*MockCacheHandler)(nil).PushRingClose), ctx, sessionID)
+}
+
+// PushRingConfirm mocks base method.
+func (m *MockCacheHandler) PushRingConfirm(ctx context.Context, sessionID, callID uuid.UUID, now time.Time, winner string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingConfirm", ctx, sessionID, callID, now, winner)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushRingConfirm indicates an expected call of PushRingConfirm.
+func (mr *MockCacheHandlerMockRecorder) PushRingConfirm(ctx, sessionID, callID, now, winner any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingConfirm", reflect.TypeOf((*MockCacheHandler)(nil).PushRingConfirm), ctx, sessionID, callID, now, winner)
+}
+
+// PushRingFailed mocks base method.
+func (m *MockCacheHandler) PushRingFailed(ctx context.Context, sessionID uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingFailed", ctx, sessionID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushRingFailed indicates an expected call of PushRingFailed.
+func (mr *MockCacheHandlerMockRecorder) PushRingFailed(ctx, sessionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingFailed", reflect.TypeOf((*MockCacheHandler)(nil).PushRingFailed), ctx, sessionID)
+}
+
+// PushRingLeaseRelease mocks base method.
+func (m *MockCacheHandler) PushRingLeaseRelease(ctx context.Context, sessionID, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingLeaseRelease", ctx, sessionID, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PushRingLeaseRelease indicates an expected call of PushRingLeaseRelease.
+func (mr *MockCacheHandlerMockRecorder) PushRingLeaseRelease(ctx, sessionID, callID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingLeaseRelease", reflect.TypeOf((*MockCacheHandler)(nil).PushRingLeaseRelease), ctx, sessionID, callID)
+}
+
+// PushRingLeaseTake mocks base method.
+func (m *MockCacheHandler) PushRingLeaseTake(ctx context.Context, sessionID, callID uuid.UUID, now, until time.Time) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingLeaseTake", ctx, sessionID, callID, now, until)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushRingLeaseTake indicates an expected call of PushRingLeaseTake.
+func (mr *MockCacheHandlerMockRecorder) PushRingLeaseTake(ctx, sessionID, callID, now, until any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingLeaseTake", reflect.TypeOf((*MockCacheHandler)(nil).PushRingLeaseTake), ctx, sessionID, callID, now, until)
+}
+
+// PushRingSessionCreate mocks base method.
+func (m *MockCacheHandler) PushRingSessionCreate(ctx context.Context, s *pushring.Session) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingSessionCreate", ctx, s)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PushRingSessionCreate indicates an expected call of PushRingSessionCreate.
+func (mr *MockCacheHandlerMockRecorder) PushRingSessionCreate(ctx, s any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingSessionCreate", reflect.TypeOf((*MockCacheHandler)(nil).PushRingSessionCreate), ctx, s)
+}
+
+// PushRingSessionGet mocks base method.
+func (m *MockCacheHandler) PushRingSessionGet(ctx context.Context, id uuid.UUID) (*pushring.Session, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingSessionGet", ctx, id)
+	ret0, _ := ret[0].(*pushring.Session)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushRingSessionGet indicates an expected call of PushRingSessionGet.
+func (mr *MockCacheHandlerMockRecorder) PushRingSessionGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingSessionGet", reflect.TypeOf((*MockCacheHandler)(nil).PushRingSessionGet), ctx, id)
+}
+
+// PushRingSessionIDGet mocks base method.
+func (m *MockCacheHandler) PushRingSessionIDGet(ctx context.Context, kind string, id uuid.UUID) (uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingSessionIDGet", ctx, kind, id)
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushRingSessionIDGet indicates an expected call of PushRingSessionIDGet.
+func (mr *MockCacheHandlerMockRecorder) PushRingSessionIDGet(ctx, kind, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingSessionIDGet", reflect.TypeOf((*MockCacheHandler)(nil).PushRingSessionIDGet), ctx, kind, id)
+}
+
+// PushRingSessionIDsGet mocks base method.
+func (m *MockCacheHandler) PushRingSessionIDsGet(ctx context.Context, masterCallID, flowID uuid.UUID) (uuid.UUID, uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingSessionIDsGet", ctx, masterCallID, flowID)
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(uuid.UUID)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// PushRingSessionIDsGet indicates an expected call of PushRingSessionIDsGet.
+func (mr *MockCacheHandlerMockRecorder) PushRingSessionIDsGet(ctx, masterCallID, flowID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingSessionIDsGet", reflect.TypeOf((*MockCacheHandler)(nil).PushRingSessionIDsGet), ctx, masterCallID, flowID)
+}
+
+// PushRingTicketBind mocks base method.
+func (m *MockCacheHandler) PushRingTicketBind(ctx context.Context, sessionID, flowID uuid.UUID, ticketHash string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingTicketBind", ctx, sessionID, flowID, ticketHash)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PushRingTicketBind indicates an expected call of PushRingTicketBind.
+func (mr *MockCacheHandlerMockRecorder) PushRingTicketBind(ctx, sessionID, flowID, ticketHash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingTicketBind", reflect.TypeOf((*MockCacheHandler)(nil).PushRingTicketBind), ctx, sessionID, flowID, ticketHash)
+}
+
+// PushRingTicketClaim mocks base method.
+func (m *MockCacheHandler) PushRingTicketClaim(ctx context.Context, ticketHash string, now, inUseUntil time.Time) (*pushring.TicketClaim, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingTicketClaim", ctx, ticketHash, now, inUseUntil)
+	ret0, _ := ret[0].(*pushring.TicketClaim)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushRingTicketClaim indicates an expected call of PushRingTicketClaim.
+func (mr *MockCacheHandlerMockRecorder) PushRingTicketClaim(ctx, ticketHash, now, inUseUntil any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingTicketClaim", reflect.TypeOf((*MockCacheHandler)(nil).PushRingTicketClaim), ctx, ticketHash, now, inUseUntil)
+}
+
+// PushRingTicketConsume mocks base method.
+func (m *MockCacheHandler) PushRingTicketConsume(ctx context.Context, sessionID, flowID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingTicketConsume", ctx, sessionID, flowID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PushRingTicketConsume indicates an expected call of PushRingTicketConsume.
+func (mr *MockCacheHandlerMockRecorder) PushRingTicketConsume(ctx, sessionID, flowID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingTicketConsume", reflect.TypeOf((*MockCacheHandler)(nil).PushRingTicketConsume), ctx, sessionID, flowID)
+}
+
+// PushRingTicketReturn mocks base method.
+func (m *MockCacheHandler) PushRingTicketReturn(ctx context.Context, sessionID, flowID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingTicketReturn", ctx, sessionID, flowID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PushRingTicketReturn indicates an expected call of PushRingTicketReturn.
+func (mr *MockCacheHandlerMockRecorder) PushRingTicketReturn(ctx, sessionID, flowID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingTicketReturn", reflect.TypeOf((*MockCacheHandler)(nil).PushRingTicketReturn), ctx, sessionID, flowID)
+}
+
+// PushRingTicketsDelete mocks base method.
+func (m *MockCacheHandler) PushRingTicketsDelete(ctx context.Context, s *pushring.Session, exceptDeviceID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushRingTicketsDelete", ctx, s, exceptDeviceID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PushRingTicketsDelete indicates an expected call of PushRingTicketsDelete.
+func (mr *MockCacheHandlerMockRecorder) PushRingTicketsDelete(ctx, s, exceptDeviceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushRingTicketsDelete", reflect.TypeOf((*MockCacheHandler)(nil).PushRingTicketsDelete), ctx, s, exceptDeviceID)
 }
 
 // RecordingGet mocks base method.

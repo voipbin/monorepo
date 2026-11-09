@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
+	"monorepo/bin-call-manager/pkg/pushringhandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
 )
 
@@ -40,6 +41,7 @@ type cov2Mocks struct {
 	bridge  *bridgehandler.MockBridgeHandler
 	rec     *recordinghandler.MockRecordingHandler
 	ext     *externalmediahandler.MockExternalMediaHandler
+	push    *pushringhandler.MockPushRingHandler
 }
 
 func newCov2Handler(t *testing.T) (*confbridgeHandler, *cov2Mocks) {
@@ -56,6 +58,7 @@ func newCov2Handler(t *testing.T) (*confbridgeHandler, *cov2Mocks) {
 		bridge:  bridgehandler.NewMockBridgeHandler(mc),
 		rec:     recordinghandler.NewMockRecordingHandler(mc),
 		ext:     externalmediahandler.NewMockExternalMediaHandler(mc),
+		push:    pushringhandler.NewMockPushRingHandler(mc),
 	}
 	h := &confbridgeHandler{
 		utilHandler:          m.util,
@@ -67,6 +70,7 @@ func newCov2Handler(t *testing.T) (*confbridgeHandler, *cov2Mocks) {
 		bridgeHandler:        m.bridge,
 		recordingHandler:     m.rec,
 		externalMediaHandler: m.ext,
+		pushRingHandler:      m.push,
 	}
 	return h, m
 }
@@ -74,7 +78,7 @@ func newCov2Handler(t *testing.T) (*confbridgeHandler, *cov2Mocks) {
 func Test_NewConfbridgeHandler_cov2_fields(t *testing.T) {
 	_, m := newCov2Handler(t)
 
-	res := NewConfbridgeHandler(m.req, m.notify, m.db, m.cache, m.channel, m.bridge, m.rec, m.ext)
+	res := NewConfbridgeHandler(m.req, m.notify, m.db, m.cache, m.channel, m.bridge, m.rec, m.ext, m.push)
 	h, ok := res.(*confbridgeHandler)
 	if !ok {
 		t.Fatalf("Wrong type. got: %T", res)
@@ -84,7 +88,7 @@ func Test_NewConfbridgeHandler_cov2_fields(t *testing.T) {
 	}
 	if h.reqHandler != m.req || h.notifyHandler != m.notify || h.db != m.db || h.cache != m.cache ||
 		h.channelHandler != m.channel || h.bridgeHandler != m.bridge || h.recordingHandler != m.rec ||
-		h.externalMediaHandler != m.ext {
+		h.externalMediaHandler != m.ext || h.pushRingHandler != m.push {
 		t.Errorf("Wrong dependency wiring")
 	}
 }
