@@ -15,7 +15,12 @@ import (
 // SendOnce calls client.CreateChatCompletion exactly once so the caller's
 // context deadline is honored. nil/empty-choices handling is left to the caller.
 func (h *engineOpenaiHandler) SendOnce(ctx context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
-	resp, err := h.client.CreateChatCompletion(ctx, *req)
+	client, err := h.newClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.CreateChatCompletion(ctx, *req)
 	if err != nil {
 		return nil, err
 	}

@@ -75,7 +75,7 @@ func (h *listenHandler) processBuilder(m *sock.Request) (response *sock.Response
 		return h.processFlowBuilderChatPost(ctx, m), nil
 
 	case m.URI == builder.URIStatus && m.Method == sock.RequestMethodGet:
-		return h.processBuilderStatusGet(), nil
+		return h.processBuilderStatusGet(ctx), nil
 
 	default:
 		// A Builder URI with the wrong method.
@@ -109,8 +109,8 @@ func (h *listenHandler) processBuilderChatPost(ctx context.Context, m *sock.Requ
 	return &sock.Response{StatusCode: http.StatusOK, DataType: "application/json", Data: data}
 }
 
-func (h *listenHandler) processBuilderStatusGet() *sock.Response {
-	data, errMarshal := json.Marshal(h.builderHandler.Status())
+func (h *listenHandler) processBuilderStatusGet(ctx context.Context) *sock.Response {
+	data, errMarshal := json.Marshal(h.builderHandler.Status(ctx))
 	if errMarshal != nil {
 		return errorResponse(cerrors.Internal(commonoutline.ServiceNameAIManager, builder.ReasonUnavailable, "the response could not be written"))
 	}

@@ -58,7 +58,7 @@ func Test_RealEvaluation(t *testing.T) {
 		base = defaultBaseURL
 	}
 
-	var sender builderhandler.Sender = engine_openai_handler.NewEngineOpenaiHandlerWithConfig(key, base)
+	var sender builderhandler.Sender = engine_openai_handler.NewEngineOpenaiHandlerWithConfig(func(context.Context) (string, error) { return key, nil }, base)
 
 	cfg := builderhandler.DefaultConfig()
 	cfg.Model = model

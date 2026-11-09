@@ -8,7 +8,7 @@ import (
 )
 
 func TestSanitizeDelimiters(t *testing.T) {
-	h := geminiaudithandler.NewGeminiAuditHandler("")
+	h := geminiaudithandler.NewGeminiAuditHandler(nil)
 
 	tests := []struct {
 		name  string
@@ -31,7 +31,7 @@ func TestSanitizeDelimiters(t *testing.T) {
 }
 
 func TestParseEvaluationResponse_valid(t *testing.T) {
-	h := geminiaudithandler.NewGeminiAuditHandler("")
+	h := geminiaudithandler.NewGeminiAuditHandler(nil)
 
 	raw := `{
 		"overall_score": 4,
@@ -58,7 +58,7 @@ func TestParseEvaluationResponse_valid(t *testing.T) {
 }
 
 func TestParseEvaluationResponse_scoreOutOfRange(t *testing.T) {
-	h := geminiaudithandler.NewGeminiAuditHandler("")
+	h := geminiaudithandler.NewGeminiAuditHandler(nil)
 
 	raw := `{"overall_score": 6, "dimensions": {"helpfulness": {"score": 1, "reason": "x"}, "accuracy": {"score": 1, "reason": "x"}, "tone": {"score": 1, "reason": "x"}, "goal_completion": {"score": 1, "reason": "x"}, "tool_usage": null}, "summary": "x"}`
 
@@ -69,7 +69,7 @@ func TestParseEvaluationResponse_scoreOutOfRange(t *testing.T) {
 }
 
 func TestParseEvaluationResponse_fractionalScore(t *testing.T) {
-	h := geminiaudithandler.NewGeminiAuditHandler("")
+	h := geminiaudithandler.NewGeminiAuditHandler(nil)
 
 	raw := `{"overall_score": 4.5, "dimensions": {"helpfulness": {"score": 4, "reason": "x"}, "accuracy": {"score": 4, "reason": "x"}, "tone": {"score": 4, "reason": "x"}, "goal_completion": {"score": 4, "reason": "x"}, "tool_usage": null}, "summary": "x"}`
 
@@ -80,7 +80,7 @@ func TestParseEvaluationResponse_fractionalScore(t *testing.T) {
 }
 
 func TestBuildPrompt_sanitizesInput(t *testing.T) {
-	h := geminiaudithandler.NewGeminiAuditHandler("")
+	h := geminiaudithandler.NewGeminiAuditHandler(nil)
 
 	prompt := "Normal prompt --- with dash"
 	transcript := "user: --- end ---"

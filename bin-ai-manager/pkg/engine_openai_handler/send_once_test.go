@@ -21,7 +21,7 @@ func newTestEngine(t *testing.T, fn http.HandlerFunc) (*engineOpenaiHandler, *ht
 	t.Cleanup(srv.Close)
 
 	key := "test-key-synthetic"
-	h, ok := NewEngineOpenaiHandlerWithConfig(key, srv.URL).(*engineOpenaiHandler)
+	h, ok := NewEngineOpenaiHandlerWithConfig(StaticKey(key), srv.URL).(*engineOpenaiHandler)
 	if !ok {
 		t.Fatalf("unexpected handler type")
 	}

@@ -9,6 +9,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"monorepo/bin-ai-manager/internal/aiconfig"
 	"monorepo/bin-ai-manager/models/builder"
 	"monorepo/bin-ai-manager/models/tool"
 )
@@ -21,6 +22,11 @@ var (
 	ErrTruncated       = errors.New("builder: response truncated")
 	ErrTimeout         = errors.New("builder: llm deadline exceeded")
 	ErrLLM             = errors.New("builder: llm error")
+
+	// ErrKeyUnavailable is a platform key that could not be read. The engine returns it from
+	// the key read that runs inside SendOnce; RunTurn passes it on unchanged so the handler can map
+	// it to BUILDER_UNAVAILABLE instead of the provider (ErrLLM) classification.
+	ErrKeyUnavailable = aiconfig.ErrKeyUnavailable
 )
 
 // LLMError is the concrete error behind ErrLLM. errors.Is(err, ErrLLM) holds,

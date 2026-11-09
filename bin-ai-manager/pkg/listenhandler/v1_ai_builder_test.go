@@ -117,7 +117,7 @@ func Test_processBuilder_missingCustomerIDIsRejected(t *testing.T) {
 func Test_processBuilder_status(t *testing.T) {
 	for _, available := range []bool{true, false} {
 		h, bh := newBuilderListenHandler(t)
-		bh.EXPECT().Status().Return(&builder.StatusResponse{Available: available, MaxMessages: 40, MaxMessageChars: 2000})
+		bh.EXPECT().Status(gomock.Any()).Return(&builder.StatusResponse{Available: available, MaxMessages: 40, MaxMessageChars: 2000})
 
 		resp, err := h.processRequest(&sock.Request{URI: builder.URIStatus, Method: sock.RequestMethodGet})
 		if err != nil || resp.StatusCode != http.StatusOK {

@@ -23,6 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"monorepo/bin-ai-manager/internal/aiconfig"
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/migrations"
 	"monorepo/bin-ai-manager/models/mcpserver"
@@ -137,6 +138,16 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB, cache)
 
+	// The platform LLM keys are stored in the database (the environment value applies when there
+	// is no row) and are read when a call needs them, so a changed key is used by the next call.
+	configHandler, errConfig := aiconfig.New(cfg, db.ConfigStore())
+	if errConfig != nil {
+		log.Errorf("Could not create the config handler. err: %v", errConfig)
+		return errConfig
+	}
+	aiconfig.LogSources(context.Background(), configHandler)
+	keys := newPlatformKeys(configHandler, cfg)
+
 	// rabbitmq sock connect
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
 	sockHandler.Connect()
@@ -198,7 +209,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		return err
 	}
 
-	engineOpenaiHandler := engine_openai_handler.NewEngineOpenaiHandler(cfg.EngineKeyChatGPT)
+	engineOpenaiHandler := engine_openai_handler.NewEngineOpenaiHandler(keys.conversation)
 	engineDialogflowHandler := engine_dialogflow_handler.NewEngineDialogflowHandler()
 
 	participantHandler := participanthandler.New(db)
@@ -206,25 +217,17 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, cache, aiHandler, teamHandler, messageHandler, participantHandler, mcptoolHandler, mcpServerHandler, toolhandler.NewToolHandler())
 	// Build a dedicated engine for summaries. Like the analysis gateway, the
 	// provider is selectable by base URL (Gemini OpenAI-compat by default) and
-	// the API key is selected to match the provider so an OpenAI rollback is
-	// fully env-driven. The conversational engineOpenaiHandler (OpenAI) is
-	// unchanged.
-	summaryKey := cfg.EngineKeyChatGPT // OpenAI default (rollback)
-	if strings.Contains(cfg.SummaryEngineBaseURL, "generativelanguage") {
-		summaryKey = cfg.GoogleAPIKey
-	}
-	summaryEngine := engine_openai_handler.NewEngineOpenaiHandlerWithConfig(summaryKey, cfg.SummaryEngineBaseURL)
+	// the API key is selected to match the provider (aiconfig.KeyForBaseURL), so an
+	// OpenAI rollback is fully config-driven. The conversational engineOpenaiHandler
+	// (OpenAI) is unchanged.
+	summaryEngine := engine_openai_handler.NewEngineOpenaiHandlerWithConfig(keys.summary, cfg.SummaryEngineBaseURL)
 	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, summaryEngine, cfg.SummaryModel, cfg.SummaryReasoningEffort)
 
 	// Build a dedicated engine for the analysis gateway. The provider is
 	// selectable by base URL (Gemini OpenAI-compat by default), and the API key
-	// is selected to match the provider so an OpenAI rollback is fully env-driven
+	// is selected to match the provider so an OpenAI rollback is fully config-driven
 	// (VOIP-1197). The conversational engineOpenaiHandler (OpenAI) is unchanged.
-	analysisKey := cfg.EngineKeyChatGPT // OpenAI default
-	if strings.Contains(cfg.AnalysisEngineBaseURL, "generativelanguage") {
-		analysisKey = cfg.GoogleAPIKey
-	}
-	analysisEngine := engine_openai_handler.NewEngineOpenaiHandlerWithConfig(analysisKey, cfg.AnalysisEngineBaseURL)
+	analysisEngine := engine_openai_handler.NewEngineOpenaiHandlerWithConfig(keys.analysis, cfg.AnalysisEngineBaseURL)
 
 	analysisHandler := analysishandler.NewAnalysisHandler(
 		analysisEngine,
@@ -237,8 +240,11 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// The Assistant Builder shares the analysis engine (same provider and key).
 	// It is available when that key is set. See builderSettings.
-	builderConfig, builderOptions := builderSettings(cfg)
-	infos, warns := builderStartupNotes(cfg, builderOptions)
+	builderConfig, builderOptions := builderSettings(cfg, keys.analysis)
+	startupCtx, cancelStartup := context.WithTimeout(context.Background(), builderStartupKeyTimeout)
+	keyConfigured, errKey := builderOptions.KeyConfigured(startupCtx)
+	cancelStartup()
+	infos, warns := builderStartupNotes(cfg, keyConfigured, errKey)
 	for _, m := range infos {
 		logrus.Info(m)
 	}
@@ -251,13 +257,12 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	aiprompthistoryHandler := aiprompthistoryhandler.New(db, utilHandler)
 
-	if cfg.GoogleAPIKey == "" {
-		logrus.Error("GOOGLE_API_KEY is not configured; all Gemini audit requests will fail with evaluator_unavailable")
-	}
-	aiauditHandler := aiaudithandler.NewAIAuditHandler(db, geminiaudithandler.NewGeminiAuditHandler(cfg.GoogleAPIKey))
+	// A Gemini key that is not configured is logged by aiconfig.LogSources above (key name and
+	// source only); audit and proposal requests then fail with evaluator_unavailable.
+	aiauditHandler := aiaudithandler.NewAIAuditHandler(db, geminiaudithandler.NewGeminiAuditHandler(keys.gemini))
 	aiauditHandler.SweepStaleAudits(context.Background())
 
-	geminiProposalHandler := geminiproposalhandler.NewGeminiProposalHandler(cfg.GoogleAPIKey)
+	geminiProposalHandler := geminiproposalhandler.NewGeminiProposalHandler(keys.gemini)
 	aipromptproposalHandler := aipromptproposalhandler.NewAIPromptProposalHandler(db, geminiProposalHandler)
 	aipromptproposalHandler.SweepStaleProposals(context.Background())
 

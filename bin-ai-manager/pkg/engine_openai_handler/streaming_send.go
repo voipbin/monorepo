@@ -70,7 +70,11 @@ func (h *engineOpenaiHandler) streamingSend(ctx context.Context, req *openai.Cha
 	req.Stream = true
 
 	log.WithField("message_count", len(req.Messages)).Debugf("Sending streaming chat completion request to OpenAI.")
-	stream, err := h.client.CreateChatCompletionStream(ctx, *req)
+	client, errClient := h.newClient(ctx)
+	if errClient != nil {
+		return nil, nil, fmt.Errorf("could not create the client: %w", errClient)
+	}
+	stream, err := client.CreateChatCompletionStream(ctx, *req)
 	if err != nil {
 		return nil, nil, fmt.Errorf("CreateChatCompletionStream error: %w", err)
 	}

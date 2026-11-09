@@ -21,6 +21,7 @@ import (
 // deadline, a different thing from outcomeTimeout, the handler's own one).
 const (
 	outcomeOK              = "ok"
+	outcomeKeyError        = "key_error"
 	outcomeTimeout         = "timeout"
 	outcomeTruncated       = "truncated"
 	outcomeInvalidResponse = "invalid_response"
@@ -43,6 +44,8 @@ func flowOutcome(err error) string {
 	switch {
 	case err == nil:
 		return outcomeOK
+	case errors.Is(err, ErrKeyUnavailable):
+		return outcomeKeyError
 	case errors.Is(err, ErrTimeout):
 		return outcomeTimeout
 	case errors.As(err, &llm) && llm.Code == "timeout":

@@ -47,11 +47,9 @@ func initCommand() *cobra.Command {
 		Use:   "ai-control",
 		Short: "Voipbin AI Management CLI",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
-				return errors.Wrap(errBind, "failed to bind flags")
+			if errLoad := loadConfig(cmd); errLoad != nil {
+				return errLoad
 			}
-
-			config.LoadGlobalConfig()
 
 			// Same fail-fast gate cmd/ai-manager applies (review round 2
 			// finding LOW-1). No ai-control subcommand reaches a listen code
@@ -91,11 +89,24 @@ func initCommand() *cobra.Command {
 
 	cmdRoot.AddCommand(cmdAI)
 	cmdRoot.AddCommand(cmdAIcall)
+	cmdRoot.AddCommand(cmdConfig())
 	// the migrate commands open only the database, so they do not depend on Redis or RabbitMQ
 	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {
 		return migrationhandler.New(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable)
 	}))
 	return cmdRoot
+}
+
+// loadConfig binds the flags and loads the configuration of the process. It is what every
+// subcommand needs; the validation of the whole configuration is on top of it (the root command).
+func loadConfig(cmd *cobra.Command) error {
+	if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
+		return errors.Wrap(errBind, "failed to bind flags")
+	}
+
+	config.LoadGlobalConfig()
+
+	return nil
 }
 
 // AI commands

@@ -5,6 +5,7 @@ package geminiproposalhandler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -63,20 +64,41 @@ type GeminiProposalHandler interface {
 	ParseProposalResponse(data []byte) (*ProposalResponse, error)
 }
 
+// KeyFunc hands the API key at the time of a call. An empty value with no error is "no key
+// configured"; an error stops the call.
+type KeyFunc = func(ctx context.Context) (string, error)
+
 type geminiProposalHandler struct {
-	client *openai.Client
+	keyFunc KeyFunc
+	baseURL string
 }
 
-// NewGeminiProposalHandler creates a new handler using the given API key.
-func NewGeminiProposalHandler(apiKey string) GeminiProposalHandler {
+// NewGeminiProposalHandler creates a new handler. The API key is resolved on every call, so a
+// rotated key is used by the next call.
+func NewGeminiProposalHandler(keyFunc KeyFunc) GeminiProposalHandler {
+	return &geminiProposalHandler{keyFunc: keyFunc, baseURL: geminiEndpoint}
+}
+
+// newClient resolves the key now and builds the client. The error is the one of the key function.
+func (h *geminiProposalHandler) newClient(ctx context.Context) (*openai.Client, error) {
+	if h.keyFunc == nil {
+		return nil, errors.New("geminiproposalhandler: no key function")
+	}
+
+	apiKey, err := h.keyFunc(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	cfg := openai.DefaultConfig(apiKey)
-	cfg.BaseURL = geminiEndpoint
-	return &geminiProposalHandler{client: openai.NewClientWithConfig(cfg)}
+	cfg.BaseURL = h.baseURL
+
+	return openai.NewClientWithConfig(cfg), nil
 }
 
 // sanitize delegates to geminiaudithandler so the delimiter convention has one source of truth.
 func sanitize(text string) string {
-	return geminiaudithandler.NewGeminiAuditHandler("").Sanitize(text)
+	return geminiaudithandler.NewGeminiAuditHandler(nil).Sanitize(text)
 }
 
 // ParseProposalResponse validates Gemini's JSON output for prompt-rewrite proposals.
@@ -167,7 +189,12 @@ func (h *geminiProposalHandler) Evaluate(ctx context.Context, originalPrompt str
 	fullPrompt := h.BuildPrompt(originalPrompt, audits, language)
 	logrus.Debugf("geminiProposalHandler.Evaluate: model=%s prompt_len=%d audits=%d language=%s", geminiModel, len(originalPrompt), len(audits), language)
 
-	resp, err := h.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+	client, errClient := h.newClient(ctx)
+	if errClient != nil {
+		return nil, fmt.Errorf("could not get the API key: %w", errClient)
+	}
+
+	resp, err := client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		Model:           geminiModel,
 		ReasoningEffort: geminiReasoningEffort,
 		Messages: []openai.ChatCompletionMessage{
