@@ -3,6 +3,7 @@ package storetest
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -52,6 +53,7 @@ func Contract(t *testing.T, newStore func(t *testing.T) confighandler.Store, his
 	t.Run("duplicate insert is a conflict and leaves no history", e.duplicateInsert)
 	t.Run("update with the right and a stale revision", e.updateRevision)
 	t.Run("delete with the right and a stale revision", e.deleteRevision)
+	t.Run("list histories newest first with a cursor", e.listHistories)
 }
 
 func (e *contractEnv) getMissing(t *testing.T) {
@@ -191,5 +193,97 @@ func (e *contractEnv) deleteRevision(t *testing.T) {
 	}
 	if e.histories(t, s) != before+1 {
 		t.Errorf("Wrong match. the delete did not write its history row")
+	}
+}
+
+// listHistories checks the read of the history: the newest first, the cursor (time, id) that also
+// separates rows of the same time, the other keys left out, and the stored fields.
+func (e *contractEnv) listHistories(t *testing.T) {
+	s := e.newStore(t)
+
+	at := func(sec int) time.Time {
+		return e.now.Add(time.Duration(sec) * time.Second)
+	}
+	id := func(n int) uuid.UUID {
+		return uuid.FromStringOrNil(fmt.Sprintf("00000000-0000-4000-8000-%012d", n))
+	}
+	hist := func(key, action string, n, sec int) *confighandler.History {
+		h := e.newHist(key, action)
+		h.ID, h.TMCreate = id(n), at(sec)
+		h.IsSecret, h.NewKeyVersion, h.Source = true, 2, "api"
+		return h
+	}
+
+	// "k": ids 1, 2, 3 share a time, id 4 is later, id 5 is earlier. "other": id 6.
+	if err := s.Insert(e.ctx, e.newRow("k"), hist("k", "set", 1, 10)); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	for i, h := range []*confighandler.History{hist("k", "set", 2, 10), hist("k", "set", 3, 10), hist("k", "clear", 4, 20), hist("k", "set", 5, 5)} {
+		upd := e.newRow("k")
+		upd.Revision = uint32(i) + 2
+		if err := s.Update(e.ctx, upd, uint32(i)+1, h); err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
+	}
+	if err := s.Insert(e.ctx, e.newRow("other"), hist("other", "set", 6, 10)); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	expect := []uuid.UUID{id(4), id(3), id(2), id(1), id(5)}
+
+	got, err := s.ListHistories(e.ctx, "k", confighandler.HistoryCursor{}, 10)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if len(got) != len(expect) {
+		t.Fatalf("Wrong match. expect: %d rows, got: %d", len(expect), len(got))
+	}
+	for i, h := range got {
+		if h.ID != expect[i] || h.Key != "k" {
+			t.Errorf("Wrong match. position %d expect: %s, got: %s %s", i, expect[i], h.ID, h.Key)
+		}
+	}
+	first := got[1]
+	if first.Action != "set" || !first.IsSecret || first.NewKeyVersion != 2 || first.Source != "api" ||
+		first.ActorID != e.actor || !first.TMCreate.Equal(at(10)) || first.OldValueJSON != nil || first.NewValueJSON != nil {
+		t.Errorf("Wrong match. got: %+v", first)
+	}
+
+	// walk with a limit of 2 and the cursor of the last row of each page
+	var walked []uuid.UUID
+	cursor := confighandler.HistoryCursor{}
+	for page := 0; page < 10; page++ {
+		rows, err := s.ListHistories(e.ctx, "k", cursor, 2)
+		if err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
+		for _, h := range rows {
+			walked = append(walked, h.ID)
+		}
+		if len(rows) < 2 {
+			break
+		}
+		last := rows[len(rows)-1]
+		cursor = confighandler.HistoryCursor{TMCreate: last.TMCreate, ID: last.ID}
+	}
+	if len(walked) != len(expect) {
+		t.Fatalf("Wrong match. expect: %v, got: %v", expect, walked)
+	}
+	for i := range walked {
+		if walked[i] != expect[i] {
+			t.Errorf("Wrong match. position %d expect: %s, got: %s", i, expect[i], walked[i])
+		}
+	}
+
+	// a cursor in another time zone selects the same rows
+	zone := time.FixedZone("test", 9*60*60)
+	rows, err := s.ListHistories(e.ctx, "k", confighandler.HistoryCursor{TMCreate: at(10).In(zone), ID: id(2)}, 10)
+	if err != nil || len(rows) != 2 || rows[0].ID != id(1) || rows[1].ID != id(5) {
+		t.Errorf("Wrong match. got: %v %v", rows, err)
+	}
+
+	none, err := s.ListHistories(e.ctx, "nothing", confighandler.HistoryCursor{}, 10)
+	if err != nil || len(none) != 0 {
+		t.Errorf("Wrong match. expect: no rows, got: %v %v", none, err)
 	}
 }

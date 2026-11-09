@@ -53,6 +53,8 @@ secret, resolved, err := h.Secret(ctx, "provider.api_key") // db, then env, then
 - The service provides the `Store` (two tables: `<svc>_configs` and `<svc>_config_histories`) and the migrations; the library provides the registry, the resolver and the cipher. Reference: `bin-email-manager/internal/configkeys`, `internal/emailconfig`, `pkg/dbhandler/config_store.go`.
 - A read error is an error, not "no row". A stored secret that can not be decrypted is never replaced by the environment value.
 - A general on/off flag is not a setting of this library; bool keys exist only as a provider selection inside an atomic group.
+- Writes take `confighandler.ExpectRevision(n)`: the write succeeds only when the stored revision is `n` (0 means no row), is attempted once, and returns `ErrStale` (wrapping `ErrConflict`) otherwise. `Histories` pages the change history newest first with a (tm_create, id) cursor, and the `Store` implements `ListHistories` (the key index must serve it).
+- `pkg/confighandler/configrpc` serves `/v1/configs` of a service on its listener (`Server.Match`/`Handle`) and owns the wire models, the log-safe copy of a request (`LogSafe`) and the error mapping. The listener must log only `LogSafe(m)`. `requesthandler.ConfigV1*` is the client; adding a service is one case in `requesthandler/config.go` and one name in the api-manager service handler.
 - `pkg/confighandler/storetest` holds an in-memory store and the contract every `Store` must pass.
 - `secretcrypto` is used by bin-email-manager, bin-number-manager and bin-ai-manager. `confighandler` was added while only bin-email-manager used it. That is a deviation from the 3 services rule, not a precedent.
 

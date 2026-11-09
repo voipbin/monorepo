@@ -263,6 +263,10 @@ Public endpoint — no authentication required. Redeems a token issued by `POST 
 | PUT | `/number_providers/:provider_name` | bin-number-manager | Update enabled, priority, config (ProjectSuperAdmin) |
 | PUT | `/number_providers/:provider_name/secret` | bin-number-manager | Store provider secret, write-only (ProjectSuperAdmin) |
 | DELETE | `/number_providers/:provider_name/secret` | bin-number-manager | Delete stored provider secret (ProjectSuperAdmin) |
+| GET | `/service_configs/:service` | the service manager (email: bin-email-manager) | List the config keys and their state (ProjectSuperAdmin) |
+| PUT | `/service_configs/:service/keys/:key/secret` | the service manager | Store a secret, write-only, with an expected revision (ProjectSuperAdmin) |
+| DELETE | `/service_configs/:service/keys/:key` | the service manager | Delete the stored value, with an expected revision (ProjectSuperAdmin) |
+| GET | `/service_configs/:service/keys/:key/histories` | the service manager | Page the change history of a key (ProjectSuperAdmin) |
 
 ---
 

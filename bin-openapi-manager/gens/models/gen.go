@@ -2807,6 +2807,135 @@ func (e RouteManagerProviderType) Valid() bool {
 	}
 }
 
+// Defines values for ServiceConfigHistoryAction.
+const (
+	ServiceConfigHistoryActionClear ServiceConfigHistoryAction = "clear"
+	ServiceConfigHistoryActionSet   ServiceConfigHistoryAction = "set"
+)
+
+// Valid indicates whether the value is a known member of the ServiceConfigHistoryAction enum.
+func (e ServiceConfigHistoryAction) Valid() bool {
+	switch e {
+	case ServiceConfigHistoryActionClear:
+		return true
+	case ServiceConfigHistoryActionSet:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ServiceConfigHistorySource.
+const (
+	ServiceConfigHistorySourceAPI ServiceConfigHistorySource = "api"
+	ServiceConfigHistorySourceCLI ServiceConfigHistorySource = "cli"
+)
+
+// Valid indicates whether the value is a known member of the ServiceConfigHistorySource enum.
+func (e ServiceConfigHistorySource) Valid() bool {
+	switch e {
+	case ServiceConfigHistorySourceAPI:
+		return true
+	case ServiceConfigHistorySourceCLI:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ServiceConfigKeyKind.
+const (
+	ServiceConfigKeyKindParam  ServiceConfigKeyKind = "param"
+	ServiceConfigKeyKindSecret ServiceConfigKeyKind = "secret"
+	ServiceConfigKeyKindSelect ServiceConfigKeyKind = "select"
+)
+
+// Valid indicates whether the value is a known member of the ServiceConfigKeyKind enum.
+func (e ServiceConfigKeyKind) Valid() bool {
+	switch e {
+	case ServiceConfigKeyKindParam:
+		return true
+	case ServiceConfigKeyKindSecret:
+		return true
+	case ServiceConfigKeyKindSelect:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ServiceConfigKeySource.
+const (
+	ServiceConfigKeySourceDB              ServiceConfigKeySource = "db"
+	ServiceConfigKeySourceDBInvalid       ServiceConfigKeySource = "db_invalid"
+	ServiceConfigKeySourceDBUndecryptable ServiceConfigKeySource = "db_undecryptable"
+	ServiceConfigKeySourceDefault         ServiceConfigKeySource = "default"
+	ServiceConfigKeySourceEnv             ServiceConfigKeySource = "env"
+	ServiceConfigKeySourceNone            ServiceConfigKeySource = "none"
+)
+
+// Valid indicates whether the value is a known member of the ServiceConfigKeySource enum.
+func (e ServiceConfigKeySource) Valid() bool {
+	switch e {
+	case ServiceConfigKeySourceDB:
+		return true
+	case ServiceConfigKeySourceDBInvalid:
+		return true
+	case ServiceConfigKeySourceDBUndecryptable:
+		return true
+	case ServiceConfigKeySourceDefault:
+		return true
+	case ServiceConfigKeySourceEnv:
+		return true
+	case ServiceConfigKeySourceNone:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ServiceConfigKeyType.
+const (
+	ServiceConfigKeyTypeBool     ServiceConfigKeyType = "bool"
+	ServiceConfigKeyTypeDuration ServiceConfigKeyType = "duration"
+	ServiceConfigKeyTypeEnum     ServiceConfigKeyType = "enum"
+	ServiceConfigKeyTypeInt      ServiceConfigKeyType = "int"
+	ServiceConfigKeyTypeString   ServiceConfigKeyType = "string"
+)
+
+// Valid indicates whether the value is a known member of the ServiceConfigKeyType enum.
+func (e ServiceConfigKeyType) Valid() bool {
+	switch e {
+	case ServiceConfigKeyTypeBool:
+		return true
+	case ServiceConfigKeyTypeDuration:
+		return true
+	case ServiceConfigKeyTypeEnum:
+		return true
+	case ServiceConfigKeyTypeInt:
+		return true
+	case ServiceConfigKeyTypeString:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ServiceConfigServiceName.
+const (
+	ServiceConfigServiceNameEmail ServiceConfigServiceName = "email"
+)
+
+// Valid indicates whether the value is a known member of the ServiceConfigServiceName enum.
+func (e ServiceConfigServiceName) Valid() bool {
+	switch e {
+	case ServiceConfigServiceNameEmail:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for StorageManagerFileReferenceType.
 const (
 	StorageManagerFileReferenceTypeNone      StorageManagerFileReferenceType = ""
@@ -9670,6 +9799,186 @@ type RouteManagerRoute struct {
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
+// ServiceConfig The config keys of a service. It never contains a secret, a length or a hash of a secret, or the value of an environment variable.
+type ServiceConfig struct {
+	// Keys The keys of the service, in the order the service declares them.
+	Keys []ServiceConfigKey `json:"keys"`
+
+	// SecretWritable Whether the platform has an encryption key, which is needed to store a secret.
+	//
+	// Example: true
+	SecretWritable bool `json:"secret_writable"`
+
+	// Service The name of a service that has config keys.
+	//
+	// Example: email
+	Service ServiceConfigServiceName `json:"service"`
+}
+
+// ServiceConfigHistory One change of a config key. A change of a secret has the key versions only, never a value.
+type ServiceConfigHistory struct {
+	// Action What was done. `set` stores a value, `clear` deletes the stored value.
+	//
+	// Example: set
+	Action ServiceConfigHistoryAction `json:"action"`
+
+	// ActorId The agent who made the change. The agent ID returned from the `GET /agents` response.
+	//
+	// Example: 550e8400-e29b-41d4-a716-446655440000
+	ActorId string `json:"actor_id"`
+
+	// Id The ID of the history entry returned from the `GET /service_configs/{service}/keys/{key}/histories` response.
+	//
+	// Example: aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
+	Id string `json:"id"`
+
+	// IsSecret Whether the key is a secret. The history of a secret never holds a value.
+	//
+	// Example: true
+	IsSecret bool `json:"is_secret"`
+
+	// Key The name of the key.
+	//
+	// Example: mailgun.api_key
+	Key string `json:"key"`
+
+	// NewKeyVersion The version of the encryption key of the secret after the change. 0 when the value was deleted.
+	//
+	// Example: 1
+	NewKeyVersion int `json:"new_key_version"`
+
+	// OldKeyVersion The version of the encryption key of the secret before the change. 0 when there was none.
+	//
+	// Example: 0
+	OldKeyVersion int `json:"old_key_version"`
+
+	// Source Where the change was made from. `api` is this API, `cli` the command line tool of the service.
+	//
+	// Example: api
+	Source ServiceConfigHistorySource `json:"source"`
+
+	// TmCreate The timestamp of the change.
+	//
+	// Example: 2026-01-02T03:04:05.000000Z
+	TmCreate time.Time `json:"tm_create"`
+}
+
+// ServiceConfigHistoryAction What was done. `set` stores a value, `clear` deletes the stored value.
+//
+// Example: set
+type ServiceConfigHistoryAction string
+
+// ServiceConfigHistoryList defines model for ServiceConfigHistoryList.
+type ServiceConfigHistoryList struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                `json:"next_page_token,omitempty"`
+	Result        []ServiceConfigHistory `json:"result"`
+}
+
+// ServiceConfigHistorySource Where the change was made from. `api` is this API, `cli` the command line tool of the service.
+//
+// Example: api
+type ServiceConfigHistorySource string
+
+// ServiceConfigKey One config key and its current state. It never contains a secret, a length or a hash of a secret, or the value of an environment variable.
+type ServiceConfigKey struct {
+	// Description One line that tells what the key is for.
+	//
+	// Example: API key of the Mailgun account that sends email.
+	Description string `json:"description"`
+
+	// EnvName The name of the environment variable that the service reads when no value is stored. It is the name only, never the value. Omitted when the key has no environment variable.
+	//
+	// Example: MAILGUN_API_KEY
+	EnvName *string `json:"env_name,omitempty"`
+
+	// EnvShadowed Whether the environment variable is set but not used, because a stored value takes precedence.
+	//
+	// Example: false
+	EnvShadowed bool `json:"env_shadowed"`
+
+	// HasSecret Whether a secret value exists, stored or in the environment. The secret itself is never returned.
+	//
+	// Example: true
+	HasSecret bool `json:"has_secret"`
+
+	// Key The name of the key.
+	//
+	// Example: mailgun.api_key
+	Key string `json:"key"`
+
+	// KeyVersion The version of the encryption key that encrypted the stored secret. 0 when no secret is stored.
+	//
+	// Example: 1
+	KeyVersion int `json:"key_version"`
+
+	// Kind The role of the key. A `secret` is encrypted and write-only.
+	//
+	// Example: secret
+	Kind ServiceConfigKeyKind `json:"kind"`
+
+	// Revision The revision of the stored value, to be sent back when the key is changed. 0 when no value is stored. It starts at 1 again when a key is deleted and set again.
+	//
+	// Example: 3
+	Revision int64 `json:"revision"`
+
+	// Source Where the value that the service uses comes from. `db` is the stored value, `env` the environment of the service, `default` the default of the key, `none` that the key has no value anywhere.
+	// `db_undecryptable` means that the stored secret cannot be decrypted (for example the encryption key was lost) and `db_invalid` that the stored value does not fit the declaration of the key. The service does not fall back to the environment in these two cases; store a new value or delete the stored value to recover.
+	//
+	//
+	// Example: db
+	Source ServiceConfigKeySource `json:"source"`
+
+	// TmUpdate The timestamp of the last change of the stored value. Omitted when no value is stored.
+	//
+	// Example: 2026-01-02T03:04:05.000000Z
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// Type The value type of the key.
+	//
+	// Example: string
+	Type ServiceConfigKeyType `json:"type"`
+
+	// UpdatedBy The agent who last changed the stored value. The agent ID returned from the `GET /agents` response. Omitted when no value is stored.
+	//
+	// Example: 550e8400-e29b-41d4-a716-446655440000
+	UpdatedBy *string `json:"updated_by,omitempty"`
+}
+
+// ServiceConfigKeyKind The role of the key. A `secret` is encrypted and write-only.
+//
+// Example: secret
+type ServiceConfigKeyKind string
+
+// ServiceConfigKeySecretRequest The secret to store. It is write-only and never returned.
+type ServiceConfigKeySecretRequest struct {
+	// Revision The `revision` of the key returned from the `GET /service_configs/{service}` response. 0 means that the key has no stored value.
+	//
+	// Example: 3
+	Revision int64 `json:"revision"`
+
+	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte). It must not start or end with white space or contain a line break; it is rejected, not trimmed.
+	//
+	// Example: example-secret-token
+	Secret *string `json:"secret,omitempty"`
+}
+
+// ServiceConfigKeySource Where the value that the service uses comes from. `db` is the stored value, `env` the environment of the service, `default` the default of the key, `none` that the key has no value anywhere.
+// `db_undecryptable` means that the stored secret cannot be decrypted (for example the encryption key was lost) and `db_invalid` that the stored value does not fit the declaration of the key. The service does not fall back to the environment in these two cases; store a new value or delete the stored value to recover.
+//
+// Example: db
+type ServiceConfigKeySource string
+
+// ServiceConfigKeyType The value type of the key.
+//
+// Example: string
+type ServiceConfigKeyType string
+
+// ServiceConfigServiceName The name of a service that has config keys.
+//
+// Example: email
+type ServiceConfigServiceName string
+
 // StorageManagerAccount defines model for StorageManagerAccount.
 type StorageManagerAccount struct {
 	// CustomerId The unique identifier of the customer who owns this storage account. Returned from the `GET /customers` response.
@@ -10811,6 +11120,14 @@ type PageSize = int
 
 // PageToken defines model for PageToken.
 type PageToken = string
+
+// ServiceConfigKeyName Example: mailgun.api_key
+type ServiceConfigKeyName = string
+
+// ServiceConfigService The name of a service that has config keys.
+//
+// Example: email
+type ServiceConfigService = ServiceConfigServiceName
 
 // BadRequest defines model for BadRequest.
 type BadRequest = ErrorResponse
@@ -13818,6 +14135,21 @@ type PostServiceAgentsTransfersJSONBody struct {
 	TransfererCallId openapi_types.UUID `json:"transferer_call_id"`
 }
 
+// DeleteServiceConfigsServiceKeysKeyParams defines parameters for DeleteServiceConfigsServiceKeysKey.
+type DeleteServiceConfigsServiceKeysKeyParams struct {
+	// Revision The `revision` of the key returned from the `GET /service_configs/{service}` response. 0 means that the key has no stored value.
+	Revision int64 `form:"revision" json:"revision"`
+}
+
+// GetServiceConfigsServiceKeysKeyHistoriesParams defines parameters for GetServiceConfigsServiceKeysKeyHistories.
+type GetServiceConfigsServiceKeysKeyHistoriesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetSpeakingsParams defines parameters for GetSpeakings.
 type GetSpeakingsParams struct {
 	PageSize  *int    `form:"page_size,omitempty" json:"page_size,omitempty"`
@@ -14674,6 +15006,9 @@ type PostServiceAgentsTranscribesJSONRequestBody PostServiceAgentsTranscribesJSO
 
 // PostServiceAgentsTransfersJSONRequestBody defines body for PostServiceAgentsTransfers for application/json ContentType.
 type PostServiceAgentsTransfersJSONRequestBody PostServiceAgentsTransfersJSONBody
+
+// PutServiceConfigsServiceKeysKeySecretJSONRequestBody defines body for PutServiceConfigsServiceKeysKeySecret for application/json ContentType.
+type PutServiceConfigsServiceKeysKeySecretJSONRequestBody = ServiceConfigKeySecretRequest
 
 // PostSpeakingsJSONRequestBody defines body for PostSpeakings for application/json ContentType.
 type PostSpeakingsJSONRequestBody PostSpeakingsJSONBody

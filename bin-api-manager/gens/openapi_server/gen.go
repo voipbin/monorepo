@@ -2815,6 +2815,135 @@ func (e RouteManagerProviderType) Valid() bool {
 	}
 }
 
+// Defines values for ServiceConfigHistoryAction.
+const (
+	ServiceConfigHistoryActionClear ServiceConfigHistoryAction = "clear"
+	ServiceConfigHistoryActionSet   ServiceConfigHistoryAction = "set"
+)
+
+// Valid indicates whether the value is a known member of the ServiceConfigHistoryAction enum.
+func (e ServiceConfigHistoryAction) Valid() bool {
+	switch e {
+	case ServiceConfigHistoryActionClear:
+		return true
+	case ServiceConfigHistoryActionSet:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ServiceConfigHistorySource.
+const (
+	ServiceConfigHistorySourceAPI ServiceConfigHistorySource = "api"
+	ServiceConfigHistorySourceCLI ServiceConfigHistorySource = "cli"
+)
+
+// Valid indicates whether the value is a known member of the ServiceConfigHistorySource enum.
+func (e ServiceConfigHistorySource) Valid() bool {
+	switch e {
+	case ServiceConfigHistorySourceAPI:
+		return true
+	case ServiceConfigHistorySourceCLI:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ServiceConfigKeyKind.
+const (
+	ServiceConfigKeyKindParam  ServiceConfigKeyKind = "param"
+	ServiceConfigKeyKindSecret ServiceConfigKeyKind = "secret"
+	ServiceConfigKeyKindSelect ServiceConfigKeyKind = "select"
+)
+
+// Valid indicates whether the value is a known member of the ServiceConfigKeyKind enum.
+func (e ServiceConfigKeyKind) Valid() bool {
+	switch e {
+	case ServiceConfigKeyKindParam:
+		return true
+	case ServiceConfigKeyKindSecret:
+		return true
+	case ServiceConfigKeyKindSelect:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ServiceConfigKeySource.
+const (
+	ServiceConfigKeySourceDB              ServiceConfigKeySource = "db"
+	ServiceConfigKeySourceDBInvalid       ServiceConfigKeySource = "db_invalid"
+	ServiceConfigKeySourceDBUndecryptable ServiceConfigKeySource = "db_undecryptable"
+	ServiceConfigKeySourceDefault         ServiceConfigKeySource = "default"
+	ServiceConfigKeySourceEnv             ServiceConfigKeySource = "env"
+	ServiceConfigKeySourceNone            ServiceConfigKeySource = "none"
+)
+
+// Valid indicates whether the value is a known member of the ServiceConfigKeySource enum.
+func (e ServiceConfigKeySource) Valid() bool {
+	switch e {
+	case ServiceConfigKeySourceDB:
+		return true
+	case ServiceConfigKeySourceDBInvalid:
+		return true
+	case ServiceConfigKeySourceDBUndecryptable:
+		return true
+	case ServiceConfigKeySourceDefault:
+		return true
+	case ServiceConfigKeySourceEnv:
+		return true
+	case ServiceConfigKeySourceNone:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ServiceConfigKeyType.
+const (
+	ServiceConfigKeyTypeBool     ServiceConfigKeyType = "bool"
+	ServiceConfigKeyTypeDuration ServiceConfigKeyType = "duration"
+	ServiceConfigKeyTypeEnum     ServiceConfigKeyType = "enum"
+	ServiceConfigKeyTypeInt      ServiceConfigKeyType = "int"
+	ServiceConfigKeyTypeString   ServiceConfigKeyType = "string"
+)
+
+// Valid indicates whether the value is a known member of the ServiceConfigKeyType enum.
+func (e ServiceConfigKeyType) Valid() bool {
+	switch e {
+	case ServiceConfigKeyTypeBool:
+		return true
+	case ServiceConfigKeyTypeDuration:
+		return true
+	case ServiceConfigKeyTypeEnum:
+		return true
+	case ServiceConfigKeyTypeInt:
+		return true
+	case ServiceConfigKeyTypeString:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ServiceConfigServiceName.
+const (
+	ServiceConfigServiceNameEmail ServiceConfigServiceName = "email"
+)
+
+// Valid indicates whether the value is a known member of the ServiceConfigServiceName enum.
+func (e ServiceConfigServiceName) Valid() bool {
+	switch e {
+	case ServiceConfigServiceNameEmail:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for StorageManagerFileReferenceType.
 const (
 	StorageManagerFileReferenceTypeNone      StorageManagerFileReferenceType = ""
@@ -7651,6 +7780,123 @@ type RouteManagerRoute struct {
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
+// ServiceConfig The config keys of a service. It never contains a secret, a length or a hash of a secret, or the value of an environment variable.
+type ServiceConfig struct {
+	// Keys The keys of the service, in the order the service declares them.
+	Keys []ServiceConfigKey `json:"keys"`
+
+	// SecretWritable Whether the platform has an encryption key, which is needed to store a secret.
+	SecretWritable bool `json:"secret_writable"`
+
+	// Service The name of a service that has config keys.
+	Service ServiceConfigServiceName `json:"service"`
+}
+
+// ServiceConfigHistory One change of a config key. A change of a secret has the key versions only, never a value.
+type ServiceConfigHistory struct {
+	// Action What was done. `set` stores a value, `clear` deletes the stored value.
+	Action ServiceConfigHistoryAction `json:"action"`
+
+	// ActorId The agent who made the change. The agent ID returned from the `GET /agents` response.
+	ActorId string `json:"actor_id"`
+
+	// Id The ID of the history entry returned from the `GET /service_configs/{service}/keys/{key}/histories` response.
+	Id string `json:"id"`
+
+	// IsSecret Whether the key is a secret. The history of a secret never holds a value.
+	IsSecret bool `json:"is_secret"`
+
+	// Key The name of the key.
+	Key string `json:"key"`
+
+	// NewKeyVersion The version of the encryption key of the secret after the change. 0 when the value was deleted.
+	NewKeyVersion int `json:"new_key_version"`
+
+	// OldKeyVersion The version of the encryption key of the secret before the change. 0 when there was none.
+	OldKeyVersion int `json:"old_key_version"`
+
+	// Source Where the change was made from. `api` is this API, `cli` the command line tool of the service.
+	Source ServiceConfigHistorySource `json:"source"`
+
+	// TmCreate The timestamp of the change.
+	TmCreate time.Time `json:"tm_create"`
+}
+
+// ServiceConfigHistoryAction What was done. `set` stores a value, `clear` deletes the stored value.
+type ServiceConfigHistoryAction string
+
+// ServiceConfigHistoryList defines model for ServiceConfigHistoryList.
+type ServiceConfigHistoryList struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                `json:"next_page_token,omitempty"`
+	Result        []ServiceConfigHistory `json:"result"`
+}
+
+// ServiceConfigHistorySource Where the change was made from. `api` is this API, `cli` the command line tool of the service.
+type ServiceConfigHistorySource string
+
+// ServiceConfigKey One config key and its current state. It never contains a secret, a length or a hash of a secret, or the value of an environment variable.
+type ServiceConfigKey struct {
+	// Description One line that tells what the key is for.
+	Description string `json:"description"`
+
+	// EnvName The name of the environment variable that the service reads when no value is stored. It is the name only, never the value. Omitted when the key has no environment variable.
+	EnvName *string `json:"env_name,omitempty"`
+
+	// EnvShadowed Whether the environment variable is set but not used, because a stored value takes precedence.
+	EnvShadowed bool `json:"env_shadowed"`
+
+	// HasSecret Whether a secret value exists, stored or in the environment. The secret itself is never returned.
+	HasSecret bool `json:"has_secret"`
+
+	// Key The name of the key.
+	Key string `json:"key"`
+
+	// KeyVersion The version of the encryption key that encrypted the stored secret. 0 when no secret is stored.
+	KeyVersion int `json:"key_version"`
+
+	// Kind The role of the key. A `secret` is encrypted and write-only.
+	Kind ServiceConfigKeyKind `json:"kind"`
+
+	// Revision The revision of the stored value, to be sent back when the key is changed. 0 when no value is stored. It starts at 1 again when a key is deleted and set again.
+	Revision int64 `json:"revision"`
+
+	// Source Where the value that the service uses comes from. `db` is the stored value, `env` the environment of the service, `default` the default of the key, `none` that the key has no value anywhere.
+	// `db_undecryptable` means that the stored secret cannot be decrypted (for example the encryption key was lost) and `db_invalid` that the stored value does not fit the declaration of the key. The service does not fall back to the environment in these two cases; store a new value or delete the stored value to recover.
+	Source ServiceConfigKeySource `json:"source"`
+
+	// TmUpdate The timestamp of the last change of the stored value. Omitted when no value is stored.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// Type The value type of the key.
+	Type ServiceConfigKeyType `json:"type"`
+
+	// UpdatedBy The agent who last changed the stored value. The agent ID returned from the `GET /agents` response. Omitted when no value is stored.
+	UpdatedBy *string `json:"updated_by,omitempty"`
+}
+
+// ServiceConfigKeyKind The role of the key. A `secret` is encrypted and write-only.
+type ServiceConfigKeyKind string
+
+// ServiceConfigKeySecretRequest The secret to store. It is write-only and never returned.
+type ServiceConfigKeySecretRequest struct {
+	// Revision The `revision` of the key returned from the `GET /service_configs/{service}` response. 0 means that the key has no stored value.
+	Revision int64 `json:"revision"`
+
+	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte). It must not start or end with white space or contain a line break; it is rejected, not trimmed.
+	Secret *string `json:"secret,omitempty"`
+}
+
+// ServiceConfigKeySource Where the value that the service uses comes from. `db` is the stored value, `env` the environment of the service, `default` the default of the key, `none` that the key has no value anywhere.
+// `db_undecryptable` means that the stored secret cannot be decrypted (for example the encryption key was lost) and `db_invalid` that the stored value does not fit the declaration of the key. The service does not fall back to the environment in these two cases; store a new value or delete the stored value to recover.
+type ServiceConfigKeySource string
+
+// ServiceConfigKeyType The value type of the key.
+type ServiceConfigKeyType string
+
+// ServiceConfigServiceName The name of a service that has config keys.
+type ServiceConfigServiceName string
+
 // StorageManagerAccount defines model for StorageManagerAccount.
 type StorageManagerAccount struct {
 	// CustomerId The unique identifier of the customer who owns this storage account. Returned from the `GET /customers` response.
@@ -8381,6 +8627,12 @@ type PageSize = int
 
 // PageToken defines model for PageToken.
 type PageToken = string
+
+// ServiceConfigKeyName defines model for ServiceConfigKeyName.
+type ServiceConfigKeyName = string
+
+// ServiceConfigService The name of a service that has config keys.
+type ServiceConfigService = ServiceConfigServiceName
 
 // BadRequest defines model for BadRequest.
 type BadRequest = ErrorResponse
@@ -11055,6 +11307,21 @@ type PostServiceAgentsTransfersJSONBody struct {
 	TransfererCallId openapi_types.UUID `json:"transferer_call_id"`
 }
 
+// DeleteServiceConfigsServiceKeysKeyParams defines parameters for DeleteServiceConfigsServiceKeysKey.
+type DeleteServiceConfigsServiceKeysKeyParams struct {
+	// Revision The `revision` of the key returned from the `GET /service_configs/{service}` response. 0 means that the key has no stored value.
+	Revision int64 `form:"revision" json:"revision"`
+}
+
+// GetServiceConfigsServiceKeysKeyHistoriesParams defines parameters for GetServiceConfigsServiceKeysKeyHistories.
+type GetServiceConfigsServiceKeysKeyHistoriesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetSpeakingsParams defines parameters for GetSpeakings.
 type GetSpeakingsParams struct {
 	PageSize  *int    `form:"page_size,omitempty" json:"page_size,omitempty"`
@@ -11851,6 +12118,9 @@ type PostServiceAgentsTranscribesJSONRequestBody PostServiceAgentsTranscribesJSO
 
 // PostServiceAgentsTransfersJSONRequestBody defines body for PostServiceAgentsTransfers for application/json ContentType.
 type PostServiceAgentsTransfersJSONRequestBody PostServiceAgentsTransfersJSONBody
+
+// PutServiceConfigsServiceKeysKeySecretJSONRequestBody defines body for PutServiceConfigsServiceKeysKeySecret for application/json ContentType.
+type PutServiceConfigsServiceKeysKeySecretJSONRequestBody = ServiceConfigKeySecretRequest
 
 // PostSpeakingsJSONRequestBody defines body for PostSpeakings for application/json ContentType.
 type PostSpeakingsJSONRequestBody PostSpeakingsJSONBody
@@ -13108,6 +13378,18 @@ type ServerInterface interface {
 	// Establish a WebSocket connection
 	// (GET /service_agents/ws)
 	GetServiceAgentsWs(c *gin.Context)
+	// Get the config keys of a service
+	// (GET /service_configs/{service})
+	GetServiceConfigsService(c *gin.Context, service ServiceConfigService)
+	// Delete the stored value of a config key
+	// (DELETE /service_configs/{service}/keys/{key})
+	DeleteServiceConfigsServiceKeysKey(c *gin.Context, service ServiceConfigService, key ServiceConfigKeyName, params DeleteServiceConfigsServiceKeysKeyParams)
+	// List the changes of a config key
+	// (GET /service_configs/{service}/keys/{key}/histories)
+	GetServiceConfigsServiceKeysKeyHistories(c *gin.Context, service ServiceConfigService, key ServiceConfigKeyName, params GetServiceConfigsServiceKeysKeyHistoriesParams)
+	// Store the secret of a config key
+	// (PUT /service_configs/{service}/keys/{key}/secret)
+	PutServiceConfigsServiceKeysKeySecret(c *gin.Context, service ServiceConfigService, key ServiceConfigKeyName)
 	// List speaking sessions
 	// (GET /speakings)
 	GetSpeakings(c *gin.Context, params GetSpeakingsParams)
@@ -23598,6 +23880,163 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsWs(c *gin.Context) {
 	siw.Handler.GetServiceAgentsWs(c)
 }
 
+// GetServiceConfigsService operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceConfigsService(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "service" -------------
+	var service ServiceConfigService
+
+	err = runtime.BindStyledParameterWithOptions("simple", "service", c.Param("service"), &service, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter service: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceConfigsService(c, service)
+}
+
+// DeleteServiceConfigsServiceKeysKey operation middleware
+func (siw *ServerInterfaceWrapper) DeleteServiceConfigsServiceKeysKey(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "service" -------------
+	var service ServiceConfigService
+
+	err = runtime.BindStyledParameterWithOptions("simple", "service", c.Param("service"), &service, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter service: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "key" -------------
+	var key ServiceConfigKeyName
+
+	err = runtime.BindStyledParameterWithOptions("simple", "key", c.Param("key"), &key, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter key: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteServiceConfigsServiceKeysKeyParams
+
+	// ------------- Required query parameter "revision" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "revision", c.Request.URL.Query(), &params.Revision, runtime.BindQueryParameterOptions{Type: "integer", Format: "int64"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter revision: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteServiceConfigsServiceKeysKey(c, service, key, params)
+}
+
+// GetServiceConfigsServiceKeysKeyHistories operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceConfigsServiceKeysKeyHistories(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "service" -------------
+	var service ServiceConfigService
+
+	err = runtime.BindStyledParameterWithOptions("simple", "service", c.Param("service"), &service, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter service: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "key" -------------
+	var key ServiceConfigKeyName
+
+	err = runtime.BindStyledParameterWithOptions("simple", "key", c.Param("key"), &key, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter key: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceConfigsServiceKeysKeyHistoriesParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceConfigsServiceKeysKeyHistories(c, service, key, params)
+}
+
+// PutServiceConfigsServiceKeysKeySecret operation middleware
+func (siw *ServerInterfaceWrapper) PutServiceConfigsServiceKeysKeySecret(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "service" -------------
+	var service ServiceConfigService
+
+	err = runtime.BindStyledParameterWithOptions("simple", "service", c.Param("service"), &service, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter service: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "key" -------------
+	var key ServiceConfigKeyName
+
+	err = runtime.BindStyledParameterWithOptions("simple", "key", c.Param("key"), &key, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter key: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutServiceConfigsServiceKeysKeySecret(c, service, key)
+}
+
 // GetSpeakings operation middleware
 func (siw *ServerInterfaceWrapper) GetSpeakings(c *gin.Context) {
 
@@ -25625,6 +26064,10 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/service_agents/transcripts", wrapper.GetServiceAgentsTranscripts)
 	router.POST(options.BaseURL+"/service_agents/transfers", wrapper.PostServiceAgentsTransfers)
 	router.GET(options.BaseURL+"/service_agents/ws", wrapper.GetServiceAgentsWs)
+	router.GET(options.BaseURL+"/service_configs/:service", wrapper.GetServiceConfigsService)
+	router.DELETE(options.BaseURL+"/service_configs/:service/keys/:key", wrapper.DeleteServiceConfigsServiceKeysKey)
+	router.GET(options.BaseURL+"/service_configs/:service/keys/:key/histories", wrapper.GetServiceConfigsServiceKeysKeyHistories)
+	router.PUT(options.BaseURL+"/service_configs/:service/keys/:key/secret", wrapper.PutServiceConfigsServiceKeysKeySecret)
 	router.GET(options.BaseURL+"/speakings", wrapper.GetSpeakings)
 	router.POST(options.BaseURL+"/speakings", wrapper.PostSpeakings)
 	router.DELETE(options.BaseURL+"/speakings/:id", wrapper.DeleteSpeakingsId)
@@ -58156,6 +58599,408 @@ func (response GetServiceAgentsWs500JSONResponse) VisitGetServiceAgentsWsRespons
 	return err
 }
 
+type GetServiceConfigsServiceRequestObject struct {
+	Service ServiceConfigService `json:"service"`
+}
+
+type GetServiceConfigsServiceResponseObject interface {
+	VisitGetServiceConfigsServiceResponse(w http.ResponseWriter) error
+}
+
+type GetServiceConfigsService200JSONResponse ServiceConfig
+
+func (response GetServiceConfigsService200JSONResponse) VisitGetServiceConfigsServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceConfigsService401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceConfigsService401JSONResponse) VisitGetServiceConfigsServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceConfigsService403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceConfigsService403JSONResponse) VisitGetServiceConfigsServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceConfigsService404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetServiceConfigsService404JSONResponse) VisitGetServiceConfigsServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceConfigsService500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceConfigsService500JSONResponse) VisitGetServiceConfigsServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceConfigsServiceKeysKeyRequestObject struct {
+	Service ServiceConfigService `json:"service"`
+	Key     ServiceConfigKeyName `json:"key"`
+	Params  DeleteServiceConfigsServiceKeysKeyParams
+}
+
+type DeleteServiceConfigsServiceKeysKeyResponseObject interface {
+	VisitDeleteServiceConfigsServiceKeysKeyResponse(w http.ResponseWriter) error
+}
+
+type DeleteServiceConfigsServiceKeysKey200JSONResponse ServiceConfigKey
+
+func (response DeleteServiceConfigsServiceKeysKey200JSONResponse) VisitDeleteServiceConfigsServiceKeysKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceConfigsServiceKeysKey400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteServiceConfigsServiceKeysKey400JSONResponse) VisitDeleteServiceConfigsServiceKeysKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceConfigsServiceKeysKey401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteServiceConfigsServiceKeysKey401JSONResponse) VisitDeleteServiceConfigsServiceKeysKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceConfigsServiceKeysKey403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteServiceConfigsServiceKeysKey403JSONResponse) VisitDeleteServiceConfigsServiceKeysKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceConfigsServiceKeysKey404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteServiceConfigsServiceKeysKey404JSONResponse) VisitDeleteServiceConfigsServiceKeysKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceConfigsServiceKeysKey409JSONResponse struct{ ConflictJSONResponse }
+
+func (response DeleteServiceConfigsServiceKeysKey409JSONResponse) VisitDeleteServiceConfigsServiceKeysKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceConfigsServiceKeysKey500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteServiceConfigsServiceKeysKey500JSONResponse) VisitDeleteServiceConfigsServiceKeysKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceConfigsServiceKeysKeyHistoriesRequestObject struct {
+	Service ServiceConfigService `json:"service"`
+	Key     ServiceConfigKeyName `json:"key"`
+	Params  GetServiceConfigsServiceKeysKeyHistoriesParams
+}
+
+type GetServiceConfigsServiceKeysKeyHistoriesResponseObject interface {
+	VisitGetServiceConfigsServiceKeysKeyHistoriesResponse(w http.ResponseWriter) error
+}
+
+type GetServiceConfigsServiceKeysKeyHistories200JSONResponse ServiceConfigHistoryList
+
+func (response GetServiceConfigsServiceKeysKeyHistories200JSONResponse) VisitGetServiceConfigsServiceKeysKeyHistoriesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceConfigsServiceKeysKeyHistories400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceConfigsServiceKeysKeyHistories400JSONResponse) VisitGetServiceConfigsServiceKeysKeyHistoriesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceConfigsServiceKeysKeyHistories401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceConfigsServiceKeysKeyHistories401JSONResponse) VisitGetServiceConfigsServiceKeysKeyHistoriesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceConfigsServiceKeysKeyHistories403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceConfigsServiceKeysKeyHistories403JSONResponse) VisitGetServiceConfigsServiceKeysKeyHistoriesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceConfigsServiceKeysKeyHistories404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetServiceConfigsServiceKeysKeyHistories404JSONResponse) VisitGetServiceConfigsServiceKeysKeyHistoriesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceConfigsServiceKeysKeyHistories500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceConfigsServiceKeysKeyHistories500JSONResponse) VisitGetServiceConfigsServiceKeysKeyHistoriesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceConfigsServiceKeysKeySecretRequestObject struct {
+	Service ServiceConfigService `json:"service"`
+	Key     ServiceConfigKeyName `json:"key"`
+	Body    *PutServiceConfigsServiceKeysKeySecretJSONRequestBody
+}
+
+type PutServiceConfigsServiceKeysKeySecretResponseObject interface {
+	VisitPutServiceConfigsServiceKeysKeySecretResponse(w http.ResponseWriter) error
+}
+
+type PutServiceConfigsServiceKeysKeySecret200JSONResponse ServiceConfigKey
+
+func (response PutServiceConfigsServiceKeysKeySecret200JSONResponse) VisitPutServiceConfigsServiceKeysKeySecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceConfigsServiceKeysKeySecret400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutServiceConfigsServiceKeysKeySecret400JSONResponse) VisitPutServiceConfigsServiceKeysKeySecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceConfigsServiceKeysKeySecret401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutServiceConfigsServiceKeysKeySecret401JSONResponse) VisitPutServiceConfigsServiceKeysKeySecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceConfigsServiceKeysKeySecret403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PutServiceConfigsServiceKeysKeySecret403JSONResponse) VisitPutServiceConfigsServiceKeysKeySecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceConfigsServiceKeysKeySecret404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PutServiceConfigsServiceKeysKeySecret404JSONResponse) VisitPutServiceConfigsServiceKeysKeySecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceConfigsServiceKeysKeySecret409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PutServiceConfigsServiceKeysKeySecret409JSONResponse) VisitPutServiceConfigsServiceKeysKeySecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceConfigsServiceKeysKeySecret500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutServiceConfigsServiceKeysKeySecret500JSONResponse) VisitPutServiceConfigsServiceKeysKeySecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceConfigsServiceKeysKeySecret503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PutServiceConfigsServiceKeysKeySecret503JSONResponse) VisitPutServiceConfigsServiceKeysKeySecretResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetSpeakingsRequestObject struct {
 	Params GetSpeakingsParams
 }
@@ -64522,6 +65367,18 @@ type StrictServerInterface interface {
 	// Establish a WebSocket connection
 	// (GET /service_agents/ws)
 	GetServiceAgentsWs(ctx context.Context, request GetServiceAgentsWsRequestObject) (GetServiceAgentsWsResponseObject, error)
+	// Get the config keys of a service
+	// (GET /service_configs/{service})
+	GetServiceConfigsService(ctx context.Context, request GetServiceConfigsServiceRequestObject) (GetServiceConfigsServiceResponseObject, error)
+	// Delete the stored value of a config key
+	// (DELETE /service_configs/{service}/keys/{key})
+	DeleteServiceConfigsServiceKeysKey(ctx context.Context, request DeleteServiceConfigsServiceKeysKeyRequestObject) (DeleteServiceConfigsServiceKeysKeyResponseObject, error)
+	// List the changes of a config key
+	// (GET /service_configs/{service}/keys/{key}/histories)
+	GetServiceConfigsServiceKeysKeyHistories(ctx context.Context, request GetServiceConfigsServiceKeysKeyHistoriesRequestObject) (GetServiceConfigsServiceKeysKeyHistoriesResponseObject, error)
+	// Store the secret of a config key
+	// (PUT /service_configs/{service}/keys/{key}/secret)
+	PutServiceConfigsServiceKeysKeySecret(ctx context.Context, request PutServiceConfigsServiceKeysKeySecretRequestObject) (PutServiceConfigsServiceKeysKeySecretResponseObject, error)
 	// List speaking sessions
 	// (GET /speakings)
 	GetSpeakings(ctx context.Context, request GetSpeakingsRequestObject) (GetSpeakingsResponseObject, error)
@@ -75858,6 +76715,122 @@ func (sh *strictHandler) GetServiceAgentsWs(ctx *gin.Context) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(GetServiceAgentsWsResponseObject); ok {
 		if err := validResponse.VisitGetServiceAgentsWsResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceConfigsService operation middleware
+func (sh *strictHandler) GetServiceConfigsService(ctx *gin.Context, service ServiceConfigService) {
+	var request GetServiceConfigsServiceRequestObject
+
+	request.Service = service
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceConfigsService(ctx, request.(GetServiceConfigsServiceRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceConfigsService")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetServiceConfigsServiceResponseObject); ok {
+		if err := validResponse.VisitGetServiceConfigsServiceResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteServiceConfigsServiceKeysKey operation middleware
+func (sh *strictHandler) DeleteServiceConfigsServiceKeysKey(ctx *gin.Context, service ServiceConfigService, key ServiceConfigKeyName, params DeleteServiceConfigsServiceKeysKeyParams) {
+	var request DeleteServiceConfigsServiceKeysKeyRequestObject
+
+	request.Service = service
+	request.Key = key
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteServiceConfigsServiceKeysKey(ctx, request.(DeleteServiceConfigsServiceKeysKeyRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteServiceConfigsServiceKeysKey")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(DeleteServiceConfigsServiceKeysKeyResponseObject); ok {
+		if err := validResponse.VisitDeleteServiceConfigsServiceKeysKeyResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceConfigsServiceKeysKeyHistories operation middleware
+func (sh *strictHandler) GetServiceConfigsServiceKeysKeyHistories(ctx *gin.Context, service ServiceConfigService, key ServiceConfigKeyName, params GetServiceConfigsServiceKeysKeyHistoriesParams) {
+	var request GetServiceConfigsServiceKeysKeyHistoriesRequestObject
+
+	request.Service = service
+	request.Key = key
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceConfigsServiceKeysKeyHistories(ctx, request.(GetServiceConfigsServiceKeysKeyHistoriesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceConfigsServiceKeysKeyHistories")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetServiceConfigsServiceKeysKeyHistoriesResponseObject); ok {
+		if err := validResponse.VisitGetServiceConfigsServiceKeysKeyHistoriesResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutServiceConfigsServiceKeysKeySecret operation middleware
+func (sh *strictHandler) PutServiceConfigsServiceKeysKeySecret(ctx *gin.Context, service ServiceConfigService, key ServiceConfigKeyName) {
+	var request PutServiceConfigsServiceKeysKeySecretRequestObject
+
+	request.Service = service
+	request.Key = key
+
+	var body PutServiceConfigsServiceKeysKeySecretJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutServiceConfigsServiceKeysKeySecret(ctx, request.(PutServiceConfigsServiceKeysKeySecretRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutServiceConfigsServiceKeysKeySecret")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PutServiceConfigsServiceKeysKeySecretResponseObject); ok {
+		if err := validResponse.VisitPutServiceConfigsServiceKeysKeySecretResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

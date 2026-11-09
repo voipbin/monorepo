@@ -1,0 +1,25 @@
+get:
+  summary: Get the config keys of a service
+  description: |
+    Returns every config key of the service with its current state: the kind and type of the key, where its value comes from (`source`), whether a secret is stored, and the `revision` to send back when the key is changed. `secret_writable` tells whether the platform has an encryption key, which a secret needs.
+    The response never contains a secret, a length or a hash of a secret, or the value of an environment variable. `env_name` is the name of the variable, not its value.
+    Requires the project super admin permission.
+  tags:
+    - ServiceConfig
+  parameters:
+    - $ref: '#/components/parameters/ServiceConfigService'
+  responses:
+    '200':
+      description: The config keys of the service.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServiceConfig'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

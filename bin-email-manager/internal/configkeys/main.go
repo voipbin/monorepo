@@ -30,9 +30,9 @@ const maxSecretLen = 512
 // before the configs existed, so a database without rows behaves exactly as before.
 func Keys() []confighandler.Key {
 	return []confighandler.Key{
-		{Name: KeySendgridAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: "SENDGRID_API_KEY", MaxLen: maxSecretLen},
-		{Name: KeyMailgunAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: "MAILGUN_API_KEY", MaxLen: maxSecretLen},
-		{Name: KeyMailgunWebhookSigningKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: "MAILGUN_WEBHOOK_SIGNING_KEY", MaxLen: maxSecretLen},
+		{Name: KeySendgridAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "API key of the SendGrid account that sends email.", Env: "SENDGRID_API_KEY", MaxLen: maxSecretLen},
+		{Name: KeyMailgunAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "API key of the Mailgun account that sends email.", Env: "MAILGUN_API_KEY", MaxLen: maxSecretLen},
+		{Name: KeyMailgunWebhookSigningKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "Key that verifies the signature of the Mailgun delivery webhooks.", Env: "MAILGUN_WEBHOOK_SIGNING_KEY", MaxLen: maxSecretLen},
 	}
 }
 

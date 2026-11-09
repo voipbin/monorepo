@@ -45,6 +45,7 @@ import (
 	outline "monorepo/bin-common-handler/models/outline"
 	service "monorepo/bin-common-handler/models/service"
 	sock "monorepo/bin-common-handler/models/sock"
+	configrpc "monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	conference "monorepo/bin-conference-manager/models/conference"
 	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
 	casenote "monorepo/bin-contact-manager/models/casenote"
@@ -3723,6 +3724,66 @@ func (m *MockRequestHandler) ConferenceV1ServiceTypeConferencecallStart(ctx cont
 func (mr *MockRequestHandlerMockRecorder) ConferenceV1ServiceTypeConferencecallStart(ctx, activeflowID, conferenceID, referenceType, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ServiceTypeConferencecallStart", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ServiceTypeConferencecallStart), ctx, activeflowID, conferenceID, referenceType, referenceID)
+}
+
+// ConfigV1KeyClear mocks base method.
+func (m *MockRequestHandler) ConfigV1KeyClear(ctx context.Context, arg1, key string, actorID uuid.UUID, revision uint32) (*configrpc.Key, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfigV1KeyClear", ctx, arg1, key, actorID, revision)
+	ret0, _ := ret[0].(*configrpc.Key)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConfigV1KeyClear indicates an expected call of ConfigV1KeyClear.
+func (mr *MockRequestHandlerMockRecorder) ConfigV1KeyClear(ctx, arg1, key, actorID, revision any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigV1KeyClear", reflect.TypeOf((*MockRequestHandler)(nil).ConfigV1KeyClear), ctx, arg1, key, actorID, revision)
+}
+
+// ConfigV1KeyHistoryList mocks base method.
+func (m *MockRequestHandler) ConfigV1KeyHistoryList(ctx context.Context, arg1, key, pageToken string, pageSize int) (*configrpc.HistoryList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfigV1KeyHistoryList", ctx, arg1, key, pageToken, pageSize)
+	ret0, _ := ret[0].(*configrpc.HistoryList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConfigV1KeyHistoryList indicates an expected call of ConfigV1KeyHistoryList.
+func (mr *MockRequestHandlerMockRecorder) ConfigV1KeyHistoryList(ctx, arg1, key, pageToken, pageSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigV1KeyHistoryList", reflect.TypeOf((*MockRequestHandler)(nil).ConfigV1KeyHistoryList), ctx, arg1, key, pageToken, pageSize)
+}
+
+// ConfigV1KeySecretSet mocks base method.
+func (m *MockRequestHandler) ConfigV1KeySecretSet(ctx context.Context, arg1, key string, actorID uuid.UUID, secret string, revision uint32) (*configrpc.Key, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfigV1KeySecretSet", ctx, arg1, key, actorID, secret, revision)
+	ret0, _ := ret[0].(*configrpc.Key)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConfigV1KeySecretSet indicates an expected call of ConfigV1KeySecretSet.
+func (mr *MockRequestHandlerMockRecorder) ConfigV1KeySecretSet(ctx, arg1, key, actorID, secret, revision any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigV1KeySecretSet", reflect.TypeOf((*MockRequestHandler)(nil).ConfigV1KeySecretSet), ctx, arg1, key, actorID, secret, revision)
+}
+
+// ConfigV1ServiceGet mocks base method.
+func (m *MockRequestHandler) ConfigV1ServiceGet(ctx context.Context, arg1 string) (*configrpc.Service, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfigV1ServiceGet", ctx, arg1)
+	ret0, _ := ret[0].(*configrpc.Service)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConfigV1ServiceGet indicates an expected call of ConfigV1ServiceGet.
+func (mr *MockRequestHandlerMockRecorder) ConfigV1ServiceGet(ctx, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigV1ServiceGet", reflect.TypeOf((*MockRequestHandler)(nil).ConfigV1ServiceGet), ctx, arg1)
 }
 
 // ContactV1AddressCreate mocks base method.

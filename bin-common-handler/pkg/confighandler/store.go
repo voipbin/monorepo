@@ -39,6 +39,12 @@ type History struct {
 	TMCreate      time.Time
 }
 
+// HistoryCursor marks the last history row of a page. The zero value means the first page.
+type HistoryCursor struct {
+	TMCreate time.Time
+	ID       uuid.UUID
+}
+
 // Store is implemented by each service on its own configs tables.
 // Every write stores the row change and the history row in one transaction.
 type Store interface {
@@ -57,4 +63,9 @@ type Store interface {
 	// Delete removes the row when its revision is expectRevision. It returns ErrConflict when no
 	// row matches.
 	Delete(ctx context.Context, key string, expectRevision uint32, hist *History) error
+
+	// ListHistories returns the history rows of the key, ordered by TMCreate and ID descending,
+	// that come after the cursor (strictly older, or the same time with a smaller ID). At most
+	// limit rows. A zero cursor starts at the newest row.
+	ListHistories(ctx context.Context, key string, after HistoryCursor, limit int) ([]*History, error)
 }

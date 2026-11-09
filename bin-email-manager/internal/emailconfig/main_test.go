@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"strings"
 	"testing"
@@ -12,7 +13,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/confighandler"
+	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	"monorepo/bin-common-handler/pkg/confighandler/storetest"
 
 	"monorepo/bin-email-manager/internal/config"
@@ -235,5 +239,47 @@ func Test_LogSources_unusableRow(t *testing.T) {
 	LogSources(context.Background(), newTestHandler(t, &config.Config{}, store))
 	if !strings.Contains(buf.String(), "can not be used") || strings.Contains(buf.String(), "stored-one") {
 		t.Errorf("Wrong match. got: %q", buf.String())
+	}
+}
+
+// A key written through the config RPC is the value that the supplier returns on the very next
+// call, without a restart, and a clear brings the environment value back (the provider is fake:
+// only the supplier of the credential is exercised, nothing is sent).
+func Test_Supplier_followsTheConfigRPC(t *testing.T) {
+	cfg := &config.Config{MailgunAPIKey: "env-mailgun", ConfigEncryptionKeys: testKeyList(1)}
+	h := newTestHandler(t, cfg, storetest.NewMemory())
+	server := configrpc.NewServer(h, commonoutline.ServiceNameEmailManager)
+	supplier := Supplier(h, configkeys.KeyMailgunAPIKey)
+	actor := uuid.Must(uuid.NewV4())
+
+	call := func(method sock.RequestMethod, uri, body string) *sock.Response {
+		t.Helper()
+
+		res, err := server.Handle(context.Background(), &sock.Request{URI: uri, Method: method, Data: json.RawMessage(body)})
+		if err != nil || res.StatusCode != 200 {
+			t.Fatalf("Wrong match. expect: 200, got: %v %v", res, err)
+		}
+
+		return res
+	}
+	uri := "/v1/configs/" + configkeys.KeyMailgunAPIKey
+
+	if got, _ := supplier(context.Background()); got != "env-mailgun" {
+		t.Fatalf("Wrong match. expect: the environment, got: %q", got)
+	}
+
+	call(sock.RequestMethodPut, uri+"/secret", `{"actor_id":"`+actor.String()+`","secret":"stored-one","revision":0}`)
+	if got, _ := supplier(context.Background()); got != "stored-one" {
+		t.Errorf("Wrong match. expect: the written value at once, got: %q", got)
+	}
+
+	call(sock.RequestMethodPut, uri+"/secret", `{"actor_id":"`+actor.String()+`","secret":"stored-two","revision":1}`)
+	if got, _ := supplier(context.Background()); got != "stored-two" {
+		t.Errorf("Wrong match. expect: the rotated value at once, got: %q", got)
+	}
+
+	call(sock.RequestMethodDelete, uri, `{"actor_id":"`+actor.String()+`","revision":2}`)
+	if got, _ := supplier(context.Background()); got != "env-mailgun" {
+		t.Errorf("Wrong match. expect: the environment again, got: %q", got)
 	}
 }

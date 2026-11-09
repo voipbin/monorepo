@@ -8,6 +8,7 @@ import (
 	"errors"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -209,5 +210,162 @@ func Test_configStore_mysql_endToEnd(t *testing.T) {
 	_ = db.QueryRow("select count(*), sum(old_value_json is not null or new_value_json is not null) from email_config_histories").Scan(&histories, &withValue)
 	if histories != 3 || withValue != 0 {
 		t.Errorf("Wrong match. expect: 3 history rows without a value, got: %d, %d", histories, withValue)
+	}
+}
+
+// The history query reads through the index of the key: it must not scan the whole table, for the
+// first page and for a page after a cursor.
+func Test_configStore_mysql_historiesUseTheKeyIndex(t *testing.T) {
+	db := openMySQLForConfigs(t)
+
+	actor := uuid.Must(uuid.NewV4())
+	base := time.Date(2026, 5, 6, 7, 8, 9, 0, time.UTC)
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	for i := 0; i < 3000; i++ {
+		key := []string{"sendgrid.api_key", "mailgun.api_key", "mailgun.webhook_signing_key"}[i%3]
+		_, err := tx.Exec("insert into email_config_histories (id, config_key, action, is_secret, old_key_version, new_key_version, actor_id, source, tm_create) values (?, ?, 'set', 1, 0, 1, ?, 'api', ?)",
+			uuid.Must(uuid.NewV4()).Bytes(), key, actor.Bytes(), base.Add(time.Duration(i/3)*time.Second))
+		if err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if _, err := db.Exec("analyze table email_config_histories"); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	cursors := map[string]confighandler.HistoryCursor{
+		"first page":     {},
+		"after a cursor": {TMCreate: base.Add(500 * time.Second), ID: uuid.Must(uuid.NewV4())},
+	}
+	for name, cursor := range cursors {
+		t.Run(name, func(t *testing.T) {
+			query, args, err := historiesQuery("mailgun.api_key", cursor, 21)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			rows, err := db.Query("explain "+query, args...)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			defer func() { _ = rows.Close() }()
+
+			cols, _ := rows.Columns()
+			found := false
+			for rows.Next() {
+				vals := make([]any, len(cols))
+				ptrs := make([]any, len(cols))
+				for i := range vals {
+					ptrs[i] = &vals[i]
+				}
+				if err := rows.Scan(ptrs...); err != nil {
+					t.Fatalf("Wrong match. expect: ok, got: %v", err)
+				}
+				for i, c := range cols {
+					if strings.EqualFold(c, "key") {
+						used := ""
+						if b, ok := vals[i].([]byte); ok {
+							used = string(b)
+						}
+						t.Logf("explain key: %q", used)
+						if used != "idx_email_config_histories_key" {
+							t.Errorf("Wrong match. expect: idx_email_config_histories_key, got: %q", used)
+						}
+						found = true
+					}
+				}
+			}
+			if !found {
+				t.Errorf("Wrong match. no key column in the explain output: %v", cols)
+			}
+		})
+	}
+}
+
+// Two writers that expect the same revision, on the real database: exactly one wins, the other is
+// stale, and the history holds one row. After a clear and a new set, revision 1 is accepted again.
+func Test_configStore_mysql_expectRevision(t *testing.T) {
+	db := openMySQLForConfigs(t)
+	ctx := context.Background()
+
+	raw := make([]byte, 32)
+	for i := range raw {
+		raw[i] = byte(0x50 + i)
+	}
+	crypto, err := secretcrypto.New("1:"+base64.StdEncoding.EncodeToString(raw), secretcrypto.WithMaxPlaintext(2020))
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	reg, err := configkeys.NewRegistry()
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	h := confighandler.NewHandler(reg, NewConfigStore(db), crypto, func(string) (string, bool) { return "", false })
+	actor := uuid.Must(uuid.NewV4())
+	key := configkeys.KeyMailgunAPIKey
+
+	if _, err := h.SetSecret(ctx, actor, key, "test-secret-not-real", confighandler.ExpectRevision(0)); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	const writers = 8
+	var wg sync.WaitGroup
+	errs := make([]error, writers)
+	for i := 0; i < writers; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			_, errs[i] = h.SetSecret(ctx, actor, key, "test-secret-not-real-2", confighandler.ExpectRevision(1))
+		}(i)
+	}
+	wg.Wait()
+
+	ok, stale := 0, 0
+	for _, err := range errs {
+		switch {
+		case err == nil:
+			ok++
+		case errors.Is(err, confighandler.ErrStale):
+			stale++
+		default:
+			t.Errorf("Wrong match. unexpected error: %v", err)
+		}
+	}
+	if ok != 1 || stale != writers-1 {
+		t.Errorf("Wrong match. expect: 1 ok, %d stale, got: %d ok, %d stale", writers-1, ok, stale)
+	}
+
+	var histories int
+	_ = db.QueryRow("select count(*) from email_config_histories where config_key = ?", key).Scan(&histories)
+	if histories != 2 {
+		t.Errorf("Wrong match. expect: 2 history rows (the first write and the one winner), got: %d", histories)
+	}
+
+	// the accepted limit: a recreate gives revision 1 again, and the old holder of 1 is not detected
+	if _, err := h.Clear(ctx, actor, key, confighandler.ExpectRevision(2)); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if _, err := h.SetSecret(ctx, actor, key, "test-secret-not-real-3", confighandler.ExpectRevision(0)); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if _, err := h.SetSecret(ctx, actor, key, "test-secret-not-real-4", confighandler.ExpectRevision(1)); err != nil {
+		t.Errorf("Wrong match. expect: ok (accepted limit), got: %v", err)
+	}
+
+	// the history through the handler: newest first, without a value
+	got, next, err := h.Histories(ctx, key, "", 3)
+	if err != nil || len(got) != 3 || next == "" {
+		t.Fatalf("Wrong match. got: %d %q %v", len(got), next, err)
+	}
+	for _, hist := range got {
+		if !hist.IsSecret || hist.OldValueJSON != nil || hist.NewValueJSON != nil {
+			t.Errorf("Wrong match. got: %+v", hist)
+		}
 	}
 }

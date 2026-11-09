@@ -52,3 +52,8 @@ The `listenhandler` consumes from queue `QueueNameEmailRequest` and dispatches b
 | GET | `/v1/emails/{uuid}` | Get email details |
 | DELETE | `/v1/emails/{uuid}` | Delete email |
 | POST | `/v1/hooks` | Process provider delivery webhook (SendGrid or Mailgun) |
+| GET | `/v1/configs` | List the config keys with their resolved state (admin, no secret material), served by `configrpc` |
+| PUT | `/v1/configs/{key}/secret` | Store a secret, write-only, with an expected revision (admin; `actor_id` required) |
+| DELETE | `/v1/configs/{key}` | Delete the stored value, with an expected revision (admin; `actor_id` required) |
+| GET | `/v1/configs/{key}/histories` | Page the change history of a key, newest first |
+
