@@ -37,7 +37,7 @@ RabbitMQ
 
 - **listenhandler**: URI regex routing only; no business logic.
 - **providerhandler**: Manages SIP provider configurations (hostname, tech prefix/postfix, SIP headers).
-- **routehandler**: Manages per-customer route mappings. The `DialrouteGets` function implements fallback merge logic between customer routes and the system default.
+- **routehandler**: Manages per-customer route mappings. The `DialrouteList` function implements fallback merge logic between customer routes and the system default.
 - **dbhandler**: `Masterminds/squirrel` query builder; soft-delete pattern for both tables.
 - **cachehandler**: Redis cache reduces DB load for frequent dialroute lookups during call setup.
 

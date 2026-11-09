@@ -34,7 +34,7 @@ Maps a customer destination to a provider with priority ordering.
 | `detail` | string | Description |
 | `provider_id` | UUID | Target provider |
 | `target` | string | Country code (e.g., `1`, `44`) or `all` for catch-all |
-| `priority` | int | Lower number = higher priority |
+| `priority` | int | Lower number = tried first. A route without a stored priority (NULL) is tried last |
 | `tm_create` | timestamp | |
 | `tm_update` | timestamp | |
 | `tm_delete` | timestamp | Soft-delete sentinel |
@@ -50,14 +50,14 @@ Not a stored entity — a computed result. The `GET /v1/dialroutes?customer_id=<
 ## Key Business Rules
 
 1. **Dialroute merge (fallback chain)**:
-   - `routehandler.DialrouteGets` first retrieves customer-specific routes for the target destination.
+   - `routehandler.DialrouteList` first retrieves customer-specific routes for the target destination.
    - It then retrieves default routes (`CustomerIDBasicRoute`) for the same target.
    - Results are merged: customer routes take precedence; default routes are appended for providers not already represented in customer routes.
    - This lets customers override specific providers while falling back to system defaults for others.
 
 2. **Target matching**: Routes are matched by exact `target` value. A target of `all` acts as a catch-all and is used as the fallback when no country-code-specific route exists. The dialroute lookup typically queries both the specific country code and `all`.
 
-3. **Priority ordering**: Within a customer's routes for a given target, lower `priority` values are returned first.
+3. **Priority ordering**: `routehandler.ListByTarget` returns the routes of the target and of `all` ordered by `priority` ascending (lower number is tried first; NULL is last). Routes with the same priority keep this order: target routes before `all` routes, newest first. The list API (`GET /v1/routes`) is not affected and keeps its `tm_create` ordering. Dialroutes are the customer routes in this order followed by the default routes in this order, so a default route never goes ahead of a customer route whatever its priority. A route without a stored priority is returned by `ListByTarget` (and so in dialroutes and `route-control` output) with `priority` 2147483647; the list API still returns it as 0. Synthetic routes (`route_provider_ids`) keep the given order.
 
 4. **Provider type**: Currently all providers are type `sip`. The type field exists for future extensibility.
 

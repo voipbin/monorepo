@@ -38,6 +38,7 @@ type DBHandler interface {
 	RouteCreate(ctx context.Context, r *route.Route) error
 	RouteGet(ctx context.Context, id uuid.UUID) (*route.Route, error)
 	RouteList(ctx context.Context, token string, limit uint64, filters map[route.Field]any) ([]*route.Route, error)
+	RouteListForDial(ctx context.Context, limit uint64, filters map[route.Field]any) ([]*route.Route, error)
 	RouteDelete(ctx context.Context, id uuid.UUID) error
 	RouteUpdate(ctx context.Context, id uuid.UUID, fields map[route.Field]any) error
 }

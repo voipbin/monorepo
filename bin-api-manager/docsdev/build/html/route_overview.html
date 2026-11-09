@@ -702,7 +702,7 @@
 <p><strong>Key Components</strong></p>
 <ul class="simple">
 <li><p><strong>Route</strong>: A rule that maps calls to providers</p></li>
-<li><p><strong>Priority</strong>: Order in which routes are attempted</p></li>
+<li><p><strong>Priority</strong>: Order in which routes are attempted. Routes are tried from the lowest priority number to the highest. A route without a priority is tried last, and routes with the same priority are tried newest first. Routes of the customer are always tried before the system default routes.</p></li>
 <li><p><strong>Failover</strong>: Automatic retry with different provider on failure</p></li>
 <li><p><strong>Conditions</strong>: Criteria for route selection</p></li>
 </ul>

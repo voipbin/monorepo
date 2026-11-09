@@ -59,7 +59,7 @@ Routes determine which provider handles each outbound call.
 **Key Components**
 
 - **Route**: A rule that maps calls to providers
-- **Priority**: Order in which routes are attempted
+- **Priority**: Order in which routes are attempted. Routes are tried from the lowest priority number to the highest. A route without a priority is tried last, and routes with the same priority are tried newest first. Routes of the customer are always tried before the system default routes.
 - **Failover**: Automatic retry with different provider on failure
 - **Conditions**: Criteria for route selection
 
