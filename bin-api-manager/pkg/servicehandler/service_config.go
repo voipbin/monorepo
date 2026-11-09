@@ -189,6 +189,12 @@ func (h *serviceHandler) ServiceConfigKeyHistoryList(ctx context.Context, a *aut
 		return nil, err
 	}
 
+	// a negative size would be dropped on the way and answered as the default size
+	if pageSize < 0 {
+		log.Info("The page size is not valid.")
+		return nil, serviceerrors.ErrInvalidArgument
+	}
+
 	res, err := h.reqHandler.ConfigV1KeyHistoryList(ctx, service, key, pageToken, pageSize)
 	if err != nil {
 		log.Errorf("Could not get the config history. err: %v", err)

@@ -252,6 +252,19 @@ func Test_ServiceConfig_validation(t *testing.T) {
 	}
 }
 
+// A negative page size is refused and does not reach the rpc.
+func Test_ServiceConfigKeyHistoryList_negativePageSize(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{reqHandler: mockReq}
+
+	if _, err := h.ServiceConfigKeyHistoryList(context.Background(), testProviderSuperAdmin(), "email", testServiceConfigKey, "", -5); !errors.Is(err, serviceerrors.ErrInvalidArgument) {
+		t.Errorf("Wrong match. expect: %v, got: %v", serviceerrors.ErrInvalidArgument, err)
+	}
+}
+
 // The largest revision of the range is accepted.
 func Test_ServiceConfig_revisionRange(t *testing.T) {
 	mc := gomock.NewController(t)

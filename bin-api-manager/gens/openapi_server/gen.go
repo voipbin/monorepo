@@ -7883,7 +7883,7 @@ type ServiceConfigKeySecretRequest struct {
 	// Revision The `revision` of the key returned from the `GET /service_configs/{service}` response. 0 means that the key has no stored value.
 	Revision int64 `json:"revision"`
 
-	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte). It must not start or end with white space or contain a line break; it is rejected, not trimmed.
+	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte); a key can declare a shorter limit (the email keys allow 512 bytes), and a longer secret is rejected with 400. It must not start or end with white space or contain a line break; it is rejected, not trimmed. The request body is limited to 4 KB.
 	Secret *string `json:"secret,omitempty"`
 }
 

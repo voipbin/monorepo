@@ -9957,7 +9957,7 @@ type ServiceConfigKeySecretRequest struct {
 	// Example: 3
 	Revision int64 `json:"revision"`
 
-	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte). It must not start or end with white space or contain a line break; it is rejected, not trimmed.
+	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte); a key can declare a shorter limit (the email keys allow 512 bytes), and a longer secret is rejected with 400. It must not start or end with white space or contain a line break; it is rejected, not trimmed. The request body is limited to 4 KB.
 	//
 	// Example: example-secret-token
 	Secret *string `json:"secret,omitempty"`

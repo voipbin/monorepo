@@ -1,15 +1,21 @@
 package server
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/gofrs/uuid"
 	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
@@ -311,5 +317,59 @@ func Test_serviceConfigs_secretNotInTheAccessLog(t *testing.T) {
 	assertNoSecret(t, hook, testServiceConfigSecret, w.Body.String(), w2.Body.String(), accessLog.String(), recoveryLog.String())
 	if accessLog.Len() == 0 {
 		t.Errorf("Wrong match. the access log is empty, so the check above proves nothing")
+	}
+}
+
+// The responses are the RPC models of configrpc, and the public contract is the generated model.
+// A drift of a field name or a type in either one is caught here: a response must decode into the
+// generated model without an unknown field, and both must have the same set of fields.
+func Test_serviceConfigs_responsesMatchTheContract(t *testing.T) {
+	jsonNames := func(v any) []string {
+		var res []string
+		typ := reflect.TypeOf(v)
+		for i := 0; i < typ.NumField(); i++ {
+			if name := strings.Split(typ.Field(i).Tag.Get("json"), ",")[0]; name != "" && name != "-" {
+				res = append(res, name)
+			}
+		}
+		sort.Strings(res)
+
+		return res
+	}
+
+	actor := uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000")
+	now := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+	key := testServiceConfigKey()
+	key.UpdatedBy = &actor
+	key.TMUpdate = &now
+	key.EnvShadowed = true
+
+	tests := []struct {
+		name   string
+		rpc    any
+		model  any
+		fields [2]any
+	}{
+		{"service", &configrpc.Service{Service: "email", SecretWritable: true, Keys: []configrpc.Key{*key}}, &openapi_server.ServiceConfig{}, [2]any{configrpc.Service{}, openapi_server.ServiceConfig{}}},
+		{"key", key, &openapi_server.ServiceConfigKey{}, [2]any{configrpc.Key{}, openapi_server.ServiceConfigKey{}}},
+		{"history", &configrpc.HistoryList{Result: []configrpc.History{{ID: actor, Key: "k", Action: "set", IsSecret: true, ActorID: actor, Source: "api", TMCreate: now}}, NextPageToken: "n"}, &openapi_server.ServiceConfigHistoryList{}, [2]any{configrpc.History{}, openapi_server.ServiceConfigHistory{}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b, err := json.Marshal(tt.rpc)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			dec := json.NewDecoder(bytes.NewReader(b))
+			dec.DisallowUnknownFields()
+			if err := dec.Decode(tt.model); err != nil {
+				t.Errorf("Wrong match. the response does not fit the generated model: %v", err)
+			}
+
+			if got, expect := jsonNames(tt.fields[0]), jsonNames(tt.fields[1]); !reflect.DeepEqual(got, expect) {
+				t.Errorf("Wrong match. the rpc and the generated model differ.\nrpc: %v\nmodel: %v", got, expect)
+			}
+		})
 	}
 }
