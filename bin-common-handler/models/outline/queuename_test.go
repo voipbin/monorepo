@@ -27,6 +27,7 @@ func Test_QueueNameRequestAll(t *testing.T) {
 		QueueNameNumberRequest,
 		QueueNameOutdialRequest,
 		QueueNamePipecatRequest,
+		QueueNamePushRequest,
 		QueueNameQueueRequest,
 		QueueNameRagRequest,
 		QueueNameRegistrarRequest,

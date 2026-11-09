@@ -83,6 +83,7 @@ The monorepo includes many backend services under separate directories:
 | `bin-openapi-manager`      | Shared OpenAPI specs                          |
 | `bin-outdial-manager`      | Outbound call dialer                          |
 | `bin-pipecat-manager`      | Realtime AI voice pipeline (Go/Python hybrid) |
+| `bin-push-manager`         | FCM push notifications for agent devices      |
 | `bin-queue-manager`        | Call queueing and routing logic               |
 | `bin-rag-manager`          | Retrieval-augmented generation backend        |
 | `bin-registrar-manager`    | SIP registrar (UDP/TCP/WebRTC)                |

@@ -1,0 +1,46 @@
+post:
+  summary: Register a push device
+  description: |
+    Registers the push device of the calling agent, or refreshes it when the same token is already
+    registered. The call is idempotent: both a new and a refreshed device return 200. The device
+    always belongs to the authenticated agent; the owner is never taken from the request. A token
+    that was registered by another agent is moved to the calling agent.
+
+    The push token is a credential and is never returned in any response.
+
+    Returns 400 when the platform is not supported, or when the token is empty or longer than 512 bytes.
+  tags:
+    - Service Agent
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - platform
+            - token
+          properties:
+            platform:
+              $ref: '#/components/schemas/PushManagerDevicePlatform'
+            token:
+              type: string
+              minLength: 1
+              maxLength: 512
+              description: "The push token issued to the app by the platform's push service. 1 to 512 bytes."
+              example: "fcm-token-example-0123456789"
+  responses:
+    '200':
+      description: The registered device.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PushManagerDevice'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'

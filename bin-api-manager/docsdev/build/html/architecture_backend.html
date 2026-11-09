@@ -656,9 +656,9 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
-<p>This page describes VoIPBin’s 34 Go microservices, their organization by domain, the API gateway (bin-api-manager), and special service architectures (pipecat hybrid Go/Python, sentinel Kubernetes monitoring). Relevant when an AI agent needs to understand which service handles a specific domain, the routing table from HTTP endpoints to backend services, or the authentication/authorization flow.</p>
+<p>This page describes VoIPBin’s 35 Go microservices, their organization by domain, the API gateway (bin-api-manager), and special service architectures (pipecat hybrid Go/Python, sentinel Kubernetes monitoring). Relevant when an AI agent needs to understand which service handles a specific domain, the routing table from HTTP endpoints to backend services, or the authentication/authorization flow.</p>
 </div>
-<p>VoIPBin’s backend consists of 34 specialized Go microservices organized into functional domains. Each service owns its specific business logic and communicates with others through a message queue, enabling independent scaling, deployment, and development.</p>
+<p>VoIPBin’s backend consists of 35 specialized Go microservices organized into functional domains. Each service owns its specific business logic and communicates with others through a message queue, enabling independent scaling, deployment, and development.</p>
 <section id="microservices-organization">
 <h2>Microservices Organization<a class="headerlink" href="#microservices-organization" title="Link to this heading">¶</a></h2>
 <p>Services are organized by functional domain:</p>
@@ -707,6 +707,7 @@
 <span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">number</span><span class="o">-</span><span class="n">manager</span>      <span class="o">|</span>  <span class="n">Phone</span> <span class="n">number</span> <span class="n">management</span>         <span class="o">|</span>
 <span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">tag</span><span class="o">-</span><span class="n">manager</span>         <span class="o">|</span>  <span class="n">Customer</span> <span class="n">tag</span> <span class="n">management</span>         <span class="o">|</span>
 <span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">timeline</span><span class="o">-</span><span class="n">manager</span>    <span class="o">|</span>  <span class="n">Per</span><span class="o">-</span><span class="n">resource</span> <span class="n">timeline</span> <span class="n">events</span>    <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">push</span><span class="o">-</span><span class="n">manager</span>        <span class="o">|</span>  <span class="n">Agent</span> <span class="n">push</span> <span class="n">device</span> <span class="n">tokens</span>        <span class="o">|</span>
 <span class="o">+-------------------------------------------------------------+</span>
 
 <span class="o">+-------------------------------------------------------------+</span>
@@ -982,6 +983,9 @@ Client                    API Gateway              Backend Service
 </tr>
 <tr class="row-even"><td><p>/v1.0/transfers</p></td>
 <td><p>bin-transfer-manager</p></td>
+</tr>
+<tr class="row-odd"><td><p>/v1.0/service_agents/push_devices</p></td>
+<td><p>bin-push-manager</p></td>
 </tr>
 </tbody>
 </table>
@@ -1429,7 +1433,7 @@ Client                    API Gateway              Backend Service
 <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="n">Replicas</span><span class="p">:</span> <span class="mi">3</span>    <span class="n">HPA</span><span class="p">:</span> <span class="mi">3</span><span class="o">-</span><span class="mi">20</span>                   <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="o">+---------------------------------------------+</span>  <span class="o">|</span>  <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>                                                   <span class="o">|</span>  <span class="o">|</span>
-<span class="o">|</span>  <span class="o">|</span>  <span class="o">...</span> <span class="mi">34</span> <span class="n">deployments</span> <span class="n">total</span>                         <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">...</span> <span class="mi">35</span> <span class="n">deployments</span> <span class="n">total</span>                         <span class="o">|</span>  <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>                                                   <span class="o">|</span>  <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+---------------------------------------------------+</span>  <span class="o">|</span>
 <span class="o">|</span>                                                         <span class="o">|</span>
@@ -1460,7 +1464,7 @@ Client                    API Gateway              Backend Service
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Metrics</span> <span class="n">Pipeline</span><span class="p">:</span>
 
 <span class="n">Services</span>                <span class="n">Prometheus</span>              <span class="n">Grafana</span>
-<span class="p">(</span><span class="mi">34</span> <span class="n">services</span><span class="p">)</span>               <span class="o">|</span>                      <span class="o">|</span>
+<span class="p">(</span><span class="mi">35</span> <span class="n">services</span><span class="p">)</span>               <span class="o">|</span>                      <span class="o">|</span>
      <span class="o">|</span>                      <span class="o">|</span>                      <span class="o">|</span>
      <span class="o">|</span>  <span class="n">Expose</span> <span class="o">/</span><span class="n">metrics</span>     <span class="o">|</span>                      <span class="o">|</span>
      <span class="o">|</span>  <span class="n">endpoint</span>            <span class="o">|</span>                      <span class="o">|</span>

@@ -32,6 +32,7 @@ Services this service calls directly (from `go.mod` replace directives):
 - `monorepo/bin-number-manager` (local: `../bin-number-manager`)
 - `monorepo/bin-outdial-manager` (local: `../bin-outdial-manager`)
 - `monorepo/bin-pipecat-manager` (local: `../bin-pipecat-manager`)
+- `monorepo/bin-push-manager` (local: `../bin-push-manager`)
 - `monorepo/bin-queue-manager` (local: `../bin-queue-manager`)
 - `monorepo/bin-rag-manager` (local: `../bin-rag-manager`)
 - `monorepo/bin-registrar-manager` (local: `../bin-registrar-manager`)

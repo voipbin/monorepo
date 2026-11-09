@@ -791,6 +791,33 @@
 </table>
 </div>
 </section>
+<section id="push-device">
+<span id="agent-struct-agent-push-device"></span><h2>Push device<a class="headerlink" href="#push-device" title="Link to this heading">¶</a></h2>
+<p>A push device of an agent: one installed app that can receive notifications. Returned by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/push_devices</span></code> and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/service_agents/push_devices/{id}</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"agent_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"platform"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The device’s unique identifier. Returned from the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/push_devices</span></code> response.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer ID of the owner agent. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/me</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">agent_id</span></code> (UUID): The owner agent’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/me</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">platform</span></code> (enum string): The platform of the app. Only <code class="docutils literal notranslate"><span class="pre">android</span></code> is supported.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the device was first registered.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp when the device was last registered or refreshed.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The push token is never part of a response. Registering the same token again keeps the <code class="docutils literal notranslate"><span class="pre">id</span></code> and moves <code class="docutils literal notranslate"><span class="pre">tm_update</span></code>.</p>
+</div>
+</section>
 </section>
 
         </article>
@@ -856,6 +883,7 @@
 <li><a class="reference internal" href="#ring-method">Ring method</a></li>
 <li><a class="reference internal" href="#status">Status</a></li>
 <li><a class="reference internal" href="#permission">Permission</a></li>
+<li><a class="reference internal" href="#push-device">Push device</a></li>
 </ul>
 </li>
 </ul>

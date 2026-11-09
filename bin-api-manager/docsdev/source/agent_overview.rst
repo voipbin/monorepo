@@ -217,6 +217,34 @@ Each address can only belong to one agent per customer:
     ✗ Agent B has extension (UUID) E1 in Customer X  (same customer, CONFLICT)
 
 
+Push Devices
+------------
+An agent can register the push token of its mobile app, so that VoIPbin can notify the app. The registration is private to the agent and exists only on the agent surface (``/service_agents/*``). The owner of a device is always the authenticated agent; it is never taken from the request.
+
++--------+----------------------------------------+-------------------------------------------------------------------------------------------+
+| Method | Endpoint                               | Description                                                                               |
++========+========================================+===========================================================================================+
+| POST   | ``/service_agents/push_devices``       | Register the push device, or refresh it when the same token is already registered.        |
++--------+----------------------------------------+-------------------------------------------------------------------------------------------+
+| DELETE | ``/service_agents/push_devices/{id}``  | Delete one of the calling agent's push devices.                                           |
++--------+----------------------------------------+-------------------------------------------------------------------------------------------+
+
+The request body of ``POST /service_agents/push_devices`` has two fields:
+
+* ``platform`` (enum string): The platform of the app. Only ``android`` is supported.
+* ``token`` (String): The push token issued to the app by the platform's push service. 1 to 512 bytes.
+
+Registering returns ``200`` with the device both for a new device and for a refreshed one. A token that was registered by another agent moves to the calling agent. The response never contains the token. An unsupported ``platform``, or an empty or longer than 512 bytes ``token``, returns ``400``.
+
+``DELETE /service_agents/push_devices/{id}`` returns the deleted device. A device that does not exist, or that belongs to another agent or another customer, is reported identically as ``404 DEVICE_NOT_FOUND``.
+
+See :ref:`Push device struct <agent-struct-agent-push_device>` for the response fields.
+
+.. note:: **AI Implementation Hint**
+
+   Both endpoints need an agent token (a token of a signed-in agent). An access key or any other non-agent token gets ``401``. The ``id`` for the delete call is the ``id`` returned by ``POST /service_agents/push_devices``. The push token is a credential: store it only on the device and never log it.
+
+
 Call to agent
 -------------
 To reach an agent, VoIPBin employs a system that allows the agent to have multiple addresses. When a call is initiated to agents, VoIPBin generates calls to every agent's address simultaneously. If an agent answers one of the calls, VoIPBin automatically terminates the other calls, streamlining the communication process and ensuring that only one connection is established with the available agent.

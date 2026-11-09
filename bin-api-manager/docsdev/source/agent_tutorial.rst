@@ -223,3 +223,49 @@ Regenerate the direct hash for an agent. This invalidates the previous SIP URI a
 .. note:: **AI Implementation Hint**
 
    This endpoint requires no request body. The ``direct_hash`` in the response is the new hash (already prefixed with ``direct.``) — the previous hash is permanently invalidated. The direct SIP URI is formed directly from it: ``sip:<direct_hash>@sip.voipbin.net``.
+
+
+Register a push device
+----------------------
+
+Register the push token of the agent's mobile app. This requires an agent token (a token of a signed-in agent).
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/service_agents/push_devices?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "platform": "android",
+            "token": "<PUSH_TOKEN_FROM_THE_APP>"
+        }'
+
+    {
+        "id": "3f6c1d2e-8a4b-4c7d-9e10-5b2a7c8d9e01",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "agent_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+        "platform": "android",
+        "tm_create": "2026-11-09T09:15:30.123456Z",
+        "tm_update": "2026-11-09T09:15:30.123456Z"
+    }
+
+Delete a push device
+--------------------
+
+Delete one of the calling agent's push devices. A device of another agent or customer, or an unknown id, returns ``404``.
+
+.. code::
+
+    $ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/service_agents/push_devices/3f6c1d2e-8a4b-4c7d-9e10-5b2a7c8d9e01?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "id": "3f6c1d2e-8a4b-4c7d-9e10-5b2a7c8d9e01",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "agent_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+        "platform": "android",
+        "tm_create": "2026-11-09T09:15:30.123456Z",
+        "tm_update": "2026-11-09T09:15:30.123456Z"
+    }
+
+.. note:: **AI Implementation Hint**
+
+   The response never contains the push token. Registering again with the same token refreshes the device and returns the same ``id``.

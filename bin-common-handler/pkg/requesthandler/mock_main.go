@@ -73,6 +73,8 @@ import (
 	outdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 	message2 "monorepo/bin-pipecat-manager/models/message"
 	pipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	device "monorepo/bin-push-manager/models/device"
+	notification "monorepo/bin-push-manager/models/notification"
 	queue "monorepo/bin-queue-manager/models/queue"
 	queuecall "monorepo/bin-queue-manager/models/queuecall"
 	query "monorepo/bin-rag-manager/models/query"
@@ -6099,6 +6101,81 @@ func (m *MockRequestHandler) PipecatV1PipecatcallTerminateWithDelay(ctx context.
 func (mr *MockRequestHandlerMockRecorder) PipecatV1PipecatcallTerminateWithDelay(ctx, hostID, pipecatcallID, delay any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1PipecatcallTerminateWithDelay", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1PipecatcallTerminateWithDelay), ctx, hostID, pipecatcallID, delay)
+}
+
+// PushV1DeviceCreate mocks base method.
+func (m *MockRequestHandler) PushV1DeviceCreate(ctx context.Context, customerID, agentID uuid.UUID, platform device.Platform, token string) (*device.Device, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushV1DeviceCreate", ctx, customerID, agentID, platform, token)
+	ret0, _ := ret[0].(*device.Device)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushV1DeviceCreate indicates an expected call of PushV1DeviceCreate.
+func (mr *MockRequestHandlerMockRecorder) PushV1DeviceCreate(ctx, customerID, agentID, platform, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushV1DeviceCreate", reflect.TypeOf((*MockRequestHandler)(nil).PushV1DeviceCreate), ctx, customerID, agentID, platform, token)
+}
+
+// PushV1DeviceDelete mocks base method.
+func (m *MockRequestHandler) PushV1DeviceDelete(ctx context.Context, id uuid.UUID) (*device.Device, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushV1DeviceDelete", ctx, id)
+	ret0, _ := ret[0].(*device.Device)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushV1DeviceDelete indicates an expected call of PushV1DeviceDelete.
+func (mr *MockRequestHandlerMockRecorder) PushV1DeviceDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushV1DeviceDelete", reflect.TypeOf((*MockRequestHandler)(nil).PushV1DeviceDelete), ctx, id)
+}
+
+// PushV1DeviceGet mocks base method.
+func (m *MockRequestHandler) PushV1DeviceGet(ctx context.Context, id uuid.UUID) (*device.Device, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushV1DeviceGet", ctx, id)
+	ret0, _ := ret[0].(*device.Device)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushV1DeviceGet indicates an expected call of PushV1DeviceGet.
+func (mr *MockRequestHandlerMockRecorder) PushV1DeviceGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushV1DeviceGet", reflect.TypeOf((*MockRequestHandler)(nil).PushV1DeviceGet), ctx, id)
+}
+
+// PushV1DeviceList mocks base method.
+func (m *MockRequestHandler) PushV1DeviceList(ctx context.Context, customerID, agentID uuid.UUID) ([]device.Device, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushV1DeviceList", ctx, customerID, agentID)
+	ret0, _ := ret[0].([]device.Device)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushV1DeviceList indicates an expected call of PushV1DeviceList.
+func (mr *MockRequestHandlerMockRecorder) PushV1DeviceList(ctx, customerID, agentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushV1DeviceList", reflect.TypeOf((*MockRequestHandler)(nil).PushV1DeviceList), ctx, customerID, agentID)
+}
+
+// PushV1NotificationSend mocks base method.
+func (m *MockRequestHandler) PushV1NotificationSend(ctx context.Context, customerID, agentID, deviceID uuid.UUID, kind notification.Kind, data map[string]string) (*notification.SendResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushV1NotificationSend", ctx, customerID, agentID, deviceID, kind, data)
+	ret0, _ := ret[0].(*notification.SendResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushV1NotificationSend indicates an expected call of PushV1NotificationSend.
+func (mr *MockRequestHandlerMockRecorder) PushV1NotificationSend(ctx, customerID, agentID, deviceID, kind, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushV1NotificationSend", reflect.TypeOf((*MockRequestHandler)(nil).PushV1NotificationSend), ctx, customerID, agentID, deviceID, kind, data)
 }
 
 // QueueV1QueueCountByCustomerID mocks base method.

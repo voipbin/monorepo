@@ -26,6 +26,7 @@ bin-message-manager
 bin-number-manager
 bin-outdial-manager
 bin-pipecat-manager
+bin-push-manager
 bin-queue-manager
 bin-rag-manager
 bin-registrar-manager

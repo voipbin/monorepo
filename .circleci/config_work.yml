@@ -138,6 +138,10 @@ parameters:
     type: boolean
     default: false
 
+  run-bin-push-manager:
+    type: boolean
+    default: false
+
   run-bin-queue-manager:
     type: boolean
     default: false
@@ -622,6 +626,24 @@ workflows:
           serial-group: << pipeline.project.slug >>/deploy-bin-pipecat-manager
           requires:
             - bin-pipecat-manager-build
+  bin-push-manager:
+    when: << pipeline.parameters.run-bin-push-manager >>
+    jobs:
+      - bin-push-manager-test:
+          <<: *non_main_filters
+      - bin-push-manager-test:
+          name: bin-push-manager-test-auto
+          <<: *deploy_filters
+      - bin-push-manager-build:
+          <<: *context_production
+          requires:
+            - bin-push-manager-test
+            - bin-push-manager-test-auto
+      - bin-push-manager-deploy:
+          <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-push-manager
+          requires:
+            - bin-push-manager-build
   bin-queue-manager:
     when: << pipeline.parameters.run-bin-queue-manager >>
     jobs:
@@ -1857,6 +1879,41 @@ jobs:
             DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-pipecat-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-pipecat-manager bin-pipecat-manager/komodo/docker-compose.yml bin-pipecat-manager/komodo/environment.env
+
+  # bin-push-manager
+  bin-push-manager-test:
+    docker: *go_image
+    resource_class: small
+    steps:
+      - go-test:
+          source-directory: bin-push-manager
+
+  bin-push-manager-build:
+    docker: *gcp_image
+    resource_class: small
+    steps:
+      - docker-build:
+          project-id: voipbin
+          project-repository: bin-push-manager
+          source-directory: bin-push-manager
+
+  # Komodo-managed deploy. The FCM credential is passed through the Stack
+  # environment file (3rd argument), as for bin-storage-manager.
+  bin-push-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-push-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-push-manager via Komodo API
+          command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-push-manager" \
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-push-manager bin-push-manager/komodo/docker-compose.yml bin-push-manager/komodo/environment.env
 
   # bin-queue-manager
   bin-queue-manager-test:
