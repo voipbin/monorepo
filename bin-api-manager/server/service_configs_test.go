@@ -252,6 +252,8 @@ func Test_serviceConfigs_errors(t *testing.T) {
 		{"invalid value", cerrors.InvalidArgument("email-manager", "CONFIG_INVALID", "bad"), http.StatusBadRequest, "CONFIG_INVALID"},
 		{"write verify", cerrors.Internal("email-manager", "CONFIG_WRITE_VERIFY_FAILED", "verify"), http.StatusInternalServerError, "CONFIG_WRITE_VERIFY_FAILED"},
 		{"timeout", requesthandler.ErrInternal, http.StatusInternalServerError, "INTERNAL"},
+		// the allow list of the service handler has a service that the request handler does not know
+		{"service unknown to the request handler", requesthandler.ErrConfigServiceUnknown, http.StatusInternalServerError, "INTERNAL"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -277,6 +279,96 @@ func Test_serviceConfigs_errors(t *testing.T) {
 	}
 }
 
+// The service ai is routed like email: the generated binding passes the service name on as it is.
+// The typed errors of the ai manager have the same status and reason as the ones of the email
+// manager, because the mapping uses the reason and the status only.
+func Test_serviceConfigs_aiService(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	a := testNumberProviderAgent()
+	r, w, _, _, _ := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
+
+	mockSvc.EXPECT().ServiceConfigGet(gomock.Any(), a, "ai").Return(&configrpc.Service{Service: "ai", SecretWritable: true, Keys: []configrpc.Key{*testServiceConfigKey()}}, nil)
+	do(r, w, "GET", "/service_configs/ai", "")
+	if w.Code != http.StatusOK || !strings.HasPrefix(w.Body.String(), `{"service":"ai",`) {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+
+	mockSvc.EXPECT().ServiceConfigKeySecretSet(gomock.Any(), a, "ai", "llm.gemini.api_key", testServiceConfigSecret, int64(2)).Return(testServiceConfigKey(), nil)
+	w = httptest.NewRecorder()
+	do(r, w, "PUT", "/service_configs/ai/keys/llm.gemini.api_key/secret", `{"secret":"`+testServiceConfigSecret+`","revision":2}`)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+
+	mockSvc.EXPECT().ServiceConfigKeyClear(gomock.Any(), a, "ai", "llm.openai_compat.api_key", int64(3)).Return(testServiceConfigKey(), nil)
+	w = httptest.NewRecorder()
+	do(r, w, "DELETE", "/service_configs/ai/keys/llm.openai_compat.api_key?revision=3", "")
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+
+	mockSvc.EXPECT().ServiceConfigKeyHistoryList(gomock.Any(), a, "ai", "llm.gemini.api_key", "", 0).Return(&configrpc.HistoryList{Result: []configrpc.History{}}, nil)
+	w = httptest.NewRecorder()
+	do(r, w, "GET", "/service_configs/ai/keys/llm.gemini.api_key/histories", "")
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+}
+
+// The generated binding does not check the service name against the enum: a value that is not
+// allowed reaches the service handler, which answers 404. The allow list of the service handler
+// is the only place that decides.
+func Test_serviceConfigs_serviceNameIsNotCheckedByTheBinding(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	a := testNumberProviderAgent()
+	r, w, _, _, _ := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
+
+	mockSvc.EXPECT().ServiceConfigGet(gomock.Any(), a, "tts").Return(nil, serviceerrors.ErrNotFound)
+	do(r, w, "GET", "/service_configs/tts", "")
+	if w.Code != http.StatusNotFound || !strings.Contains(w.Body.String(), "RESOURCE_NOT_FOUND") {
+		t.Errorf("Wrong match. expect: 404 RESOURCE_NOT_FOUND, got: %d %s", w.Code, w.Body.String())
+	}
+}
+
+// The typed errors of the ai manager have the same status and reason as the ones of the email manager.
+func Test_serviceConfigs_aiErrors(t *testing.T) {
+	tests := []struct {
+		err          error
+		expectStatus int
+		expectReason string
+	}{
+		{cerrors.FailedPrecondition("bin-ai-manager", "REVISION_MISMATCH", "stale"), http.StatusConflict, "REVISION_MISMATCH"},
+		{cerrors.Unavailable("bin-ai-manager", "ENCRYPTION_KEY_NOT_CONFIGURED", "no key"), http.StatusServiceUnavailable, "ENCRYPTION_KEY_NOT_CONFIGURED"},
+		{cerrors.NotFound("bin-ai-manager", "CONFIG_KEY_NOT_FOUND", "no key"), http.StatusNotFound, "CONFIG_KEY_NOT_FOUND"},
+		{cerrors.InvalidArgument("bin-ai-manager", "CONFIG_INVALID", "bad"), http.StatusBadRequest, "CONFIG_INVALID"},
+		{cerrors.Internal("bin-ai-manager", "CONFIG_WRITE_VERIFY_FAILED", "verify"), http.StatusInternalServerError, "CONFIG_WRITE_VERIFY_FAILED"},
+		{cerrors.Internal("bin-ai-manager", "INTERNAL", "internal"), http.StatusInternalServerError, "INTERNAL"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.expectReason, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			a := testNumberProviderAgent()
+			r, w, _, _, _ := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
+
+			mockSvc.EXPECT().ServiceConfigKeySecretSet(gomock.Any(), a, "ai", "llm.gemini.api_key", testServiceConfigSecret, int64(1)).Return(nil, tt.err)
+			do(r, w, "PUT", "/service_configs/ai/keys/llm.gemini.api_key/secret", `{"secret":"`+testServiceConfigSecret+`","revision":1}`)
+
+			if w.Code != tt.expectStatus || !strings.Contains(w.Body.String(), tt.expectReason) || strings.Contains(w.Body.String(), "bin-ai-manager") {
+				t.Errorf("Wrong match. expect: %d %s, got: %d %s", tt.expectStatus, tt.expectReason, w.Code, w.Body.String())
+			}
+		})
+	}
+}
+
 // No identity is a 401 and the service handler is not called.
 func Test_serviceConfigs_noIdentity(t *testing.T) {
 	mc := gomock.NewController(t)
@@ -297,8 +389,8 @@ func Test_serviceConfigs_noIdentity(t *testing.T) {
 	}
 }
 
-// A request that is not routed by the generated binding (an unknown service, a mistyped path) never
-// reaches the handlers; the secret in its body is still not logged by the access logger.
+// A request that is not routed by the generated binding (a mistyped path) never reaches the
+// handlers; the secret in its body is still not logged by the access logger.
 func Test_serviceConfigs_secretNotInTheAccessLog(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

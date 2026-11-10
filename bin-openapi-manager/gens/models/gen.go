@@ -2959,12 +2959,15 @@ func (e ServiceConfigKeyType) Valid() bool {
 
 // Defines values for ServiceConfigServiceName.
 const (
+	ServiceConfigServiceNameAi    ServiceConfigServiceName = "ai"
 	ServiceConfigServiceNameEmail ServiceConfigServiceName = "email"
 )
 
 // Valid indicates whether the value is a known member of the ServiceConfigServiceName enum.
 func (e ServiceConfigServiceName) Valid() bool {
 	switch e {
+	case ServiceConfigServiceNameAi:
+		return true
 	case ServiceConfigServiceNameEmail:
 		return true
 	default:
@@ -9888,7 +9891,7 @@ type ServiceConfig struct {
 	// Example: true
 	SecretWritable bool `json:"secret_writable"`
 
-	// Service The name of a service that has config keys.
+	// Service The name of a service that has config keys. `email` is the email service and `ai` the AI service.
 	//
 	// Example: email
 	Service ServiceConfigServiceName `json:"service"`
@@ -10036,7 +10039,7 @@ type ServiceConfigKeySecretRequest struct {
 	// Example: 3
 	Revision int64 `json:"revision"`
 
-	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte); a key can declare a shorter limit (the email keys allow 512 bytes), and a longer secret is rejected with 400. It must not start or end with white space or contain a line break; it is rejected, not trimmed. The request body is limited to 4 KB.
+	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte); a key can declare a shorter limit (the email and ai keys allow 512 bytes), and a longer secret is rejected with 400. It must not start or end with white space or contain a line break; it is rejected, not trimmed. The request body is limited to 4 KB.
 	//
 	// Example: example-secret-token
 	Secret *string `json:"secret,omitempty"`
@@ -10053,7 +10056,7 @@ type ServiceConfigKeySource string
 // Example: string
 type ServiceConfigKeyType string
 
-// ServiceConfigServiceName The name of a service that has config keys.
+// ServiceConfigServiceName The name of a service that has config keys. `email` is the email service and `ai` the AI service.
 //
 // Example: email
 type ServiceConfigServiceName string
@@ -11203,7 +11206,7 @@ type PageToken = string
 // ServiceConfigKeyName Example: mailgun.api_key
 type ServiceConfigKeyName = string
 
-// ServiceConfigService The name of a service that has config keys.
+// ServiceConfigService The name of a service that has config keys. `email` is the email service and `ai` the AI service.
 //
 // Example: email
 type ServiceConfigService = ServiceConfigServiceName

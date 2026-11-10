@@ -22,7 +22,7 @@ AI conversation orchestration service. Manages AI configurations, active call se
 
 The config flag is `engine_key_chatgpt` / env `ENGINE_KEY_CHATGPT` (not `openai_api_key`). This key is used for OpenAI and other OpenAI-compatible providers (e.g. Grok). Do not rename it. A value stored with `ai-control config set --key llm.openai_compat.api_key` takes precedence over it (resolution: stored, then environment).
 
-**Gemini audit uses a separate key.** The `geminiaudithandler` requires a Google API key (`AIza...`), configured via `google_api_key` / env `GOOGLE_API_KEY`. This is distinct from `ENGINE_KEY_CHATGPT` which holds an OpenAI-style key (`sk-...`). Its stored counterpart is `llm.gemini.api_key`. Both keys are read for each call through `internal/aiconfig` (never cache them or read the environment directly); see docs/operations.md, "Platform LLM keys".
+**Gemini audit uses a separate key.** The `geminiaudithandler` requires a Google API key (`AIza...`), configured via `google_api_key` / env `GOOGLE_API_KEY`. This is distinct from `ENGINE_KEY_CHATGPT` which holds an OpenAI-style key (`sk-...`). Its stored counterpart is `llm.gemini.api_key`. Both keys are read for each call through `internal/aiconfig` (never cache them or read the environment directly); see docs/operations.md, "Platform LLM keys". They can also be written through the admin API (`/service_configs/ai`, served as `/v1/configs` by the shared `configrpc`, history source `api`); that route is handled before the request log entry exists and must never log the request, because the body of a secret write is the secret.
 
 ## Common commands
 
