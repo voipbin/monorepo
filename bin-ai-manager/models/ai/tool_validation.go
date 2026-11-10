@@ -85,7 +85,7 @@ func ExpandAllToolNames(t Type) map[tool.ToolName]bool {
 // Rules:
 //   - tool.ToolNameAll is always structurally valid input, for either Type --
 //     it is a selector expanded at runtime by bin-pipecat-manager's
-//     GetByNames against AllowedToolNames(t), never a concrete tool name
+//     GetByNames against ExpandAllToolNames(t), never a concrete tool name
 //     checked for set membership here.
 //   - Every other name must be a member of AllowedToolNames(t) for the
 //     given Type. A name that is neither a known tool for this Type nor

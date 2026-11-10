@@ -111,11 +111,13 @@ printf '%s\n' "$NEW_KEY" | ./ai-control config set --key llm.gemini.api_key --ac
 ./ai-control config clear --key llm.gemini.api_key --actor-id <uuid>
 ```
 
+The same two keys can also be stored, deleted and read through the admin API of api-manager (`/service_configs/ai`, project super admin only), which reaches this service as `/v1/configs` requests. A change made that way is recorded in the history with the source `api` (the command line records `cli`) and is used by the next call like a change of the command line. The request body of a secret is never logged, and a request that looks like a config request is not routed to any other handler.
+
 The master key list is `AI_CONFIG_ENCRYPTION_KEYS` (environment only). The deployment definition must pass it to the container before `config set` can store a value; without it the commands list and clear but refuse to set, and the environment keys keep working. The `config` commands need the database and the master key list only; they do not validate the rest of the configuration.
 
 Rotation:
 1. Create the new key at the provider. Keep the old key valid.
-2. Make sure every replica runs the image of this feature. Do not enter a value while a rolling deploy is half done: an older replica ignores the stored value, so the replicas would use different keys.
+2. Make sure every replica runs the image of this feature. Do not enter a value while a rolling deploy is half done, with the command line or the admin API: an older replica ignores the stored value (and does not serve the admin API), so the replicas would use different keys.
 3. Run `config set` with the new key. The next call uses it.
 4. Check it at once with a call that needs the key (a Builder status and one chat turn, or one audit). If the provider answers an authentication error, run `config clear` (the environment key, if any, is used again) or set the right value.
 5. Revoke the old key at the provider after the check. A rollback of the image uses the environment key again, so keep the old key valid until the check passed.

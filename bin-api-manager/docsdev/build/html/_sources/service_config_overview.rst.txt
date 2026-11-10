@@ -10,7 +10,7 @@ Overview
    * **Async:** No. Every request returns the updated key immediately.
    * **Access:** ProjectSuperAdmin only. Customer-level tokens, access keys and direct tokens are refused.
 
-The Service Config API manages the stored configuration of a platform service. The ``{service}`` path parameter names the service. ``email`` is the only service that is supported now. Its keys are ``mailgun.api_key``, ``sendgrid.api_key`` and ``mailgun.webhook_signing_key``.
+The Service Config API manages the stored configuration of a platform service. The ``{service}`` path parameter names the service. Two services are supported now. ``email`` has the keys ``mailgun.api_key``, ``sendgrid.api_key`` and ``mailgun.webhook_signing_key``. ``ai`` has the keys ``llm.openai_compat.api_key`` (the API key of the OpenAI compatible provider) and ``llm.gemini.api_key`` (the Google API key of the Gemini endpoint). A service name that is not listed is answered with ``404 Not Found``.
 
 With the Service Config API you can:
 
@@ -62,11 +62,11 @@ The revision starts at 1 again when a key is deleted and stored again, so a call
 
 Secret Rules
 ------------
-A secret is 1 to 2020 bytes long (multi-byte characters count per byte). A key can declare a shorter limit: the email keys allow 512 bytes, and a longer secret is rejected with ``400 Bad Request``. A secret that starts or ends with white space, or that contains a line break, is rejected with ``400 Bad Request``; it is not trimmed. The request body is limited to 4 KB, and a larger body is rejected with ``400 Bad Request``.
+A secret is 1 to 2020 bytes long (multi-byte characters count per byte). A key can declare a shorter limit: the email and ai keys allow 512 bytes, and a longer secret is rejected with ``400 Bad Request``. A secret that starts or ends with white space, or that contains a line break, is rejected with ``400 Bad Request``; it is not trimmed. The request body is limited to 4 KB, and a larger body is rejected with ``400 Bad Request``.
 
 After a timeout, or an answer of ``500`` or ``503``, check the key with ``GET /service_configs/{service}`` before you send the secret again. The answer ``500`` with the reason ``CONFIG_WRITE_VERIFY_FAILED`` means that the change may have been stored, and any other ``500`` can leave the state unknown in the same way.
 
-The request is also refused with ``503 Service Unavailable`` while the email service has not been updated to a version that supports this API. This check lowers the chance that a secret reaches a service that cannot handle it during a rollout, but it does not rule it out: store a secret only after every instance of the service has been updated.
+The request is also refused with ``503 Service Unavailable`` while the service has not been updated to a version that supports this API. This check lowers the chance that a secret reaches a service that cannot handle it during a rollout, but it does not rule it out: store a secret only after every instance of the service has been updated.
 
 
 Errors
