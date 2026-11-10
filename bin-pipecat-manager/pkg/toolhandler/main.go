@@ -90,8 +90,9 @@ func containsName(names []aitool.ToolName, target aitool.ToolName) bool {
 // enforces at save time was not previously re-checked here.
 func (h *toolHandler) GetByNames(aiType amai.Type, names []aitool.ToolName) []aitool.Tool {
 	allowed := amai.AllowedToolNames(aiType)
-	// The "all" selector covers only the expanded set; opt-in tools (e.g. the
-	// Insight SMS tools) are returned only when named explicitly.
+	// The "all" selector covers the expanded set (for an Insight AI that
+	// includes the SMS tools, VOIP-1708); a name outside it is returned only
+	// when listed explicitly.
 	expanded := amai.ExpandAllToolNames(aiType)
 	hasAll := containsName(names, aitool.ToolNameAll)
 

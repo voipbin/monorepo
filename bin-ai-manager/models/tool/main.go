@@ -92,9 +92,9 @@ var AllToolNames = []ToolName{
 // thread the agent is already reading. Neither tool can place calls, send
 // email or SMS, mutate CRM records, or spend money.
 //
-// SMS sending is not part of this list. It exists only as the opt-in list
-// InsightOptInToolNames below, usable when the AI's tool_names names the tool
-// explicitly (the "all" selector never includes it). Email, calls and CRM
+// SMS sending is not part of this list, so that this list stays free of
+// outside side effects. The SMS tools live in InsightMessageToolNames below;
+// the "all" selector of an Insight AI covers both lists. Email, calls and CRM
 // writes remain unavailable to Insight AIs.
 var AllInsightToolNames = []ToolName{
 	ToolNameGetContactInteractions,
@@ -107,14 +107,20 @@ var AllInsightToolNames = []ToolName{
 	ToolNameNotifyAgent,
 }
 
-// InsightOptInToolNames lists the tools an ai.TypeInsight AI may use only when
-// tool_names names them explicitly (VOIP-1704). They are accepted by
-// ValidateToolNames but are never produced by the "all" selector, so an
-// existing Insight AI stored with ["all"] gains no capability.
+// InsightMessageToolNames lists the tools with which an ai.TypeInsight AI
+// sends or proposes an SMS (VOIP-1704). They are accepted by name by
+// ValidateToolNames and, since VOIP-1708, are also produced by the "all"
+// selector together with AllInsightToolNames (ai.ExpandAllToolNames).
+//
+// This list is deliberately separate from AllInsightToolNames: send_message
+// has outside side effects (an SMS or MMS is sent at once and the cost is
+// charged to the customer account), so it must not pass through
+// TestAllInsightToolNamesAreReadOnly. Test_InsightMessageToolNames pins the
+// exact names, so adding to this list is a deliberate change.
 //
 // send_message is the existing SMS/MMS tool, reused as is. draft_message only
 // shows an SMS draft card to the agent and sends nothing.
-var InsightOptInToolNames = []ToolName{
+var InsightMessageToolNames = []ToolName{
 	ToolNameSendMessage,
 	ToolNameDraftMessage,
 }

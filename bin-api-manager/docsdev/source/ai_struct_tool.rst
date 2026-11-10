@@ -938,7 +938,7 @@ emit_info_card             Display a structured info card in the panel        ``
 notify_agent               Push a proactive note to the agent's panel         ``false``
 ========================== ================================================= ===============
 
-**Opt-in tools.** Two more tools can be used by a ``type=insight`` AI, but only when ``tool_names`` names them explicitly. ``["all"]`` never includes them, so an Insight AI that already stores ``["all"]`` does not gain them:
+**SMS tools.** Two more tools can be used by a ``type=insight`` AI. They can be named in ``tool_names`` and ``["all"]`` includes them, so an Insight AI that already stores ``["all"]`` gains both as soon as this change is deployed:
 
 ========================== ================================================= ===============
 Tool Name                  Description                                       run_llm Default
@@ -951,7 +951,7 @@ draft_message              Show an SMS draft card; sends nothing              ``
 
 .. note:: **AI Implementation Hint**
 
-   ``send_message`` for an Insight AI is the same tool as for a normal AI, so it can attach media (MMS) and use a source number given in the AI's instructions. The text a customer wrote, or what is said on a call, is untrusted input: an assistant that acts on it can be steered to send an SMS to an arbitrary number, and the cost is charged to the customer account. Enable only ``draft_message`` when every message should be confirmed by an agent first.
+   ``send_message`` for an Insight AI is the same tool as for a normal AI, so it can attach media (MMS) and use a source number given in the AI's instructions. The text a customer wrote, or what is said on a call, is untrusted input: an assistant that acts on it can be steered to send an SMS to an arbitrary number, and the cost is charged to the customer account. Because ``["all"]`` includes ``send_message``, list the tools by name and include ``draft_message`` but not ``send_message`` when every message should be confirmed by an agent first. The tools can also be called in a turn that no agent is attending.
 
 .. _ai-struct-tool-get_contact_interactions:
 
@@ -1280,7 +1280,7 @@ The resulting message is delivered over the same webhook / WebSocket / poll path
 draft_message
 ~~~~~~~~~~~~~~
 
-Shows an SMS draft card in the Insight Assistant panel for the agent to review. **Nothing is sent by this tool.** It is an opt-in tool: it is available only when ``tool_names`` names it, and ``["all"]`` does not include it.
+Shows an SMS draft card in the Insight Assistant panel for the agent to review. **Nothing is sent by this tool.** It is available when ``tool_names`` names it, and ``["all"]`` includes it for a ``type=insight`` AI.
 
 .. note:: **AI Implementation Hint**
 
@@ -1409,7 +1409,7 @@ Tool Name                    run_llm   Why
 ``get_call_transcript``      ``true``  Insight tool: continues after the result to answer the agent about the call transcript.
 ``emit_info_card``           ``true``  Insight tool: the card is the primary artifact; a follow-up must not restate the field values.
 ``notify_agent``             ``false`` Insight tool: the notification itself is the output, so no follow-up answer is generated.
-``draft_message``            ``true``  Insight opt-in tool: the card is the primary artifact; a follow-up must not repeat the draft text.
+``draft_message``            ``true``  Insight SMS tool: the card is the primary artifact; a follow-up must not repeat the draft text.
 ============================ ========= ========================================================================================
 
 .. note:: **AI Implementation Hint**

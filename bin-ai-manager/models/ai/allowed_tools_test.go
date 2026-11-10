@@ -33,11 +33,11 @@ func TestAllowedToolNames(t *testing.T) {
 			wantDisallowed: tool.AllInsightToolNames,
 		},
 		{
-			name:        "insight_allows_insight_tools_and_opt_in_tools_only",
+			name:        "insight_allows_insight_tools_and_message_tools_only",
 			aiType:      TypeInsight,
-			wantAllowed: append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightOptInToolNames...),
-			// every Normal tool except the opt-in ones stays denied.
-			wantDisallowed: withoutNames(tool.AllToolNames, tool.InsightOptInToolNames),
+			wantAllowed: append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightMessageToolNames...),
+			// every Normal tool except the message ones stays denied.
+			wantDisallowed: withoutNames(tool.AllToolNames, tool.InsightMessageToolNames),
 		},
 		{
 			name:           "unknown_type_denies_everything",
@@ -79,6 +79,8 @@ func TestAllowedToolNames(t *testing.T) {
 // side effects outside the session's own message/expression surface, since
 // the "all" selector automatically grants any future addition to every
 // Insight AI already storing tool_names=["all"], with no re-consent step.
+// The SMS tools are NOT in this list and so are not covered by this guard;
+// they are a separate list pinned by Test_InsightMessageToolNames.
 // (Reworded from "must be a read-only tool" by docs/plans/
 // 2026-09-04-insight-assistant-emit-info-card-design.md §1.4: a literal
 // read-only reading would incorrectly exclude emit_info_card, which writes
@@ -122,11 +124,11 @@ func TestAllInsightToolNamesAreReadOnly(t *testing.T) {
 // write-capable Normal-only tool ever being smuggled into
 // tool.AllInsightToolNames: every tool.AllToolNames entry that is NOT also
 // in tool.AllInsightToolNames must be rejected for TypeInsight, except the
-// explicit opt-in tools (VOIP-1704), which are accepted by name and pinned by
-// Test_InsightOptInToolNames.
+// message tools (VOIP-1704, tool.InsightMessageToolNames), which are accepted
+// and pinned by Test_InsightMessageToolNames.
 func TestValidateToolNames_WriteToolNeverAllowedForInsight(t *testing.T) {
 	insightAllowed := toSet(tool.AllInsightToolNames)
-	for _, n := range tool.InsightOptInToolNames {
+	for _, n := range tool.InsightMessageToolNames {
 		insightAllowed[n] = true
 	}
 
@@ -143,35 +145,58 @@ func TestValidateToolNames_WriteToolNeverAllowedForInsight(t *testing.T) {
 	}
 }
 
-// Test_InsightOptInToolNames pins the opt-in list: adding a tool to it grants
-// a side-effecting capability on an explicit tool_names entry, so it must be
-// a deliberate change that updates this test.
-func Test_InsightOptInToolNames(t *testing.T) {
+// Test_InsightMessageToolNames pins the message list: adding a tool to it
+// grants a side-effecting capability to every Insight AI stored with
+// tool_names=["all"] (VOIP-1708) and bypasses TestAllInsightToolNamesAreReadOnly
+// and TestValidateToolNames_WriteToolNeverAllowedForInsight, so it must be a
+// deliberate change that updates this test.
+func Test_InsightMessageToolNames(t *testing.T) {
 	want := map[tool.ToolName]bool{
 		tool.ToolNameSendMessage:  true,
 		tool.ToolNameDraftMessage: true,
 	}
-	if len(tool.InsightOptInToolNames) != len(want) {
-		t.Fatalf("tool.InsightOptInToolNames = %v, want exactly %d known names", tool.InsightOptInToolNames, len(want))
-	}
-	for _, n := range tool.InsightOptInToolNames {
-		if !want[n] {
-			t.Errorf("tool.InsightOptInToolNames contains unexpected %q", n)
-		}
+	if len(tool.InsightMessageToolNames) != len(want) {
+		t.Fatalf("tool.InsightMessageToolNames = %v, want exactly %d known names", tool.InsightMessageToolNames, len(want))
 	}
 
-	// opt-in tools are never part of the "all" selector or of AllInsightToolNames.
+	// The message tools are a separate list: never in AllInsightToolNames
+	// (which only holds tools without outside side effects), always part of
+	// the "all" selector and accepted by name.
 	insightAll := toSet(tool.AllInsightToolNames)
-	for _, n := range tool.InsightOptInToolNames {
-		if insightAll[n] {
-			t.Errorf("opt-in tool %q must not be in tool.AllInsightToolNames", n)
+	expanded := ExpandAllToolNames(TypeInsight)
+	for _, n := range tool.InsightMessageToolNames {
+		if !want[n] {
+			t.Errorf("tool.InsightMessageToolNames contains unexpected %q", n)
 		}
-		if ExpandAllToolNames(TypeInsight)[n] {
-			t.Errorf("ExpandAllToolNames(TypeInsight) must not contain opt-in tool %q", n)
+		if insightAll[n] {
+			t.Errorf("message tool %q must not be in tool.AllInsightToolNames", n)
+		}
+		if !expanded[n] {
+			t.Errorf("ExpandAllToolNames(TypeInsight) must contain message tool %q", n)
 		}
 		if err := ValidateToolNames(TypeInsight, []tool.ToolName{n}); err != nil {
 			t.Errorf("ValidateToolNames(TypeInsight, [%q]) = %v, want nil", n, err)
 		}
+	}
+}
+
+// Test_ExpandAllToolNames_InsightIsAllowedSet: for an Insight AI "all" means
+// every tool it may use, so the selector set and the whitelist are equal, and
+// together they are the 8 AllInsightToolNames plus the 2 message tools.
+func Test_ExpandAllToolNames_InsightIsAllowedSet(t *testing.T) {
+	expanded := ExpandAllToolNames(TypeInsight)
+	allowed := AllowedToolNames(TypeInsight)
+
+	if len(expanded) != len(allowed) {
+		t.Fatalf("ExpandAllToolNames(TypeInsight) has %d names, AllowedToolNames(TypeInsight) has %d, want equal", len(expanded), len(allowed))
+	}
+	for n := range allowed {
+		if !expanded[n] {
+			t.Errorf("AllowedToolNames(TypeInsight) has %q but ExpandAllToolNames(TypeInsight) does not", n)
+		}
+	}
+	if want := len(tool.AllInsightToolNames) + len(tool.InsightMessageToolNames); len(expanded) != want || want != 10 {
+		t.Errorf("ExpandAllToolNames(TypeInsight) has %d names, want %d (== 10)", len(expanded), want)
 	}
 }
 
@@ -184,7 +209,7 @@ func Test_ExpandAllToolNames(t *testing.T) {
 		wantSizeSame bool
 	}{
 		{"normal", TypeNormal, tool.AllToolNames, []tool.ToolName{tool.ToolNameDraftMessage}, true},
-		{"insight", TypeInsight, tool.AllInsightToolNames, tool.InsightOptInToolNames, true},
+		{"insight", TypeInsight, append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightMessageToolNames...), withoutNames(tool.AllToolNames, tool.InsightMessageToolNames), true},
 		{"unknown", Type("future"), nil, append(append([]tool.ToolName{}, tool.AllToolNames...), tool.AllInsightToolNames...), true},
 	}
 	for _, tt := range tests {

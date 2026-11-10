@@ -38,13 +38,7 @@ func AllowedToolNames(t Type) map[tool.ToolName]bool {
 	case TypeNormal:
 		return toSet(tool.AllToolNames)
 	case TypeInsight:
-		// The opt-in tools are allowed for an explicit name only; see
-		// ExpandAllToolNames for what the "all" selector covers.
-		set := toSet(tool.AllInsightToolNames)
-		for _, n := range tool.InsightOptInToolNames {
-			set[n] = true
-		}
-		return set
+		return insightToolSet()
 	default:
 		logrus.WithField("ai_type", t).Warnf("unknown AI type encountered in tool whitelist resolution, denying all tools")
 		UnknownAITypeToolDenialTotal.Inc()
@@ -52,17 +46,29 @@ func AllowedToolNames(t Type) map[tool.ToolName]bool {
 	}
 }
 
+// insightToolSet returns every tool an Insight AI may use: the tools without
+// outside side effects (tool.AllInsightToolNames) and the SMS tools
+// (tool.InsightMessageToolNames).
+func insightToolSet() map[tool.ToolName]bool {
+	set := toSet(tool.AllInsightToolNames)
+	for _, n := range tool.InsightMessageToolNames {
+		set[n] = true
+	}
+	return set
+}
+
 // ExpandAllToolNames returns the set the "all" selector expands to for a given
-// AI type. It is a subset of AllowedToolNames(t): the Insight opt-in tools
-// (tool.InsightOptInToolNames) are allowed by name but never part of "all".
-// An unknown type expands to the empty set (AllowedToolNames already reports
-// the unknown type).
+// AI type. For every known type it equals AllowedToolNames(t): "all" means
+// every tool the type may use. For an Insight AI that includes the SMS tools
+// (tool.InsightMessageToolNames, VOIP-1708), so send_message sends an SMS at
+// once for an AI stored with ["all"]. An unknown type expands to the empty
+// set (AllowedToolNames already reports the unknown type).
 func ExpandAllToolNames(t Type) map[tool.ToolName]bool {
 	switch t {
 	case TypeNormal:
 		return toSet(tool.AllToolNames)
 	case TypeInsight:
-		return toSet(tool.AllInsightToolNames)
+		return insightToolSet()
 	default:
 		return map[tool.ToolName]bool{}
 	}
