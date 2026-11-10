@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"monorepo/bin-ai-manager/internal/config"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
@@ -87,58 +88,14 @@ func (h *aicallHandler) DraftDecision(ctx context.Context, aicallID uuid.UUID, d
 		return nil, errors.Wrapf(err, "could not get the aicall correctly")
 	}
 
-	// every refusal below the lookup is the same NotFound, so ids cannot be probed.
-	d, err := h.messageHandler.Get(ctx, draftID)
+	// every validation, including the expiry, runs before the claim, so a refused request never consumes the draft.
+	draft, err := h.draftDecisionLoad(ctx, c, draftID, decision)
 	if err != nil {
-		var ve *cerrors.VoipbinError
-		if stderrors.As(err, &ve) && ve.Status == cerrors.StatusNotFound {
-			return nil, draftNotFound()
-		}
-		return nil, errors.Wrapf(err, "could not get the draft")
-	}
-	if d.AIcallID != c.ID || d.CustomerID != c.CustomerID || d.Role != message.RoleTool {
-		return nil, draftNotFound()
+		return nil, err
 	}
 
-	var stored messageContent
-	if errUnmarshal := json.Unmarshal([]byte(d.Content), &stored); errUnmarshal != nil {
-		return nil, draftNotFound()
-	}
-	var draft *CardBlock
-	for i := range stored.Blocks {
-		if stored.Blocks[i].Type == message.BlockTypeSMSDraft && stored.Blocks[i].To != "" {
-			draft = &stored.Blocks[i]
-			break
-		}
-	}
-	if draft == nil {
-		return nil, draftNotFound()
-	}
-
-	if decision == message.DraftDecisionApprove && !draftToRegex.MatchString(draft.To) {
-		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "DRAFT_INVALID", "The draft recipient is not a valid phone number.")
-	}
-
-	// expiry is evaluated lazily; a draft without a creation time counts as expired (fail closed).
-	expiry := config.Get().AIcallDraftDecisionExpirySeconds
-	if expiry <= 0 {
-		expiry = draftDecisionExpiryDefaultSeconds
-	}
-	now := h.utilHandler.TimeNow()
-	if d.TMCreate == nil || now == nil || now.Sub(*d.TMCreate) > time.Duration(expiry)*time.Second {
-		return nil, cerrors.FailedPrecondition(commonoutline.ServiceNameAIManager, "DRAFT_EXPIRED", "The draft expired and can no longer be decided.")
-	}
-
-	// claim: the primary key conflict is the atomic exclusion of a second decision.
-	claim, err := json.Marshal(&draftClaimContent{Type: draftClaimType, DraftID: draftID, Decision: decision})
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not marshal the claim content")
-	}
-	if _, errClaim := h.messageHandler.Create(ctx, draftDecisionClaimID(draftID), c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleNotification, string(claim), nil, ""); errClaim != nil {
-		if dbhandler.IsDuplicateKey(errClaim) {
-			return nil, cerrors.AlreadyExists(commonoutline.ServiceNameAIManager, "DRAFT_ALREADY_DECIDED", "The draft was already decided.")
-		}
-		return nil, errors.Wrapf(errClaim, "could not record the decision claim")
+	if errClaim := h.draftDecisionClaim(ctx, c, draftID, decision); errClaim != nil {
+		return nil, errClaim
 	}
 
 	args, err := json.Marshal(&fmaction.OptionMessageSend{
@@ -184,4 +141,73 @@ func (h *aicallHandler) DraftDecision(ctx context.Context, aicallID uuid.UUID, d
 
 	log.Infof("Decided the draft. result: %s", result.Result)
 	return res, nil
+}
+
+// draftDecisionLoad reads the draft row and runs every check that must pass
+// before the claim: the row belongs to the aicall and its customer, it is a
+// tool row carrying an sms_draft block with a recipient, the recipient is a
+// valid E.164 number (approve), and the draft is not expired. Every refusal
+// about the row itself is the same NotFound, so ids cannot be probed. It
+// returns the card block holding the recipient and the text.
+func (h *aicallHandler) draftDecisionLoad(ctx context.Context, c *aicall.AIcall, draftID uuid.UUID, decision message.DraftDecision) (*CardBlock, error) {
+	d, err := h.messageHandler.Get(ctx, draftID)
+	if err != nil {
+		var ve *cerrors.VoipbinError
+		if stderrors.As(err, &ve) && ve.Status == cerrors.StatusNotFound {
+			return nil, draftNotFound()
+		}
+		return nil, errors.Wrapf(err, "could not get the draft")
+	}
+	if d.AIcallID != c.ID || d.CustomerID != c.CustomerID || d.Role != message.RoleTool {
+		return nil, draftNotFound()
+	}
+
+	var stored messageContent
+	if errUnmarshal := json.Unmarshal([]byte(d.Content), &stored); errUnmarshal != nil {
+		return nil, draftNotFound()
+	}
+	var draft *CardBlock
+	for i := range stored.Blocks {
+		if stored.Blocks[i].Type == message.BlockTypeSMSDraft && stored.Blocks[i].To != "" {
+			draft = &stored.Blocks[i]
+			break
+		}
+	}
+	if draft == nil {
+		return nil, draftNotFound()
+	}
+
+	if decision == message.DraftDecisionApprove && !draftToRegex.MatchString(draft.To) {
+		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "DRAFT_INVALID", "The draft recipient is not a valid phone number.")
+	}
+
+	// expiry is evaluated lazily; a draft without a creation time counts as expired (fail closed).
+	expiry := config.Get().AIcallDraftDecisionExpirySeconds
+	if expiry <= 0 {
+		expiry = draftDecisionExpiryDefaultSeconds
+	}
+	now := h.utilHandler.TimeNow()
+	if d.TMCreate == nil || now == nil || now.Sub(*d.TMCreate) > time.Duration(expiry)*time.Second {
+		return nil, cerrors.FailedPrecondition(commonoutline.ServiceNameAIManager, "DRAFT_EXPIRED", "The draft expired and can no longer be decided.")
+	}
+
+	return draft, nil
+}
+
+// draftDecisionClaim writes the claim row. Its id is derived from the draft id,
+// so the primary key conflict is the atomic exclusion of a second decision.
+func (h *aicallHandler) draftDecisionClaim(ctx context.Context, c *aicall.AIcall, draftID uuid.UUID, decision message.DraftDecision) error {
+	claim, err := json.Marshal(&draftClaimContent{Type: draftClaimType, DraftID: draftID, Decision: decision})
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal the claim content")
+	}
+
+	if _, errCreate := h.messageHandler.Create(ctx, draftDecisionClaimID(draftID), c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleNotification, string(claim), nil, ""); errCreate != nil {
+		if dbhandler.IsDuplicateKey(errCreate) {
+			return cerrors.AlreadyExists(commonoutline.ServiceNameAIManager, "DRAFT_ALREADY_DECIDED", "The draft was already decided.")
+		}
+		return errors.Wrapf(errCreate, "could not record the decision claim")
+	}
+
+	return nil
 }
