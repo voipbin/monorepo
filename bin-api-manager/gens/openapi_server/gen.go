@@ -2967,12 +2967,15 @@ func (e ServiceConfigKeyType) Valid() bool {
 
 // Defines values for ServiceConfigServiceName.
 const (
+	ServiceConfigServiceNameAi    ServiceConfigServiceName = "ai"
 	ServiceConfigServiceNameEmail ServiceConfigServiceName = "email"
 )
 
 // Valid indicates whether the value is a known member of the ServiceConfigServiceName enum.
 func (e ServiceConfigServiceName) Valid() bool {
 	switch e {
+	case ServiceConfigServiceNameAi:
+		return true
 	case ServiceConfigServiceNameEmail:
 		return true
 	default:
@@ -7851,7 +7854,7 @@ type ServiceConfig struct {
 	// SecretWritable Whether the platform has an encryption key, which is needed to store a secret.
 	SecretWritable bool `json:"secret_writable"`
 
-	// Service The name of a service that has config keys.
+	// Service The name of a service that has config keys. `email` is the email service and `ai` the AI service.
 	Service ServiceConfigServiceName `json:"service"`
 }
 
@@ -7946,7 +7949,7 @@ type ServiceConfigKeySecretRequest struct {
 	// Revision The `revision` of the key returned from the `GET /service_configs/{service}` response. 0 means that the key has no stored value.
 	Revision int64 `json:"revision"`
 
-	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte); a key can declare a shorter limit (the email keys allow 512 bytes), and a longer secret is rejected with 400. It must not start or end with white space or contain a line break; it is rejected, not trimmed. The request body is limited to 4 KB.
+	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte); a key can declare a shorter limit (the email and ai keys allow 512 bytes), and a longer secret is rejected with 400. It must not start or end with white space or contain a line break; it is rejected, not trimmed. The request body is limited to 4 KB.
 	Secret *string `json:"secret,omitempty"`
 }
 
@@ -7957,7 +7960,7 @@ type ServiceConfigKeySource string
 // ServiceConfigKeyType The value type of the key.
 type ServiceConfigKeyType string
 
-// ServiceConfigServiceName The name of a service that has config keys.
+// ServiceConfigServiceName The name of a service that has config keys. `email` is the email service and `ai` the AI service.
 type ServiceConfigServiceName string
 
 // StorageManagerAccount defines model for StorageManagerAccount.
@@ -8694,7 +8697,7 @@ type PageToken = string
 // ServiceConfigKeyName defines model for ServiceConfigKeyName.
 type ServiceConfigKeyName = string
 
-// ServiceConfigService The name of a service that has config keys.
+// ServiceConfigService The name of a service that has config keys. `email` is the email service and `ai` the AI service.
 type ServiceConfigService = ServiceConfigServiceName
 
 // BadRequest defines model for BadRequest.

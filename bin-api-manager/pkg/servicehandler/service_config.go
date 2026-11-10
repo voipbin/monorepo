@@ -27,6 +27,7 @@ var regServiceConfigKey = regexp.MustCompile(serviceConfigKeyPattern)
 // line here and a line in the queue map of requesthandler.
 var serviceConfigServices = map[string]bool{
 	"email": true,
+	"ai":    true,
 }
 
 // serviceConfigAuthorize checks that the identity may manage the configs: direct access is

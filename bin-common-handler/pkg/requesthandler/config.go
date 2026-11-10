@@ -18,15 +18,21 @@ import (
 // ErrConfigServiceUnknown is returned for a service that has no config RPC.
 var ErrConfigServiceUnknown = errors.New("the service has no config RPC")
 
-// configServiceEmail is the name of the email service in the config API.
-const configServiceEmail = "email"
+// names of the services in the config API.
+const (
+	configServiceEmail = "email"
+	configServiceAI    = "ai"
+)
 
 // configQueue returns the request queue of the service of the config API, and the label of the
 // metrics. The label is a fixed text per service, never a key name. A service is added here with
 // one line, together with the mount of configrpc in its listener.
 func configQueue(service string) (commonoutline.QueueName, string, error) {
-	if service == configServiceEmail {
+	switch service {
+	case configServiceEmail:
 		return commonoutline.QueueNameEmailRequest, "email/configs", nil
+	case configServiceAI:
+		return commonoutline.QueueNameAIRequest, "ai/configs", nil
 	}
 
 	return "", "", ErrConfigServiceUnknown

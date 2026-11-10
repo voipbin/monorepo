@@ -18,7 +18,7 @@ Service Config
         ]
     }
 
-* ``service`` (String): The name of the service, such as ``email``.
+* ``service`` (String): The name of the service: ``email`` or ``ai``.
 * ``secret_writable`` (Boolean): Whether the platform has an encryption key, which a secret needs.
 * ``keys`` (Array of Key): The keys of the service, in the order the service declares them.
 
