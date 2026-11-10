@@ -938,7 +938,7 @@ emit_info_card             Display a structured info card in the panel        ``
 notify_agent               Push a proactive note to the agent's panel         ``false``
 ========================== ================================================= ===============
 
-**SMS tools.** Two more tools can be used by a ``type=insight`` AI. They can be named in ``tool_names`` and ``["all"]`` includes them, so an Insight AI that already stores ``["all"]`` gains both as soon as this change is deployed:
+**SMS tools.** Two more tools can be used by a ``type=insight`` AI. They can be named in ``tool_names`` and ``["all"]`` includes them, so an Insight AI that already stores ``["all"]`` gains both after the service update is deployed:
 
 ========================== ================================================= ===============
 Tool Name                  Description                                       run_llm Default
