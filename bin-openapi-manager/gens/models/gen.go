@@ -407,6 +407,24 @@ func (e AIManagerMessageDirection) Valid() bool {
 	}
 }
 
+// Defines values for AIManagerMessageDraftDecision.
+const (
+	AIManagerMessageDraftDecisionApprove AIManagerMessageDraftDecision = "approve"
+	AIManagerMessageDraftDecisionReject  AIManagerMessageDraftDecision = "reject"
+)
+
+// Valid indicates whether the value is a known member of the AIManagerMessageDraftDecision enum.
+func (e AIManagerMessageDraftDecision) Valid() bool {
+	switch e {
+	case AIManagerMessageDraftDecisionApprove:
+		return true
+	case AIManagerMessageDraftDecisionReject:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AIManagerMessageRole.
 const (
 	AIManagerMessageRoleAssistant    AIManagerMessageRole = "assistant"
@@ -495,6 +513,7 @@ const (
 	AIManagerToolNameConnectCall            AIManagerToolName = "connect_call"
 	AIManagerToolNameCreateCall             AIManagerToolName = "create_call"
 	AIManagerToolNameDescribeAction         AIManagerToolName = "describe_action"
+	AIManagerToolNameDraftMessage           AIManagerToolName = "draft_message"
 	AIManagerToolNameEmitInfoCard           AIManagerToolName = "emit_info_card"
 	AIManagerToolNameGetAicallMessages      AIManagerToolName = "get_aicall_messages"
 	AIManagerToolNameGetCallTranscript      AIManagerToolName = "get_call_transcript"
@@ -530,6 +549,8 @@ func (e AIManagerToolName) Valid() bool {
 	case AIManagerToolNameCreateCall:
 		return true
 	case AIManagerToolNameDescribeAction:
+		return true
+	case AIManagerToolNameDraftMessage:
 		return true
 	case AIManagerToolNameEmitInfoCard:
 		return true
@@ -4167,7 +4188,7 @@ type AIManagerAI struct {
 	// Example: 2026-01-15T09:30:00.000000Z
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// ToolNames List of tool names enabled for this AI. Use `["all"]` to enable all tools. See the Tool Functions documentation for detailed descriptions of each tool.
+	// ToolNames List of tool names enabled for this AI. Use `["all"]` to enable all tools. See the Tool Functions documentation for detailed descriptions of each tool. Opt-in tools for type=insight AIs: `send_message` (sends an SMS or MMS right away) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They are accepted only when named explicitly and are never included by `["all"]`, so an Insight AI stored with `["all"]` does not gain them.
 	//
 	// Example: ["all"]
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
@@ -4846,6 +4867,11 @@ type AIManagerMessageOrigin string
 //
 // Example: incoming
 type AIManagerMessageDirection string
+
+// AIManagerMessageDraftDecision The agent's decision on an SMS draft card. `approve` sends the drafted SMS; `reject` discards it without sending.
+//
+// Example: approve
+type AIManagerMessageDraftDecision string
 
 // AIManagerMessageRole Role of the entity in the conversation.
 //
@@ -11523,7 +11549,7 @@ type PostAisJSONBody struct {
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
-	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Opt-in tools for type=insight AIs: `send_message` (sends an SMS or MMS right away) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They are accepted only when named explicitly and are never included by `["all"]`, so an Insight AI stored with `["all"]` does not gain them. Mismatched combinations are rejected with a 400.
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.
@@ -11589,7 +11615,7 @@ type PutAisIdJSONBody struct {
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
-	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Opt-in tools for type=insight AIs: `send_message` (sends an SMS or MMS right away) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They are accepted only when named explicitly and are never included by `["all"]`, so an Insight AI stored with `["all"]` does not gain them. Mismatched combinations are rejected with a 400.
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.
@@ -13503,6 +13529,24 @@ type PostServiceAgentsAimessagesJSONBody struct {
 	Role AIManagerMessageRole `json:"role"`
 }
 
+// PostServiceAgentsAimessagesDraftDecisionJSONBody defines parameters for PostServiceAgentsAimessagesDraftDecision.
+type PostServiceAgentsAimessagesDraftDecisionJSONBody struct {
+	// AicallId The ID of the aicall the draft belongs to. Returned from the `POST /service_agents/aicalls` or `GET /service_agents/aicalls` response.
+	//
+	// Example: 5e4a0680-804e-11ec-8477-2fea5968d85b
+	AicallId openapi_types.UUID `json:"aicall_id"`
+
+	// Decision The agent's decision on an SMS draft card. `approve` sends the drafted SMS; `reject` discards it without sending.
+	//
+	// Example: approve
+	Decision AIManagerMessageDraftDecision `json:"decision"`
+
+	// DraftId The ID of the `tool` message that carries the `sms_draft` block. Returned from the `id` field of the `GET /service_agents/aimessages` response or of the `aimessage_created` event.
+	//
+	// Example: 7a1c3f80-804e-11ec-8477-2fea5968d85b
+	DraftId openapi_types.UUID `json:"draft_id"`
+}
+
 // GetServiceAgentsCallsParams defines parameters for GetServiceAgentsCalls.
 type GetServiceAgentsCallsParams struct {
 	// PageSize Number of results to return per page.
@@ -14985,6 +15029,9 @@ type PostServiceAgentsAicallsJSONRequestBody PostServiceAgentsAicallsJSONBody
 
 // PostServiceAgentsAimessagesJSONRequestBody defines body for PostServiceAgentsAimessages for application/json ContentType.
 type PostServiceAgentsAimessagesJSONRequestBody PostServiceAgentsAimessagesJSONBody
+
+// PostServiceAgentsAimessagesDraftDecisionJSONRequestBody defines body for PostServiceAgentsAimessagesDraftDecision for application/json ContentType.
+type PostServiceAgentsAimessagesDraftDecisionJSONRequestBody PostServiceAgentsAimessagesDraftDecisionJSONBody
 
 // PostServiceAgentsCallsIdParticipantsJSONRequestBody defines body for PostServiceAgentsCallsIdParticipants for application/json ContentType.
 type PostServiceAgentsCallsIdParticipantsJSONRequestBody PostServiceAgentsCallsIdParticipantsJSONBody

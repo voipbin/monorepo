@@ -333,7 +333,9 @@ case_create               Create a CRM case for the current contact
    above: ``get_contact_interactions``, ``get_conversation_content``,
    ``get_related_cases``, ``get_case_notes``,
    ``get_contact_profile``, ``get_call_transcript``, ``emit_info_card``, and
-   ``notify_agent``. See
+   ``notify_agent``. Two more, ``send_message`` and ``draft_message``, are opt-in:
+   they are available only when named in ``tool_names`` and are not included by
+   ``["all"]``. See
    :ref:`Insight Tools <ai-struct-tool-insight>`. They can also use the tools of the MCP
    servers listed in their own ``mcp_server_ids``.
 

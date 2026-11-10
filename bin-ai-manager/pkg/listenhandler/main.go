@@ -118,6 +118,8 @@ var (
 	regV1Messages    = regexp.MustCompile("/v1/messages$")
 	regV1MessagesID  = regexp.MustCompile("/v1/messages/" + regUUID + "$")
 
+	regV1MessagesDraftDecision = regexp.MustCompile("^/v1/messages/draft-decision$")
+
 	// service
 	regV1ServicesTypeAIcall   = regexp.MustCompile("/v1/services/type/aicall$")
 	regV1ServicesTypeSummary  = regexp.MustCompile("/v1/services/type/summary$")
@@ -488,6 +490,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Messages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1MessagesPost(ctx, m)
 		requestType = "/v1/messages"
+
+	// POST /messages/draft-decision
+	case regV1MessagesDraftDecision.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1MessagesDraftDecisionPost(ctx, m)
+		requestType = "/v1/messages/draft-decision"
 
 	// POST /messages/<message-id>
 	case regV1MessagesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:

@@ -139,6 +139,10 @@ put:
                 get_call_transcript, and notify_agent -- the one write tool,
                 usable only while the assistant is monitoring a live call);
                 type=normal AIs may use any Normal tool name or ["all"].
+                Opt-in tools for type=insight AIs: `send_message` (sends an SMS or MMS right away) and
+                `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent
+                until the agent approves). They are accepted only when named explicitly and are never
+                included by `["all"]`, so an Insight AI stored with `["all"]` does not gain them.
                 Mismatched combinations are rejected with a 400.
             mcp_server_ids:
               type: array

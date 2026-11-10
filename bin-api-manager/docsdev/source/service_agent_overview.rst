@@ -71,6 +71,9 @@ The table below groups every ``/service_agents/*`` path by the resource it front
    * - ``GET/POST /service_agents/aicalls``, ``/aimessages``
      - :ref:`AI <ai-main>`
      -
+   * - ``POST /service_agents/aimessages/draft-decision``
+     - :ref:`Insight Tools <ai-struct-tool-draft_message>`
+     - **New** -- approves or rejects an SMS draft card that the Insight Assistant produced with ``draft_message``. Body: ``aicall_id``, ``draft_id`` (the ``id`` of the ``tool`` message that carries the ``sms_draft`` block) and ``decision`` (``approve`` or ``reject``). Returns the ``tool`` message that records the result. A draft can be decided once (``409`` ``DRAFT_ALREADY_DECIDED``) and only within 10 minutes of its creation by default (``409`` ``DRAFT_EXPIRED``); an unknown draft, or a draft of another AI call or customer, returns ``404`` ``DRAFT_NOT_FOUND``
    * - ``GET/POST/PUT/DELETE /service_agents/contacts*``
      - :ref:`Contact <contact-main>`
      -

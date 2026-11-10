@@ -242,6 +242,10 @@ func Test_isDuplicateKey(t *testing.T) {
 			if got := isDuplicateKey(tt.err); got != tt.expect {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expect, got)
 			}
+			// the exported wrapper (VOIP-1704 draft decision claim) answers the same.
+			if got := IsDuplicateKey(tt.err); got != tt.expect {
+				t.Errorf("Wrong match for IsDuplicateKey. expect: %v, got: %v", tt.expect, got)
+			}
 		})
 	}
 }

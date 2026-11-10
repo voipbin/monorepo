@@ -109,3 +109,45 @@ func (h *serviceHandler) ServiceAgentAImessageCreate(ctx context.Context, a *aut
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
+
+// ServiceAgentAImessageDraftDecision sends a request to ai-manager to approve
+// or reject an SMS draft card of the given aicall. The aicall must belong to
+// the service agent's own customer (tenant isolation only, no ownership
+// check): any agent of the customer can decide any draft of the customer,
+// the same permission as the other aimessage calls. The draft itself (its
+// recipient, text, owner and age) is validated by ai-manager.
+func (h *serviceHandler) ServiceAgentAImessageDraftDecision(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, draftID uuid.UUID, decision ammessage.DraftDecision) (*ammessage.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, serviceerrors.ErrAuthenticationRequired
+	}
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ServiceAgentAImessageDraftDecision",
+		"customer_id": a.CustomerID,
+		"username":    a.DisplayName(),
+		"aicall_id":   aicallID,
+		"draft_id":    draftID,
+		"decision":    decision,
+	})
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	// confirm the aicall belongs to the agent's own tenant before deciding
+	// a draft of it -- tenant isolation only, no ownership check.
+	if _, err := h.ServiceAgentAIcallGet(ctx, a, aicallID); err != nil {
+		return nil, errors.Wrapf(err, "could not get the aicall info. aicall_id: %v", aicallID)
+	}
+
+	tmp, err := h.reqHandler.AIV1MessageDraftDecision(ctx, aicallID, draftID, decision)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not decide the draft. err: %v", err)
+	}
+
+	// the deciding agent is recorded in the log only.
+	log.Infof("Decided the sms draft. result_message_id: %s", tmp.ID)
+
+	return tmp.ConvertWebhookMessage(), nil
+}

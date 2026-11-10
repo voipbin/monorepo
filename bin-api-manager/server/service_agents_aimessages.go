@@ -108,3 +108,43 @@ func (h *server) PostServiceAgentsAimessages(c *gin.Context) {
 
 	c.JSON(200, res)
 }
+
+// PostServiceAgentsAimessagesDraftDecision handles POST /service_agents/aimessages/draft-decision
+func (h *server) PostServiceAgentsAimessagesDraftDecision(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostServiceAgentsAimessagesDraftDecision",
+		"request_address": c.ClientIP,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	var req openapi_server.PostServiceAgentsAimessagesDraftDecisionJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
+		return
+	}
+
+	res, err := h.serviceHandler.ServiceAgentAImessageDraftDecision(
+		c.Request.Context(),
+		a,
+		uuid.UUID(req.AicallId),
+		uuid.UUID(req.DraftId),
+		ammessage.DraftDecision(req.Decision),
+	)
+	if err != nil {
+		log.Errorf("Could not decide the draft. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}

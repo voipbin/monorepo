@@ -78,6 +78,11 @@ func Test_setters_touchOnlyTheirField(t *testing.T) {
 			expect: func(c *Config) { c.AIcallSendCooldownSeconds = 17 },
 		},
 		{
+			name:   "draft decision expiry seconds",
+			apply:  func() { SetAIcallDraftDecisionExpirySecondsForTest(29) },
+			expect: func(c *Config) { c.AIcallDraftDecisionExpirySeconds = 29 },
+		},
+		{
 			name:   "contact case recreate rate limit minutes",
 			apply:  func() { SetAIcallContactCaseRecreateRateLimitMinutesForTest(23) },
 			expect: func(c *Config) { c.AIcallContactCaseRecreateRateLimitMinutes = 23 },

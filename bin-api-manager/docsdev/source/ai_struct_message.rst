@@ -94,6 +94,8 @@ A message with ``role`` ``notification`` records a session event rather than con
 
 ``member_switched``: an AI team handed the conversation to another member.
 
+``draft_decision``: an agent decided an SMS draft card (see :ref:`draft_message <ai-struct-tool-draft_message>`). It is written before the decision is carried out and marks the draft as being processed. ``content`` is ``{"type": "draft_decision", "draft_id": "<draft message id>", "decision": "approve" | "reject"}``.
+
 ``pipeline_error``: an AI service provider (language model, speech-to-text or text-to-speech) returned an error while the AI was handling the session, so the AI may not have answered.
 
 .. code::

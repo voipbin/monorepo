@@ -819,6 +819,21 @@ func (mr *MockRequestHandlerMockRecorder) AIV1MessageDelete(ctx, messageID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1MessageDelete", reflect.TypeOf((*MockRequestHandler)(nil).AIV1MessageDelete), ctx, messageID)
 }
 
+// AIV1MessageDraftDecision mocks base method.
+func (m *MockRequestHandler) AIV1MessageDraftDecision(ctx context.Context, aicallID, draftID uuid.UUID, decision message.DraftDecision) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1MessageDraftDecision", ctx, aicallID, draftID, decision)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1MessageDraftDecision indicates an expected call of AIV1MessageDraftDecision.
+func (mr *MockRequestHandlerMockRecorder) AIV1MessageDraftDecision(ctx, aicallID, draftID, decision any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1MessageDraftDecision", reflect.TypeOf((*MockRequestHandler)(nil).AIV1MessageDraftDecision), ctx, aicallID, draftID, decision)
+}
+
 // AIV1MessageGet mocks base method.
 func (m *MockRequestHandler) AIV1MessageGet(ctx context.Context, messageID uuid.UUID) (*message.Message, error) {
 	m.ctrl.T.Helper()

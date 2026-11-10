@@ -48,6 +48,10 @@ const (
 	// Insight AI proactive notification (NOJIRA, docs/plans/
 	// 2026-09-03-insight-ai-realtime-listen-design.md §5.5).
 	ToolNameNotifyAgent ToolName = "notify_agent"
+
+	// Insight AI SMS draft (VOIP-1704, docs/plans/
+	// 2026-11-10-insight-assistant-sms-design.md).
+	ToolNameDraftMessage ToolName = "draft_message"
 )
 
 // AllToolNames returns all available tool names (excluding "all")
@@ -87,6 +91,11 @@ var AllToolNames = []ToolName{
 // only effect is a message in the AIcall's own conversation thread -- the
 // thread the agent is already reading. Neither tool can place calls, send
 // email or SMS, mutate CRM records, or spend money.
+//
+// SMS sending is not part of this list. It exists only as the opt-in list
+// InsightOptInToolNames below, usable when the AI's tool_names names the tool
+// explicitly (the "all" selector never includes it). Email, calls and CRM
+// writes remain unavailable to Insight AIs.
 var AllInsightToolNames = []ToolName{
 	ToolNameGetContactInteractions,
 	ToolNameGetConversationContent,
@@ -96,6 +105,18 @@ var AllInsightToolNames = []ToolName{
 	ToolNameGetCallTranscript,
 	ToolNameEmitInfoCard,
 	ToolNameNotifyAgent,
+}
+
+// InsightOptInToolNames lists the tools an ai.TypeInsight AI may use only when
+// tool_names names them explicitly (VOIP-1704). They are accepted by
+// ValidateToolNames but are never produced by the "all" selector, so an
+// existing Insight AI stored with ["all"] gains no capability.
+//
+// send_message is the existing SMS/MMS tool, reused as is. draft_message only
+// shows an SMS draft card to the agent and sends nothing.
+var InsightOptInToolNames = []ToolName{
+	ToolNameSendMessage,
+	ToolNameDraftMessage,
 }
 
 // Tool defines a tool with its schema for LLM function calling.

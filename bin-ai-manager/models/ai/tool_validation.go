@@ -38,10 +38,32 @@ func AllowedToolNames(t Type) map[tool.ToolName]bool {
 	case TypeNormal:
 		return toSet(tool.AllToolNames)
 	case TypeInsight:
-		return toSet(tool.AllInsightToolNames)
+		// The opt-in tools are allowed for an explicit name only; see
+		// ExpandAllToolNames for what the "all" selector covers.
+		set := toSet(tool.AllInsightToolNames)
+		for _, n := range tool.InsightOptInToolNames {
+			set[n] = true
+		}
+		return set
 	default:
 		logrus.WithField("ai_type", t).Warnf("unknown AI type encountered in tool whitelist resolution, denying all tools")
 		UnknownAITypeToolDenialTotal.Inc()
+		return map[tool.ToolName]bool{}
+	}
+}
+
+// ExpandAllToolNames returns the set the "all" selector expands to for a given
+// AI type. It is a subset of AllowedToolNames(t): the Insight opt-in tools
+// (tool.InsightOptInToolNames) are allowed by name but never part of "all".
+// An unknown type expands to the empty set (AllowedToolNames already reports
+// the unknown type).
+func ExpandAllToolNames(t Type) map[tool.ToolName]bool {
+	switch t {
+	case TypeNormal:
+		return toSet(tool.AllToolNames)
+	case TypeInsight:
+		return toSet(tool.AllInsightToolNames)
+	default:
 		return map[tool.ToolName]bool{}
 	}
 }

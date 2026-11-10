@@ -279,3 +279,83 @@ func sortToolNames(names []aitool.ToolName) []aitool.ToolName {
 	}
 	return result
 }
+
+// TestToolHandler_GetByNames_InsightOptIn: the "all" selector never returns the
+// Insight opt-in SMS tools (VOIP-1704); an explicit name does; a Normal AI
+// never gets draft_message.
+func Test_ToolHandler_GetByNames_InsightOptIn(t *testing.T) {
+	cached := []aitool.Tool{
+		{Name: aitool.ToolNameSendMessage},
+		{Name: aitool.ToolNameDraftMessage},
+		{Name: aitool.ToolNameGetContactInteractions},
+		{Name: aitool.ToolNameEmitInfoCard},
+	}
+
+	tests := []struct {
+		name    string
+		aiType  amai.Type
+		names   []aitool.ToolName
+		want    []aitool.ToolName
+		wantNot []aitool.ToolName
+	}{
+		{
+			name:    "insight all excludes opt-in",
+			aiType:  amai.TypeInsight,
+			names:   []aitool.ToolName{aitool.ToolNameAll},
+			want:    []aitool.ToolName{aitool.ToolNameGetContactInteractions, aitool.ToolNameEmitInfoCard},
+			wantNot: []aitool.ToolName{aitool.ToolNameSendMessage, aitool.ToolNameDraftMessage},
+		},
+		{
+			name:    "insight explicit draft_message",
+			aiType:  amai.TypeInsight,
+			names:   []aitool.ToolName{aitool.ToolNameDraftMessage},
+			want:    []aitool.ToolName{aitool.ToolNameDraftMessage},
+			wantNot: []aitool.ToolName{aitool.ToolNameSendMessage, aitool.ToolNameEmitInfoCard},
+		},
+		{
+			name:    "insight all plus send_message",
+			aiType:  amai.TypeInsight,
+			names:   []aitool.ToolName{aitool.ToolNameAll, aitool.ToolNameSendMessage},
+			want:    []aitool.ToolName{aitool.ToolNameGetContactInteractions, aitool.ToolNameEmitInfoCard, aitool.ToolNameSendMessage},
+			wantNot: []aitool.ToolName{aitool.ToolNameDraftMessage},
+		},
+		{
+			name:    "normal all has send_message but never draft_message",
+			aiType:  amai.TypeNormal,
+			names:   []aitool.ToolName{aitool.ToolNameAll},
+			want:    []aitool.ToolName{aitool.ToolNameSendMessage},
+			wantNot: []aitool.ToolName{aitool.ToolNameDraftMessage, aitool.ToolNameEmitInfoCard},
+		},
+		{
+			name:    "normal explicit draft_message is dropped",
+			aiType:  amai.TypeNormal,
+			names:   []aitool.ToolName{aitool.ToolNameDraftMessage},
+			wantNot: []aitool.ToolName{aitool.ToolNameDraftMessage},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &toolHandler{tools: cached}
+			got := h.GetByNames(tt.aiType, tt.names)
+
+			set := map[aitool.ToolName]bool{}
+			for _, g := range got {
+				set[g.Name] = true
+			}
+			if len(got) != len(tt.want) {
+				t.Errorf("GetByNames() returned %d tools, want %d", len(got), len(tt.want))
+			}
+			for _, n := range tt.want {
+				if !set[n] {
+					t.Errorf("GetByNames() missing %s", n)
+				}
+			}
+			for _, n := range tt.wantNot {
+				if set[n] {
+					t.Errorf("GetByNames() must not return %s", n)
+				}
+			}
+		})
+	}
+}

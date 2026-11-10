@@ -2193,7 +2193,7 @@
                     "items": {
                       "$ref": "#/components/schemas/AIManagerToolName"
                     },
-                    "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or [\"all\"]. Mismatched combinations are rejected with a 400."
+                    "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or [\"all\"]. Opt-in tools for type=insight AIs: `send_message` (sends an SMS or MMS right away) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They are accepted only when named explicitly and are never included by `[\"all\"]`, so an Insight AI stored with `[\"all\"]` does not gain them. Mismatched combinations are rejected with a 400."
                   },
                   "mcp_server_ids": {
                     "type": "array",
@@ -2667,7 +2667,7 @@
                     "items": {
                       "$ref": "#/components/schemas/AIManagerToolName"
                     },
-                    "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or [\"all\"]. Mismatched combinations are rejected with a 400."
+                    "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or [\"all\"]. Opt-in tools for type=insight AIs: `send_message` (sends an SMS or MMS right away) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They are accepted only when named explicitly and are never included by `[\"all\"]`, so an Insight AI stored with `[\"all\"]` does not gain them. Mismatched combinations are rejected with a 400."
                   },
                   "mcp_server_ids": {
                     "type": "array",
@@ -19232,6 +19232,77 @@
         }
       }
     },
+    "/service_agents/aimessages/draft-decision": {
+      "post": {
+        "summary": "Decide an SMS draft",
+        "description": "Approves or rejects an SMS draft card that the Insight Assistant produced with the `draft_message` tool. On `approve` the platform sends the drafted SMS (to the stored recipient and text, from the account's default sender) without involving the LLM, and records the result in the aicall's message history. On `reject` nothing is sent and the rejection is recorded. The draft id is the `id` of the `tool` message that carries the `sms_draft` block.\nA draft can be decided once. A repeated or opposite decision is refused with `DRAFT_ALREADY_DECIDED`. A draft that is not decided within 10 minutes of its creation (the default; operators can change it) is refused with `DRAFT_EXPIRED`. Both refusals answer with HTTP 409. An unknown draft, or a draft of another aicall or customer, is refused with `DRAFT_NOT_FOUND`. The aicall must belong to the service agent's own customer. A send failure is returned as a normal response whose message content has `result` set to `failed`.",
+        "tags": [
+          "Service Agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "aicall_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The ID of the aicall the draft belongs to. Returned from the `POST /service_agents/aicalls` or `GET /service_agents/aicalls` response.",
+                    "example": "5e4a0680-804e-11ec-8477-2fea5968d85b"
+                  },
+                  "draft_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The ID of the `tool` message that carries the `sms_draft` block. Returned from the `id` field of the `GET /service_agents/aimessages` response or of the `aimessage_created` event.",
+                    "example": "7a1c3f80-804e-11ec-8477-2fea5968d85b"
+                  },
+                  "decision": {
+                    "$ref": "#/components/schemas/AIManagerMessageDraftDecision"
+                  }
+                },
+                "required": [
+                  "aicall_id",
+                  "draft_id",
+                  "decision"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The `tool` message that records the decision result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/service_agents/calls/{id}": {
       "get": {
         "summary": "Retrieve detailed information of a specific call",
@@ -29124,7 +29195,7 @@
             "items": {
               "$ref": "#/components/schemas/AIManagerToolName"
             },
-            "description": "List of tool names enabled for this AI. Use `[\"all\"]` to enable all tools. See the Tool Functions documentation for detailed descriptions of each tool.",
+            "description": "List of tool names enabled for this AI. Use `[\"all\"]` to enable all tools. See the Tool Functions documentation for detailed descriptions of each tool. Opt-in tools for type=insight AIs: `send_message` (sends an SMS or MMS right away) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They are accepted only when named explicitly and are never included by `[\"all\"]`, so an Insight AI stored with `[\"all\"]` does not gain them.",
             "example": [
               "all"
             ]
@@ -30017,7 +30088,8 @@
           "emit_info_card",
           "notify_agent",
           "list_queues",
-          "join_queue"
+          "join_queue",
+          "draft_message"
         ],
         "x-enum-varnames": [
           "AIManagerToolNameAll",
@@ -30045,7 +30117,21 @@
           "AIManagerToolNameEmitInfoCard",
           "AIManagerToolNameNotifyAgent",
           "AIManagerToolNameListQueues",
-          "AIManagerToolNameJoinQueue"
+          "AIManagerToolNameJoinQueue",
+          "AIManagerToolNameDraftMessage"
+        ]
+      },
+      "AIManagerMessageDraftDecision": {
+        "type": "string",
+        "description": "The agent's decision on an SMS draft card. `approve` sends the drafted SMS; `reject` discards it without sending.",
+        "example": "approve",
+        "enum": [
+          "approve",
+          "reject"
+        ],
+        "x-enum-varnames": [
+          "AIManagerMessageDraftDecisionApprove",
+          "AIManagerMessageDraftDecisionReject"
         ]
       },
       "AIManagerAIcall": {

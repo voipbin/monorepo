@@ -177,3 +177,80 @@ func Test_PostServiceAgentsAimessages(t *testing.T) {
 		})
 	}
 }
+
+func Test_PostServiceAgentsAimessagesDraftDecision(t *testing.T) {
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+		},
+	})
+	aicallID := uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b")
+	draftID := uuid.FromStringOrNil("7a1c3f80-804e-11ec-8477-2fea5968d85b")
+
+	tests := []struct {
+		name string
+
+		reqBody []byte
+
+		callExpected   bool
+		expectDecision ammessage.DraftDecision
+		expectCode     int
+	}{
+		{
+			name:           "approve",
+			reqBody:        []byte(`{"aicall_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","draft_id":"7a1c3f80-804e-11ec-8477-2fea5968d85b","decision":"approve"}`),
+			callExpected:   true,
+			expectDecision: ammessage.DraftDecisionApprove,
+			expectCode:     http.StatusOK,
+		},
+		{
+			name:           "reject",
+			reqBody:        []byte(`{"aicall_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","draft_id":"7a1c3f80-804e-11ec-8477-2fea5968d85b","decision":"reject"}`),
+			callExpected:   true,
+			expectDecision: ammessage.DraftDecisionReject,
+			expectCode:     http.StatusOK,
+		},
+		{
+			name:       "invalid json",
+			reqBody:    []byte(`{`),
+			expectCode: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", "/service_agents/aimessages/draft-decision", bytes.NewBuffer(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			if tt.callExpected {
+				mockSvc.EXPECT().ServiceAgentAImessageDraftDecision(req.Context(), agent, aicallID, draftID, tt.expectDecision).Return(&ammessage.WebhookMessage{
+					Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("72e68b78-8286-11ed-8875-378ced61c021")},
+				}, nil)
+			}
+
+			r.ServeHTTP(w, req)
+			if w.Code != tt.expectCode {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectCode, w.Code)
+			}
+			if tt.callExpected && !bytes.Contains(w.Body.Bytes(), []byte(`"id":"72e68b78-8286-11ed-8875-378ced61c021"`)) {
+				t.Errorf("Wrong body: %s", w.Body.String())
+			}
+		})
+	}
+}

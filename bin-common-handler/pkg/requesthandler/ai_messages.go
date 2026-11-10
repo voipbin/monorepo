@@ -77,6 +77,37 @@ func (r *requestHandler) AIV1MessageSend(ctx context.Context, aicallID uuid.UUID
 	return &res, nil
 }
 
+// AIV1MessageDraftDecision sends a request to ai-manager
+// to approve or reject an SMS draft card of the given aicall.
+// it returns the decision result message if it succeed.
+// The approval sends the SMS inside ai-manager, so it uses a longer timeout like AIV1MessageSend.
+func (r *requestHandler) AIV1MessageDraftDecision(ctx context.Context, aicallID uuid.UUID, draftID uuid.UUID, decision cbmessage.DraftDecision) (*cbmessage.Message, error) {
+	uri := "/v1/messages/draft-decision"
+
+	data := &cbrequest.V1DataMessagesDraftDecisionPost{
+		AIcallID: aicallID,
+		DraftID:  draftID,
+		Decision: decision,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/messages/draft-decision", 30000, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cbmessage.Message
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // AIV1MessageGet returns the message.
 func (r *requestHandler) AIV1MessageGet(ctx context.Context, messageID uuid.UUID) (*cbmessage.Message, error) {
 
