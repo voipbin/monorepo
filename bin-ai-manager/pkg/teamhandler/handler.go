@@ -225,7 +225,7 @@ func (h *teamHandler) Update(ctx context.Context, id uuid.UUID, name *string, de
 // validateNoInsightMembers verifies that each member's AIID references an
 // existing AI (Rule 6) and rejects any member backed by an Insight-typed AI.
 // Insight AIs (ai.TypeInsight) carry a restricted tool set
-// (ai.AllInsightToolNames) and a dedicated system prompt built for
+// (ai.AllInsightToolNames plus tool.InsightMessageToolNames) and a dedicated system prompt built for
 // agent-facing Q&A over a single contact-manager Case (VOIP-1234 §5); they
 // are not designed for team-based multi-agent call/conversation flows, where
 // members hand off to each other via LLM function calling and share a

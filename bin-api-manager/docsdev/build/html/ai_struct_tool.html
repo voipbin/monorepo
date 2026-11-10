@@ -1577,7 +1577,7 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </tbody>
 </table>
 </div>
-<p><strong>Opt-in tools.</strong> Two more tools can be used by a <code class="docutils literal notranslate"><span class="pre">type=insight</span></code> AI, but only when <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> names them explicitly. <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> never includes them, so an Insight AI that already stores <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> does not gain them:</p>
+<p><strong>SMS tools.</strong> Two more tools can be used by a <code class="docutils literal notranslate"><span class="pre">type=insight</span></code> AI. They can be named in <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> and <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> includes them, so an Insight AI that already stores <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> gains both after the service update is deployed:</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
@@ -1602,7 +1602,7 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p><code class="docutils literal notranslate"><span class="pre">send_message</span></code> for an Insight AI is the same tool as for a normal AI, so it can attach media (MMS) and use a source number given in the AI’s instructions. The text a customer wrote, or what is said on a call, is untrusted input: an assistant that acts on it can be steered to send an SMS to an arbitrary number, and the cost is charged to the customer account. Enable only <code class="docutils literal notranslate"><span class="pre">draft_message</span></code> when every message should be confirmed by an agent first.</p>
+<p><code class="docutils literal notranslate"><span class="pre">send_message</span></code> for an Insight AI is the same tool as for a normal AI, so it can attach media (MMS) and use a source number given in the AI’s instructions. The text a customer wrote, or what is said on a call, is untrusted input: an assistant that acts on it can be steered to send an SMS to an arbitrary number, and the cost is charged to the customer account. Because <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> includes <code class="docutils literal notranslate"><span class="pre">send_message</span></code>, list the tools by name and include <code class="docutils literal notranslate"><span class="pre">draft_message</span></code> but not <code class="docutils literal notranslate"><span class="pre">send_message</span></code> when every message should be confirmed by an agent first. The tools can also be called in a turn that no agent is attending.</p>
 </div>
 <section id="get-contact-interactions">
 <span id="ai-struct-tool-get-contact-interactions"></span><h3>get_contact_interactions<a class="headerlink" href="#get-contact-interactions" title="Link to this heading">¶</a></h3>
@@ -1885,7 +1885,7 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </section>
 <section id="draft-message">
 <span id="ai-struct-tool-draft-message"></span><h3>draft_message<a class="headerlink" href="#draft-message" title="Link to this heading">¶</a></h3>
-<p>Shows an SMS draft card in the Insight Assistant panel for the agent to review. <strong>Nothing is sent by this tool.</strong> It is an opt-in tool: it is available only when <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> names it, and <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> does not include it.</p>
+<p>Shows an SMS draft card in the Insight Assistant panel for the agent to review. <strong>Nothing is sent by this tool.</strong> It is available when <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> names it, and <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> includes it for a <code class="docutils literal notranslate"><span class="pre">type=insight</span></code> AI.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
@@ -2097,7 +2097,7 @@ tool call is made and no answer is produced, so an Insight assistant that is ans
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">draft_message</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
-<td><p>Insight opt-in tool: the card is the primary artifact; a follow-up must not repeat the draft text.</p></td>
+<td><p>Insight SMS tool: the card is the primary artifact; a follow-up must not repeat the draft text.</p></td>
 </tr>
 </tbody>
 </table>

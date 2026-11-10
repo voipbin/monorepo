@@ -333,9 +333,9 @@ case_create               Create a CRM case for the current contact
    above: ``get_contact_interactions``, ``get_conversation_content``,
    ``get_related_cases``, ``get_case_notes``,
    ``get_contact_profile``, ``get_call_transcript``, ``emit_info_card``, and
-   ``notify_agent``. Two more, ``send_message`` and ``draft_message``, are opt-in:
-   they are available only when named in ``tool_names`` and are not included by
-   ``["all"]``. See
+   ``notify_agent``. Two more, ``send_message`` and ``draft_message``, send or
+   propose an SMS: they can be named in ``tool_names`` and are included by
+   ``["all"]``, so ``send_message`` sends right away without an agent's confirmation. See
    :ref:`Insight Tools <ai-struct-tool-insight>`. They can also use the tools of the MCP
    servers listed in their own ``mcp_server_ids``.
 
@@ -434,7 +434,7 @@ Tools are configured per-AI using the ``tool_names`` field (Array of String):
 
 .. note:: **AI Implementation Hint**
 
-   When using ``["all"]``, the AI can invoke any available tool, including ``stop_flow`` which terminates the entire call. For customer-facing deployments, prefer listing specific tools explicitly to prevent unintended call terminations.
+   When using ``["all"]``, the AI can invoke any available tool, including ``stop_flow`` which terminates the entire call. For customer-facing deployments, prefer listing specific tools explicitly to prevent unintended call terminations. For a ``type=insight`` AI, ``["all"]`` includes ``send_message``, which sends an SMS or MMS right away and is charged to the customer account.
 
 Using the AI
 ============
@@ -796,7 +796,7 @@ Best Practices
 **2. Tool Configuration**
 
 - Enable only tools the AI needs for its task
-- Use ``["all"]`` cautiously - prefer specific tool lists
+- Use ``["all"]`` cautiously - prefer specific tool lists (for an Insight AI it includes ``send_message``, which sends an SMS right away)
 - Test tool interactions thoroughly before deployment
 - Handle tool failures gracefully in prompts
 

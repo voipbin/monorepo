@@ -224,11 +224,12 @@ func nameSet(tools []tool.Tool) map[tool.ToolName]bool {
 	return res
 }
 
-// TestToolHandler_GetByNames_InsightOptIn pins the opt-in contract of the
-// Insight SMS tools (VOIP-1704): the "all" selector never returns them, an
-// explicit name does, and a mixed list returns the expanded set plus the
-// named tool.
-func Test_ToolHandler_GetByNames_InsightOptIn(t *testing.T) {
+// Test_ToolHandler_GetByNames_InsightMessageTools pins the contract of the
+// Insight SMS tools (VOIP-1704, VOIP-1708): the "all" selector returns them
+// together with the other Insight tools (10 in total), an explicit name still
+// returns just that tool, and a mixed list returns no duplicates. A Normal AI
+// never gets draft_message.
+func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
 	h := NewToolHandler()
 
 	tests := []struct {
@@ -240,12 +241,11 @@ func Test_ToolHandler_GetByNames_InsightOptIn(t *testing.T) {
 		wantCount int
 	}{
 		{
-			name:      "insight all excludes opt-in tools",
+			name:      "insight all includes the message tools",
 			aiType:    ai.TypeInsight,
 			names:     []tool.ToolName{tool.ToolNameAll},
-			want:      tool.AllInsightToolNames,
-			wantNot:   tool.InsightOptInToolNames,
-			wantCount: len(tool.AllInsightToolNames),
+			want:      append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightMessageToolNames...),
+			wantCount: 10,
 		},
 		{
 			name:      "insight explicit draft_message",
@@ -267,9 +267,8 @@ func Test_ToolHandler_GetByNames_InsightOptIn(t *testing.T) {
 			name:      "insight all plus send_message",
 			aiType:    ai.TypeInsight,
 			names:     []tool.ToolName{tool.ToolNameAll, tool.ToolNameSendMessage},
-			want:      append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.ToolNameSendMessage),
-			wantNot:   []tool.ToolName{tool.ToolNameDraftMessage},
-			wantCount: len(tool.AllInsightToolNames) + 1,
+			want:      append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightMessageToolNames...),
+			wantCount: 10,
 		},
 		{
 			name:      "normal explicit draft_message is not allowed",
@@ -279,7 +278,7 @@ func Test_ToolHandler_GetByNames_InsightOptIn(t *testing.T) {
 			wantCount: 0,
 		},
 		{
-			name:      "normal all excludes draft_message",
+			name:      "normal all has no draft_message",
 			aiType:    ai.TypeNormal,
 			names:     []tool.ToolName{tool.ToolNameAll},
 			want:      tool.AllToolNames,

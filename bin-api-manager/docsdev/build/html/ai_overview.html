@@ -1004,9 +1004,9 @@
 above: <code class="docutils literal notranslate"><span class="pre">get_contact_interactions</span></code>, <code class="docutils literal notranslate"><span class="pre">get_conversation_content</span></code>,
 <code class="docutils literal notranslate"><span class="pre">get_related_cases</span></code>, <code class="docutils literal notranslate"><span class="pre">get_case_notes</span></code>,
 <code class="docutils literal notranslate"><span class="pre">get_contact_profile</span></code>, <code class="docutils literal notranslate"><span class="pre">get_call_transcript</span></code>, <code class="docutils literal notranslate"><span class="pre">emit_info_card</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">notify_agent</span></code>. Two more, <code class="docutils literal notranslate"><span class="pre">send_message</span></code> and <code class="docutils literal notranslate"><span class="pre">draft_message</span></code>, are opt-in:
-they are available only when named in <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> and are not included by
-<code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code>. See
+<code class="docutils literal notranslate"><span class="pre">notify_agent</span></code>. Two more, <code class="docutils literal notranslate"><span class="pre">send_message</span></code> and <code class="docutils literal notranslate"><span class="pre">draft_message</span></code>, send or
+propose an SMS: they can be named in <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> and are included by
+<code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code>, so <code class="docutils literal notranslate"><span class="pre">send_message</span></code> sends right away without an agent’s confirmation. See
 <a class="reference internal" href="ai_struct_tool.html#ai-struct-tool-insight"><span class="std std-ref">Insight Tools</span></a>. They can also use the tools of the MCP
 servers listed in their own <code class="docutils literal notranslate"><span class="pre">mcp_server_ids</span></code>.</p>
 </div>
@@ -1088,7 +1088,7 @@ where it belongs permanently.</p></li>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>When using <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code>, the AI can invoke any available tool, including <code class="docutils literal notranslate"><span class="pre">stop_flow</span></code> which terminates the entire call. For customer-facing deployments, prefer listing specific tools explicitly to prevent unintended call terminations.</p>
+<p>When using <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code>, the AI can invoke any available tool, including <code class="docutils literal notranslate"><span class="pre">stop_flow</span></code> which terminates the entire call. For customer-facing deployments, prefer listing specific tools explicitly to prevent unintended call terminations. For a <code class="docutils literal notranslate"><span class="pre">type=insight</span></code> AI, <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> includes <code class="docutils literal notranslate"><span class="pre">send_message</span></code>, which sends an SMS or MMS right away and is charged to the customer account.</p>
 </div>
 </section>
 </section>
@@ -1535,7 +1535,7 @@ fault.</p></li>
 <p><strong>2. Tool Configuration</strong></p>
 <ul class="simple">
 <li><p>Enable only tools the AI needs for its task</p></li>
-<li><p>Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> cautiously - prefer specific tool lists</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code> cautiously - prefer specific tool lists (for an Insight AI it includes <code class="docutils literal notranslate"><span class="pre">send_message</span></code>, which sends an SMS right away)</p></li>
 <li><p>Test tool interactions thoroughly before deployment</p></li>
 <li><p>Handle tool failures gracefully in prompts</p></li>
 </ul>

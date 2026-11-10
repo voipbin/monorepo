@@ -4191,7 +4191,7 @@ type AIManagerAI struct {
 	// Example: 2026-01-15T09:30:00.000000Z
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// ToolNames List of tool names enabled for this AI. Use `["all"]` to enable all tools. See the Tool Functions documentation for detailed descriptions of each tool. Opt-in tools for type=insight AIs: `send_message` (sends an SMS or MMS right away) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They are accepted only when named explicitly and are never included by `["all"]`, so an Insight AI stored with `["all"]` does not gain them.
+	// ToolNames List of tool names enabled for this AI. Use `["all"]` to enable all tools. See the Tool Functions documentation for detailed descriptions of each tool. Tools for type=insight AIs that send or propose an SMS: `send_message` (sends an SMS or MMS right away, without an agent's confirmation) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They can be named explicitly and are included by `["all"]`, so an Insight AI stored with `["all"]` gets both.
 	//
 	// Example: ["all"]
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
@@ -11552,7 +11552,7 @@ type PostAisJSONBody struct {
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
-	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Opt-in tools for type=insight AIs: `send_message` (sends an SMS or MMS right away) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They are accepted only when named explicitly and are never included by `["all"]`, so an Insight AI stored with `["all"]` does not gain them. Mismatched combinations are rejected with a 400.
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, emit_info_card, and notify_agent, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Tools for type=insight AIs that send or propose an SMS: `send_message` (sends an SMS or MMS right away, without an agent's confirmation) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They can be named explicitly and are included by `["all"]`, so an Insight AI stored with `["all"]` gets both. Mismatched combinations are rejected with a 400.
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.
@@ -11618,7 +11618,7 @@ type PutAisIdJSONBody struct {
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
-	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Opt-in tools for type=insight AIs: `send_message` (sends an SMS or MMS right away) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They are accepted only when named explicitly and are never included by `["all"]`, so an Insight AI stored with `["all"]` does not gain them. Mismatched combinations are rejected with a 400.
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, emit_info_card, and notify_agent, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Tools for type=insight AIs that send or propose an SMS: `send_message` (sends an SMS or MMS right away, without an agent's confirmation) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They can be named explicitly and are included by `["all"]`, so an Insight AI stored with `["all"]` gets both. Mismatched combinations are rejected with a 400.
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.
