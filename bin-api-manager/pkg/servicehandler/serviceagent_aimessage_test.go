@@ -275,3 +275,104 @@ func Test_ServiceAgentAImessageCreate_TenantIsolation(t *testing.T) {
 		t.Errorf("Wrong match. expect: err, got: ok")
 	}
 }
+
+func Test_ServiceAgentAImessageDraftDecision(t *testing.T) {
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	aicallID := uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b")
+	draftID := uuid.FromStringOrNil("7a1c3f80-804e-11ec-8477-2fea5968d85b")
+
+	tests := []struct {
+		name string
+
+		agent          *auth.AuthIdentity
+		aicallCustomer uuid.UUID
+		decision       ammessage.DraftDecision
+
+		expectAIcallGet bool
+		expectRPC       bool
+		expectErr       bool
+	}{
+		{
+			name: "plain agent permission, aicall of the same customer",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity:   commonidentity.Identity{ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"), CustomerID: customerID},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			aicallCustomer:  customerID,
+			decision:        ammessage.DraftDecisionApprove,
+			expectAIcallGet: true,
+			expectRPC:       true,
+		},
+		{
+			name: "reject goes through the same path",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity:   commonidentity.Identity{ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"), CustomerID: customerID},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			aicallCustomer:  customerID,
+			decision:        ammessage.DraftDecisionReject,
+			expectAIcallGet: true,
+			expectRPC:       true,
+		},
+		{
+			name: "aicall of another customer is refused before the rpc",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity:   commonidentity.Identity{ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"), CustomerID: customerID},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			aicallCustomer:  uuid.FromStringOrNil("6a72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+			decision:        ammessage.DraftDecisionApprove,
+			expectAIcallGet: true,
+			expectErr:       true,
+		},
+		{
+			name:      "not an agent",
+			agent:     &auth.AuthIdentity{},
+			decision:  ammessage.DraftDecisionApprove,
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler:  mockReq,
+				dbHandler:   mockDB,
+				utilHandler: mockUtil,
+			}
+			ctx := context.Background()
+
+			if tt.expectAIcallGet {
+				mockReq.EXPECT().AIV1AIcallGet(ctx, aicallID).Return(&amaicall.AIcall{
+					Identity: commonidentity.Identity{ID: aicallID, CustomerID: tt.aicallCustomer},
+				}, nil)
+			}
+			if tt.expectRPC {
+				mockReq.EXPECT().AIV1MessageDraftDecision(ctx, aicallID, draftID, tt.decision).Return(&ammessage.Message{
+					Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb")},
+				}, nil)
+			}
+
+			res, err := h.ServiceAgentAImessageDraftDecision(ctx, tt.agent, aicallID, draftID, tt.decision)
+			if tt.expectErr {
+				if err == nil {
+					t.Fatalf("expected an error, got: %v", res)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res == nil || res.ID != uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb") {
+				t.Errorf("Wrong match. got: %v", res)
+			}
+		})
+	}
+}

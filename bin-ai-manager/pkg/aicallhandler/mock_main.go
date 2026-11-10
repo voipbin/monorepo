@@ -66,6 +66,21 @@ func (mr *MockAIcallHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAIcallHandler)(nil).Delete), ctx, id)
 }
 
+// DraftDecision mocks base method.
+func (m *MockAIcallHandler) DraftDecision(ctx context.Context, aicallID, draftID uuid.UUID, decision message.DraftDecision) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DraftDecision", ctx, aicallID, draftID, decision)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DraftDecision indicates an expected call of DraftDecision.
+func (mr *MockAIcallHandlerMockRecorder) DraftDecision(ctx, aicallID, draftID, decision any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DraftDecision", reflect.TypeOf((*MockAIcallHandler)(nil).DraftDecision), ctx, aicallID, draftID, decision)
+}
+
 // EventCMCallHangup mocks base method.
 func (m *MockAIcallHandler) EventCMCallHangup(ctx context.Context, c *call.Call) {
 	m.ctrl.T.Helper()

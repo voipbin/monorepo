@@ -90,6 +90,9 @@ func containsName(names []aitool.ToolName, target aitool.ToolName) bool {
 // enforces at save time was not previously re-checked here.
 func (h *toolHandler) GetByNames(aiType amai.Type, names []aitool.ToolName) []aitool.Tool {
 	allowed := amai.AllowedToolNames(aiType)
+	// The "all" selector covers only the expanded set; opt-in tools (e.g. the
+	// Insight SMS tools) are returned only when named explicitly.
+	expanded := amai.ExpandAllToolNames(aiType)
 	hasAll := containsName(names, aitool.ToolNameAll)
 
 	h.mu.RLock()
@@ -100,7 +103,7 @@ func (h *toolHandler) GetByNames(aiType amai.Type, names []aitool.ToolName) []ai
 		if !allowed[t.Name] {
 			continue // concrete-name check only; "all" is never itself checked for set membership
 		}
-		if hasAll || containsName(names, t.Name) {
+		if (hasAll && expanded[t.Name]) || containsName(names, t.Name) {
 			result = append(result, t)
 		}
 	}

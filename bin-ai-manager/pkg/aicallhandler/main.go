@@ -80,6 +80,9 @@ type AIcallHandler interface {
 
 	Send(ctx context.Context, id uuid.UUID, role message.Role, messageText string, runImmediately bool, audioResponse bool) (*message.Message, error)
 
+	// DraftDecision approves or rejects an SMS draft card without an LLM turn (VOIP-1704).
+	DraftDecision(ctx context.Context, aicallID uuid.UUID, draftID uuid.UUID, decision message.DraftDecision) (*message.Message, error)
+
 	EventCMCallHangup(ctx context.Context, c *cmcall.Call)
 	EventCMConfbridgeJoined(ctx context.Context, evt *cmconfbridge.EventConfbridgeJoined)
 	EventCMConfbridgeLeaved(ctx context.Context, evt *cmconfbridge.EventConfbridgeLeaved)

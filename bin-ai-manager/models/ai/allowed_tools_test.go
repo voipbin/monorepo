@@ -6,6 +6,18 @@ import (
 	"monorepo/bin-ai-manager/models/tool"
 )
 
+// withoutNames returns names minus the entries of exclude.
+func withoutNames(names, exclude []tool.ToolName) []tool.ToolName {
+	ex := toSet(exclude)
+	res := []tool.ToolName{}
+	for _, n := range names {
+		if !ex[n] {
+			res = append(res, n)
+		}
+	}
+	return res
+}
+
 func TestAllowedToolNames(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -21,20 +33,21 @@ func TestAllowedToolNames(t *testing.T) {
 			wantDisallowed: tool.AllInsightToolNames,
 		},
 		{
-			name:           "insight_allows_insight_tools_only",
-			aiType:         TypeInsight,
-			wantAllowed:    tool.AllInsightToolNames,
-			wantDisallowed: tool.AllToolNames,
+			name:        "insight_allows_insight_tools_and_opt_in_tools_only",
+			aiType:      TypeInsight,
+			wantAllowed: append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightOptInToolNames...),
+			// every Normal tool except the opt-in ones stays denied.
+			wantDisallowed: withoutNames(tool.AllToolNames, tool.InsightOptInToolNames),
 		},
 		{
 			name:           "unknown_type_denies_everything",
 			aiType:         Type("some_future_type"),
-			wantDisallowed: append(append([]tool.ToolName{}, tool.AllToolNames...), tool.AllInsightToolNames...),
+			wantDisallowed: append(append(append([]tool.ToolName{}, tool.AllToolNames...), tool.AllInsightToolNames...), tool.ToolNameDraftMessage),
 		},
 		{
 			name:           "type_none_denies_everything",
 			aiType:         TypeNone,
-			wantDisallowed: append(append([]tool.ToolName{}, tool.AllToolNames...), tool.AllInsightToolNames...),
+			wantDisallowed: append(append(append([]tool.ToolName{}, tool.AllToolNames...), tool.AllInsightToolNames...), tool.ToolNameDraftMessage),
 		},
 	}
 
@@ -108,9 +121,14 @@ func TestAllInsightToolNamesAreReadOnly(t *testing.T) {
 // TestValidateToolNames_WriteToolNeverAllowedForInsight guards against a
 // write-capable Normal-only tool ever being smuggled into
 // tool.AllInsightToolNames: every tool.AllToolNames entry that is NOT also
-// in tool.AllInsightToolNames must be rejected for TypeInsight.
+// in tool.AllInsightToolNames must be rejected for TypeInsight, except the
+// explicit opt-in tools (VOIP-1704), which are accepted by name and pinned by
+// Test_InsightOptInToolNames.
 func TestValidateToolNames_WriteToolNeverAllowedForInsight(t *testing.T) {
 	insightAllowed := toSet(tool.AllInsightToolNames)
+	for _, n := range tool.InsightOptInToolNames {
+		insightAllowed[n] = true
+	}
 
 	for _, writeTool := range tool.AllToolNames {
 		if insightAllowed[writeTool] {
@@ -122,5 +140,78 @@ func TestValidateToolNames_WriteToolNeverAllowedForInsight(t *testing.T) {
 					"write-capable tool must never be allowed for Insight AI", writeTool)
 			}
 		})
+	}
+}
+
+// Test_InsightOptInToolNames pins the opt-in list: adding a tool to it grants
+// a side-effecting capability on an explicit tool_names entry, so it must be
+// a deliberate change that updates this test.
+func Test_InsightOptInToolNames(t *testing.T) {
+	want := map[tool.ToolName]bool{
+		tool.ToolNameSendMessage:  true,
+		tool.ToolNameDraftMessage: true,
+	}
+	if len(tool.InsightOptInToolNames) != len(want) {
+		t.Fatalf("tool.InsightOptInToolNames = %v, want exactly %d known names", tool.InsightOptInToolNames, len(want))
+	}
+	for _, n := range tool.InsightOptInToolNames {
+		if !want[n] {
+			t.Errorf("tool.InsightOptInToolNames contains unexpected %q", n)
+		}
+	}
+
+	// opt-in tools are never part of the "all" selector or of AllInsightToolNames.
+	insightAll := toSet(tool.AllInsightToolNames)
+	for _, n := range tool.InsightOptInToolNames {
+		if insightAll[n] {
+			t.Errorf("opt-in tool %q must not be in tool.AllInsightToolNames", n)
+		}
+		if ExpandAllToolNames(TypeInsight)[n] {
+			t.Errorf("ExpandAllToolNames(TypeInsight) must not contain opt-in tool %q", n)
+		}
+		if err := ValidateToolNames(TypeInsight, []tool.ToolName{n}); err != nil {
+			t.Errorf("ValidateToolNames(TypeInsight, [%q]) = %v, want nil", n, err)
+		}
+	}
+}
+
+func Test_ExpandAllToolNames(t *testing.T) {
+	tests := []struct {
+		name         string
+		aiType       Type
+		want         []tool.ToolName
+		wantNot      []tool.ToolName
+		wantSizeSame bool
+	}{
+		{"normal", TypeNormal, tool.AllToolNames, []tool.ToolName{tool.ToolNameDraftMessage}, true},
+		{"insight", TypeInsight, tool.AllInsightToolNames, tool.InsightOptInToolNames, true},
+		{"unknown", Type("future"), nil, append(append([]tool.ToolName{}, tool.AllToolNames...), tool.AllInsightToolNames...), true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ExpandAllToolNames(tt.aiType)
+			for _, n := range tt.want {
+				if !got[n] {
+					t.Errorf("ExpandAllToolNames(%v)[%v] = false, want true", tt.aiType, n)
+				}
+			}
+			for _, n := range tt.wantNot {
+				if got[n] {
+					t.Errorf("ExpandAllToolNames(%v)[%v] = true, want false", tt.aiType, n)
+				}
+			}
+			if len(got) != len(tt.want) {
+				t.Errorf("ExpandAllToolNames(%v) size = %d, want %d", tt.aiType, len(got), len(tt.want))
+			}
+		})
+	}
+
+	// Normal "all" still includes send_message (it is a Normal tool), but not draft_message.
+	if !ExpandAllToolNames(TypeNormal)[tool.ToolNameSendMessage] {
+		t.Errorf("Normal all must include send_message")
+	}
+	// draft_message is not allowed for Normal by name either.
+	if err := ValidateToolNames(TypeNormal, []tool.ToolName{tool.ToolNameDraftMessage}); err == nil {
+		t.Errorf("draft_message must be rejected for a Normal AI")
 	}
 }

@@ -4778,6 +4778,21 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentAImessageCreate(ctx, a, ai
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentAImessageCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentAImessageCreate), ctx, a, aicallID, role, content)
 }
 
+// ServiceAgentAImessageDraftDecision mocks base method.
+func (m *MockServiceHandler) ServiceAgentAImessageDraftDecision(ctx context.Context, a *auth.AuthIdentity, aicallID, draftID uuid.UUID, decision message.DraftDecision) (*message.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentAImessageDraftDecision", ctx, a, aicallID, draftID, decision)
+	ret0, _ := ret[0].(*message.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentAImessageDraftDecision indicates an expected call of ServiceAgentAImessageDraftDecision.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentAImessageDraftDecision(ctx, a, aicallID, draftID, decision any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentAImessageDraftDecision", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentAImessageDraftDecision), ctx, a, aicallID, draftID, decision)
+}
+
 // ServiceAgentAImessageList mocks base method.
 func (m *MockServiceHandler) ServiceAgentAImessageList(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, size uint64, token string) ([]*message.WebhookMessage, error) {
 	m.ctrl.T.Helper()

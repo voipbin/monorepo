@@ -17,3 +17,12 @@ type V1DataMessagesPost struct {
 	RunImmediately bool `json:"run_immediately,omitempty"` // if true, it will run the ai call immediately
 	AudioResponse  bool `json:"audio_response,omitempty"`  // if true, it will return audio response
 }
+
+// V1DataMessagesDraftDecisionPost is
+// v1 data type request struct for
+// /v1/messages/draft-decision POST
+type V1DataMessagesDraftDecisionPost struct {
+	AIcallID uuid.UUID             `json:"aicall_id,omitempty"`
+	DraftID  uuid.UUID             `json:"draft_id,omitempty"`
+	Decision message.DraftDecision `json:"decision,omitempty"`
+}

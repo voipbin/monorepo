@@ -44,6 +44,7 @@ func (h *toolHandler) GetByNames(aiType ai.Type, names []tool.ToolName) []tool.T
 	}
 
 	allowed := ai.AllowedToolNames(aiType)
+	expanded := ai.ExpandAllToolNames(aiType)
 
 	// Check for "all"
 	hasAll := false
@@ -59,7 +60,7 @@ func (h *toolHandler) GetByNames(aiType ai.Type, names []tool.ToolName) []tool.T
 		if !allowed[t.Name] {
 			continue
 		}
-		if hasAll {
+		if hasAll && expanded[t.Name] {
 			result = append(result, t)
 			continue
 		}

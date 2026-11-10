@@ -350,6 +350,8 @@ type RequestHandler interface {
 		audioResponse bool,
 		timeout int,
 	) (*ammessage.Message, error)
+	// AIV1MessageDraftDecision approves or rejects an SMS draft card (VOIP-1704).
+	AIV1MessageDraftDecision(ctx context.Context, aicallID uuid.UUID, draftID uuid.UUID, decision ammessage.DraftDecision) (*ammessage.Message, error)
 	AIV1MessageGet(ctx context.Context, messageID uuid.UUID) (*ammessage.Message, error)
 	AIV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*ammessage.Message, error)
 

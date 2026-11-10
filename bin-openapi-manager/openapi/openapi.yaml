@@ -2297,6 +2297,10 @@ components:
           description: >-
             List of tool names enabled for this AI. Use `["all"]` to enable all tools.
             See the Tool Functions documentation for detailed descriptions of each tool.
+            Opt-in tools for type=insight AIs: `send_message` (sends an SMS or MMS right away) and
+            `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent
+            until the agent approves). They are accepted only when named explicitly and are never
+            included by `["all"]`, so an Insight AI stored with `["all"]` does not gain them.
           example: ["all"]
         mcp_server_ids:
           type: array
@@ -3081,6 +3085,7 @@ components:
         - notify_agent
         - list_queues
         - join_queue
+        - draft_message
       x-enum-varnames:
         - AIManagerToolNameAll
         - AIManagerToolNameConnectCall
@@ -3108,6 +3113,20 @@ components:
         - AIManagerToolNameNotifyAgent
         - AIManagerToolNameListQueues
         - AIManagerToolNameJoinQueue
+        - AIManagerToolNameDraftMessage
+
+    AIManagerMessageDraftDecision:
+      type: string
+      description: >-
+        The agent's decision on an SMS draft card. `approve` sends the drafted SMS; `reject`
+        discards it without sending.
+      example: "approve"
+      enum:
+        - approve
+        - reject
+      x-enum-varnames:
+        - AIManagerMessageDraftDecisionApprove
+        - AIManagerMessageDraftDecisionReject
 
     AIManagerAIcall:
       type: object
@@ -9834,6 +9853,8 @@ paths:
     $ref: './paths/service_agents/aicalls_id_listen.yaml'
   /service_agents/aimessages:
     $ref: './paths/service_agents/aimessages.yaml'
+  /service_agents/aimessages/draft-decision:
+    $ref: './paths/service_agents/aimessages_draft_decision.yaml'
   /service_agents/calls/{id}:
     $ref: './paths/service_agents/calls_id.yaml'
   /service_agents/calls/{id}/participants:

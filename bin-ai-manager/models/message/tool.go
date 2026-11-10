@@ -53,4 +53,18 @@ const (
 	FunctionCallNameGetCallTranscript      FunctionCallName = "get_call_transcript"
 	FunctionCallNameEmitInfoCard           FunctionCallName = "emit_info_card"
 	FunctionCallNameNotifyAgent            FunctionCallName = "notify_agent"
+	FunctionCallNameDraftMessage           FunctionCallName = "draft_message"
 )
+
+// DraftDecision is the agent's decision on an SMS draft card produced by the
+// draft_message tool (VOIP-1704).
+type DraftDecision string
+
+// list of draft decisions
+const (
+	DraftDecisionApprove DraftDecision = "approve"
+	DraftDecisionReject  DraftDecision = "reject"
+)
+
+// BlockTypeSMSDraft is the type of the card block draft_message records.
+const BlockTypeSMSDraft = "sms_draft"

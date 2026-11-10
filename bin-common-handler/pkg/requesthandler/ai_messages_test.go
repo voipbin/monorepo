@@ -291,3 +291,71 @@ func Test_AIV1MessageDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_AIV1MessageDraftDecision(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		aicallID uuid.UUID
+		draftID  uuid.UUID
+		decision cbmessage.DraftDecision
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     *cbmessage.Message
+	}{
+		{
+			name: "normal",
+
+			aicallID: uuid.FromStringOrNil("d9000000-0000-11f0-0000-000000000001"),
+			draftID:  uuid.FromStringOrNil("d9000000-0000-11f0-0000-000000000002"),
+			decision: cbmessage.DraftDecisionApprove,
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"d9000000-0000-11f0-0000-000000000003"}`),
+			},
+
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:      "/v1/messages/draft-decision",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"aicall_id":"d9000000-0000-11f0-0000-000000000001","draft_id":"d9000000-0000-11f0-0000-000000000002","decision":"approve"}`),
+			},
+			expectRes: &cbmessage.Message{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("d9000000-0000-11f0-0000-000000000003"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.AIV1MessageDraftDecision(ctx, tt.aicallID, tt.draftID, tt.decision)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

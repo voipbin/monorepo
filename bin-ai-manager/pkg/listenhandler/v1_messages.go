@@ -153,3 +153,39 @@ func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, m *sock.Requ
 
 	return res, nil
 }
+
+// processV1MessagesDraftDecisionPost handles POST /v1/messages/draft-decision request
+func (h *listenHandler) processV1MessagesDraftDecisionPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler":  "processV1MessagesDraftDecisionPost",
+		"method":   m.Method,
+		"uri":      m.URI,
+		"data_len": len(m.Data),
+	})
+
+	var req request.V1DataMessagesDraftDecisionPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.aicallHandler.DraftDecision(ctx, req.AIcallID, req.DraftID, req.Decision)
+	if err != nil {
+		log.Debugf("Could not decide the draft. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

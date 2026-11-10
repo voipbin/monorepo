@@ -215,3 +215,122 @@ func TestAllToolNames(t *testing.T) {
 		}
 	}
 }
+
+func nameSet(tools []tool.Tool) map[tool.ToolName]bool {
+	res := map[tool.ToolName]bool{}
+	for _, t := range tools {
+		res[t.Name] = true
+	}
+	return res
+}
+
+// TestToolHandler_GetByNames_InsightOptIn pins the opt-in contract of the
+// Insight SMS tools (VOIP-1704): the "all" selector never returns them, an
+// explicit name does, and a mixed list returns the expanded set plus the
+// named tool.
+func Test_ToolHandler_GetByNames_InsightOptIn(t *testing.T) {
+	h := NewToolHandler()
+
+	tests := []struct {
+		name      string
+		aiType    ai.Type
+		names     []tool.ToolName
+		want      []tool.ToolName
+		wantNot   []tool.ToolName
+		wantCount int
+	}{
+		{
+			name:      "insight all excludes opt-in tools",
+			aiType:    ai.TypeInsight,
+			names:     []tool.ToolName{tool.ToolNameAll},
+			want:      tool.AllInsightToolNames,
+			wantNot:   tool.InsightOptInToolNames,
+			wantCount: len(tool.AllInsightToolNames),
+		},
+		{
+			name:      "insight explicit draft_message",
+			aiType:    ai.TypeInsight,
+			names:     []tool.ToolName{tool.ToolNameDraftMessage},
+			want:      []tool.ToolName{tool.ToolNameDraftMessage},
+			wantNot:   []tool.ToolName{tool.ToolNameSendMessage},
+			wantCount: 1,
+		},
+		{
+			name:      "insight explicit send_message",
+			aiType:    ai.TypeInsight,
+			names:     []tool.ToolName{tool.ToolNameSendMessage},
+			want:      []tool.ToolName{tool.ToolNameSendMessage},
+			wantNot:   []tool.ToolName{tool.ToolNameDraftMessage},
+			wantCount: 1,
+		},
+		{
+			name:      "insight all plus send_message",
+			aiType:    ai.TypeInsight,
+			names:     []tool.ToolName{tool.ToolNameAll, tool.ToolNameSendMessage},
+			want:      append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.ToolNameSendMessage),
+			wantNot:   []tool.ToolName{tool.ToolNameDraftMessage},
+			wantCount: len(tool.AllInsightToolNames) + 1,
+		},
+		{
+			name:      "normal explicit draft_message is not allowed",
+			aiType:    ai.TypeNormal,
+			names:     []tool.ToolName{tool.ToolNameDraftMessage},
+			wantNot:   []tool.ToolName{tool.ToolNameDraftMessage},
+			wantCount: 0,
+		},
+		{
+			name:      "normal all excludes draft_message",
+			aiType:    ai.TypeNormal,
+			names:     []tool.ToolName{tool.ToolNameAll},
+			want:      tool.AllToolNames,
+			wantNot:   []tool.ToolName{tool.ToolNameDraftMessage},
+			wantCount: len(tool.AllToolNames),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := h.GetByNames(tt.aiType, tt.names)
+			set := nameSet(got)
+			if len(got) != tt.wantCount {
+				t.Errorf("GetByNames() returned %d tools, want %d", len(got), tt.wantCount)
+			}
+			for _, n := range tt.want {
+				if !set[n] {
+					t.Errorf("GetByNames() missing %s", n)
+				}
+			}
+			for _, n := range tt.wantNot {
+				if set[n] {
+					t.Errorf("GetByNames() must not return %s", n)
+				}
+			}
+		})
+	}
+}
+
+// TestDraftMessageDefinition pins the draft_message definition contract.
+func Test_DraftMessageDefinition(t *testing.T) {
+	var def *tool.Tool
+	for i := range toolDefinitions {
+		if toolDefinitions[i].Name == tool.ToolNameDraftMessage {
+			def = &toolDefinitions[i]
+		}
+	}
+	if def == nil {
+		t.Fatalf("draft_message definition not found")
+	}
+	if !def.RunLLM {
+		t.Errorf("draft_message RunLLM = false, want true")
+	}
+	required, _ := def.Parameters["required"].([]string)
+	if len(required) != 2 || required[0] != "to" || required[1] != "text" {
+		t.Errorf("draft_message required = %v, want [to text]", required)
+	}
+	props, _ := def.Parameters["properties"].(map[string]any)
+	for _, k := range []string{"to", "text", "title", "run_llm"} {
+		if _, ok := props[k]; !ok {
+			t.Errorf("draft_message property %q missing", k)
+		}
+	}
+}
