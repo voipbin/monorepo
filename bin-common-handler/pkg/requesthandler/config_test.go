@@ -246,6 +246,86 @@ func Test_config_aiService(t *testing.T) {
 	}
 }
 
+// The service tts is sent to the queue of the tts manager and to no other queue, for all four calls,
+// with the same uri, method and body as the other services.
+func Test_config_ttsService(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	const target = "bin-manager.tts-manager.request"
+	ok := &sock.Response{StatusCode: 200, DataType: "application/json", Data: []byte(testConfigKeyRaw)}
+
+	tests := []struct {
+		name   string
+		expect *sock.Request
+		resp   *sock.Response
+		call   func(r *requestHandler) error
+	}{
+		{
+			"service",
+			&sock.Request{URI: "/v1/configs", Method: sock.RequestMethodGet, DataType: ContentTypeJSON},
+			&sock.Response{StatusCode: 200, DataType: "application/json", Data: []byte(`{"secret_writable":true,"keys":[` + testConfigKeyRaw + `]}`)},
+			func(r *requestHandler) error {
+				res, err := r.ConfigV1ServiceGet(context.Background(), "tts")
+				if err == nil && res.Service != "tts" {
+					return fmt.Errorf("wrong service: %q", res.Service)
+				}
+				return err
+			},
+		},
+		{
+			"secret",
+			&sock.Request{
+				URI:      "/v1/configs/aws.access_key/secret",
+				Method:   sock.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"actor_id":"` + testConfigActor.String() + `","secret":"` + testConfigSecret + `","revision":2}`),
+			},
+			ok,
+			func(r *requestHandler) error {
+				_, err := r.ConfigV1KeySecretSet(context.Background(), "tts", "aws.access_key", testConfigActor, testConfigSecret, 2)
+				return err
+			},
+		},
+		{
+			"delete",
+			&sock.Request{
+				URI:      "/v1/configs/aws.access_key",
+				Method:   sock.RequestMethodDelete,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"actor_id":"` + testConfigActor.String() + `","revision":2}`),
+			},
+			ok,
+			func(r *requestHandler) error {
+				_, err := r.ConfigV1KeyClear(context.Background(), "tts", "aws.access_key", testConfigActor, 2)
+				return err
+			},
+		},
+		{
+			"histories",
+			&sock.Request{URI: "/v1/configs/aws.access_key/histories", Method: sock.RequestMethodGet, DataType: ContentTypeJSON},
+			&sock.Response{StatusCode: 200, DataType: "application/json", Data: []byte(`{"result":[],"next_page_token":""}`)},
+			func(r *requestHandler) error {
+				_, err := r.ConfigV1KeyHistoryList(context.Background(), "tts", "aws.access_key", "", 0)
+				return err
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{sock: mockSock}
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), target, tt.expect).Return(tt.resp, nil)
+
+			if err := tt.call(&reqHandler); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
 // The label of the metrics is a fixed text per service, never a key name.
 func Test_configQueue(t *testing.T) {
 	tests := []struct {
@@ -257,7 +337,8 @@ func Test_configQueue(t *testing.T) {
 		{"email", "bin-manager.email-manager.request", "email/configs", nil},
 		{"ai", "bin-manager.ai-manager.request", "ai/configs", nil},
 		{"message", "bin-manager.message-manager.request", "message/configs", nil},
-		{"tts", "", "", ErrConfigServiceUnknown},
+		{"tts", "bin-manager.tts-manager.request", "tts/configs", nil},
+		{"voice", "", "", ErrConfigServiceUnknown},
 		{"", "", "", ErrConfigServiceUnknown},
 	}
 
@@ -281,7 +362,7 @@ func Test_config_unknownService(t *testing.T) {
 	reqHandler := requestHandler{sock: mockSock}
 	ctx := context.Background()
 
-	for _, service := range []string{"", "nothing", "EMAIL", "AI", "MESSAGE", "ai/../x", "email/../x"} {
+	for _, service := range []string{"", "nothing", "EMAIL", "AI", "MESSAGE", "TTS", "ai/../x", "tts/../x", "email/../x"} {
 		if _, err := reqHandler.ConfigV1ServiceGet(ctx, service); !errors.Is(err, ErrConfigServiceUnknown) {
 			t.Errorf("Wrong match. service %q expect: ErrConfigServiceUnknown, got: %v", service, err)
 		}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 
+	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -25,6 +27,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-tts-manager/internal/config"
+	"monorepo/bin-tts-manager/internal/ttsconfig"
 	"monorepo/bin-tts-manager/migrations"
 	"monorepo/bin-tts-manager/pkg/cachehandler"
 	"monorepo/bin-tts-manager/pkg/dbhandler"
@@ -140,7 +143,25 @@ func run(db *sql.DB) error {
 	localAddress := os.Getenv("POD_IP")
 	podID := os.Getenv("HOSTNAME")
 
-	ttsHandler := ttshandler.NewTTSHandler(config.Get().AWSAccessKey, config.Get().AWSSecretKey, config.Get().GCPTTSEndpoint, "/shared-data", localAddress, reqHandler)
+	// initialize cache and db handlers. They come first: the provider keys are read from the
+	// database at the time of use.
+	cacheHandler := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDB)
+	if err := cacheHandler.Connect(); err != nil {
+		logrus.Fatalf("Could not connect to cache. err: %v", err)
+	}
+	dbHandler := dbhandler.NewDBHandler(db, cacheHandler)
+
+	// the stored settings: the provider keys are read per use, stored value first, then the
+	// environment value
+	configHandler, err := ttsconfig.New(config.Get(), dbHandler.ConfigStore())
+	if err != nil {
+		return errors.Wrapf(err, "could not create the config handler")
+	}
+	ttsconfig.LogSources(context.Background(), configHandler)
+	awsCreds := ttsconfig.AWSCredentials(configHandler)
+	elevenlabsKey := ttsconfig.ElevenlabsKey(configHandler)
+
+	ttsHandler := ttshandler.NewTTSHandler(awsCreds, config.Get().GCPTTSEndpoint, "/shared-data", localAddress, reqHandler)
 	if ttsHandler == nil {
 		// Fail fast: a nil handler would otherwise sit in the listener and
 		// nil-panic on the first /v1/speeches request (the 2026-08-22
@@ -149,27 +170,20 @@ func run(db *sql.DB) error {
 		// crash-looped per request instead of failing at startup).
 		logrus.Fatalf("Could not create the tts handler. Check TTS provider credentials (e.g. GOOGLE_APPLICATION_CREDENTIALS).")
 	}
-	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, podID, config.Get().ElevenlabsAPIKey, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
-
-	// initialize cache and db handlers
-	cacheHandler := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDB)
-	if err := cacheHandler.Connect(); err != nil {
-		logrus.Fatalf("Could not connect to cache. err: %v", err)
-	}
-	dbHandler := dbhandler.NewDBHandler(db, cacheHandler)
+	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, podID, elevenlabsKey, awsCreds)
 	speakingHandler := speakinghandler.NewSpeakingHandler(dbHandler, streamingHandler, notifyHandler, podID)
 
 	// run listener
-	go runListen(sockHandler, ttsHandler, streamingHandler, speakingHandler, podID)
+	go runListen(sockHandler, ttsHandler, streamingHandler, speakingHandler, podID, configrpc.NewServer(configHandler, serviceName))
 
 	log.Debug("All handlers started successfully")
 	return nil
 }
 
 // runListen run the listener
-func runListen(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, speakingHandler speakinghandler.SpeakingHandler, podID string) {
+func runListen(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, speakingHandler speakinghandler.SpeakingHandler, podID string, configServer *configrpc.Server) {
 
-	if errRun := runListenNormal(sockHandler, ttsHandler, streamingHandler, speakingHandler); errRun != nil {
+	if errRun := runListenNormal(sockHandler, ttsHandler, streamingHandler, speakingHandler, configServer); errRun != nil {
 		panic(errors.Wrapf(errRun, "could not run listen handler in normal mode"))
 	}
 
@@ -178,9 +192,9 @@ func runListen(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHan
 	}
 }
 
-func runListenNormal(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, speakingHandler speakinghandler.SpeakingHandler) error {
+func runListenNormal(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, speakingHandler speakinghandler.SpeakingHandler, configServer *configrpc.Server) error {
 
-	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler, speakingHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler, speakingHandler, configServer)
 
 	// run
 	if errRun := listenHandler.Run(string(commonoutline.QueueNameTTSRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
@@ -190,9 +204,10 @@ func runListenNormal(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.
 	return nil
 }
 
-// runListen run the listener
+// runListenPod run the listener of the queue of this pod. It carries the streaming control only, so
+// it has no config server: a config request on it is answered with a fixed 404.
 func runListenPod(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, speakingHandler speakinghandler.SpeakingHandler, podID string) error {
-	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler, speakingHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler, speakingHandler, nil)
 
 	queueName := fmt.Sprintf("%s.%s", commonoutline.QueueNameTTSRequest, podID)
 	if err := listenHandler.Run(queueName, string(commonoutline.QueueNameDelay)); err != nil {

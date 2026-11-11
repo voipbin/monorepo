@@ -7,11 +7,11 @@
 | Service exits at startup ("Could not create the tts handler") | GCP ADC credentials not available — the daemon fails fast instead of nil-panicking on the first `/v1/speeches` request | Check `GOOGLE_APPLICATION_CREDENTIALS` points to a valid credential file (`/run/secrets/google_service_account.json`, materialized by the Komodo compose `secrets:` block); verify the `BIN_MANAGER__GOOGLE_APPLICATION_CREDENTIALS_JSON` Komodo Variable is synced |
 | Batch TTS returns no audio URL | GCP request failing at runtime (quota, endpoint), or `/shared-data` not writable (volume missing from the compose stack) | Check `speech_fallback_total` metric (AWS Polly is the fallback provider); verify the `shared-data` volume is mounted in `komodo/docker-compose.yml` |
 | Call connects but TTS audio is silent while `/v1/speeches` succeeds | Asterisk cannot fetch the media URL — `voipbin-tts-manager-http` sidecar down, or `POD_IP` missing/wrong so the URL host does not resolve | Check the `tts-manager-http` container is running on the `production` network; verify `POD_IP=tts-manager-http` in the compose stack |
-| AWS Polly fallback failing | Missing `aws_access_key` / `aws_secret_key` | Verify credentials in environment; check AWS Polly quotas |
+| AWS Polly fallback failing | Missing AWS keys, only one of the two AWS keys stored, or the stored keys can not be read | Run `tts-control config list` (see [Provider keys](#provider-keys)); `source` of both AWS keys must be `db` or both `env`; check AWS Polly quotas |
 | Streaming session RPC timeout | RPC routed to wrong pod (wrong per-pod queue) | Verify `host_id` matches `HOSTNAME` of target pod; check per-pod queue binding |
 | AudioSocket connection refused | Go service port 8080 not listening | Check pod readiness; verify no port conflict with Python sidecar |
 | Audio file not served by sidecar | `/shared-data` volume not mounted or empty | Check pod volume mount; verify Go service wrote the file before sidecar serves it |
-| ElevenLabs WebSocket disconnect | Rate limit or API key invalid | Check `streaming_error_total` metric; verify `ELEVENLABS_API_KEY` |
+| ElevenLabs WebSocket disconnect | Rate limit or API key invalid | Check `streaming_error_total` metric; verify the key with `tts-control config list` (stored value or `ELEVENLABS_API_KEY`) |
 | Keep-alive timeout | Network issue between pod and ElevenLabs | Check `streaming_error_total`; session is cleaned up automatically |
 | `POD_IP` not set | GKE: missing Downward API configuration. Compose: env dropped from the stack | GKE: verify `k8s/deployment.yml` injects `status.podIP` as `POD_IP`. Compose: verify `POD_IP=tts-manager-http` in `komodo/docker-compose.yml` |
 
@@ -105,9 +105,10 @@ instead of the older SSH + `versions.lock` (`ssh-deploy.sh`) path.
 | Flag / Env Var | Description | Default |
 |----------------|-------------|---------|
 | `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server URL | `amqp://guest:guest@localhost:5672` |
-| `aws_access_key` / `AWS_ACCESS_KEY` | AWS Polly access key | optional |
-| `aws_secret_key` / `AWS_SECRET_KEY` | AWS Polly secret key | optional |
-| `elevenlabs_api_key` / `ELEVENLABS_API_KEY` | ElevenLabs API key (streaming) | required for streaming |
+| `aws_access_key` / `AWS_ACCESS_KEY` | AWS Polly access key. A value stored with `tts-control config set` takes precedence; see [Provider keys](#provider-keys) | optional (stored value or env) |
+| `aws_secret_key` / `AWS_SECRET_KEY` | AWS Polly secret key. A stored value takes precedence; store it together with the access key | optional (stored value or env) |
+| `elevenlabs_api_key` / `ELEVENLABS_API_KEY` | ElevenLabs API key (streaming). A stored value takes precedence | required for streaming (stored value or env) |
+| (no flag) / `TTS_CONFIG_ENCRYPTION_KEYS` | Master key list of the stored provider keys: comma-separated `<version>:<base64 32 bytes>`, the highest version encrypts. Environment only, never a flag. A malformed or empty value does not stop the start: the service logs the problem (never the value), refuses to store a secret, and keeps using the environment keys that have no stored value | optional |
 | `gcp_tts_endpoint` / `GCP_TTS_ENDPOINT` | GCP TTS regional endpoint | `eu-texttospeech.googleapis.com:443` |
 | `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
 | `redis_address` / `REDIS_ADDRESS` | Redis server address | required |
@@ -119,6 +120,45 @@ instead of the older SSH + `versions.lock` (`ssh-deploy.sh`) path.
 | `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
 
 GCP authentication uses Application Default Credentials via `GOOGLE_APPLICATION_CREDENTIALS`, pointing at `/run/secrets/google_service_account.json` — materialized by the Komodo compose `secrets:` block from the `BIN_MANAGER__GOOGLE_APPLICATION_CREDENTIALS_JSON` Komodo Variable (see the Deployment section above). If the credential file is missing or invalid, the daemon fails fast at startup instead of serving requests.
+
+## Provider keys
+
+The AWS Polly keys and the ElevenLabs key are stored settings with an environment fallback. The resolution order is: stored value, then the environment variable, then nothing (an empty key, as before).
+
+| Stored key | Environment | Used by |
+|------------|-------------|---------|
+| `aws.access_key` | `AWS_ACCESS_KEY` | Amazon Polly (the batch fallback and the AWS streaming provider), together with the secret key |
+| `aws.secret_key` | `AWS_SECRET_KEY` | same |
+| `elevenlabs.api_key` | `ELEVENLABS_API_KEY` | The ElevenLabs streaming handshake |
+
+The two AWS keys are one credential. A stored key and an environment key are never combined: while exactly one of the two AWS keys is stored, AWS requests fail (the batch request falls back to the other provider, a streaming message fails) and the start logs a warning. Store both keys, one after the other, and clear both to go back to the environment. This is a check of the sources, not a transaction: when both are stored and only one is changed, the pair mixes an old and a new value and AWS rejects the signature until the second key is stored.
+
+The keys are read for each request that needs them (nothing is cached), so a change is used by the next request of every replica, with no restart. The price is one or two small database reads per AWS batch attempt (a cache miss), per AWS streaming message and per ElevenLabs streaming message, bounded to 5 seconds for the whole pair. While the database can not be read these requests fail even when the environment holds a key (the environment value is a fallback for a missing row, not for a failed read); GCP requests do not read the database. A batch request for the AWS provider that fails on AWS is served by GCP with its default voice (watch `tts_manager_speech_fallback_total` after a key change); a default request is served by GCP first and reaches AWS only as its fallback, so with a mismatched AWS pair that fallback fails too. `tts-control create` reads the keys the same way, so it needs the database.
+
+```bash
+# the value is read from stdin only (one line; a key is at most 512 bytes) and is never printed
+printf '%s\n' "$NEW_ACCESS_KEY" | ./tts-control config set --key aws.access_key --actor-id <uuid>
+printf '%s\n' "$NEW_SECRET_KEY" | ./tts-control config set --key aws.secret_key --actor-id <uuid>
+./tts-control config list
+./tts-control config clear --key aws.access_key --actor-id <uuid>
+```
+
+The same keys can also be stored, deleted and read through the admin API of api-manager (`/service_configs/tts`, project super admin only), which reaches this service as `/v1/configs` requests on the shared queue. A change made that way is recorded in the history with the source `api` (the command line records `cli`). The request body of a secret is never logged.
+
+The master key list is `TTS_CONFIG_ENCRYPTION_KEYS` (environment only, `<version>:<base64 of 32 bytes>[,...]`). Keep it in the secret store of the deployment, never in a flag or in the repository. The deployment definition must pass it to the container before `config set` can store a value; without it the commands list and clear but refuse to set, and a stored secret is reported as `db_undecryptable` (an error for its callers, never replaced by the environment). The `config` commands need the database and the master key list only.
+
+Other services read the same credentials from their own configuration and have separate stored settings:
+
+- The AWS pair is also read by the transcription service. The two services keep separate stored settings, so the same AWS credential must be entered in both when it is rotated (in the same maintenance step). Check each service with its `config list`: `source` of both AWS keys and `env_shadowed`. A mismatch shows as one service authenticating and the other failing at AWS, or as the warning at the start of this service that the two AWS sources differ.
+- The ElevenLabs key is also read by the pipecat runner from the same deployment variable as an environment value (it has no database). Storing a new key here does not change the runner: rotate the variable and redeploy the pipecat service too, and do not remove the variable while that service uses it. `config list` shows `env_shadowed` for the key as long as the variable is set.
+
+Rotation:
+1. Create the new key at the provider. Keep the old key valid.
+2. Make sure every replica runs the image of this feature. Do not enter a value while a rolling deploy is half done, with the command line or the admin API: an older replica ignores the stored value (and does not serve the admin API), so the replicas would use different keys.
+3. Store the new value (both AWS keys, one after the other), check with `config list`, and place one test request.
+4. Revoke the old key at the provider.
+
+Recovery: `tts-control config clear --key <key> --actor-id <uuid>` makes the environment value apply again.
 
 ## Prometheus Metrics
 

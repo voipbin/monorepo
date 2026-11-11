@@ -15,6 +15,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
+	"monorepo/bin-tts-manager/internal/ttsconfig"
 	"monorepo/bin-tts-manager/models/streaming"
 )
 
@@ -211,14 +212,13 @@ func NewStreamingHandler(
 	notifyHandler notifyhandler.NotifyHandler,
 
 	podID string,
-	elevenlabsAPIKey string,
-	awsAccessKey string,
-	awsSecretKey string,
+	elevenlabsKey ttsconfig.KeyFunc,
+	awsCreds ttsconfig.AWSCredentialsFunc,
 ) StreamingHandler {
 
-	elevenlabsHandler := NewElevenlabsHandler(reqHandler, notifyHandler, elevenlabsAPIKey)
+	elevenlabsHandler := NewElevenlabsHandler(reqHandler, notifyHandler, elevenlabsKey)
 	gcpHandler := NewGCPHandler(reqHandler, notifyHandler)
-	awsHandler := NewAWSHandler(reqHandler, notifyHandler, awsAccessKey, awsSecretKey)
+	awsHandler := NewAWSHandler(reqHandler, notifyHandler, awsCreds)
 
 	return &streamingHandler{
 		utilHandler:    utilhandler.NewUtilHandler(),

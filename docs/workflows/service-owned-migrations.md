@@ -78,7 +78,7 @@ Every PR that changes a migration file or the migration runner states, with evid
 | bin-talk-manager | talk_chats, talk_mentions, talk_messages, talk_participants, talk_pins | `bin-talk-manager/migrations/` |
 | bin-timeline-manager | timeline_analyses | `bin-timeline-manager/migrations/mysql/` |
 | bin-transcribe-manager | transcribe_transcribes, transcribe_transcripts | `bin-transcribe-manager/migrations/` |
-| bin-tts-manager | tts_manager_speaking | `bin-tts-manager/migrations/` |
+| bin-tts-manager | tts_config_histories, tts_configs, tts_manager_speaking | `bin-tts-manager/migrations/` |
 | bin-webchat-manager | webchat_messages, webchat_sessions, webchat_widgets | `bin-webchat-manager/migrations/` |
 
 This list is derived from the `CREATE TABLE` statements in each service's `migrations/` directory (`bin-timeline-manager` keeps its MySQL migrations under `migrations/mysql/` next to its ClickHouse migrations; `bin-rag-manager` uses PostgreSQL and is not part of `bin_manager`). A PR that adds or drops a table updates this document.
@@ -172,6 +172,8 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | timeline_analyses | bin-timeline-manager | Timeline analysis records |
 | transcribe_transcribes | bin-transcribe-manager | Transcription job records |
 | transcribe_transcripts | bin-transcribe-manager | STT transcription results (linked to transcribes) |
+| tts_config_histories | bin-tts-manager | Change history of the platform-wide stored settings (no values) |
+| tts_configs | bin-tts-manager | Platform-wide stored settings (TTS provider keys, encrypted) |
 | tts_manager_speaking | bin-tts-manager | Text-to-speech speaking sessions |
 | webchat_messages | bin-webchat-manager | Individual inbound/outbound webchat messages |
 | webchat_sessions | bin-webchat-manager | Visitor conversation sessions per widget |

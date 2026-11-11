@@ -2,6 +2,7 @@ package streaminghandler
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 
@@ -34,7 +35,7 @@ func isolateAWSSharedConfig(t *testing.T) {
 func Test_awsHandler_createClient_success(t *testing.T) {
 	isolateAWSSharedConfig(t)
 
-	h := &awsHandler{accessKey: "test-access-key", secretKey: "test-secret-key"}
+	h := &awsHandler{creds: fixedAWSCreds("test-access-key", "test-secret-key")}
 
 	client, err := h.createClient(context.Background())
 	if err != nil {
@@ -55,7 +56,7 @@ func Test_awsHandler_createClient_error(t *testing.T) {
 	isolateAWSSharedConfig(t)
 	t.Setenv("AWS_PROFILE", "does-not-exist")
 
-	h := &awsHandler{accessKey: "test-access-key", secretKey: "test-secret-key"}
+	h := &awsHandler{creds: fixedAWSCreds("test-access-key", "test-secret-key")}
 
 	_, err := h.createClient(context.Background())
 	if err == nil || !strings.Contains(err.Error(), "failed to create AWS") {
@@ -76,7 +77,7 @@ func Test_awsHandler_Init_success(t *testing.T) {
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any()).Times(1)
 
-	h := &awsHandler{reqHandler: mockReq, notifyHandler: mockNotify, accessKey: "test-access-key", secretKey: "test-secret-key"}
+	h := &awsHandler{reqHandler: mockReq, notifyHandler: mockNotify, creds: fixedAWSCreds("test-access-key", "test-secret-key")}
 
 	st := &streaming.Streaming{
 		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000002")},
@@ -113,7 +114,7 @@ func Test_awsHandler_Init_createClientError(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-	h := &awsHandler{reqHandler: mockReq, notifyHandler: mockNotify, accessKey: "test-access-key", secretKey: "test-secret-key"}
+	h := &awsHandler{reqHandler: mockReq, notifyHandler: mockNotify, creds: fixedAWSCreds("test-access-key", "test-secret-key")}
 
 	st := &streaming.Streaming{
 		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000003")},
@@ -126,5 +127,59 @@ func Test_awsHandler_Init_createClientError(t *testing.T) {
 	}
 	if res != nil {
 		t.Errorf("Wrong match. expected: nil, got: %v", res)
+	}
+}
+
+// The credentials of the client are the pair that the supplier returned for this call, so a pair
+// that changed between two Init calls is used by the second one.
+func Test_awsHandler_createClient_credsFromSupplier(t *testing.T) {
+	isolateAWSSharedConfig(t)
+
+	pair := [2]string{"first-access", "first-secret"}
+	h := &awsHandler{creds: func(context.Context) (string, string, error) { return pair[0], pair[1], nil }}
+
+	for _, want := range [][2]string{{"first-access", "first-secret"}, {"second-access", "second-secret"}} {
+		pair = want
+		client, err := h.createClient(context.Background())
+		if err != nil {
+			t.Fatalf("Wrong match. expected: nil, got: %v", err)
+		}
+		got, err := client.Options().Credentials.Retrieve(context.Background())
+		if err != nil || got.AccessKeyID != want[0] || got.SecretAccessKey != want[1] {
+			t.Errorf("Wrong match. expected: the pair %v, got: %s %v", want, got.AccessKeyID, err)
+		}
+	}
+}
+
+// A failed read is an error of the client creation, with no key text in it, and Init fails before
+// any event is published.
+func Test_awsHandler_createClient_supplierError(t *testing.T) {
+	isolateAWSSharedConfig(t)
+
+	errSupply := errors.New("the TTS provider key could not be read")
+	h := &awsHandler{creds: func(context.Context) (string, string, error) { return "", "", errSupply }}
+
+	client, err := h.createClient(context.Background())
+	if !errors.Is(err, errSupply) || client != nil {
+		t.Errorf("Wrong match. expected: the supplier error and no client, got: %v %v", client, err)
+	}
+
+	// no event is expected: the mock fails the test if one is published
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	h.reqHandler = requesthandler.NewMockRequestHandler(mc)
+	h.notifyHandler = notifyhandler.NewMockNotifyHandler(mc)
+
+	st := &streaming.Streaming{ID: uuid.FromStringOrNil("5b6a3c1e-0000-4000-8000-0000000000b1")}
+	if res, errInit := h.Init(context.Background(), st); res != nil || !errors.Is(errInit, errSupply) {
+		t.Errorf("Wrong match. expected: nil and the supplier error, got: %v %v", res, errInit)
+	}
+}
+
+func Test_awsHandler_createClient_nilSupplier(t *testing.T) {
+	h := &awsHandler{}
+
+	if client, err := h.createClient(context.Background()); err == nil || client != nil {
+		t.Errorf("Wrong match. expected: an error and no client, got: %v %v", client, err)
 	}
 }

@@ -8,12 +8,15 @@ import (
 
 	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-tts-manager/internal/config"
+	"monorepo/bin-tts-manager/internal/ttsconfig"
 	"monorepo/bin-tts-manager/migrations"
 	"monorepo/bin-tts-manager/models/tts"
+	"monorepo/bin-tts-manager/pkg/dbhandler"
 	"monorepo/bin-tts-manager/pkg/ttshandler"
 
 	"github.com/gofrs/uuid"
@@ -31,15 +34,33 @@ func main() {
 	}
 }
 
-func initHandler() (ttshandler.TTSHandler, error) {
+// openTTSHandler creates the handler of the create command and the function that releases what it
+// opened. Tests replace it.
+var openTTSHandler = initHandler
+
+// initHandler opens the database for the provider keys (read the same way as the daemon reads
+// them: a stored value first, then the environment) and creates the TTS handler. The returned
+// function closes the database.
+func initHandler() (ttshandler.TTSHandler, func(), error) {
+	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "could not connect to the database")
+	}
+	closeFunc := func() { commondatabasehandler.Close(db) }
+
+	configHandler, err := ttsconfig.New(config.Get(), dbhandler.NewConfigStore(db))
+	if err != nil {
+		closeFunc()
+		return nil, nil, errors.Wrap(err, "could not create the config handler")
+	}
+
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 
 	handler := ttshandler.NewTTSHandler(
-		config.Get().AWSAccessKey,
-		config.Get().AWSSecretKey,
+		ttsconfig.AWSCredentials(configHandler),
 		config.Get().GCPTTSEndpoint,
 		"/tmp/tts-media", // Default media bucket directory for CLI
 		"localhost",      // Default local address for CLI
@@ -47,10 +68,11 @@ func initHandler() (ttshandler.TTSHandler, error) {
 	)
 
 	if handler == nil {
-		return nil, errors.New("failed to create TTS handler")
+		closeFunc()
+		return nil, nil, errors.New("failed to create TTS handler")
 	}
 
-	return handler, nil
+	return handler, closeFunc, nil
 }
 
 func initCommand() *cobra.Command {
@@ -58,12 +80,7 @@ func initCommand() *cobra.Command {
 		Use:   "tts-control",
 		Short: "Voipbin TTS Management CLI",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
-				return errors.Wrap(errBind, "failed to bind flags")
-			}
-
-			config.LoadGlobalConfig()
-			return nil
+			return loadConfig(cmd)
 		},
 	}
 
@@ -75,11 +92,23 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdCreate())
 
 	cmdRoot.AddCommand(cmdSub)
+	cmdRoot.AddCommand(cmdConfig())
 	// the migrate commands open only the database, so they do not depend on Redis or RabbitMQ
 	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {
 		return migrationhandler.New(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable)
 	}))
 	return cmdRoot
+}
+
+// loadConfig binds the flags and loads the configuration of the process. Every subcommand needs it.
+func loadConfig(cmd *cobra.Command) error {
+	if errBind := viper.BindPFlags(cmd.Flags()); errBind != nil {
+		return errors.Wrap(errBind, "failed to bind flags")
+	}
+
+	config.LoadGlobalConfig()
+
+	return nil
 }
 
 func resolveUUID(flagName string, label string) (uuid.UUID, error) {
@@ -153,10 +182,11 @@ func runCreate(cmd *cobra.Command, args []string) error {
 
 	voiceID := viper.GetString("voice-id")
 
-	handler, err := initHandler()
+	handler, closeFunc, err := openTTSHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
+	defer closeFunc()
 
 	res, err := handler.Create(
 		context.Background(),

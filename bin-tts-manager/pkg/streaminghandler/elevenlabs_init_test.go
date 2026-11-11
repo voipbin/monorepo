@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -111,7 +112,7 @@ func Test_elevenlabsHandler_Init(t *testing.T) {
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	h := &elevenlabsHandler{
 		notifyHandler: mockNotify,
-		apiKey:        "fake-api-key",
+		keyFunc:       fixedKey("fake-api-key"),
 	}
 
 	streamingID := uuid.FromStringOrNil("5b6a3c1e-0000-4000-8000-0000000000a1")
@@ -186,7 +187,7 @@ func Test_elevenlabsHandler_Init_connectFailure(t *testing.T) {
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	h := &elevenlabsHandler{
 		notifyHandler: mockNotify,
-		apiKey:        "fake-api-key",
+		keyFunc:       fixedKey("fake-api-key"),
 	}
 
 	st := &streaming.Streaming{VoiceID: "fake-voice-0000000002"}
@@ -212,7 +213,7 @@ func Test_elevenlabsHandler_connect_voiceSelection(t *testing.T) {
 	defer mc.Finish()
 
 	seen := useLocalElevenlabsServer(t, true)
-	h := &elevenlabsHandler{apiKey: "fake-api-key"}
+	h := &elevenlabsHandler{keyFunc: fixedKey("fake-api-key")}
 
 	// no explicit voice and no activeflow: the language and gender mapping applies
 	st := &streaming.Streaming{Language: "korean", Gender: streaming.GenderFemale}
@@ -289,5 +290,57 @@ func Test_readConnWebsock_droppedWhenContextCancelled(t *testing.T) {
 	}
 	if err, ok := <-errCh; ok {
 		t.Errorf("Wrong match. expect: no read error, got: %v", err)
+	}
+}
+
+// The handshake carries the key that the supplier returned for this connect, so a key that
+// changed between two connects is used by the second one.
+func Test_elevenlabs_connect_headerFromSupplier(t *testing.T) {
+	seen := useLocalElevenlabsServer(t, true)
+
+	key := "first-api-key"
+	h := &elevenlabsHandler{keyFunc: func(context.Context) (string, error) { return key, nil }}
+	st := &streaming.Streaming{VoiceID: "fake-voice-0000000003"}
+
+	for _, want := range []string{"first-api-key", "second-api-key"} {
+		key = want
+		conn, err := h.connect(context.Background(), st)
+		if err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
+		t.Cleanup(func() { _ = conn.Close() })
+
+		if req := receiveElevenlabsRequest(t, seen); req.apiKey != want {
+			t.Errorf("Wrong API key header. expect: %q, got: %q", want, req.apiKey)
+		}
+	}
+}
+
+// A failed read stops the connect before the dial, and the error holds no key text.
+func Test_elevenlabs_connect_supplierError(t *testing.T) {
+	seen := useLocalElevenlabsServer(t, true)
+
+	errSupply := errors.New("the TTS provider key could not be read")
+	h := &elevenlabsHandler{keyFunc: func(context.Context) (string, error) { return "", errSupply }}
+	st := &streaming.Streaming{VoiceID: "fake-voice-0000000004"}
+
+	conn, err := h.connect(context.Background(), st)
+	if !errors.Is(err, errSupply) || conn != nil {
+		t.Errorf("Wrong match. expect: the supplier error and no connection, got: %v %v", conn, err)
+	}
+
+	select {
+	case req := <-seen:
+		t.Errorf("Wrong match. expect: no handshake, got a request: %+v", req)
+	case <-time.After(200 * time.Millisecond):
+	}
+}
+
+func Test_elevenlabs_connect_nilSupplier(t *testing.T) {
+	h := &elevenlabsHandler{}
+	st := &streaming.Streaming{VoiceID: "fake-voice-0000000005"}
+
+	if conn, err := h.connect(context.Background(), st); err == nil || conn != nil {
+		t.Errorf("Wrong match. expect: an error and no connection, got: %v %v", conn, err)
 	}
 }

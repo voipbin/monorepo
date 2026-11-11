@@ -356,6 +356,43 @@ func Test_serviceConfigs_messageService(t *testing.T) {
 	}
 }
 
+// The service tts is routed like email: the generated binding passes the service name on as it is.
+func Test_serviceConfigs_ttsService(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	a := testNumberProviderAgent()
+	r, w, _, _, _ := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
+
+	mockSvc.EXPECT().ServiceConfigGet(gomock.Any(), a, "tts").Return(&configrpc.Service{Service: "tts", SecretWritable: true, Keys: []configrpc.Key{*testServiceConfigKey()}}, nil)
+	do(r, w, "GET", "/service_configs/tts", "")
+	if w.Code != http.StatusOK || !strings.HasPrefix(w.Body.String(), `{"service":"tts",`) {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+
+	mockSvc.EXPECT().ServiceConfigKeySecretSet(gomock.Any(), a, "tts", "aws.access_key", testServiceConfigSecret, int64(2)).Return(testServiceConfigKey(), nil)
+	w = httptest.NewRecorder()
+	do(r, w, "PUT", "/service_configs/tts/keys/aws.access_key/secret", `{"secret":"`+testServiceConfigSecret+`","revision":2}`)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+
+	mockSvc.EXPECT().ServiceConfigKeyClear(gomock.Any(), a, "tts", "elevenlabs.api_key", int64(3)).Return(testServiceConfigKey(), nil)
+	w = httptest.NewRecorder()
+	do(r, w, "DELETE", "/service_configs/tts/keys/elevenlabs.api_key?revision=3", "")
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+
+	mockSvc.EXPECT().ServiceConfigKeyHistoryList(gomock.Any(), a, "tts", "aws.access_key", "", 0).Return(&configrpc.HistoryList{Result: []configrpc.History{}}, nil)
+	w = httptest.NewRecorder()
+	do(r, w, "GET", "/service_configs/tts/keys/aws.access_key/histories", "")
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+}
+
 // The generated binding does not check the service name against the enum: a value that is not
 // allowed reaches the service handler, which answers 404. The allow list of the service handler
 // is the only place that decides.
@@ -367,8 +404,8 @@ func Test_serviceConfigs_serviceNameIsNotCheckedByTheBinding(t *testing.T) {
 	a := testNumberProviderAgent()
 	r, w, _, _, _ := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
 
-	mockSvc.EXPECT().ServiceConfigGet(gomock.Any(), a, "tts").Return(nil, serviceerrors.ErrNotFound)
-	do(r, w, "GET", "/service_configs/tts", "")
+	mockSvc.EXPECT().ServiceConfigGet(gomock.Any(), a, "voice").Return(nil, serviceerrors.ErrNotFound)
+	do(r, w, "GET", "/service_configs/voice", "")
 	if w.Code != http.StatusNotFound || !strings.Contains(w.Body.String(), "RESOURCE_NOT_FOUND") {
 		t.Errorf("Wrong match. expect: 404 RESOURCE_NOT_FOUND, got: %d %s", w.Code, w.Body.String())
 	}

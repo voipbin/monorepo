@@ -343,39 +343,49 @@ func Test_gcpGetClient_warmUpFailureIsNotFatal(t *testing.T) {
 }
 
 func Test_NewAudioHandler(t *testing.T) {
+	creds := func(context.Context) (string, string, error) { return "fake-access", "fake-secret", nil }
+
 	t.Run("returns nil when the gcp client cannot be created", func(t *testing.T) {
 		setMissingADC(t)
 
-		if res := NewAudioHandler(context.Background(), "fake-access", "fake-secret", "unused"); res != nil {
+		if res := NewAudioHandler(context.Background(), creds, "unused"); res != nil {
 			t.Errorf("Wrong match. expect: nil, got: %v", res)
 		}
 	})
 
-	t.Run("returns nil when the aws client cannot be created", func(t *testing.T) {
+	t.Run("builds no aws client, a broken aws setup is not a start failure", func(t *testing.T) {
 		setFakeADC(t)
 		t.Setenv("AWS_PROFILE", "does-not-exist")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 		defer cancel()
 
-		if res := NewAudioHandler(ctx, "fake-access", "fake-secret", closedLoopbackAddr(t)); res != nil {
-			t.Errorf("Wrong match. expect: nil, got: %v", res)
+		res := NewAudioHandler(ctx, creds, closedLoopbackAddr(t))
+		h, ok := res.(*audioHandler)
+		if !ok || h == nil {
+			t.Fatalf("Wrong match. expect: *audioHandler, got: %T", res)
+		}
+		_ = h.gcpClient.Close()
+
+		// the failure shows up as an error of the request
+		if _, err := h.pollyClient(ctx); err == nil {
+			t.Errorf("Wrong match. expect: an error for the broken aws setup, got: nil")
 		}
 	})
 
-	t.Run("returns a handler holding both clients", func(t *testing.T) {
+	t.Run("returns a handler with the gcp client and the supplier", func(t *testing.T) {
 		setFakeADC(t)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 		defer cancel()
 
-		res := NewAudioHandler(ctx, "fake-access", "fake-secret", closedLoopbackAddr(t))
+		res := NewAudioHandler(ctx, creds, closedLoopbackAddr(t))
 		h, ok := res.(*audioHandler)
 		if !ok || h == nil {
 			t.Fatalf("Wrong match. expect: *audioHandler, got: %T", res)
 		}
-		if h.gcpClient == nil || h.awsClient == nil {
-			t.Errorf("Wrong clients. gcp nil: %v, aws nil: %v", h.gcpClient == nil, h.awsClient == nil)
+		if h.gcpClient == nil || h.awsCreds == nil || h.awsBuild == nil {
+			t.Errorf("Wrong fields. gcp nil: %v, creds nil: %v, build nil: %v", h.gcpClient == nil, h.awsCreds == nil, h.awsBuild == nil)
 		}
 		_ = h.gcpClient.Close()
 	})

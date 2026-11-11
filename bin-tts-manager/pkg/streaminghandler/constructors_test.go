@@ -1,10 +1,12 @@
 package streaminghandler
 
 import (
+	"context"
 	"testing"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-tts-manager/internal/ttsconfig"
 
 	"go.uber.org/mock/gomock"
 )
@@ -18,7 +20,7 @@ func Test_NewAWSHandler_setsFields(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-	res := NewAWSHandler(mockReq, mockNotify, "access-key", "secret-key")
+	res := NewAWSHandler(mockReq, mockNotify, fixedAWSCreds("access-key", "secret-key"))
 
 	h, ok := res.(*awsHandler)
 	if !ok {
@@ -27,8 +29,8 @@ func Test_NewAWSHandler_setsFields(t *testing.T) {
 	if h.reqHandler != mockReq || h.notifyHandler != mockNotify {
 		t.Error("Wrong match. expected: the injected dependencies to be stored")
 	}
-	if h.accessKey != "access-key" || h.secretKey != "secret-key" {
-		t.Errorf("Wrong match. expected: access-key/secret-key, got: %s/%s", h.accessKey, h.secretKey)
+	if a, sk, err := h.creds(context.Background()); err != nil || a != "access-key" || sk != "secret-key" {
+		t.Errorf("Wrong match. expected: access-key/secret-key, got: %s/%s %v", a, sk, err)
 	}
 }
 
@@ -61,7 +63,7 @@ func Test_NewElevenlabsHandler_setsFields(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-	res := NewElevenlabsHandler(mockReq, mockNotify, "api-key")
+	res := NewElevenlabsHandler(mockReq, mockNotify, fixedKey("api-key"))
 
 	h, ok := res.(*elevenlabsHandler)
 	if !ok {
@@ -70,8 +72,8 @@ func Test_NewElevenlabsHandler_setsFields(t *testing.T) {
 	if h.reqHandler != mockReq || h.notifyHandler != mockNotify {
 		t.Error("Wrong match. expected: the injected dependencies to be stored")
 	}
-	if h.apiKey != "api-key" {
-		t.Errorf("Wrong match. expected: api-key, got: %s", h.apiKey)
+	if k, err := h.keyFunc(context.Background()); err != nil || k != "api-key" {
+		t.Errorf("Wrong match. expected: api-key, got: %s %v", k, err)
 	}
 }
 
@@ -85,7 +87,7 @@ func Test_NewStreamingHandler_setsFields(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-	res := NewStreamingHandler(mockReq, mockNotify, "pod-1", "eleven-key", "aws-access", "aws-secret")
+	res := NewStreamingHandler(mockReq, mockNotify, "pod-1", fixedKey("eleven-key"), fixedAWSCreds("aws-access", "aws-secret"))
 
 	h, ok := res.(*streamingHandler)
 	if !ok {
@@ -103,4 +105,14 @@ func Test_NewStreamingHandler_setsFields(t *testing.T) {
 	if h.elevenlabsHandler == nil || h.gcpHandler == nil || h.awsHandler == nil {
 		t.Error("Wrong match. expected: all three vendor handlers to be set")
 	}
+}
+
+// fixedKey returns a key supplier that always hands out the given key.
+func fixedKey(key string) ttsconfig.KeyFunc {
+	return func(context.Context) (string, error) { return key, nil }
+}
+
+// fixedAWSCreds returns a credentials supplier that always hands out the given pair.
+func fixedAWSCreds(access, secret string) ttsconfig.AWSCredentialsFunc {
+	return func(context.Context) (string, string, error) { return access, secret, nil }
 }

@@ -29,6 +29,7 @@ var serviceConfigServices = map[string]bool{
 	"email":   true,
 	"ai":      true,
 	"message": true,
+	"tts":     true,
 }
 
 // serviceConfigAuthorize checks that the identity may manage the configs: direct access is

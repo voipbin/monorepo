@@ -15,6 +15,36 @@ var (
 	once         sync.Once
 )
 
+// Names of the environment variables that the config registry reads through EnvValue.
+const (
+	envAWSAccessKey     = "AWS_ACCESS_KEY"
+	envAWSSecretKey     = "AWS_SECRET_KEY"
+	envElevenlabsAPIKey = "ELEVENLABS_API_KEY"
+
+	// EnvConfigEncryptionKeys is the environment variable of the master key list of the stored
+	// settings.
+	EnvConfigEncryptionKeys = "TTS_CONFIG_ENCRYPTION_KEYS"
+)
+
+// EnvValue returns the loaded value (flag or environment) of a variable name. It is the
+// environment lookup of the config registry, so the stored settings and the direct reads see the
+// same values. A name that is not loaded is "not set".
+func (c *Config) EnvValue(name string) (string, bool) {
+	var v string
+	switch name {
+	case envAWSAccessKey:
+		v = c.AWSAccessKey
+	case envAWSSecretKey:
+		v = c.AWSSecretKey
+	case envElevenlabsAPIKey:
+		v = c.ElevenlabsAPIKey
+	default:
+		return "", false
+	}
+
+	return v, v != ""
+}
+
 // Config holds process-wide configuration values loaded from command-line
 // flags and environment variables for the service.
 type Config struct {
@@ -29,6 +59,12 @@ type Config struct {
 	RedisAddress            string // RedisAddress is the Redis server address.
 	RedisPassword           string // RedisPassword is the Redis server password.
 	RedisDB                 int    // RedisDB is the Redis database number.
+
+	// ConfigEncryptionKeys is the master key list of the stored settings
+	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
+	// command line flag. A value that can not be parsed does not stop the service: stored
+	// secrets can not be used then and the environment keys keep working.
+	ConfigEncryptionKeys string
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -72,6 +108,12 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_db":                  "REDIS_DB",
 	}
 
+	// the master key list of the stored settings has no flag: a flag value would show in the
+	// process list.
+	if errBind := viper.BindEnv("tts_config_encryption_keys", EnvConfigEncryptionKeys); errBind != nil {
+		return errors.Wrapf(errBind, "could not bind the env. key: %s", EnvConfigEncryptionKeys)
+	}
+
 	for flagKey, envKey := range bindings {
 		if errBind := viper.BindPFlag(flagKey, f.Lookup(flagKey)); errBind != nil {
 			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
@@ -106,6 +148,7 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDB:                 viper.GetInt("redis_db"),
+			ConfigEncryptionKeys:    viper.GetString("tts_config_encryption_keys"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})
@@ -114,4 +157,13 @@ func LoadGlobalConfig() {
 func initLog() {
 	logrus.SetFormatter(joonix.NewFormatter())
 	logrus.SetLevel(logrus.DebugLevel)
+}
+
+// ResetForTest clears the global config and lets LoadGlobalConfig load from viper and the
+// environment again (LoadGlobalConfig is sync.Once-guarded). A test that needs it must reset
+// again in t.Cleanup, so a value it set does not stay in the global config.
+// USE ONLY FROM TESTS.
+func ResetForTest() {
+	once = sync.Once{}
+	globalConfig = Config{}
 }
