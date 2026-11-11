@@ -63,6 +63,8 @@ import (
 	outdial "monorepo/bin-outdial-manager/models/outdial"
 	outdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 	device "monorepo/bin-push-manager/models/device"
+	notification "monorepo/bin-push-manager/models/notification"
+	settings "monorepo/bin-push-manager/models/settings"
 	queue "monorepo/bin-queue-manager/models/queue"
 	queuecall "monorepo/bin-queue-manager/models/queuecall"
 	rag "monorepo/bin-rag-manager/models/rag"
@@ -5756,6 +5758,66 @@ func (m *MockServiceHandler) ServiceAgentPushDeviceDelete(ctx context.Context, a
 func (mr *MockServiceHandlerMockRecorder) ServiceAgentPushDeviceDelete(ctx, a, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentPushDeviceDelete", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentPushDeviceDelete), ctx, a, id)
+}
+
+// ServiceAgentPushMuteAdd mocks base method.
+func (m *MockServiceHandler) ServiceAgentPushMuteAdd(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) (*settings.Settings, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentPushMuteAdd", ctx, a, chatID)
+	ret0, _ := ret[0].(*settings.Settings)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentPushMuteAdd indicates an expected call of ServiceAgentPushMuteAdd.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentPushMuteAdd(ctx, a, chatID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentPushMuteAdd", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentPushMuteAdd), ctx, a, chatID)
+}
+
+// ServiceAgentPushMuteRemove mocks base method.
+func (m *MockServiceHandler) ServiceAgentPushMuteRemove(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) (*settings.Settings, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentPushMuteRemove", ctx, a, chatID)
+	ret0, _ := ret[0].(*settings.Settings)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentPushMuteRemove indicates an expected call of ServiceAgentPushMuteRemove.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentPushMuteRemove(ctx, a, chatID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentPushMuteRemove", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentPushMuteRemove), ctx, a, chatID)
+}
+
+// ServiceAgentPushSettingsGet mocks base method.
+func (m *MockServiceHandler) ServiceAgentPushSettingsGet(ctx context.Context, a *auth.AuthIdentity) (*settings.Settings, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentPushSettingsGet", ctx, a)
+	ret0, _ := ret[0].(*settings.Settings)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentPushSettingsGet indicates an expected call of ServiceAgentPushSettingsGet.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentPushSettingsGet(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentPushSettingsGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentPushSettingsGet), ctx, a)
+}
+
+// ServiceAgentPushSettingsUpdate mocks base method.
+func (m *MockServiceHandler) ServiceAgentPushSettingsUpdate(ctx context.Context, a *auth.AuthIdentity, kinds map[notification.Kind]bool) (*settings.Settings, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentPushSettingsUpdate", ctx, a, kinds)
+	ret0, _ := ret[0].(*settings.Settings)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentPushSettingsUpdate indicates an expected call of ServiceAgentPushSettingsUpdate.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentPushSettingsUpdate(ctx, a, kinds any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentPushSettingsUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentPushSettingsUpdate), ctx, a, kinds)
 }
 
 // ServiceAgentTagGet mocks base method.

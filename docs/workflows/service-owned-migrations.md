@@ -68,7 +68,7 @@ Every PR that changes a migration file or the migration runner states, with evid
 | bin-number-manager | number_numbers, number_providers | `bin-number-manager/migrations/` |
 | bin-outdial-manager | outdial_outdials, outdial_outdialtargetcalls, outdial_outdialtargets | `bin-outdial-manager/migrations/` |
 | bin-pipecat-manager | pipecat_pipecatcalls | `bin-pipecat-manager/migrations/` |
-| bin-push-manager | push_devices | `bin-push-manager/migrations/` |
+| bin-push-manager | push_chat_mutes, push_devices, push_kind_prefs | `bin-push-manager/migrations/` |
 | bin-queue-manager | queue_queuecallreferences, queue_queuecalls, queue_queues | `bin-queue-manager/migrations/` |
 | bin-registrar-manager | registrar_customer_domains, registrar_extensions, registrar_sip_auths, registrar_trunks | `bin-registrar-manager/migrations/` |
 | bin-route-manager | route_providercalls, route_providers, route_routes | `bin-route-manager/migrations/` |
@@ -148,7 +148,9 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | outdial_outdialtargetcalls | bin-outdial-manager | Calls placed to outdialtargets |
 | outdial_outdialtargets | bin-outdial-manager | Individual dial targets |
 | pipecat_pipecatcalls | bin-pipecat-manager | Pipecat AI voice sessions |
+| push_chat_mutes | bin-push-manager | Chats an agent muted (a row means muted) |
 | push_devices | bin-push-manager | Agent device push tokens (FCM) |
+| push_kind_prefs | bin-push-manager | Notification kinds an agent switched off (a row means off) |
 | queue_queuecallreferences | bin-queue-manager | Legacy, not referenced by current code |
 | queue_queuecalls | bin-queue-manager | Calls waiting in or processed by queues |
 | queue_queues | bin-queue-manager | Queue definitions |

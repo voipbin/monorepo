@@ -21,6 +21,7 @@ import (
 	"monorepo/bin-push-manager/pkg/dbhandler"
 	"monorepo/bin-push-manager/pkg/devicehandler"
 	"monorepo/bin-push-manager/pkg/notificationhandler"
+	"monorepo/bin-push-manager/pkg/settingshandler"
 )
 
 var (
@@ -39,6 +40,7 @@ func newTestHandler(mc *gomock.Controller) (*listenHandler, *devicehandler.MockD
 		sockHandler:         sockhandler.NewMockSockHandler(mc),
 		deviceHandler:       mockDevice,
 		notificationHandler: mockNotification,
+		settingsHandler:     settingshandler.NewMockSettingsHandler(mc),
 	}, mockDevice, mockNotification
 }
 
@@ -342,7 +344,7 @@ func Test_Run(t *testing.T) {
 	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockDevice := devicehandler.NewMockDeviceHandler(mc)
 	mockNotification := notificationhandler.NewMockNotificationHandler(mc)
-	h := NewListenHandler(mockSock, mockDevice, mockNotification)
+	h := NewListenHandler(mockSock, mockDevice, mockNotification, settingshandler.NewMockSettingsHandler(mc))
 
 	mockSock.EXPECT().QueueCreate("q", "normal").Return(fmt.Errorf("boom"))
 	if err := h.Run("q", "delay"); err == nil {

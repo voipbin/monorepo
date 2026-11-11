@@ -16,6 +16,7 @@ import (
 var (
 	_ eventtopic.SubscriptionIdentifier = (*CaseTagEvent)(nil)
 	_ eventtopic.SubscriptionIdentifier = (*CaseContactEvent)(nil)
+	_ eventtopic.SubscriptionIdentifier = (*CaseAssignedEvent)(nil)
 )
 
 func Test_CaseTagEvent_EventSubscriptionID(t *testing.T) {
@@ -206,5 +207,31 @@ func Test_CaseHasNoSubscriptionAddress(t *testing.T) {
 
 	if _, ok := data.(eventtopic.SubscriptionIdentifier); ok {
 		t.Errorf("Case is not a published event type and deliberately carries no subscription address; it gained an EventSubscriptionID method it should not have.")
+	}
+}
+
+// Test_CaseAssignedEvent pins the address (the case, not the new owner) and the JSON key set that
+// the subscribers of case_assigned rely on.
+func Test_CaseAssignedEvent(t *testing.T) {
+	caseID := uuid.FromStringOrNil("f1b2c3d4-4003-4003-4003-000000000001")
+	customerID := uuid.FromStringOrNil("f1b2c3d4-4003-4003-4003-000000000002")
+	ownerID := uuid.FromStringOrNil("f1b2c3d4-4003-4003-4003-000000000003")
+
+	e := &CaseAssignedEvent{CaseID: caseID, CustomerID: customerID, OwnerID: ownerID}
+
+	if got := e.EventSubscriptionID(); got != caseID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", caseID, got)
+	}
+	if EventTypeCaseAssigned != "case_assigned" {
+		t.Errorf("Wrong match. the event type is a wire contract. got: %s", EventTypeCaseAssigned)
+	}
+
+	m, err := json.Marshal(e)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	expect := `{"case_id":"` + caseID.String() + `","customer_id":"` + customerID.String() + `","owner_id":"` + ownerID.String() + `"}`
+	if string(m) != expect {
+		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", expect, m)
 	}
 }

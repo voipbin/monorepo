@@ -76,6 +76,7 @@ import (
 	pipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	device "monorepo/bin-push-manager/models/device"
 	notification "monorepo/bin-push-manager/models/notification"
+	settings "monorepo/bin-push-manager/models/settings"
 	queue "monorepo/bin-queue-manager/models/queue"
 	queuecall "monorepo/bin-queue-manager/models/queuecall"
 	query "monorepo/bin-rag-manager/models/query"
@@ -6222,6 +6223,36 @@ func (mr *MockRequestHandlerMockRecorder) PushV1DeviceList(ctx, customerID, agen
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushV1DeviceList", reflect.TypeOf((*MockRequestHandler)(nil).PushV1DeviceList), ctx, customerID, agentID)
 }
 
+// PushV1MuteAdd mocks base method.
+func (m *MockRequestHandler) PushV1MuteAdd(ctx context.Context, customerID, agentID, chatID uuid.UUID) (*settings.Settings, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushV1MuteAdd", ctx, customerID, agentID, chatID)
+	ret0, _ := ret[0].(*settings.Settings)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushV1MuteAdd indicates an expected call of PushV1MuteAdd.
+func (mr *MockRequestHandlerMockRecorder) PushV1MuteAdd(ctx, customerID, agentID, chatID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushV1MuteAdd", reflect.TypeOf((*MockRequestHandler)(nil).PushV1MuteAdd), ctx, customerID, agentID, chatID)
+}
+
+// PushV1MuteRemove mocks base method.
+func (m *MockRequestHandler) PushV1MuteRemove(ctx context.Context, customerID, agentID, chatID uuid.UUID) (*settings.Settings, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushV1MuteRemove", ctx, customerID, agentID, chatID)
+	ret0, _ := ret[0].(*settings.Settings)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushV1MuteRemove indicates an expected call of PushV1MuteRemove.
+func (mr *MockRequestHandlerMockRecorder) PushV1MuteRemove(ctx, customerID, agentID, chatID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushV1MuteRemove", reflect.TypeOf((*MockRequestHandler)(nil).PushV1MuteRemove), ctx, customerID, agentID, chatID)
+}
+
 // PushV1NotificationSend mocks base method.
 func (m *MockRequestHandler) PushV1NotificationSend(ctx context.Context, customerID, agentID, deviceID uuid.UUID, kind notification.Kind, data map[string]string) (*notification.SendResult, error) {
 	m.ctrl.T.Helper()
@@ -6235,6 +6266,36 @@ func (m *MockRequestHandler) PushV1NotificationSend(ctx context.Context, custome
 func (mr *MockRequestHandlerMockRecorder) PushV1NotificationSend(ctx, customerID, agentID, deviceID, kind, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushV1NotificationSend", reflect.TypeOf((*MockRequestHandler)(nil).PushV1NotificationSend), ctx, customerID, agentID, deviceID, kind, data)
+}
+
+// PushV1SettingsGet mocks base method.
+func (m *MockRequestHandler) PushV1SettingsGet(ctx context.Context, customerID, agentID uuid.UUID) (*settings.Settings, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushV1SettingsGet", ctx, customerID, agentID)
+	ret0, _ := ret[0].(*settings.Settings)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushV1SettingsGet indicates an expected call of PushV1SettingsGet.
+func (mr *MockRequestHandlerMockRecorder) PushV1SettingsGet(ctx, customerID, agentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushV1SettingsGet", reflect.TypeOf((*MockRequestHandler)(nil).PushV1SettingsGet), ctx, customerID, agentID)
+}
+
+// PushV1SettingsUpdate mocks base method.
+func (m *MockRequestHandler) PushV1SettingsUpdate(ctx context.Context, customerID, agentID uuid.UUID, kinds map[notification.Kind]bool) (*settings.Settings, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushV1SettingsUpdate", ctx, customerID, agentID, kinds)
+	ret0, _ := ret[0].(*settings.Settings)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushV1SettingsUpdate indicates an expected call of PushV1SettingsUpdate.
+func (mr *MockRequestHandlerMockRecorder) PushV1SettingsUpdate(ctx, customerID, agentID, kinds any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushV1SettingsUpdate", reflect.TypeOf((*MockRequestHandler)(nil).PushV1SettingsUpdate), ctx, customerID, agentID, kinds)
 }
 
 // QueueV1QueueCountByCustomerID mocks base method.

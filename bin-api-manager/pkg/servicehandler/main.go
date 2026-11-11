@@ -78,6 +78,8 @@ import (
 	wcwidget "monorepo/bin-webchat-manager/models/widget"
 
 	pmdevice "monorepo/bin-push-manager/models/device"
+	pmnotification "monorepo/bin-push-manager/models/notification"
+	pmsettings "monorepo/bin-push-manager/models/settings"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 	rmsipauth "monorepo/bin-registrar-manager/models/sipauth"
 	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
@@ -1084,6 +1086,10 @@ type ServiceHandler interface {
 	ServiceAgentContactStarDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontactstar.WebhookMessage, error)
 	ServiceAgentPushDeviceCreate(ctx context.Context, a *auth.AuthIdentity, platform pmdevice.Platform, token string) (*pmdevice.WebhookMessage, error)
 	ServiceAgentPushDeviceDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*pmdevice.WebhookMessage, error)
+	ServiceAgentPushSettingsGet(ctx context.Context, a *auth.AuthIdentity) (*pmsettings.Settings, error)
+	ServiceAgentPushSettingsUpdate(ctx context.Context, a *auth.AuthIdentity, kinds map[pmnotification.Kind]bool) (*pmsettings.Settings, error)
+	ServiceAgentPushMuteAdd(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) (*pmsettings.Settings, error)
+	ServiceAgentPushMuteRemove(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) (*pmsettings.Settings, error)
 	ServiceAgentContactStarList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmcontactstar.WebhookMessage, string, error)
 	ServiceAgentContactListStarred(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmcontact.WebhookMessage, string, error)
 	ServiceAgentCaseNoteCreate(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, text string) (*cmcasenote.CaseNote, error)

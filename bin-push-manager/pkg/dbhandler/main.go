@@ -14,6 +14,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-push-manager/models/device"
+	"monorepo/bin-push-manager/models/notification"
 )
 
 // DBHandler interface
@@ -30,6 +31,26 @@ type DBHandler interface {
 	DeviceDeleteByTokenNotOwner(ctx context.Context, token string, customerID, agentID uuid.UUID) error
 	DeviceDeleteByCustomerID(ctx context.Context, customerID uuid.UUID) error
 	DeviceDeleteByAgentID(ctx context.Context, agentID uuid.UUID) error
+
+	// KindPrefDisable switches the kind off for the agent. A kind that has no row is on. Repeating it succeeds.
+	KindPrefDisable(ctx context.Context, customerID, agentID uuid.UUID, kind notification.Kind) error
+	// KindPrefEnable switches the kind on for the agent by deleting the row. Repeating it succeeds.
+	KindPrefEnable(ctx context.Context, customerID, agentID uuid.UUID, kind notification.Kind) error
+	KindPrefListDisabledByAgent(ctx context.Context, customerID, agentID uuid.UUID) ([]notification.Kind, error)
+	// KindPrefListDisabledByAgents returns the agents of the list that switched the kind off.
+	KindPrefListDisabledByAgents(ctx context.Context, customerID uuid.UUID, agentIDs []uuid.UUID, kind notification.Kind) ([]uuid.UUID, error)
+	KindPrefDeleteByAgentID(ctx context.Context, agentID uuid.UUID) error
+	KindPrefDeleteByCustomerID(ctx context.Context, customerID uuid.UUID) error
+
+	// MuteCreate mutes the chat for the agent. Repeating it succeeds.
+	MuteCreate(ctx context.Context, customerID, agentID, chatID uuid.UUID) error
+	// MuteDelete unmutes the chat for the agent. Repeating it succeeds.
+	MuteDelete(ctx context.Context, customerID, agentID, chatID uuid.UUID) error
+	MuteListByAgent(ctx context.Context, customerID, agentID uuid.UUID) ([]uuid.UUID, error)
+	// MuteListMutedByAgents returns the agents of the list that muted the chat.
+	MuteListMutedByAgents(ctx context.Context, customerID uuid.UUID, agentIDs []uuid.UUID, chatID uuid.UUID) ([]uuid.UUID, error)
+	MuteDeleteByAgentID(ctx context.Context, agentID uuid.UUID) error
+	MuteDeleteByCustomerID(ctx context.Context, customerID uuid.UUID) error
 }
 
 // handler database handler

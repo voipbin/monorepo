@@ -96,8 +96,9 @@ Internal, agent-facing state changes on a Case are published through the plain `
 | `case_tag_removed` | `kase.EventTypeCaseTagRemoved` | `*kase.CaseTagEvent` | `case_id`, `tag_id` | `case_id` (override) |
 | `case_contact_attributed` | `kase.EventTypeCaseContactAttributed` | `*kase.CaseContactEvent` | `case_id`, `contact_id` | `case_id` (override) |
 | `case_contact_detached` | `kase.EventTypeCaseContactDetached` | `*kase.CaseContactEvent` | `case_id`, `contact_id` (`uuid.Nil`) | `case_id` (override) |
+| `case_assigned` | `kase.EventTypeCaseAssigned` | `*kase.CaseAssignedEvent` | `case_id`, `customer_id`, `owner_id` | `case_id` (override) |
 
-`EventSubscriptionID()` is implemented with a POINTER receiver on all four payload types (`*CaseNote`, `*CaseNoteDeletedEvent`, `*CaseTagEvent`, `*CaseContactEvent`): the event data reaches `notifyhandler` as a pointer and the interface assertion matches the dynamic type, so a value receiver would silently never be picked up. `kase.Case` itself deliberately carries NO override — its own id already is the address.
+`EventSubscriptionID()` is implemented with a POINTER receiver on all five payload types (`*CaseNote`, `*CaseNoteDeletedEvent`, `*CaseTagEvent`, `*CaseContactEvent`, `*CaseAssignedEvent`): the event data reaches `notifyhandler` as a pointer and the interface assertion matches the dynamic type, so a value receiver would silently never be picked up. `kase.Case` itself deliberately carries NO override — its own id already is the address.
 
 `CaseNote` and `CaseNoteDeletedEvent` both carry their own top-level `id`; the override is what keeps the address on the case axis instead of that note id. Without it the events would publish under a well-formed but unbindable address that no runtime metric can flag, which is why `models/kase/routingkey_golden_test.go` pins the `case_note_deleted` address explicitly.
 
@@ -127,5 +128,6 @@ A Case that originates from a conversation (`reference_type=conversation_message
 
 - Assign (agent): the Conversation owner is set to the agent (reassign overwrites). The Conversation is updated before the Case; on a failure the request returns an error and a retry converges.
 - Unassign: the Conversation owner is released only while it equals the previous Case owner.
+- `case_assigned` is published after the write, only when an open Case gets a different agent as its owner (`owner_id` is the new owner). An Unassign, a repeated Assign of the same owner and a Case that is closed (also one closed while the Assign ran) publish nothing. The agent who assigned the Case is not part of the payload, so assigning a Case to oneself publishes it too. Two Assign calls racing on one Case can publish twice or not at all.
 - Close: the Conversation owner is released unconditionally; `Case.Owner` is kept. A failure of this release is logged and not returned.
 - Call-origin Cases, Cases without a conversation reference and a vanished Conversation are no-ops. Only the Conversation recorded in the Case chain is synchronized; a second Conversation of the same peer opened through another self address is not.

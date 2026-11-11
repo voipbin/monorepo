@@ -21061,6 +21061,186 @@
         }
       }
     },
+    "/service_agents/me/push_settings": {
+      "get": {
+        "summary": "Get the push notification settings",
+        "description": "Returns which push notification kinds the calling agent receives and which chats the agent muted.\nThe settings always belong to the authenticated agent. Everything is on and nothing is muted until\nthe agent changes it, so an agent who never changed anything gets every kind as `true` and an empty\n`muted_chat_ids`.\n\nThe kinds that can be switched are `chat_mentioned`, `chat_message`, `conversation_message`,\n`case_assigned` and `case_note`. Incoming call notifications cannot be switched off and are not part\nof the settings.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "responses": {
+          "200": {
+            "description": "The push notification settings of the calling agent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushManagerSettings"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Switch push notification kinds",
+        "description": "Switches push notification kinds on (`true`) or off (`false`) for the calling agent and returns the\nsettings after the change. A kind that is not in `kinds` is not changed, and an empty `kinds` changes\nnothing. The call is idempotent: sending the same body again gives the same result.\n\nThe kinds that can be switched are `chat_mentioned`, `chat_message`, `conversation_message`,\n`case_assigned` and `case_note`. Any other key, including the incoming call kinds, is rejected with\n`400` (`INVALID_KIND`) before anything is changed.\n\nThe kinds are written one by one. When a write fails, the call returns a `5xx` error and the kinds\nwritten before the failure stay changed; send the same request again to finish the change.\n\nA muted chat does not silence `chat_mentioned`: a mention is always delivered while that kind is on.\nAn agent who switched `chat_mentioned` off gets no notification for a message that mentions him, even\nwhen `chat_message` is on.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "kinds"
+                ],
+                "properties": {
+                  "kinds": {
+                    "type": "object",
+                    "description": "The kinds to switch. The key is the kind and the value is `true` for on and `false` for off.",
+                    "additionalProperties": {
+                      "type": "boolean"
+                    },
+                    "example": {
+                      "chat_message": false,
+                      "case_note": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The push notification settings after the change.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushManagerSettings"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/service_agents/me/push_mutes/{chat_id}": {
+      "put": {
+        "summary": "Mute a chat",
+        "description": "Mutes the chat for the calling agent: the `chat_message` notifications of the chat stop. Mentions\n(`chat_mentioned`) of the agent in the chat are still delivered. The call is idempotent: muting a\nmuted chat returns `200` with the settings.\n\nThe chat must belong to the customer of the calling agent. The agent does not have to be a participant.\nA chat that does not exist, that belongs to another customer, or that cannot be read is reported\nidentically as `404 CHAT_NOT_FOUND`.\n\nThe mute stays when the chat is deleted or the agent leaves it; it has no effect then.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "chat_id",
+            "in": "path",
+            "required": true,
+            "description": "The chat ID returned from GET /service_agents/talk_chats.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The push notification settings after the change.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushManagerSettings"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Unmute a chat",
+        "description": "Unmutes the chat for the calling agent. The call is idempotent: unmuting a chat that is not muted\nreturns `200` with the settings, whether or not the chat exists.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "chat_id",
+            "in": "path",
+            "required": true,
+            "description": "The chat ID returned from GET /service_agents/talk_chats.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The push notification settings after the change.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushManagerSettings"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/service_agents/me/status": {
       "put": {
         "summary": "Update authenticated agent's status",
@@ -31725,6 +31905,40 @@
             "format": "date-time",
             "description": "When the device was last registered or refreshed.",
             "example": "2026-11-09T09:15:30.123456Z"
+          }
+        }
+      },
+      "PushManagerSettings": {
+        "type": "object",
+        "description": "The push notification settings of the calling agent.",
+        "required": [
+          "kinds",
+          "muted_chat_ids"
+        ],
+        "properties": {
+          "kinds": {
+            "type": "object",
+            "description": "Every kind the agent can switch with `true` for on and `false` for off: `chat_mentioned`, `chat_message`, `conversation_message`, `case_assigned` and `case_note`.",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "example": {
+              "chat_mentioned": true,
+              "chat_message": false,
+              "conversation_message": true,
+              "case_assigned": true,
+              "case_note": false
+            }
+          },
+          "muted_chat_ids": {
+            "type": "array",
+            "description": "The chats the agent muted, the oldest mute first. Empty when no chat is muted.",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The chat ID returned from GET /service_agents/talk_chats.",
+              "example": "5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11"
+            }
           }
         }
       },

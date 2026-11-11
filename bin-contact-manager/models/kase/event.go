@@ -24,6 +24,9 @@ const (
 	// EventTypeCaseContactDetached is published when a Case's Contact attribution is cleared
 	// (design VOIP-1253).
 	EventTypeCaseContactDetached string = "case_contact_detached"
+
+	// EventTypeCaseAssigned is published when the owner of an open Case changes to an agent.
+	EventTypeCaseAssigned string = "case_assigned"
 )
 
 // CaseTagEvent is the payload of case_tag_added / case_tag_removed.
@@ -66,5 +69,21 @@ type CaseContactEvent struct {
 // EventSubscriptionID returns the case id as the subscription address -- see CaseTagEvent's
 // method comment for the rationale and the pointer-receiver requirement.
 func (h *CaseContactEvent) EventSubscriptionID() string {
+	return h.CaseID.String()
+}
+
+// CaseAssignedEvent is the payload of case_assigned. It is published only when an open Case gets a
+// different agent as its owner: not on Unassign, not on a repeated Assign of the same owner and not
+// for a closed Case. The agent who assigned the Case is not part of it, so an agent who assigns a
+// Case to himself is notified like any other owner.
+type CaseAssignedEvent struct {
+	CaseID     uuid.UUID `json:"case_id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+	OwnerID    uuid.UUID `json:"owner_id"` // the new owner (an agent id)
+}
+
+// EventSubscriptionID returns the case id as the subscription address -- see CaseTagEvent's
+// method comment for the rationale and the pointer-receiver requirement.
+func (h *CaseAssignedEvent) EventSubscriptionID() string {
 	return h.CaseID.String()
 }

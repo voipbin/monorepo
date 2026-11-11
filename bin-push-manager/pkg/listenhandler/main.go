@@ -20,6 +20,7 @@ import (
 	"monorepo/bin-push-manager/pkg/dbhandler"
 	"monorepo/bin-push-manager/pkg/devicehandler"
 	"monorepo/bin-push-manager/pkg/notificationhandler"
+	"monorepo/bin-push-manager/pkg/settingshandler"
 )
 
 // pagination parameters
@@ -38,6 +39,7 @@ type listenHandler struct {
 
 	deviceHandler       devicehandler.DeviceHandler
 	notificationHandler notificationhandler.NotificationHandler
+	settingsHandler     settingshandler.SettingsHandler
 }
 
 var (
@@ -51,6 +53,11 @@ var (
 
 	// notifications
 	regV1Notifications = regexp.MustCompile("/v1/notifications$")
+
+	// settings. The id is lowercase, as uuid.String() writes it. These are anchored at both ends and are matched
+	// before the older routes, whose expressions are not anchored at the start.
+	regV1Settings  = regexp.MustCompile(`^/v1/settings(\?(.*))?$`)
+	regV1MutesChat = regexp.MustCompile(`^/v1/mutes/` + regUUID + `(\?(.*))?$`)
 )
 
 var (
@@ -108,11 +115,12 @@ func errorResponse(err error) *sock.Response {
 }
 
 // NewListenHandler return ListenHandler interface
-func NewListenHandler(sockHandler sockhandler.SockHandler, deviceHandler devicehandler.DeviceHandler, notificationHandler notificationhandler.NotificationHandler) ListenHandler {
+func NewListenHandler(sockHandler sockhandler.SockHandler, deviceHandler devicehandler.DeviceHandler, notificationHandler notificationhandler.NotificationHandler, settingsHandler settingshandler.SettingsHandler) ListenHandler {
 	return &listenHandler{
 		sockHandler:         sockHandler,
 		deviceHandler:       deviceHandler,
 		notificationHandler: notificationHandler,
+		settingsHandler:     settingsHandler,
 	}
 }
 
@@ -158,6 +166,29 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// v1
 	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+	////////////
+	// settings
+	////////////
+	// GET /settings
+	case regV1Settings.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1SettingsGet(ctx, m)
+		requestType = "/v1/settings"
+
+	// PUT /settings
+	case regV1Settings.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1SettingsPut(ctx, m)
+		requestType = "/v1/settings"
+
+	// PUT /mutes/<chat-id>
+	case regV1MutesChat.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1MutesIDPut(ctx, m)
+		requestType = "/v1/mutes/<chat-id>"
+
+	// DELETE /mutes/<chat-id>
+	case regV1MutesChat.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1MutesIDDelete(ctx, m)
+		requestType = "/v1/mutes/<chat-id>"
 
 	////////////
 	// devices

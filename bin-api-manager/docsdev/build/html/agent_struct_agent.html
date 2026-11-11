@@ -656,24 +656,24 @@
 <section id="agent">
 <span id="agent-struct-agent-agent"></span><h2>Agent<a class="headerlink" href="#agent" title="Link to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"username"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"ring_method"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"permission"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">"tag_ids"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ring_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;permission&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;tag_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">],</span>
-    <span class="s2">"addresses"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;addresses&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="o">...</span>
     <span class="p">],</span>
-    <span class="s2">"direct_hash"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">},</span>
 </pre></div>
 </div>
@@ -795,12 +795,12 @@
 <span id="agent-struct-agent-push-device"></span><h2>Push device<a class="headerlink" href="#push-device" title="Link to this heading">¶</a></h2>
 <p>A push device of an agent: one installed app that can receive notifications. Returned by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/push_devices</span></code> and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/service_agents/push_devices/{id}</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"agent_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"platform"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;platform&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -817,6 +817,28 @@
 <p><strong>AI Implementation Hint</strong></p>
 <p>The push token is never part of a response. Registering the same token again keeps the <code class="docutils literal notranslate"><span class="pre">id</span></code> and moves <code class="docutils literal notranslate"><span class="pre">tm_update</span></code>.</p>
 </div>
+</section>
+<section id="push-settings">
+<span id="agent-struct-agent-push-settings"></span><h2>Push settings<a class="headerlink" href="#push-settings" title="Link to this heading">¶</a></h2>
+<p>The push notification settings of an agent. Returned by <code class="docutils literal notranslate"><span class="pre">GET</span></code> and <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/service_agents/me/push_settings</span></code> and by <code class="docutils literal notranslate"><span class="pre">PUT</span></code> and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/service_agents/me/push_mutes/{chat_id}</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;kinds&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;chat_mentioned&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+        <span class="s2">&quot;chat_message&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+        <span class="s2">&quot;conversation_message&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+        <span class="s2">&quot;case_assigned&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+        <span class="s2">&quot;case_note&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;muted_chat_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">kinds</span></code> (Object): Every kind the agent can switch, with <code class="docutils literal notranslate"><span class="pre">true</span></code> for on and <code class="docutils literal notranslate"><span class="pre">false</span></code> for off. The keys are <code class="docutils literal notranslate"><span class="pre">chat_mentioned</span></code>, <code class="docutils literal notranslate"><span class="pre">chat_message</span></code>, <code class="docutils literal notranslate"><span class="pre">conversation_message</span></code>, <code class="docutils literal notranslate"><span class="pre">case_assigned</span></code> and <code class="docutils literal notranslate"><span class="pre">case_note</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">muted_chat_ids</span></code> (Array of UUID): The chats the agent muted, the oldest mute first. Each ID is a chat <code class="docutils literal notranslate"><span class="pre">id</span></code> returned from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_chats</span></code>. Empty when no chat is muted.</p></li>
+</ul>
 </section>
 </section>
 
@@ -884,6 +906,7 @@
 <li><a class="reference internal" href="#status">Status</a></li>
 <li><a class="reference internal" href="#permission">Permission</a></li>
 <li><a class="reference internal" href="#push-device">Push device</a></li>
+<li><a class="reference internal" href="#push-settings">Push settings</a></li>
 </ul>
 </li>
 </ul>

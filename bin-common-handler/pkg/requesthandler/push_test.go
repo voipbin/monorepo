@@ -11,6 +11,7 @@ import (
 
 	pmdevice "monorepo/bin-push-manager/models/device"
 	pmnotification "monorepo/bin-push-manager/models/notification"
+	pmsettings "monorepo/bin-push-manager/models/settings"
 )
 
 const pushQueue = "bin-manager.push-manager.request"
@@ -19,6 +20,13 @@ func Test_PushV1Wrappers(t *testing.T) {
 	deviceID := uuid.FromStringOrNil("3a5c7e9b-1d2f-4b64-8c06-2e4a6c8e0b18")
 	customerID := uuid.FromStringOrNil("7c9e1a3b-5d4f-4d86-a028-4a6c8e0a2d30")
 	agentID := uuid.FromStringOrNil("b1d3f5a7-9c6e-4f08-9a4a-6c8e0a2c4e52")
+
+	chatID := uuid.FromStringOrNil("5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11")
+	settingsWant := pmsettings.Settings{
+		Kinds:        map[pmnotification.Kind]bool{pmnotification.KindChatMessage: false, pmnotification.KindCaseNote: true},
+		MutedChatIDs: []uuid.UUID{chatID},
+	}
+	const settingsResponse = `{"kinds":{"chat_message":false,"case_note":true},"muted_chat_ids":["5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11"]}`
 
 	deviceWant := pmdevice.Device{
 		Identity: identity.Identity{ID: deviceID, CustomerID: customerID},
@@ -103,6 +111,58 @@ func Test_PushV1Wrappers(t *testing.T) {
 				return h.PushV1NotificationSend(context.Background(), customerID, agentID, deviceID, pmnotification.KindCallIncoming, map[string]string{"join_address": "a1"})
 			},
 			expectRes: &pmnotification.SendResult{DeviceCount: 1, SentCount: 1},
+		},
+		{
+			name:           "settings_get",
+			queue:          pushQueue,
+			expectURI:      "/v1/settings?customer_id=7c9e1a3b-5d4f-4d86-a028-4a6c8e0a2d30&agent_id=b1d3f5a7-9c6e-4f08-9a4a-6c8e0a2c4e52",
+			expectMethod:   sock.RequestMethodGet,
+			expectDataType: ContentTypeNone,
+			responseData:   settingsResponse,
+			call: func(h *requestHandler) (any, error) {
+				return h.PushV1SettingsGet(context.Background(), customerID, agentID)
+			},
+			expectRes: &settingsWant,
+		},
+		{
+			name:           "settings_update",
+			queue:          pushQueue,
+			expectURI:      "/v1/settings",
+			expectMethod:   sock.RequestMethodPut,
+			expectDataType: ContentTypeJSON,
+			expectData:     `{"customer_id":"7c9e1a3b-5d4f-4d86-a028-4a6c8e0a2d30","agent_id":"b1d3f5a7-9c6e-4f08-9a4a-6c8e0a2c4e52","kinds":{"case_note":false,"chat_message":true}}`,
+			responseData:   settingsResponse,
+			call: func(h *requestHandler) (any, error) {
+				return h.PushV1SettingsUpdate(context.Background(), customerID, agentID, map[pmnotification.Kind]bool{
+					pmnotification.KindCaseNote:    false,
+					pmnotification.KindChatMessage: true,
+				})
+			},
+			expectRes: &settingsWant,
+		},
+		{
+			name:           "mute_add",
+			queue:          pushQueue,
+			expectURI:      "/v1/mutes/5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11?customer_id=7c9e1a3b-5d4f-4d86-a028-4a6c8e0a2d30&agent_id=b1d3f5a7-9c6e-4f08-9a4a-6c8e0a2c4e52",
+			expectMethod:   sock.RequestMethodPut,
+			expectDataType: ContentTypeNone,
+			responseData:   settingsResponse,
+			call: func(h *requestHandler) (any, error) {
+				return h.PushV1MuteAdd(context.Background(), customerID, agentID, chatID)
+			},
+			expectRes: &settingsWant,
+		},
+		{
+			name:           "mute_remove",
+			queue:          pushQueue,
+			expectURI:      "/v1/mutes/5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11?customer_id=7c9e1a3b-5d4f-4d86-a028-4a6c8e0a2d30&agent_id=b1d3f5a7-9c6e-4f08-9a4a-6c8e0a2c4e52",
+			expectMethod:   sock.RequestMethodDelete,
+			expectDataType: ContentTypeNone,
+			responseData:   settingsResponse,
+			call: func(h *requestHandler) (any, error) {
+				return h.PushV1MuteRemove(context.Background(), customerID, agentID, chatID)
+			},
+			expectRes: &settingsWant,
 		},
 	}
 

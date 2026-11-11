@@ -237,7 +237,7 @@ func Test_Send_validation(t *testing.T) {
 	}{
 		{"no customer", uuid.Nil, testAgentID, notification.KindCallIncoming, nil},
 		{"no agent", testCustomerID, uuid.Nil, notification.KindCallIncoming, nil},
-		{"unknown kind", testCustomerID, testAgentID, notification.Kind("chat_message"), nil},
+		{"unknown kind", testCustomerID, testAgentID, notification.Kind("unknown_kind"), nil},
 		{"the kind key belongs to push-manager", testCustomerID, testAgentID, notification.KindCallIncoming, map[string]string{notification.DataKeyKind: "x"}},
 	}
 

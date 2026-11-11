@@ -108,6 +108,65 @@ func Test_fcmSender_Send_requestShape(t *testing.T) {
 	}
 }
 
+// The delivery values follow the kind: a call is short lived, a message or a case change lasts an hour, and the
+// chat message and the case note do not wake a sleeping device. No kind has a collapse key.
+func Test_fcmSender_Send_policyOfKind(t *testing.T) {
+	tests := []struct {
+		kind       notification.Kind
+		data       map[string]string
+		expectBody string
+	}{
+		{
+			notification.KindChatMentioned,
+			map[string]string{"chat_id": "c1", "message_id": "m1"},
+			`{"message":{"token":"` + fakeToken + `","data":{"chat_id":"c1","kind":"chat_mentioned","message_id":"m1"},"android":{"priority":"HIGH","ttl":"3600s"}}}`,
+		},
+		{
+			notification.KindChatMessage,
+			map[string]string{"chat_id": "c1", "message_id": "m1"},
+			`{"message":{"token":"` + fakeToken + `","data":{"chat_id":"c1","kind":"chat_message","message_id":"m1"},"android":{"priority":"NORMAL","ttl":"3600s"}}}`,
+		},
+		{
+			notification.KindConversationMessage,
+			map[string]string{"conversation_id": "v1", "message_id": "m1"},
+			`{"message":{"token":"` + fakeToken + `","data":{"conversation_id":"v1","kind":"conversation_message","message_id":"m1"},"android":{"priority":"HIGH","ttl":"3600s"}}}`,
+		},
+		{
+			notification.KindCaseAssigned,
+			map[string]string{"case_id": "k1"},
+			`{"message":{"token":"` + fakeToken + `","data":{"case_id":"k1","kind":"case_assigned"},"android":{"priority":"HIGH","ttl":"3600s"}}}`,
+		},
+		{
+			notification.KindCaseNote,
+			map[string]string{"case_id": "k1", "note_id": "n1"},
+			`{"message":{"token":"` + fakeToken + `","data":{"case_id":"k1","kind":"case_note","note_id":"n1"},"android":{"priority":"NORMAL","ttl":"3600s"}}}`,
+		},
+		{
+			notification.KindCallCancelled,
+			map[string]string{"cancel_key": "k"},
+			`{"message":{"token":"` + fakeToken + `","data":{"cancel_key":"k","kind":"call_cancelled"},"android":{"priority":"HIGH","ttl":"60s"}}}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.kind), func(t *testing.T) {
+			var got captured
+			srv := newFakeFCM(t, 200, `{}`, &got)
+			s := newFCMSender(srv.Client(), srv.URL, "demo-project")
+
+			if err := s.Send(context.Background(), fakeToken, tt.kind, tt.data); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if got.raw != tt.expectBody {
+				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectBody, got.raw)
+			}
+			if strings.Contains(got.raw, "collapse") {
+				t.Errorf("Wrong match. no kind has a collapse key. got: %s", got.raw)
+			}
+		})
+	}
+}
+
 func Test_fcmSender_Send_errors(t *testing.T) {
 	tests := []struct {
 		name         string

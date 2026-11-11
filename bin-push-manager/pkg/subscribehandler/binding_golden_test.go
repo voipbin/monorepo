@@ -9,6 +9,10 @@ func Test_topicPatterns_golden(t *testing.T) {
 	expected := []string{
 		"agent-manager.agent.*.deleted",
 		"customer-manager.customer.*.deleted",
+		"talk-manager.chatmessage.*.created",
+		"conversation-manager.conversation.*.message_created",
+		"contact-manager.case.*.note_created",
+		"contact-manager.case.*.assigned",
 	}
 
 	if len(topicPatterns) != len(expected) {

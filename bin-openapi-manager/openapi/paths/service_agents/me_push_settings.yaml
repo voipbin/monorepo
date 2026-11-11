@@ -1,0 +1,77 @@
+get:
+  summary: Get the push notification settings
+  description: |
+    Returns which push notification kinds the calling agent receives and which chats the agent muted.
+    The settings always belong to the authenticated agent. Everything is on and nothing is muted until
+    the agent changes it, so an agent who never changed anything gets every kind as `true` and an empty
+    `muted_chat_ids`.
+
+    The kinds that can be switched are `chat_mentioned`, `chat_message`, `conversation_message`,
+    `case_assigned` and `case_note`. Incoming call notifications cannot be switched off and are not part
+    of the settings.
+  tags:
+    - Service Agent
+  responses:
+    '200':
+      description: The push notification settings of the calling agent.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PushManagerSettings'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'
+put:
+  summary: Switch push notification kinds
+  description: |
+    Switches push notification kinds on (`true`) or off (`false`) for the calling agent and returns the
+    settings after the change. A kind that is not in `kinds` is not changed, and an empty `kinds` changes
+    nothing. The call is idempotent: sending the same body again gives the same result.
+
+    The kinds that can be switched are `chat_mentioned`, `chat_message`, `conversation_message`,
+    `case_assigned` and `case_note`. Any other key, including the incoming call kinds, is rejected with
+    `400` (`INVALID_KIND`) before anything is changed.
+
+    The kinds are written one by one. When a write fails, the call returns a `5xx` error and the kinds
+    written before the failure stay changed; send the same request again to finish the change.
+
+    A muted chat does not silence `chat_mentioned`: a mention is always delivered while that kind is on.
+    An agent who switched `chat_mentioned` off gets no notification for a message that mentions him, even
+    when `chat_message` is on.
+  tags:
+    - Service Agent
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - kinds
+          properties:
+            kinds:
+              type: object
+              description: "The kinds to switch. The key is the kind and the value is `true` for on and `false` for off."
+              additionalProperties:
+                type: boolean
+              example:
+                chat_message: false
+                case_note: false
+  responses:
+    '200':
+      description: The push notification settings after the change.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PushManagerSettings'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'

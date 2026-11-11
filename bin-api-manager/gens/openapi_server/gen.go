@@ -7388,6 +7388,15 @@ type PushManagerDevice struct {
 // PushManagerDevicePlatform The platform of the push device. Only `android` is supported.
 type PushManagerDevicePlatform string
 
+// PushManagerSettings The push notification settings of the calling agent.
+type PushManagerSettings struct {
+	// Kinds Every kind the agent can switch with `true` for on and `false` for off: `chat_mentioned`, `chat_message`, `conversation_message`, `case_assigned` and `case_note`.
+	Kinds map[string]bool `json:"kinds"`
+
+	// MutedChatIds The chats the agent muted, the oldest mute first. Empty when no chat is muted.
+	MutedChatIds []openapi_types.UUID `json:"muted_chat_ids"`
+}
+
 // QueueManagerQueue defines model for QueueManagerQueue.
 type QueueManagerQueue struct {
 	// CustomerId The unique identifier of the customer who owns this queue. Returned from the `GET /customers` response.
@@ -11207,6 +11216,12 @@ type PutServiceAgentsMePasswordJSONBody struct {
 	Password string `json:"password"`
 }
 
+// PutServiceAgentsMePushSettingsJSONBody defines parameters for PutServiceAgentsMePushSettings.
+type PutServiceAgentsMePushSettingsJSONBody struct {
+	// Kinds The kinds to switch. The key is the kind and the value is `true` for on and `false` for off.
+	Kinds map[string]bool `json:"kinds"`
+}
+
 // PutServiceAgentsMeStatusJSONBody defines parameters for PutServiceAgentsMeStatus.
 type PutServiceAgentsMeStatusJSONBody struct {
 	// Status Current availability status of the agent.
@@ -12196,6 +12211,9 @@ type PutServiceAgentsMeAddressesJSONRequestBody PutServiceAgentsMeAddressesJSONB
 
 // PutServiceAgentsMePasswordJSONRequestBody defines body for PutServiceAgentsMePassword for application/json ContentType.
 type PutServiceAgentsMePasswordJSONRequestBody PutServiceAgentsMePasswordJSONBody
+
+// PutServiceAgentsMePushSettingsJSONRequestBody defines body for PutServiceAgentsMePushSettings for application/json ContentType.
+type PutServiceAgentsMePushSettingsJSONRequestBody PutServiceAgentsMePushSettingsJSONBody
 
 // PutServiceAgentsMeStatusJSONRequestBody defines body for PutServiceAgentsMeStatus for application/json ContentType.
 type PutServiceAgentsMeStatusJSONRequestBody PutServiceAgentsMeStatusJSONBody
@@ -13408,6 +13426,18 @@ type ServerInterface interface {
 	// Update authenticated agent's password
 	// (PUT /service_agents/me/password)
 	PutServiceAgentsMePassword(c *gin.Context)
+	// Unmute a chat
+	// (DELETE /service_agents/me/push_mutes/{chat_id})
+	DeleteServiceAgentsMePushMutesChatId(c *gin.Context, chatId openapi_types.UUID)
+	// Mute a chat
+	// (PUT /service_agents/me/push_mutes/{chat_id})
+	PutServiceAgentsMePushMutesChatId(c *gin.Context, chatId openapi_types.UUID)
+	// Get the push notification settings
+	// (GET /service_agents/me/push_settings)
+	GetServiceAgentsMePushSettings(c *gin.Context)
+	// Switch push notification kinds
+	// (PUT /service_agents/me/push_settings)
+	PutServiceAgentsMePushSettings(c *gin.Context)
 	// Update authenticated agent's status
 	// (PUT /service_agents/me/status)
 	PutServiceAgentsMeStatus(c *gin.Context)
@@ -23282,6 +23312,82 @@ func (siw *ServerInterfaceWrapper) PutServiceAgentsMePassword(c *gin.Context) {
 	siw.Handler.PutServiceAgentsMePassword(c)
 }
 
+// DeleteServiceAgentsMePushMutesChatId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteServiceAgentsMePushMutesChatId(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "chat_id" -------------
+	var chatId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "chat_id", c.Param("chat_id"), &chatId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chat_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteServiceAgentsMePushMutesChatId(c, chatId)
+}
+
+// PutServiceAgentsMePushMutesChatId operation middleware
+func (siw *ServerInterfaceWrapper) PutServiceAgentsMePushMutesChatId(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "chat_id" -------------
+	var chatId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "chat_id", c.Param("chat_id"), &chatId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chat_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutServiceAgentsMePushMutesChatId(c, chatId)
+}
+
+// GetServiceAgentsMePushSettings operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsMePushSettings(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsMePushSettings(c)
+}
+
+// PutServiceAgentsMePushSettings operation middleware
+func (siw *ServerInterfaceWrapper) PutServiceAgentsMePushSettings(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutServiceAgentsMePushSettings(c)
+}
+
 // PutServiceAgentsMeStatus operation middleware
 func (siw *ServerInterfaceWrapper) PutServiceAgentsMeStatus(c *gin.Context) {
 
@@ -26206,6 +26312,10 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/service_agents/me", wrapper.PutServiceAgentsMe)
 	router.PUT(options.BaseURL+"/service_agents/me/addresses", wrapper.PutServiceAgentsMeAddresses)
 	router.PUT(options.BaseURL+"/service_agents/me/password", wrapper.PutServiceAgentsMePassword)
+	router.DELETE(options.BaseURL+"/service_agents/me/push_mutes/:chat_id", wrapper.DeleteServiceAgentsMePushMutesChatId)
+	router.PUT(options.BaseURL+"/service_agents/me/push_mutes/:chat_id", wrapper.PutServiceAgentsMePushMutesChatId)
+	router.GET(options.BaseURL+"/service_agents/me/push_settings", wrapper.GetServiceAgentsMePushSettings)
+	router.PUT(options.BaseURL+"/service_agents/me/push_settings", wrapper.PutServiceAgentsMePushSettings)
 	router.PUT(options.BaseURL+"/service_agents/me/status", wrapper.PutServiceAgentsMeStatus)
 	router.POST(options.BaseURL+"/service_agents/push_devices", wrapper.PostServiceAgentsPushDevices)
 	router.DELETE(options.BaseURL+"/service_agents/push_devices/:id", wrapper.DeleteServiceAgentsPushDevicesId)
@@ -56671,6 +56781,317 @@ func (response PutServiceAgentsMePassword500JSONResponse) VisitPutServiceAgentsM
 	return err
 }
 
+type DeleteServiceAgentsMePushMutesChatIdRequestObject struct {
+	ChatId openapi_types.UUID `json:"chat_id"`
+}
+
+type DeleteServiceAgentsMePushMutesChatIdResponseObject interface {
+	VisitDeleteServiceAgentsMePushMutesChatIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteServiceAgentsMePushMutesChatId200JSONResponse PushManagerSettings
+
+func (response DeleteServiceAgentsMePushMutesChatId200JSONResponse) VisitDeleteServiceAgentsMePushMutesChatIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsMePushMutesChatId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteServiceAgentsMePushMutesChatId400JSONResponse) VisitDeleteServiceAgentsMePushMutesChatIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsMePushMutesChatId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteServiceAgentsMePushMutesChatId401JSONResponse) VisitDeleteServiceAgentsMePushMutesChatIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsMePushMutesChatId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteServiceAgentsMePushMutesChatId403JSONResponse) VisitDeleteServiceAgentsMePushMutesChatIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteServiceAgentsMePushMutesChatId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteServiceAgentsMePushMutesChatId500JSONResponse) VisitDeleteServiceAgentsMePushMutesChatIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsMePushMutesChatIdRequestObject struct {
+	ChatId openapi_types.UUID `json:"chat_id"`
+}
+
+type PutServiceAgentsMePushMutesChatIdResponseObject interface {
+	VisitPutServiceAgentsMePushMutesChatIdResponse(w http.ResponseWriter) error
+}
+
+type PutServiceAgentsMePushMutesChatId200JSONResponse PushManagerSettings
+
+func (response PutServiceAgentsMePushMutesChatId200JSONResponse) VisitPutServiceAgentsMePushMutesChatIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsMePushMutesChatId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutServiceAgentsMePushMutesChatId400JSONResponse) VisitPutServiceAgentsMePushMutesChatIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsMePushMutesChatId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutServiceAgentsMePushMutesChatId401JSONResponse) VisitPutServiceAgentsMePushMutesChatIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsMePushMutesChatId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PutServiceAgentsMePushMutesChatId403JSONResponse) VisitPutServiceAgentsMePushMutesChatIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsMePushMutesChatId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PutServiceAgentsMePushMutesChatId404JSONResponse) VisitPutServiceAgentsMePushMutesChatIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsMePushMutesChatId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutServiceAgentsMePushMutesChatId500JSONResponse) VisitPutServiceAgentsMePushMutesChatIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsMePushSettingsRequestObject struct {
+}
+
+type GetServiceAgentsMePushSettingsResponseObject interface {
+	VisitGetServiceAgentsMePushSettingsResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsMePushSettings200JSONResponse PushManagerSettings
+
+func (response GetServiceAgentsMePushSettings200JSONResponse) VisitGetServiceAgentsMePushSettingsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsMePushSettings401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsMePushSettings401JSONResponse) VisitGetServiceAgentsMePushSettingsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsMePushSettings403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsMePushSettings403JSONResponse) VisitGetServiceAgentsMePushSettingsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceAgentsMePushSettings500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsMePushSettings500JSONResponse) VisitGetServiceAgentsMePushSettingsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsMePushSettingsRequestObject struct {
+	Body *PutServiceAgentsMePushSettingsJSONRequestBody
+}
+
+type PutServiceAgentsMePushSettingsResponseObject interface {
+	VisitPutServiceAgentsMePushSettingsResponse(w http.ResponseWriter) error
+}
+
+type PutServiceAgentsMePushSettings200JSONResponse PushManagerSettings
+
+func (response PutServiceAgentsMePushSettings200JSONResponse) VisitPutServiceAgentsMePushSettingsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsMePushSettings400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutServiceAgentsMePushSettings400JSONResponse) VisitPutServiceAgentsMePushSettingsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsMePushSettings401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutServiceAgentsMePushSettings401JSONResponse) VisitPutServiceAgentsMePushSettingsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsMePushSettings403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PutServiceAgentsMePushSettings403JSONResponse) VisitPutServiceAgentsMePushSettingsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutServiceAgentsMePushSettings500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutServiceAgentsMePushSettings500JSONResponse) VisitPutServiceAgentsMePushSettingsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type PutServiceAgentsMeStatusRequestObject struct {
 	Body *PutServiceAgentsMeStatusJSONRequestBody
 }
@@ -65778,6 +66199,18 @@ type StrictServerInterface interface {
 	// Update authenticated agent's password
 	// (PUT /service_agents/me/password)
 	PutServiceAgentsMePassword(ctx context.Context, request PutServiceAgentsMePasswordRequestObject) (PutServiceAgentsMePasswordResponseObject, error)
+	// Unmute a chat
+	// (DELETE /service_agents/me/push_mutes/{chat_id})
+	DeleteServiceAgentsMePushMutesChatId(ctx context.Context, request DeleteServiceAgentsMePushMutesChatIdRequestObject) (DeleteServiceAgentsMePushMutesChatIdResponseObject, error)
+	// Mute a chat
+	// (PUT /service_agents/me/push_mutes/{chat_id})
+	PutServiceAgentsMePushMutesChatId(ctx context.Context, request PutServiceAgentsMePushMutesChatIdRequestObject) (PutServiceAgentsMePushMutesChatIdResponseObject, error)
+	// Get the push notification settings
+	// (GET /service_agents/me/push_settings)
+	GetServiceAgentsMePushSettings(ctx context.Context, request GetServiceAgentsMePushSettingsRequestObject) (GetServiceAgentsMePushSettingsResponseObject, error)
+	// Switch push notification kinds
+	// (PUT /service_agents/me/push_settings)
+	PutServiceAgentsMePushSettings(ctx context.Context, request PutServiceAgentsMePushSettingsRequestObject) (PutServiceAgentsMePushSettingsResponseObject, error)
 	// Update authenticated agent's status
 	// (PUT /service_agents/me/status)
 	PutServiceAgentsMeStatus(ctx context.Context, request PutServiceAgentsMeStatusRequestObject) (PutServiceAgentsMeStatusResponseObject, error)
@@ -76480,6 +76913,113 @@ func (sh *strictHandler) PutServiceAgentsMePassword(ctx *gin.Context) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(PutServiceAgentsMePasswordResponseObject); ok {
 		if err := validResponse.VisitPutServiceAgentsMePasswordResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteServiceAgentsMePushMutesChatId operation middleware
+func (sh *strictHandler) DeleteServiceAgentsMePushMutesChatId(ctx *gin.Context, chatId openapi_types.UUID) {
+	var request DeleteServiceAgentsMePushMutesChatIdRequestObject
+
+	request.ChatId = chatId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteServiceAgentsMePushMutesChatId(ctx, request.(DeleteServiceAgentsMePushMutesChatIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteServiceAgentsMePushMutesChatId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(DeleteServiceAgentsMePushMutesChatIdResponseObject); ok {
+		if err := validResponse.VisitDeleteServiceAgentsMePushMutesChatIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutServiceAgentsMePushMutesChatId operation middleware
+func (sh *strictHandler) PutServiceAgentsMePushMutesChatId(ctx *gin.Context, chatId openapi_types.UUID) {
+	var request PutServiceAgentsMePushMutesChatIdRequestObject
+
+	request.ChatId = chatId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutServiceAgentsMePushMutesChatId(ctx, request.(PutServiceAgentsMePushMutesChatIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutServiceAgentsMePushMutesChatId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PutServiceAgentsMePushMutesChatIdResponseObject); ok {
+		if err := validResponse.VisitPutServiceAgentsMePushMutesChatIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsMePushSettings operation middleware
+func (sh *strictHandler) GetServiceAgentsMePushSettings(ctx *gin.Context) {
+	var request GetServiceAgentsMePushSettingsRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsMePushSettings(ctx, request.(GetServiceAgentsMePushSettingsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsMePushSettings")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetServiceAgentsMePushSettingsResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsMePushSettingsResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutServiceAgentsMePushSettings operation middleware
+func (sh *strictHandler) PutServiceAgentsMePushSettings(ctx *gin.Context) {
+	var request PutServiceAgentsMePushSettingsRequestObject
+
+	var body PutServiceAgentsMePushSettingsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutServiceAgentsMePushSettings(ctx, request.(PutServiceAgentsMePushSettingsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutServiceAgentsMePushSettings")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PutServiceAgentsMePushSettingsResponseObject); ok {
+		if err := validResponse.VisitPutServiceAgentsMePushSettingsResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {
