@@ -28,7 +28,7 @@ func Test_noStrayFiles(t *testing.T) {
 }
 
 func Test_embeddedMigrations(t *testing.T) {
-	// push_devices uses the database default table options, so no table option is declared.
+	// the tables of this service use the database default table options, so no table option is declared.
 	if problems := migrationcheck.Check(FS, migrationcheck.Options{}); len(problems) > 0 {
 		t.Errorf("Wrong migration files:\n%s", strings.Join(problems, "\n"))
 	}

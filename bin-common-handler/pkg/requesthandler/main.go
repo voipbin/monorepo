@@ -78,6 +78,7 @@ import (
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	pmdevice "monorepo/bin-push-manager/models/device"
 	pmnotification "monorepo/bin-push-manager/models/notification"
+	pmsettings "monorepo/bin-push-manager/models/settings"
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 
@@ -1654,6 +1655,12 @@ type RequestHandler interface {
 	PushV1DeviceGet(ctx context.Context, id uuid.UUID) (*pmdevice.Device, error)
 	PushV1DeviceDelete(ctx context.Context, id uuid.UUID) (*pmdevice.Device, error)
 	PushV1DeviceList(ctx context.Context, customerID, agentID uuid.UUID) ([]pmdevice.Device, error)
+
+	// push-manager notification settings
+	PushV1SettingsGet(ctx context.Context, customerID, agentID uuid.UUID) (*pmsettings.Settings, error)
+	PushV1SettingsUpdate(ctx context.Context, customerID, agentID uuid.UUID, kinds map[pmnotification.Kind]bool) (*pmsettings.Settings, error)
+	PushV1MuteAdd(ctx context.Context, customerID, agentID, chatID uuid.UUID) (*pmsettings.Settings, error)
+	PushV1MuteRemove(ctx context.Context, customerID, agentID, chatID uuid.UUID) (*pmsettings.Settings, error)
 
 	// push-manager notifications
 	PushV1NotificationSend(ctx context.Context, customerID, agentID, deviceID uuid.UUID, kind pmnotification.Kind, data map[string]string) (*pmnotification.SendResult, error)

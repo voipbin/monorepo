@@ -313,6 +313,7 @@ HTTP Endpoint                        Backend Service
 /v1.0/storage_accounts               bin-storage-manager
 /v1.0/transfers                      bin-transfer-manager
 /v1.0/service_agents/push_devices    bin-push-manager
+/v1.0/service_agents/me/push_*       bin-push-manager
 ===================================  ===========================
 
 .. note::

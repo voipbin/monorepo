@@ -133,7 +133,7 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 	// Agent mentions are indexed in the same transaction as the message. System messages are not scanned.
 	var mentionAgentIDs []uuid.UUID
 	if req.Type == message.TypeNormal {
-		mentionAgentIDs = extractAgentMentions(req.Text, req.OwnerID)
+		mentionAgentIDs = message.ExtractAgentMentions(req.Text, req.OwnerID)
 	}
 
 	if len(mentionAgentIDs) == 0 {

@@ -245,6 +245,35 @@ See :ref:`Push device struct <agent-struct-agent-push_device>` for the response 
    Both endpoints need an agent token (a token of a signed-in agent). An access key or any other non-agent token gets ``401``. The ``id`` for the delete call is the ``id`` returned by ``POST /service_agents/push_devices``. The push token is a credential: store it only on the device and never log it.
 
 
+Push Notification Settings
+--------------------------
+The app of an agent is notified by a push when a call comes in and, from the events of the platform, when a chat mentions the agent, a chat message arrives, a customer message arrives in a conversation the agent owns, a case is assigned to the agent, or another agent writes a note on a case the agent owns. The agent chooses which of these kinds it receives and which chats it mutes. The settings belong to the authenticated agent and are never taken from the request.
+
++--------+-------------------------------------------------+--------------------------------------------------------------------------+
+| Method | Endpoint                                        | Description                                                              |
++========+=================================================+==========================================================================+
+| GET    | ``/service_agents/me/push_settings``            | Get the kinds that are on or off and the muted chats.                    |
++--------+-------------------------------------------------+--------------------------------------------------------------------------+
+| PUT    | ``/service_agents/me/push_settings``            | Switch kinds on or off.                                                  |
++--------+-------------------------------------------------+--------------------------------------------------------------------------+
+| PUT    | ``/service_agents/me/push_mutes/{chat_id}``     | Mute a chat.                                                             |
++--------+-------------------------------------------------+--------------------------------------------------------------------------+
+| DELETE | ``/service_agents/me/push_mutes/{chat_id}``     | Unmute a chat.                                                           |
++--------+-------------------------------------------------+--------------------------------------------------------------------------+
+
+Everything is on and nothing is muted until the agent changes it. The kinds that can be switched are ``chat_mentioned``, ``chat_message``, ``conversation_message``, ``case_assigned`` and ``case_note``; the incoming call notification cannot be switched off. All four calls return the settings after the change (see :ref:`Push settings struct <agent-struct-agent-push_settings>`).
+
+* ``PUT /service_agents/me/push_settings`` takes ``kinds``, an object whose key is a kind and whose value is ``true`` (on) or ``false`` (off). A kind that is not in ``kinds`` is not changed and an empty ``kinds`` changes nothing. A key that is not a switchable kind returns ``400 INVALID_KIND`` before anything is changed. The kinds are written one by one: when a write fails the call returns a ``5xx`` error and the kinds written before stay changed, so send the same request again. The call is idempotent.
+* ``PUT /service_agents/me/push_mutes/{chat_id}`` mutes the chat: the ``chat_message`` notifications of the chat stop, while a mention of the agent in it (``chat_mentioned``) is still delivered. The chat must belong to the customer of the agent; the agent does not have to be a participant. A chat that does not exist, that belongs to another customer or that cannot be read returns ``404 CHAT_NOT_FOUND``. Muting a muted chat returns ``200``.
+* ``DELETE /service_agents/me/push_mutes/{chat_id}`` unmutes the chat and returns ``200`` also when the chat was not muted.
+
+``chat_message`` goes to the agents who take part in the chat, except the author and the agents mentioned in the message: one message gives an agent one notification at most. An agent who switched ``chat_mentioned`` off gets no notification for a message that mentions him, even when ``chat_message`` is on. A notification carries ids only (for example the chat and the message), never the text.
+
+.. note:: **AI Implementation Hint**
+
+   These endpoints need an agent token (a token of a signed-in agent). An access key or any other non-agent token gets ``401``. The ``chat_id`` is the chat ``id`` returned by ``GET /service_agents/talk_chats``. Settings can be sent before any push device is registered.
+
+
 Call to agent
 -------------
 To reach an agent, VoIPBin employs a system that allows the agent to have multiple addresses. When a call is initiated to agents, VoIPBin generates calls to every agent's address simultaneously. If an agent answers one of the calls, VoIPBin automatically terminates the other calls, streamlining the communication process and ensuring that only one connection is established with the available agent.

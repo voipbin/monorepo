@@ -26,15 +26,22 @@ import (
 )
 
 type syncEnv struct {
-	h        *caseHandler
-	db       dbhandler.DBHandler
-	mockReq  *requesthandler.MockRequestHandler
-	mockUtil *utilhandler.MockUtilHandler
-	customer uuid.UUID
-	seq      int
+	h          *caseHandler
+	db         dbhandler.DBHandler
+	mockReq    *requesthandler.MockRequestHandler
+	mockUtil   *utilhandler.MockUtilHandler
+	mockNotify *notifyhandler.MockNotifyHandler
+	customer   uuid.UUID
+	seq        int
 }
 
 func newSyncEnv(t *testing.T, customerSuffix string) *syncEnv {
+	return newSyncEnvWith(t, customerSuffix, true)
+}
+
+// newSyncEnvWith builds the environment. When tolerateAssigned is true, the case_assigned event of an
+// owner change is accepted any number of times.
+func newSyncEnvWith(t *testing.T, customerSuffix string, tolerateAssigned bool) *syncEnv {
 	mc := gomock.NewController(t)
 	t.Cleanup(mc.Finish)
 
@@ -44,12 +51,19 @@ func newSyncEnv(t *testing.T, customerSuffix string) *syncEnv {
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	db := dbhandler.NewHandler(dbTest, mockCache)
 
+	// These tests are about the Conversation owner sync. The case_assigned event of an owner change
+	// is asserted strictly in assign_test.go, so it is tolerated here.
+	if tolerateAssigned {
+		mockNotify.EXPECT().PublishEvent(gomock.Any(), kase.EventTypeCaseAssigned, gomock.Any()).AnyTimes()
+	}
+
 	return &syncEnv{
-		h:        &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: db, notifyHandler: mockNotify},
-		db:       db,
-		mockReq:  mockReq,
-		mockUtil: mockUtil,
-		customer: uuid.FromStringOrNil("f1b2c3d4-1715-1715-1715-" + customerSuffix),
+		h:          &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: db, notifyHandler: mockNotify},
+		db:         db,
+		mockReq:    mockReq,
+		mockUtil:   mockUtil,
+		mockNotify: mockNotify,
+		customer:   uuid.FromStringOrNil("f1b2c3d4-1715-1715-1715-" + customerSuffix),
 	}
 }
 

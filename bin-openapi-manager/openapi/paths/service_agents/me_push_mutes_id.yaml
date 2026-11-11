@@ -1,0 +1,71 @@
+put:
+  summary: Mute a chat
+  description: |
+    Mutes the chat for the calling agent: the `chat_message` notifications of the chat stop. Mentions
+    (`chat_mentioned`) of the agent in the chat are still delivered. The call is idempotent: muting a
+    muted chat returns `200` with the settings.
+
+    The chat must belong to the customer of the calling agent. The agent does not have to be a participant.
+    A chat that does not exist, that belongs to another customer, or that cannot be read is reported
+    identically as `404 CHAT_NOT_FOUND`.
+
+    The mute stays when the chat is deleted or the agent leaves it; it has no effect then.
+  tags:
+    - Service Agent
+  parameters:
+    - name: chat_id
+      in: path
+      required: true
+      description: "The chat ID returned from GET /service_agents/talk_chats."
+      schema:
+        type: string
+        format: uuid
+        example: "5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11"
+  responses:
+    '200':
+      description: The push notification settings after the change.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PushManagerSettings'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+delete:
+  summary: Unmute a chat
+  description: |
+    Unmutes the chat for the calling agent. The call is idempotent: unmuting a chat that is not muted
+    returns `200` with the settings, whether or not the chat exists.
+  tags:
+    - Service Agent
+  parameters:
+    - name: chat_id
+      in: path
+      required: true
+      description: "The chat ID returned from GET /service_agents/talk_chats."
+      schema:
+        type: string
+        format: uuid
+        example: "5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11"
+  responses:
+    '200':
+      description: The push notification settings after the change.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PushManagerSettings'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'

@@ -19,12 +19,6 @@ const (
 	fcmScope    = "https://www.googleapis.com/auth/firebase.messaging"
 	fcmEndpoint = "https://fcm.googleapis.com"
 
-	// fcmTTL is how long FCM keeps an undelivered message. An incoming call is over after about a minute.
-	fcmTTL = "60s"
-
-	// fcmPriority makes FCM wake a sleeping device at once.
-	fcmPriority = "HIGH"
-
 	// fcmErrorCodeUnregistered is the FCM error code of a token that is not valid any more.
 	fcmErrorCodeUnregistered = "UNREGISTERED"
 
@@ -92,7 +86,8 @@ type fcmErrorResponse struct {
 	} `json:"error"`
 }
 
-// buildBody builds the FCM request body: a data only message with the kind added.
+// buildBody builds the FCM request body: a data only message with the kind added. The priority and the TTL
+// follow the kind.
 func buildBody(token string, kind notification.Kind, data map[string]string) ([]byte, error) {
 	d := make(map[string]string, len(data)+1)
 	for k, v := range data {
@@ -100,11 +95,13 @@ func buildBody(token string, kind notification.Kind, data map[string]string) ([]
 	}
 	d[notification.DataKeyKind] = string(kind)
 
+	policy := notification.PolicyOf(kind)
+
 	return json.Marshal(&fcmRequest{
 		Message: fcmMessage{
 			Token:   token,
 			Data:    d,
-			Android: fcmAndroid{Priority: fcmPriority, TTL: fcmTTL},
+			Android: fcmAndroid{Priority: policy.Priority, TTL: policy.TTL},
 		},
 	})
 }

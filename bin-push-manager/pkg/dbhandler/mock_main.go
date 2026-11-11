@@ -12,6 +12,7 @@ package dbhandler
 import (
 	context "context"
 	device "monorepo/bin-push-manager/models/device"
+	notification "monorepo/bin-push-manager/models/notification"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -169,4 +170,176 @@ func (m *MockDBHandler) DeviceTouch(ctx context.Context, id uuid.UUID) error {
 func (mr *MockDBHandlerMockRecorder) DeviceTouch(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeviceTouch", reflect.TypeOf((*MockDBHandler)(nil).DeviceTouch), ctx, id)
+}
+
+// KindPrefDeleteByAgentID mocks base method.
+func (m *MockDBHandler) KindPrefDeleteByAgentID(ctx context.Context, agentID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KindPrefDeleteByAgentID", ctx, agentID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// KindPrefDeleteByAgentID indicates an expected call of KindPrefDeleteByAgentID.
+func (mr *MockDBHandlerMockRecorder) KindPrefDeleteByAgentID(ctx, agentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KindPrefDeleteByAgentID", reflect.TypeOf((*MockDBHandler)(nil).KindPrefDeleteByAgentID), ctx, agentID)
+}
+
+// KindPrefDeleteByCustomerID mocks base method.
+func (m *MockDBHandler) KindPrefDeleteByCustomerID(ctx context.Context, customerID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KindPrefDeleteByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// KindPrefDeleteByCustomerID indicates an expected call of KindPrefDeleteByCustomerID.
+func (mr *MockDBHandlerMockRecorder) KindPrefDeleteByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KindPrefDeleteByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).KindPrefDeleteByCustomerID), ctx, customerID)
+}
+
+// KindPrefDisable mocks base method.
+func (m *MockDBHandler) KindPrefDisable(ctx context.Context, customerID, agentID uuid.UUID, kind notification.Kind) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KindPrefDisable", ctx, customerID, agentID, kind)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// KindPrefDisable indicates an expected call of KindPrefDisable.
+func (mr *MockDBHandlerMockRecorder) KindPrefDisable(ctx, customerID, agentID, kind any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KindPrefDisable", reflect.TypeOf((*MockDBHandler)(nil).KindPrefDisable), ctx, customerID, agentID, kind)
+}
+
+// KindPrefEnable mocks base method.
+func (m *MockDBHandler) KindPrefEnable(ctx context.Context, customerID, agentID uuid.UUID, kind notification.Kind) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KindPrefEnable", ctx, customerID, agentID, kind)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// KindPrefEnable indicates an expected call of KindPrefEnable.
+func (mr *MockDBHandlerMockRecorder) KindPrefEnable(ctx, customerID, agentID, kind any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KindPrefEnable", reflect.TypeOf((*MockDBHandler)(nil).KindPrefEnable), ctx, customerID, agentID, kind)
+}
+
+// KindPrefListDisabledByAgent mocks base method.
+func (m *MockDBHandler) KindPrefListDisabledByAgent(ctx context.Context, customerID, agentID uuid.UUID) ([]notification.Kind, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KindPrefListDisabledByAgent", ctx, customerID, agentID)
+	ret0, _ := ret[0].([]notification.Kind)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// KindPrefListDisabledByAgent indicates an expected call of KindPrefListDisabledByAgent.
+func (mr *MockDBHandlerMockRecorder) KindPrefListDisabledByAgent(ctx, customerID, agentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KindPrefListDisabledByAgent", reflect.TypeOf((*MockDBHandler)(nil).KindPrefListDisabledByAgent), ctx, customerID, agentID)
+}
+
+// KindPrefListDisabledByAgents mocks base method.
+func (m *MockDBHandler) KindPrefListDisabledByAgents(ctx context.Context, customerID uuid.UUID, agentIDs []uuid.UUID, kind notification.Kind) ([]uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KindPrefListDisabledByAgents", ctx, customerID, agentIDs, kind)
+	ret0, _ := ret[0].([]uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// KindPrefListDisabledByAgents indicates an expected call of KindPrefListDisabledByAgents.
+func (mr *MockDBHandlerMockRecorder) KindPrefListDisabledByAgents(ctx, customerID, agentIDs, kind any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KindPrefListDisabledByAgents", reflect.TypeOf((*MockDBHandler)(nil).KindPrefListDisabledByAgents), ctx, customerID, agentIDs, kind)
+}
+
+// MuteCreate mocks base method.
+func (m *MockDBHandler) MuteCreate(ctx context.Context, customerID, agentID, chatID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MuteCreate", ctx, customerID, agentID, chatID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MuteCreate indicates an expected call of MuteCreate.
+func (mr *MockDBHandlerMockRecorder) MuteCreate(ctx, customerID, agentID, chatID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MuteCreate", reflect.TypeOf((*MockDBHandler)(nil).MuteCreate), ctx, customerID, agentID, chatID)
+}
+
+// MuteDelete mocks base method.
+func (m *MockDBHandler) MuteDelete(ctx context.Context, customerID, agentID, chatID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MuteDelete", ctx, customerID, agentID, chatID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MuteDelete indicates an expected call of MuteDelete.
+func (mr *MockDBHandlerMockRecorder) MuteDelete(ctx, customerID, agentID, chatID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MuteDelete", reflect.TypeOf((*MockDBHandler)(nil).MuteDelete), ctx, customerID, agentID, chatID)
+}
+
+// MuteDeleteByAgentID mocks base method.
+func (m *MockDBHandler) MuteDeleteByAgentID(ctx context.Context, agentID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MuteDeleteByAgentID", ctx, agentID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MuteDeleteByAgentID indicates an expected call of MuteDeleteByAgentID.
+func (mr *MockDBHandlerMockRecorder) MuteDeleteByAgentID(ctx, agentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MuteDeleteByAgentID", reflect.TypeOf((*MockDBHandler)(nil).MuteDeleteByAgentID), ctx, agentID)
+}
+
+// MuteDeleteByCustomerID mocks base method.
+func (m *MockDBHandler) MuteDeleteByCustomerID(ctx context.Context, customerID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MuteDeleteByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MuteDeleteByCustomerID indicates an expected call of MuteDeleteByCustomerID.
+func (mr *MockDBHandlerMockRecorder) MuteDeleteByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MuteDeleteByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).MuteDeleteByCustomerID), ctx, customerID)
+}
+
+// MuteListByAgent mocks base method.
+func (m *MockDBHandler) MuteListByAgent(ctx context.Context, customerID, agentID uuid.UUID) ([]uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MuteListByAgent", ctx, customerID, agentID)
+	ret0, _ := ret[0].([]uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MuteListByAgent indicates an expected call of MuteListByAgent.
+func (mr *MockDBHandlerMockRecorder) MuteListByAgent(ctx, customerID, agentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MuteListByAgent", reflect.TypeOf((*MockDBHandler)(nil).MuteListByAgent), ctx, customerID, agentID)
+}
+
+// MuteListMutedByAgents mocks base method.
+func (m *MockDBHandler) MuteListMutedByAgents(ctx context.Context, customerID uuid.UUID, agentIDs []uuid.UUID, chatID uuid.UUID) ([]uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MuteListMutedByAgents", ctx, customerID, agentIDs, chatID)
+	ret0, _ := ret[0].([]uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MuteListMutedByAgents indicates an expected call of MuteListMutedByAgents.
+func (mr *MockDBHandlerMockRecorder) MuteListMutedByAgents(ctx, customerID, agentIDs, chatID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MuteListMutedByAgents", reflect.TypeOf((*MockDBHandler)(nil).MuteListMutedByAgents), ctx, customerID, agentIDs, chatID)
 }

@@ -592,6 +592,10 @@ Managed locally by api-manager (no RabbitMQ RPC to a backend service).
 | DELETE | `/service_agents/contacts/:id/star` | bin-contact-manager | Remove the star |
 | POST | `/service_agents/push_devices` | bin-push-manager | Register or refresh the calling agent's push device (agent only, no token in the response) |
 | DELETE | `/service_agents/push_devices/:id` | bin-push-manager | Delete the calling agent's push device (404 for any other agent's, customer's or unknown device) |
+| GET | `/service_agents/me/push_settings` | bin-push-manager | Push notification settings of the calling agent: kinds on or off and muted chats (agent only) |
+| PUT | `/service_agents/me/push_settings` | bin-push-manager | Switch push notification kinds (400 `INVALID_KIND` for a kind that cannot be switched; not atomic, repeat the request after a 5xx) |
+| PUT | `/service_agents/me/push_mutes/:chat_id` | bin-push-manager | Mute a chat for the calling agent (404 `CHAT_NOT_FOUND` for a chat of another customer or one that cannot be read) |
+| DELETE | `/service_agents/me/push_mutes/:chat_id` | bin-push-manager | Unmute a chat for the calling agent (idempotent) |
 | GET | `/service_agents/contact_stars` | bin-contact-manager | List the caller's stars |
 | GET | `/service_agents/conversations` | bin-conversation-manager | List conversations |
 | GET | `/service_agents/conversations/:id` | bin-conversation-manager | Get conversation |

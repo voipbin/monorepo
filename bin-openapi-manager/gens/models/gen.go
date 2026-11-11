@@ -9156,6 +9156,17 @@ type PushManagerDevice struct {
 // Example: android
 type PushManagerDevicePlatform string
 
+// PushManagerSettings The push notification settings of the calling agent.
+type PushManagerSettings struct {
+	// Kinds Every kind the agent can switch with `true` for on and `false` for off: `chat_mentioned`, `chat_message`, `conversation_message`, `case_assigned` and `case_note`.
+	//
+	// Example: {"case_assigned":true,"case_note":false,"chat_mentioned":true,"chat_message":false,"conversation_message":true}
+	Kinds map[string]bool `json:"kinds"`
+
+	// MutedChatIds The chats the agent muted, the oldest mute first. Empty when no chat is muted.
+	MutedChatIds []openapi_types.UUID `json:"muted_chat_ids"`
+}
+
 // QueueManagerQueue defines model for QueueManagerQueue.
 type QueueManagerQueue struct {
 	// CustomerId The unique identifier of the customer who owns this queue. Returned from the `GET /customers` response.
@@ -14036,6 +14047,14 @@ type PutServiceAgentsMePasswordJSONBody struct {
 	Password string `json:"password"`
 }
 
+// PutServiceAgentsMePushSettingsJSONBody defines parameters for PutServiceAgentsMePushSettings.
+type PutServiceAgentsMePushSettingsJSONBody struct {
+	// Kinds The kinds to switch. The key is the kind and the value is `true` for on and `false` for off.
+	//
+	// Example: {"case_note":false,"chat_message":false}
+	Kinds map[string]bool `json:"kinds"`
+}
+
 // PutServiceAgentsMeStatusJSONBody defines parameters for PutServiceAgentsMeStatus.
 type PutServiceAgentsMeStatusJSONBody struct {
 	// Status Current availability status of the agent.
@@ -15110,6 +15129,9 @@ type PutServiceAgentsMeAddressesJSONRequestBody PutServiceAgentsMeAddressesJSONB
 
 // PutServiceAgentsMePasswordJSONRequestBody defines body for PutServiceAgentsMePassword for application/json ContentType.
 type PutServiceAgentsMePasswordJSONRequestBody PutServiceAgentsMePasswordJSONBody
+
+// PutServiceAgentsMePushSettingsJSONRequestBody defines body for PutServiceAgentsMePushSettings for application/json ContentType.
+type PutServiceAgentsMePushSettingsJSONRequestBody PutServiceAgentsMePushSettingsJSONBody
 
 // PutServiceAgentsMeStatusJSONRequestBody defines body for PutServiceAgentsMeStatus for application/json ContentType.
 type PutServiceAgentsMeStatusJSONRequestBody PutServiceAgentsMeStatusJSONBody

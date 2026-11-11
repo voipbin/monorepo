@@ -4482,6 +4482,33 @@ components:
           description: "When the device was last registered or refreshed."
           example: "2026-11-09T09:15:30.123456Z"
 
+    PushManagerSettings:
+      type: object
+      description: "The push notification settings of the calling agent."
+      required:
+        - kinds
+        - muted_chat_ids
+      properties:
+        kinds:
+          type: object
+          description: "Every kind the agent can switch with `true` for on and `false` for off: `chat_mentioned`, `chat_message`, `conversation_message`, `case_assigned` and `case_note`."
+          additionalProperties:
+            type: boolean
+          example:
+            chat_mentioned: true
+            chat_message: false
+            conversation_message: true
+            case_assigned: true
+            case_note: false
+        muted_chat_ids:
+          type: array
+          description: "The chats the agent muted, the oldest mute first. Empty when no chat is muted."
+          items:
+            type: string
+            format: uuid
+            description: "The chat ID returned from GET /service_agents/talk_chats."
+            example: "5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11"
+
     PushManagerDevicePlatform:
       type: string
       description: "The platform of the push device. Only `android` is supported."
@@ -9926,6 +9953,10 @@ paths:
     $ref: './paths/service_agents/me_addresses.yaml'
   /service_agents/me/password:
     $ref: './paths/service_agents/me_password.yaml'
+  /service_agents/me/push_settings:
+    $ref: './paths/service_agents/me_push_settings.yaml'
+  /service_agents/me/push_mutes/{chat_id}:
+    $ref: './paths/service_agents/me_push_mutes_id.yaml'
   /service_agents/me/status:
     $ref: './paths/service_agents/me_status.yaml'
   /service_agents/me:

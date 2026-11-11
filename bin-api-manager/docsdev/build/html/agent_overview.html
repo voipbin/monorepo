@@ -694,7 +694,7 @@
           <span class="o">|</span>
           <span class="o">|</span> <span class="n">Call</span> <span class="n">ends</span>
           <span class="n">v</span>
-    <span class="p">(</span><span class="n">stays</span> <span class="s2">"busy"</span> <span class="n">until</span> <span class="n">the</span> <span class="n">agent</span>
+    <span class="p">(</span><span class="n">stays</span> <span class="s2">&quot;busy&quot;</span> <span class="n">until</span> <span class="n">the</span> <span class="n">agent</span>
      <span class="n">manually</span> <span class="n">sets</span> <span class="n">a</span> <span class="n">new</span> <span class="n">status</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -746,10 +746,10 @@ queue calls?</p></th>
 <span class="o">+-----------+</span>                           <span class="o">+-----------+</span>
 
 <span class="n">Note</span><span class="p">:</span> <span class="n">during</span> <span class="n">dial</span> <span class="p">(</span><span class="n">before</span> <span class="n">the</span> <span class="n">call</span> <span class="ow">is</span> <span class="n">answered</span><span class="p">)</span> <span class="n">the</span> <span class="n">agent</span> <span class="ow">is</span> <span class="n">temporarily</span>
-<span class="n">excluded</span> <span class="kn">from</span><span class="w"> </span><span class="nn">re</span><span class="o">-</span><span class="n">selection</span> <span class="n">by</span> <span class="n">an</span> <span class="n">internal</span> <span class="n">reservation</span><span class="p">,</span> <span class="ow">not</span> <span class="n">by</span> <span class="n">a</span> <span class="n">status</span>
-<span class="n">change</span><span class="p">,</span> <span class="n">so</span> <span class="n">the</span> <span class="n">status</span> <span class="n">stays</span> <span class="s2">"available"</span> <span class="n">until</span> <span class="n">the</span> <span class="n">call</span> <span class="ow">is</span> <span class="n">answered</span><span class="o">.</span>
+<span class="n">excluded</span> <span class="kn">from</span> <span class="nn">re</span><span class="o">-</span><span class="n">selection</span> <span class="n">by</span> <span class="n">an</span> <span class="n">internal</span> <span class="n">reservation</span><span class="p">,</span> <span class="ow">not</span> <span class="n">by</span> <span class="n">a</span> <span class="n">status</span>
+<span class="n">change</span><span class="p">,</span> <span class="n">so</span> <span class="n">the</span> <span class="n">status</span> <span class="n">stays</span> <span class="s2">&quot;available&quot;</span> <span class="n">until</span> <span class="n">the</span> <span class="n">call</span> <span class="ow">is</span> <span class="n">answered</span><span class="o">.</span>
 
-<span class="n">Note</span><span class="p">:</span> <span class="n">there</span> <span class="ow">is</span> <span class="n">no</span> <span class="n">automatic</span> <span class="n">transition</span> <span class="n">back</span> <span class="n">to</span> <span class="s2">"available"</span> <span class="n">when</span> <span class="n">the</span>
+<span class="n">Note</span><span class="p">:</span> <span class="n">there</span> <span class="ow">is</span> <span class="n">no</span> <span class="n">automatic</span> <span class="n">transition</span> <span class="n">back</span> <span class="n">to</span> <span class="s2">&quot;available&quot;</span> <span class="n">when</span> <span class="n">the</span>
 <span class="n">call</span> <span class="n">ends</span><span class="o">.</span> <span class="n">The</span> <span class="n">agent</span> <span class="p">(</span><span class="ow">or</span> <span class="n">your</span> <span class="n">application</span><span class="p">)</span> <span class="n">must</span> <span class="n">explicitly</span> <span class="n">call</span>
 <span class="n">PUT</span> <span class="o">/</span><span class="n">agents</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">status</span> <span class="n">to</span> <span class="n">become</span> <span class="n">eligible</span> <span class="k">for</span> <span class="n">queue</span> <span class="n">calls</span> <span class="n">again</span><span class="o">.</span>
 </pre></div>
@@ -779,7 +779,7 @@ queue calls?</p></th>
                       <span class="o">|</span> <span class="n">Agent</span> <span class="ow">is</span> <span class="n">eligible</span>  <span class="o">|</span>
                       <span class="o">|</span> <span class="k">if</span> <span class="n">it</span> <span class="n">has</span> <span class="n">ANY</span> <span class="n">tag</span>  <span class="o">|</span>
                       <span class="o">|</span> <span class="ow">in</span> <span class="n">common</span> <span class="k">with</span> <span class="n">the</span> <span class="o">|</span>
-                      <span class="o">|</span> <span class="n">queue</span><span class="s1">'s tag_ids.   |</span>
+                      <span class="o">|</span> <span class="n">queue</span><span class="s1">&#39;s tag_ids.   |</span>
                       <span class="o">+-------------------+</span>
 </pre></div>
 </div>
@@ -806,15 +806,15 @@ queue calls?</p></th>
 </div>
 <p><strong>Managing Agent Tags</strong></p>
 <p>Update an agent’s tags via the API:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/agents/&lt;agent-id&gt;/tag_ids?token=&lt;token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "tag_ids": [
-            "uuid-for-english-tag",
-            "uuid-for-billing-tag",
-            "uuid-for-tier2-tag"
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/agents/&lt;agent-id&gt;/tag_ids?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;tag_ids&quot;: [
+            &quot;uuid-for-english-tag&quot;,
+            &quot;uuid-for-billing-tag&quot;,
+            &quot;uuid-for-tier2-tag&quot;
         ]
-    }'
+    }&#39;
 </pre></div>
 </div>
 </section>
@@ -912,6 +912,50 @@ queue calls?</p></th>
 <p>Both endpoints need an agent token (a token of a signed-in agent). An access key or any other non-agent token gets <code class="docutils literal notranslate"><span class="pre">401</span></code>. The <code class="docutils literal notranslate"><span class="pre">id</span></code> for the delete call is the <code class="docutils literal notranslate"><span class="pre">id</span></code> returned by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/push_devices</span></code>. The push token is a credential: store it only on the device and never log it.</p>
 </div>
 </section>
+<section id="push-notification-settings">
+<h2>Push Notification Settings<a class="headerlink" href="#push-notification-settings" title="Link to this heading">¶</a></h2>
+<p>The app of an agent is notified by a push when a call comes in and, from the events of the platform, when a chat mentions the agent, a chat message arrives, a customer message arrives in a conversation the agent owns, a case is assigned to the agent, or another agent writes a note on a case the agent owns. The agent chooses which of these kinds it receives and which chats it mutes. The settings belong to the authenticated agent and are never taken from the request.</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Endpoint</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>GET</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/me/push_settings</span></code></p></td>
+<td><p>Get the kinds that are on or off and the muted chats.</p></td>
+</tr>
+<tr class="row-odd"><td><p>PUT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/me/push_settings</span></code></p></td>
+<td><p>Switch kinds on or off.</p></td>
+</tr>
+<tr class="row-even"><td><p>PUT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/me/push_mutes/{chat_id}</span></code></p></td>
+<td><p>Mute a chat.</p></td>
+</tr>
+<tr class="row-odd"><td><p>DELETE</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/me/push_mutes/{chat_id}</span></code></p></td>
+<td><p>Unmute a chat.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Everything is on and nothing is muted until the agent changes it. The kinds that can be switched are <code class="docutils literal notranslate"><span class="pre">chat_mentioned</span></code>, <code class="docutils literal notranslate"><span class="pre">chat_message</span></code>, <code class="docutils literal notranslate"><span class="pre">conversation_message</span></code>, <code class="docutils literal notranslate"><span class="pre">case_assigned</span></code> and <code class="docutils literal notranslate"><span class="pre">case_note</span></code>; the incoming call notification cannot be switched off. All four calls return the settings after the change (see <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent-push-settings"><span class="std std-ref">Push settings struct</span></a>).</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/service_agents/me/push_settings</span></code> takes <code class="docutils literal notranslate"><span class="pre">kinds</span></code>, an object whose key is a kind and whose value is <code class="docutils literal notranslate"><span class="pre">true</span></code> (on) or <code class="docutils literal notranslate"><span class="pre">false</span></code> (off). A kind that is not in <code class="docutils literal notranslate"><span class="pre">kinds</span></code> is not changed and an empty <code class="docutils literal notranslate"><span class="pre">kinds</span></code> changes nothing. A key that is not a switchable kind returns <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">INVALID_KIND</span></code> before anything is changed. The kinds are written one by one: when a write fails the call returns a <code class="docutils literal notranslate"><span class="pre">5xx</span></code> error and the kinds written before stay changed, so send the same request again. The call is idempotent.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/service_agents/me/push_mutes/{chat_id}</span></code> mutes the chat: the <code class="docutils literal notranslate"><span class="pre">chat_message</span></code> notifications of the chat stop, while a mention of the agent in it (<code class="docutils literal notranslate"><span class="pre">chat_mentioned</span></code>) is still delivered. The chat must belong to the customer of the agent; the agent does not have to be a participant. A chat that does not exist, that belongs to another customer or that cannot be read returns <code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">CHAT_NOT_FOUND</span></code>. Muting a muted chat returns <code class="docutils literal notranslate"><span class="pre">200</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/service_agents/me/push_mutes/{chat_id}</span></code> unmutes the chat and returns <code class="docutils literal notranslate"><span class="pre">200</span></code> also when the chat was not muted.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">chat_message</span></code> goes to the agents who take part in the chat, except the author and the agents mentioned in the message: one message gives an agent one notification at most. An agent who switched <code class="docutils literal notranslate"><span class="pre">chat_mentioned</span></code> off gets no notification for a message that mentions him, even when <code class="docutils literal notranslate"><span class="pre">chat_message</span></code> is on. A notification carries ids only (for example the chat and the message), never the text.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>These endpoints need an agent token (a token of a signed-in agent). An access key or any other non-agent token gets <code class="docutils literal notranslate"><span class="pre">401</span></code>. The <code class="docutils literal notranslate"><span class="pre">chat_id</span></code> is the chat <code class="docutils literal notranslate"><span class="pre">id</span></code> returned by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_chats</span></code>. Settings can be sent before any push device is registered.</p>
+</div>
+</section>
 <section id="call-to-agent">
 <h2>Call to agent<a class="headerlink" href="#call-to-agent" title="Link to this heading">¶</a></h2>
 <p>To reach an agent, VoIPBin employs a system that allows the agent to have multiple addresses. When a call is initiated to agents, VoIPBin generates calls to every agent’s address simultaneously. If an agent answers one of the calls, VoIPBin automatically terminates the other calls, streamlining the communication process and ensuring that only one connection is established with the available agent.</p>
@@ -960,11 +1004,11 @@ Queue finds Agent Smith (available)
 <span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">agents</span>
 <span class="o">+---------------------------------------+</span>
 <span class="o">|</span> <span class="p">{</span>                                     <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">"username"</span><span class="p">:</span> <span class="s2">"john@company.com"</span><span class="p">,</span>     <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">"password"</span><span class="p">:</span> <span class="s2">"secure_password"</span><span class="p">,</span>      <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"John Smith"</span><span class="p">,</span>               <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">"tag_ids"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>                   <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">"addresses"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>                  <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;john@company.com&quot;</span><span class="p">,</span>     <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;secure_password&quot;</span><span class="p">,</span>      <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John Smith&quot;</span><span class="p">,</span>               <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;tag_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>                   <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;addresses&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>                  <span class="o">|</span>
 <span class="o">|</span> <span class="p">}</span>                                     <span class="o">|</span>
 <span class="o">+---------------------------------------+</span>
                  <span class="o">|</span>
@@ -984,7 +1028,7 @@ Queue finds Agent Smith (available)
 
 1. Agent calls login API
    POST https://api.voipbin.net/v1.0/login
-   { "username": "...", "password": "..." }
+   { &quot;username&quot;: &quot;...&quot;, &quot;password&quot;: &quot;...&quot; }
           |
           v
 2. System validates credentials
@@ -997,18 +1041,18 @@ Queue finds Agent Smith (available)
 3. Return agent info
    +------------------------------------+
    | {                                  |
-   |   "id": "agent-uuid",              |
-   |   "name": "John Smith",            |
-   |   "status": "offline",             |
-   |   "permission": "user",            |
+   |   &quot;id&quot;: &quot;agent-uuid&quot;,              |
+   |   &quot;name&quot;: &quot;John Smith&quot;,            |
+   |   &quot;status&quot;: &quot;offline&quot;,             |
+   |   &quot;permission&quot;: &quot;user&quot;,            |
    |   ...                              |
    | }                                  |
    +------------------------------------+
           |
           v
-4. Agent sets status to "available"
+4. Agent sets status to &quot;available&quot;
    PUT https://api.voipbin.net/v1.0/agents/{id}/status
-   { "status": "available" }
+   { &quot;status&quot;: &quot;available&quot; }
           |
           v
 5. Agent is now ready to receive calls!
@@ -1049,9 +1093,9 @@ Queue finds Agent Smith (available)
 <span class="n">Step</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Queue</span> <span class="n">searches</span> <span class="k">for</span> <span class="n">agents</span>
 <span class="o">+----------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">SELECT</span> <span class="n">agents</span> <span class="n">WHERE</span><span class="p">:</span>                                                  <span class="o">|</span>
-<span class="o">|</span>   <span class="n">o</span> <span class="n">customer_id</span> <span class="o">=</span> <span class="n">queue</span><span class="s1">'s customer_id                                |</span>
-<span class="o">|</span>   <span class="n">o</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">'available'</span>                                             <span class="o">|</span>
-<span class="o">|</span>   <span class="n">o</span> <span class="n">tag_ids</span> <span class="n">overlaps</span> <span class="n">queue</span><span class="s1">'s tag_ids (skipped if the queue has no    |</span>
+<span class="o">|</span>   <span class="n">o</span> <span class="n">customer_id</span> <span class="o">=</span> <span class="n">queue</span><span class="s1">&#39;s customer_id                                |</span>
+<span class="o">|</span>   <span class="n">o</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;available&#39;</span>                                             <span class="o">|</span>
+<span class="o">|</span>   <span class="n">o</span> <span class="n">tag_ids</span> <span class="n">overlaps</span> <span class="n">queue</span><span class="s1">&#39;s tag_ids (skipped if the queue has no    |</span>
 <span class="o">|</span>     <span class="n">tags</span> <span class="o">--</span> <span class="n">see</span> <span class="n">the</span> <span class="n">Queue</span> <span class="n">Overview</span><span class="p">)</span>                                  <span class="o">|</span>
 <span class="o">+----------------------------------------------------------------------+</span>
            <span class="o">|</span>
@@ -1070,7 +1114,7 @@ Queue finds Agent Smith (available)
 <span class="o">|</span> <span class="n">during</span> <span class="n">dial</span><span class="p">)</span>         <span class="o">|</span>
 <span class="o">+----------+-----------+</span>
            <span class="o">|</span>
-           <span class="o">|</span> <span class="n">Agent</span><span class="s1">'s phones ring</span>
+           <span class="o">|</span> <span class="n">Agent</span><span class="s1">&#39;s phones ring</span>
            <span class="n">v</span>
 <span class="n">Step</span> <span class="mi">5</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">answers</span>
 <span class="o">+----------------------+</span>
@@ -1109,14 +1153,14 @@ Queue finds Agent Smith (available)
 </div>
 <p><strong>Example Webhook Payload</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"agent_status_updated"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"agent-uuid"</span><span class="p">,</span>
-        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"customer-uuid"</span><span class="p">,</span>
-        <span class="s2">"username"</span><span class="p">:</span> <span class="s2">"john@company.com"</span><span class="p">,</span>
-        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"John Smith"</span><span class="p">,</span>
-        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"available"</span><span class="p">,</span>
-        <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2024-01-15T10:30:00Z"</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent_status_updated&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;agent-uuid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;john@company.com&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John Smith&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;available&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1132,7 +1176,7 @@ Queue finds Agent Smith (available)
 
 <span class="o">+-----------------------------------------------------------------------------+</span>
 <span class="o">|</span>                     <span class="n">CUSTOMER</span> <span class="n">ADMIN</span> <span class="p">(</span><span class="mh">0x0020</span> <span class="o">/</span> <span class="mi">32</span><span class="p">)</span>                         <span class="o">|</span>
-<span class="o">|</span>  <span class="n">o</span> <span class="n">Full</span> <span class="n">access</span> <span class="n">to</span> <span class="n">the</span> <span class="n">customer</span><span class="s1">'s APIs                                   |</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Full</span> <span class="n">access</span> <span class="n">to</span> <span class="n">the</span> <span class="n">customer</span><span class="s1">&#39;s APIs                                   |</span>
 <span class="o">|</span>  <span class="n">o</span> <span class="n">Can</span> <span class="n">manage</span> <span class="n">other</span> <span class="n">agents</span> <span class="p">(</span><span class="n">create</span><span class="p">,</span> <span class="n">update</span><span class="p">,</span> <span class="n">delete</span><span class="p">,</span> <span class="n">permissions</span><span class="p">)</span>        <span class="o">|</span>
 <span class="o">|</span>  <span class="n">o</span> <span class="n">Can</span> <span class="n">create</span><span class="o">/</span><span class="n">delete</span> <span class="n">resources</span> <span class="p">(</span><span class="n">queues</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span><span class="p">)</span>                     <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------------+</span>
@@ -1198,7 +1242,7 @@ Queue finds Agent Smith (available)
 2. Agent sets available → Status: available
 3. Call comes in → Status stays available (agent reserved during dial)
 4. Agent answers → Status: busy (automatic)
-5. Call ends → Status stays "busy"; the agent must manually set it
+5. Call ends → Status stays &quot;busy&quot;; the agent must manually set it
    back to available via PUT /agents/{id}/status
 6. Agent takes break → Status: away (manual)
 7. Agent logs out → Status: offline (manual)
@@ -1221,7 +1265,7 @@ Queue finds Agent Smith (available)
        Status: available → busy
 
 Call ends
-       Status stays "busy" (no automatic revert)
+       Status stays &quot;busy&quot; (no automatic revert)
 
 Agent manually sets status back to available
 
@@ -1236,7 +1280,7 @@ Agent returns
 </div>
 <p><strong>Scenario 3: End of Day</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Agent finishes last call
-       Status stays "busy" until manually changed
+       Status stays &quot;busy&quot; until manually changed
 
 Agent logs out for the day
        Status: available → offline
@@ -1397,6 +1441,7 @@ receiving calls, check <code class="docutils literal notranslate"><span class="p
 <li><a class="reference internal" href="#agent-tags-skills">Agent Tags (Skills)</a></li>
 <li><a class="reference internal" href="#contact-addresses">Contact Addresses</a></li>
 <li><a class="reference internal" href="#push-devices">Push Devices</a></li>
+<li><a class="reference internal" href="#push-notification-settings">Push Notification Settings</a></li>
 <li><a class="reference internal" href="#call-to-agent">Call to agent</a></li>
 <li><a class="reference internal" href="#agent-lifecycle">Agent Lifecycle</a></li>
 <li><a class="reference internal" href="#how-agents-receive-queue-calls">How Agents Receive Queue Calls</a></li>

@@ -122,6 +122,13 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		ContactID: uuid.Nil,
 	}
 
+	// casehandler.Assign publishes this struct when the owner of an open Case changes to an agent.
+	caseAssignedData := &kase.CaseAssignedEvent{
+		CaseID:     caseID,
+		CustomerID: uuid.Must(uuid.NewV4()),
+		OwnerID:    uuid.Must(uuid.NewV4()),
+	}
+
 	tests := []struct {
 		name      string
 		eventType string
@@ -175,6 +182,13 @@ func TestGoldenRoutingKeys(t *testing.T) {
 			kase.EventTypeCaseTagRemoved,
 			caseTagData,
 			"contact-manager.case.c0a7e1d2-0000-4000-8000-000000000001.tag_removed",
+		},
+		{
+			// the address must be the case id, NOT the new owner id in the payload.
+			"case_assigned",
+			kase.EventTypeCaseAssigned,
+			caseAssignedData,
+			"contact-manager.case.c0a7e1d2-0000-4000-8000-000000000001.assigned",
 		},
 		{
 			// contact_update dynamic branch 1 of 2.

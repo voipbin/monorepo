@@ -13,6 +13,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -25,9 +26,11 @@ import (
 	"monorepo/bin-push-manager/migrations"
 	"monorepo/bin-push-manager/pkg/dbhandler"
 	"monorepo/bin-push-manager/pkg/devicehandler"
+	"monorepo/bin-push-manager/pkg/eventhandler"
 	"monorepo/bin-push-manager/pkg/listenhandler"
 	"monorepo/bin-push-manager/pkg/notificationhandler"
 	"monorepo/bin-push-manager/pkg/pushhandler"
+	"monorepo/bin-push-manager/pkg/settingshandler"
 	"monorepo/bin-push-manager/pkg/subscribehandler"
 )
 
@@ -122,13 +125,18 @@ func runService(sqlDB *sql.DB) error {
 	sender := pushhandler.NewSender(cfg.FCMServiceAccountFile)
 	deviceHandler := devicehandler.NewDeviceHandler(db)
 	notificationHandler := notificationhandler.NewNotificationHandler(db, sender)
+	settingsHandler := settingshandler.NewSettingsHandler(db)
 
-	listenHandler := listenhandler.NewListenHandler(sockHandler, deviceHandler, notificationHandler)
+	// the request handler registers its metrics, so it is built once per process
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, commonoutline.ServiceNamePushManager)
+	eventHandler := eventhandler.NewEventHandler(reqHandler, settingsHandler, notificationHandler)
+
+	listenHandler := listenhandler.NewListenHandler(sockHandler, deviceHandler, notificationHandler, settingsHandler)
 	if err := listenHandler.Run(string(commonoutline.QueueNamePushRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 
-	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNamePushSubscribe), deviceHandler)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNamePushSubscribe), deviceHandler, settingsHandler, eventHandler)
 	if err := subHandler.Run(); err != nil {
 		return err
 	}

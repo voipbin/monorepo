@@ -128,6 +128,7 @@ Each resource group in the REST API maps to one (or occasionally two) backend se
 | `/speakings/*` | `bin-tts-manager` (pipecat) | Text-to-speech speaking sessions |
 | `/storage_accounts/*`, `/storage_files/*` | `bin-storage-manager` | File/media storage (GCS) |
 | `/service_agents/push_devices/*` | `bin-push-manager` | Agent push device tokens (register, delete); the token is never returned |
+| `/service_agents/me/push_settings`, `/service_agents/me/push_mutes/*` | `bin-push-manager` | Agent push notification settings (kinds on or off, muted chats) |
 | `/tags/*` | `bin-tag-manager` | Resource tagging |
 | `/teams/*` | `bin-agent-manager` | Agent teams |
 | `/timelines/*` | `bin-timeline-manager` | Event timeline and SIP analysis |

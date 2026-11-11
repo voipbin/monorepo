@@ -43,6 +43,7 @@ func (h *caseHandler) Assign(ctx context.Context, customerID, id uuid.UUID, owne
 	// this keeps a direct caller from touching the continued Case's
 	// conversation.
 	wasOpen := c.Status == kase.StatusOpen
+	prevOwnerID := c.OwnerID
 	switch {
 	case !wasOpen:
 	case ownerType == commonidentity.OwnerTypeAgent && ownerID != uuid.Nil:
@@ -73,6 +74,18 @@ func (h *caseHandler) Assign(ctx context.Context, customerID, id uuid.UUID, owne
 		if err := h.syncConversationOwner(ctx, res, uuid.Nil, uuid.Nil); err != nil {
 			return nil, fmt.Errorf("could not release conversation owner of a closed case. Assign. err: %w", err)
 		}
+	}
+
+	// Tell the new owner. Only an owner change of a Case that is still open counts: a repeated Assign
+	// of the same owner (a retry converges, see above), an Unassign and a Case closed in the
+	// meantime publish nothing. Two Assign calls racing on the same Case can publish twice or not
+	// at all; the notification is best effort like the push it feeds.
+	if wasOpen && res.Status == kase.StatusOpen && ownerType == commonidentity.OwnerTypeAgent && ownerID != uuid.Nil && ownerID != prevOwnerID {
+		h.notifyHandler.PublishEvent(ctx, kase.EventTypeCaseAssigned, &kase.CaseAssignedEvent{
+			CaseID:     res.ID,
+			CustomerID: res.CustomerID,
+			OwnerID:    ownerID,
+		})
 	}
 
 	return res, nil
