@@ -173,13 +173,15 @@ func (h *transcribeHandler) stopLive(ctx context.Context, tr *transcribe.Transcr
 //     bin-call-manager/pkg/channelhandler/hangup.go's HangingUpWithAsteriskID.
 //
 //   - typed cerrors.VoipbinError{Status: StatusUnavailable, Reason:
-//     streaminghandler.ErrSTTNotConfiguredReason}: returned by
-//     streaminghandler's disabledStreamingHandler.Stop (see
-//     pkg/streaminghandler/disabled.go) when no STT provider is configured on
-//     this instance. Start always fails in that state too, so no live session
-//     could ever have existed to begin with — treating this as a genuine
-//     failure would permanently block the StatusDone transition for an
-//     instance that structurally can never have a real session to stop.
+//     streaminghandler.ErrSTTNotConfiguredReason}: the error that
+//     streaminghandler's Start returns (see pkg/streaminghandler/errors.go)
+//     when no STT provider is configured on this instance. Start fails in
+//     that state, so no live session could have existed to begin with. The
+//     streaming handler's Stop does not return it today (an unknown session is
+//     STREAMING_NOT_FOUND, the NotFound branch above), so this branch is kept
+//     as a defensive one: treating this as a genuine failure would
+//     permanently block the StatusDone transition for an instance that
+//     structurally can never have a real session to stop.
 //
 //     IMPORTANT: this branch intentionally checks Status AND Reason together,
 //     unlike the NotFound branch above (which is a genuine dual-check mirror

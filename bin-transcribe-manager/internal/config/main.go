@@ -15,6 +15,33 @@ var (
 	once         sync.Once
 )
 
+// Names of the environment variables that the config registry reads through EnvValue.
+const (
+	envAWSAccessKey = "AWS_ACCESS_KEY"
+	envAWSSecretKey = "AWS_SECRET_KEY"
+
+	// EnvConfigEncryptionKeys is the environment variable of the master key list of the stored
+	// settings.
+	EnvConfigEncryptionKeys = "TRANSCRIBE_CONFIG_ENCRYPTION_KEYS"
+)
+
+// EnvValue returns the loaded value (flag or environment) of a variable name. It is the
+// environment lookup of the config registry, so the stored settings and the direct reads see the
+// same values. A name that is not loaded is "not set".
+func (c *Config) EnvValue(name string) (string, bool) {
+	var v string
+	switch name {
+	case envAWSAccessKey:
+		v = c.AWSAccessKey
+	case envAWSSecretKey:
+		v = c.AWSSecretKey
+	default:
+		return "", false
+	}
+
+	return v, v != ""
+}
+
 // Config holds process-wide configuration values loaded from command-line
 // flags and environment variables for the service.
 type Config struct {
@@ -29,6 +56,12 @@ type Config struct {
 	AWSSecretKey            string // AWSSecretKey is the AWS secret key for AWS services.
 	PodIP                   string // PodIP is parsed from the POD_IP env var but currently unused - no code path binds a listener to it (kept for backward compat with the K8s Downward API wiring that was never carried over to Docker Compose; see komodo/docker-compose.yml's header comment).
 	StreamingListenPort     int    // StreamingListenPort is the TCP port on which the AudioSocket streaming listener binds (default: 8080).
+
+	// ConfigEncryptionKeys is the master key list of the stored settings
+	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
+	// command line flag. A value that can not be parsed does not stop the service: the stored
+	// secrets can not be used then and the environment keys keep working.
+	ConfigEncryptionKeys string
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -72,6 +105,12 @@ func bindConfig(cmd *cobra.Command) error {
 		"streaming_listen_port":     "STREAMING_LISTEN_PORT",
 	}
 
+	// the master key list of the stored settings has no flag: a flag value would show in the
+	// process list.
+	if errBind := viper.BindEnv("transcribe_config_encryption_keys", EnvConfigEncryptionKeys); errBind != nil {
+		return errors.Wrapf(errBind, "could not bind the env. key: %s", EnvConfigEncryptionKeys)
+	}
+
 	for flagKey, envKey := range bindings {
 		if errBind := viper.BindPFlag(flagKey, f.Lookup(flagKey)); errBind != nil {
 			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
@@ -106,6 +145,7 @@ func LoadGlobalConfig() {
 			AWSSecretKey:            viper.GetString("aws_secret_key"),
 			PodIP:                   viper.GetString("pod_ip"),
 			StreamingListenPort:     viper.GetInt("streaming_listen_port"),
+			ConfigEncryptionKeys:    viper.GetString("transcribe_config_encryption_keys"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

@@ -63,16 +63,15 @@ func Test_NewStreamingHandler_providers(t *testing.T) {
 		accessKey      string
 		secretKey      string
 
-		expectDisabled bool
-		expectGCP      bool
-		expectAWS      bool
+		expectGCP bool
+		expectAWS bool
 	}{
-		{"gcp only", true, "", "", false, true, false},
-		{"aws only", false, "test_access_key", "test_secret_key", false, false, true},
-		{"both", true, "test_access_key", "test_secret_key", false, true, true},
-		{"none degrades to the disabled handler", false, "", "", true, false, false},
-		{"aws access key without secret is ignored", false, "test_access_key", "", true, false, false},
-		{"aws secret without access key is ignored", false, "", "test_secret_key", true, false, false},
+		{"gcp only", true, "", "", true, false},
+		{"aws only", false, "test_access_key", "test_secret_key", false, true},
+		{"both", true, "test_access_key", "test_secret_key", true, true},
+		{"none is still the real handler", false, "", "", false, false},
+		{"aws access key without secret is ignored", false, "test_access_key", "", false, false},
+		{"aws secret without access key is ignored", false, "", "test_secret_key", false, false},
 	}
 
 	for _, tt := range tests {
@@ -90,17 +89,10 @@ func Test_NewStreamingHandler_providers(t *testing.T) {
 				requesthandler.NewMockRequestHandler(mc),
 				notifyhandler.NewMockNotifyHandler(mc),
 				transcripthandler.NewMockTranscriptHandler(mc),
-				tt.accessKey,
-				tt.secretKey,
+				pairKeys(tt.accessKey, tt.secretKey),
 			)
 
 			sh, ok := h.(*streamingHandler)
-			if tt.expectDisabled {
-				if ok {
-					t.Fatalf("expected the disabled handler, got a streaming handler")
-				}
-				return
-			}
 			if !ok {
 				t.Fatalf("expected a streaming handler, got %T", h)
 			}

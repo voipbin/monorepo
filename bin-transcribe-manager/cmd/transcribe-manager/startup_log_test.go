@@ -25,6 +25,7 @@ func Test_logStartup(t *testing.T) {
 		"RedisPassword",
 		"AWSAccessKey",
 		"AWSSecretKey",
+		"ConfigEncryptionKeys",
 	}
 
 	// logged maps every other Config field to the key it is logged under.

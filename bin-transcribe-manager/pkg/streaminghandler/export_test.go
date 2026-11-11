@@ -18,10 +18,9 @@ func AWSRunForTest(
 	st *streaming.Streaming,
 ) error {
 	h := &streamingHandler{
-		awsClient:         client,
 		notifyHandler:     notifyHandler,
 		transcriptHandler: transcriptHandler,
 	}
 
-	return h.awsRun(st)
+	return h.awsRun(st, client)
 }

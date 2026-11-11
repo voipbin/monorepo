@@ -37,8 +37,8 @@ func awsNewClient(accessKey string, secretKey string) (*transcribestreaming.Clie
 }
 
 // awsRun runs the STT process using AWS Transcribe Streaming
-func (h *streamingHandler) awsRun(st *streaming.Streaming) error {
-	if h.awsClient == nil {
+func (h *streamingHandler) awsRun(st *streaming.Streaming, awsClient *transcribestreaming.Client) error {
+	if awsClient == nil {
 		return fmt.Errorf("AWS provider not initialized")
 	}
 
@@ -51,7 +51,7 @@ func (h *streamingHandler) awsRun(st *streaming.Streaming) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	streamClient, err := h.awsInit(ctx, st)
+	streamClient, err := h.awsInit(ctx, st, awsClient)
 	if err != nil {
 		log.Errorf("Could not create streaming client: %v", err)
 		return err
@@ -67,7 +67,7 @@ func (h *streamingHandler) awsRun(st *streaming.Streaming) error {
 }
 
 // awsInit initializes the AWS Transcribe Streaming client
-func (h *streamingHandler) awsInit(ctx context.Context, st *streaming.Streaming) (*transcribestreaming.StartStreamTranscriptionOutput, error) {
+func (h *streamingHandler) awsInit(ctx context.Context, st *streaming.Streaming, awsClient *transcribestreaming.Client) (*transcribestreaming.StartStreamTranscriptionOutput, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "awsInit",
 		"streaming_id":  st.ID,
@@ -80,7 +80,7 @@ func (h *streamingHandler) awsInit(ctx context.Context, st *streaming.Streaming)
 		MediaSampleRateHertz: aws.Int32(defaultAWSSampleRate),
 	}
 
-	res, err := h.awsClient.StartStreamTranscription(ctx, input)
+	res, err := awsClient.StartStreamTranscription(ctx, input)
 	if err != nil {
 		log.Errorf("Could not create a client for speech. err: %v", err)
 		return nil, err

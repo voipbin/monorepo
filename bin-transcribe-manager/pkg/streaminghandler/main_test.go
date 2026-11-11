@@ -2,7 +2,9 @@ package streaminghandler
 
 import (
 	"context"
+	stderrors "errors"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -37,8 +39,7 @@ func Test_NewStreamingHandler_AWSOnly(t *testing.T) {
 		mockReq,
 		mockNotify,
 		mockTranscript,
-		"test_access_key",
-		"test_secret_key",
+		pairKeys("test_access_key", "test_secret_key"),
 	)
 
 	// Should return valid handler (AWS initialized, GCP not in priority list)
@@ -48,14 +49,16 @@ func Test_NewStreamingHandler_AWSOnly(t *testing.T) {
 }
 
 // Test_NewStreamingHandler_NoProviders verifies that NewStreamingHandler never returns a nil
-// interface. Startup used to abort when neither provider could be initialized; it now degrades
-// the streaming transcribe path instead (see Test_NewDisabledStreamingHandler).
+// interface and that it does not decide at start up that streaming is off: the handler is the real
+// one, Run is a no-op, and Start answers STT_NOT_CONFIGURED while no provider is available.
 //
 // Whether GCP actually initializes here depends on the ambient application-default
-// credentials, so this only asserts the constructor contract that holds either way.
+// credentials, so the test removes them.
 func Test_NewStreamingHandler_NoProviders(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
+
+	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", filepath.Join(t.TempDir(), "missing.json"))
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
@@ -65,38 +68,35 @@ func Test_NewStreamingHandler_NoProviders(t *testing.T) {
 		mockReq,
 		mockNotify,
 		mockTranscript,
-		"", // empty AWS credentials
-		"",
+		pairKeys("", ""), // empty AWS credentials
 	)
 
 	if handler == nil {
 		t.Fatal("Expected handler to be non-nil when no providers available")
 	}
-}
-
-// Test_NewDisabledStreamingHandler verifies the STT-unavailable degradation contract:
-// Run() must be a no-op so the service finishes booting, and the per-request methods must
-// report ErrSTTNotConfigured instead of silently doing nothing.
-func Test_NewDisabledStreamingHandler(t *testing.T) {
-	handler := NewDisabledStreamingHandler()
-
-	if handler == nil {
-		t.Fatal("Expected handler to be non-nil")
+	if _, ok := handler.(*streamingHandler); !ok {
+		t.Fatalf("Wrong match. expect: the real handler, got: %T", handler)
 	}
 
 	if err := handler.Run(); err != nil {
-		t.Errorf("Run() should be a no-op when STT is disabled, got error: %v", err)
+		t.Errorf("Run() must stay a no-op, got error: %v", err)
 	}
 
-	if _, err := handler.Start(context.Background(), uuid.Nil, uuid.Nil, transcribe.ReferenceTypeCall, uuid.Nil, "en-US", transcript.DirectionIn, transcribe.ProviderEmpty); err == nil {
-		t.Error("Expected an STT-not-configured error from Start(), got nil")
-	} else if ve, ok := err.(*cerrors.VoipbinError); !ok || ve.Reason != ErrSTTNotConfiguredReason {
-		t.Errorf("Wrong error type/reason. expect reason: %s, got: %v", ErrSTTNotConfiguredReason, err)
+	// the request handler has no expectation: nothing may be created when there is no provider
+	if _, err := handler.Start(context.Background(), uuid.Nil, uuid.Nil, transcribe.ReferenceTypeCall, uuid.Nil, "en-US", transcript.DirectionIn, transcribe.ProviderEmpty); !isReason(err, ErrSTTNotConfiguredReason) {
+		t.Errorf("Wrong match. expect reason: %s, got: %v", ErrSTTNotConfiguredReason, err)
 	}
+}
 
-	if _, err := handler.Stop(context.Background(), uuid.Nil); err == nil {
-		t.Error("Expected an STT-not-configured error from Stop(), got nil")
-	} else if ve, ok := err.(*cerrors.VoipbinError); !ok || ve.Reason != ErrSTTNotConfiguredReason {
-		t.Errorf("Wrong error type/reason. expect reason: %s, got: %v", ErrSTTNotConfiguredReason, err)
+// pairKeys returns a supplier that always hands out the given pair.
+func pairKeys(accessKey, secretKey string) AWSKeyFunc {
+	return func(context.Context) (string, string, error) {
+		return accessKey, secretKey, nil
 	}
+}
+
+// isReason tells whether err is a VoipbinError with the reason.
+func isReason(err error, reason string) bool {
+	var ve *cerrors.VoipbinError
+	return stderrors.As(err, &ve) && ve.Reason == reason
 }

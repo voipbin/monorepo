@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/transcribestreaming"
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
 	gomock "go.uber.org/mock/gomock"
@@ -34,6 +35,9 @@ func newStartTestHandler(mc *gomock.Controller) (*streamingHandler, *utilhandler
 		notifyHandler: mockNotify,
 		mapStreaming:  make(map[uuid.UUID]*streaming.Streaming),
 	}
+	// a handler with no provider refuses Start before it creates anything, so the flow tests give
+	// it an AWS provider; the client is never used for a call before the websocket step fails
+	withFakeAWS(h)
 
 	return h, mockUtil, mockReq, mockNotify
 }
@@ -125,7 +129,11 @@ func Test_Start_success(t *testing.T) {
 	mockNotify.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingStarted, gomock.Any())
 	mockReq.EXPECT().CallV1ExternalMediaStart(ctx, id, cmexternalmedia.ReferenceType(transcribe.ReferenceTypeConfbridge), gomock.Any(), "INCOMING", defaultEncapsulation, defaultTransport, "", defaultConnectionType, defaultFormat, cmexternalmedia.Direction(transcript.DirectionIn), cmexternalmedia.DirectionNone).Return(em, nil)
 
-	// no STT client is initialized in this handler, so the spawned runSTT returns at once
+	// the AWS client of this test points at a loopback port nothing listens on, so the spawned
+	// runSTT fails at once without leaving the machine
+	h.newAWSClient = func(string, string) (*transcribestreaming.Client, error) {
+		return newUnreachableAWSClient(t), nil
+	}
 	res, err := h.Start(ctx, customerID, transcribeID, transcribe.ReferenceTypeConfbridge, uuid.FromStringOrNil("9e3f0c10-0000-11ee-8b11-000000000034"), "ko-KR", transcript.DirectionIn, transcribe.ProviderEmpty)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
@@ -165,7 +173,7 @@ func Test_runSTT_noInitializedProvider(t *testing.T) {
 			done := make(chan struct{})
 			go func() {
 				defer close(done)
-				h.runSTT(st, tt.provider)
+				h.runSTT(st, tt.provider, nil)
 			}()
 
 			select {
