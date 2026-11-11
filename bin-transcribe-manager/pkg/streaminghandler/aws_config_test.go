@@ -1,16 +1,19 @@
 package streaminghandler
 
 import (
-	"fmt"
+	"context"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
+	"monorepo/bin-transcribe-manager/models/transcribe"
+	"monorepo/bin-transcribe-manager/models/transcript"
 	"monorepo/bin-transcribe-manager/pkg/transcripthandler"
 )
 
@@ -48,12 +51,19 @@ func Test_NewStreamingHandler_awsConfigFailure(t *testing.T) {
 		requesthandler.NewMockRequestHandler(mc),
 		notifyhandler.NewMockNotifyHandler(mc),
 		transcripthandler.NewMockTranscriptHandler(mc),
-		"test_access_key",
-		"test_secret_key",
+		pairKeys("test_access_key", "test_secret_key"),
 	)
 
-	// the AWS provider is dropped when its client cannot be built, and GCP is not configured either
-	if got, want := fmt.Sprintf("%T", res), fmt.Sprintf("%T", NewDisabledStreamingHandler()); got != want {
-		t.Errorf("Wrong match. expect: %s, got: %s", want, got)
+	// the AWS provider is dropped when its client cannot be built, and GCP is not configured either:
+	// the handler is the real one and Start answers STT_NOT_CONFIGURED
+	h, ok := res.(*streamingHandler)
+	if !ok {
+		t.Fatalf("Wrong match. expect: a streaming handler, got: %T", res)
+	}
+	if h.awsClient != nil || h.gcpClient != nil {
+		t.Errorf("Wrong match. expect: no provider client, got gcp: %v, aws: %v", h.gcpClient, h.awsClient)
+	}
+	if _, err := res.Start(context.Background(), uuid.Nil, uuid.Nil, transcribe.ReferenceTypeCall, uuid.Nil, "en-US", transcript.DirectionIn, transcribe.ProviderEmpty); !isReason(err, ErrSTTNotConfiguredReason) {
+		t.Errorf("Wrong match. expect: %s, got: %v", ErrSTTNotConfiguredReason, err)
 	}
 }

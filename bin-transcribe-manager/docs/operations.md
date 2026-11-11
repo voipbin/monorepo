@@ -8,10 +8,11 @@
 | STT RPC routed to wrong/nonexistent pod | Stale `host_id` after any process restart — `host_id` is a random UUID generated fresh at startup (not derived from `POD_IP` or pod identity), so it changes every time the process restarts, not only when the pod IP changes | Session must be recreated; see [docs/architecture.md](architecture.md) for per-pod queue naming |
 | No transcripts appearing | WebSocket to Asterisk not established | Check `streaming_handler` logs for dial errors; verify `MediaURI` from `ExternalMediaStart` |
 | GCP auth failure | ADC not configured | Check `GOOGLE_APPLICATION_CREDENTIALS` points to a valid mounted service account key file |
-| AWS auth failure | Missing credentials | Verify `AWS_ACCESS_KEY` / `AWS_SECRET_KEY` env vars |
+| AWS auth failure | Missing or wrong credentials | Check `./transcribe-control config list` (source and has_secret of both keys) and the `AWS_ACCESS_KEY` / `AWS_SECRET_KEY` env vars. See "AWS credential" below |
 | Session health-check failing | Pod hosting session is down | Session is lost; streaming cannot be resumed — client must recreate |
 | `customer_deleted` cascade not running | Subscribe handler not consuming customer-manager events | Check queue binding: `bin-manager.customer-manager.event` |
-| Transcribe start/stop returns a `STT_NOT_CONFIGURED` error (`*cerrors.VoipbinError`, status `Unavailable`) | Neither GCP nor AWS STT client initialized at startup, so the service is running with the disabled streaming handler. Common causes: an invalid or placeholder `GOOGLE_APPLICATION_CREDENTIALS` key file plus no AWS credentials | Fix the GCP key file or set `AWS_ACCESS_KEY` / `AWS_SECRET_KEY`, then restart the service. Confirm with the provider-initialization log check below — a healthy boot logs `GCP STT provider initialized` and/or `AWS STT provider initialized`; a degraded boot logs `No STT providers available. Streaming transcribe is disabled until GCP or AWS credentials are configured.` |
+| Transcribe start returns a `STT_NOT_CONFIGURED` error (`*cerrors.VoipbinError`, status `Unavailable`) | No STT provider is available when the request arrives: there is no GCP client (an invalid or placeholder `GOOGLE_APPLICATION_CREDENTIALS` key file) and no AWS credential pair (stored or environment). Nothing is created for the request. Stop of an unknown session is `STREAMING_NOT_FOUND`, which the transcribe handler treats as already stopped | Fix the GCP key file, or store the AWS pair (see "AWS credential" below) or set `AWS_ACCESS_KEY` / `AWS_SECRET_KEY`. No restart is needed for a stored or changed AWS pair. The start up log says `GCP STT provider initialized` and/or `AWS STT provider initialized`, or `No STT provider is available now.` |
+| Transcribe start returns `STT_KEY_UNAVAILABLE` (status `Unavailable`) | There is no GCP client and the AWS credential could not be read: the database is down, a stored value can not be decrypted, or the master key list is missing while a row exists. The environment pair is not used instead | Restore the database or the master key list (`TRANSCRIBE_CONFIG_ENCRYPTION_KEYS`), or clear both stored keys to go back to the environment pair. A deployment that has GCP is not affected: the request goes on without AWS and logs one warning |
 
 ## Schema Migration Failures
 
@@ -92,14 +93,50 @@ Service uses Cobra and Viper (`internal/config/main.go`). Configuration loaded o
 | `redis_address` / `REDIS_ADDRESS` | Redis server address | required |
 | `redis_password` / `REDIS_PASSWORD` | Redis authentication | optional |
 | `redis_database` / `REDIS_DATABASE` | Redis DB index | optional |
-| `aws_access_key` / `AWS_ACCESS_KEY` | AWS Transcribe access key | optional (if GCP configured) |
-| `aws_secret_key` / `AWS_SECRET_KEY` | AWS Transcribe secret key | optional (if GCP configured) |
+| `aws_access_key` / `AWS_ACCESS_KEY` | AWS Transcribe access key (a stored `aws.access_key` takes precedence) | optional (if GCP configured) |
+| `aws_secret_key` / `AWS_SECRET_KEY` | AWS Transcribe secret key (a stored `aws.secret_key` takes precedence) | optional (if GCP configured) |
+| `transcribe_config_encryption_keys` / `TRANSCRIBE_CONFIG_ENCRYPTION_KEYS` | Master key list that encrypts the stored AWS credential (environment only, never a flag, never logged). Without it the service starts, the environment pair keeps working, and only storing a secret is refused | optional |
 | `pod_ip` / `POD_IP` | Pod IP (Kubernetes Downward API); config field is intended for the AudioSocket streaming listener bind address — **not** the per-pod queue `host_id`, which is a random UUID generated at process startup independent of `POD_IP` | required |
 | `streaming_listen_port` / `STREAMING_LISTEN_PORT` | Port for WebSocket streaming connections | required |
 | `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics HTTP path | `/metrics` |
 | `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
 
-GCP authentication uses Application Default Credentials. Neither STT provider is strictly required to boot: if neither initializes, the service starts with streaming transcribe disabled (see the failure-modes table above). Configure at least one provider for a working streaming transcribe path.
+GCP authentication uses Application Default Credentials. Neither STT provider is strictly required to boot: if none is available, the service starts and every request to start a streaming is answered `STT_NOT_CONFIGURED` (see the failure-modes table above). Configure at least one provider for a working streaming transcribe path.
+
+## AWS credential
+
+The AWS credential is two stored settings with an environment fallback. The resolution order is: stored value, then the environment variable, then nothing (AWS is not available, as before).
+
+| Stored key | Environment | Used by |
+|------------|-------------|---------|
+| `aws.access_key` | `AWS_ACCESS_KEY` | AWS Transcribe streaming |
+| `aws.secret_key` | `AWS_SECRET_KEY` | AWS Transcribe streaming |
+
+The two keys are one credential and are used only together, from the same source: both stored, or both from the environment. A stored key never pairs with an environment key. A pair with one key missing is "AWS not available", and a stored pair with one key cleared is not replaced by the environment value. The pair is read for every transcribe start (one bounded database read of at most 2 seconds, none for stop), and the AWS client is built again only when the pair changed, so a change is used by the next start of every replica with no restart. A stream that is already running keeps the client it started with. A deployment that has the pair in the database only is not left without AWS.
+
+```bash
+# the value is read from stdin only (one line; a key is at most 512 bytes) and is never printed
+printf '%s\n' "$NEW_ACCESS_KEY" | ./transcribe-control config set --key aws.access_key --actor-id <uuid>
+printf '%s\n' "$NEW_SECRET_KEY" | ./transcribe-control config set --key aws.secret_key --actor-id <uuid>
+./transcribe-control config list
+./transcribe-control config clear --key aws.access_key --actor-id <uuid>
+./transcribe-control config clear --key aws.secret_key --actor-id <uuid>
+```
+
+The same two keys can also be stored, deleted and read through the admin API of api-manager (`/service_configs/transcribe`, project super admin only), which reaches this service as `/v1/configs` requests. The history records the source `api` for the admin API and `cli` for the command line. The request body of a secret is never logged, and a request that looks like a config request is not routed to any other handler. The master key list is `TRANSCRIBE_CONFIG_ENCRYPTION_KEYS` (environment only, passed by the deployment definition); without it `config list` and `config clear` work and `config set` is refused. The `config` commands need the database and the master key list only.
+
+Entering the pair or rotating it takes two `config set` commands, so run them back to back. After the first command of a first entry the pair is incomplete and AWS is not available (a deployment with no GCP refuses a transcribe start in that time). After the first command of a rotation the pair is mixed (one new stored key, one old stored key or none) and the next start does not use a mixed pair, so AWS is not available until the second command ends; a stored key is never paired with an environment key. Rollback needs both keys cleared (the environment pair applies again, and only while the variables still hold the old key).
+
+Rotation:
+1. Create the new credential at AWS. Keep the old one valid.
+2. Make sure every replica runs the image of this feature. Do not enter a value while a rolling deploy is half done, with the command line or the admin API: an older replica ignores the stored value (and does not serve the admin API), so the replicas would use different credentials.
+3. Run the two `config set` commands, back to back.
+4. Check one transcribe start that uses AWS (a start with `provider` `aws`). If AWS refuses the credential, run both `config clear` commands or set the right values.
+5. Revoke the old credential at AWS after the check. A rollback of the image uses the environment pair again, so keep the old credential valid until the check passed.
+
+Dual input: bin-tts-manager reads the same kind of credential from its own environment, and in the Komodo definitions both services take it from the same variables. Each service has its own settings, so the source is two places and nothing keeps them equal. Moving one service to the database and not the other leaves the other on the environment value, and rotating in one service only leaves the other on the old credential: revoking the old credential then breaks that service. Rotate both services before the old credential is revoked, check a transcribe start and a TTS call after the change, and revoke the old credential last.
+
+Recovery: a stored value that can not be decrypted (the master key is missing, mistyped or changed) is not replaced by the environment value. A transcribe start answers `STT_KEY_UNAVAILABLE` when GCP is not available, `config list` shows `db_undecryptable`, and the start up logs an error line. Restore the master key list, or run both `config clear` commands to fall back to the environment pair.
 
 ## Prometheus Metrics
 

@@ -5,6 +5,7 @@ import (
 
 	"monorepo/bin-call-manager/models/externalmedia"
 
+	"github.com/aws/aws-sdk-go-v2/service/transcribestreaming"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
@@ -18,15 +19,17 @@ var defaultProviderOrder = []STTProvider{STTProviderGCP, STTProviderAWS}
 
 // getProviderFunc returns the handler function for the given provider,
 // or nil if the provider is not initialized.
-func (h *streamingHandler) getProviderFunc(p STTProvider) func(*streaming.Streaming) error {
+func (h *streamingHandler) getProviderFunc(p STTProvider, awsClient *transcribestreaming.Client) func(*streaming.Streaming) error {
 	switch p {
 	case STTProviderGCP:
 		if h.gcpClient != nil {
 			return h.gcpRun
 		}
 	case STTProviderAWS:
-		if h.awsClient != nil {
-			return h.awsRun
+		if awsClient != nil {
+			return func(st *streaming.Streaming) error {
+				return h.awsRun(st, awsClient)
+			}
 		}
 	}
 	return nil
@@ -43,6 +46,23 @@ func (h *streamingHandler) Start(ctx context.Context, customerID uuid.UUID, tran
 		"direction":      direction,
 		"provider":       provider,
 	})
+
+	// Resolve the providers first, before the streaming record and the external media exist: with
+	// no provider nothing is created. The AWS client is passed on to runSTT, which runs in its own
+	// goroutine and must not read a client that another Start replaces.
+	awsClient, errAWS := h.awsClientFor(ctx)
+	if h.gcpClient == nil && awsClient == nil {
+		if errAWS != nil {
+			log.Errorf("Could not start the streaming. The AWS credential could not be read and no other STT provider is available. err: %v", errAWS)
+			return nil, newErrSTTKeyUnavailable()
+		}
+
+		log.Error("Could not start the streaming. No STT provider is configured.")
+		return nil, newErrSTTNotConfigured()
+	}
+	if errAWS != nil {
+		log.Warnf("Could not read the AWS credential. AWS is not used for this streaming. err: %v", errAWS)
+	}
 
 	// create streaming record
 	res, err := h.Create(ctx, customerID, transcribeID, language, direction)
@@ -91,7 +111,7 @@ func (h *streamingHandler) Start(ctx context.Context, customerID uuid.UUID, tran
 
 	// spawn STT processing — the media processor's ReadMessage loop handles
 	// ping/pong/close frames automatically, so no separate read goroutine needed.
-	go h.runSTT(res, provider)
+	go h.runSTT(res, provider, awsClient) //nolint:contextcheck // the stream outlives the request and owns its context (awsRun creates it), as before
 
 	return res, nil
 }
@@ -99,7 +119,7 @@ func (h *streamingHandler) Start(ctx context.Context, customerID uuid.UUID, tran
 // runSTT selects the STT provider and runs the handler.
 // If provider is set, tries that provider first then falls back to default order.
 // If provider is empty, uses the default order (GCP -> AWS).
-func (h *streamingHandler) runSTT(st *streaming.Streaming, provider transcribe.Provider) {
+func (h *streamingHandler) runSTT(st *streaming.Streaming, provider transcribe.Provider, awsClient *transcribestreaming.Client) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "runSTT",
 		"streaming_id": st.ID,
@@ -112,7 +132,7 @@ func (h *streamingHandler) runSTT(st *streaming.Streaming, provider transcribe.P
 	if provider != "" {
 		sttProvider, err := validateProvider(string(provider))
 		if err == nil {
-			if fn := h.getProviderFunc(sttProvider); fn != nil {
+			if fn := h.getProviderFunc(sttProvider, awsClient); fn != nil {
 				handlers = append(handlers, fn)
 			} else {
 				log.Warnf("Requested provider %q not initialized, falling back to default order", provider)
@@ -124,7 +144,7 @@ func (h *streamingHandler) runSTT(st *streaming.Streaming, provider transcribe.P
 
 	// Append default order (skip any already added as first choice)
 	for _, p := range defaultProviderOrder {
-		fn := h.getProviderFunc(p)
+		fn := h.getProviderFunc(p, awsClient)
 		if fn == nil {
 			continue
 		}

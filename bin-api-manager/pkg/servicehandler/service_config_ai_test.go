@@ -23,6 +23,7 @@ func Test_ServiceConfig_services(t *testing.T) {
 		{"email", "mailgun.api_key"},
 		{"ai", "llm.gemini.api_key"},
 		{"message", "provider.telnyx.auth_token"},
+		{"transcribe", "aws.secret_key"},
 	}
 
 	for _, tt := range tests {

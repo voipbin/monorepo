@@ -26,10 +26,11 @@ var regServiceConfigKey = regexp.MustCompile(serviceConfigKeyPattern)
 // service path parameter, and the same names are known by requesthandler. Adding a service is a
 // line here and a line in the queue map of requesthandler.
 var serviceConfigServices = map[string]bool{
-	"email":   true,
-	"ai":      true,
-	"message": true,
-	"tts":     true,
+	"email":      true,
+	"ai":         true,
+	"message":    true,
+	"tts":        true,
+	"transcribe": true,
 }
 
 // serviceConfigAuthorize checks that the identity may manage the configs: direct access is

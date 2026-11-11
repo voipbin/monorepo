@@ -396,7 +396,7 @@ func Test_runSTT_withGCPClient(t *testing.T) {
 
 			mockTranscript.EXPECT().Create(gomock.Any(), st.CustomerID, st.TranscribeID, transcript.DirectionIn, "good day", gomock.Any()).Return(&transcript.Transcript{}, nil)
 
-			h.runSTT(st, tt.provider)
+			h.runSTT(st, tt.provider, nil)
 
 			if streamCalls.Load() != 1 {
 				t.Errorf("Wrong match. expect: 1 stream, got: %d", streamCalls.Load())
@@ -425,7 +425,7 @@ func Test_runSTT_requestedProviderFails(t *testing.T) {
 
 			st := newFakeSTTStreaming("en-US", transcript.DirectionIn)
 
-			h.runSTT(st, tt.provider)
+			h.runSTT(st, tt.provider, nil)
 
 			if streamCalls.Load() != 1 {
 				t.Errorf("Wrong match. expect: 1 attempt, got: %d", streamCalls.Load())

@@ -70,6 +70,7 @@ func Test_Start(t *testing.T) {
 				notifyHandler: mockNotify,
 				mapStreaming:  make(map[uuid.UUID]*streaming.Streaming),
 			}
+			withFakeAWS(h)
 			ctx := context.Background()
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
@@ -174,11 +175,12 @@ func Test_getProviderFunc(t *testing.T) {
 			if tt.gcpClient {
 				h.gcpClient = &speech.Client{}
 			}
+			var awsClient *transcribestreaming.Client
 			if tt.awsClient {
-				h.awsClient = &transcribestreaming.Client{}
+				awsClient = &transcribestreaming.Client{}
 			}
 
-			fn := h.getProviderFunc(tt.provider)
+			fn := h.getProviderFunc(tt.provider, awsClient)
 			if tt.expectNil && fn != nil {
 				t.Errorf("Expected nil function, got non-nil")
 			}
@@ -290,8 +292,9 @@ func Test_runSTT_handlerSelection(t *testing.T) {
 			if tt.gcpInitialized {
 				h.gcpClient = &speech.Client{}
 			}
+			var awsClient *transcribestreaming.Client
 			if tt.awsInitialized {
-				h.awsClient = &transcribestreaming.Client{}
+				awsClient = &transcribestreaming.Client{}
 			}
 
 			// Build handler list using same logic as runSTT
@@ -303,14 +306,14 @@ func Test_runSTT_handlerSelection(t *testing.T) {
 			if provider != "" {
 				sttProvider, err := validateProvider(string(provider))
 				if err == nil {
-					if h.getProviderFunc(sttProvider) != nil {
+					if h.getProviderFunc(sttProvider, awsClient) != nil {
 						handlers = append(handlers, struct{ provider STTProvider }{sttProvider})
 					}
 				}
 			}
 
 			for _, p := range defaultProviderOrder {
-				if h.getProviderFunc(p) == nil {
+				if h.getProviderFunc(p, awsClient) == nil {
 					continue
 				}
 				if len(handlers) > 0 && provider != "" {

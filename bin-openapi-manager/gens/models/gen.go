@@ -2962,10 +2962,11 @@ func (e ServiceConfigKeyType) Valid() bool {
 
 // Defines values for ServiceConfigServiceName.
 const (
-	ServiceConfigServiceNameAi      ServiceConfigServiceName = "ai"
-	ServiceConfigServiceNameEmail   ServiceConfigServiceName = "email"
-	ServiceConfigServiceNameMessage ServiceConfigServiceName = "message"
-	ServiceConfigServiceNameTts     ServiceConfigServiceName = "tts"
+	ServiceConfigServiceNameAi         ServiceConfigServiceName = "ai"
+	ServiceConfigServiceNameEmail      ServiceConfigServiceName = "email"
+	ServiceConfigServiceNameMessage    ServiceConfigServiceName = "message"
+	ServiceConfigServiceNameTranscribe ServiceConfigServiceName = "transcribe"
+	ServiceConfigServiceNameTts        ServiceConfigServiceName = "tts"
 )
 
 // Valid indicates whether the value is a known member of the ServiceConfigServiceName enum.
@@ -2976,6 +2977,8 @@ func (e ServiceConfigServiceName) Valid() bool {
 	case ServiceConfigServiceNameEmail:
 		return true
 	case ServiceConfigServiceNameMessage:
+		return true
+	case ServiceConfigServiceNameTranscribe:
 		return true
 	case ServiceConfigServiceNameTts:
 		return true
@@ -9900,7 +9903,7 @@ type ServiceConfig struct {
 	// Example: true
 	SecretWritable bool `json:"secret_writable"`
 
-	// Service The name of a service that has config keys. `email` is the email service, `ai` the AI service, `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`) and `tts` the text to speech service. The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
+	// Service The name of a service that has config keys. `email` is the email service, `ai` the AI service, `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`), `tts` the text to speech service and `transcribe` the transcribe service. The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
 	//
 	// Example: email
 	Service ServiceConfigServiceName `json:"service"`
@@ -10048,7 +10051,7 @@ type ServiceConfigKeySecretRequest struct {
 	// Example: 3
 	Revision int64 `json:"revision"`
 
-	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte); a key can declare a shorter limit (the email, ai, message and tts keys allow 512 bytes), and a longer secret is rejected with 400. It must not start or end with white space or contain a line break; it is rejected, not trimmed. The request body is limited to 4 KB.
+	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte); a key can declare a shorter limit (the email, ai, message, tts and transcribe keys allow 512 bytes), and a longer secret is rejected with 400. It must not start or end with white space or contain a line break; it is rejected, not trimmed. The request body is limited to 4 KB.
 	//
 	// Example: example-secret-token
 	Secret *string `json:"secret,omitempty"`
@@ -10065,7 +10068,7 @@ type ServiceConfigKeySource string
 // Example: string
 type ServiceConfigKeyType string
 
-// ServiceConfigServiceName The name of a service that has config keys. `email` is the email service, `ai` the AI service, `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`) and `tts` the text to speech service. The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
+// ServiceConfigServiceName The name of a service that has config keys. `email` is the email service, `ai` the AI service, `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`), `tts` the text to speech service and `transcribe` the transcribe service. The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
 //
 // Example: email
 type ServiceConfigServiceName string
@@ -11215,7 +11218,7 @@ type PageToken = string
 // ServiceConfigKeyName Example: mailgun.api_key
 type ServiceConfigKeyName = string
 
-// ServiceConfigService The name of a service that has config keys. `email` is the email service, `ai` the AI service, `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`) and `tts` the text to speech service. The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
+// ServiceConfigService The name of a service that has config keys. `email` is the email service, `ai` the AI service, `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`), `tts` the text to speech service and `transcribe` the transcribe service. The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
 //
 // Example: email
 type ServiceConfigService = ServiceConfigServiceName

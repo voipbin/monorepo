@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-transcribe-manager/internal/config"
+	"monorepo/bin-transcribe-manager/internal/transcribeconfig"
 	"monorepo/bin-transcribe-manager/migrations"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 	"monorepo/bin-transcribe-manager/pkg/cachehandler"
@@ -72,7 +73,12 @@ func initTranscribeHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (tran
 
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler)
 
-	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
+	// the same credential rule as the daemon: the stored pair, else the environment pair
+	configHandler, err := transcribeconfig.New(config.Get(), dbhandler.NewConfigStore(sqlDB))
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not create the config handler")
+	}
+	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, transcribeconfig.AWSKeys(configHandler))
 
 	hostID := uuid.Must(uuid.NewV4())
 	return transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID), nil
@@ -105,6 +111,7 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdDelete())
 
 	cmdRoot.AddCommand(cmdSub)
+	cmdRoot.AddCommand(cmdConfig())
 	// the migrate commands open only the database, so they do not depend on Redis or RabbitMQ
 	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {
 		return migrationhandler.New(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable)

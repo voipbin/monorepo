@@ -77,7 +77,7 @@ Every PR that changes a migration file or the migration runner states, with evid
 | bin-tag-manager | tag_tags | `bin-tag-manager/migrations/` |
 | bin-talk-manager | talk_chats, talk_mentions, talk_messages, talk_participants, talk_pins | `bin-talk-manager/migrations/` |
 | bin-timeline-manager | timeline_analyses | `bin-timeline-manager/migrations/mysql/` |
-| bin-transcribe-manager | transcribe_transcribes, transcribe_transcripts | `bin-transcribe-manager/migrations/` |
+| bin-transcribe-manager | transcribe_config_histories, transcribe_configs, transcribe_transcribes, transcribe_transcripts | `bin-transcribe-manager/migrations/` |
 | bin-tts-manager | tts_config_histories, tts_configs, tts_manager_speaking | `bin-tts-manager/migrations/` |
 | bin-webchat-manager | webchat_messages, webchat_sessions, webchat_widgets | `bin-webchat-manager/migrations/` |
 
@@ -170,6 +170,8 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | talk_participants | bin-talk-manager | Participants in talk sessions |
 | talk_pins | bin-talk-manager | Chats and messages pinned by an agent |
 | timeline_analyses | bin-timeline-manager | Timeline analysis records |
+| transcribe_config_histories | bin-transcribe-manager | Change history of the stored settings (no values) |
+| transcribe_configs | bin-transcribe-manager | Stored settings (the AWS credential of AWS Transcribe, encrypted) |
 | transcribe_transcribes | bin-transcribe-manager | Transcription job records |
 | transcribe_transcripts | bin-transcribe-manager | STT transcription results (linked to transcribes) |
 | tts_config_histories | bin-tts-manager | Change history of the platform-wide stored settings (no values) |

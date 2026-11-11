@@ -27,7 +27,7 @@ func Test_NewListenHandler_keepsDependencies(t *testing.T) {
 	mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 	mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
 
-	res := NewListenHandler(hostID, mockSock, mockReq, mockTranscribe, mockTranscript)
+	res := NewListenHandler(hostID, mockSock, mockReq, mockTranscribe, mockTranscript, nil)
 
 	h, ok := res.(*listenHandler)
 	if !ok {
