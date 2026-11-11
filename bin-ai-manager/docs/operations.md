@@ -97,12 +97,12 @@ The platform LLM keys are two stored settings with an environment fallback. The 
 
 | Stored key | Environment | Used by |
 |------------|-------------|---------|
-| `llm.openai_compat.api_key` | `ENGINE_KEY_CHATGPT` | The conversation engine, and the summary, analysis and Builder calls when their base URL is not the Gemini endpoint |
+| `llm.openai_compat.api_key` | `ENGINE_KEY_CHATGPT` | The summary, analysis and Builder calls when their base URL is not the Gemini endpoint |
 | `llm.gemini.api_key` | `GOOGLE_API_KEY` | Audit and prompt proposal, and the summary, analysis and Builder calls when their base URL is the Gemini endpoint (a base URL that contains `generativelanguage`) |
 
 These are platform keys. They are not the `engine_key` of a customer AI, which belongs to the customer and is stored encrypted on the AI.
 
-The key is read for each call (nothing is cached), so a change is used by the next call of every replica, with no restart. The price is one database read per call (two for a Builder chat: the check and the model call), and a conversation turn reads it as well, so while the database can not be read these calls fail even when the environment holds a key (the environment value is a fallback for a missing row, not for a failed read). A request that is already running keeps the key it started with; the summary and analysis calls retry for up to one minute with the key they read at the start, so a rotation can take up to a minute to reach a retrying call.
+The key is read for each call (nothing is cached), so a change is used by the next call of every replica, with no restart. The price is one database read per call (two for a Builder chat: the check and the model call), so while the database can not be read the calls that use a platform key fail even when the environment holds a key (the environment value is a fallback for a missing row, not for a failed read). A request that is already running keeps the key it started with; the summary and analysis calls retry for up to one minute with the key they read at the start, so a rotation can take up to a minute to reach a retrying call. An AI conversation turn (an aicall reply) does not read these stored keys: the pipecat service answers it, with the key of the AI or from its own environment, so changing a stored platform key does not change the key an AI conversation uses.
 
 ```bash
 # the value is read from stdin only (one line; a key is at most 512 bytes) and is never printed
