@@ -11,7 +11,7 @@ import (
 func Test_sendMessage_requestBuildFailure(t *testing.T) {
 	var nilCtx context.Context
 
-	h := NewRequestExternal("messagebird-token", "telnyx-token")
+	h := NewRequestExternal(staticToken("messagebird-token"), staticToken("telnyx-token"))
 
 	t.Run("messagebird", func(t *testing.T) {
 		res, err := h.MessagebirdSendMessage(nilCtx, "+15550000001", []string{"+15550000002"}, "hello")

@@ -296,8 +296,10 @@ The ``.env.template`` variable names above are what you set;
 ``MESSAGEBIRD_API_KEY`` internally as ``AUTHTOKEN_MESSAGEBIRD``. This
 only matters if you go looking for the raw variable name inside
 ``number-manager``'s or ``message-manager``'s own config; the ``.env``
-names above are what you actually set. MessageBird has no dedicated
-feature write-up beyond its ``.env.template`` entry.
+names above are what you actually set. A token that an administrator
+stores later through the Service Config API (the ``message`` service) takes
+precedence over the ``.env`` value, which stays as the fallback. MessageBird
+has no dedicated feature write-up beyond its ``.env.template`` entry.
 
 .. code-block:: bash
 

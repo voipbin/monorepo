@@ -13,7 +13,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 )
 
-// The services of the config API: both are allowed, for all four operations, and the service name
+// The services of the config API: all of them are allowed, for all four operations, and the service name
 // reaches the request handler as it is.
 func Test_ServiceConfig_services(t *testing.T) {
 	tests := []struct {
@@ -22,6 +22,7 @@ func Test_ServiceConfig_services(t *testing.T) {
 	}{
 		{"email", "mailgun.api_key"},
 		{"ai", "llm.gemini.api_key"},
+		{"message", "provider.telnyx.auth_token"},
 	}
 
 	for _, tt := range tests {

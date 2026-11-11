@@ -63,7 +63,7 @@ func Test_TelnyxSendMessage_request(t *testing.T) {
 		return newResponse(200, io.NopCloser(strings.NewReader(`{"data":{"id":"fake-message-id","record_type":"message","type":"SMS"}}`))), nil
 	}))
 
-	h := NewRequestExternal("fake-token-mb", "fake-token-tn")
+	h := NewRequestExternal(staticToken("fake-token-mb"), staticToken("fake-token-tn"))
 
 	res, err := h.TelnyxSendMessage(context.Background(), "+15550100001", "+15550100002", "hello")
 	if err != nil {
@@ -115,7 +115,7 @@ func Test_TelnyxSendMessage_status(t *testing.T) {
 				return newResponse(tt.status, io.NopCloser(strings.NewReader(tt.body))), nil
 			}))
 
-			h := NewRequestExternal("fake-token-mb", "fake-token-tn")
+			h := NewRequestExternal(staticToken("fake-token-mb"), staticToken("fake-token-tn"))
 
 			res, err := h.TelnyxSendMessage(context.Background(), "+15550100001", "+15550100002", "hello")
 			if !tt.expectErr {
@@ -174,7 +174,7 @@ func Test_TelnyxSendMessage_responseErrors(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			replaceDefaultTransport(t, tt.roundTrip)
 
-			h := NewRequestExternal("fake-token-mb", "fake-token-tn")
+			h := NewRequestExternal(staticToken("fake-token-mb"), staticToken("fake-token-tn"))
 
 			res, err := h.TelnyxSendMessage(context.Background(), "+15550100001", "+15550100002", "hello")
 			if err == nil || res != nil {
@@ -196,7 +196,7 @@ func Test_TelnyxSendMessage_payload(t *testing.T) {
 		return newResponse(200, io.NopCloser(strings.NewReader(`{}`))), nil
 	}))
 
-	h := NewRequestExternal("fake-token-mb", "fake-token-tn")
+	h := NewRequestExternal(staticToken("fake-token-mb"), staticToken("fake-token-tn"))
 
 	// characters that need JSON escaping must survive the round trip
 	text := "line1\n\"quoted\" \u00e9"

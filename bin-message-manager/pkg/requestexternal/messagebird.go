@@ -28,6 +28,12 @@ func (h *requestExternal) MessagebirdSendMessage(ctx context.Context, sender str
 		"recipients": len(destinations),
 	})
 
+	token, errToken := h.authtokenMessagebird(ctx)
+	if errToken != nil {
+		log.Errorf("Could not get the messagebird token. err: %v", errToken)
+		return nil, fmt.Errorf("%w: messagebird: %w", ErrTokenUnavailable, errToken)
+	}
+
 	uri := messagebirdMessagesURI
 
 	data := url.Values{}
@@ -54,7 +60,7 @@ func (h *requestExternal) MessagebirdSendMessage(ctx context.Context, sender str
 		return nil, errors.Wrap(err, "Could not create a request.")
 	}
 
-	authtoken := fmt.Sprintf("AccessKey %s", h.authtokenMessagebird)
+	authtoken := fmt.Sprintf("AccessKey %s", token)
 	r.Header.Add("Authorization", authtoken)
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))

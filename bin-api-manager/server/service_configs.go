@@ -12,7 +12,7 @@ import (
 )
 
 // serviceConfigMaxBodyBytes caps the request body of the secret update. The largest secret that a
-// key accepts today (512 bytes for the email and ai keys, up to 6 bytes per byte once JSON escaped) fits
+// key accepts today (512 bytes for the email, ai and message keys, up to 6 bytes per byte once JSON escaped) fits
 // in it with room. Check it again when a service with a longer secret limit is added.
 const serviceConfigMaxBodyBytes = 4 * 1024
 

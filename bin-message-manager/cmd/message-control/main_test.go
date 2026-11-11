@@ -14,7 +14,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"monorepo/bin-common-handler/pkg/confighandler/storetest"
+
 	"monorepo/bin-message-manager/internal/config"
+	"monorepo/bin-message-manager/internal/messageconfig"
 )
 
 type roundTripFunc func(req *http.Request) (*http.Response, error)
@@ -52,7 +55,12 @@ func Test_newRequestExternal_tokenOrder(t *testing.T) {
 		AuthtokenTelnyx:      "fake-tn",
 	}
 
-	h := newRequestExternal(cfg)
+	configHandler, err := messageconfig.New(cfg, storetest.NewMemory())
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	h := newRequestExternal(configHandler)
 	if _, err := h.TelnyxSendMessage(context.Background(), "+15550000001", "+15550000002", "hello"); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}

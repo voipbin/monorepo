@@ -28,7 +28,8 @@ Supporting binary:
 | Business | `pkg/messagehandler` | Message CRUD, billing validation, provider dispatch, webhook processing |
 | Provider | `pkg/messagehandler/provider_telnyx.go` | Telnyx SMS API send per target |
 | Provider | `pkg/messagehandler/provider_messagebird.go` | MessageBird SMS API send per target |
-| External | `pkg/requestexternal` | HTTP client wrapper for provider APIs |
+| External | `pkg/requestexternal` | HTTP client wrapper for provider APIs. The provider tokens are supplied by a function that is called for every request (nothing is cached) |
+| Config | `internal/messageconfig`, `internal/configkeys`, `pkg/dbhandler/config_store.go` | Stored provider tokens (encrypted) with the environment fallback; `messageconfig.MessagebirdToken` and `TelnyxToken` return the supplier functions |
 | Data | `pkg/dbhandler` | Squirrel SQL builder queries for messages and targets |
 | Cache | `pkg/cachehandler` | Redis caching for message lookups |
 | Models | `models/message` | Message, Type, Direction, ProviderName, Status |
@@ -53,4 +54,8 @@ The `listenhandler` consumes from queue `bin-manager.message-manager.request` an
 | GET | `/v1/messages?` | List messages (pagination) |
 | GET | `/v1/messages/{uuid}` | Get message details |
 | DELETE | `/v1/messages/{uuid}` | Delete message |
+| GET | `/v1/configs` | List the stored provider token settings (source, never a value) |
+| PUT | `/v1/configs/{key}/secret` | Store a token (admin API through bin-api-manager); handled before the request log entry exists, nothing of the request is logged |
+| DELETE | `/v1/configs/{key}` | Remove a stored token |
+| GET | `/v1/configs/{key}/histories` | Change history of a key (no values) |
 | POST | `/v1/hooks` | Process provider webhook (a Telnyx `message.sent` or `message.finalized` receipt updates the target found by the provider reference id and is answered with 500 only when it must be delivered again; `message.received` creates an inbound message; for an inbound MMS the attachments are stored by a background ingest after the message is created) |

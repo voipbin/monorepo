@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"monorepo/bin-message-manager/models/telnyx"
 	"net/http"
@@ -13,6 +14,11 @@ import (
 
 // TelnyxSendMessage sends request to the telnyx to send the message.
 func (h *requestExternal) TelnyxSendMessage(ctx context.Context, source string, destination string, text string) (*telnyx.MessageResponse, error) {
+	token, err := h.authtokenTelnyx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: telnyx: %w", ErrTokenUnavailable, err)
+	}
+
 	uri := "https://api.telnyx.com/v2/messages"
 
 	payload := struct {
@@ -38,7 +44,7 @@ func (h *requestExternal) TelnyxSendMessage(ctx context.Context, source string, 
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+h.authtokenTelnyx) // Use Bearer token authentication
+	req.Header.Set("Authorization", "Bearer "+token) // Use Bearer token authentication
 
 	client := &http.Client{}
 	resp, err := client.Do(req)

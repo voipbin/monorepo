@@ -976,8 +976,10 @@ sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class=
 <code class="docutils literal notranslate"><span class="pre">MESSAGEBIRD_API_KEY</span></code> internally as <code class="docutils literal notranslate"><span class="pre">AUTHTOKEN_MESSAGEBIRD</span></code>. This
 only matters if you go looking for the raw variable name inside
 <code class="docutils literal notranslate"><span class="pre">number-manager</span></code>’s or <code class="docutils literal notranslate"><span class="pre">message-manager</span></code>’s own config; the <code class="docutils literal notranslate"><span class="pre">.env</span></code>
-names above are what you actually set. MessageBird has no dedicated
-feature write-up beyond its <code class="docutils literal notranslate"><span class="pre">.env.template</span></code> entry.</p>
+names above are what you actually set. A token that an administrator
+stores later through the Service Config API (the <code class="docutils literal notranslate"><span class="pre">message</span></code> service) takes
+precedence over the <code class="docutils literal notranslate"><span class="pre">.env</span></code> value, which stays as the fallback. MessageBird
+has no dedicated feature write-up beyond its <code class="docutils literal notranslate"><span class="pre">.env.template</span></code> entry.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>number-manager
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>message-manager
 </pre></div>

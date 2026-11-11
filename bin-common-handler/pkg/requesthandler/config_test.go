@@ -256,6 +256,7 @@ func Test_configQueue(t *testing.T) {
 	}{
 		{"email", "bin-manager.email-manager.request", "email/configs", nil},
 		{"ai", "bin-manager.ai-manager.request", "ai/configs", nil},
+		{"message", "bin-manager.message-manager.request", "message/configs", nil},
 		{"tts", "", "", ErrConfigServiceUnknown},
 		{"", "", "", ErrConfigServiceUnknown},
 	}
@@ -280,7 +281,7 @@ func Test_config_unknownService(t *testing.T) {
 	reqHandler := requestHandler{sock: mockSock}
 	ctx := context.Background()
 
-	for _, service := range []string{"", "nothing", "EMAIL", "AI", "ai/../x", "email/../x"} {
+	for _, service := range []string{"", "nothing", "EMAIL", "AI", "MESSAGE", "ai/../x", "email/../x"} {
 		if _, err := reqHandler.ConfigV1ServiceGet(ctx, service); !errors.Is(err, ErrConfigServiceUnknown) {
 			t.Errorf("Wrong match. service %q expect: ErrConfigServiceUnknown, got: %v", service, err)
 		}

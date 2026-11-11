@@ -65,6 +65,11 @@ func IsDefinitiveRejection(err error) bool {
 
 // TelnyxSendMMS sends one MMS to the telnyx.
 func (h *requestExternal) TelnyxSendMMS(ctx context.Context, source string, destination string, text string, mediaURLs []string) (*telnyx.MessageResponse, error) {
+	token, errToken := h.authtokenTelnyx(ctx)
+	if errToken != nil {
+		return nil, fmt.Errorf("%w: telnyx: %w", ErrTokenUnavailable, errToken)
+	}
+
 	payload := struct {
 		From      string   `json:"from"`
 		To        string   `json:"to"`
@@ -90,7 +95,7 @@ func (h *requestExternal) TelnyxSendMMS(ctx context.Context, source string, dest
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+h.authtokenTelnyx)
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -122,6 +127,11 @@ func (h *requestExternal) TelnyxSendMMS(ctx context.Context, source string, dest
 // MessagebirdSendMMS sends one MMS to the messagebird. The request has exactly one recipient
 // because a messagebird request succeeds or fails as a whole for its recipient list.
 func (h *requestExternal) MessagebirdSendMMS(ctx context.Context, sender string, destination string, text string, mediaURLs []string) (*messagebird.Message, error) {
+	token, errToken := h.authtokenMessagebird(ctx)
+	if errToken != nil {
+		return nil, fmt.Errorf("%w: messagebird: %w", ErrTokenUnavailable, errToken)
+	}
+
 	data := url.Values{}
 	data.Set("recipients", destination)
 	data.Set("originator", sender)
@@ -137,7 +147,7 @@ func (h *requestExternal) MessagebirdSendMMS(ctx context.Context, sender string,
 	if err != nil {
 		return nil, pkgerrors.Wrapf(err, "could not create a request")
 	}
-	req.Header.Set("Authorization", "AccessKey "+h.authtokenMessagebird)
+	req.Header.Set("Authorization", "AccessKey "+token)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	client := &http.Client{}

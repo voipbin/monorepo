@@ -20,8 +20,9 @@ var ErrConfigServiceUnknown = errors.New("the service has no config RPC")
 
 // names of the services in the config API.
 const (
-	configServiceEmail = "email"
-	configServiceAI    = "ai"
+	configServiceEmail   = "email"
+	configServiceAI      = "ai"
+	configServiceMessage = "message"
 )
 
 // configQueue returns the request queue of the service of the config API, and the label of the
@@ -33,6 +34,8 @@ func configQueue(service string) (commonoutline.QueueName, string, error) {
 		return commonoutline.QueueNameEmailRequest, "email/configs", nil
 	case configServiceAI:
 		return commonoutline.QueueNameAIRequest, "ai/configs", nil
+	case configServiceMessage:
+		return commonoutline.QueueNameMessageRequest, "message/configs", nil
 	}
 
 	return "", "", ErrConfigServiceUnknown

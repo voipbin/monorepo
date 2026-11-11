@@ -131,9 +131,12 @@ func (h *mmsTelnyx) SendMMS(ctx context.Context, messageID uuid.UUID, source *co
 		}
 
 		outcome := classifyError(err)
-		if outcome == SendOutcomeRejected {
+		switch {
+		case outcome == SendOutcomeRejected:
 			log.Errorf("The provider refused the mms. target_index: %d, err: %v", i, err)
-		} else {
+		case requestexternal.IsTokenUnavailable(err):
+			log.Errorf("The mms was not sent: the provider token could not be read. target_index: %d, err: %v", i, err)
+		default:
 			log.Errorf("Could not send the mms. The result is not known. target_index: %d, err: %v", i, err)
 		}
 		return SendResult{Outcome: outcome}
@@ -169,9 +172,12 @@ func (h *mmsMessagebird) SendMMS(ctx context.Context, messageID uuid.UUID, sourc
 		}
 
 		outcome := classifyError(err)
-		if outcome == SendOutcomeRejected {
+		switch {
+		case outcome == SendOutcomeRejected:
 			log.Errorf("The provider refused the mms. target_index: %d, err: %v", i, err)
-		} else {
+		case requestexternal.IsTokenUnavailable(err):
+			log.Errorf("The mms was not sent: the provider token could not be read. target_index: %d, err: %v", i, err)
+		default:
 			log.Errorf("Could not send the mms. The result is not known. target_index: %d, err: %v", i, err)
 		}
 		return SendResult{Outcome: outcome}
