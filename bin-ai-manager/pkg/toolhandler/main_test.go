@@ -227,7 +227,7 @@ func nameSet(tools []tool.Tool) map[tool.ToolName]bool {
 
 // Test_ToolHandler_GetByNames_InsightMessageTools pins the contract of the
 // Insight SMS and email tools (VOIP-1704, VOIP-1708, VOIP-1710): the "all"
-// selector returns them together with the other Insight tools (12 in total),
+// selector returns them together with the other Insight tools (15 in total),
 // an explicit name still returns just that tool, and a mixed list returns no
 // duplicates. A Normal AI never gets draft_message or draft_email.
 func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
@@ -245,8 +245,8 @@ func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
 			name:      "insight all includes the message and email tools",
 			aiType:    ai.TypeInsight,
 			names:     []tool.ToolName{tool.ToolNameAll},
-			want:      append(append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightMessageToolNames...), tool.InsightEmailToolNames...),
-			wantCount: 12,
+			want:      append(append(append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightMessageToolNames...), tool.InsightEmailToolNames...), tool.InsightCallToolNames...),
+			wantCount: 15,
 		},
 		{
 			name:      "insight explicit draft_email",
@@ -268,8 +268,39 @@ func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
 			name:      "insight all plus send_email",
 			aiType:    ai.TypeInsight,
 			names:     []tool.ToolName{tool.ToolNameAll, tool.ToolNameSendEmail},
-			want:      append(append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightMessageToolNames...), tool.InsightEmailToolNames...),
-			wantCount: 12,
+			want:      append(append(append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightMessageToolNames...), tool.InsightEmailToolNames...), tool.InsightCallToolNames...),
+			wantCount: 15,
+		},
+		{
+			name:      "insight explicit draft_call",
+			aiType:    ai.TypeInsight,
+			names:     []tool.ToolName{tool.ToolNameDraftCall},
+			want:      []tool.ToolName{tool.ToolNameDraftCall},
+			wantNot:   []tool.ToolName{tool.ToolNameCreateCall, tool.ToolNameDescribeAction},
+			wantCount: 1,
+		},
+		{
+			name:      "insight explicit create_call",
+			aiType:    ai.TypeInsight,
+			names:     []tool.ToolName{tool.ToolNameCreateCall},
+			want:      []tool.ToolName{tool.ToolNameCreateCall},
+			wantNot:   []tool.ToolName{tool.ToolNameDraftCall},
+			wantCount: 1,
+		},
+		{
+			name:      "insight draft_call with describe_action",
+			aiType:    ai.TypeInsight,
+			names:     []tool.ToolName{tool.ToolNameDraftCall, tool.ToolNameDescribeAction},
+			want:      []tool.ToolName{tool.ToolNameDraftCall, tool.ToolNameDescribeAction},
+			wantNot:   []tool.ToolName{tool.ToolNameCreateCall},
+			wantCount: 2,
+		},
+		{
+			name:      "normal explicit draft_call is not allowed",
+			aiType:    ai.TypeNormal,
+			names:     []tool.ToolName{tool.ToolNameDraftCall},
+			wantNot:   []tool.ToolName{tool.ToolNameDraftCall},
+			wantCount: 0,
 		},
 		{
 			name:      "normal explicit draft_email is not allowed",
@@ -305,8 +336,8 @@ func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
 			name:      "insight all plus send_message",
 			aiType:    ai.TypeInsight,
 			names:     []tool.ToolName{tool.ToolNameAll, tool.ToolNameSendMessage},
-			want:      append(append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightMessageToolNames...), tool.InsightEmailToolNames...),
-			wantCount: 12,
+			want:      append(append(append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightMessageToolNames...), tool.InsightEmailToolNames...), tool.InsightCallToolNames...),
+			wantCount: 15,
 		},
 		{
 			name:      "normal explicit draft_message is not allowed",
@@ -316,11 +347,11 @@ func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
 			wantCount: 0,
 		},
 		{
-			name:      "normal all has no draft_message and no draft_email",
+			name:      "normal all has no draft_message, draft_email and draft_call",
 			aiType:    ai.TypeNormal,
 			names:     []tool.ToolName{tool.ToolNameAll},
 			want:      tool.AllToolNames,
-			wantNot:   []tool.ToolName{tool.ToolNameDraftMessage, tool.ToolNameDraftEmail},
+			wantNot:   []tool.ToolName{tool.ToolNameDraftMessage, tool.ToolNameDraftEmail, tool.ToolNameDraftCall},
 			wantCount: len(tool.AllToolNames),
 		},
 	}

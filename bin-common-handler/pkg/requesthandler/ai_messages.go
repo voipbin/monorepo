@@ -78,7 +78,7 @@ func (r *requestHandler) AIV1MessageSend(ctx context.Context, aicallID uuid.UUID
 }
 
 // AIV1MessageDraftDecision sends a request to ai-manager
-// to approve or reject an SMS draft card of the given aicall.
+// to approve or reject an SMS, email or call draft card of the given aicall.
 // it returns the decision result message if it succeed.
 // The approval sends the SMS inside ai-manager, so it uses a longer timeout like AIV1MessageSend.
 func (r *requestHandler) AIV1MessageDraftDecision(ctx context.Context, aicallID uuid.UUID, draftID uuid.UUID, decision cbmessage.DraftDecision) (*cbmessage.Message, error) {

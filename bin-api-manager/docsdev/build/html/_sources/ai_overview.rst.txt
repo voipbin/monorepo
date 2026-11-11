@@ -333,9 +333,9 @@ case_create               Create a CRM case for the current contact
    above: ``get_contact_interactions``, ``get_conversation_content``,
    ``get_related_cases``, ``get_case_notes``,
    ``get_contact_profile``, ``get_call_transcript``, ``emit_info_card``, and
-   ``notify_agent``. Four more, ``send_message``, ``draft_message``, ``send_email`` and ``draft_email``, send or
-   propose an SMS or an email: they can be named in ``tool_names`` and are included by
-   ``["all"]``, so ``send_message`` and ``send_email`` send right away without an agent's confirmation. See
+   ``notify_agent``. Seven more, ``send_message``, ``draft_message``, ``send_email``, ``draft_email``, ``create_call``,
+   ``draft_call`` and ``describe_action``, send, call or propose an SMS, an email or an outbound call: they can be named in ``tool_names`` and are included by
+   ``["all"]``, so ``send_message``, ``send_email`` and ``create_call`` act right away without an agent's confirmation. See
    :ref:`Insight Tools <ai-struct-tool-insight>`. They can also use the tools of the MCP
    servers listed in their own ``mcp_server_ids``.
 

@@ -147,6 +147,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		message.FunctionCallNameEmitInfoCard:           h.toolHandleEmitInfoCard,
 		message.FunctionCallNameDraftMessage:           h.toolHandleDraftMessage,
 		message.FunctionCallNameDraftEmail:             h.toolHandleDraftEmail,
+		message.FunctionCallNameDraftCall:              h.toolHandleDraftCall,
 	}
 
 	promAIcallToolExecuteTotal.WithLabelValues(labelForToolExecuteMetric(tool.Function.Name)).Inc()
@@ -207,7 +208,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	}
 	log.WithFields(logrus.Fields{"message_id": msg.ID, "content_len": len(msg.Content)}).Debugf("Created the tool response message. message_id: %s", msg.ID)
 
-	// emit_info_card (and draft_message and draft_email, which record their card
+	// emit_info_card (and draft_message, draft_email and draft_call, which record their card
 	// the same way) bypasses unmarshalToolResponse: the stored message content
 	// carries Blocks (the card's title/description/fields), which must never be
 	// fed back into the LLM's prompt context (docs/plans/
@@ -216,7 +217,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	// every other tool's unmarshalToolResponse output, Blocks excluded. Every
 	// other tool is unaffected and still goes through unmarshalToolResponse.
 	var res map[string]any
-	if tool.Function.Name == message.FunctionCallNameEmitInfoCard || tool.Function.Name == message.FunctionCallNameDraftMessage || tool.Function.Name == message.FunctionCallNameDraftEmail {
+	if tool.Function.Name == message.FunctionCallNameEmitInfoCard || tool.Function.Name == message.FunctionCallNameDraftMessage || tool.Function.Name == message.FunctionCallNameDraftEmail || tool.Function.Name == message.FunctionCallNameDraftCall {
 		res = emitInfoCardLLMResult(tmpMessageContent)
 	} else {
 		res, err = h.unmarshalToolResponse(msg)
@@ -243,7 +244,9 @@ type CardField struct {
 // Type "sms_draft" (draft_message, VOIP-1704) also carries To and Text: the
 // proposed recipient number and message body. Type "email_draft" (draft_email,
 // VOIP-1710) carries Recipients (normalized addresses), Subject and Content (plain
-// text). The fields of a type are omitted for the other types.
+// text). Type "call_draft" (draft_call, VOIP-1717) carries Call: the arguments of
+// create_call as the agent saw them. The fields of a type are omitted for the
+// other types.
 type CardBlock struct {
 	Type        string      `json:"type"`
 	Title       string      `json:"title"`
@@ -254,6 +257,7 @@ type CardBlock struct {
 	Recipients  []string    `json:"recipients,omitempty"`
 	Subject     string      `json:"subject,omitempty"`
 	Content     string      `json:"content,omitempty"`
+	Call        *CallDraft  `json:"call,omitempty"`
 }
 
 type messageContent struct {

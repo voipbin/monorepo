@@ -58,10 +58,10 @@ func draftNotFound() error {
 	return cerrors.NotFound(commonoutline.ServiceNameAIManager, "DRAFT_NOT_FOUND", "The draft was not found.")
 }
 
-// DraftDecision carries out the agent's decision on an SMS or email draft card
+// DraftDecision carries out the agent's decision on an SMS, email or call draft card
 // without involving the LLM. The request holds ids only; the recipients and the
 // text are read from the stored draft row, and the block type of that row
-// (sms_draft or email_draft) selects the send.
+// (sms_draft, email_draft or call_draft) selects the send_message, send_email or create_call handler.
 //
 // Rows written for one decision (none is updated afterwards):
 //   - a claim row (role notification), written first. Its id is derived from
@@ -99,68 +99,12 @@ func (h *aicallHandler) DraftDecision(ctx context.Context, aicallID uuid.UUID, d
 		return nil, errClaim
 	}
 
-	isEmail := draft.Type == message.BlockTypeEmailDraft
-
-	var funcName message.FunctionCallName
-	var args []byte
-	if isEmail {
-		funcName = message.FunctionCallNameSendEmail
-		destinations := make([]commonaddress.Address, 0, len(draft.Recipients))
-		for _, r := range draft.Recipients {
-			destinations = append(destinations, commonaddress.Address{Type: commonaddress.TypeEmail, Target: r})
-		}
-		args, err = json.Marshal(&fmaction.OptionEmailSend{
-			Destinations: destinations,
-			Subject:      draft.Subject,
-			Content:      draft.Content,
-		})
-	} else {
-		funcName = message.FunctionCallNameSendMessage
-		args, err = json.Marshal(&fmaction.OptionMessageSend{
-			Destinations: []commonaddress.Address{{Type: commonaddress.TypeTel, Target: draft.To}},
-			Text:         draft.Text,
-		})
-	}
+	tool, err := draftDecisionBuildTool(draft, draftID)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not marshal the send arguments")
-	}
-	tool := &message.ToolCall{
-		ID:   draftDecisionToolCallID(draftID),
-		Type: message.ToolTypeFunction,
-		Function: message.FunctionCall{
-			Name:      funcName,
-			Arguments: string(args),
-		},
+		return nil, err
 	}
 
-	var result *messageContent
-	switch {
-	case decision == message.DraftDecisionApprove && isEmail:
-		promAIcallToolExecuteTotal.WithLabelValues(labelForToolExecuteMetric(tool.Function.Name)).Inc()
-		result = h.toolHandleEmailSend(ctx, c, tool)
-		if result.Result == "failed" {
-			result.Message += draftDeliveryUnconfirmedSuffix
-		} else {
-			// the send is asynchronous: email-manager answers once the email exists and a
-			// provider failure afterwards is never reported, so a success is not a delivery.
-			result.Message = draftEmailAcceptedMessage
-		}
-
-	case decision == message.DraftDecisionApprove:
-		promAIcallToolExecuteTotal.WithLabelValues(labelForToolExecuteMetric(tool.Function.Name)).Inc()
-		result = h.toolHandleMessageSend(ctx, c, tool)
-		if result.Result == "failed" {
-			result.Message += draftDeliveryUnconfirmedSuffix
-		}
-
-	default:
-		result = newToolResult(tool.ID)
-		result.Result = "rejected"
-		result.Message = draftRejectedMessage
-		if isEmail {
-			result.Message = draftEmailRejectedMessage
-		}
-	}
+	result := h.draftDecisionExecute(ctx, c, tool, draft, decision)
 
 	activeAIID := h.resolveActiveAIIDFromAIcall(ctx, c)
 	if _, errCall := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionIncoming, message.RoleAssistant, "", []message.ToolCall{*tool}, "",
@@ -198,30 +142,22 @@ func (h *aicallHandler) draftDecisionLoad(ctx context.Context, c *aicall.AIcall,
 		return nil, draftNotFound()
 	}
 
+	// UseNumber: the numbers in a call draft's action options must keep their exact
+	// digits, as toolHandleCreateCall decodes them.
 	var stored messageContent
-	if errUnmarshal := json.Unmarshal([]byte(d.Content), &stored); errUnmarshal != nil {
+	dec := json.NewDecoder(strings.NewReader(d.Content))
+	dec.UseNumber()
+	if errUnmarshal := dec.Decode(&stored); errUnmarshal != nil {
 		return nil, draftNotFound()
 	}
-	var draft *CardBlock
-	for i := range stored.Blocks {
-		isSMS := stored.Blocks[i].Type == message.BlockTypeSMSDraft && stored.Blocks[i].To != ""
-		isEmail := stored.Blocks[i].Type == message.BlockTypeEmailDraft && len(stored.Blocks[i].Recipients) > 0
-		if isSMS || isEmail {
-			draft = &stored.Blocks[i]
-			break
-		}
-	}
+	draft := draftDecisionFindBlock(stored.Blocks)
 	if draft == nil {
 		return nil, draftNotFound()
 	}
 
 	if decision == message.DraftDecisionApprove {
-		if draft.Type == message.BlockTypeEmailDraft {
-			if !draftEmailStillValid(draft) {
-				return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "DRAFT_INVALID", draftEmailInvalidMessage)
-			}
-		} else if !draftToRegex.MatchString(draft.To) {
-			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "DRAFT_INVALID", "The draft recipient is not a valid phone number.")
+		if errValid := draftDecisionShapeValid(draft); errValid != nil {
+			return nil, errValid
 		}
 	}
 
@@ -235,7 +171,147 @@ func (h *aicallHandler) draftDecisionLoad(ctx context.Context, c *aicall.AIcall,
 		return nil, cerrors.FailedPrecondition(commonoutline.ServiceNameAIManager, "DRAFT_EXPIRED", "The draft expired and can no longer be decided.")
 	}
 
+	// the flow binding is read after the expiry check, so an expired draft costs no read,
+	// and before the claim, so a read error does not consume the draft.
+	if decision == message.DraftDecisionApprove && draft.Type == message.BlockTypeCallDraft {
+		ok, errBind := h.callDraftFlowBindingValid(ctx, c, draft.Call)
+		if errBind != nil {
+			return nil, errors.Wrapf(errBind, "could not read the flow of the call draft")
+		}
+		if !ok {
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "DRAFT_INVALID", draftCallInvalidMessage)
+		}
+	}
+
 	return draft, nil
+}
+
+// draftDecisionFindBlock returns the first card block that is a decidable draft:
+// an sms_draft with a recipient, an email_draft with recipients or a call_draft
+// with a call. It returns nil when there is none.
+func draftDecisionFindBlock(blocks []CardBlock) *CardBlock {
+	for i := range blocks {
+		switch {
+		case blocks[i].Type == message.BlockTypeSMSDraft && blocks[i].To != "":
+			return &blocks[i]
+		case blocks[i].Type == message.BlockTypeEmailDraft && len(blocks[i].Recipients) > 0:
+			return &blocks[i]
+		case blocks[i].Type == message.BlockTypeCallDraft && blocks[i].Call != nil:
+			return &blocks[i]
+		}
+	}
+	return nil
+}
+
+// draftDecisionShapeValid runs, on approve, the validation of the draft type
+// again: the E.164 rule for SMS, validateEmailDraft for email and
+// validateCallDraftShape for a call.
+func draftDecisionShapeValid(draft *CardBlock) error {
+	switch draft.Type {
+	case message.BlockTypeEmailDraft:
+		if !draftEmailStillValid(draft) {
+			return cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "DRAFT_INVALID", draftEmailInvalidMessage)
+		}
+	case message.BlockTypeCallDraft:
+		if !callDraftShapeStillValid(draft.Call) {
+			return cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "DRAFT_INVALID", draftCallInvalidMessage)
+		}
+	default:
+		if !draftToRegex.MatchString(draft.To) {
+			return cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "DRAFT_INVALID", "The draft recipient is not a valid phone number.")
+		}
+	}
+	return nil
+}
+
+// draftDecisionBuildTool rebuilds, from the stored draft, the tool call that
+// the decision runs: send_message, send_email or create_call with the stored
+// arguments. The block type selects it.
+func draftDecisionBuildTool(draft *CardBlock, draftID uuid.UUID) (*message.ToolCall, error) {
+	var funcName message.FunctionCallName
+	var args []byte
+	var err error
+	switch draft.Type {
+	case message.BlockTypeEmailDraft:
+		funcName = message.FunctionCallNameSendEmail
+		destinations := make([]commonaddress.Address, 0, len(draft.Recipients))
+		for _, r := range draft.Recipients {
+			destinations = append(destinations, commonaddress.Address{Type: commonaddress.TypeEmail, Target: r})
+		}
+		args, err = json.Marshal(&fmaction.OptionEmailSend{
+			Destinations: destinations,
+			Subject:      draft.Subject,
+			Content:      draft.Content,
+		})
+	case message.BlockTypeCallDraft:
+		funcName = message.FunctionCallNameCreateCall
+		args, err = callDraftCreateArguments(draft.Call)
+	default:
+		funcName = message.FunctionCallNameSendMessage
+		args, err = json.Marshal(&fmaction.OptionMessageSend{
+			Destinations: []commonaddress.Address{{Type: commonaddress.TypeTel, Target: draft.To}},
+			Text:         draft.Text,
+		})
+	}
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal the send arguments")
+	}
+
+	return &message.ToolCall{
+		ID:   draftDecisionToolCallID(draftID),
+		Type: message.ToolTypeFunction,
+		Function: message.FunctionCall{
+			Name:      funcName,
+			Arguments: string(args),
+		},
+	}, nil
+}
+
+// draftDecisionExecute carries out the decision and returns the tool result. A
+// reject runs nothing. An approve runs the handler of the draft type in code
+// without an LLM turn: the metric label is the handler that ran.
+func (h *aicallHandler) draftDecisionExecute(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall, draft *CardBlock, decision message.DraftDecision) *messageContent {
+	if decision != message.DraftDecisionApprove {
+		result := newToolResult(tool.ID)
+		result.Result = "rejected"
+		switch draft.Type {
+		case message.BlockTypeEmailDraft:
+			result.Message = draftEmailRejectedMessage
+		case message.BlockTypeCallDraft:
+			result.Message = draftCallRejectedMessage
+		default:
+			result.Message = draftRejectedMessage
+		}
+		return result
+	}
+
+	promAIcallToolExecuteTotal.WithLabelValues(labelForToolExecuteMetric(tool.Function.Name)).Inc()
+
+	switch draft.Type {
+	case message.BlockTypeEmailDraft:
+		result := h.toolHandleEmailSend(ctx, c, tool)
+		if result.Result == "failed" {
+			result.Message += draftDeliveryUnconfirmedSuffix
+		} else {
+			// the send is asynchronous: email-manager answers once the email exists and a
+			// provider failure afterwards is never reported, so a success is not a delivery.
+			result.Message = draftEmailAcceptedMessage
+		}
+		return result
+
+	case message.BlockTypeCallDraft:
+		// the handler's result is kept as is: on success the created call ids, on failure
+		// no call was created (an error is returned only when every destination failed),
+		// so there is nothing unconfirmed to add.
+		return h.toolHandleCreateCall(ctx, c, tool)
+
+	default:
+		result := h.toolHandleMessageSend(ctx, c, tool)
+		if result.Result == "failed" {
+			result.Message += draftDeliveryUnconfirmedSuffix
+		}
+		return result
+	}
 }
 
 // draftDecisionClaim writes the claim row. Its id is derived from the draft id,

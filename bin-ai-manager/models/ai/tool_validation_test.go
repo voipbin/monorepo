@@ -62,6 +62,18 @@ func TestValidateToolNames(t *testing.T) {
 			wantError: false,
 		},
 		{
+			name:      "insight_with_call_tools_ok",
+			aiType:    TypeInsight,
+			toolNames: []tool.ToolName{tool.ToolNameCreateCall, tool.ToolNameDraftCall, tool.ToolNameDescribeAction},
+			wantError: false,
+		},
+		{
+			name:      "normal_with_draft_call_rejected",
+			aiType:    TypeNormal,
+			toolNames: []tool.ToolName{tool.ToolNameDraftCall},
+			wantError: true,
+		},
+		{
 			name:      "normal_with_draft_email_rejected",
 			aiType:    TypeNormal,
 			toolNames: []tool.ToolName{tool.ToolNameDraftEmail},
