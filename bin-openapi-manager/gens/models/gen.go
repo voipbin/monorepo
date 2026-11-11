@@ -513,6 +513,7 @@ const (
 	AIManagerToolNameConnectCall            AIManagerToolName = "connect_call"
 	AIManagerToolNameCreateCall             AIManagerToolName = "create_call"
 	AIManagerToolNameDescribeAction         AIManagerToolName = "describe_action"
+	AIManagerToolNameDraftEmail             AIManagerToolName = "draft_email"
 	AIManagerToolNameDraftMessage           AIManagerToolName = "draft_message"
 	AIManagerToolNameEmitInfoCard           AIManagerToolName = "emit_info_card"
 	AIManagerToolNameGetAicallMessages      AIManagerToolName = "get_aicall_messages"
@@ -549,6 +550,8 @@ func (e AIManagerToolName) Valid() bool {
 	case AIManagerToolNameCreateCall:
 		return true
 	case AIManagerToolNameDescribeAction:
+		return true
+	case AIManagerToolNameDraftEmail:
 		return true
 	case AIManagerToolNameDraftMessage:
 		return true
@@ -4191,7 +4194,7 @@ type AIManagerAI struct {
 	// Example: 2026-01-15T09:30:00.000000Z
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// ToolNames List of tool names enabled for this AI. Use `["all"]` to enable all tools. See the Tool Functions documentation for detailed descriptions of each tool. Tools for type=insight AIs that send or propose an SMS: `send_message` (sends an SMS or MMS right away, without an agent's confirmation) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They can be named explicitly and are included by `["all"]`, so an Insight AI stored with `["all"]` gets both.
+	// ToolNames List of tool names enabled for this AI. Use `["all"]` to enable all tools. See the Tool Functions documentation for detailed descriptions of each tool. Tools for type=insight AIs that send or propose an SMS or an email: `send_message` and `send_email` (send right away, without an agent's confirmation; an email is sent from the platform's default sender address and its delivery is not confirmed) and `draft_message` and `draft_email` (show a draft card that an agent approves or rejects; nothing is sent until the agent approves). They can be named explicitly and are included by `["all"]`, so an Insight AI stored with `["all"]` gets all four (12 tools in total, with the 8 other Insight tools). A customer who does not want direct sending names `draft_message` and `draft_email` instead of `["all"]`. `draft_message` and `draft_email` are available to type=insight AIs only.
 	//
 	// Example: ["all"]
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
@@ -4871,7 +4874,7 @@ type AIManagerMessageOrigin string
 // Example: incoming
 type AIManagerMessageDirection string
 
-// AIManagerMessageDraftDecision The agent's decision on an SMS draft card. `approve` sends the drafted SMS; `reject` discards it without sending.
+// AIManagerMessageDraftDecision The agent's decision on a draft card (an SMS draft or an email draft). `approve` sends the drafted SMS or email; `reject` discards it without sending.
 //
 // Example: approve
 type AIManagerMessageDraftDecision string
@@ -11552,7 +11555,7 @@ type PostAisJSONBody struct {
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
-	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, emit_info_card, and notify_agent, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Tools for type=insight AIs that send or propose an SMS: `send_message` (sends an SMS or MMS right away, without an agent's confirmation) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They can be named explicitly and are included by `["all"]`, so an Insight AI stored with `["all"]` gets both. Mismatched combinations are rejected with a 400.
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, emit_info_card, and notify_agent, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Tools for type=insight AIs that send or propose an SMS or an email: `send_message` and `send_email` (send right away, without an agent's confirmation; an email is sent from the platform's default sender address and its delivery is not confirmed) and `draft_message` and `draft_email` (show a draft card that an agent approves or rejects; nothing is sent until the agent approves). They can be named explicitly and are included by `["all"]`, so an Insight AI stored with `["all"]` gets all four (12 tools in total, with the 8 other Insight tools). A customer who does not want direct sending names `draft_message` and `draft_email` instead of `["all"]`. `draft_message` and `draft_email` are available to type=insight AIs only. Mismatched combinations are rejected with a 400.
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.
@@ -11618,7 +11621,7 @@ type PutAisIdJSONBody struct {
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
-	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, emit_info_card, and notify_agent, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Tools for type=insight AIs that send or propose an SMS: `send_message` (sends an SMS or MMS right away, without an agent's confirmation) and `draft_message` (shows an SMS draft card that an agent approves or rejects; nothing is sent until the agent approves). They can be named explicitly and are included by `["all"]`, so an Insight AI stored with `["all"]` gets both. Mismatched combinations are rejected with a 400.
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, emit_info_card, and notify_agent, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Tools for type=insight AIs that send or propose an SMS or an email: `send_message` and `send_email` (send right away, without an agent's confirmation; an email is sent from the platform's default sender address and its delivery is not confirmed) and `draft_message` and `draft_email` (show a draft card that an agent approves or rejects; nothing is sent until the agent approves). They can be named explicitly and are included by `["all"]`, so an Insight AI stored with `["all"]` gets all four (12 tools in total, with the 8 other Insight tools). A customer who does not want direct sending names `draft_message` and `draft_email` instead of `["all"]`. `draft_message` and `draft_email` are available to type=insight AIs only. Mismatched combinations are rejected with a 400.
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.
@@ -13539,12 +13542,12 @@ type PostServiceAgentsAimessagesDraftDecisionJSONBody struct {
 	// Example: 5e4a0680-804e-11ec-8477-2fea5968d85b
 	AicallId openapi_types.UUID `json:"aicall_id"`
 
-	// Decision The agent's decision on an SMS draft card. `approve` sends the drafted SMS; `reject` discards it without sending.
+	// Decision The agent's decision on a draft card (an SMS draft or an email draft). `approve` sends the drafted SMS or email; `reject` discards it without sending.
 	//
 	// Example: approve
 	Decision AIManagerMessageDraftDecision `json:"decision"`
 
-	// DraftId The ID of the `tool` message that carries the `sms_draft` block. Returned from the `id` field of the `GET /service_agents/aimessages` response or of the `aimessage_created` event.
+	// DraftId The ID of the `tool` message that carries the `sms_draft` or `email_draft` block. Returned from the `id` field of the `GET /service_agents/aimessages` response or of the `aimessage_created` event.
 	//
 	// Example: 7a1c3f80-804e-11ec-8477-2fea5968d85b
 	DraftId openapi_types.UUID `json:"draft_id"`

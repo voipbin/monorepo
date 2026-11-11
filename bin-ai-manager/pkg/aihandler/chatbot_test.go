@@ -1042,7 +1042,7 @@ func TestCreate_RejectsInsightAIWithNormalTools(t *testing.T) {
 		"",
 		ai.STTTypeNone,
 		"",
-		[]tool.ToolName{tool.ToolNameSendEmail, tool.ToolNameConnectCall},
+		[]tool.ToolName{tool.ToolNameStopFlow, tool.ToolNameConnectCall},
 		nil,
 		false,
 		false,
@@ -1051,7 +1051,7 @@ func TestCreate_RejectsInsightAIWithNormalTools(t *testing.T) {
 		t.Fatal("Create() with Type=insight and Normal-only tool_names should have been rejected, got nil error")
 	}
 	assertInvalidArgument(t, err)
-	if !contains(err.Error(), "send_email") && !contains(err.Error(), "connect_call") {
+	if !contains(err.Error(), "stop_flow") || !contains(err.Error(), "connect_call") {
 		t.Errorf("Create() error should name the offending tool(s), got: %v", err)
 	}
 }
@@ -1214,7 +1214,7 @@ func TestUpdate_RejectsInsightAIWithNormalTools(t *testing.T) {
 		"",
 		ai.STTTypeNone,
 		"",
-		[]tool.ToolName{tool.ToolNameSendEmail},
+		[]tool.ToolName{tool.ToolNameConnectCall},
 		nil,
 		false,
 		false,

@@ -72,7 +72,7 @@ type Config struct {
 
 	AIcallSendCooldownSeconds int // Minimum seconds between two Send() calls on the same AIcall, to bound LLM spend from rapid repeated sends.
 
-	AIcallDraftDecisionExpirySeconds int // Seconds after its creation during which an SMS draft can still be approved or rejected. Zero or less means the default (600).
+	AIcallDraftDecisionExpirySeconds int // Seconds after its creation during which an SMS or email draft can still be approved or rejected. Zero or less means the default (600).
 
 	// Insight AI realtime call listening (docs/plans/
 	// 2026-09-03-insight-ai-realtime-listen-design.md §5.12).
@@ -188,7 +188,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("aicall_contact_case_recreate_rate_limit_minutes", 5, "Rate limit window (minutes) after a contact_case-typed AIcall terminates during which recreation for the same reference_id is blocked")
 	f.Int("aicall_insight_session_idle_minutes", 30, "Idle minutes after which reopening an Insight Case panel starts a new assistant session (prompt refresh + history boundary); 0 or less disables it")
 	f.Int("aicall_send_cooldown_seconds", 3, "Minimum seconds between two Send() calls on the same AIcall")
-	f.Int("aicall_draft_decision_expiry_seconds", 600, "Seconds after its creation during which an SMS draft can still be approved or rejected")
+	f.Int("aicall_draft_decision_expiry_seconds", 600, "Seconds after its creation during which an SMS or email draft can still be approved or rejected")
 	f.Int("aicall_listen_evaluate_interval_seconds", 20, "Debounce window (seconds) between Insight AI listen evaluation turns on one AIcall")
 	f.Int("aicall_listen_window_size", 40, "Rolling transcript lines kept in a listen turn's context")
 	f.Int("aicall_listen_qa_context_size", 10, "Q&A message rows replayed into a listen turn's context")
@@ -450,7 +450,7 @@ func SetAIcallInsightSessionIdleMinutesForTest(minutes int) {
 	globalConfig.AIcallInsightSessionIdleMinutes = minutes
 }
 
-// SetAIcallDraftDecisionExpirySecondsForTest overrides the SMS draft decision expiry in tests.
+// SetAIcallDraftDecisionExpirySecondsForTest overrides the draft decision expiry in tests.
 func SetAIcallDraftDecisionExpirySecondsForTest(seconds int) {
 	globalConfig.AIcallDraftDecisionExpirySeconds = seconds
 }

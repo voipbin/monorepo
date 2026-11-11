@@ -1,19 +1,24 @@
 post:
-  summary: Decide an SMS draft
+  summary: Decide a draft
   description: >-
-    Approves or rejects an SMS draft card that the Insight Assistant produced with the
-    `draft_message` tool. On `approve` the platform sends the drafted SMS (to the stored
-    recipient and text, from the account's default sender) without involving the LLM, and
-    records the result in the aicall's message history. On `reject` nothing is sent and the
-    rejection is recorded. The draft id is the `id` of the `tool` message that carries the
-    `sms_draft` block.
+    Approves or rejects a draft card that the Insight Assistant produced with the
+    `draft_message` tool (an SMS draft, block type `sms_draft`) or the `draft_email` tool (an email
+    draft, block type `email_draft`). On `approve` the platform sends the draft without involving the
+    LLM and records the result in the aicall's message history: an SMS draft is sent to the stored
+    recipient with the stored text, and an email draft is sent to the stored recipients with the
+    stored subject and plain text content, in both cases from the account's default sender. On
+    `reject` nothing is sent and the rejection is recorded. The draft id is the `id` of the `tool`
+    message that carries the `sms_draft` or `email_draft` block.
 
     A draft can be decided once. A repeated or opposite decision is refused with
     `DRAFT_ALREADY_DECIDED`. A draft that is not decided within 10 minutes of its creation (the
     default; operators can change it) is refused with `DRAFT_EXPIRED`. Both refusals answer with HTTP 409. An unknown draft, or a draft of another aicall or
-    customer, is refused with `DRAFT_NOT_FOUND`. The aicall must belong to the service
+    customer, is refused with `DRAFT_NOT_FOUND`. On `approve`, a stored draft that no longer passes
+    validation is refused with `DRAFT_INVALID` (HTTP 400) before anything is sent; the draft stays
+    undecided and can still be rejected. The aicall must belong to the service
     agent's own customer. A send failure is returned as a normal response whose
-    message content has `result` set to `failed`.
+    message content has `result` set to `failed`. An email is sent asynchronously: for an email draft,
+    `result` `success` means the platform accepted the email for sending and does not confirm delivery.
   tags:
     - Service Agent
   requestBody:
@@ -34,9 +39,9 @@ post:
               type: string
               format: uuid
               description: >-
-                The ID of the `tool` message that carries the `sms_draft` block. Returned from
-                the `id` field of the `GET /service_agents/aimessages` response or of the
-                `aimessage_created` event.
+                The ID of the `tool` message that carries the `sms_draft` or `email_draft` block.
+                Returned from the `id` field of the `GET /service_agents/aimessages` response or of
+                the `aimessage_created` event.
               example: "7a1c3f80-804e-11ec-8477-2fea5968d85b"
             decision:
               $ref: '#/components/schemas/AIManagerMessageDraftDecision'

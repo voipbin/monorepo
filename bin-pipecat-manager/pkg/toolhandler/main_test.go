@@ -148,16 +148,17 @@ func TestToolHandler_GetByNames(t *testing.T) {
 			},
 		},
 		{
-			name: "insight all returns only insight tools and the SMS tool, never other normal tools (leak regression guard)",
+			name: "insight all returns only insight tools and the SMS and email tools, never other normal tools (leak regression guard)",
 
 			cachedTools: cachedTools,
 			aiType:      amai.TypeInsight,
 			names:       []aitool.ToolName{aitool.ToolNameAll},
 
-			wantCount: 3,
+			// connect_call and set_variables are in the cache and stay refused: they are the leak sentinels.
+			wantCount: 4,
 			wantNames: []aitool.ToolName{
 				aitool.ToolNameGetContactInteractions, aitool.ToolNameGetConversationContent,
-				aitool.ToolNameSendMessage,
+				aitool.ToolNameSendMessage, aitool.ToolNameSendEmail,
 			},
 		},
 		{
@@ -282,13 +283,15 @@ func sortToolNames(names []aitool.ToolName) []aitool.ToolName {
 }
 
 // Test_ToolHandler_GetByNames_InsightMessageTools: the "all" selector returns
-// the Insight SMS tools together with the other Insight tools (VOIP-1708,
-// exactly 10 for a full cache); an explicit name still returns just that
-// tool; a Normal AI never gets draft_message.
+// the Insight SMS and email tools together with the other Insight tools
+// (VOIP-1708, VOIP-1710, exactly 12 for a full cache); an explicit name still
+// returns just that tool; a Normal AI never gets draft_message or draft_email.
 func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
 	cached := []aitool.Tool{
 		{Name: aitool.ToolNameSendMessage},
 		{Name: aitool.ToolNameDraftMessage},
+		{Name: aitool.ToolNameSendEmail},
+		{Name: aitool.ToolNameDraftEmail},
 		{Name: aitool.ToolNameGetContactInteractions},
 		{Name: aitool.ToolNameEmitInfoCard},
 		{Name: aitool.ToolNameConnectCall},
@@ -302,11 +305,37 @@ func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
 		wantNot []aitool.ToolName
 	}{
 		{
-			name:    "insight all includes the message tools",
+			name:    "insight all includes the message and email tools",
 			aiType:  amai.TypeInsight,
 			names:   []aitool.ToolName{aitool.ToolNameAll},
-			want:    []aitool.ToolName{aitool.ToolNameGetContactInteractions, aitool.ToolNameEmitInfoCard, aitool.ToolNameSendMessage, aitool.ToolNameDraftMessage},
+			want:    []aitool.ToolName{aitool.ToolNameGetContactInteractions, aitool.ToolNameEmitInfoCard, aitool.ToolNameSendMessage, aitool.ToolNameDraftMessage, aitool.ToolNameSendEmail, aitool.ToolNameDraftEmail},
 			wantNot: []aitool.ToolName{aitool.ToolNameConnectCall},
+		},
+		{
+			name:    "insight explicit send_email",
+			aiType:  amai.TypeInsight,
+			names:   []aitool.ToolName{aitool.ToolNameSendEmail},
+			want:    []aitool.ToolName{aitool.ToolNameSendEmail},
+			wantNot: []aitool.ToolName{aitool.ToolNameDraftEmail, aitool.ToolNameEmitInfoCard},
+		},
+		{
+			name:    "insight explicit draft_email",
+			aiType:  amai.TypeInsight,
+			names:   []aitool.ToolName{aitool.ToolNameDraftEmail},
+			want:    []aitool.ToolName{aitool.ToolNameDraftEmail},
+			wantNot: []aitool.ToolName{aitool.ToolNameSendEmail, aitool.ToolNameEmitInfoCard},
+		},
+		{
+			name:   "insight all plus send_email",
+			aiType: amai.TypeInsight,
+			names:  []aitool.ToolName{aitool.ToolNameAll, aitool.ToolNameSendEmail},
+			want:   []aitool.ToolName{aitool.ToolNameGetContactInteractions, aitool.ToolNameEmitInfoCard, aitool.ToolNameSendMessage, aitool.ToolNameDraftMessage, aitool.ToolNameSendEmail, aitool.ToolNameDraftEmail},
+		},
+		{
+			name:    "normal explicit draft_email is dropped",
+			aiType:  amai.TypeNormal,
+			names:   []aitool.ToolName{aitool.ToolNameDraftEmail},
+			wantNot: []aitool.ToolName{aitool.ToolNameDraftEmail},
 		},
 		{
 			name:    "insight explicit send_message",
@@ -326,14 +355,14 @@ func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
 			name:   "insight all plus send_message",
 			aiType: amai.TypeInsight,
 			names:  []aitool.ToolName{aitool.ToolNameAll, aitool.ToolNameSendMessage},
-			want:   []aitool.ToolName{aitool.ToolNameGetContactInteractions, aitool.ToolNameEmitInfoCard, aitool.ToolNameSendMessage, aitool.ToolNameDraftMessage},
+			want:   []aitool.ToolName{aitool.ToolNameGetContactInteractions, aitool.ToolNameEmitInfoCard, aitool.ToolNameSendMessage, aitool.ToolNameDraftMessage, aitool.ToolNameSendEmail, aitool.ToolNameDraftEmail},
 		},
 		{
-			name:    "normal all has send_message but never draft_message",
+			name:    "normal all has send_message and send_email but never draft_message or draft_email",
 			aiType:  amai.TypeNormal,
 			names:   []aitool.ToolName{aitool.ToolNameAll},
-			want:    []aitool.ToolName{aitool.ToolNameSendMessage, aitool.ToolNameConnectCall},
-			wantNot: []aitool.ToolName{aitool.ToolNameDraftMessage, aitool.ToolNameEmitInfoCard},
+			want:    []aitool.ToolName{aitool.ToolNameSendMessage, aitool.ToolNameSendEmail, aitool.ToolNameConnectCall},
+			wantNot: []aitool.ToolName{aitool.ToolNameDraftMessage, aitool.ToolNameDraftEmail, aitool.ToolNameEmitInfoCard},
 		},
 		{
 			name:    "normal explicit draft_message is dropped",
@@ -369,11 +398,11 @@ func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
 	}
 }
 
-// Test_ToolHandler_GetByNames_InsightAllReturnsTenTools: with every tool in the
-// cache, the "all" selector of an Insight AI returns exactly the 8
-// AllInsightToolNames plus the 2 InsightMessageToolNames (VOIP-1708), and
-// no Normal-only tool.
-func Test_ToolHandler_GetByNames_InsightAllReturnsTenTools(t *testing.T) {
+// Test_ToolHandler_GetByNames_InsightAllReturnsTwelveTools: with every tool in
+// the cache, the "all" selector of an Insight AI returns exactly the 8
+// AllInsightToolNames plus the 2 InsightMessageToolNames (VOIP-1708) and the 2
+// InsightEmailToolNames (VOIP-1710), and no Normal-only tool.
+func Test_ToolHandler_GetByNames_InsightAllReturnsTwelveTools(t *testing.T) {
 	cached := []aitool.Tool{}
 	for _, n := range aitool.AllToolNames {
 		cached = append(cached, aitool.Tool{Name: n})
@@ -381,7 +410,7 @@ func Test_ToolHandler_GetByNames_InsightAllReturnsTenTools(t *testing.T) {
 	for _, n := range aitool.AllInsightToolNames {
 		cached = append(cached, aitool.Tool{Name: n})
 	}
-	cached = append(cached, aitool.Tool{Name: aitool.ToolNameDraftMessage})
+	cached = append(cached, aitool.Tool{Name: aitool.ToolNameDraftMessage}, aitool.Tool{Name: aitool.ToolNameDraftEmail})
 
 	h := &toolHandler{tools: cached}
 	got := h.GetByNames(amai.TypeInsight, []aitool.ToolName{aitool.ToolNameAll})
@@ -393,8 +422,11 @@ func Test_ToolHandler_GetByNames_InsightAllReturnsTenTools(t *testing.T) {
 	for _, n := range aitool.InsightMessageToolNames {
 		want[n] = true
 	}
-	if len(want) != 10 {
-		t.Fatalf("expected set has %d names, want 10", len(want))
+	for _, n := range aitool.InsightEmailToolNames {
+		want[n] = true
+	}
+	if len(want) != 12 {
+		t.Fatalf("expected set has %d names, want 12", len(want))
 	}
 
 	seen := map[aitool.ToolName]bool{}
@@ -407,7 +439,7 @@ func Test_ToolHandler_GetByNames_InsightAllReturnsTenTools(t *testing.T) {
 		}
 		seen[g.Name] = true
 	}
-	if len(seen) != 10 {
-		t.Errorf("GetByNames() returned %d distinct tools, want 10", len(seen))
+	if len(seen) != 12 {
+		t.Errorf("GetByNames() returned %d distinct tools, want 12", len(seen))
 	}
 }
