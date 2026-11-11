@@ -36,14 +36,14 @@ func TestAllowedToolNames(t *testing.T) {
 			name:           "normal_allows_normal_tools_only",
 			aiType:         TypeNormal,
 			wantAllowed:    tool.AllToolNames,
-			wantDisallowed: append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.ToolNameDraftMessage, tool.ToolNameDraftEmail, tool.ToolNameDraftCall),
+			wantDisallowed: append(withoutNames(tool.AllInsightToolNames, tool.AllToolNames), tool.ToolNameDraftMessage, tool.ToolNameDraftEmail, tool.ToolNameDraftCall),
 		},
 		{
 			name:        "insight_allows_insight_tools_and_message_tools_only",
 			aiType:      TypeInsight,
 			wantAllowed: append(append([]tool.ToolName{}, tool.AllInsightToolNames...), insightExtraToolNames()...),
 			// every Normal tool except the message, email and call ones stays denied.
-			wantDisallowed: withoutNames(tool.AllToolNames, insightExtraToolNames()),
+			wantDisallowed: withoutNames(withoutNames(tool.AllToolNames, insightExtraToolNames()), tool.AllInsightToolNames),
 		},
 		{
 			name:           "unknown_type_denies_everything",
@@ -105,6 +105,7 @@ func TestAllInsightToolNamesAreReadOnly(t *testing.T) {
 		tool.ToolNameGetContactProfile:      true,
 		tool.ToolNameGetCallTranscript:      true,
 		tool.ToolNameEmitInfoCard:           true,
+		tool.ToolNameSearchKnowledge:        true,
 	}
 
 	// Sanctioned write exceptions -- a SEPARATE map, deliberately, so this test
@@ -278,8 +279,8 @@ func Test_ExpandAllToolNames_InsightIsAllowedSet(t *testing.T) {
 			t.Errorf("AllowedToolNames(TypeInsight) has %q but ExpandAllToolNames(TypeInsight) does not", n)
 		}
 	}
-	if want := len(tool.AllInsightToolNames) + len(tool.InsightMessageToolNames) + len(tool.InsightEmailToolNames) + len(tool.InsightCallToolNames); len(expanded) != want || want != 15 {
-		t.Errorf("ExpandAllToolNames(TypeInsight) has %d names, want %d (== 15)", len(expanded), want)
+	if want := len(tool.AllInsightToolNames) + len(tool.InsightMessageToolNames) + len(tool.InsightEmailToolNames) + len(tool.InsightCallToolNames); len(expanded) != want || want != 16 {
+		t.Errorf("ExpandAllToolNames(TypeInsight) has %d names, want %d (== 16)", len(expanded), want)
 	}
 }
 
@@ -292,7 +293,7 @@ func Test_ExpandAllToolNames(t *testing.T) {
 		wantSizeSame bool
 	}{
 		{"normal", TypeNormal, tool.AllToolNames, []tool.ToolName{tool.ToolNameDraftMessage, tool.ToolNameDraftEmail}, true},
-		{"insight", TypeInsight, append(append([]tool.ToolName{}, tool.AllInsightToolNames...), insightExtraToolNames()...), withoutNames(tool.AllToolNames, insightExtraToolNames()), true},
+		{"insight", TypeInsight, append(append([]tool.ToolName{}, tool.AllInsightToolNames...), insightExtraToolNames()...), withoutNames(withoutNames(tool.AllToolNames, insightExtraToolNames()), tool.AllInsightToolNames), true},
 		{"unknown", Type("future"), nil, append(append([]tool.ToolName{}, tool.AllToolNames...), tool.AllInsightToolNames...), true},
 	}
 	for _, tt := range tests {

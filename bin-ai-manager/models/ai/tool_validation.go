@@ -47,7 +47,8 @@ func AllowedToolNames(t Type) map[tool.ToolName]bool {
 }
 
 // insightToolSet returns every tool an Insight AI may use: the tools without
-// outside side effects (tool.AllInsightToolNames), the SMS tools
+// outside side effects (tool.AllInsightToolNames, which includes the
+// knowledge base lookup search_knowledge), the SMS tools
 // (tool.InsightMessageToolNames), the email tools
 // (tool.InsightEmailToolNames) and the call tools (tool.InsightCallToolNames).
 func insightToolSet() map[tool.ToolName]bool {

@@ -333,7 +333,8 @@ case_create               Create a CRM case for the current contact
    above: ``get_contact_interactions``, ``get_conversation_content``,
    ``get_related_cases``, ``get_case_notes``,
    ``get_contact_profile``, ``get_call_transcript``, ``emit_info_card``, and
-   ``notify_agent``. Seven more, ``send_message``, ``draft_message``, ``send_email``, ``draft_email``, ``create_call``,
+   ``notify_agent``, plus ``search_knowledge`` (the knowledge base lookup above, offered when the AI
+   has a ``rag_id``, and included by ``["all"]``). Seven more, ``send_message``, ``draft_message``, ``send_email``, ``draft_email``, ``create_call``,
    ``draft_call`` and ``describe_action``, send, call or propose an SMS, an email or an outbound call: they can be named in ``tool_names`` and are included by
    ``["all"]``, so ``send_message``, ``send_email`` and ``create_call`` act right away without an agent's confirmation. See
    :ref:`Insight Tools <ai-struct-tool-insight>`. They can also use the tools of the MCP
@@ -796,7 +797,7 @@ Best Practices
 **2. Tool Configuration**
 
 - Enable only tools the AI needs for its task
-- Use ``["all"]`` cautiously - prefer specific tool lists (for an Insight AI it includes ``send_message`` and ``send_email``, which send an SMS or an email right away)
+- Use ``["all"]`` cautiously - prefer specific tool lists (for an Insight AI it includes ``send_message`` and ``send_email``, which send an SMS or an email right away, and ``search_knowledge`` when the AI has a ``rag_id``)
 - Test tool interactions thoroughly before deployment
 - Handle tool failures gracefully in prompts
 

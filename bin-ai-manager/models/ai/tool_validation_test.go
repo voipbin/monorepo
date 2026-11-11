@@ -62,6 +62,18 @@ func TestValidateToolNames(t *testing.T) {
 			wantError: false,
 		},
 		{
+			name:      "insight_with_search_knowledge_ok",
+			aiType:    TypeInsight,
+			toolNames: []tool.ToolName{tool.ToolNameSearchKnowledge},
+			wantError: false,
+		},
+		{
+			name:      "insight_with_search_knowledge_and_unknown_rejected",
+			aiType:    TypeInsight,
+			toolNames: []tool.ToolName{tool.ToolNameSearchKnowledge, tool.ToolName("bogus_tool")},
+			wantError: true,
+		},
+		{
 			name:      "insight_with_call_tools_ok",
 			aiType:    TypeInsight,
 			toolNames: []tool.ToolName{tool.ToolNameCreateCall, tool.ToolNameDraftCall, tool.ToolNameDescribeAction},

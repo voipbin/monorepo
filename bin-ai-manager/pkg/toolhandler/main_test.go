@@ -227,7 +227,7 @@ func nameSet(tools []tool.Tool) map[tool.ToolName]bool {
 
 // Test_ToolHandler_GetByNames_InsightMessageTools pins the contract of the
 // Insight SMS and email tools (VOIP-1704, VOIP-1708, VOIP-1710): the "all"
-// selector returns them together with the other Insight tools (15 in total),
+// selector returns them together with the other Insight tools (16 in total),
 // an explicit name still returns just that tool, and a mixed list returns no
 // duplicates. A Normal AI never gets draft_message or draft_email.
 func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
@@ -246,7 +246,7 @@ func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
 			aiType:    ai.TypeInsight,
 			names:     []tool.ToolName{tool.ToolNameAll},
 			want:      append(append(append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightMessageToolNames...), tool.InsightEmailToolNames...), tool.InsightCallToolNames...),
-			wantCount: 15,
+			wantCount: 16,
 		},
 		{
 			name:      "insight explicit draft_email",
@@ -269,7 +269,7 @@ func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
 			aiType:    ai.TypeInsight,
 			names:     []tool.ToolName{tool.ToolNameAll, tool.ToolNameSendEmail},
 			want:      append(append(append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightMessageToolNames...), tool.InsightEmailToolNames...), tool.InsightCallToolNames...),
-			wantCount: 15,
+			wantCount: 16,
 		},
 		{
 			name:      "insight explicit draft_call",
@@ -337,7 +337,7 @@ func Test_ToolHandler_GetByNames_InsightMessageTools(t *testing.T) {
 			aiType:    ai.TypeInsight,
 			names:     []tool.ToolName{tool.ToolNameAll, tool.ToolNameSendMessage},
 			want:      append(append(append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.InsightMessageToolNames...), tool.InsightEmailToolNames...), tool.InsightCallToolNames...),
-			wantCount: 15,
+			wantCount: 16,
 		},
 		{
 			name:      "normal explicit draft_message is not allowed",

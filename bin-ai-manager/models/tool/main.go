@@ -100,6 +100,11 @@ var AllToolNames = []ToolName{
 // thread the agent is already reading. Neither tool can place calls, send
 // email or SMS, mutate CRM records, or spend money.
 //
+// search_knowledge (VOIP-1720) is also in this list: it only reads the AI's
+// own knowledge base (a query embedding and a vector search) and writes
+// nothing. It is shared with Normal AIs (AllToolNames) and is hidden at
+// runtime when the AI has no rag_id.
+//
 // Sending an SMS or an email is not part of this list, so that this list
 // stays free of outside side effects. The SMS tools live in
 // InsightMessageToolNames and the email tools in InsightEmailToolNames below;
@@ -114,6 +119,7 @@ var AllInsightToolNames = []ToolName{
 	ToolNameGetCallTranscript,
 	ToolNameEmitInfoCard,
 	ToolNameNotifyAgent,
+	ToolNameSearchKnowledge,
 }
 
 // InsightMessageToolNames lists the tools with which an ai.TypeInsight AI

@@ -938,6 +938,8 @@ emit_info_card             Display a structured info card in the panel        ``
 notify_agent               Push a proactive note to the agent's panel         ``false``
 ========================== ================================================= ===============
 
+**Knowledge base lookup.** ``search_knowledge`` (see :ref:`search_knowledge <ai-struct-tool-search_knowledge>`) is shared with ``type=normal`` AIs and is also available to ``type=insight`` AIs. It only reads the AI's knowledge base and has no side effect. It can be named in ``tool_names`` and ``["all"]`` includes it, so an Insight AI that already stores ``["all"]`` and has a ``rag_id`` gains it after the service update is deployed. It is offered to the AI only when the AI has a ``rag_id``.
+
 **SMS, email and call tools.** Seven more tools can be used by a ``type=insight`` AI. They can be named in ``tool_names`` and ``["all"]`` includes them, so an Insight AI that already stores ``["all"]`` gains all seven after the service update is deployed:
 
 ========================== ================================================= ===============
