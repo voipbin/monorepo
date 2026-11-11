@@ -9,7 +9,7 @@ import (
 // insightExtraToolNames returns the Insight tools that send or propose a
 // message: the SMS tools and the email tools.
 func insightExtraToolNames() []tool.ToolName {
-	return append(append([]tool.ToolName{}, tool.InsightMessageToolNames...), tool.InsightEmailToolNames...)
+	return append(append(append([]tool.ToolName{}, tool.InsightMessageToolNames...), tool.InsightEmailToolNames...), tool.InsightCallToolNames...)
 }
 
 // withoutNames returns names minus the entries of exclude.
@@ -36,24 +36,24 @@ func TestAllowedToolNames(t *testing.T) {
 			name:           "normal_allows_normal_tools_only",
 			aiType:         TypeNormal,
 			wantAllowed:    tool.AllToolNames,
-			wantDisallowed: append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.ToolNameDraftMessage, tool.ToolNameDraftEmail),
+			wantDisallowed: append(append([]tool.ToolName{}, tool.AllInsightToolNames...), tool.ToolNameDraftMessage, tool.ToolNameDraftEmail, tool.ToolNameDraftCall),
 		},
 		{
 			name:        "insight_allows_insight_tools_and_message_tools_only",
 			aiType:      TypeInsight,
 			wantAllowed: append(append([]tool.ToolName{}, tool.AllInsightToolNames...), insightExtraToolNames()...),
-			// every Normal tool except the message and email ones stays denied.
+			// every Normal tool except the message, email and call ones stays denied.
 			wantDisallowed: withoutNames(tool.AllToolNames, insightExtraToolNames()),
 		},
 		{
 			name:           "unknown_type_denies_everything",
 			aiType:         Type("some_future_type"),
-			wantDisallowed: append(append(append([]tool.ToolName{}, tool.AllToolNames...), tool.AllInsightToolNames...), tool.ToolNameDraftMessage, tool.ToolNameDraftEmail),
+			wantDisallowed: append(append(append([]tool.ToolName{}, tool.AllToolNames...), tool.AllInsightToolNames...), tool.ToolNameDraftMessage, tool.ToolNameDraftEmail, tool.ToolNameDraftCall),
 		},
 		{
 			name:           "type_none_denies_everything",
 			aiType:         TypeNone,
-			wantDisallowed: append(append(append([]tool.ToolName{}, tool.AllToolNames...), tool.AllInsightToolNames...), tool.ToolNameDraftMessage, tool.ToolNameDraftEmail),
+			wantDisallowed: append(append(append([]tool.ToolName{}, tool.AllToolNames...), tool.AllInsightToolNames...), tool.ToolNameDraftMessage, tool.ToolNameDraftEmail, tool.ToolNameDraftCall),
 		},
 	}
 
@@ -131,8 +131,10 @@ func TestAllInsightToolNamesAreReadOnly(t *testing.T) {
 // tool.AllInsightToolNames: every tool.AllToolNames entry that is NOT also
 // in tool.AllInsightToolNames must be rejected for TypeInsight, except the
 // message tools (VOIP-1704, tool.InsightMessageToolNames) and the email tools
-// (VOIP-1710, tool.InsightEmailToolNames), which are accepted and pinned by
-// Test_InsightMessageToolNames and Test_InsightEmailToolNames.
+// (VOIP-1710, tool.InsightEmailToolNames) and the call tools (VOIP-1717,
+// tool.InsightCallToolNames), which are accepted and pinned by
+// Test_InsightMessageToolNames, Test_InsightEmailToolNames and
+// Test_InsightCallToolNames.
 func TestValidateToolNames_WriteToolNeverAllowedForInsight(t *testing.T) {
 	insightAllowed := toSet(tool.AllInsightToolNames)
 	for _, n := range insightExtraToolNames() {
@@ -183,6 +185,30 @@ func Test_InsightMessageToolNames(t *testing.T) {
 		}
 		if err := ValidateToolNames(TypeInsight, []tool.ToolName{n}); err != nil {
 			t.Errorf("ValidateToolNames(TypeInsight, [%q]) = %v, want nil", n, err)
+		}
+	}
+}
+
+// Test_InsightCallToolNames pins the call list (VOIP-1717): adding to it is a
+// deliberate change. create_call has outside effects, so the list is separate
+// from AllInsightToolNames; draft_call is not a Normal AI tool.
+func Test_InsightCallToolNames(t *testing.T) {
+	want := map[tool.ToolName]bool{
+		tool.ToolNameCreateCall:     true,
+		tool.ToolNameDraftCall:      true,
+		tool.ToolNameDescribeAction: true,
+	}
+	if len(tool.InsightCallToolNames) != len(want) {
+		t.Fatalf("tool.InsightCallToolNames = %v, want exactly %d known names", tool.InsightCallToolNames, len(want))
+	}
+	for _, n := range tool.InsightCallToolNames {
+		if !want[n] {
+			t.Errorf("tool.InsightCallToolNames contains unexpected %q", n)
+		}
+	}
+	for _, n := range tool.AllInsightToolNames {
+		if want[n] {
+			t.Errorf("%q must not be in AllInsightToolNames", n)
 		}
 	}
 }
@@ -252,8 +278,8 @@ func Test_ExpandAllToolNames_InsightIsAllowedSet(t *testing.T) {
 			t.Errorf("AllowedToolNames(TypeInsight) has %q but ExpandAllToolNames(TypeInsight) does not", n)
 		}
 	}
-	if want := len(tool.AllInsightToolNames) + len(tool.InsightMessageToolNames) + len(tool.InsightEmailToolNames); len(expanded) != want || want != 12 {
-		t.Errorf("ExpandAllToolNames(TypeInsight) has %d names, want %d (== 12)", len(expanded), want)
+	if want := len(tool.AllInsightToolNames) + len(tool.InsightMessageToolNames) + len(tool.InsightEmailToolNames) + len(tool.InsightCallToolNames); len(expanded) != want || want != 15 {
+		t.Errorf("ExpandAllToolNames(TypeInsight) has %d names, want %d (== 15)", len(expanded), want)
 	}
 }
 

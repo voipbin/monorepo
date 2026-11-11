@@ -111,7 +111,7 @@ func (h *serviceHandler) ServiceAgentAImessageCreate(ctx context.Context, a *aut
 }
 
 // ServiceAgentAImessageDraftDecision sends a request to ai-manager to approve
-// or reject an SMS or email draft card of the given aicall. The aicall must belong to
+// or reject an SMS, email or call draft card of the given aicall. The aicall must belong to
 // the service agent's own customer (tenant isolation only, no ownership
 // check): any agent of the customer can decide any draft of the customer,
 // the same permission as the other aimessage calls. The draft itself (its

@@ -56,6 +56,10 @@ const (
 	// Insight AI email draft (VOIP-1710, docs/plans/
 	// 2026-11-11-insight-assistant-email-design.md).
 	ToolNameDraftEmail ToolName = "draft_email"
+
+	// Insight AI call draft (VOIP-1717, docs/plans/
+	// 2026-11-11-insight-assistant-call-design.md).
+	ToolNameDraftCall ToolName = "draft_call"
 )
 
 // AllToolNames returns all available tool names (excluding "all")
@@ -99,8 +103,8 @@ var AllToolNames = []ToolName{
 // Sending an SMS or an email is not part of this list, so that this list
 // stays free of outside side effects. The SMS tools live in
 // InsightMessageToolNames and the email tools in InsightEmailToolNames below;
-// the "all" selector of an Insight AI covers all three lists. Calls and CRM
-// writes remain unavailable to Insight AIs.
+// the "all" selector of an Insight AI covers all lists. The call tools live in
+// InsightCallToolNames. CRM writes remain unavailable to Insight AIs.
 var AllInsightToolNames = []ToolName{
 	ToolNameGetContactInteractions,
 	ToolNameGetConversationContent,
@@ -148,6 +152,28 @@ var InsightMessageToolNames = []ToolName{
 var InsightEmailToolNames = []ToolName{
 	ToolNameSendEmail,
 	ToolNameDraftEmail,
+}
+
+// InsightCallToolNames lists the tools with which an ai.TypeInsight AI places
+// or proposes an outbound call (VOIP-1717). Like the other Insight lists they
+// are accepted by name by ValidateToolNames and are produced by the "all"
+// selector (ai.ExpandAllToolNames).
+//
+// This list is deliberately separate from AllInsightToolNames: create_call has
+// outside side effects (a call is placed at once and the minutes are charged to
+// the customer account), so it must not pass through
+// TestAllInsightToolNamesAreReadOnly. Test_InsightCallToolNames pins the exact
+// names, so adding to this list is a deliberate change.
+//
+// create_call is the existing tool, reused as is. draft_call only shows a call
+// draft card to the agent and places nothing; it is not in AllToolNames, so a
+// Normal AI cannot use it. describe_action is read-only and is the tool that
+// create_call's "actions" argument tells the model to use; it is also in
+// AllToolNames.
+var InsightCallToolNames = []ToolName{
+	ToolNameCreateCall,
+	ToolNameDraftCall,
+	ToolNameDescribeAction,
 }
 
 // Tool defines a tool with its schema for LLM function calling.

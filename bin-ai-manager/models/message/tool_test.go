@@ -66,6 +66,11 @@ func TestFunctionCallNameConstants(t *testing.T) {
 			expected: "draft_email",
 		},
 		{
+			name:     "function_call_name_draft_call",
+			constant: FunctionCallNameDraftCall,
+			expected: "draft_call",
+		},
+		{
 			name:     "function_call_name_set_variables",
 			constant: FunctionCallNameSetVariables,
 			expected: "set_variables",

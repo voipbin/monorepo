@@ -69,7 +69,7 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 | `GET /v1/ais/<uuid>/participants(\?|$)` | List AI calls an AI agent participated in (paginated) |
 | `GET /v1/messages?` | List messages |
 | `GET/POST /v1/messages/<uuid>` | Get / create message |
-| `POST /v1/messages/draft-decision` | Approve or reject an SMS or email draft card of an Insight AIcall without an LLM turn (`DraftDecision`). Public path is `POST /service_agents/aimessages/draft-decision` |
+| `POST /v1/messages/draft-decision` | Approve or reject an SMS, email or call draft card of an Insight AIcall without an LLM turn (`DraftDecision`). Public path is `POST /service_agents/aimessages/draft-decision` |
 | `POST /v1/services/type/aicall` | Create AI call service (used by flow-manager) |
 | `POST /v1/services/type/summary` | Create summary service |
 | `POST /v1/services/type/task` | Create task service |
