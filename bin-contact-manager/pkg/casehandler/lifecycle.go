@@ -11,6 +11,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-contact-manager/models/kase"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
@@ -91,6 +92,20 @@ func (h *caseHandler) Close(ctx context.Context, customerID, id uuid.UUID, close
 		if err != nil {
 			return nil, err
 		}
+
+		// Release the linked Conversation owner so the Flow and new Case
+		// creation resume on the next inbound message. Case.Owner is left
+		// untouched (Continue's authorization relies on it). The close is
+		// already committed and a retry returns AlreadyClosed, so a
+		// failure here is logged and not returned; the agent can release
+		// the Conversation through the conversation API.
+		if errSync := h.syncConversationOwner(ctx, c, uuid.Nil, uuid.Nil); errSync != nil {
+			logrus.WithFields(logrus.Fields{
+				"func":    "Close",
+				"case_id": id,
+			}).Errorf("Could not release the linked conversation owner after the close. err: %v", errSync)
+		}
+
 		return &CloseResult{
 			Case:          c,
 			ClosedReason:  c.ClosedReason,
