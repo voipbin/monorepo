@@ -146,6 +146,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		message.FunctionCallNameGetCallTranscript:      h.toolHandleGetCallTranscript,
 		message.FunctionCallNameEmitInfoCard:           h.toolHandleEmitInfoCard,
 		message.FunctionCallNameDraftMessage:           h.toolHandleDraftMessage,
+		message.FunctionCallNameDraftEmail:             h.toolHandleDraftEmail,
 	}
 
 	promAIcallToolExecuteTotal.WithLabelValues(labelForToolExecuteMetric(tool.Function.Name)).Inc()
@@ -206,8 +207,8 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	}
 	log.WithFields(logrus.Fields{"message_id": msg.ID, "content_len": len(msg.Content)}).Debugf("Created the tool response message. message_id: %s", msg.ID)
 
-	// emit_info_card (and draft_message, which records its card the same way)
-	// bypasses unmarshalToolResponse: the stored message content
+	// emit_info_card (and draft_message and draft_email, which record their card
+	// the same way) bypasses unmarshalToolResponse: the stored message content
 	// carries Blocks (the card's title/description/fields), which must never be
 	// fed back into the LLM's prompt context (docs/plans/
 	// 2026-09-04-insight-assistant-emit-info-card-design.md D2). The LLM-facing
@@ -215,7 +216,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	// every other tool's unmarshalToolResponse output, Blocks excluded. Every
 	// other tool is unaffected and still goes through unmarshalToolResponse.
 	var res map[string]any
-	if tool.Function.Name == message.FunctionCallNameEmitInfoCard || tool.Function.Name == message.FunctionCallNameDraftMessage {
+	if tool.Function.Name == message.FunctionCallNameEmitInfoCard || tool.Function.Name == message.FunctionCallNameDraftMessage || tool.Function.Name == message.FunctionCallNameDraftEmail {
 		res = emitInfoCardLLMResult(tmpMessageContent)
 	} else {
 		res, err = h.unmarshalToolResponse(msg)
@@ -240,7 +241,9 @@ type CardField struct {
 // 2026-09-04-insight-assistant-emit-info-card-design.md D1.
 //
 // Type "sms_draft" (draft_message, VOIP-1704) also carries To and Text: the
-// proposed recipient number and message body. Both are omitted for "info".
+// proposed recipient number and message body. Type "email_draft" (draft_email,
+// VOIP-1710) carries Recipients (normalized addresses), Subject and Content (plain
+// text). The fields of a type are omitted for the other types.
 type CardBlock struct {
 	Type        string      `json:"type"`
 	Title       string      `json:"title"`
@@ -248,6 +251,9 @@ type CardBlock struct {
 	Fields      []CardField `json:"fields,omitempty"`
 	To          string      `json:"to,omitempty"`
 	Text        string      `json:"text,omitempty"`
+	Recipients  []string    `json:"recipients,omitempty"`
+	Subject     string      `json:"subject,omitempty"`
+	Content     string      `json:"content,omitempty"`
 }
 
 type messageContent struct {

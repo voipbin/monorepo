@@ -572,7 +572,7 @@ Managed locally by api-manager (no RabbitMQ RPC to a backend service).
 | POST | `/service_agents/calls/:id/participants` | bin-call-manager, bin-registrar-manager | Add a colleague extension to an owned two-party call |
 | POST | `/service_agents/calls/:id/recording_start` | bin-call-manager | Start recording an owned, answered call |
 | POST | `/service_agents/calls/:id/recording_stop` | bin-call-manager | Stop recording an owned call |
-| POST | `/service_agents/aimessages/draft-decision` | bin-ai-manager | Approve or reject an SMS draft card of an Insight AI call |
+| POST | `/service_agents/aimessages/draft-decision` | bin-ai-manager | Approve or reject an SMS or email draft card of an Insight AI call |
 | POST | `/service_agents/transfers` | bin-call-manager, bin-registrar-manager, bin-transfer-manager | Transfer an owned call to a colleague extension |
 | GET | `/service_agents/contacts` | bin-contact-manager | List contacts (`starred=true`: the caller's starred contacts) |
 | POST | `/service_agents/contacts` | bin-contact-manager | Create contact |

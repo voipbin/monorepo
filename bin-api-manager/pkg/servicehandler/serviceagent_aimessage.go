@@ -111,11 +111,11 @@ func (h *serviceHandler) ServiceAgentAImessageCreate(ctx context.Context, a *aut
 }
 
 // ServiceAgentAImessageDraftDecision sends a request to ai-manager to approve
-// or reject an SMS draft card of the given aicall. The aicall must belong to
+// or reject an SMS or email draft card of the given aicall. The aicall must belong to
 // the service agent's own customer (tenant isolation only, no ownership
 // check): any agent of the customer can decide any draft of the customer,
 // the same permission as the other aimessage calls. The draft itself (its
-// recipient, text, owner and age) is validated by ai-manager.
+// recipients, text, owner and age) is validated by ai-manager.
 func (h *serviceHandler) ServiceAgentAImessageDraftDecision(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, draftID uuid.UUID, decision ammessage.DraftDecision) (*ammessage.WebhookMessage, error) {
 	if !a.IsAgent() {
 		return nil, serviceerrors.ErrAuthenticationRequired
@@ -147,7 +147,7 @@ func (h *serviceHandler) ServiceAgentAImessageDraftDecision(ctx context.Context,
 	}
 
 	// the deciding agent is recorded in the log only.
-	log.Infof("Decided the sms draft. result_message_id: %s", tmp.ID)
+	log.Infof("Decided the draft. result_message_id: %s", tmp.ID)
 
 	return tmp.ConvertWebhookMessage(), nil
 }

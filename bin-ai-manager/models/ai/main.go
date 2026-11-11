@@ -52,7 +52,7 @@ type AI struct {
 	// Type distinguishes a Normal AI (default) from an Insight AI. Insight AIs
 	// use a dedicated system prompt and their built-in tools are restricted to
 	// the Insight tool set (see tool.AllInsightToolNames,
-	// tool.InsightMessageToolNames /
+	// tool.InsightMessageToolNames, tool.InsightEmailToolNames /
 	// toolhandler.AllInsightToolNames); MCP tools come from McpServerIDs.
 	Type Type `json:"type,omitempty" db:"type"`
 

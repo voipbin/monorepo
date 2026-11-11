@@ -47,11 +47,15 @@ func AllowedToolNames(t Type) map[tool.ToolName]bool {
 }
 
 // insightToolSet returns every tool an Insight AI may use: the tools without
-// outside side effects (tool.AllInsightToolNames) and the SMS tools
-// (tool.InsightMessageToolNames).
+// outside side effects (tool.AllInsightToolNames), the SMS tools
+// (tool.InsightMessageToolNames) and the email tools
+// (tool.InsightEmailToolNames).
 func insightToolSet() map[tool.ToolName]bool {
 	set := toSet(tool.AllInsightToolNames)
 	for _, n := range tool.InsightMessageToolNames {
+		set[n] = true
+	}
+	for _, n := range tool.InsightEmailToolNames {
 		set[n] = true
 	}
 	return set
@@ -60,8 +64,9 @@ func insightToolSet() map[tool.ToolName]bool {
 // ExpandAllToolNames returns the set the "all" selector expands to for a given
 // AI type. For every known type it equals AllowedToolNames(t): "all" means
 // every tool the type may use. For an Insight AI that includes the SMS tools
-// (tool.InsightMessageToolNames, VOIP-1708), so send_message sends an SMS at
-// once for an AI stored with ["all"]. An unknown type expands to the empty
+// (tool.InsightMessageToolNames, VOIP-1708) and the email tools
+// (tool.InsightEmailToolNames, VOIP-1710), so send_message and send_email send
+// at once for an AI stored with ["all"]. An unknown type expands to the empty
 // set (AllowedToolNames already reports the unknown type).
 func ExpandAllToolNames(t Type) map[tool.ToolName]bool {
 	switch t {

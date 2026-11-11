@@ -80,7 +80,7 @@ type AIcallHandler interface {
 
 	Send(ctx context.Context, id uuid.UUID, role message.Role, messageText string, runImmediately bool, audioResponse bool) (*message.Message, error)
 
-	// DraftDecision approves or rejects an SMS draft card without an LLM turn (VOIP-1704).
+	// DraftDecision approves or rejects an SMS or email draft card without an LLM turn (VOIP-1704, VOIP-1710).
 	DraftDecision(ctx context.Context, aicallID uuid.UUID, draftID uuid.UUID, decision message.DraftDecision) (*message.Message, error)
 
 	EventCMCallHangup(ctx context.Context, c *cmcall.Call)
@@ -366,7 +366,7 @@ Keep the message content empty.
 	// InsightSystemPrompt is the dedicated system prompt used for ai.TypeInsight
 	// AIs, in place of defaultCommonAIcallSystemPrompt / defaultCommonAItaskSystemPrompt.
 	// Insight AIs have the Insight built-in tool set (see
-	// tool.AllInsightToolNames and tool.InsightMessageToolNames) plus the tools of their own mcp_server_ids,
+	// tool.AllInsightToolNames, tool.InsightMessageToolNames and tool.InsightEmailToolNames) plus the tools of their own mcp_server_ids,
 	// and are used to analyze existing contact/conversation data rather than
 	// to drive a live call or task workflow.
 	InsightSystemPrompt = `You are an Insight AI for VoIPBin. Your role is to analyze existing contact and conversation

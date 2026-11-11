@@ -52,6 +52,10 @@ const (
 	// Insight AI SMS draft (VOIP-1704, docs/plans/
 	// 2026-11-10-insight-assistant-sms-design.md).
 	ToolNameDraftMessage ToolName = "draft_message"
+
+	// Insight AI email draft (VOIP-1710, docs/plans/
+	// 2026-11-11-insight-assistant-email-design.md).
+	ToolNameDraftEmail ToolName = "draft_email"
 )
 
 // AllToolNames returns all available tool names (excluding "all")
@@ -92,9 +96,10 @@ var AllToolNames = []ToolName{
 // thread the agent is already reading. Neither tool can place calls, send
 // email or SMS, mutate CRM records, or spend money.
 //
-// SMS sending is not part of this list, so that this list stays free of
-// outside side effects. The SMS tools live in InsightMessageToolNames below;
-// the "all" selector of an Insight AI covers both lists. Email, calls and CRM
+// Sending an SMS or an email is not part of this list, so that this list
+// stays free of outside side effects. The SMS tools live in
+// InsightMessageToolNames and the email tools in InsightEmailToolNames below;
+// the "all" selector of an Insight AI covers all three lists. Calls and CRM
 // writes remain unavailable to Insight AIs.
 var AllInsightToolNames = []ToolName{
 	ToolNameGetContactInteractions,
@@ -123,6 +128,26 @@ var AllInsightToolNames = []ToolName{
 var InsightMessageToolNames = []ToolName{
 	ToolNameSendMessage,
 	ToolNameDraftMessage,
+}
+
+// InsightEmailToolNames lists the tools with which an ai.TypeInsight AI sends
+// or proposes an email (VOIP-1710). Like InsightMessageToolNames they are
+// accepted by name by ValidateToolNames and are produced by the "all" selector
+// together with the other Insight lists (ai.ExpandAllToolNames).
+//
+// This list is deliberately separate from AllInsightToolNames: send_email has
+// outside side effects (an email is sent at once from the platform's default
+// sender address and the cost is charged to the customer account), so it must
+// not pass through TestAllInsightToolNamesAreReadOnly.
+// Test_InsightEmailToolNames pins the exact names, so adding to this list is a
+// deliberate change.
+//
+// send_email is the existing email tool, reused as is. draft_email only shows
+// an email draft card to the agent and sends nothing. draft_email is not in
+// AllToolNames, so a Normal AI cannot use it.
+var InsightEmailToolNames = []ToolName{
+	ToolNameSendEmail,
+	ToolNameDraftEmail,
 }
 
 // Tool defines a tool with its schema for LLM function calling.

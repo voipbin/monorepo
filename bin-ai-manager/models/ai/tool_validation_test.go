@@ -52,7 +52,19 @@ func TestValidateToolNames(t *testing.T) {
 		{
 			name:      "insight_with_normal_tool_rejected",
 			aiType:    TypeInsight,
-			toolNames: []tool.ToolName{tool.ToolNameSendEmail},
+			toolNames: []tool.ToolName{tool.ToolNameConnectCall},
+			wantError: true,
+		},
+		{
+			name:      "insight_with_email_tools_ok",
+			aiType:    TypeInsight,
+			toolNames: []tool.ToolName{tool.ToolNameSendEmail, tool.ToolNameDraftEmail},
+			wantError: false,
+		},
+		{
+			name:      "normal_with_draft_email_rejected",
+			aiType:    TypeNormal,
+			toolNames: []tool.ToolName{tool.ToolNameDraftEmail},
 			wantError: true,
 		},
 		{

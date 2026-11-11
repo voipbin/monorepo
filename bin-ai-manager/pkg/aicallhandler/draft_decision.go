@@ -58,9 +58,10 @@ func draftNotFound() error {
 	return cerrors.NotFound(commonoutline.ServiceNameAIManager, "DRAFT_NOT_FOUND", "The draft was not found.")
 }
 
-// DraftDecision carries out the agent's decision on an SMS draft card without
-// involving the LLM. The request holds ids only; the recipient and the text
-// are read from the stored draft row.
+// DraftDecision carries out the agent's decision on an SMS or email draft card
+// without involving the LLM. The request holds ids only; the recipients and the
+// text are read from the stored draft row, and the block type of that row
+// (sms_draft or email_draft) selects the send.
 //
 // Rows written for one decision (none is updated afterwards):
 //   - a claim row (role notification), written first. Its id is derived from
@@ -98,10 +99,28 @@ func (h *aicallHandler) DraftDecision(ctx context.Context, aicallID uuid.UUID, d
 		return nil, errClaim
 	}
 
-	args, err := json.Marshal(&fmaction.OptionMessageSend{
-		Destinations: []commonaddress.Address{{Type: commonaddress.TypeTel, Target: draft.To}},
-		Text:         draft.Text,
-	})
+	isEmail := draft.Type == message.BlockTypeEmailDraft
+
+	var funcName message.FunctionCallName
+	var args []byte
+	if isEmail {
+		funcName = message.FunctionCallNameSendEmail
+		destinations := make([]commonaddress.Address, 0, len(draft.Recipients))
+		for _, r := range draft.Recipients {
+			destinations = append(destinations, commonaddress.Address{Type: commonaddress.TypeEmail, Target: r})
+		}
+		args, err = json.Marshal(&fmaction.OptionEmailSend{
+			Destinations: destinations,
+			Subject:      draft.Subject,
+			Content:      draft.Content,
+		})
+	} else {
+		funcName = message.FunctionCallNameSendMessage
+		args, err = json.Marshal(&fmaction.OptionMessageSend{
+			Destinations: []commonaddress.Address{{Type: commonaddress.TypeTel, Target: draft.To}},
+			Text:         draft.Text,
+		})
+	}
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not marshal the send arguments")
 	}
@@ -109,22 +128,38 @@ func (h *aicallHandler) DraftDecision(ctx context.Context, aicallID uuid.UUID, d
 		ID:   draftDecisionToolCallID(draftID),
 		Type: message.ToolTypeFunction,
 		Function: message.FunctionCall{
-			Name:      message.FunctionCallNameSendMessage,
+			Name:      funcName,
 			Arguments: string(args),
 		},
 	}
 
 	var result *messageContent
-	if decision == message.DraftDecisionApprove {
+	switch {
+	case decision == message.DraftDecisionApprove && isEmail:
+		promAIcallToolExecuteTotal.WithLabelValues(labelForToolExecuteMetric(tool.Function.Name)).Inc()
+		result = h.toolHandleEmailSend(ctx, c, tool)
+		if result.Result == "failed" {
+			result.Message += draftDeliveryUnconfirmedSuffix
+		} else {
+			// the send is asynchronous: email-manager answers once the email exists and a
+			// provider failure afterwards is never reported, so a success is not a delivery.
+			result.Message = draftEmailAcceptedMessage
+		}
+
+	case decision == message.DraftDecisionApprove:
 		promAIcallToolExecuteTotal.WithLabelValues(labelForToolExecuteMetric(tool.Function.Name)).Inc()
 		result = h.toolHandleMessageSend(ctx, c, tool)
 		if result.Result == "failed" {
 			result.Message += draftDeliveryUnconfirmedSuffix
 		}
-	} else {
+
+	default:
 		result = newToolResult(tool.ID)
 		result.Result = "rejected"
 		result.Message = draftRejectedMessage
+		if isEmail {
+			result.Message = draftEmailRejectedMessage
+		}
 	}
 
 	activeAIID := h.resolveActiveAIIDFromAIcall(ctx, c)
@@ -145,8 +180,9 @@ func (h *aicallHandler) DraftDecision(ctx context.Context, aicallID uuid.UUID, d
 
 // draftDecisionLoad reads the draft row and runs every check that must pass
 // before the claim: the row belongs to the aicall and its customer, it is a
-// tool row carrying an sms_draft block with a recipient, the recipient is a
-// valid E.164 number (approve), and the draft is not expired. Every refusal
+// tool row carrying an sms_draft block with a recipient or an email_draft block
+// with recipients, the stored draft still passes validation (approve: the E.164
+// rule for SMS, validateEmailDraft for email), and the draft is not expired. Every refusal
 // about the row itself is the same NotFound, so ids cannot be probed. It
 // returns the card block holding the recipient and the text.
 func (h *aicallHandler) draftDecisionLoad(ctx context.Context, c *aicall.AIcall, draftID uuid.UUID, decision message.DraftDecision) (*CardBlock, error) {
@@ -168,7 +204,9 @@ func (h *aicallHandler) draftDecisionLoad(ctx context.Context, c *aicall.AIcall,
 	}
 	var draft *CardBlock
 	for i := range stored.Blocks {
-		if stored.Blocks[i].Type == message.BlockTypeSMSDraft && stored.Blocks[i].To != "" {
+		isSMS := stored.Blocks[i].Type == message.BlockTypeSMSDraft && stored.Blocks[i].To != ""
+		isEmail := stored.Blocks[i].Type == message.BlockTypeEmailDraft && len(stored.Blocks[i].Recipients) > 0
+		if isSMS || isEmail {
 			draft = &stored.Blocks[i]
 			break
 		}
@@ -177,8 +215,14 @@ func (h *aicallHandler) draftDecisionLoad(ctx context.Context, c *aicall.AIcall,
 		return nil, draftNotFound()
 	}
 
-	if decision == message.DraftDecisionApprove && !draftToRegex.MatchString(draft.To) {
-		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "DRAFT_INVALID", "The draft recipient is not a valid phone number.")
+	if decision == message.DraftDecisionApprove {
+		if draft.Type == message.BlockTypeEmailDraft {
+			if !draftEmailStillValid(draft) {
+				return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "DRAFT_INVALID", draftEmailInvalidMessage)
+			}
+		} else if !draftToRegex.MatchString(draft.To) {
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "DRAFT_INVALID", "The draft recipient is not a valid phone number.")
+		}
 	}
 
 	// expiry is evaluated lazily; a draft without a creation time counts as expired (fail closed).
@@ -210,4 +254,20 @@ func (h *aicallHandler) draftDecisionClaim(ctx context.Context, c *aicall.AIcall
 	}
 
 	return nil
+}
+
+// draftEmailStillValid reports whether a stored email draft passes validation
+// again: the same rules as at creation, and the stored recipients must already be
+// in their normalized form (a row that was changed after creation is refused).
+func draftEmailStillValid(draft *CardBlock) bool {
+	normalized, err := validateEmailDraft(draft.Recipients, draft.Subject, draft.Content)
+	if err != nil || len(normalized) != len(draft.Recipients) {
+		return false
+	}
+	for i := range normalized {
+		if normalized[i] != draft.Recipients[i] {
+			return false
+		}
+	}
+	return true
 }
