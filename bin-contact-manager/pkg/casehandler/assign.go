@@ -30,6 +30,31 @@ func (h *caseHandler) Assign(ctx context.Context, customerID, id uuid.UUID, owne
 		return nil, dbhandler.ErrNotFound
 	}
 
+	// Synchronize the linked Conversation owner first, so a failure leaves
+	// the Case untouched and a retry of the same request converges. The
+	// Case is authoritative: Assign sets the Conversation owner, Unassign
+	// releases it only while it still equals the previous Case owner (a
+	// Conversation given to another agent through the conversation API is
+	// left alone). Any other (ownerType, ownerID) combination is skipped.
+	//
+	// A Case that is already closed is left alone: its conversation may be
+	// owned through a continued open Case (same conversation by chain), and
+	// the Close has released it already. api-manager rejects such calls;
+	// this keeps a direct caller from touching the continued Case's
+	// conversation.
+	wasOpen := c.Status == kase.StatusOpen
+	switch {
+	case !wasOpen:
+	case ownerType == commonidentity.OwnerTypeAgent && ownerID != uuid.Nil:
+		if err := h.syncConversationOwner(ctx, c, ownerID, uuid.Nil); err != nil {
+			return nil, fmt.Errorf("could not sync conversation owner. Assign. err: %w", err)
+		}
+	case ownerType == commonidentity.OwnerTypeNone && ownerID == uuid.Nil && c.OwnerID != uuid.Nil:
+		if err := h.syncConversationOwner(ctx, c, uuid.Nil, c.OwnerID); err != nil {
+			return nil, fmt.Errorf("could not sync conversation owner. Unassign. err: %w", err)
+		}
+	}
+
 	if err := h.db.CaseUpdateOwner(ctx, customerID, id, ownerType, ownerID); err != nil {
 		return nil, fmt.Errorf("could not update owner. Assign. err: %w", err)
 	}
@@ -37,6 +62,17 @@ func (h *caseHandler) Assign(ctx context.Context, customerID, id uuid.UUID, owne
 	res, err := h.db.CaseGetByID(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	// A Close that committed between the read above and the owner write
+	// has already released the Conversation before this Assign set it
+	// (CaseUpdateOwner has no status predicate). Release it again so a
+	// closed Case does not keep an agent-owned Conversation. A Close that
+	// commits after this read releases the Conversation itself.
+	if wasOpen && res.Status == kase.StatusClosed && ownerType == commonidentity.OwnerTypeAgent && ownerID != uuid.Nil {
+		if err := h.syncConversationOwner(ctx, res, uuid.Nil, uuid.Nil); err != nil {
+			return nil, fmt.Errorf("could not release conversation owner of a closed case. Assign. err: %w", err)
+		}
 	}
 
 	return res, nil

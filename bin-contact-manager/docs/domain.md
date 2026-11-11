@@ -120,3 +120,12 @@ Internal, agent-facing state changes on a Case are published through the plain `
 8. **Event publishing**: Create, update, and delete operations publish `contact_created`, `contact_updated`, and `contact_deleted` events to `QueueNameContactEvent`. Downstream services (e.g., call flows) can subscribe to keep caller-ID caches current. The payload is the `*contact.WebhookMessage` value produced by `ConvertWebhookMessage()`. **VOIP-1405 payload change**: this used to be the `[]byte` returned by `CreateWebhookEvent()`, which `PublishEvent` then marshaled a second time, storing the event as a base64 JSON *string*. The published payload is now a JSON object. This is an intended, independent improvement and is NOT reverted by disabling the global topic exchange option.
 
 9. **Case events**: see the "Case event payloads" table above for the six internal case events, their named constants, and their subscription addresses on the global topic exchange.
+
+### Case owner and Conversation owner
+
+A Case that originates from a conversation (`reference_type=conversation_message`, `reference_id` = conversation id, found through the `previous_case_id` chain for a continued Case) keeps the owner of that Conversation in line with the Case, because conversation-manager runs the Flow for an inbound message only while the Conversation has no agent owner.
+
+- Assign (agent): the Conversation owner is set to the agent (reassign overwrites). The Conversation is updated before the Case; on a failure the request returns an error and a retry converges.
+- Unassign: the Conversation owner is released only while it equals the previous Case owner.
+- Close: the Conversation owner is released unconditionally; `Case.Owner` is kept. A failure of this release is logged and not returned.
+- Call-origin Cases, Cases without a conversation reference and a vanished Conversation are no-ops. Only the Conversation recorded in the Case chain is synchronized; a second Conversation of the same peer opened through another self address is not.

@@ -26,6 +26,7 @@ This service calls the following services:
 | Service | Purpose |
 |---------|---------|
 | `bin-tag-manager` | Tag definition lookup when assigning tags to contacts |
+| `bin-conversation-manager` | Conversation get and owner update when a Case is assigned, unassigned or closed (keeps the Flow/agent decision of inbound messages in line with the Case owner) |
 
 ### Event Subscriptions (consumed)
 
@@ -50,6 +51,7 @@ Direct monorepo dependencies (via `replace` directives in `go.mod`):
 | `monorepo/bin-common-handler` | sockhandler, requesthandler, notifyhandler, databasehandler, utilhandler |
 | `monorepo/bin-customer-manager` | Customer event model structs (for subscription deserialization) |
 | `monorepo/bin-tag-manager` | Tag model structs (for tag assignment validation) |
+| `monorepo/bin-conversation-manager` | Conversation model (owner field) for the owner sync |
 
 Notable third-party dependencies:
 
