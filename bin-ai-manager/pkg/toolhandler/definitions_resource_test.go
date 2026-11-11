@@ -253,6 +253,9 @@ func TestInsightReadToolsRunLLMDescription(t *testing.T) {
 		}
 		asserted[tool.ToolNameEmitInfoCard] = true
 		asserted[tool.ToolNameNotifyAgent] = true
+		// search_knowledge is a RAG lookup shared with Normal AIs; it is not part
+		// of the run_llm wording contract pinned below.
+		asserted[tool.ToolNameSearchKnowledge] = true
 
 		declared := make(map[tool.ToolName]bool, len(tool.AllInsightToolNames))
 		for _, name := range tool.AllInsightToolNames {

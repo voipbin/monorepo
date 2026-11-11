@@ -179,7 +179,7 @@ Tool definitions live in `pkg/toolhandler/definitions.go`. Only tools listed in 
 | `set_variables` | Write to flow context variables |
 | `get_variables` | Read from flow context variables |
 | `get_aicall_messages` | Retrieve conversation history |
-| `search_knowledge` | Query the AI's knowledge base (RAG) |
+| `search_knowledge` | Query the AI's knowledge base (RAG). Read-only. An Insight AI can use it too (it is in `tool.AllInsightToolNames`, so `tool_names` may name it and `["all"]` includes it); it is offered only when the AI has a `rag_id`, and the handler fails the call when none is set |
 | `get_correlation` | Retrieve the correlation graph (related resource ids) for an activeflow |
 | `get_resource` | Retrieve a curated summary of a single resource by type+id (call, groupcall, recording, transcribe incl. transcripts, summary, aicall incl. conversation history, conferencecall, queuecall); customer-ownership enforced. For `aicall`, an opt-in `include_config` boolean additionally renders the customer-authored session prompt snapshots in an escaped, capped config block (never the platform base prompt) |
 | `get_contact_profile` | Insight-only, read-only: returns the profile (name/company/job title + up to 5 reachable addresses, primary first) of the contact linked to the current Case. No arguments; always scoped to the current Case |

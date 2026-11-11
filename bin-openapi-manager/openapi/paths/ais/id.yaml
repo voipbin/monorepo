@@ -136,7 +136,8 @@ put:
                 Insight tool names are permitted (currently:
                 get_contact_interactions, get_conversation_content,
                 get_related_cases, get_case_notes, get_contact_profile,
-                get_call_transcript, emit_info_card, and notify_agent,
+                get_call_transcript, emit_info_card, search_knowledge, and
+                notify_agent,
                 usable only while the assistant is monitoring a live call);
                 type=normal AIs may use any Normal tool name or ["all"].
                 Tools for type=insight AIs that send, call or propose an SMS, an email or a call: `send_message`, `send_email` and `create_call` (act right
@@ -144,8 +145,8 @@ put:
                 a call is placed at once, runs the given flow or actions when the callee answers, and its minutes are charged to the account) and
                 `draft_message`, `draft_email` and `draft_call` (show a draft card that an agent approves or rejects; nothing is sent or called until the
                 agent approves). `describe_action` is also available to type=insight AIs so that the `actions` of `create_call` and `draft_call` can be
-                assembled. They can be named explicitly and are included by `["all"]`, so an Insight AI stored with `["all"]` gets all seven (15 tools
-                in total, with the 8 other Insight tools). A customer who does not want direct sending or calling names the draft tools (and
+                assembled. They can be named explicitly and are included by `["all"]`, so an Insight AI stored with `["all"]` gets all seven. `search_knowledge` is also available to type=insight AIs and is
+                included by `["all"]`; it is offered only when the AI has a `rag_id`. A customer who does not want direct sending or calling names the draft tools (and
                 `describe_action`) instead of `["all"]`. `draft_message`, `draft_email` and `draft_call` are available to type=insight AIs only.
                 Mismatched combinations are rejected with a 400.
             mcp_server_ids:
