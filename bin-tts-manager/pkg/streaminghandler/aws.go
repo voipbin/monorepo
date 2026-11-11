@@ -15,6 +15,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-tts-manager/internal/ttsconfig"
 	"monorepo/bin-tts-manager/models/message"
 	"monorepo/bin-tts-manager/models/streaming"
 
@@ -135,16 +136,15 @@ type awsHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	accessKey string
-	secretKey string
+	// creds hands the AWS key pair to the handler at the time of use (every Init).
+	creds ttsconfig.AWSCredentialsFunc
 }
 
-func NewAWSHandler(reqHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler, accessKey string, secretKey string) streamer {
+func NewAWSHandler(reqHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler, creds ttsconfig.AWSCredentialsFunc) streamer {
 	return &awsHandler{
 		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,
-		accessKey:     accessKey,
-		secretKey:     secretKey,
+		creds:         creds,
 	}
 }
 
@@ -187,11 +187,20 @@ func (h *awsHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 }
 
 func (h *awsHandler) createClient(ctx context.Context) (*polly.Client, error) {
+	if h.creds == nil {
+		return nil, fmt.Errorf("the aws credentials supplier is not set")
+	}
+
+	accessKey, secretKey, errCreds := h.creds(ctx)
+	if errCreds != nil {
+		return nil, fmt.Errorf("could not get the aws credentials: %w", errCreds)
+	}
+
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(defaultAWSStreamingRegion),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
-			h.accessKey,
-			h.secretKey,
+			accessKey,
+			secretKey,
 			"",
 		)),
 	)

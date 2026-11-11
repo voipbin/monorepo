@@ -153,12 +153,26 @@ func Test_savePCMAsWAV_errors(t *testing.T) {
 }
 
 func newLocalPollyClient(endpoint string) *polly.Client {
+	return newLocalPollyClientWithKeys(endpoint, "test-access-key", "test-secret-key")
+}
+
+func newLocalPollyClientWithKeys(endpoint, accessKey, secretKey string) *polly.Client {
 	return polly.New(polly.Options{
 		BaseEndpoint: aws.String(endpoint),
 		Region:       "test-region-1",
-		Credentials:  credentials.NewStaticCredentialsProvider("test-access-key", "test-secret-key", ""),
+		Credentials:  credentials.NewStaticCredentialsProvider(accessKey, secretKey, ""),
 		Retryer:      aws.NopRetryer{},
 	})
+}
+
+// newLocalPollyHandler returns an audioHandler whose Polly client talks to a local fake server.
+func newLocalPollyHandler(endpoint string) *audioHandler {
+	return &audioHandler{
+		awsCreds: func(context.Context) (string, string, error) { return "test-access-key", "test-secret-key", nil },
+		awsBuild: func(context.Context, string, string) (*polly.Client, error) {
+			return newLocalPollyClient(endpoint), nil
+		},
+	}
 }
 
 func Test_awsAudioCreate(t *testing.T) {
@@ -175,7 +189,7 @@ func Test_awsAudioCreate(t *testing.T) {
 		}))
 		defer srv.Close()
 
-		h := &audioHandler{awsClient: newLocalPollyClient(srv.URL)}
+		h := newLocalPollyHandler(srv.URL)
 		path := filepath.Join(t.TempDir(), "speech.wav")
 
 		if err := h.awsAudioCreate(context.Background(), callID, "<speak>hi</speak>", "ko-KR", "Kendra", path); err != nil {
@@ -207,7 +221,7 @@ func Test_awsAudioCreate(t *testing.T) {
 		}))
 		defer srv.Close()
 
-		h := &audioHandler{awsClient: newLocalPollyClient(srv.URL)}
+		h := newLocalPollyHandler(srv.URL)
 		path := filepath.Join(t.TempDir(), "speech.wav")
 
 		if err := h.awsAudioCreate(context.Background(), callID, "hi", "ko-KR", "", path); err != nil {
@@ -224,7 +238,7 @@ func Test_awsAudioCreate(t *testing.T) {
 		}))
 		defer srv.Close()
 
-		h := &audioHandler{awsClient: newLocalPollyClient(srv.URL)}
+		h := newLocalPollyHandler(srv.URL)
 		path := filepath.Join(t.TempDir(), "speech.wav")
 
 		err := h.awsAudioCreate(context.Background(), callID, "hi", "en-US", "", path)
@@ -243,7 +257,7 @@ func Test_awsAudioCreate(t *testing.T) {
 		}))
 		defer srv.Close()
 
-		h := &audioHandler{awsClient: newLocalPollyClient(srv.URL)}
+		h := newLocalPollyHandler(srv.URL)
 		path := filepath.Join(t.TempDir(), "missing-dir", "speech.wav")
 
 		err := h.awsAudioCreate(context.Background(), callID, "hi", "en-US", "", path)
@@ -260,7 +274,7 @@ func Test_AudioCreate_dispatchesToAWS(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	h := &audioHandler{awsClient: newLocalPollyClient(srv.URL)}
+	h := newLocalPollyHandler(srv.URL)
 	path := filepath.Join(t.TempDir(), "speech.wav")
 
 	err := h.AudioCreate(context.Background(), uuid.Nil, "hi", "en-US", "aws", "", path)

@@ -5,6 +5,7 @@ package audiohandler
 import (
 	"context"
 	"io/fs"
+	"sync"
 
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
 	texttospeechpb "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
@@ -12,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-tts-manager/internal/ttsconfig"
 	"monorepo/bin-tts-manager/models/tts"
 )
 
@@ -22,7 +24,17 @@ type AudioHandler interface {
 
 type audioHandler struct {
 	gcpClient *texttospeech.Client
-	awsClient *polly.Client
+
+	// awsCreds hands the AWS key pair to the handler at the time of use. awsBuild builds a Polly
+	// client from a pair (awsGetClient when nil). The client of the last pair is kept in a slot
+	// and reused while the pair is unchanged; the keys themselves are read for every call.
+	awsCreds ttsconfig.AWSCredentialsFunc
+	awsBuild func(ctx context.Context, accessKey, secretKey string) (*polly.Client, error)
+
+	mu         sync.Mutex
+	slotAccess string
+	slotSecret string
+	slotClient *polly.Client
 }
 
 // list of default variables
@@ -35,7 +47,7 @@ const (
 )
 
 // NewAudioHandler create AudioHandler
-func NewAudioHandler(ctx context.Context, awsAccessKey string, awsSecretKey string, gcpEndpoint string) AudioHandler {
+func NewAudioHandler(ctx context.Context, awsCreds ttsconfig.AWSCredentialsFunc, gcpEndpoint string) AudioHandler {
 	log := logrus.WithField("func", "NewAudioHandler")
 
 	gcpClient, err := gcpGetClient(ctx, gcpEndpoint)
@@ -44,15 +56,10 @@ func NewAudioHandler(ctx context.Context, awsAccessKey string, awsSecretKey stri
 		return nil
 	}
 
-	awsClient, err := awsGetClient(ctx, awsAccessKey, awsSecretKey)
-	if err != nil {
-		log.Errorf("Could not create a new aws client. err: %v", err)
-		return nil
-	}
-
 	h := &audioHandler{
 		gcpClient: gcpClient,
-		awsClient: awsClient,
+		awsCreds:  awsCreds,
+		awsBuild:  awsGetClient,
 	}
 
 	return h

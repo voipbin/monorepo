@@ -42,6 +42,47 @@ func awsGetClient(ctx context.Context, accessKey string, secretKey string) (*pol
 	return res, nil
 }
 
+// pollyClient returns the Polly client for the AWS keys of this call. The keys are read for every
+// call (a changed or rotated pair is used by the next call); the client built from the last pair
+// is reused while the pair is unchanged, so a call does not build a new HTTP transport. The
+// mutex is not held while the keys are read or the client is built.
+func (h *audioHandler) pollyClient(ctx context.Context) (*polly.Client, error) {
+	if h.awsCreds == nil {
+		return nil, fmt.Errorf("the aws credentials supplier is not set")
+	}
+
+	accessKey, secretKey, err := h.awsCreds(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not get the aws credentials: %w", err)
+	}
+
+	h.mu.Lock()
+	if h.slotClient != nil && h.slotAccess == accessKey && h.slotSecret == secretKey {
+		client := h.slotClient
+		h.mu.Unlock()
+		return client, nil
+	}
+	h.mu.Unlock()
+
+	build := h.awsBuild
+	if build == nil {
+		build = awsGetClient
+	}
+
+	client, err := build(ctx, accessKey, secretKey)
+	if err != nil {
+		return nil, fmt.Errorf("could not create the aws client: %w", err)
+	}
+
+	h.mu.Lock()
+	h.slotAccess = accessKey
+	h.slotSecret = secretKey
+	h.slotClient = client
+	h.mu.Unlock()
+
+	return client, nil
+}
+
 func (h *audioHandler) awsAudioCreate(ctx context.Context, callID uuid.UUID, text string, lang string, voiceID string, filepath string) error {
 	log := logrus.WithField("func", "awsAudioCreate")
 
@@ -60,9 +101,14 @@ func (h *audioHandler) awsAudioCreate(ctx context.Context, callID uuid.UUID, tex
 		SampleRate:   aws.String(strconv.Itoa(int(defaultSampleRate))),
 	}
 
+	client, err := h.pollyClient(ctx)
+	if err != nil {
+		return err
+	}
+
 	start := time.Now()
 
-	resp, err := h.awsClient.SynthesizeSpeech(ctx, input)
+	resp, err := client.SynthesizeSpeech(ctx, input)
 	if err != nil {
 		return fmt.Errorf("failed to synthesize speech: %w", err)
 	}

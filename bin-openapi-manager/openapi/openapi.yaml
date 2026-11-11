@@ -120,7 +120,7 @@ tags:
       url: https://api.voipbin.net/docs/number_provider.html
 
   - name: ServiceConfig
-    description: Operations related to the config keys of a service (admin-only, for example the credentials of the email providers, the LLM keys of the ai service and the SMS and MMS provider tokens of the message service)
+    description: Operations related to the config keys of a service (admin-only, for example the credentials of the email providers, the LLM keys of the ai service and the SMS and MMS provider tokens of the message service, and the provider keys of the tts service)
     externalDocs:
       description: Find more about service config
       url: https://api.voipbin.net/docs/service_config.html
@@ -244,7 +244,7 @@ components:
       name: service
       in: path
       required: true
-      description: "The service whose config keys are managed. Only the services that support stored config keys are accepted: `email`, `ai` and `message`."
+      description: "The service whose config keys are managed. Only the services that support stored config keys are accepted: `email`, `ai`, `message` and `tts`."
       schema:
         $ref: '#/components/schemas/ServiceConfigServiceName'
     ServiceConfigKeyName:
@@ -6574,16 +6574,18 @@ components:
         - NumberManagerNumberProviderCredentialSourceDBUndecryptable
     ServiceConfigServiceName:
       type: string
-      description: The name of a service that has config keys. `email` is the email service, `ai` the AI service and `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`). The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
+      description: The name of a service that has config keys. `email` is the email service, `ai` the AI service, `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`) and `tts` the text to speech service. The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
       example: "email"
       enum:
         - email
         - ai
         - message
+        - tts
       x-enum-varnames:
         - ServiceConfigServiceNameEmail
         - ServiceConfigServiceNameAi
         - ServiceConfigServiceNameMessage
+        - ServiceConfigServiceNameTts
     ServiceConfigKeyKind:
       type: string
       description: The role of the key. A `secret` is encrypted and write-only.
@@ -6746,7 +6748,7 @@ components:
           writeOnly: true
           minLength: 1
           maxLength: 2020
-          description: The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte); a key can declare a shorter limit (the email, ai and message keys allow 512 bytes), and a longer secret is rejected with 400. It must not start or end with white space or contain a line break; it is rejected, not trimmed. The request body is limited to 4 KB.
+          description: The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte); a key can declare a shorter limit (the email, ai, message and tts keys allow 512 bytes), and a longer secret is rejected with 400. It must not start or end with white space or contain a line break; it is rejected, not trimmed. The request body is limited to 4 KB.
           example: "example-secret-token"
         revision:
           type: integer

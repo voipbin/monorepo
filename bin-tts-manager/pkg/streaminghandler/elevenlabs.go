@@ -14,6 +14,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-tts-manager/internal/ttsconfig"
 	"monorepo/bin-tts-manager/models/message"
 	"monorepo/bin-tts-manager/models/streaming"
 
@@ -151,15 +152,16 @@ type elevenlabsHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	apiKey string
+	// keyFunc hands the API key to the handler at the time of use (every connect).
+	keyFunc ttsconfig.KeyFunc
 }
 
-func NewElevenlabsHandler(reqHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler, apiKey string) streamer {
+func NewElevenlabsHandler(reqHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler, keyFunc ttsconfig.KeyFunc) streamer {
 	return &elevenlabsHandler{
 		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,
 
-		apiKey: apiKey,
+		keyFunc: keyFunc,
 	}
 }
 
@@ -381,9 +383,18 @@ func (h *elevenlabsHandler) connect(ctx context.Context, st *streaming.Streaming
 	q.Set("output_format", defaultElevenlabsOutputFormat)
 	u.RawQuery = q.Encode()
 
+	if h.keyFunc == nil {
+		return nil, fmt.Errorf("the elevenlabs key supplier is not set")
+	}
+
+	apiKey, errKey := h.keyFunc(ctx)
+	if errKey != nil {
+		return nil, errors.Wrapf(errKey, "could not get the elevenlabs api key")
+	}
+
 	// Set up WebSocket headers, including the API key.
 	header := make(map[string][]string)
-	header["xi-api-key"] = []string{h.apiKey}
+	header["xi-api-key"] = []string{apiKey}
 
 	// Establish the WebSocket connection.
 	res, _, err := websocket.DefaultDialer.DialContext(ctx, u.String(), header) //nolint:bodyclose // gorilla/websocket documents that the handshake response body does not need to be closed by the caller

@@ -2973,6 +2973,7 @@ const (
 	ServiceConfigServiceNameAi      ServiceConfigServiceName = "ai"
 	ServiceConfigServiceNameEmail   ServiceConfigServiceName = "email"
 	ServiceConfigServiceNameMessage ServiceConfigServiceName = "message"
+	ServiceConfigServiceNameTts     ServiceConfigServiceName = "tts"
 )
 
 // Valid indicates whether the value is a known member of the ServiceConfigServiceName enum.
@@ -2983,6 +2984,8 @@ func (e ServiceConfigServiceName) Valid() bool {
 	case ServiceConfigServiceNameEmail:
 		return true
 	case ServiceConfigServiceNameMessage:
+		return true
+	case ServiceConfigServiceNameTts:
 		return true
 	default:
 		return false
@@ -7860,7 +7863,7 @@ type ServiceConfig struct {
 	// SecretWritable Whether the platform has an encryption key, which is needed to store a secret.
 	SecretWritable bool `json:"secret_writable"`
 
-	// Service The name of a service that has config keys. `email` is the email service, `ai` the AI service and `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`). The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
+	// Service The name of a service that has config keys. `email` is the email service, `ai` the AI service, `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`) and `tts` the text to speech service. The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
 	Service ServiceConfigServiceName `json:"service"`
 }
 
@@ -7955,7 +7958,7 @@ type ServiceConfigKeySecretRequest struct {
 	// Revision The `revision` of the key returned from the `GET /service_configs/{service}` response. 0 means that the key has no stored value.
 	Revision int64 `json:"revision"`
 
-	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte); a key can declare a shorter limit (the email, ai and message keys allow 512 bytes), and a longer secret is rejected with 400. It must not start or end with white space or contain a line break; it is rejected, not trimmed. The request body is limited to 4 KB.
+	// Secret The secret (for example an API key). 1 to 2020 bytes (multi-byte characters count per byte); a key can declare a shorter limit (the email, ai, message and tts keys allow 512 bytes), and a longer secret is rejected with 400. It must not start or end with white space or contain a line break; it is rejected, not trimmed. The request body is limited to 4 KB.
 	Secret *string `json:"secret,omitempty"`
 }
 
@@ -7966,7 +7969,7 @@ type ServiceConfigKeySource string
 // ServiceConfigKeyType The value type of the key.
 type ServiceConfigKeyType string
 
-// ServiceConfigServiceName The name of a service that has config keys. `email` is the email service, `ai` the AI service and `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`). The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
+// ServiceConfigServiceName The name of a service that has config keys. `email` is the email service, `ai` the AI service, `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`) and `tts` the text to speech service. The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
 type ServiceConfigServiceName string
 
 // StorageManagerAccount defines model for StorageManagerAccount.
@@ -8703,7 +8706,7 @@ type PageToken = string
 // ServiceConfigKeyName defines model for ServiceConfigKeyName.
 type ServiceConfigKeyName = string
 
-// ServiceConfigService The name of a service that has config keys. `email` is the email service, `ai` the AI service and `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`). The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
+// ServiceConfigService The name of a service that has config keys. `email` is the email service, `ai` the AI service, `message` the message service (the SMS and MMS provider tokens `provider.messagebird.auth_token` and `provider.telnyx.auth_token`) and `tts` the text to speech service. The Telnyx token of `message` is a separate setting from the Telnyx token of the number provider, so a rotation of the Telnyx account needs both places to be changed.
 type ServiceConfigService = ServiceConfigServiceName
 
 // BadRequest defines model for BadRequest.

@@ -21,7 +21,7 @@ func Test_NewListenHandler(t *testing.T) {
 	mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
 	mockSpeaking := speakinghandler.NewMockSpeakingHandler(mc)
 
-	h := NewListenHandler(mockSock, mockTTS, mockStreaming, mockSpeaking)
+	h := NewListenHandler(mockSock, mockTTS, mockStreaming, mockSpeaking, nil)
 	if h == nil {
 		t.Fatal("expected handler, got nil")
 	}

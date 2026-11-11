@@ -7,6 +7,7 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"go.uber.org/mock/gomock"
@@ -31,7 +32,7 @@ func Test_runListenNormal_success(t *testing.T) {
 		},
 	)
 
-	if err := runListenNormal(mockSock, nil, nil, nil); err != nil {
+	if err := runListenNormal(mockSock, nil, nil, nil, nil); err != nil {
 		t.Fatalf("Wrong match. expected: nil, got: %v", err)
 	}
 
@@ -50,7 +51,7 @@ func Test_runListenNormal_queueCreateError(t *testing.T) {
 	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockSock.EXPECT().QueueCreate(testQueueName, "normal").Return(errors.New("boom"))
 
-	err := runListenNormal(mockSock, nil, nil, nil)
+	err := runListenNormal(mockSock, nil, nil, nil, nil)
 	if err == nil {
 		t.Fatal("Wrong match. expected: error, got: nil")
 	}
@@ -114,7 +115,7 @@ func Test_runListen_panicsOnNormalFailure(t *testing.T) {
 		}
 	}()
 
-	runListen(mockSock, nil, nil, nil, "pod-1")
+	runListen(mockSock, nil, nil, nil, "pod-1", nil)
 }
 
 // Test_runListen_panicsOnPodFailure verifies runListen panics when the
@@ -149,5 +150,44 @@ func Test_runListen_panicsOnPodFailure(t *testing.T) {
 		}
 	}()
 
-	runListen(mockSock, nil, nil, nil, "pod-1")
+	runListen(mockSock, nil, nil, nil, "pod-1", nil)
+}
+
+// Test_runListenPod_configRequestNotServed verifies the pod queue has no config server: a config
+// request that reaches it is answered with the fixed 404, and the same request reaches the config
+// server on the shared queue (Test_runListenNormal_success keeps that side).
+func Test_runListenPod_configRequestNotServed(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+
+	got := make(chan sock.CbMsgRPC, 1)
+	expectQueue := fmt.Sprintf("%s.%s", testQueueName, "pod-1")
+	mockSock.EXPECT().QueueCreate(expectQueue, "normal").Return(nil)
+	mockSock.EXPECT().ConsumeRPC(gomock.Any(), expectQueue, "tts-manager", false, false, false, 10, gomock.Any()).DoAndReturn(
+		func(_, _, _, _, _, _ any, _ any, cbRPC sock.CbMsgRPC) error {
+			got <- cbRPC
+			return nil
+		},
+	)
+
+	if err := runListenPod(mockSock, nil, nil, nil, "pod-1"); err != nil {
+		t.Fatalf("Wrong match. expected: nil, got: %v", err)
+	}
+
+	var cb sock.CbMsgRPC
+	select {
+	case cb = <-got:
+	case <-time.After(3 * time.Second):
+		t.Fatal("ConsumeRPC was not reached")
+	}
+
+	res, err := cb(&sock.Request{URI: "/v1/configs", Method: sock.RequestMethodGet})
+	if err != nil || res == nil {
+		t.Fatalf("Wrong match. got: %v %v", res, err)
+	}
+	if res.StatusCode != 404 {
+		t.Errorf("Wrong match. expect: 404, got: %d", res.StatusCode)
+	}
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-tts-manager/internal/ttsconfig"
 	"monorepo/bin-tts-manager/models/tts"
 	"monorepo/bin-tts-manager/pkg/audiohandler"
 	"monorepo/bin-tts-manager/pkg/buckethandler"
@@ -96,8 +97,7 @@ func init() {
 
 // NewTTSHandler create TTSHandler
 func NewTTSHandler(
-	awsAccessKey string,
-	awsSecretKey string,
+	awsCreds ttsconfig.AWSCredentialsFunc,
 	gcpEndpoint string,
 	mediaBucketDirectory string,
 	localAddress string,
@@ -111,7 +111,7 @@ func NewTTSHandler(
 	log.Debugf("Creating a new TTSHandler.")
 
 	ctx := context.Background()
-	audioHandler := audiohandler.NewAudioHandler(ctx, awsAccessKey, awsSecretKey, gcpEndpoint)
+	audioHandler := audiohandler.NewAudioHandler(ctx, awsCreds, gcpEndpoint)
 	if audioHandler == nil {
 		log.Errorf("Could not create audio handler.")
 		return nil
