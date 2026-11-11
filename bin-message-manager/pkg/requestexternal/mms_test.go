@@ -46,7 +46,7 @@ func Test_TelnyxSendMMS_request(t *testing.T) {
 				return newResponse(200, io.NopCloser(strings.NewReader(`{"data":{"id":"fake-message-id","record_type":"message","type":"MMS"}}`))), nil
 			}))
 
-			h := NewRequestExternal("fake-token-mb", "fake-token-tn")
+			h := NewRequestExternal(staticToken("fake-token-mb"), staticToken("fake-token-tn"))
 
 			res, err := h.TelnyxSendMMS(context.Background(), "+155****0001", "+155****0002", tt.text, []string{"https://example.invalid/a.png", "https://example.invalid/b.pdf"})
 			if err != nil {
@@ -119,7 +119,7 @@ func Test_MessagebirdSendMMS_request(t *testing.T) {
 				return newResponse(201, io.NopCloser(strings.NewReader(`{"id":"fake-id","recipients":{"totalCount":1,"items":[{"recipient":155550002,"status":"sent"}]}}`))), nil
 			}))
 
-			h := NewRequestExternal("fake-token-mb", "fake-token-tn")
+			h := NewRequestExternal(staticToken("fake-token-mb"), staticToken("fake-token-tn"))
 
 			res, err := h.MessagebirdSendMMS(context.Background(), "+155****0001", "+155****0002", tt.text, []string{"https://example.invalid/a.png", "https://example.invalid/b.pdf"})
 			if err != nil {
@@ -188,7 +188,7 @@ func Test_SendMMS_status(t *testing.T) {
 					return newResponse(tt.status, io.NopCloser(strings.NewReader(body))), nil
 				}))
 
-				h := NewRequestExternal("fake-token-mb", "fake-token-tn")
+				h := NewRequestExternal(staticToken("fake-token-mb"), staticToken("fake-token-tn"))
 
 				var err error
 				if provider == "telnyx" {
@@ -249,7 +249,7 @@ func Test_SendMMS_notDefinitive(t *testing.T) {
 			t.Run(provider+" "+tt.name, func(t *testing.T) {
 				replaceDefaultTransport(t, tt.roundTrip)
 
-				h := NewRequestExternal("fake-token-mb", "fake-token-tn")
+				h := NewRequestExternal(staticToken("fake-token-mb"), staticToken("fake-token-tn"))
 
 				var err error
 				if provider == "telnyx" {
@@ -270,7 +270,7 @@ func Test_SendMMS_notDefinitive(t *testing.T) {
 }
 
 func Test_SendMMS_canceledContext(t *testing.T) {
-	h := NewRequestExternal("fake-token-mb", "fake-token-tn")
+	h := NewRequestExternal(staticToken("fake-token-mb"), staticToken("fake-token-tn"))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -303,7 +303,7 @@ func Test_TelnyxSendMMS_textOnly(t *testing.T) {
 		return newResponse(200, io.NopCloser(strings.NewReader(`{"data":{"id":"fake-message-id","parts":1}}`))), nil
 	}))
 
-	h := NewRequestExternal("fake-token-mb", "fake-token-tn")
+	h := NewRequestExternal(staticToken("fake-token-mb"), staticToken("fake-token-tn"))
 	res, err := h.TelnyxSendMMS(context.Background(), "+15550100001", "+15550100002", "long text", nil)
 	if err != nil || res.Data.ID != "fake-message-id" {
 		t.Fatalf("Wrong match. expect: ok, got: res: %v, err: %v", res, err)

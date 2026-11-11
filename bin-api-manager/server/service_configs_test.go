@@ -318,6 +318,44 @@ func Test_serviceConfigs_aiService(t *testing.T) {
 	}
 }
 
+// The service message is routed like email and ai: the service name reaches the service handler as
+// it is, for the keys of the two providers.
+func Test_serviceConfigs_messageService(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	a := testNumberProviderAgent()
+	r, w, _, _, _ := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
+
+	mockSvc.EXPECT().ServiceConfigGet(gomock.Any(), a, "message").Return(&configrpc.Service{Service: "message", SecretWritable: true, Keys: []configrpc.Key{*testServiceConfigKey()}}, nil)
+	do(r, w, "GET", "/service_configs/message", "")
+	if w.Code != http.StatusOK || !strings.HasPrefix(w.Body.String(), `{"service":"message",`) {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+
+	mockSvc.EXPECT().ServiceConfigKeySecretSet(gomock.Any(), a, "message", "provider.telnyx.auth_token", testServiceConfigSecret, int64(2)).Return(testServiceConfigKey(), nil)
+	w = httptest.NewRecorder()
+	do(r, w, "PUT", "/service_configs/message/keys/provider.telnyx.auth_token/secret", `{"secret":"`+testServiceConfigSecret+`","revision":2}`)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+
+	mockSvc.EXPECT().ServiceConfigKeyClear(gomock.Any(), a, "message", "provider.messagebird.auth_token", int64(3)).Return(testServiceConfigKey(), nil)
+	w = httptest.NewRecorder()
+	do(r, w, "DELETE", "/service_configs/message/keys/provider.messagebird.auth_token?revision=3", "")
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+
+	mockSvc.EXPECT().ServiceConfigKeyHistoryList(gomock.Any(), a, "message", "provider.telnyx.auth_token", "", 0).Return(&configrpc.HistoryList{Result: []configrpc.History{}}, nil)
+	w = httptest.NewRecorder()
+	do(r, w, "GET", "/service_configs/message/keys/provider.telnyx.auth_token/histories", "")
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+}
+
 // The generated binding does not check the service name against the enum: a value that is not
 // allowed reaches the service handler, which answers 404. The allow list of the service handler
 // is the only place that decides.

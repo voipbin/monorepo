@@ -10,6 +10,33 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Names of the environment variables that the config registry reads through EnvValue.
+const (
+	envAuthtokenMessagebird = "AUTHTOKEN_MESSAGEBIRD"
+	envAuthtokenTelnyx      = "AUTHTOKEN_TELNYX"
+
+	// EnvConfigEncryptionKeys is the environment variable of the master key list of the stored
+	// settings.
+	EnvConfigEncryptionKeys = "MESSAGE_CONFIG_ENCRYPTION_KEYS"
+)
+
+// EnvValue returns the loaded value (flag or environment) of a variable name. It is the
+// environment lookup of the config registry, so the stored settings and the direct reads see the
+// same values. A name that is not loaded is "not set".
+func (c *Config) EnvValue(name string) (string, bool) {
+	var v string
+	switch name {
+	case envAuthtokenMessagebird:
+		v = c.AuthtokenMessagebird
+	case envAuthtokenTelnyx:
+		v = c.AuthtokenTelnyx
+	default:
+		return "", false
+	}
+
+	return v, v != ""
+}
+
 // Config holds all configuration for the message-manager service
 type Config struct {
 	DatabaseDSN             string // DatabaseDSN is the data source name used to connect to the primary database.
@@ -21,6 +48,12 @@ type Config struct {
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 	AuthtokenMessagebird    string // AuthtokenMessagebird is the authentication token for MessageBird API.
 	AuthtokenTelnyx         string // AuthtokenTelnyx is the authentication token for Telnyx API.
+
+	// ConfigEncryptionKeys is the master key list of the stored settings
+	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
+	// command line flag. A value that can not be parsed does not stop the service: the stored
+	// secrets can not be used then and the environment tokens keep working.
+	ConfigEncryptionKeys string
 }
 
 var (
@@ -67,6 +100,12 @@ func bindConfig(cmd *cobra.Command) error {
 		"authtoken_telnyx":          "AUTHTOKEN_TELNYX",
 	}
 
+	// the master key list of the stored settings has no flag: a flag value would show in the
+	// process list.
+	if errBind := viper.BindEnv("message_config_encryption_keys", EnvConfigEncryptionKeys); errBind != nil {
+		return errors.Wrapf(errBind, "could not bind the env. key: %s", EnvConfigEncryptionKeys)
+	}
+
 	for flagKey, envKey := range bindings {
 		if errBind := viper.BindPFlag(flagKey, f.Lookup(flagKey)); errBind != nil {
 			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
@@ -100,6 +139,7 @@ func LoadGlobalConfig() {
 			RedisDatabase:           viper.GetInt("redis_database"),
 			AuthtokenMessagebird:    viper.GetString("authtoken_messagebird"),
 			AuthtokenTelnyx:         viper.GetString("authtoken_telnyx"),
+			ConfigEncryptionKeys:    viper.GetString("message_config_encryption_keys"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

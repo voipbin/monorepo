@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"net/http"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -17,11 +19,13 @@ import (
 	"monorepo/bin-message-manager/pkg/requestexternal"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-message-manager/internal/config"
+	"monorepo/bin-message-manager/internal/messageconfig"
 	"monorepo/bin-message-manager/migrations"
 	"monorepo/bin-message-manager/pkg/cachehandler"
 	"monorepo/bin-message-manager/pkg/dbhandler"
@@ -156,10 +160,18 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler, cfg *config.Confi
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	requestExternal := requestexternal.NewRequestExternal(cfg.AuthtokenMessagebird, cfg.AuthtokenTelnyx)
+	// The provider tokens are stored in the database (the environment value applies when there is
+	// no row) and are read when a message is sent, so a changed token is used by the next send.
+	configHandler, errConfig := messageconfig.New(cfg, dbhandler.NewConfigStore(sqlDB))
+	if errConfig != nil {
+		return errors.Wrapf(errConfig, "could not create the config handler")
+	}
+	messageconfig.LogSources(context.Background(), configHandler)
+
+	requestExternal := requestexternal.NewRequestExternal(messageconfig.MessagebirdToken(configHandler), messageconfig.TelnyxToken(configHandler))
 
 	messageHandler := messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, requestExternal)
-	listenHandler := listenhandler.NewListenHandler(sockHandler, messageHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, messageHandler, configrpc.NewServer(configHandler, serviceName))
 
 	// run
 	if errRun := listenHandler.Run(string(commonoutline.QueueNameMessageRequest), string(commonoutline.QueueNameDelay)); errRun != nil {

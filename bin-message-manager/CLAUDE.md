@@ -21,7 +21,7 @@ After message creation, provider send runs in a **goroutine** — it is non-bloc
 
 ## Database migrations
 
-The schema of the table `message_messages` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. The full rules, the baseline text rules and the verification script are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md); `bin-tag-manager/CLAUDE.md` is the reference service.
+The schema of the tables `message_messages`, `message_configs` and `message_config_histories` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. The full rules, the baseline text rules and the verification script are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md); `bin-tag-manager/CLAUDE.md` is the reference service.
 
 - Files: `migrations/NNNNNN_<table>_<verb>_<type>_<items>.up.sql` and `.down.sql` (six digits, from 000001 without gaps). `000001_baseline` is the schema at the time of the conversion. Version table: `message_schema_migrations`.
 - `cmd/message-manager` runs `migrationhandler.Run` right after the database connection, before the cache and RabbitMQ. Failure stops the start (non-zero exit).
@@ -42,6 +42,11 @@ go test -coverprofile cp.out -v $(go list ./...)
 # Verification (mandatory before commit)
 go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 
+# message-control config — the stored provider tokens (database and master key only; the value is read from stdin)
+./bin/message-control config list
+printf '%s' "$NEW_TOKEN" | ./bin/message-control config set --key provider.telnyx.auth_token --actor-id <uuid>
+./bin/message-control config clear --key provider.telnyx.auth_token --actor-id <uuid>
+
 # message-control — direct DB/cache access, bypasses RabbitMQ (the migrate command opens only the database)
 ./bin/message-control migrate status
 ./bin/message-control message get --id <uuid>
@@ -56,6 +61,10 @@ AUTHTOKEN_MESSAGEBIRD="token" \
 AUTHTOKEN_TELNYX="token" \
 ./bin/message-manager
 ```
+
+## CRITICAL: Provider tokens are read per request
+
+The MessageBird and Telnyx tokens are stored settings (`message_configs`, order: stored value, then `AUTHTOKEN_MESSAGEBIRD` / `AUTHTOKEN_TELNYX`, then empty). `requestexternal` receives a supplier function (`messageconfig.MessagebirdToken`, `TelnyxToken`) and calls it for every provider request. Never read the token from `config.Get()` in a send path and never cache it: a changed token must be used by the next request. A token that can not be read is an error (never replaced by the environment value). The Telnyx token here is not the one of `bin-number-manager`; a Telnyx key rotation needs both (see docs/operations.md, "Provider tokens"). The admin API route `/v1/configs` is handled before the request log entry exists and logs nothing of the request (the body of a secret write is the secret).
 
 ## Architecture Summary
 

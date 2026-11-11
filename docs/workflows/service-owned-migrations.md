@@ -64,7 +64,7 @@ Every PR that changes a migration file or the migration runner states, with evid
 | bin-direct-manager | direct_directs | `bin-direct-manager/migrations/` |
 | bin-email-manager | email_config_histories, email_configs, email_emails | `bin-email-manager/migrations/` |
 | bin-flow-manager | flow_activeflows, flow_flows | `bin-flow-manager/migrations/` |
-| bin-message-manager | message_messages | `bin-message-manager/migrations/` |
+| bin-message-manager | message_config_histories, message_configs, message_messages | `bin-message-manager/migrations/` |
 | bin-number-manager | number_numbers, number_providers | `bin-number-manager/migrations/` |
 | bin-outdial-manager | outdial_outdials, outdial_outdialtargetcalls, outdial_outdialtargets | `bin-outdial-manager/migrations/` |
 | bin-pipecat-manager | pipecat_pipecatcalls | `bin-pipecat-manager/migrations/` |
@@ -139,6 +139,8 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | email_emails | bin-email-manager | Outbound email records |
 | flow_activeflows | bin-flow-manager | Currently executing flow instances |
 | flow_flows | bin-flow-manager | Flow definitions |
+| message_config_histories | bin-message-manager | Change history of the stored settings (no values) |
+| message_configs | bin-message-manager | Stored settings (the SMS and MMS provider tokens, encrypted) |
 | message_messages | bin-message-manager | Outbound SMS/messaging records |
 | number_numbers | bin-number-manager | Purchased DID numbers |
 | number_providers | bin-number-manager | Number provider settings (priority, enabled flag, encrypted secret) |

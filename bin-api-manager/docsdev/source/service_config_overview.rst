@@ -10,7 +10,7 @@ Overview
    * **Async:** No. Every request returns the updated key immediately.
    * **Access:** ProjectSuperAdmin only. Customer-level tokens, access keys and direct tokens are refused.
 
-The Service Config API manages the stored configuration of a platform service. The ``{service}`` path parameter names the service. Two services are supported now. ``email`` has the keys ``mailgun.api_key``, ``sendgrid.api_key`` and ``mailgun.webhook_signing_key``. ``ai`` has the keys ``llm.openai_compat.api_key`` (the API key of the OpenAI compatible provider) and ``llm.gemini.api_key`` (the Google API key of the Gemini endpoint). A service name that is not listed is answered with ``404 Not Found``.
+The Service Config API manages the stored configuration of a platform service. The ``{service}`` path parameter names the service. Three services are supported now. ``email`` has the keys ``mailgun.api_key``, ``sendgrid.api_key`` and ``mailgun.webhook_signing_key``. ``ai`` has the keys ``llm.openai_compat.api_key`` (the API key of the OpenAI compatible provider) and ``llm.gemini.api_key`` (the Google API key of the Gemini endpoint). ``message`` has the keys ``provider.messagebird.auth_token`` (the access key of the MessageBird account) and ``provider.telnyx.auth_token`` (the API key of the Telnyx account that sends the SMS and MMS). The Telnyx token of the message service is a separate setting from the Telnyx token of the number provider (see Number Provider), so a rotation of the Telnyx account needs both places to be changed. A service name that is not listed is answered with ``404 Not Found``.
 
 With the Service Config API you can:
 
@@ -62,7 +62,7 @@ The revision starts at 1 again when a key is deleted and stored again, so a call
 
 Secret Rules
 ------------
-A secret is 1 to 2020 bytes long (multi-byte characters count per byte). A key can declare a shorter limit: the email and ai keys allow 512 bytes, and a longer secret is rejected with ``400 Bad Request``. A secret that starts or ends with white space, or that contains a line break, is rejected with ``400 Bad Request``; it is not trimmed. The request body is limited to 4 KB, and a larger body is rejected with ``400 Bad Request``.
+A secret is 1 to 2020 bytes long (multi-byte characters count per byte). A key can declare a shorter limit: the email, ai and message keys allow 512 bytes, and a longer secret is rejected with ``400 Bad Request``. A secret that starts or ends with white space, or that contains a line break, is rejected with ``400 Bad Request``; it is not trimmed. The request body is limited to 4 KB, and a larger body is rejected with ``400 Bad Request``.
 
 After a timeout, or an answer of ``500`` or ``503``, check the key with ``GET /service_configs/{service}`` before you send the secret again. The answer ``500`` with the reason ``CONFIG_WRITE_VERIFY_FAILED`` means that the change may have been stored, and any other ``500`` can leave the state unknown in the same way.
 

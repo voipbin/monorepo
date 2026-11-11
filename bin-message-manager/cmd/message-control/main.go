@@ -10,12 +10,14 @@ import (
 	"monorepo/bin-common-handler/models/address"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/confighandler"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-message-manager/internal/config"
+	"monorepo/bin-message-manager/internal/messageconfig"
 	"monorepo/bin-message-manager/migrations"
 	"monorepo/bin-message-manager/models/message"
 	"monorepo/bin-message-manager/pkg/cachehandler"
@@ -67,13 +69,18 @@ func initMessageHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (message
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
-	requestExternal := newRequestExternal(config.Get())
+	// the same token rule as the daemon: the stored token, else the environment token
+	configHandler, err := messageconfig.New(config.Get(), dbhandler.NewConfigStore(sqlDB))
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not create the config handler")
+	}
+	requestExternal := newRequestExternal(configHandler)
 
 	return messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, requestExternal), nil
 }
 
-func newRequestExternal(cfg *config.Config) requestexternal.RequestExternal {
-	return requestexternal.NewRequestExternal(cfg.AuthtokenMessagebird, cfg.AuthtokenTelnyx)
+func newRequestExternal(configHandler confighandler.Handler) requestexternal.RequestExternal {
+	return requestexternal.NewRequestExternal(messageconfig.MessagebirdToken(configHandler), messageconfig.TelnyxToken(configHandler))
 }
 
 func initCommand() *cobra.Command {
@@ -101,6 +108,7 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdDelete())
 
 	cmdRoot.AddCommand(cmdSub)
+	cmdRoot.AddCommand(cmdConfig())
 
 	// the migrate commands open only the database, so they do not depend on Redis or RabbitMQ
 	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {

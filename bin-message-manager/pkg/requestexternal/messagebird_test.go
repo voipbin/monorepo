@@ -10,7 +10,7 @@ import (
 )
 
 func Test_MessagebirdSendMessage_canceledContext(t *testing.T) {
-	h := NewRequestExternal("token", "token")
+	h := NewRequestExternal(staticToken("token"), staticToken("token"))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -52,7 +52,7 @@ func Test_MessagebirdSendMessage_status(t *testing.T) {
 			messagebirdMessagesURI = server.URL
 			defer func() { messagebirdMessagesURI = old }()
 
-			h := NewRequestExternal("fake-token-mb", "fake-token-tn")
+			h := NewRequestExternal(staticToken("fake-token-mb"), staticToken("fake-token-tn"))
 			res, err := h.MessagebirdSendMessage(context.Background(), "+15550100001", []string{"+15550100002"}, "hello")
 			if !tt.expectErr {
 				if err != nil || res == nil || res.ID != "mb-1" || res.Recipients.Items[0].MessagePartCount != 2 {

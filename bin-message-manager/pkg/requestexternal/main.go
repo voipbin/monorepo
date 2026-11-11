@@ -4,6 +4,7 @@ package requestexternal
 
 import (
 	"context"
+	"errors"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -45,13 +46,30 @@ type RequestExternal interface {
 	TelnyxSendMMS(ctx context.Context, source string, destination string, text string, mediaURLs []string) (*telnyx.MessageResponse, error)
 }
 
-type requestExternal struct {
-	authtokenMessagebird string // authentication token for messagebird
-	authtokenTelnyx      string // authentication token for telnyx
+// TokenFunc hands a provider token to the request at the time of use. Nothing is cached by the
+// caller, so a token that was changed is used by the next request. An empty token with no error
+// means "not configured". An error means that the token could not be read: the request is not
+// sent, and the error is never replaced by another token.
+type TokenFunc func(ctx context.Context) (string, error)
+
+// ErrTokenUnavailable is wrapped by the error of a request that was not sent because the token
+// could not be read. The request never reached the provider, so no message exists there. The
+// cause (a database error, a stored value that can not be decrypted, a read that ran out of time)
+// is wrapped as well and holds no token text.
+var ErrTokenUnavailable = errors.New("the provider token could not be read, so the request was not sent")
+
+// IsTokenUnavailable reports whether the request was not sent because its token could not be read.
+func IsTokenUnavailable(err error) bool {
+	return errors.Is(err, ErrTokenUnavailable)
 }
 
-// NewRequestExternal create RequestExternal
-func NewRequestExternal(authtokenMessagebird string, authtokenTelnyx string) RequestExternal {
+type requestExternal struct {
+	authtokenMessagebird TokenFunc // supplies the authentication token for messagebird
+	authtokenTelnyx      TokenFunc // supplies the authentication token for telnyx
+}
+
+// NewRequestExternal create RequestExternal. The tokens are asked for on every request.
+func NewRequestExternal(authtokenMessagebird TokenFunc, authtokenTelnyx TokenFunc) RequestExternal {
 	h := &requestExternal{
 		authtokenMessagebird: authtokenMessagebird,
 		authtokenTelnyx:      authtokenTelnyx,
