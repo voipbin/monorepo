@@ -64,9 +64,9 @@ func cmdConfig() *cobra.Command {
 		Short: "Stored configuration (the TTS provider keys)",
 		Long: `Stored configuration: the keys of the TTS providers (the AWS access key and secret key of
 Amazon Polly, and the ElevenLabs API key). The two AWS keys are stored together: while only one of
-them is stored, AWS requests fail (a stored key is never combined with an environment key).
+them is stored, AWS requests fail.
 
-A stored value takes precedence over the environment variable of the same key. A change is
+The keys are stored in the database only; a key that is cleared is not configured. A change is
 used by the next request, with no restart. The daemon applies the table migration at its start; on a
 local database run "migrate up" first. The master key list is read from the environment
 (TTS_CONFIG_ENCRYPTION_KEYS) and is never a flag. These commands need the database and the master
@@ -109,7 +109,7 @@ one line is refused.`,
 func cmdConfigClear() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clear",
-		Short: "Remove the stored value of a key (the environment variable applies again)",
+		Short: "Remove the stored value of a key (the key is then not configured)",
 		RunE:  runConfigClear,
 	}
 

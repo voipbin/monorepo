@@ -1,9 +1,9 @@
 // Package configkeys declares the configuration keys of bin-message-manager.
 //
-// The two keys are the authentication tokens of the SMS and MMS providers that were read from the
-// environment only. They are independent secret keys: each provider has its own token and they
+// The two keys are the authentication tokens of the SMS and MMS providers. They are stored in the
+// database only. They are independent secret keys: each provider has its own token and they
 // are rotated separately. The Telnyx token of this service is a different setting from the Telnyx
-// token of bin-number-manager (a different source and a different variable), so rotating one
+// token of bin-number-manager (a different source), so rotating one
 // does not rotate the other.
 package configkeys
 
@@ -32,12 +32,12 @@ const (
 // maxSecretLen is the longest accepted provider token in bytes.
 const maxSecretLen = 512
 
-// Keys returns the declarations. The environment names are the variables that the service read
-// before the configs existed, so a database without rows behaves exactly as before.
+// Keys returns the declarations. The values are stored in the database only: a key has no
+// environment name, so a key without a row is not configured.
 func Keys() []confighandler.Key {
 	return []confighandler.Key{
-		{Name: KeyMessagebirdAuthToken, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "Access key of the MessageBird account that sends the SMS and MMS that Telnyx refused.", Env: "AUTHTOKEN_MESSAGEBIRD", MaxLen: maxSecretLen},
-		{Name: KeyTelnyxAuthToken, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "API key of the Telnyx account that sends the SMS and MMS of the message service. It is read from here and not from the number service, so a key rotation needs both places.", Env: "AUTHTOKEN_TELNYX", MaxLen: maxSecretLen},
+		{Name: KeyMessagebirdAuthToken, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "Access key of the MessageBird account that sends the SMS and MMS that Telnyx refused.", MaxLen: maxSecretLen},
+		{Name: KeyTelnyxAuthToken, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "API key of the Telnyx account that sends the SMS and MMS of the message service. It is read from here and not from the number service, so a key rotation needs both places.", MaxLen: maxSecretLen},
 	}
 }
 

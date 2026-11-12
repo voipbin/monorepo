@@ -1,6 +1,8 @@
 package config
 
 import (
+	"reflect"
+	"strings"
 	"sync"
 	"testing"
 
@@ -26,9 +28,6 @@ func TestGet(t *testing.T) {
 				RabbitMQAddress:         "amqp://guest:guest@localhost:5672",
 				PrometheusEndpoint:      "/metrics",
 				PrometheusListenAddress: ":2112",
-				AWSAccessKey:            "AKIA...",
-				AWSSecretKey:            "secret...",
-				ElevenlabsAPIKey:        "elevenlabs-api-key",
 				GCPTTSEndpoint:          "texttospeech.googleapis.com:443",
 			},
 		},
@@ -48,15 +47,6 @@ func TestGet(t *testing.T) {
 			}
 			if res.PrometheusListenAddress != tt.setupConfig.PrometheusListenAddress {
 				t.Errorf("Wrong PrometheusListenAddress. expect: %s, got: %s", tt.setupConfig.PrometheusListenAddress, res.PrometheusListenAddress)
-			}
-			if res.AWSAccessKey != tt.setupConfig.AWSAccessKey {
-				t.Errorf("Wrong AWSAccessKey. expect: %s, got: %s", tt.setupConfig.AWSAccessKey, res.AWSAccessKey)
-			}
-			if res.AWSSecretKey != tt.setupConfig.AWSSecretKey {
-				t.Errorf("Wrong AWSSecretKey. expect: %s, got: %s", tt.setupConfig.AWSSecretKey, res.AWSSecretKey)
-			}
-			if res.ElevenlabsAPIKey != tt.setupConfig.ElevenlabsAPIKey {
-				t.Errorf("Wrong ElevenlabsAPIKey. expect: %s, got: %s", tt.setupConfig.ElevenlabsAPIKey, res.ElevenlabsAPIKey)
 			}
 			if res.GCPTTSEndpoint != tt.setupConfig.GCPTTSEndpoint {
 				t.Errorf("Wrong GCPTTSEndpoint. expect: %s, got: %s", tt.setupConfig.GCPTTSEndpoint, res.GCPTTSEndpoint)
@@ -106,15 +96,6 @@ func TestBootstrap(t *testing.T) {
 			if rootCmd.PersistentFlags().Lookup("prometheus_listen_address") == nil {
 				t.Errorf("Expected prometheus_listen_address flag to be registered")
 			}
-			if rootCmd.PersistentFlags().Lookup("aws_access_key") == nil {
-				t.Errorf("Expected aws_access_key flag to be registered")
-			}
-			if rootCmd.PersistentFlags().Lookup("aws_secret_key") == nil {
-				t.Errorf("Expected aws_secret_key flag to be registered")
-			}
-			if rootCmd.PersistentFlags().Lookup("elevenlabs_api_key") == nil {
-				t.Errorf("Expected elevenlabs_api_key flag to be registered")
-			}
 			if rootCmd.PersistentFlags().Lookup("gcp_tts_endpoint") == nil {
 				t.Errorf("Expected gcp_tts_endpoint flag to be registered")
 			}
@@ -151,30 +132,70 @@ func TestLoadGlobalConfig(t *testing.T) {
 	}
 }
 
-func Test_EnvValue(t *testing.T) {
-	c := &Config{AWSAccessKey: "access-test", ElevenlabsAPIKey: "", ConfigEncryptionKeys: "1:x", AWSSecretKey: "secret-test"}
-
-	tests := []struct {
-		name string
-
-		envName string
-
-		expectValue string
-		expectOK    bool
-	}{
-		{name: "aws access key", envName: "AWS_ACCESS_KEY", expectValue: "access-test", expectOK: true},
-		{name: "aws secret key", envName: "AWS_SECRET_KEY", expectValue: "secret-test", expectOK: true},
-		{name: "empty value is not set", envName: "ELEVENLABS_API_KEY", expectValue: "", expectOK: false},
-		{name: "the master key list is not served to the registry", envName: "TTS_CONFIG_ENCRYPTION_KEYS", expectOK: false},
-		{name: "unknown name", envName: "DATABASE_DSN", expectOK: false},
+// The provider keys are stored in the database only: Config has no field for them, and no flag
+// of the old names exists.
+func Test_removedProviderFields(t *testing.T) {
+	typ := reflect.TypeOf(Config{})
+	for _, name := range []string{"AWSAccessKey", "AWSSecretKey", "ElevenlabsAPIKey"} {
+		if _, ok := typ.FieldByName(name); ok {
+			t.Errorf("Wrong match. Config must not have the field %s", name)
+		}
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			v, ok := c.EnvValue(tt.envName)
-			if v != tt.expectValue || ok != tt.expectOK {
-				t.Errorf("Wrong match. expect: %q %v, got: %q %v", tt.expectValue, tt.expectOK, v, ok)
-			}
-		})
+	if _, ok := reflect.TypeOf(&Config{}).MethodByName("EnvValue"); ok {
+		t.Errorf("Wrong match. Config must not have the method EnvValue")
+	}
+
+	cmd := &cobra.Command{}
+	viper.Reset()
+	ResetForTest()
+	t.Cleanup(func() {
+		viper.Reset()
+		ResetForTest()
+	})
+	if err := Bootstrap(cmd); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	for _, name := range []string{"aws_access_key", "aws_secret_key", "elevenlabs_api_key"} {
+		if cmd.PersistentFlags().Lookup(name) != nil {
+			t.Errorf("Wrong match. the flag %q must not exist", name)
+		}
+	}
+}
+
+// A deployment that still exports the old variables starts normally: the load ignores them and
+// the other fields are not affected.
+func Test_oldProviderVariablesIgnored(t *testing.T) {
+	viper.Reset()
+	ResetForTest()
+	t.Cleanup(func() {
+		viper.Reset()
+		ResetForTest()
+	})
+
+	t.Setenv("AWS_ACCESS_KEY", "synthetic-old-access")
+	t.Setenv("AWS_SECRET_KEY", "synthetic-old-secret")
+	t.Setenv("ELEVENLABS_API_KEY", "synthetic-old-eleven")
+	t.Setenv("RABBITMQ_ADDRESS", "amqp://synthetic-host:5672")
+	t.Setenv("GCP_TTS_ENDPOINT", "synthetic-gcp:443")
+	t.Setenv("TTS_CONFIG_ENCRYPTION_KEYS", "1:synthetic-master")
+
+	cmd := &cobra.Command{}
+	if err := Bootstrap(cmd); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	LoadGlobalConfig()
+
+	got := Get()
+	if got.RabbitMQAddress != "amqp://synthetic-host:5672" || got.GCPTTSEndpoint != "synthetic-gcp:443" || got.ConfigEncryptionKeys != "1:synthetic-master" {
+		t.Errorf("Wrong match. the other fields are affected: %+v", got)
+	}
+
+	// no loaded field holds an old value
+	v := reflect.ValueOf(*got)
+	for i := 0; i < v.NumField(); i++ {
+		if v.Field(i).Kind() == reflect.String && strings.Contains(v.Field(i).String(), "synthetic-old-") {
+			t.Errorf("Wrong match. the field %s holds an old variable value", v.Type().Field(i).Name)
+		}
 	}
 }
 

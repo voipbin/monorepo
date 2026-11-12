@@ -63,8 +63,7 @@ func cmdConfig() *cobra.Command {
 MessageBird (provider.messagebird.auth_token) and Telnyx (provider.telnyx.auth_token). They are
 platform credentials and are set separately.
 
-A stored value takes precedence over the environment variable of the same key (AUTHTOKEN_MESSAGEBIRD,
-AUTHTOKEN_TELNYX). A change is used by the next send on every replica, with no restart. Set a value
+The tokens are stored in the database only; a key that is cleared is not configured. A change is used by the next send on every replica, with no restart. Set a value
 only after every replica runs the image that has the config commands. The Telnyx token of this
 service is a different setting from the Telnyx token of the number service (a different source),
 so a rotation of the Telnyx account needs both places to be changed. To check a stored value
@@ -110,7 +109,7 @@ one line is refused.`,
 func cmdConfigClear() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clear",
-		Short: "Remove the stored value of a key (the environment variable of the key applies again)",
+		Short: "Remove the stored value of a key (the key is then not configured)",
 		RunE:  runConfigClear,
 	}
 

@@ -21,9 +21,6 @@ func Test_logStartup(t *testing.T) {
 	// secrets are the Config fields that must never be logged.
 	secrets := []string{
 		"RabbitMQAddress",
-		"AWSAccessKey",
-		"AWSSecretKey",
-		"ElevenlabsAPIKey",
 		"DatabaseDSN",
 		"RedisPassword",
 		"ConfigEncryptionKeys",

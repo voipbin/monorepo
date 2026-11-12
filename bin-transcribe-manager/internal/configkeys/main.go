@@ -1,7 +1,7 @@
 // Package configkeys declares the configuration keys of bin-transcribe-manager.
 //
-// The two keys are the AWS credential of the AWS Transcribe provider that was read from the
-// environment only. They are independent secret keys: the shared library can not declare an
+// The two keys are the AWS credential of the AWS Transcribe provider. They are stored in the
+// database only. They are independent secret keys: the shared library can not declare an
 // atomic group with two secrets (its anchor must be one secret), and the admin API and the
 // command line write secrets only. That the two values belong together is enforced where they
 // are read (transcribeconfig.AWSKeys): a pair is used only when both come from the same source.
@@ -32,12 +32,12 @@ const (
 // maxSecretLen is the longest accepted AWS credential in bytes.
 const maxSecretLen = 512
 
-// Keys returns the declarations. The environment names are the variables that the service read
-// before the configs existed, so a database without rows behaves exactly as before.
+// Keys returns the declarations. The values are stored in the database only: a key has no
+// environment name, so a key without a row is not configured.
 func Keys() []confighandler.Key {
 	return []confighandler.Key{
-		{Name: KeyAWSAccessKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "Access key id of the AWS account that serves AWS Transcribe. It is used only together with the secret access key, from the same source.", Env: "AWS_ACCESS_KEY", MaxLen: maxSecretLen},
-		{Name: KeyAWSSecretKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "Secret access key of the AWS account that serves AWS Transcribe. It is used only together with the access key id, from the same source.", Env: "AWS_SECRET_KEY", MaxLen: maxSecretLen},
+		{Name: KeyAWSAccessKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "Access key id of the AWS account that serves AWS Transcribe. It is used only together with the secret access key, from the same source.", MaxLen: maxSecretLen},
+		{Name: KeyAWSSecretKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "Secret access key of the AWS account that serves AWS Transcribe. It is used only together with the access key id, from the same source.", MaxLen: maxSecretLen},
 	}
 }
 

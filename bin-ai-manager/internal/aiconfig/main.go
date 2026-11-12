@@ -1,5 +1,5 @@
 // Package aiconfig wires the stored configuration of bin-ai-manager: the master key, the
-// registry, the environment lookup and the suppliers that hand the platform LLM keys to the
+// registry and the suppliers that hand the platform LLM keys to the
 // handlers at the time of use.
 package aiconfig
 
@@ -35,7 +35,7 @@ const (
 
 // ErrKeyUnavailable is returned when a platform key could not be read: a database read error, a
 // stored secret that can not be decrypted, or a read that ran out of time. It is never replaced by
-// the value of the environment. A key that is simply not configured is not an error (an empty
+// an empty value. A key that is simply not configured is not an error (an empty
 // value). The error holds no key text.
 var ErrKeyUnavailable = errors.New("the platform LLM key could not be read")
 
@@ -47,7 +47,7 @@ type KeyFunc = func(ctx context.Context) (string, error)
 //
 // An unparsable master key list never stops the service: the error is logged (without any key
 // text) and the handler works without a master key. Secrets can not be written then, and a stored
-// secret is reported as undecryptable, but the values of the environment keep working. The two
+// secret is reported as undecryptable. The two
 // older key lists of this service stop the start on an error; this one does not, so that a
 // mistake in a list that is new does not take the LLM calls down.
 // The only error is an invalid registry, which is a programming error.
@@ -63,7 +63,7 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 		crypto, _ = secretcrypto.New("", secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
 	}
 
-	return confighandler.NewHandler(reg, store, crypto, cfg.EnvValue, opts...), nil
+	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
 }
 
 // supplierConfig is the setting of a supplier.
@@ -84,7 +84,7 @@ func WithTimeout(d time.Duration) SupplierOption {
 // Supplier returns the function that hands the secret of the given key to a handler at the time of
 // use. It reads the key on every call and keeps nothing, so a changed key is used by the next call
 // on every replica. A source of none gives an empty value. A read error is returned as an error
-// (ErrKeyUnavailable) and is never turned into an empty value or into the environment value.
+// (ErrKeyUnavailable) and is never turned into an empty value.
 func Supplier(h confighandler.Handler, key string, opts ...SupplierOption) KeyFunc {
 	c := &supplierConfig{timeout: defaultReadTimeout}
 	for _, opt := range opts {
@@ -152,15 +152,15 @@ func LogSources(ctx context.Context, h confighandler.Handler) {
 	}
 
 	for _, r := range list {
-		entry := log.WithFields(logrus.Fields{"key": r.Key, "source": r.Source, "env_shadowed": r.EnvShadowed})
+		entry := log.WithFields(logrus.Fields{"key": r.Key, "source": r.Source})
 
 		switch r.Source {
 		case confighandler.SourceNone:
-			entry.Warnf("The config key is not configured. key: %s", r.Key)
+			entry.Warnf("The config key is not configured; it is read from the database only. key: %s", r.Key)
 		case confighandler.SourceDBUndecryptable, confighandler.SourceDBInvalid:
 			entry.Errorf("The stored config value can not be used. key: %s, source: %s", r.Key, r.Source)
 		default:
-			entry.Infof("Config key. key: %s, source: %s, env_shadowed: %v", r.Key, r.Source, r.EnvShadowed)
+			entry.Infof("Config key. key: %s, source: %s", r.Key, r.Source)
 		}
 	}
 }

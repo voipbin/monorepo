@@ -59,8 +59,6 @@ func TestBindConfig(t *testing.T) {
 				"REDIS_ADDRESS":             "localhost:6379",
 				"REDIS_PASSWORD":            "password",
 				"REDIS_DATABASE":            "0",
-				"AUTHTOKEN_MESSAGEBIRD":     "test-token-mb",
-				"AUTHTOKEN_TELNYX":          "test-token-telnyx",
 			},
 			expectError: false,
 		},
@@ -107,8 +105,6 @@ func TestBindConfig(t *testing.T) {
 					"redis_address",
 					"redis_password",
 					"redis_database",
-					"authtoken_messagebird",
-					"authtoken_telnyx",
 				}
 
 				for _, flag := range flags {
@@ -143,8 +139,6 @@ func TestLoadGlobalConfig(t *testing.T) {
 				"REDIS_ADDRESS":             "test-redis:6379",
 				"REDIS_PASSWORD":            "test-pass",
 				"REDIS_DATABASE":            "5",
-				"AUTHTOKEN_MESSAGEBIRD":     "mb-token",
-				"AUTHTOKEN_TELNYX":          "telnyx-token",
 			},
 		},
 	}
@@ -195,8 +189,6 @@ func TestRegisterFlags(t *testing.T) {
 		"redis_address",
 		"redis_password",
 		"redis_database",
-		"authtoken_messagebird",
-		"authtoken_telnyx",
 	}
 
 	for _, flag := range flags {
@@ -251,8 +243,6 @@ func TestConfigStruct(t *testing.T) {
 		RedisAddress:            "localhost:6379",
 		RedisDatabase:           0,
 		RedisPassword:           "password",
-		AuthtokenMessagebird:    "mb-token",
-		AuthtokenTelnyx:         "telnyx-token",
 	}
 
 	if cfg.DatabaseDSN != "test-dsn" {
@@ -275,11 +265,5 @@ func TestConfigStruct(t *testing.T) {
 	}
 	if cfg.RedisPassword != "password" {
 		t.Errorf("RedisPassword mismatch: got %v, want %v", cfg.RedisPassword, "password")
-	}
-	if cfg.AuthtokenMessagebird != "mb-token" {
-		t.Errorf("AuthtokenMessagebird mismatch: got %v, want %v", cfg.AuthtokenMessagebird, "mb-token")
-	}
-	if cfg.AuthtokenTelnyx != "telnyx-token" {
-		t.Errorf("AuthtokenTelnyx mismatch: got %v, want %v", cfg.AuthtokenTelnyx, "telnyx-token")
 	}
 }

@@ -23,8 +23,6 @@ func Test_logStartup(t *testing.T) {
 		"RabbitMQAddress",
 		"DatabaseDSN",
 		"RedisPassword",
-		"AWSAccessKey",
-		"AWSSecretKey",
 		"ConfigEncryptionKeys",
 	}
 

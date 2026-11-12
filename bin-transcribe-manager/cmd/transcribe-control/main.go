@@ -73,7 +73,7 @@ func initTranscribeHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (tran
 
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler)
 
-	// the same credential rule as the daemon: the stored pair, else the environment pair
+	// the same credential rule as the daemon: the stored pair only
 	configHandler, err := transcribeconfig.New(config.Get(), dbhandler.NewConfigStore(sqlDB))
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the config handler")

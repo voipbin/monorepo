@@ -62,7 +62,7 @@ func builderStartupNotes(cfg *config.Config, keyConfigured bool, errKey error) (
 	}
 
 	if !keyConfigured {
-		return []string{"the optional assistant builder is unavailable because the analysis engine has no API key (the Gemini key for a Gemini base URL, the OpenAI compatible key otherwise; set it in the environment or with ai-control config set); the admin UI hides it until one is set"}, nil
+		return []string{"the optional assistant builder is unavailable because the analysis engine has no API key (the Gemini key for a Gemini base URL, the OpenAI compatible key otherwise; set it with ai-control config set or the admin API); the admin UI hides it until one is set"}, nil
 	}
 
 	isGeminiURL := aiconfig.IsGeminiBaseURL(cfg.AnalysisEngineBaseURL)

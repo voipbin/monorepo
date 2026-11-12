@@ -29,7 +29,7 @@ Supporting binary:
 | Provider | `pkg/messagehandler/provider_telnyx.go` | Telnyx SMS API send per target |
 | Provider | `pkg/messagehandler/provider_messagebird.go` | MessageBird SMS API send per target |
 | External | `pkg/requestexternal` | HTTP client wrapper for provider APIs. The provider tokens are supplied by a function that is called for every request (nothing is cached) |
-| Config | `internal/messageconfig`, `internal/configkeys`, `pkg/dbhandler/config_store.go` | Stored provider tokens (encrypted) with the environment fallback; `messageconfig.MessagebirdToken` and `TelnyxToken` return the supplier functions |
+| Config | `internal/messageconfig`, `internal/configkeys`, `pkg/dbhandler/config_store.go` | Stored provider tokens (encrypted, database only); `messageconfig.MessagebirdToken` and `TelnyxToken` return the supplier functions |
 | Data | `pkg/dbhandler` | Squirrel SQL builder queries for messages and targets |
 | Cache | `pkg/cachehandler` | Redis caching for message lookups |
 | Models | `models/message` | Message, Type, Direction, ProviderName, Status |

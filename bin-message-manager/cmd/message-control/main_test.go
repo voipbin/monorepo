@@ -17,6 +17,7 @@ import (
 	"monorepo/bin-common-handler/pkg/confighandler/storetest"
 
 	"monorepo/bin-message-manager/internal/config"
+	"monorepo/bin-message-manager/internal/configkeys"
 	"monorepo/bin-message-manager/internal/messageconfig"
 )
 
@@ -50,14 +51,20 @@ func Test_newRequestExternal_tokenOrder(t *testing.T) {
 		}, nil
 	})
 
-	cfg := &config.Config{
-		AuthtokenMessagebird: "fake-mb",
-		AuthtokenTelnyx:      "fake-tn",
-	}
+	// two stored tokens with different values: the Telnyx request must carry the Telnyx one
+	cfg := &config.Config{ConfigEncryptionKeys: testMasterKeys()}
 
 	configHandler, err := messageconfig.New(cfg, storetest.NewMemory())
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	for key, value := range map[string]string{
+		configkeys.KeyMessagebirdAuthToken: "fake-mb",
+		configkeys.KeyTelnyxAuthToken:      "fake-tn",
+	} {
+		if _, errSet := configHandler.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), key, value); errSet != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", errSet)
+		}
 	}
 
 	h := newRequestExternal(configHandler)

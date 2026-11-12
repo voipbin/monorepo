@@ -1,5 +1,5 @@
 // Package emailconfig wires the stored configuration of bin-email-manager: the master key, the
-// registry, the environment lookup and the suppliers that hand the provider credentials to the
+// registry and the suppliers that hand the provider credentials to the
 // email handler at the time of use.
 package emailconfig
 
@@ -32,7 +32,7 @@ const (
 //
 // An unparsable master key list never stops the service: the error is logged (without any key
 // text) and the handler works without a master key. Secrets can not be written then, and a stored
-// secret is reported as undecryptable, but the values of the environment keep working.
+// secret is reported as undecryptable.
 // The only error is an invalid registry, which is a programming error.
 func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Option) (confighandler.Handler, error) {
 	reg, err := configkeys.NewRegistry()
@@ -46,7 +46,7 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 		crypto, _ = secretcrypto.New("", secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
 	}
 
-	return confighandler.NewHandler(reg, store, crypto, cfg.EnvValue, opts...), nil
+	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
 }
 
 // supplierConfig is the setting of a supplier.
@@ -102,15 +102,15 @@ func LogSources(ctx context.Context, h confighandler.Handler) {
 	}
 
 	for _, r := range list {
-		entry := log.WithFields(logrus.Fields{"key": r.Key, "source": r.Source, "env_shadowed": r.EnvShadowed})
+		entry := log.WithFields(logrus.Fields{"key": r.Key, "source": r.Source})
 
 		switch r.Source {
 		case confighandler.SourceNone:
-			entry.Warnf("The config key is not configured. key: %s", r.Key)
+			entry.Warnf("The config key is not configured; it is read from the database only. key: %s", r.Key)
 		case confighandler.SourceDBUndecryptable, confighandler.SourceDBInvalid:
 			entry.Errorf("The stored config value can not be used. key: %s, source: %s", r.Key, r.Source)
 		default:
-			entry.Infof("Config key. key: %s, source: %s, env_shadowed: %v", r.Key, r.Source, r.EnvShadowed)
+			entry.Infof("Config key. key: %s, source: %s", r.Key, r.Source)
 		}
 	}
 }

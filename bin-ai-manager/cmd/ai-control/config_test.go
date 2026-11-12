@@ -64,7 +64,7 @@ func runConfigCommand(args ...string) error {
 
 func Test_config_set_list_clear(t *testing.T) {
 	const secret = "synthetic-credential-value"
-	store, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys(), GoogleAPIKey: "env-value"}, secret+"\n")
+	store, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, secret+"\n")
 
 	if err := runConfigCommand("set", "--key", "llm.gemini.api_key", "--actor-id", testActor); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
@@ -82,17 +82,38 @@ func Test_config_set_list_clear(t *testing.T) {
 	if err := runConfigCommand("list"); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if strings.Contains(out.String(), secret) || strings.Contains(out.String(), "env-value") ||
-		!strings.Contains(out.String(), `"env_shadowed": true`) || !strings.Contains(out.String(), testActor) {
+	if strings.Contains(out.String(), secret) || !strings.Contains(out.String(), testActor) {
 		t.Errorf("Wrong match. list output: %s", out.String())
+	}
+	// the JSON field stays for the admin API contract: it is always false, and no env_name exists
+	if strings.Contains(out.String(), `"env_shadowed": true`) || !strings.Contains(out.String(), `"env_shadowed": false`) ||
+		strings.Contains(out.String(), "env_name") {
+		t.Errorf("Wrong match. expect: env_shadowed false and no env_name, got: %s", out.String())
 	}
 
 	out.Reset()
 	if err := runConfigCommand("clear", "--key", "llm.gemini.api_key", "--actor-id", testActor); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if !strings.Contains(out.String(), `"source": "env"`) {
-		t.Errorf("Wrong match. clear output: %s", out.String())
+	if !strings.Contains(out.String(), `"source": "none"`) || strings.Contains(out.String(), `"source": "env"`) {
+		t.Errorf("Wrong match. expect: source none after a clear, got: %s", out.String())
+	}
+}
+
+// With the old variables exported and no stored row, a listed key is none (never env).
+func Test_config_list_ignoresOldEnvironment(t *testing.T) {
+	t.Setenv("ENGINE_KEY_CHATGPT", "synthetic-old-env-openai")
+	t.Setenv("GOOGLE_API_KEY", "synthetic-old-env-gemini")
+
+	_, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, "")
+	if err := runConfigCommand("list"); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	s := out.String()
+	if strings.Count(s, `"source": "none"`) != 2 || strings.Contains(s, `"source": "env"`) ||
+		strings.Contains(s, `"env_shadowed": true`) || strings.Contains(s, "env_name") || strings.Contains(s, "synthetic-old-env") {
+		t.Errorf("Wrong match. expect: two keys with source none and no env fields, got: %s", s)
 	}
 }
 

@@ -17,7 +17,7 @@ func Test_NewRegistry(t *testing.T) {
 	}
 }
 
-// Test_goldenKinds pins the kind, the type and the environment name of every key. A key name is
+// Test_goldenKinds pins the kind and the type of every key. A key name is
 // never moved to another kind: rows and history that exist under the old meaning would be
 // read as the new one. Declare a new key name instead, and update this table in the same change.
 func Test_goldenKinds(t *testing.T) {
@@ -25,11 +25,10 @@ func Test_goldenKinds(t *testing.T) {
 		name   string
 		kind   confighandler.Kind
 		typ    confighandler.Type
-		env    string
 		maxLen int
 	}{
-		{"aws.access_key", confighandler.KindSecret, confighandler.TypeString, "AWS_ACCESS_KEY", 512},
-		{"aws.secret_key", confighandler.KindSecret, confighandler.TypeString, "AWS_SECRET_KEY", 512},
+		{"aws.access_key", confighandler.KindSecret, confighandler.TypeString, 512},
+		{"aws.secret_key", confighandler.KindSecret, confighandler.TypeString, 512},
 	}
 
 	keys := Keys()
@@ -38,8 +37,11 @@ func Test_goldenKinds(t *testing.T) {
 	}
 	for i, e := range expect {
 		k := keys[i]
-		if k.Name != e.name || k.Kind != e.kind || k.Type != e.typ || k.Env != e.env || k.MaxLen != e.maxLen {
+		if k.Name != e.name || k.Kind != e.kind || k.Type != e.typ || k.MaxLen != e.maxLen {
 			t.Errorf("Wrong match. key %d expect: %+v, got: %+v", i, e, k)
+		}
+		if k.Env != "" {
+			t.Errorf("Wrong match. %s must have no environment name, got: %q", k.Name, k.Env)
 		}
 		if k.Default != nil {
 			t.Errorf("Wrong match. %s must have no default", k.Name)

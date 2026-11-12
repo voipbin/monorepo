@@ -1,6 +1,7 @@
 package config
 
 import (
+	"reflect"
 	"sync"
 	"testing"
 
@@ -30,7 +31,6 @@ func Test_LoadGlobalConfig_values(t *testing.T) {
 
 	// credential-like values are derived from the test name instead of being written as literals
 	redisValue := "synthetic-redis-" + t.Name()
-	awsValue := "synthetic-aws-" + t.Name()
 
 	t.Setenv("RABBITMQ_ADDRESS", "amqp://rabbit.example.invalid:5672")
 	t.Setenv("PROMETHEUS_ENDPOINT", "/metrics")
@@ -39,8 +39,6 @@ func Test_LoadGlobalConfig_values(t *testing.T) {
 	t.Setenv("REDIS_ADDRESS", "redis.example.invalid:6379")
 	t.Setenv("REDIS_DATABASE", "3")
 	t.Setenv("REDIS_PASSWORD", redisValue)
-	t.Setenv("AWS_ACCESS_KEY", "aws-access-fake")
-	t.Setenv("AWS_SECRET_KEY", awsValue)
 	t.Setenv("POD_IP", "192.0.2.10")
 	t.Setenv("STREAMING_LISTEN_PORT", "9090")
 
@@ -57,8 +55,6 @@ func Test_LoadGlobalConfig_values(t *testing.T) {
 		DatabaseDSN:             "tester@tcp(db.example.invalid:3306)/test",
 		RedisAddress:            "redis.example.invalid:6379",
 		RedisDatabase:           3,
-		AWSAccessKey:            "aws-access-fake",
-		AWSSecretKey:            awsValue,
 		PodIP:                   "192.0.2.10",
 		StreamingListenPort:     9090,
 	}
@@ -106,4 +102,58 @@ func Test_LoadGlobalConfig_once(t *testing.T) {
 	if got := Get().RedisAddress; got != "first.example.invalid:6379" {
 		t.Errorf("config was reloaded. got: %s", got)
 	}
+}
+
+// Test_Config_removedFields checks that the provider secrets are not fields of the Config any
+// more: the stored settings are the only source of them.
+func Test_Config_removedFields(t *testing.T) {
+	typ := reflect.TypeOf(Config{})
+	for _, name := range []string{"AWSAccessKey", "AWSSecretKey"} {
+		if _, ok := typ.FieldByName(name); ok {
+			t.Errorf("Wrong match. Config must not have the field %s", name)
+		}
+	}
+	if _, ok := reflect.TypeOf(&Config{}).MethodByName("EnvValue"); ok {
+		t.Errorf("Wrong match. Config must not have the method EnvValue")
+	}
+}
+
+// Test_LoadGlobalConfig_oldVariablesIgnored checks that a deployment that still exports the old
+// variables starts normally: the load succeeds and no other field is affected.
+func Test_LoadGlobalConfig_oldVariablesIgnored(t *testing.T) {
+	load := func(t *testing.T) Config {
+		t.Helper()
+		resetLoadState(t)
+		t.Setenv("RABBITMQ_ADDRESS", "amqp://rabbit.example.invalid:5672")
+		t.Setenv("REDIS_DATABASE", "3")
+		t.Setenv("STREAMING_LISTEN_PORT", "9090")
+		t.Setenv("TRANSCRIBE_CONFIG_ENCRYPTION_KEYS", "1:master-fake")
+
+		return *loadForTest(t)
+	}
+
+	base := load(t)
+
+	t.Setenv("AWS_ACCESS_KEY", "aws-access-fake")
+	t.Setenv("AWS_SECRET_KEY", "aws-secret-fake")
+	t.Setenv("AWS_ACCESS_KEY_ID", "aws-access-id-fake")
+	got := load(t)
+
+	if got != base {
+		t.Errorf("Wrong match. the old variables changed the config.\nexpect: %+v\ngot: %+v", base, got)
+	}
+	if got.ConfigEncryptionKeys != "1:master-fake" || got.RabbitMQAddress != "amqp://rabbit.example.invalid:5672" || got.RedisDatabase != 3 || got.StreamingListenPort != 9090 {
+		t.Errorf("Wrong match. got: %+v", got)
+	}
+}
+
+func loadForTest(t *testing.T) *Config {
+	t.Helper()
+
+	if err := Bootstrap(&cobra.Command{}); err != nil {
+		t.Fatalf("Bootstrap() returned an error. err: %v", err)
+	}
+	LoadGlobalConfig()
+
+	return Get()
 }

@@ -62,8 +62,8 @@ func cmdConfig() *cobra.Command {
 		Long: `Stored platform configuration: the AWS credential (access key and secret access key) of the AWS
 Transcribe provider. It is a platform credential.
 
-A stored value takes precedence over the environment variable of the same key, and the two keys are
-used only together, from the same source: both stored, or both from the environment. A change is
+The keys are stored in the database only, and the two keys are used only together: AWS is not
+available while only one of them is stored. A change is
 used by the next streaming start, with no restart. The daemon applies the table migration at its
 start; on a local database run "migrate up" first. The master key list is read from the environment
 (TRANSCRIBE_CONFIG_ENCRYPTION_KEYS) and is never a flag. These commands need the database and the
@@ -106,7 +106,7 @@ one line is refused.`,
 func cmdConfigClear() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clear",
-		Short: "Remove the stored value of a key (the environment variable applies again when both keys are removed)",
+		Short: "Remove the stored value of a key (AWS is not available until both keys are stored again)",
 		RunE:  runConfigClear,
 	}
 

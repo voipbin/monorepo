@@ -5,15 +5,18 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 
 	"monorepo/bin-common-handler/pkg/confighandler"
 	"monorepo/bin-common-handler/pkg/confighandler/storetest"
+	"monorepo/bin-common-handler/pkg/secretcrypto"
 
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/internal/configkeys"
@@ -41,25 +44,121 @@ func newTestHandler(t *testing.T, cfg *config.Config, store confighandler.Store)
 	return h
 }
 
-// With no stored row the credential is exactly the value of the environment, as before.
-func Test_Supplier_noRowEqualsTheEnvironment(t *testing.T) {
-	cfg := &config.Config{EngineKeyChatGPT: "env-openai", GoogleAPIKey: "env-gemini"}
-	h := newTestHandler(t, cfg, storetest.NewMemory())
+// describeKey returns the source description of one key.
+func describeKey(h confighandler.Handler, key string) (*confighandler.Resolved, error) {
+	list, err := h.Describe(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range list {
+		if r.Key == key {
+			return r, nil
+		}
+	}
+
+	return nil, errors.New("key not described")
+}
+
+// With no stored row a key is none and its supplier gives an empty value and no error, even when
+// the old environment variables are exported.
+func Test_Supplier_noRowIsNoneWhateverTheOldEnvironmentHolds(t *testing.T) {
+	t.Setenv("ENGINE_KEY_CHATGPT", "synthetic-old-env-openai")
+	t.Setenv("GOOGLE_API_KEY", "synthetic-old-env-gemini")
+
+	h := newTestHandler(t, &config.Config{}, storetest.NewMemory())
 
 	tests := []struct {
-		key    string
-		expect string
+		key string
 	}{
-		{configkeys.KeyOpenAICompatAPIKey, "env-openai"},
-		{configkeys.KeyGeminiAPIKey, "env-gemini"},
+		{configkeys.KeyOpenAICompatAPIKey},
+		{configkeys.KeyGeminiAPIKey},
 	}
 	for _, tt := range tests {
 		t.Run(tt.key, func(t *testing.T) {
-			got, err := Supplier(h, tt.key)(context.Background())
-			if err != nil || got != tt.expect {
-				t.Errorf("Wrong match. expect: %q, got: %q %v", tt.expect, got, err)
+			res, err := describeKey(h, tt.key)
+			if err != nil || res.Source != confighandler.SourceNone || res.EnvShadowed {
+				t.Errorf("Wrong match. expect: source none, got: %+v %v", res, err)
+			}
+
+			got, errSupplier := Supplier(h, tt.key)(context.Background())
+			if errSupplier != nil || got != "" {
+				t.Errorf("Wrong match. expect: empty and no error, got: %q %v", got, errSupplier)
 			}
 		})
+	}
+
+	list, err := h.Describe(context.Background())
+	if err != nil || len(list) != 2 {
+		t.Fatalf("Wrong match. expect: 2 keys, got: %v %v", list, err)
+	}
+	for _, r := range list {
+		if r.Source != confighandler.SourceNone || r.EnvShadowed {
+			t.Errorf("Wrong match. expect: source none and not shadowed, got: %+v", r)
+		}
+	}
+}
+
+// The registry of the service has no environment name for any key. A handler built straight from
+// it with a lookup that serves the old variable names still resolves none without a row, and a
+// stored row wins when the lookup serves a value.
+func Test_registry_lookupWithOldNamesIsNotUsed(t *testing.T) {
+	reg, err := configkeys.NewRegistry()
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	asked := []string{}
+	lookup := func(name string) (string, bool) {
+		asked = append(asked, name)
+		switch name {
+		case "ENGINE_KEY_CHATGPT":
+			return "synthetic-old-env-openai", true
+		case "GOOGLE_API_KEY":
+			return "synthetic-old-env-gemini", true
+		}
+		return "", false
+	}
+
+	crypto, err := secretcrypto.New(testKeyList(1), secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	store := storetest.NewMemory()
+	h := confighandler.NewHandler(reg, store, crypto, lookup)
+
+	tests := []struct {
+		name string
+		key  string
+	}{
+		{"openai", configkeys.KeyOpenAICompatAPIKey},
+		{"gemini", configkeys.KeyGeminiAPIKey},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name+" without a row", func(t *testing.T) {
+			got, err := Supplier(h, tt.key)(context.Background())
+			if err != nil || got != "" {
+				t.Errorf("Wrong match. expect: empty, got: %q %v", got, err)
+			}
+			if res, _ := describeKey(h, tt.key); res == nil || res.Source != confighandler.SourceNone {
+				t.Errorf("Wrong match. expect: source none, got: %+v", res)
+			}
+		})
+		t.Run(tt.name+" with a row", func(t *testing.T) {
+			if _, err := h.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), tt.key, "stored-"+tt.name); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			got, err := Supplier(h, tt.key)(context.Background())
+			if err != nil || got != "stored-"+tt.name {
+				t.Errorf("Wrong match. expect: the stored value, got: %q %v", got, err)
+			}
+			if res, _ := describeKey(h, tt.key); res == nil || res.Source != confighandler.SourceDB || res.EnvShadowed {
+				t.Errorf("Wrong match. expect: source db and not shadowed, got: %+v", res)
+			}
+		})
+	}
+
+	if len(asked) != 0 {
+		t.Errorf("Wrong match. expect: the lookup is never asked, got: %v", asked)
 	}
 }
 
@@ -73,8 +172,8 @@ func Test_Supplier_notConfiguredIsEmpty(t *testing.T) {
 	}
 }
 
-func Test_Supplier_storedValueWinsAndRotates(t *testing.T) {
-	cfg := &config.Config{GoogleAPIKey: "env-gemini", ConfigEncryptionKeys: testKeyList(1)}
+func Test_Supplier_storedValueRotatesAndClears(t *testing.T) {
+	cfg := &config.Config{ConfigEncryptionKeys: testKeyList(1)}
 	h := newTestHandler(t, cfg, storetest.NewMemory())
 	supplier := Supplier(h, configkeys.KeyGeminiAPIKey)
 	actor := uuid.Must(uuid.NewV4())
@@ -96,12 +195,12 @@ func Test_Supplier_storedValueWinsAndRotates(t *testing.T) {
 	if _, err := h.Clear(context.Background(), actor, configkeys.KeyGeminiAPIKey); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if got, _ := supplier(context.Background()); got != "env-gemini" {
-		t.Errorf("Wrong match. expect: the environment again, got: %q", got)
+	if got, err := supplier(context.Background()); got != "" || err != nil {
+		t.Errorf("Wrong match. expect: not configured after a clear, got: %q %v", got, err)
 	}
 }
 
-// A secret that is stored but can not be decrypted is an error; the environment value is not used.
+// A secret that is stored but can not be decrypted is an error, not an empty value.
 func Test_Supplier_undecryptableNeverFallsBack(t *testing.T) {
 	store := storetest.NewMemory()
 	actor := uuid.Must(uuid.NewV4())
@@ -113,7 +212,7 @@ func Test_Supplier_undecryptableNeverFallsBack(t *testing.T) {
 
 	// the same rows read with no master key, and with a bad master key
 	for _, keys := range []string{"", "not-a-key-list"} {
-		reader := newTestHandler(t, &config.Config{GoogleAPIKey: "env-gemini", ConfigEncryptionKeys: keys}, store)
+		reader := newTestHandler(t, &config.Config{ConfigEncryptionKeys: keys}, store)
 		got, err := Supplier(reader, configkeys.KeyGeminiAPIKey)(context.Background())
 		if !errors.Is(err, confighandler.ErrUndecryptable) || got != "" {
 			t.Errorf("Wrong match. keys %q expect: undecryptable and no value, got: %q %v", keys, got, err)
@@ -145,7 +244,7 @@ func Test_New_badMasterKeyIsLoggedWithoutTheText(t *testing.T) {
 func Test_Supplier_readErrorIsAnError(t *testing.T) {
 	store := storetest.NewMemory()
 	store.GetErr = errors.New("database is down")
-	h := newTestHandler(t, &config.Config{GoogleAPIKey: "env-gemini"}, store)
+	h := newTestHandler(t, &config.Config{}, store)
 
 	got, err := Supplier(h, configkeys.KeyGeminiAPIKey)(context.Background())
 	if err == nil || got != "" {
@@ -176,20 +275,17 @@ func Test_Supplier_timeout(t *testing.T) {
 func Test_LogSources(t *testing.T) {
 	tests := []struct {
 		name  string
-		cfg   *config.Config
 		store func() *storetest.Memory
 
 		expectContains []string
 	}{
 		{
-			name:           "env and none",
-			cfg:            &config.Config{GoogleAPIKey: "env-gemini"},
+			name:           "none",
 			store:          storetest.NewMemory,
-			expectContains: []string{"source=env", "is not configured"},
+			expectContains: []string{"source=none", "is not configured"},
 		},
 		{
 			name: "read error",
-			cfg:  &config.Config{},
 			store: func() *storetest.Memory {
 				m := storetest.NewMemory()
 				m.ListErr = errors.New("database is down")
@@ -204,7 +300,7 @@ func Test_LogSources(t *testing.T) {
 			logrus.SetOutput(&buf)
 			defer logrus.SetOutput(logrus.StandardLogger().Out)
 
-			h := newTestHandler(t, tt.cfg, tt.store())
+			h := newTestHandler(t, &config.Config{}, tt.store())
 			LogSources(context.Background(), h)
 
 			out := buf.String()
@@ -213,8 +309,8 @@ func Test_LogSources(t *testing.T) {
 					t.Errorf("Wrong match. expect to contain: %q, got: %q", want, out)
 				}
 			}
-			if strings.Contains(out, "env-gemini") {
-				t.Errorf("Wrong match. a value was logged: %q", out)
+			if strings.Contains(out, "env_shadowed") || strings.Contains(out, "source=env") {
+				t.Errorf("Wrong match. expect: no env field or source, got: %q", out)
 			}
 		})
 	}
@@ -238,22 +334,16 @@ func Test_LogSources_unusableRow(t *testing.T) {
 	}
 }
 
-// legacyKeyForBaseURL is the rule that run() and the Builder wiring wrote inline before the key
-// supplier existed (the key was picked at startup from the loaded values). The supplier must pick
-// the same key for every URL.
-func legacyKeyForBaseURL(cfg *config.Config, baseURL string) string {
-	key := cfg.EngineKeyChatGPT
-	if strings.Contains(baseURL, "generativelanguage") {
-		key = cfg.GoogleAPIKey
+// The key of a provider follows the base URL: the Gemini key for the Gemini endpoint, the OpenAI
+// compatible key for every other URL. Both rows are stored, so a wrong pick shows.
+func Test_KeyForBaseURL_picksTheKeyOfTheProvider(t *testing.T) {
+	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
+	actor := uuid.Must(uuid.NewV4())
+	for k, v := range map[string]string{configkeys.KeyOpenAICompatAPIKey: "stored-openai", configkeys.KeyGeminiAPIKey: "stored-gemini"} {
+		if _, err := h.SetSecret(context.Background(), actor, k, v); err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
 	}
-
-	return key
-}
-
-// The key of a provider is the same as the old inline rule gave, for every kind of base URL.
-func Test_KeyForBaseURL_sameAsTheInlineRule(t *testing.T) {
-	cfg := &config.Config{EngineKeyChatGPT: "env-openai", GoogleAPIKey: "env-gemini"}
-	h := newTestHandler(t, cfg, storetest.NewMemory())
 
 	urls := []string{
 		"https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -268,9 +358,14 @@ func Test_KeyForBaseURL_sameAsTheInlineRule(t *testing.T) {
 	}
 	for _, u := range urls {
 		t.Run(u, func(t *testing.T) {
+			expect := "stored-openai"
+			if strings.Contains(u, "generativelanguage") {
+				expect = "stored-gemini"
+			}
+
 			got, err := KeyForBaseURL(h, u)(context.Background())
-			if err != nil || got != legacyKeyForBaseURL(cfg, u) {
-				t.Errorf("Wrong match. expect: %q, got: %q %v", legacyKeyForBaseURL(cfg, u), got, err)
+			if err != nil || got != expect {
+				t.Errorf("Wrong match. expect: %q, got: %q %v", expect, got, err)
 			}
 			if IsGeminiBaseURL(u) != strings.Contains(u, "generativelanguage") {
 				t.Errorf("Wrong match. the Gemini rule differs for %q", u)
@@ -279,43 +374,38 @@ func Test_KeyForBaseURL_sameAsTheInlineRule(t *testing.T) {
 	}
 }
 
-// The Gemini supplier is the Gemini key whatever the environment of the other key is.
+// The Gemini supplier is the Gemini key whatever the other key holds.
 func Test_GeminiKey(t *testing.T) {
-	h := newTestHandler(t, &config.Config{EngineKeyChatGPT: "env-openai", GoogleAPIKey: "env-gemini"}, storetest.NewMemory())
+	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
+	actor := uuid.Must(uuid.NewV4())
+	for k, v := range map[string]string{configkeys.KeyOpenAICompatAPIKey: "stored-openai", configkeys.KeyGeminiAPIKey: "stored-gemini"} {
+		if _, err := h.SetSecret(context.Background(), actor, k, v); err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
+	}
 
-	if got, err := GeminiKey(h)(context.Background()); err != nil || got != "env-gemini" {
-		t.Errorf("Wrong match. expect: env-gemini, got: %q %v", got, err)
+	if got, err := GeminiKey(h)(context.Background()); err != nil || got != "stored-gemini" {
+		t.Errorf("Wrong match. expect: stored-gemini, got: %q %v", got, err)
 	}
 }
 
-// Every source: a stored value (db), the environment (env) and nothing (none), for both keys.
+// Every source: a stored value (db) and nothing (none), for both keys.
 func Test_Supplier_sources(t *testing.T) {
 	tests := []struct {
 		name string
 		key  string
-		cfg  func() *config.Config
 
 		storeValue string
 		expect     string
 	}{
-		{"openai db", configkeys.KeyOpenAICompatAPIKey, func() *config.Config {
-			return &config.Config{EngineKeyChatGPT: "env-openai", ConfigEncryptionKeys: testKeyList(1)}
-		}, "stored-openai", "stored-openai"},
-		{"openai env", configkeys.KeyOpenAICompatAPIKey, func() *config.Config {
-			return &config.Config{EngineKeyChatGPT: "env-openai"}
-		}, "", "env-openai"},
-		{"openai none", configkeys.KeyOpenAICompatAPIKey, func() *config.Config { return &config.Config{} }, "", ""},
-		{"gemini db", configkeys.KeyGeminiAPIKey, func() *config.Config {
-			return &config.Config{GoogleAPIKey: "env-gemini", ConfigEncryptionKeys: testKeyList(1)}
-		}, "stored-gemini", "stored-gemini"},
-		{"gemini env", configkeys.KeyGeminiAPIKey, func() *config.Config {
-			return &config.Config{GoogleAPIKey: "env-gemini"}
-		}, "", "env-gemini"},
-		{"gemini none", configkeys.KeyGeminiAPIKey, func() *config.Config { return &config.Config{} }, "", ""},
+		{"openai db", configkeys.KeyOpenAICompatAPIKey, "stored-openai", "stored-openai"},
+		{"openai none", configkeys.KeyOpenAICompatAPIKey, "", ""},
+		{"gemini db", configkeys.KeyGeminiAPIKey, "stored-gemini", "stored-gemini"},
+		{"gemini none", configkeys.KeyGeminiAPIKey, "", ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := newTestHandler(t, tt.cfg(), storetest.NewMemory())
+			h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
 			if tt.storeValue != "" {
 				if _, err := h.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), tt.key, tt.storeValue); err != nil {
 					t.Fatalf("Wrong match. expect: ok, got: %v", err)
@@ -335,11 +425,11 @@ func Test_Supplier_sources(t *testing.T) {
 	}
 }
 
-// Whatever goes wrong with the stored value, the environment value is never used instead and the
-// error is ErrKeyUnavailable. The environment holds a value that differs from the stored one, so a
-// fallback shows.
+// Whatever goes wrong with the stored value, no value is given instead and the error is
+// ErrKeyUnavailable. The old environment variable is exported, so a fallback shows.
 func Test_Supplier_noEnvFallback(t *testing.T) {
 	const envValue = "env-must-not-be-used"
+	t.Setenv("GOOGLE_API_KEY", envValue)
 	actor := uuid.Must(uuid.NewV4())
 
 	tests := []struct {
@@ -351,7 +441,7 @@ func Test_Supplier_noEnvFallback(t *testing.T) {
 			setup: func(t *testing.T) confighandler.Handler {
 				store := storetest.NewMemory()
 				store.GetErr = errors.New("database is down")
-				return newTestHandler(t, &config.Config{GoogleAPIKey: envValue}, store)
+				return newTestHandler(t, &config.Config{}, store)
 			},
 		},
 		{
@@ -362,7 +452,7 @@ func Test_Supplier_noEnvFallback(t *testing.T) {
 				if _, err := writer.SetSecret(context.Background(), actor, configkeys.KeyGeminiAPIKey, "value-zz9"); err != nil {
 					t.Fatalf("Wrong match. expect: ok, got: %v", err)
 				}
-				return newTestHandler(t, &config.Config{GoogleAPIKey: envValue}, store)
+				return newTestHandler(t, &config.Config{}, store)
 			},
 		},
 		{
@@ -373,7 +463,7 @@ func Test_Supplier_noEnvFallback(t *testing.T) {
 				if _, err := writer.SetSecret(context.Background(), actor, configkeys.KeyGeminiAPIKey, "value-zz9"); err != nil {
 					t.Fatalf("Wrong match. expect: ok, got: %v", err)
 				}
-				return newTestHandler(t, &config.Config{GoogleAPIKey: envValue, ConfigEncryptionKeys: "1:" + strings.Repeat("A", 43) + "="}, store)
+				return newTestHandler(t, &config.Config{ConfigEncryptionKeys: "1:" + strings.Repeat("A", 43) + "="}, store)
 			},
 		},
 	}
@@ -413,19 +503,18 @@ func Test_Supplier_contextEnded(t *testing.T) {
 }
 
 // The supplier keeps nothing: the value written after the supplier was made is the next result, and
-// a clear brings the environment value back. The supplier is made once, as run() does.
+// a clear gives not configured. The supplier is made once, as run() does.
 func Test_Supplier_nextCallSeesTheChange(t *testing.T) {
-	h := newTestHandler(t, &config.Config{EngineKeyChatGPT: "env-openai", GoogleAPIKey: "env-gemini", ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
+	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
 	actor := uuid.Must(uuid.NewV4())
 	suppliers := map[string]KeyFunc{
 		configkeys.KeyOpenAICompatAPIKey: KeyForBaseURL(h, "https://api.openai.com/v1"),
 		configkeys.KeyGeminiAPIKey:       KeyForBaseURL(h, "https://generativelanguage.googleapis.com/v1beta/openai/"),
 	}
-	env := map[string]string{configkeys.KeyOpenAICompatAPIKey: "env-openai", configkeys.KeyGeminiAPIKey: "env-gemini"}
 
 	for key, supplier := range suppliers {
-		if got, _ := supplier(context.Background()); got != env[key] {
-			t.Fatalf("Wrong match. %s expect: %q, got: %q", key, env[key], got)
+		if got, err := supplier(context.Background()); got != "" || err != nil {
+			t.Fatalf("Wrong match. %s expect: not configured, got: %q %v", key, got, err)
 		}
 
 		for _, v := range []string{"stored-one", "stored-two"} {
@@ -440,25 +529,24 @@ func Test_Supplier_nextCallSeesTheChange(t *testing.T) {
 		if _, err := h.Clear(context.Background(), actor, key); err != nil {
 			t.Fatalf("Wrong match. expect: ok, got: %v", err)
 		}
-		if got, _ := supplier(context.Background()); got != env[key] {
-			t.Errorf("Wrong match. %s expect: the environment again, got: %q", key, got)
+		if got, err := supplier(context.Background()); got != "" || err != nil {
+			t.Errorf("Wrong match. %s expect: not configured after a clear, got: %q %v", key, got, err)
 		}
 	}
 }
 
-// Without a master key list and without rows the keys are exactly the environment values (the
-// state of a deployment that did not add the master key variable), the service handler is created
-// without an error, and a secret can not be stored.
-func Test_New_noMasterKeyBehavesAsBefore(t *testing.T) {
+// Without a master key list and without rows both keys are not configured (an empty value and no
+// error), the service handler is created without an error, and a secret can not be stored.
+func Test_New_noMasterKeyGivesNotConfigured(t *testing.T) {
 	logs := logtest.New(t)
 
-	h := newTestHandler(t, &config.Config{EngineKeyChatGPT: "env-openai", GoogleAPIKey: "env-gemini"}, storetest.NewMemory())
+	h := newTestHandler(t, &config.Config{}, storetest.NewMemory())
 
-	if got, err := KeyForBaseURL(h, "")(context.Background()); err != nil || got != "env-openai" {
-		t.Errorf("Wrong match. expect: env-openai, got: %q %v", got, err)
+	if got, err := KeyForBaseURL(h, "")(context.Background()); err != nil || got != "" {
+		t.Errorf("Wrong match. expect: empty, got: %q %v", got, err)
 	}
-	if got, err := GeminiKey(h)(context.Background()); err != nil || got != "env-gemini" {
-		t.Errorf("Wrong match. expect: env-gemini, got: %q %v", got, err)
+	if got, err := GeminiKey(h)(context.Background()); err != nil || got != "" {
+		t.Errorf("Wrong match. expect: empty, got: %q %v", got, err)
 	}
 	if _, err := h.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), configkeys.KeyGeminiAPIKey, "x"); !errors.Is(err, confighandler.ErrKeyNotConfigured) {
 		t.Errorf("Wrong match. expect: key not configured, got: %v", err)
@@ -468,28 +556,95 @@ func Test_New_noMasterKeyBehavesAsBefore(t *testing.T) {
 	}
 }
 
-// LogSources: a key that is not configured is a warning, an unusable stored value is an error, and
-// no line holds a value.
+// LogSources: a key that is not configured is a warning, a stored key is info, an unusable stored
+// value is an error, no line holds a value and no line has an env_shadowed field.
 func Test_LogSources_levels(t *testing.T) {
+	const secret = "synthetic-stored-secret-text"
+
 	store := storetest.NewMemory()
 	actor := uuid.Must(uuid.NewV4())
 	writer := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
-	if _, err := writer.SetSecret(context.Background(), actor, configkeys.KeyGeminiAPIKey, "stored-secret-text"); err != nil {
+	if _, err := writer.SetSecret(context.Background(), actor, configkeys.KeyGeminiAPIKey, secret); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 
-	logs := logtest.New(t)
+	tests := []struct {
+		name string
+		cfg  *config.Config
+
+		expectLevel map[string]logrus.Level
+		expectMsg   map[string]string
+	}{
+		{
+			name: "one stored and one none",
+			cfg:  &config.Config{ConfigEncryptionKeys: testKeyList(1)},
+			expectLevel: map[string]logrus.Level{
+				configkeys.KeyOpenAICompatAPIKey: logrus.WarnLevel,
+				configkeys.KeyGeminiAPIKey:       logrus.InfoLevel,
+			},
+			expectMsg: map[string]string{
+				configkeys.KeyOpenAICompatAPIKey: "The config key is not configured; it is read from the database only. key: llm.openai_compat.api_key",
+				configkeys.KeyGeminiAPIKey:       "Config key. key: llm.gemini.api_key, source: db",
+			},
+		},
+		{
+			name: "one unusable and one none",
+			cfg:  &config.Config{},
+			expectLevel: map[string]logrus.Level{
+				configkeys.KeyOpenAICompatAPIKey: logrus.WarnLevel,
+				configkeys.KeyGeminiAPIKey:       logrus.ErrorLevel,
+			},
+			expectMsg: map[string]string{
+				configkeys.KeyOpenAICompatAPIKey: "The config key is not configured; it is read from the database only. key: llm.openai_compat.api_key",
+				configkeys.KeyGeminiAPIKey:       "The stored config value can not be used. key: llm.gemini.api_key",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hook := logrustest.NewLocal(logrus.StandardLogger())
+			defer logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+
+			LogSources(context.Background(), newTestHandler(t, tt.cfg, store))
+
+			seen := map[string]bool{}
+			for _, e := range hook.AllEntries() {
+				if _, ok := e.Data["env_shadowed"]; ok || strings.Contains(e.Message, "env_shadowed") {
+					t.Errorf("Wrong match. expect: no env_shadowed, got: %v %s", e.Data, e.Message)
+				}
+				if strings.Contains(e.Message, secret) || strings.Contains(fmt.Sprint(e.Data), secret) {
+					t.Errorf("Wrong match. a value was logged: %s %v", e.Message, e.Data)
+				}
+
+				key, _ := e.Data["key"].(string)
+				if key == "" {
+					continue
+				}
+				seen[key] = true
+				if e.Level != tt.expectLevel[key] || !strings.Contains(e.Message, tt.expectMsg[key]) {
+					t.Errorf("Wrong match. key %s expect: %v %q, got: %v %q", key, tt.expectLevel[key], tt.expectMsg[key], e.Level, e.Message)
+				}
+			}
+			if len(seen) != 2 {
+				t.Errorf("Wrong match. expect: a line per key, got: %v", seen)
+			}
+		})
+	}
+}
+
+// A failing Describe is a warning and the function returns: the service starts anyway.
+func Test_LogSources_describeFailureWarnsAndReturns(t *testing.T) {
+	store := storetest.NewMemory()
+	store.ListErr = errors.New("database is down")
+
+	hook := logrustest.NewLocal(logrus.StandardLogger())
+	defer logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+
 	LogSources(context.Background(), newTestHandler(t, &config.Config{}, store))
 
-	out := logs.Dump()
-	if !strings.Contains(out, "The config key is not configured. key: llm.openai_compat.api_key") {
-		t.Errorf("Wrong match. expect: a warning for the key that is not configured, got: %s", out)
-	}
-	if !strings.Contains(out, "The stored config value can not be used. key: llm.gemini.api_key") {
-		t.Errorf("Wrong match. expect: an error for the unusable stored value, got: %s", out)
-	}
-	if strings.Contains(out, "stored-secret-text") {
-		t.Errorf("Wrong match. a value was logged: %s", out)
+	entries := hook.AllEntries()
+	if len(entries) != 1 || entries[0].Level != logrus.WarnLevel || !strings.Contains(entries[0].Message, "Could not read the config sources") {
+		t.Errorf("Wrong match. expect: one warning, got: %v", entries)
 	}
 }
 
@@ -500,7 +655,7 @@ func Test_Supplier_errorHoldsNoKey(t *testing.T) {
 	store.GetErr = errors.New("database is down")
 
 	logs := logtest.New(t)
-	h := newTestHandler(t, &config.Config{EngineKeyChatGPT: secret, GoogleAPIKey: secret}, store)
+	h := newTestHandler(t, &config.Config{}, store)
 	_, err := Supplier(h, configkeys.KeyGeminiAPIKey)(context.Background())
 
 	if err == nil || strings.Contains(err.Error(), secret) || strings.Contains(logs.Dump(), secret) {

@@ -10,13 +10,13 @@ Overview
    * **Async:** No. Every request returns the updated key immediately.
    * **Access:** ProjectSuperAdmin only. Customer-level tokens, access keys and direct tokens are refused.
 
-The Service Config API manages the stored configuration of a platform service. The ``{service}`` path parameter names the service. Five services are supported now. ``email`` has the keys ``mailgun.api_key``, ``sendgrid.api_key`` and ``mailgun.webhook_signing_key``. ``ai`` has the keys ``llm.openai_compat.api_key`` (the API key of the OpenAI compatible provider) and ``llm.gemini.api_key`` (the Google API key of the Gemini endpoint). ``message`` has the keys ``provider.messagebird.auth_token`` (the access key of the MessageBird account) and ``provider.telnyx.auth_token`` (the API key of the Telnyx account that sends the SMS and MMS). The Telnyx token of the message service is a separate setting from the Telnyx token of the number provider (see Number Provider), so a rotation of the Telnyx account needs both places to be changed. ``tts`` has the keys ``aws.access_key`` and ``aws.secret_key`` (the access key and the secret key of Amazon Polly) and ``elevenlabs.api_key`` (the API key of the ElevenLabs streaming service). Store the two AWS keys together: while only one of them is stored, requests to Amazon Polly fail, because a stored key is never combined with the key of the environment. ``transcribe`` has the keys ``aws.access_key`` and ``aws.secret_key`` (the access key and the secret access key of the AWS credential that the AWS Transcribe provider uses). The two keys of ``transcribe`` are used only together, from the same source: both stored, or both from the environment. Store or delete them one after the other, back to back, because the pair is not used while only one of the two is stored. A service name that is not listed is answered with ``404 Not Found``.
+The Service Config API manages the stored configuration of a platform service. The ``{service}`` path parameter names the service. Five services are supported now. ``email`` has the keys ``mailgun.api_key``, ``sendgrid.api_key`` and ``mailgun.webhook_signing_key``. ``ai`` has the keys ``llm.openai_compat.api_key`` (the API key of the OpenAI compatible provider) and ``llm.gemini.api_key`` (the Google API key of the Gemini endpoint). ``message`` has the keys ``provider.messagebird.auth_token`` (the access key of the MessageBird account) and ``provider.telnyx.auth_token`` (the API key of the Telnyx account that sends the SMS and MMS). The Telnyx token of the message service is a separate setting from the Telnyx token of the number provider (see Number Provider), so a rotation of the Telnyx account needs both places to be changed. ``tts`` has the keys ``aws.access_key`` and ``aws.secret_key`` (the access key and the secret key of Amazon Polly) and ``elevenlabs.api_key`` (the API key of the ElevenLabs streaming service). Store the two AWS keys together: while only one of them is stored, requests to Amazon Polly fail. ``transcribe`` has the keys ``aws.access_key`` and ``aws.secret_key`` (the access key and the secret access key of the AWS credential that the AWS Transcribe provider uses). The two keys of ``transcribe`` are used only together: both stored. Store or delete them one after the other, back to back, because the pair is not used while only one of the two is stored. A service name that is not listed is answered with ``404 Not Found``.
 
 With the Service Config API you can:
 
 - List the keys of a service, where each value comes from, and what each key is for
 - Store a secret (write-only)
-- Delete the stored secret to return to the environment of the service
+- Delete the stored secret; the key is then not configured
 - Read the history of the changes of a key
 
 Only secrets can be stored or deleted now. A key that is not a secret is answered with 400.
@@ -24,7 +24,7 @@ Only secrets can be stored or deleted now. A key that is not a secret is answere
 
 Where a Value Comes From
 ------------------------
-A service uses one source for a key at a time, in this order: the value stored through the API, the environment of the service, the default of the key.
+A service uses one source for a key at a time: the value stored through the API, or the default of the key. The five services listed above read their keys from the stored value only and do not read an environment variable for them.
 
 .. list-table::
    :header-rows: 1
@@ -34,17 +34,17 @@ A service uses one source for a key at a time, in this order: the value stored t
    * - ``db``
      - The value stored through this API is used.
    * - ``env``
-     - No value is stored. The environment of the service is used. ``env_name`` is the name of the variable.
+     - No value is stored and the environment of the service is used. The services that are supported now do not use this source, and ``env_name`` is not returned for their keys.
    * - ``default``
-     - No value is stored and the environment has none. The default of the key is used.
+     - No value is stored. The default of the key is used.
    * - ``none``
      - The key has no value anywhere.
    * - ``db_undecryptable``
-     - A secret is stored but cannot be decrypted (for example the encryption key was removed). The service does **not** fall back to the environment. Restore the key, store a new secret, or delete the stored secret.
+     - A secret is stored but cannot be decrypted (for example the encryption key was removed). The service does **not** use an empty value instead. Restore the key, store a new secret, or delete the stored secret.
    * - ``db_invalid``
-     - The stored value does not fit the declaration of the key. The service does not fall back to the environment. Store a new value or delete the stored value.
+     - The stored value does not fit the declaration of the key. The service does not use an empty value instead. Store a new value or delete the stored value.
 
-``env_shadowed`` is true when the environment variable is set but a stored value takes precedence over it. The response never contains the value of the environment variable.
+``env_shadowed`` is true only when a service reads an environment variable for the key and a stored value takes precedence over it. It is always false for the services that are supported now. The response never contains the value of an environment variable.
 
 The secret is write-only. It is never returned, logged or sent in an event by a service version that supports this API (see Secret Rules). A response tells only ``has_secret``, the ``key_version`` of the key that encrypted it, the ``revision`` and who changed it. The history of a secret holds the key versions, never a value.
 

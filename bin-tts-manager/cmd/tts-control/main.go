@@ -39,7 +39,7 @@ func main() {
 var openTTSHandler = initHandler
 
 // initHandler opens the database for the provider keys (read the same way as the daemon reads
-// them: a stored value first, then the environment) and creates the TTS handler. The returned
+// them: the stored value only) and creates the TTS handler. The returned
 // function closes the database.
 func initHandler() (ttshandler.TTSHandler, func(), error) {
 	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)

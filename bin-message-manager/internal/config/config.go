@@ -10,32 +10,12 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Names of the environment variables that the config registry reads through EnvValue.
+// Names of the environment variables that the service reads without a flag.
 const (
-	envAuthtokenMessagebird = "AUTHTOKEN_MESSAGEBIRD"
-	envAuthtokenTelnyx      = "AUTHTOKEN_TELNYX"
-
 	// EnvConfigEncryptionKeys is the environment variable of the master key list of the stored
 	// settings.
 	EnvConfigEncryptionKeys = "MESSAGE_CONFIG_ENCRYPTION_KEYS"
 )
-
-// EnvValue returns the loaded value (flag or environment) of a variable name. It is the
-// environment lookup of the config registry, so the stored settings and the direct reads see the
-// same values. A name that is not loaded is "not set".
-func (c *Config) EnvValue(name string) (string, bool) {
-	var v string
-	switch name {
-	case envAuthtokenMessagebird:
-		v = c.AuthtokenMessagebird
-	case envAuthtokenTelnyx:
-		v = c.AuthtokenTelnyx
-	default:
-		return "", false
-	}
-
-	return v, v != ""
-}
 
 // Config holds all configuration for the message-manager service
 type Config struct {
@@ -46,13 +26,11 @@ type Config struct {
 	RedisAddress            string // RedisAddress is the address (including host and port) of the Redis server.
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
-	AuthtokenMessagebird    string // AuthtokenMessagebird is the authentication token for MessageBird API.
-	AuthtokenTelnyx         string // AuthtokenTelnyx is the authentication token for Telnyx API.
 
 	// ConfigEncryptionKeys is the master key list of the stored settings
 	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
 	// command line flag. A value that can not be parsed does not stop the service: the stored
-	// secrets can not be used then and the environment tokens keep working.
+	// secrets can not be used then (they are reported as undecryptable).
 	ConfigEncryptionKeys string
 }
 
@@ -85,8 +63,6 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
-	f.String("authtoken_messagebird", "", "MessageBird authentication token")
-	f.String("authtoken_telnyx", "", "Telnyx authentication token")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -96,8 +72,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
-		"authtoken_messagebird":     "AUTHTOKEN_MESSAGEBIRD",
-		"authtoken_telnyx":          "AUTHTOKEN_TELNYX",
 	}
 
 	// the master key list of the stored settings has no flag: a flag value would show in the
@@ -137,8 +111,6 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDatabase:           viper.GetInt("redis_database"),
-			AuthtokenMessagebird:    viper.GetString("authtoken_messagebird"),
-			AuthtokenTelnyx:         viper.GetString("authtoken_telnyx"),
 			ConfigEncryptionKeys:    viper.GetString("message_config_encryption_keys"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")

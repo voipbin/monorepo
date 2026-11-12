@@ -7,32 +7,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Test_EnvValue(t *testing.T) {
-	c := &Config{EngineKeyChatGPT: "openai-test", GoogleAPIKey: "", ConfigEncryptionKeys: "1:x"}
-
-	tests := []struct {
-		name string
-
-		envName string
-
-		expectValue string
-		expectOK    bool
-	}{
-		{name: "openai", envName: "ENGINE_KEY_CHATGPT", expectValue: "openai-test", expectOK: true},
-		{name: "empty value is not set", envName: "GOOGLE_API_KEY", expectValue: "", expectOK: false},
-		{name: "the master key list is not served to the registry", envName: "AI_CONFIG_ENCRYPTION_KEYS", expectOK: false},
-		{name: "unknown name", envName: "DATABASE_DSN", expectOK: false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			v, ok := c.EnvValue(tt.envName)
-			if v != tt.expectValue || ok != tt.expectOK {
-				t.Errorf("Wrong match. expect: %q %v, got: %q %v", tt.expectValue, tt.expectOK, v, ok)
-			}
-		})
-	}
-}
-
 // Test_masterKeyIsEnvOnly checks that the master key list is read from the prefixed variable only,
 // that an unprefixed variable is ignored, and that no command line flag exists for it.
 func Test_masterKeyIsEnvOnly(t *testing.T) {

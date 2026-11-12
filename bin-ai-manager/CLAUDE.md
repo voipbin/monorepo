@@ -18,11 +18,11 @@ AI conversation orchestration service. Manages AI configurations, active call se
 - **Tool** — LLM function-call capability (`connect_call`, `send_email`, `set_variables`, etc.); definitions in `pkg/toolhandler/definitions.go`
 - **Per-pod routing** — follow-up RPCs to pipecat-manager target `bin-manager.pipecat-manager.request.<POD_IP>` using `pipecatcall.HostID`; see [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md)
 
-## CRITICAL: engine_key_chatgpt
+## CRITICAL: Platform LLM key names
 
-The config flag is `engine_key_chatgpt` / env `ENGINE_KEY_CHATGPT` (not `openai_api_key`). This key is used for OpenAI and other OpenAI-compatible providers (e.g. Grok). Do not rename it. A value stored with `ai-control config set --key llm.openai_compat.api_key` takes precedence over it (resolution: stored, then environment).
+The stored key is `llm.openai_compat.api_key` (set with `ai-control config set --key llm.openai_compat.api_key`). It is used for OpenAI and other OpenAI-compatible providers (e.g. Grok). The service does not read the former `engine_key_chatgpt` flag or the `ENGINE_KEY_CHATGPT` variable any more: the key is read from the database only (VOIP-1721).
 
-**Gemini audit uses a separate key.** The `geminiaudithandler` requires a Google API key (`AIza...`), configured via `google_api_key` / env `GOOGLE_API_KEY`. This is distinct from `ENGINE_KEY_CHATGPT` which holds an OpenAI-style key (`sk-...`). Its stored counterpart is `llm.gemini.api_key`. Both keys are read for each call through `internal/aiconfig` (never cache them or read the environment directly); see docs/operations.md, "Platform LLM keys". They can also be written through the admin API (`/service_configs/ai`, served as `/v1/configs` by the shared `configrpc`, history source `api`); that route is handled before the request log entry exists and must never log the request, because the body of a secret write is the secret.
+**Gemini audit uses a separate key.** The `geminiaudithandler` requires a Google API key (`AIza...`), stored as `llm.gemini.api_key` (database only; `GOOGLE_API_KEY` is read by bin-pipecat-manager from its own environment, not by this service). This is distinct from `llm.openai_compat.api_key` which holds an OpenAI-style key (`sk-...`). Both keys are read for each call through `internal/aiconfig` (never cache them; they have no environment source); see docs/operations.md, "Platform LLM keys". They can also be written through the admin API (`/service_configs/ai`, served as `/v1/configs` by the shared `configrpc`, history source `api`); that route is handled before the request log entry exists and must never log the request, because the body of a secret write is the secret.
 
 ## Common commands
 

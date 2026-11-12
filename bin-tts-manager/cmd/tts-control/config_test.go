@@ -68,7 +68,7 @@ func runConfigCommand(args ...string) error {
 
 func Test_config_set_list_clear(t *testing.T) {
 	const secret = "synthetic-credential-value"
-	store, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys(), AWSAccessKey: "env-value"}, secret+"\n")
+	store, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, secret+"\n")
 
 	if err := runConfigCommand("set", "--key", "aws.access_key", "--actor-id", testActor); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
@@ -86,8 +86,8 @@ func Test_config_set_list_clear(t *testing.T) {
 	if err := runConfigCommand("list"); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if strings.Contains(out.String(), secret) || strings.Contains(out.String(), "env-value") ||
-		!strings.Contains(out.String(), `"env_shadowed": true`) || !strings.Contains(out.String(), testActor) {
+	if strings.Contains(out.String(), secret) || !strings.Contains(out.String(), `"env_shadowed": false`) ||
+		strings.Contains(out.String(), "env_name") || !strings.Contains(out.String(), testActor) {
 		t.Errorf("Wrong match. list output: %s", out.String())
 	}
 
@@ -95,7 +95,7 @@ func Test_config_set_list_clear(t *testing.T) {
 	if err := runConfigCommand("clear", "--key", "aws.access_key", "--actor-id", testActor); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if !strings.Contains(out.String(), `"source": "env"`) {
+	if !strings.Contains(out.String(), `"source": "none"`) {
 		t.Errorf("Wrong match. clear output: %s", out.String())
 	}
 }
@@ -260,22 +260,25 @@ func Test_config_set_eachKey(t *testing.T) {
 	}
 }
 
-// The list shows the three keys and the sources, never a value.
+// The list shows the three keys and the sources, never a value. The old environment variables
+// are not a source: the keys are not configured, env_shadowed is false and env_name is absent.
 func Test_config_list_noValue(t *testing.T) {
-	cfg := &config.Config{AWSAccessKey: "env-access-sentinel", AWSSecretKey: "env-secret-sentinel", ElevenlabsAPIKey: "env-eleven-sentinel"}
-	_, out := useConfigHarness(t, cfg, "")
+	t.Setenv("AWS_ACCESS_KEY", "env-access-sentinel")
+	t.Setenv("AWS_SECRET_KEY", "env-secret-sentinel")
+	t.Setenv("ELEVENLABS_API_KEY", "env-eleven-sentinel")
+	_, out := useConfigHarness(t, &config.Config{}, "")
 
 	if err := runConfigCommand("list"); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	for _, want := range []string{"aws.access_key", "aws.secret_key", "elevenlabs.api_key", `"source": "env"`} {
+	for _, want := range []string{"aws.access_key", "aws.secret_key", "elevenlabs.api_key", `"source": "none"`, `"env_shadowed": false`} {
 		if !strings.Contains(out.String(), want) {
 			t.Errorf("Wrong match. expect: %q in %s", want, out.String())
 		}
 	}
-	for _, bad := range []string{"env-access-sentinel", "env-secret-sentinel", "env-eleven-sentinel"} {
+	for _, bad := range []string{"env-access-sentinel", "env-secret-sentinel", "env-eleven-sentinel", "env_name", `"source": "env"`, `"env_shadowed": true`} {
 		if strings.Contains(out.String(), bad) {
-			t.Errorf("Wrong match. the list holds a value: %s", out.String())
+			t.Errorf("Wrong match. the list holds %q: %s", bad, out.String())
 		}
 	}
 }

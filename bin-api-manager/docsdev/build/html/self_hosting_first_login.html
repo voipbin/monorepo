@@ -675,8 +675,8 @@ often a certificate problem, not an auth problem.</p>
 Works immediately, no email provider required.</p>
 <p><strong>Path B: email-based signup</strong>, the same flow the hosted service at
 <code class="docutils literal notranslate"><span class="pre">voipbin.net</span></code> uses (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code>). This only works if you have
-already configured an email provider (<code class="docutils literal notranslate"><span class="pre">SENDGRID_API_KEY</span></code> or
-<code class="docutils literal notranslate"><span class="pre">MAILGUN_API_KEY</span></code>, see Provider configuration) so the verification
+already configured an email provider (the stored key <code class="docutils literal notranslate"><span class="pre">sendgrid.api_key</span></code> or
+<code class="docutils literal notranslate"><span class="pre">mailgun.api_key</span></code>, see Provider configuration) so the verification
 email can actually be delivered. Without one, the signup call succeeds
 but the verification email never arrives. Use this path only if you have
 already set up email delivery; otherwise use Path A.</p>

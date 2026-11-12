@@ -6,18 +6,21 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/confighandler"
 	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	"monorepo/bin-common-handler/pkg/confighandler/storetest"
+	"monorepo/bin-common-handler/pkg/secretcrypto"
 
 	"monorepo/bin-email-manager/internal/config"
 	"monorepo/bin-email-manager/internal/configkeys"
@@ -44,21 +47,25 @@ func newTestHandler(t *testing.T, cfg *config.Config, store confighandler.Store)
 	return h
 }
 
-// With no stored row the credential is exactly the value of the environment, as before.
-func Test_Supplier_noRowEqualsTheEnvironment(t *testing.T) {
-	cfg := &config.Config{SendgridAPIKey: "env-sendgrid", MailgunAPIKey: "env-mailgun", MailgunWebhookSigningKey: "env-signing"}
-	h := newTestHandler(t, cfg, storetest.NewMemory())
+// A stored row is the value of the credential, one key at a time.
+func Test_Supplier_storedRowIsUsed(t *testing.T) {
+	store := storetest.NewMemory()
+	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
+	actor := uuid.Must(uuid.NewV4())
 
 	tests := []struct {
 		key    string
 		expect string
 	}{
-		{configkeys.KeySendgridAPIKey, "env-sendgrid"},
-		{configkeys.KeyMailgunAPIKey, "env-mailgun"},
-		{configkeys.KeyMailgunWebhookSigningKey, "env-signing"},
+		{configkeys.KeySendgridAPIKey, "stored-sendgrid"},
+		{configkeys.KeyMailgunAPIKey, "stored-mailgun"},
+		{configkeys.KeyMailgunWebhookSigningKey, "stored-signing"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.key, func(t *testing.T) {
+			if _, err := h.SetSecret(context.Background(), actor, tt.key, tt.expect); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
 			got, err := Supplier(h, tt.key)(context.Background())
 			if err != nil || got != tt.expect {
 				t.Errorf("Wrong match. expect: %q, got: %q %v", tt.expect, got, err)
@@ -67,7 +74,70 @@ func Test_Supplier_noRowEqualsTheEnvironment(t *testing.T) {
 	}
 }
 
-// Nothing set anywhere is an empty value without an error, which is "not configured".
+// With no stored row the key is not configured, even when the old environment variable is set.
+func Test_New_oldEnvironmentVariablesAreIgnored(t *testing.T) {
+	t.Setenv("SENDGRID_API_KEY", "synthetic-env-sendgrid")
+	t.Setenv("MAILGUN_API_KEY", "synthetic-env-mailgun")
+	t.Setenv("MAILGUN_WEBHOOK_SIGNING_KEY", "synthetic-env-signing")
+
+	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
+
+	for _, key := range []string{configkeys.KeySendgridAPIKey, configkeys.KeyMailgunAPIKey, configkeys.KeyMailgunWebhookSigningKey} {
+		t.Run(key, func(t *testing.T) {
+			secret, res, err := h.Secret(context.Background(), key)
+			if err != nil || res.Source != confighandler.SourceNone || res.HasSecret || secret.Reveal() != "" {
+				t.Errorf("Wrong match. expect: none and empty, got: %+v %v", res, err)
+			}
+
+			got, errSupplier := Supplier(h, key)(context.Background())
+			if errSupplier != nil || got != "" {
+				t.Errorf("Wrong match. expect: empty and no error, got: %q %v", got, errSupplier)
+			}
+		})
+	}
+}
+
+// The registry has no environment name, so a lookup function handed straight to the handler is
+// not consulted for the old variable names; a stored row wins over such a lookup anyway.
+func Test_NewHandler_registryIgnoresALookup(t *testing.T) {
+	reg, err := configkeys.NewRegistry()
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	old := map[string]string{
+		"SENDGRID_API_KEY":            "synthetic-env-sendgrid",
+		"MAILGUN_API_KEY":             "synthetic-env-mailgun",
+		"MAILGUN_WEBHOOK_SIGNING_KEY": "synthetic-env-signing",
+	}
+	lookup := func(name string) (string, bool) {
+		v, ok := old[name]
+		return v, ok
+	}
+
+	crypto, err := secretcrypto.New(testKeyList(1), secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	h := confighandler.NewHandler(reg, storetest.NewMemory(), crypto, lookup)
+
+	for _, key := range []string{configkeys.KeySendgridAPIKey, configkeys.KeyMailgunAPIKey, configkeys.KeyMailgunWebhookSigningKey} {
+		secret, res, errRead := h.Secret(context.Background(), key)
+		if errRead != nil || res.Source != confighandler.SourceNone || secret.Reveal() != "" {
+			t.Errorf("Wrong match. %s expect: none and empty, got: %+v %v", key, res, errRead)
+		}
+	}
+
+	actor := uuid.Must(uuid.NewV4())
+	if _, errSet := h.SetSecret(context.Background(), actor, configkeys.KeyMailgunAPIKey, "stored-mailgun"); errSet != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", errSet)
+	}
+	secret, res, errRead := h.Secret(context.Background(), configkeys.KeyMailgunAPIKey)
+	if errRead != nil || res.Source != confighandler.SourceDB || res.EnvShadowed || secret.Reveal() != "stored-mailgun" {
+		t.Errorf("Wrong match. expect: the stored value, got: %+v %v", res, errRead)
+	}
+}
+
+// A key without a row is an empty value without an error, which is "not configured".
 func Test_Supplier_notConfiguredIsEmpty(t *testing.T) {
 	h := newTestHandler(t, &config.Config{}, storetest.NewMemory())
 
@@ -77,8 +147,8 @@ func Test_Supplier_notConfiguredIsEmpty(t *testing.T) {
 	}
 }
 
-func Test_Supplier_storedValueWinsAndRotates(t *testing.T) {
-	cfg := &config.Config{MailgunAPIKey: "env-mailgun", ConfigEncryptionKeys: testKeyList(1)}
+func Test_Supplier_storedValueRotatesAndClears(t *testing.T) {
+	cfg := &config.Config{ConfigEncryptionKeys: testKeyList(1)}
 	h := newTestHandler(t, cfg, storetest.NewMemory())
 	supplier := Supplier(h, configkeys.KeyMailgunAPIKey)
 	actor := uuid.Must(uuid.NewV4())
@@ -100,13 +170,17 @@ func Test_Supplier_storedValueWinsAndRotates(t *testing.T) {
 	if _, err := h.Clear(context.Background(), actor, configkeys.KeyMailgunAPIKey); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if got, _ := supplier(context.Background()); got != "env-mailgun" {
-		t.Errorf("Wrong match. expect: the environment again, got: %q", got)
+	got, err := supplier(context.Background())
+	if err != nil || got != "" {
+		t.Errorf("Wrong match. expect: empty after the clear, got: %q %v", got, err)
+	}
+	if _, res, _ := h.Secret(context.Background(), configkeys.KeyMailgunAPIKey); res.Source != confighandler.SourceNone {
+		t.Errorf("Wrong match. expect: none after the clear, got: %s", res.Source)
 	}
 }
 
-// A secret that is stored but can not be decrypted is an error; the environment value is not used.
-func Test_Supplier_undecryptableNeverFallsBack(t *testing.T) {
+// A secret that is stored but can not be decrypted is an error, never an empty value.
+func Test_Supplier_undecryptableIsAnError(t *testing.T) {
 	store := storetest.NewMemory()
 	actor := uuid.Must(uuid.NewV4())
 
@@ -117,7 +191,7 @@ func Test_Supplier_undecryptableNeverFallsBack(t *testing.T) {
 
 	// the same rows read with no master key, and with a bad master key
 	for _, keys := range []string{"", "not-a-key-list"} {
-		reader := newTestHandler(t, &config.Config{MailgunAPIKey: "env-mailgun", ConfigEncryptionKeys: keys}, store)
+		reader := newTestHandler(t, &config.Config{ConfigEncryptionKeys: keys}, store)
 		got, err := Supplier(reader, configkeys.KeyMailgunAPIKey)(context.Background())
 		if !errors.Is(err, confighandler.ErrUndecryptable) || got != "" {
 			t.Errorf("Wrong match. keys %q expect: undecryptable and no value, got: %q %v", keys, got, err)
@@ -149,7 +223,7 @@ func Test_New_badMasterKeyIsLoggedWithoutTheText(t *testing.T) {
 func Test_Supplier_readErrorIsAnError(t *testing.T) {
 	store := storetest.NewMemory()
 	store.GetErr = errors.New("database is down")
-	h := newTestHandler(t, &config.Config{MailgunAPIKey: "env-mailgun"}, store)
+	h := newTestHandler(t, &config.Config{}, store)
 
 	got, err := Supplier(h, configkeys.KeyMailgunAPIKey)(context.Background())
 	if err == nil || got != "" {
@@ -180,20 +254,17 @@ func Test_Supplier_timeout(t *testing.T) {
 func Test_LogSources(t *testing.T) {
 	tests := []struct {
 		name  string
-		cfg   *config.Config
 		store func() *storetest.Memory
 
 		expectContains []string
 	}{
 		{
-			name:           "env and none",
-			cfg:            &config.Config{MailgunAPIKey: "env-mailgun"},
+			name:           "no row",
 			store:          storetest.NewMemory,
-			expectContains: []string{"source=env", "is not configured"},
+			expectContains: []string{"is not configured", "read from the database only"},
 		},
 		{
 			name: "read error",
-			cfg:  &config.Config{},
 			store: func() *storetest.Memory {
 				m := storetest.NewMemory()
 				m.ListErr = errors.New("database is down")
@@ -208,7 +279,7 @@ func Test_LogSources(t *testing.T) {
 			logrus.SetOutput(&buf)
 			defer logrus.SetOutput(logrus.StandardLogger().Out)
 
-			h := newTestHandler(t, tt.cfg, tt.store())
+			h := newTestHandler(t, &config.Config{}, tt.store())
 			LogSources(context.Background(), h)
 
 			out := buf.String()
@@ -217,10 +288,76 @@ func Test_LogSources(t *testing.T) {
 					t.Errorf("Wrong match. expect to contain: %q, got: %q", want, out)
 				}
 			}
-			if strings.Contains(out, "env-mailgun") {
-				t.Errorf("Wrong match. a value was logged: %q", out)
+			if strings.Contains(out, "env_shadowed") || strings.Contains(out, "source=env") {
+				t.Errorf("Wrong match. the log holds an environment field: %q", out)
 			}
 		})
+	}
+}
+
+// A key without a row is a warning, a stored key is an info line, the old environment variables
+// change nothing, no secret text is logged, and a failed read is a warning and a normal return.
+func Test_LogSources_levels(t *testing.T) {
+	t.Setenv("SENDGRID_API_KEY", "synthetic-env-sendgrid")
+
+	const secret = "synthetic-stored-secret"
+	store := storetest.NewMemory()
+	writer := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
+	if _, err := writer.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), configkeys.KeyMailgunAPIKey, secret); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	logger, hook := logrustest.NewNullLogger()
+	_ = logger
+	logrus.AddHook(hook)
+	defer logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+
+	LogSources(context.Background(), newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store))
+
+	levels := map[string]logrus.Level{}
+	var all strings.Builder
+	for _, e := range hook.AllEntries() {
+		all.WriteString(e.Message)
+		for k, v := range e.Data {
+			all.WriteString(" " + k + "=" + fmt.Sprint(v))
+		}
+		if _, ok := e.Data["env_shadowed"]; ok {
+			t.Errorf("Wrong match. the entry has an env_shadowed field: %+v", e.Data)
+		}
+		if key, ok := e.Data["key"].(string); ok {
+			levels[key] = e.Level
+		}
+	}
+
+	expect := map[string]logrus.Level{
+		configkeys.KeySendgridAPIKey:           logrus.WarnLevel,
+		configkeys.KeyMailgunAPIKey:            logrus.InfoLevel,
+		configkeys.KeyMailgunWebhookSigningKey: logrus.WarnLevel,
+	}
+	for key, level := range expect {
+		if got, ok := levels[key]; !ok || got != level {
+			t.Errorf("Wrong match. %s expect: %s, got: %s (logged: %v)", key, level, got, ok)
+		}
+	}
+	if strings.Contains(all.String(), secret) || strings.Contains(all.String(), "synthetic-env-sendgrid") {
+		t.Errorf("Wrong match. a secret was logged: %s", all.String())
+	}
+}
+
+func Test_LogSources_describeFailureWarns(t *testing.T) {
+	store := storetest.NewMemory()
+	store.ListErr = errors.New("database is down")
+
+	logger, hook := logrustest.NewNullLogger()
+	_ = logger
+	logrus.AddHook(hook)
+	defer logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+
+	LogSources(context.Background(), newTestHandler(t, &config.Config{}, store))
+
+	entries := hook.AllEntries()
+	if len(entries) != 1 || entries[0].Level != logrus.WarnLevel || !strings.Contains(entries[0].Message, "Could not read the config sources") {
+		t.Errorf("Wrong match. expect: one warning, got: %+v", entries)
 	}
 }
 
@@ -243,10 +380,10 @@ func Test_LogSources_unusableRow(t *testing.T) {
 }
 
 // A key written through the config RPC is the value that the supplier returns on the very next
-// call, without a restart, and a clear brings the environment value back (the provider is fake:
+// call, without a restart, and a clear leaves the key not configured (the provider is fake:
 // only the supplier of the credential is exercised, nothing is sent).
 func Test_Supplier_followsTheConfigRPC(t *testing.T) {
-	cfg := &config.Config{MailgunAPIKey: "env-mailgun", ConfigEncryptionKeys: testKeyList(1)}
+	cfg := &config.Config{ConfigEncryptionKeys: testKeyList(1)}
 	h := newTestHandler(t, cfg, storetest.NewMemory())
 	server := configrpc.NewServer(h, commonoutline.ServiceNameEmailManager)
 	supplier := Supplier(h, configkeys.KeyMailgunAPIKey)
@@ -264,8 +401,8 @@ func Test_Supplier_followsTheConfigRPC(t *testing.T) {
 	}
 	uri := "/v1/configs/" + configkeys.KeyMailgunAPIKey
 
-	if got, _ := supplier(context.Background()); got != "env-mailgun" {
-		t.Fatalf("Wrong match. expect: the environment, got: %q", got)
+	if got, _ := supplier(context.Background()); got != "" {
+		t.Fatalf("Wrong match. expect: not configured, got: %q", got)
 	}
 
 	call(sock.RequestMethodPut, uri+"/secret", `{"actor_id":"`+actor.String()+`","secret":"stored-one","revision":0}`)
@@ -279,7 +416,7 @@ func Test_Supplier_followsTheConfigRPC(t *testing.T) {
 	}
 
 	call(sock.RequestMethodDelete, uri, `{"actor_id":"`+actor.String()+`","revision":2}`)
-	if got, _ := supplier(context.Background()); got != "env-mailgun" {
-		t.Errorf("Wrong match. expect: the environment again, got: %q", got)
+	if got, _ := supplier(context.Background()); got != "" {
+		t.Errorf("Wrong match. expect: not configured after the clear, got: %q", got)
 	}
 }

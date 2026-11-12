@@ -71,7 +71,7 @@ func Test_processRequest_configs(t *testing.T) {
 		t.Fatalf("Wrong match. got: %s %v", res.Data, err)
 	}
 	for _, k := range service.Keys {
-		if k.Description == "" || k.EnvName == "" || k.Kind != "secret" {
+		if k.Description == "" || k.EnvName != "" || k.Kind != "secret" {
 			t.Errorf("Wrong match. got: %+v", k)
 		}
 	}

@@ -1,10 +1,12 @@
 package config
 
 import (
+	"reflect"
 	"sync"
 	"testing"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func TestGet(t *testing.T) {
@@ -24,8 +26,6 @@ func TestGet(t *testing.T) {
 				RedisAddress:            "127.0.0.1:6379",
 				RedisDatabase:           1,
 				RedisPassword:           "secret",
-				SendgridAPIKey:          "SG.test-key",
-				MailgunAPIKey:           "mailgun-test-key",
 			},
 		},
 	}
@@ -57,12 +57,6 @@ func TestGet(t *testing.T) {
 			if res.RedisPassword != tt.setupConfig.RedisPassword {
 				t.Errorf("Wrong RedisPassword. expect: %s, got: %s", tt.setupConfig.RedisPassword, res.RedisPassword)
 			}
-			if res.SendgridAPIKey != tt.setupConfig.SendgridAPIKey {
-				t.Errorf("Wrong SendgridAPIKey. expect: %s, got: %s", tt.setupConfig.SendgridAPIKey, res.SendgridAPIKey)
-			}
-			if res.MailgunAPIKey != tt.setupConfig.MailgunAPIKey {
-				t.Errorf("Wrong MailgunAPIKey. expect: %s, got: %s", tt.setupConfig.MailgunAPIKey, res.MailgunAPIKey)
-			}
 		})
 	}
 }
@@ -90,9 +84,6 @@ func TestInitConfig(t *testing.T) {
 			rootCmd.Flags().String("redis_address", "localhost:6379", "")
 			rootCmd.Flags().Int("redis_database", 1, "")
 			rootCmd.Flags().String("redis_password", "", "")
-			rootCmd.Flags().String("sendgrid_api_key", "SG.test", "")
-			rootCmd.Flags().String("mailgun_api_key", "mg-test", "")
-			rootCmd.Flags().String("mailgun_webhook_signing_key", "mg-signing-test", "")
 
 			// First call should initialize
 			InitConfig(rootCmd)
@@ -196,19 +187,53 @@ func TestRegisterFlags(t *testing.T) {
 	}
 }
 
-func Test_bindConfig_MailgunWebhookSigningKey(t *testing.T) {
-	t.Setenv("MAILGUN_WEBHOOK_SIGNING_KEY", "synthetic-signing-key")
+// The provider credentials are stored in the database only: Config has no field for them any more.
+func Test_Config_noProviderSecretFields(t *testing.T) {
+	removed := []string{"SendgridAPIKey", "MailgunAPIKey", "MailgunWebhookSigningKey"}
 
+	typ := reflect.TypeOf(Config{})
+	for _, name := range removed {
+		if _, ok := typ.FieldByName(name); ok {
+			t.Errorf("Wrong match. Config must not have the field %s", name)
+		}
+	}
+	if _, ok := reflect.TypeOf(&Config{}).MethodByName("EnvValue"); ok {
+		t.Errorf("Wrong match. Config must not have the EnvValue method")
+	}
+}
+
+// A deployment that still exports the old variables starts normally: the variables are not read,
+// no flag exists for them, and no other field is affected.
+func Test_Bootstrap_oldProviderVariablesAreIgnored(t *testing.T) {
+	viper.Reset()
+	defer viper.Reset()
 	once = sync.Once{}
 	globalConfig = Config{}
 
-	rootCmd := &cobra.Command{}
-	if err := bindConfig(rootCmd); err != nil {
-		t.Fatalf("Unexpected error from bindConfig: %v", err)
+	t.Setenv("SENDGRID_API_KEY", "synthetic-sendgrid")
+	t.Setenv("MAILGUN_API_KEY", "synthetic-mailgun")
+	t.Setenv("MAILGUN_WEBHOOK_SIGNING_KEY", "synthetic-signing")
+	t.Setenv("RABBITMQ_ADDRESS", "amqp://test-rabbitmq:5672")
+	t.Setenv("REDIS_DATABASE", "3")
+	t.Setenv("EMAIL_CONFIG_ENCRYPTION_KEYS", "1:synthetic-master")
+
+	cmd := &cobra.Command{}
+	if err := Bootstrap(cmd); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 	LoadGlobalConfig()
 
-	if Get().MailgunWebhookSigningKey != "synthetic-signing-key" {
-		t.Errorf("Wrong MailgunWebhookSigningKey. expect: set from the env, got: %q", Get().MailgunWebhookSigningKey)
+	cfg := Get()
+	if cfg.RabbitMQAddress != "amqp://test-rabbitmq:5672" || cfg.RedisDatabase != 3 || cfg.ConfigEncryptionKeys != "1:synthetic-master" {
+		t.Errorf("Wrong match. the other fields were affected: %+v", cfg)
+	}
+	if cfg.DatabaseDSN != "" || cfg.RedisAddress != "" || cfg.RedisPassword != "" {
+		t.Errorf("Wrong match. unset fields must stay empty: %+v", cfg)
+	}
+
+	for _, name := range []string{"sendgrid_api_key", "mailgun_api_key", "mailgun_webhook_signing_key"} {
+		if cmd.PersistentFlags().Lookup(name) != nil || cmd.Flags().Lookup(name) != nil {
+			t.Errorf("Wrong match. a flag %q still exists", name)
+		}
 	}
 }

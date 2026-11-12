@@ -64,7 +64,10 @@ func runConfigCommand(args ...string) error {
 
 func Test_config_set_list_clear(t *testing.T) {
 	const secret = "synthetic-credential-value"
-	store, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys(), AWSSecretKey: "env-value"}, secret+"\n")
+
+	// the old variable is set and must change nothing
+	t.Setenv("AWS_SECRET_KEY", "env-value")
+	store, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, secret+"\n")
 
 	if err := runConfigCommand("set", "--key", "aws.secret_key", "--actor-id", testActor); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
@@ -83,16 +86,20 @@ func Test_config_set_list_clear(t *testing.T) {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 	if strings.Contains(out.String(), secret) || strings.Contains(out.String(), "env-value") ||
-		!strings.Contains(out.String(), `"env_shadowed": true`) || !strings.Contains(out.String(), testActor) {
+		!strings.Contains(out.String(), testActor) {
 		t.Errorf("Wrong match. list output: %s", out.String())
+	}
+	if strings.Contains(out.String(), `"env_shadowed": true`) || !strings.Contains(out.String(), `"env_shadowed": false`) ||
+		strings.Contains(out.String(), "env_name") {
+		t.Errorf("Wrong match. expect: env_shadowed false and no env_name, list output: %s", out.String())
 	}
 
 	out.Reset()
 	if err := runConfigCommand("clear", "--key", "aws.secret_key", "--actor-id", testActor); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if !strings.Contains(out.String(), `"source": "env"`) {
-		t.Errorf("Wrong match. clear output: %s", out.String())
+	if !strings.Contains(out.String(), `"source": "none"`) || strings.Contains(out.String(), `"source": "env"`) {
+		t.Errorf("Wrong match. expect: source none after the clear, got: %s", out.String())
 	}
 }
 
@@ -230,7 +237,8 @@ func Test_initConfigHandler(t *testing.T) {
 // root PersistentPreRunE only binds the flags and loads the configuration, and the commands open the
 // database through openConfigHandler (replaced here by the harness).
 func Test_config_throughTheRootCommand(t *testing.T) {
-	_, out := useConfigHarness(t, &config.Config{AWSAccessKey: "env-access"}, "")
+	t.Setenv("AWS_ACCESS_KEY", "env-access")
+	_, out := useConfigHarness(t, &config.Config{}, "")
 
 	root := initCommand()
 	root.SetArgs([]string{"config", "list"})
@@ -243,7 +251,7 @@ func Test_config_throughTheRootCommand(t *testing.T) {
 	}
 
 	if !strings.Contains(out.String(), `"key": "aws.access_key"`) || !strings.Contains(out.String(), `"key": "aws.secret_key"`) ||
-		!strings.Contains(out.String(), `"source": "env"`) || strings.Contains(out.String(), "env-access") {
+		!strings.Contains(out.String(), `"source": "none"`) || strings.Contains(out.String(), `"source": "env"`) || strings.Contains(out.String(), "env-access") {
 		t.Errorf("Wrong match. list output: %s", out.String())
 	}
 }

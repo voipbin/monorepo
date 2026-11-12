@@ -39,8 +39,12 @@ Third-party integrations
 ---------------------------
 
 Voice AI, transcription, TTS, phone number provisioning, and email/SMS
-providers are configured through their own keys in ``.env``. See the
-Provider configuration section for the full list of variables, which
+providers are configured through their own keys. Most are variables in
+``.env``; the provider keys of ``ai-manager``, ``email-manager``,
+``message-manager``, ``transcribe-manager`` and ``tts-manager`` are
+stored settings that are set with the ``config set`` command of the
+service or the Service Config API, and are not read from ``.env``. See
+the Provider configuration section for the full list of keys, which
 service to restart after setting each, and the AI-provider-specific
 details (shared credentials, multi-service consumers). Until a
 provider's keys are set, the corresponding flow actions return a

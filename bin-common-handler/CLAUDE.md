@@ -32,7 +32,7 @@ Shared Go library used by every `bin-*-manager` service in the monorepo. Provide
 | `pkg/databasehandler` | SQL helpers: `PrepareFields`, `GetDBFields`, `ScanRow` |
 | `pkg/migrationhandler` | Startup schema migrations for services that own their tables: `Run`, `Migrator`, `NewMigrateCommand` (recovery command) and `migrationcheck.Check` (structure check of the migration files). Public API is frozen: additions only; a behavior change needs the two engine run of `scripts/verify-service-migrations.sh` (see [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md)) |
 | `pkg/secretcrypto` | AES-256-GCM envelope for stored secrets: versioned master key list, no associated data, adapters for the older ciphertext layouts. Errors never hold a key or a plaintext |
-| `pkg/confighandler` | Typed, platform-wide settings stored in a per-service `<svc>_configs` table: registry, resolver (db, then env, then default), writers with history, `Secret` that masks itself. First adopter: bin-email-manager |
+| `pkg/confighandler` | Typed, platform-wide settings stored in a per-service `<svc>_configs` table: registry, resolver (db, then env, then default), writers with history, `Secret` that masks itself. First adopter: bin-email-manager. The five services that use it (ai, email, message, transcribe, tts) declare no environment name for their keys and pass no environment lookup, so they resolve a key from the database only; the environment step stays in the library |
 | `pkg/utilhandler` | UUID, hashing, timestamp, email validation, URL utilities |
 
 ## Key rules
