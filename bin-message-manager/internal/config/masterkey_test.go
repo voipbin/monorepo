@@ -1,6 +1,9 @@
 package config
 
 import (
+	"fmt"
+	"reflect"
+	"strings"
 	"sync"
 	"testing"
 
@@ -25,48 +28,50 @@ func resetLoadState(t *testing.T) {
 	})
 }
 
-func Test_EnvValue(t *testing.T) {
-	c := &Config{AuthtokenTelnyx: "telnyx-test", ConfigEncryptionKeys: "1:x"}
-
-	tests := []struct {
-		name string
-
-		envName string
-
-		expectValue string
-		expectOK    bool
-	}{
-		{name: "telnyx token", envName: "AUTHTOKEN_TELNYX", expectValue: "telnyx-test", expectOK: true},
-		{name: "empty value is not set", envName: "AUTHTOKEN_MESSAGEBIRD", expectValue: "", expectOK: false},
-		{name: "the master key list is not served to the registry", envName: "MESSAGE_CONFIG_ENCRYPTION_KEYS", expectOK: false},
-		{name: "unknown name", envName: "DATABASE_DSN", expectOK: false},
+// Test_Config_removedFields checks that the provider token fields and the EnvValue method are gone:
+// the tokens are read from the database only, never from the process configuration.
+func Test_Config_removedFields(t *testing.T) {
+	typ := reflect.TypeOf(Config{})
+	for _, name := range []string{"AuthtokenMessagebird", "AuthtokenTelnyx"} {
+		if _, ok := typ.FieldByName(name); ok {
+			t.Errorf("Wrong match. the field %s must not exist", name)
+		}
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			v, ok := c.EnvValue(tt.envName)
-			if v != tt.expectValue || ok != tt.expectOK {
-				t.Errorf("Wrong match. expect: %q %v, got: %q %v", tt.expectValue, tt.expectOK, v, ok)
-			}
-		})
+	if _, ok := reflect.TypeOf(&Config{}).MethodByName("EnvValue"); ok {
+		t.Errorf("Wrong match. the method EnvValue must not exist")
 	}
 }
 
-// Test_EnvValue_flag checks that the registry sees the value that the direct read saw: a command
-// line flag counts as well as the environment variable.
-func Test_EnvValue_flag(t *testing.T) {
+// Test_legacyProviderVariablesAreIgnored checks that a deployment that still exports the old
+// provider variables starts normally: the load succeeds, no flag exists for them, and the master
+// key and the other fields are not affected.
+func Test_legacyProviderVariablesAreIgnored(t *testing.T) {
 	resetLoadState(t)
+
+	t.Setenv("AUTHTOKEN_MESSAGEBIRD", "legacy-fake-mb")
+	t.Setenv("AUTHTOKEN_TELNYX", "legacy-fake-tn")
+	t.Setenv("MESSAGE_CONFIG_ENCRYPTION_KEYS", "1:fake-master")
+	t.Setenv("DATABASE_DSN", "fake-dsn")
+	t.Setenv("REDIS_DATABASE", "3")
 
 	cmd := &cobra.Command{}
 	if err := Bootstrap(cmd); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if err := cmd.PersistentFlags().Set("authtoken_telnyx", "from-flag"); err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
 	LoadGlobalConfig()
 
-	if v, ok := Get().EnvValue("AUTHTOKEN_TELNYX"); !ok || v != "from-flag" {
-		t.Errorf("Wrong match. expect: the flag value, got: %q %v", v, ok)
+	cfg := Get()
+	if cfg.ConfigEncryptionKeys != "1:fake-master" || cfg.DatabaseDSN != "fake-dsn" || cfg.RedisDatabase != 3 {
+		t.Errorf("Wrong match. the other fields are affected: %+v", cfg)
+	}
+	for _, name := range []string{"authtoken_messagebird", "authtoken_telnyx"} {
+		if cmd.PersistentFlags().Lookup(name) != nil {
+			t.Errorf("Wrong match. a flag %q exists", name)
+		}
+	}
+	// none of the loaded values is a legacy value
+	if s := fmt.Sprintf("%+v", *cfg); strings.Contains(s, "legacy-fake") {
+		t.Errorf("Wrong match. a legacy value reached the config: %s", s)
 	}
 }
 

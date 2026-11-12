@@ -1,5 +1,5 @@
 // Package messageconfig wires the stored configuration of bin-message-manager: the master key,
-// the registry, the environment lookup and the suppliers that hand a provider token to the
+// the registry and the suppliers that hand a provider token to the
 // request layer at the time of use.
 package messageconfig
 
@@ -32,8 +32,8 @@ const (
 )
 
 // ErrKeyUnavailable is returned when a token could not be read: a database read error, a stored
-// secret that can not be decrypted, or a read that ran out of time. It is never replaced by the
-// value of the environment. A token that is simply not configured is not an error (an empty
+// secret that can not be decrypted, or a read that ran out of time. It is never replaced by an
+// empty token. A token that is simply not configured is not an error (an empty
 // token, as before the configs existed). The error holds no key text.
 var ErrKeyUnavailable = errors.New("the provider token could not be read")
 
@@ -45,7 +45,7 @@ type TokenFunc = func(ctx context.Context) (string, error)
 //
 // An unparsable master key list never stops the service: the error is logged (without any key
 // text) and the handler works without a master key. Secrets can not be written then, and a stored
-// secret is reported as undecryptable, but the values of the environment keep working.
+// secret is reported as undecryptable.
 // The only error is an invalid registry, which is a programming error.
 func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Option) (confighandler.Handler, error) {
 	reg, err := configkeys.NewRegistry()
@@ -59,7 +59,7 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 		crypto, _ = secretcrypto.New("", secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
 	}
 
-	return confighandler.NewHandler(reg, store, crypto, cfg.EnvValue, opts...), nil
+	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
 }
 
 // MessagebirdToken returns the supplier of the MessageBird token.
@@ -74,12 +74,12 @@ func TelnyxToken(h confighandler.Handler) TokenFunc {
 }
 
 // token returns the function that reads one token on every call and keeps nothing, so a changed
-// token is used by the next call on every replica. Resolution order: the stored value, then the
-// environment, then empty.
+// token is used by the next call on every replica. The value is the stored one, or empty
+// when the key has no row.
 //
 // A read error (including a stored secret that can not be decrypted and a read that ran out of
-// time) is returned as ErrKeyUnavailable and is never turned into the environment value or into
-// an empty token.
+// time) is returned as ErrKeyUnavailable and is never turned into an
+// empty token.
 func token(h confighandler.Handler, key string) TokenFunc {
 	return func(ctx context.Context) (string, error) {
 		cctx, cancel := context.WithTimeout(ctx, readTimeout)
@@ -94,9 +94,11 @@ func token(h confighandler.Handler, key string) TokenFunc {
 	}
 }
 
-// LogSources logs, once, where each key comes from (key name and source only, never a value). A
-// key that is not configured is an info line. A read error is logged as a warning: the service
-// starts anyway.
+// LogSources logs, once, where each key comes from (key name and source only, never a value). The
+// tokens are stored in the database only. A Telnyx token that is not configured is a warning,
+// because Telnyx is the first provider of every send; a MessageBird token that is not configured is
+// an info line, because MessageBird only serves the targets that Telnyx refused. A read error is
+// logged as a warning: the service starts anyway.
 func LogSources(ctx context.Context, h confighandler.Handler) {
 	log := logrus.WithField("func", "LogSources")
 
@@ -110,13 +112,19 @@ func LogSources(ctx context.Context, h confighandler.Handler) {
 	}
 
 	for _, r := range list {
-		entry := log.WithFields(logrus.Fields{"key": r.Key, "source": r.Source, "env_shadowed": r.EnvShadowed})
+		entry := log.WithFields(logrus.Fields{"key": r.Key, "source": r.Source})
 
 		switch r.Source {
+		case confighandler.SourceNone:
+			if r.Key == configkeys.KeyTelnyxAuthToken {
+				entry.Warnf("The config key is not configured; it is read from the database only. key: %s", r.Key)
+			} else {
+				entry.Infof("The config key is not configured; it is read from the database only. key: %s", r.Key)
+			}
 		case confighandler.SourceDBUndecryptable, confighandler.SourceDBInvalid:
 			entry.Errorf("The stored config value can not be used. key: %s, source: %s", r.Key, r.Source)
 		default:
-			entry.Infof("Config key. key: %s, source: %s, env_shadowed: %v", r.Key, r.Source, r.EnvShadowed)
+			entry.Infof("Config key. key: %s, source: %s", r.Key, r.Source)
 		}
 	}
 }

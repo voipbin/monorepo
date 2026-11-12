@@ -17,7 +17,7 @@ func Test_NewRegistry(t *testing.T) {
 	}
 }
 
-// Test_Keys_golden pins the kind, the type and the environment name of every key. A key name is
+// Test_Keys_golden pins the kind and the type of every key. A key name is
 // never moved to another kind: rows and history that exist under the old meaning would be
 // read as the new one. Declare a new key name instead, and update this table in the same change.
 func Test_Keys_golden(t *testing.T) {
@@ -25,12 +25,11 @@ func Test_Keys_golden(t *testing.T) {
 		name   string
 		kind   confighandler.Kind
 		typ    confighandler.Type
-		env    string
 		maxLen int
 	}{
-		{"aws.access_key", confighandler.KindSecret, confighandler.TypeString, "AWS_ACCESS_KEY", 512},
-		{"aws.secret_key", confighandler.KindSecret, confighandler.TypeString, "AWS_SECRET_KEY", 512},
-		{"elevenlabs.api_key", confighandler.KindSecret, confighandler.TypeString, "ELEVENLABS_API_KEY", 512},
+		{"aws.access_key", confighandler.KindSecret, confighandler.TypeString, 512},
+		{"aws.secret_key", confighandler.KindSecret, confighandler.TypeString, 512},
+		{"elevenlabs.api_key", confighandler.KindSecret, confighandler.TypeString, 512},
 	}
 
 	keys := Keys()
@@ -39,7 +38,7 @@ func Test_Keys_golden(t *testing.T) {
 	}
 	for i, e := range expect {
 		k := keys[i]
-		if k.Name != e.name || k.Kind != e.kind || k.Type != e.typ || k.Env != e.env || k.MaxLen != e.maxLen {
+		if k.Name != e.name || k.Kind != e.kind || k.Type != e.typ || k.MaxLen != e.maxLen {
 			t.Errorf("Wrong match. key %d expect: %+v, got: %+v", i, e, k)
 		}
 		if k.Default != nil {
@@ -63,5 +62,15 @@ func Test_descriptions(t *testing.T) {
 func Test_tableNames(t *testing.T) {
 	if Table != "tts_configs" || HistoryTable != "tts_config_histories" {
 		t.Errorf("Wrong match. the table names are part of the stored secret contract: %s %s", Table, HistoryTable)
+	}
+}
+
+// No key has an environment name: the keys are read from the database only, so an old
+// environment variable can never supply a value.
+func Test_Keys_noEnvName(t *testing.T) {
+	for _, k := range Keys() {
+		if k.Env != "" {
+			t.Errorf("Wrong match. %s must have an empty Env, got: %q", k.Name, k.Env)
+		}
 	}
 }

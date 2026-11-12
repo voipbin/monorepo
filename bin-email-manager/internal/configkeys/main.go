@@ -1,6 +1,6 @@
 // Package configkeys declares the configuration keys of bin-email-manager.
 //
-// The three keys are the provider credentials that were read from the environment only. They are
+// The three keys are the provider credentials. They are stored in the database only. They are
 // independent keys on purpose: the Mailgun API key (sending) and the Mailgun webhook signing key
 // (receiving) have different purposes and are rotated separately.
 package configkeys
@@ -26,13 +26,13 @@ const (
 // maxSecretLen is the longest accepted provider credential in bytes.
 const maxSecretLen = 512
 
-// Keys returns the declarations. The environment names are the variables that the service read
-// before the configs existed, so a database without rows behaves exactly as before.
+// Keys returns the declarations. The values are stored in the database only: a key has no
+// environment name, so a key without a row is not configured.
 func Keys() []confighandler.Key {
 	return []confighandler.Key{
-		{Name: KeySendgridAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "API key of the SendGrid account that sends email.", Env: "SENDGRID_API_KEY", MaxLen: maxSecretLen},
-		{Name: KeyMailgunAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "API key of the Mailgun account that sends email.", Env: "MAILGUN_API_KEY", MaxLen: maxSecretLen},
-		{Name: KeyMailgunWebhookSigningKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "Key that verifies the signature of the Mailgun delivery webhooks.", Env: "MAILGUN_WEBHOOK_SIGNING_KEY", MaxLen: maxSecretLen},
+		{Name: KeySendgridAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "API key of the SendGrid account that sends email.", MaxLen: maxSecretLen},
+		{Name: KeyMailgunAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "API key of the Mailgun account that sends email.", MaxLen: maxSecretLen},
+		{Name: KeyMailgunWebhookSigningKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "Key that verifies the signature of the Mailgun delivery webhooks.", MaxLen: maxSecretLen},
 	}
 }
 

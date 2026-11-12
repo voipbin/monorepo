@@ -69,7 +69,7 @@ func initMessageHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (message
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
-	// the same token rule as the daemon: the stored token, else the environment token
+	// the same token rule as the daemon: the stored token only
 	configHandler, err := messageconfig.New(config.Get(), dbhandler.NewConfigStore(sqlDB))
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the config handler")

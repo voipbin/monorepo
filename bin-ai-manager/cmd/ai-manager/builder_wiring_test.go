@@ -6,22 +6,32 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid"
+
 	"monorepo/bin-common-handler/pkg/confighandler/storetest"
 
 	"monorepo/bin-ai-manager/internal/aiconfig"
 	"monorepo/bin-ai-manager/internal/config"
+	"monorepo/bin-ai-manager/internal/configkeys"
 )
 
 const geminiURL = "https://generativelanguage.googleapis.com/v1beta/openai/"
 
-// testKeyFunc builds the key supplier of the analysis engine the way run() does, on a store with
-// no rows, so the value comes from the environment fields of cfg.
-func testKeyFunc(t *testing.T, cfg *config.Config) aiconfig.KeyFunc {
+// testKeyFunc builds the key supplier of the analysis engine the way run() does, on a store that
+// holds the given rows (key name to stored value). A key without a row is not configured.
+func testKeyFunc(t *testing.T, cfg *config.Config, stored map[string]string) aiconfig.KeyFunc {
 	t.Helper()
 
-	h, err := aiconfig.New(cfg, storetest.NewMemory())
+	c := *cfg
+	c.ConfigEncryptionKeys = testMasterKeyList()
+	h, err := aiconfig.New(&c, storetest.NewMemory())
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	for k, v := range stored {
+		if _, errSet := h.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), k, v); errSet != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", errSet)
+		}
 	}
 
 	return newPlatformKeys(h, cfg).analysis
@@ -31,18 +41,19 @@ func Test_builderSettings_keyConfigured(t *testing.T) {
 	tests := []struct {
 		name string
 		cfg  config.Config
+		rows map[string]string
 		want bool
 	}{
-		{"gemini url with a google key", config.Config{AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g"}, true},
-		{"gemini url with only an openai key", config.Config{AnalysisEngineBaseURL: geminiURL, EngineKeyChatGPT: "o"}, false},
-		{"gemini url with no key", config.Config{AnalysisEngineBaseURL: geminiURL}, false},
-		{"openai url with an openai key", config.Config{AnalysisEngineBaseURL: "https://api.openai.com/v1", EngineKeyChatGPT: "o"}, true},
-		{"openai url with only a google key", config.Config{AnalysisEngineBaseURL: "https://api.openai.com/v1", GoogleAPIKey: "g"}, false},
-		{"openai url with no key", config.Config{AnalysisEngineBaseURL: "https://api.openai.com/v1"}, false},
+		{"gemini url with a stored gemini key", config.Config{AnalysisEngineBaseURL: geminiURL}, map[string]string{configkeys.KeyGeminiAPIKey: "g"}, true},
+		{"gemini url with only a stored openai key", config.Config{AnalysisEngineBaseURL: geminiURL}, map[string]string{configkeys.KeyOpenAICompatAPIKey: "o"}, false},
+		{"gemini url with no row", config.Config{AnalysisEngineBaseURL: geminiURL}, nil, false},
+		{"openai url with a stored openai key", config.Config{AnalysisEngineBaseURL: "https://api.openai.com/v1"}, map[string]string{configkeys.KeyOpenAICompatAPIKey: "o"}, true},
+		{"openai url with only a stored gemini key", config.Config{AnalysisEngineBaseURL: "https://api.openai.com/v1"}, map[string]string{configkeys.KeyGeminiAPIKey: "g"}, false},
+		{"openai url with no row", config.Config{AnalysisEngineBaseURL: "https://api.openai.com/v1"}, nil, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, opts := builderSettings(&tt.cfg, testKeyFunc(t, &tt.cfg))
+			_, opts := builderSettings(&tt.cfg, testKeyFunc(t, &tt.cfg, tt.rows))
 			got, err := opts.KeyConfigured(context.Background())
 			if err != nil || got != tt.want {
 				t.Errorf("KeyConfigured: got %v %v, want %v", got, err, tt.want)
@@ -89,7 +100,6 @@ func Test_builderSettings_keyConfiguredReadError(t *testing.T) {
 func Test_builderSettings_mapsEverySetting(t *testing.T) {
 	cfg := config.Config{
 		AnalysisEngineBaseURL:      geminiURL,
-		GoogleAPIKey:               "g",
 		AIBuilderModel:             "model-x",
 		AIBuilderReasoningEffort:   "low",
 		AIBuilderMaxOutputTokens:   1111,
@@ -97,7 +107,7 @@ func Test_builderSettings_mapsEverySetting(t *testing.T) {
 		AIBuilderMaxConcurrent:     33,
 		AIBuilderLLMTimeoutSeconds: 44,
 	}
-	bc, opts := builderSettings(&cfg, testKeyFunc(t, &cfg))
+	bc, opts := builderSettings(&cfg, testKeyFunc(t, &cfg, map[string]string{configkeys.KeyGeminiAPIKey: "g"}))
 
 	if bc.Model != "model-x" || bc.ReasoningEffort != "low" || bc.MaxOutputTokens != 1111 {
 		t.Errorf("config: %+v", bc)

@@ -14,6 +14,7 @@ import (
 
 	"monorepo/bin-common-handler/pkg/confighandler"
 	"monorepo/bin-common-handler/pkg/confighandler/storetest"
+	"monorepo/bin-common-handler/pkg/secretcrypto"
 
 	"monorepo/bin-message-manager/internal/config"
 	"monorepo/bin-message-manager/internal/configkeys"
@@ -49,34 +50,29 @@ func setSecret(t *testing.T, h confighandler.Handler, key, value string) {
 	}
 }
 
-// Test_tokens_sources checks the three sources of each token: the database, the environment and
-// none, and that the database shadows the environment. The two tokens are independent.
+// Test_tokens_sources checks the two sources of each token: the database and none. The two tokens
+// are independent.
 func Test_tokens_sources(t *testing.T) {
 	tests := []struct {
 		name string
 
-		cfg      config.Config
 		storeKey []string // keys stored in the database (value "stored-<key>")
 
 		expectMessagebird string
 		expectTelnyx      string
 	}{
 		{name: "none"},
-		{name: "env messagebird only", cfg: config.Config{AuthtokenMessagebird: "env-mb"}, expectMessagebird: "env-mb"},
-		{name: "env telnyx only", cfg: config.Config{AuthtokenTelnyx: "env-tn"}, expectTelnyx: "env-tn"},
-		{name: "env both", cfg: config.Config{AuthtokenMessagebird: "env-mb", AuthtokenTelnyx: "env-tn"}, expectMessagebird: "env-mb", expectTelnyx: "env-tn"},
 		{name: "db telnyx only", storeKey: []string{configkeys.KeyTelnyxAuthToken}, expectTelnyx: "stored-" + configkeys.KeyTelnyxAuthToken},
 		{name: "db messagebird only", storeKey: []string{configkeys.KeyMessagebirdAuthToken}, expectMessagebird: "stored-" + configkeys.KeyMessagebirdAuthToken},
 		{
-			name: "db shadows env for the stored key only", cfg: config.Config{AuthtokenMessagebird: "env-mb", AuthtokenTelnyx: "env-tn"}, storeKey: []string{configkeys.KeyTelnyxAuthToken},
-			expectMessagebird: "env-mb", expectTelnyx: "stored-" + configkeys.KeyTelnyxAuthToken,
+			name: "db both", storeKey: []string{configkeys.KeyMessagebirdAuthToken, configkeys.KeyTelnyxAuthToken},
+			expectMessagebird: "stored-" + configkeys.KeyMessagebirdAuthToken, expectTelnyx: "stored-" + configkeys.KeyTelnyxAuthToken,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cfg := tt.cfg
-			cfg.ConfigEncryptionKeys = testKeyList(1)
-			h := newTestHandler(t, &cfg, storetest.NewMemory())
+			cfg := &config.Config{ConfigEncryptionKeys: testKeyList(1)}
+			h := newTestHandler(t, cfg, storetest.NewMemory())
 			for _, key := range tt.storeKey {
 				setSecret(t, h, key, "stored-"+key)
 			}
@@ -93,9 +89,97 @@ func Test_tokens_sources(t *testing.T) {
 	}
 }
 
+// Test_legacyVariablesAreNotRead checks that the old provider variables, even when exported, do not
+// make a token: with no row the source is none and the supplier gives an empty value and no error.
+func Test_legacyVariablesAreNotRead(t *testing.T) {
+	t.Setenv("AUTHTOKEN_MESSAGEBIRD", "legacy-fake-mb")
+	t.Setenv("AUTHTOKEN_TELNYX", "legacy-fake-tn")
+	t.Setenv("TELNYX_TOKEN", "legacy-fake-number-tn")
+
+	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
+
+	list, err := h.Describe(context.Background())
+	if err != nil || len(list) != 2 {
+		t.Fatalf("Wrong match. expect: 2 keys, got: %d %v", len(list), err)
+	}
+	for _, r := range list {
+		if r.Source != confighandler.SourceNone || r.EnvShadowed {
+			t.Errorf("Wrong match. %s expect: source none, got: %s shadowed: %v", r.Key, r.Source, r.EnvShadowed)
+		}
+	}
+
+	if v, err := MessagebirdToken(h)(context.Background()); err != nil || v != "" {
+		t.Errorf("Wrong match. messagebird expect: empty, got: %q %v", v, err)
+	}
+	if v, err := TelnyxToken(h)(context.Background()); err != nil || v != "" {
+		t.Errorf("Wrong match. telnyx expect: empty, got: %q %v", v, err)
+	}
+}
+
+// Test_registryWithFakeLookup checks the second safeguard: even when a lookup that serves the old
+// variable names is given to the library directly, the registry of the service (no Key.Env)
+// resolves none, and a stored row wins over the lookup.
+func Test_registryWithFakeLookup(t *testing.T) {
+	lookup := func(name string) (string, bool) {
+		switch name {
+		case "AUTHTOKEN_MESSAGEBIRD", "AUTHTOKEN_TELNYX", "TELNYX_TOKEN":
+			return "legacy-fake-" + name, true
+		}
+		return "", false
+	}
+	crypto, err := secretcrypto.New(testKeyList(1), secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	t.Run("registry of the service gives none", func(t *testing.T) {
+		reg, err := configkeys.NewRegistry()
+		if err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
+		h := confighandler.NewHandler(reg, storetest.NewMemory(), crypto, lookup)
+
+		for _, key := range []string{configkeys.KeyMessagebirdAuthToken, configkeys.KeyTelnyxAuthToken} {
+			secret, res, err := h.Secret(context.Background(), key)
+			if err != nil || res.Source != confighandler.SourceNone || secret.Reveal() != "" {
+				t.Errorf("Wrong match. %s expect: none and empty, got: %s %q %v", key, res.Source, secret.Reveal(), err)
+			}
+		}
+	})
+
+	t.Run("positive control: a registry with the names would read the lookup", func(t *testing.T) {
+		keys := configkeys.Keys()
+		keys[0].Env = "AUTHTOKEN_MESSAGEBIRD"
+		reg, err := confighandler.NewRegistry(keys)
+		if err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
+		h := confighandler.NewHandler(reg, storetest.NewMemory(), crypto, lookup)
+
+		_, res, err := h.Secret(context.Background(), keys[0].Name)
+		if err != nil || res.Source != confighandler.SourceEnv {
+			t.Errorf("Wrong match. expect: source env, got: %s %v", res.Source, err)
+		}
+	})
+
+	t.Run("a stored row wins over the lookup", func(t *testing.T) {
+		reg, err := configkeys.NewRegistry()
+		if err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
+		h := confighandler.NewHandler(reg, storetest.NewMemory(), crypto, lookup)
+		setSecret(t, h, configkeys.KeyTelnyxAuthToken, "stored-tn")
+
+		secret, res, err := h.Secret(context.Background(), configkeys.KeyTelnyxAuthToken)
+		if err != nil || res.Source != confighandler.SourceDB || secret.Reveal() != "stored-tn" {
+			t.Errorf("Wrong match. expect: the stored value, got: %s %q %v", res.Source, secret.Reveal(), err)
+		}
+	})
+}
+
 // The suppliers keep nothing: a token that was changed (or cleared) is the next call's result.
 func Test_tokens_nextCallSeesTheChange(t *testing.T) {
-	cfg := &config.Config{AuthtokenTelnyx: "env-tn", ConfigEncryptionKeys: testKeyList(1)}
+	cfg := &config.Config{ConfigEncryptionKeys: testKeyList(1)}
 	h := newTestHandler(t, cfg, storetest.NewMemory())
 	supplier := TelnyxToken(h)
 	ctx := context.Background()
@@ -108,8 +192,8 @@ func Test_tokens_nextCallSeesTheChange(t *testing.T) {
 		return v
 	}
 
-	if got := get(); got != "env-tn" {
-		t.Fatalf("Wrong match. expect: the environment value, got: %q", got)
+	if got := get(); got != "" {
+		t.Fatalf("Wrong match. expect: empty before any write, got: %q", got)
 	}
 	setSecret(t, h, configkeys.KeyTelnyxAuthToken, "token-1")
 	if got := get(); got != "token-1" {
@@ -119,42 +203,41 @@ func Test_tokens_nextCallSeesTheChange(t *testing.T) {
 	if got := get(); got != "token-2" {
 		t.Errorf("Wrong match. expect: token-2 right after the rotation, got: %q", got)
 	}
-	if _, err := h.Clear(ctx, uuid.Must(uuid.NewV4()), configkeys.KeyTelnyxAuthToken); err != nil {
+	res, err := h.Clear(ctx, uuid.Must(uuid.NewV4()), configkeys.KeyTelnyxAuthToken)
+	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if got := get(); got != "env-tn" {
-		t.Errorf("Wrong match. expect: the environment value again after clear, got: %q", got)
+	if res.Source != confighandler.SourceNone {
+		t.Errorf("Wrong match. expect: source none after clear, got: %s", res.Source)
+	}
+	if got := get(); got != "" {
+		t.Errorf("Wrong match. expect: empty after clear, got: %q", got)
 	}
 }
 
-// The Telnyx token of this service is its own setting: only AUTHTOKEN_TELNYX is read, and the
-// variable of the number service is not served to the registry.
+// The Telnyx token of this service is its own setting: the variable of the number service is not
+// consulted, and no key declares an environment name.
 func Test_telnyxIsIndependentOfTheNumberService(t *testing.T) {
 	for _, k := range configkeys.Keys() {
-		if k.Env == "TELNYX_TOKEN" {
-			t.Errorf("Wrong match. %s reads the variable of the number service", k.Name)
+		if k.Env != "" {
+			t.Errorf("Wrong match. %s declares the environment name %q", k.Name, k.Env)
 		}
 	}
 
-	// the message token is set, so a lookup that wrongly served TELNYX_TOKEN would show it
-	cfg := &config.Config{ConfigEncryptionKeys: testKeyList(1), AuthtokenTelnyx: "message-token"}
-	if v, ok := cfg.EnvValue("TELNYX_TOKEN"); ok || v != "" {
-		t.Errorf("Wrong match. TELNYX_TOKEN must not be served, got: %q %v", v, ok)
-	}
-	if v, ok := cfg.EnvValue("AUTHTOKEN_TELNYX"); !ok || v != "message-token" {
-		t.Errorf("Wrong match. expect: the message token, got: %q %v", v, ok)
-	}
+	t.Setenv("TELNYX_TOKEN", "number-service-token")
 
-	h := newTestHandler(t, cfg, storetest.NewMemory())
-	if v, err := TelnyxToken(h)(context.Background()); err != nil || v != "message-token" {
-		t.Errorf("Wrong match. expect: the message token, got: %q %v", v, err)
+	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
+	if v, err := TelnyxToken(h)(context.Background()); err != nil || v != "" {
+		t.Errorf("Wrong match. expect: empty, got: %q %v", v, err)
 	}
 }
 
 // A read error, an undecryptable secret and a stalled database are errors, never an empty token
 // and never the environment value.
 func Test_tokens_readErrors(t *testing.T) {
-	envCfg := &config.Config{AuthtokenMessagebird: "e-mb", AuthtokenTelnyx: "e-tn"}
+	envCfg := &config.Config{}
+	t.Setenv("AUTHTOKEN_MESSAGEBIRD", "legacy-fake-mb")
+	t.Setenv("AUTHTOKEN_TELNYX", "legacy-fake-tn")
 
 	t.Run("read error", func(t *testing.T) {
 		store := storetest.NewMemory()
@@ -181,9 +264,9 @@ func Test_tokens_readErrors(t *testing.T) {
 			t.Errorf("Wrong match. expect: ErrKeyUnavailable and no environment value, got: %q %v", v, err)
 		}
 
-		// the other key has no row, so it is not affected
-		if v, err := MessagebirdToken(h)(context.Background()); err != nil || v != "e-mb" {
-			t.Errorf("Wrong match. expect: the environment value of the other key, got: %q %v", v, err)
+		// the other key has no row, so it is not affected: none, with no error
+		if v, err := MessagebirdToken(h)(context.Background()); err != nil || v != "" {
+			t.Errorf("Wrong match. expect: empty for the key without a row, got: %q %v", v, err)
 		}
 	})
 
@@ -193,7 +276,7 @@ func Test_tokens_readErrors(t *testing.T) {
 		setSecret(t, writer, configkeys.KeyMessagebirdAuthToken, "db-mb")
 
 		// a master key list of another version only: the stored row names version 1
-		h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(2), AuthtokenMessagebird: "e-mb"}, store)
+		h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(2)}, store)
 		v, err := MessagebirdToken(h)(context.Background())
 		if !errors.Is(err, ErrKeyUnavailable) || v != "" {
 			t.Errorf("Wrong match. expect: ErrKeyUnavailable, got: %q %v", v, err)
@@ -242,7 +325,9 @@ func Test_tokens_errorHoldsNoKey(t *testing.T) {
 	store.GetErr = errors.New("database is down")
 
 	logs := logtest.New(t)
-	h := newTestHandler(t, &config.Config{AuthtokenMessagebird: secret, AuthtokenTelnyx: secret}, store)
+	t.Setenv("AUTHTOKEN_MESSAGEBIRD", secret)
+	t.Setenv("AUTHTOKEN_TELNYX", secret)
+	h := newTestHandler(t, &config.Config{}, store)
 	_, err := TelnyxToken(h)(context.Background())
 
 	if err == nil || strings.Contains(err.Error(), secret) || strings.Contains(logs.Dump(), secret) {
@@ -256,7 +341,7 @@ func Test_New_badMasterKeyIsLoggedWithoutTheText(t *testing.T) {
 	logrus.SetOutput(&buf)
 	defer logrus.SetOutput(logrus.StandardLogger().Out)
 
-	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: "7:unlikely-to-appear-in-logs", AuthtokenTelnyx: "e-tn"}, storetest.NewMemory())
+	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: "7:unlikely-to-appear-in-logs"}, storetest.NewMemory())
 
 	if _, err := h.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), configkeys.KeyTelnyxAuthToken, "x"); !errors.Is(err, confighandler.ErrKeyNotConfigured) {
 		t.Errorf("Wrong match. expect: key not configured, got: %v", err)
@@ -268,24 +353,24 @@ func Test_New_badMasterKeyIsLoggedWithoutTheText(t *testing.T) {
 		t.Errorf("Wrong match. the key list text was logged")
 	}
 
-	// the environment token still works
-	if v, err := TelnyxToken(h)(context.Background()); err != nil || v != "e-tn" {
-		t.Errorf("Wrong match. expect: the environment value, got: %q %v", v, err)
+	// a token without a row is not configured, with no error
+	if v, err := TelnyxToken(h)(context.Background()); err != nil || v != "" {
+		t.Errorf("Wrong match. expect: empty, got: %q %v", v, err)
 	}
 }
 
-// Without a master key list the tokens are exactly the environment values (a deployment that did
-// not add the variable), a secret can not be stored, and an empty list is not reported.
-func Test_New_noMasterKeyBehavesAsBefore(t *testing.T) {
+// Without a master key list the tokens are empty (nothing is stored), a secret can not be stored,
+// and an empty list is not reported.
+func Test_New_noMasterKey(t *testing.T) {
 	logs := logtest.New(t)
 
-	h := newTestHandler(t, &config.Config{AuthtokenMessagebird: "env-mb", AuthtokenTelnyx: "env-tn"}, storetest.NewMemory())
+	h := newTestHandler(t, &config.Config{}, storetest.NewMemory())
 
-	if v, err := MessagebirdToken(h)(context.Background()); err != nil || v != "env-mb" {
-		t.Errorf("Wrong match. expect: the environment value, got: %q %v", v, err)
+	if v, err := MessagebirdToken(h)(context.Background()); err != nil || v != "" {
+		t.Errorf("Wrong match. expect: empty, got: %q %v", v, err)
 	}
-	if v, err := TelnyxToken(h)(context.Background()); err != nil || v != "env-tn" {
-		t.Errorf("Wrong match. expect: the environment value, got: %q %v", v, err)
+	if v, err := TelnyxToken(h)(context.Background()); err != nil || v != "" {
+		t.Errorf("Wrong match. expect: empty, got: %q %v", v, err)
 	}
 	if _, err := h.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), configkeys.KeyTelnyxAuthToken, "x"); !errors.Is(err, confighandler.ErrKeyNotConfigured) {
 		t.Errorf("Wrong match. expect: key not configured, got: %v", err)
@@ -318,28 +403,87 @@ func Test_history_holdsNoSecret(t *testing.T) {
 	}
 }
 
-// LogSources: an unset key is an info line, an unusable stored value is an error, and no line
-// holds a value.
-func Test_LogSources(t *testing.T) {
-	store := storetest.NewMemory()
-	writer := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
-	setSecret(t, writer, configkeys.KeyTelnyxAuthToken, "stored-secret-text")
+// levelOf returns the level of the first captured entry whose message contains the text, or false.
+func levelOf(logs *logtest.Capture, text string) (logrus.Level, bool) {
+	for _, e := range logs.Entries() {
+		if strings.Contains(e.Message, text) {
+			return e.Level, true
+		}
+	}
 
-	logs := logtest.New(t)
-	LogSources(context.Background(), newTestHandler(t, &config.Config{}, store))
-
-	out := logs.Dump()
-	if !strings.Contains(out, "Config key. key: provider.messagebird.auth_token, source: none") {
-		t.Errorf("Wrong match. expect: an info line for the key that is not configured, got: %s", out)
-	}
-	if !strings.Contains(out, "The stored config value can not be used. key: provider.telnyx.auth_token") {
-		t.Errorf("Wrong match. expect: an error for the unusable stored value, got: %s", out)
-	}
-	if strings.Contains(out, "stored-secret-text") {
-		t.Errorf("Wrong match. a value was logged: %s", out)
-	}
+	return 0, false
 }
 
+// LogSources: with no row the Telnyx token is a warning and the MessageBird token is an info line,
+// a stored key is an info line, an unusable stored value is an error, no line has the
+// env_shadowed field, and no line holds a value.
+func Test_LogSources(t *testing.T) {
+	const notConfigured = "The config key is not configured; it is read from the database only. key: "
+
+	t.Run("no row", func(t *testing.T) {
+		t.Setenv("AUTHTOKEN_MESSAGEBIRD", "legacy-fake-mb")
+		t.Setenv("AUTHTOKEN_TELNYX", "legacy-fake-tn")
+
+		logs := logtest.New(t)
+		LogSources(context.Background(), newTestHandler(t, &config.Config{}, storetest.NewMemory()))
+
+		if lv, ok := levelOf(logs, notConfigured+configkeys.KeyTelnyxAuthToken); !ok || lv != logrus.WarnLevel {
+			t.Errorf("Wrong match. telnyx expect: warn, got: %v %v", lv, ok)
+		}
+		if lv, ok := levelOf(logs, notConfigured+configkeys.KeyMessagebirdAuthToken); !ok || lv != logrus.InfoLevel {
+			t.Errorf("Wrong match. messagebird expect: info, got: %v %v", lv, ok)
+		}
+		out := logs.Dump()
+		if strings.Contains(out, "legacy-fake") {
+			t.Errorf("Wrong match. a value was logged: %s", out)
+		}
+	})
+
+	t.Run("stored keys", func(t *testing.T) {
+		store := storetest.NewMemory()
+		writer := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
+		setSecret(t, writer, configkeys.KeyTelnyxAuthToken, "stored-secret-text")
+		setSecret(t, writer, configkeys.KeyMessagebirdAuthToken, "stored-secret-text-2")
+
+		logs := logtest.New(t)
+		LogSources(context.Background(), newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store))
+
+		for _, key := range []string{configkeys.KeyTelnyxAuthToken, configkeys.KeyMessagebirdAuthToken} {
+			if lv, ok := levelOf(logs, "Config key. key: "+key+", source: db"); !ok || lv != logrus.InfoLevel {
+				t.Errorf("Wrong match. %s expect: info, got: %v %v", key, lv, ok)
+			}
+		}
+		if logs.HasLevel(logrus.WarnLevel) || logs.HasLevel(logrus.ErrorLevel) {
+			t.Errorf("Wrong match. expect: no warning and no error, got: %s", logs.Dump())
+		}
+		out := logs.Dump()
+		if strings.Contains(out, "stored-secret-text") {
+			t.Errorf("Wrong match. a value was logged: %s", out)
+		}
+		if strings.Contains(out, "env_shadowed") {
+			t.Errorf("Wrong match. the env_shadowed field is logged: %s", out)
+		}
+	})
+
+	t.Run("unusable stored value", func(t *testing.T) {
+		store := storetest.NewMemory()
+		writer := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
+		setSecret(t, writer, configkeys.KeyTelnyxAuthToken, "stored-secret-text")
+
+		logs := logtest.New(t)
+		LogSources(context.Background(), newTestHandler(t, &config.Config{}, store))
+
+		if lv, ok := levelOf(logs, "The stored config value can not be used. key: "+configkeys.KeyTelnyxAuthToken); !ok || lv != logrus.ErrorLevel {
+			t.Errorf("Wrong match. expect: an error for the unusable stored value, got: %v %v", lv, ok)
+		}
+		out := logs.Dump()
+		if strings.Contains(out, "stored-secret-text") || strings.Contains(out, "env_shadowed") {
+			t.Errorf("Wrong match. a value or the env_shadowed field was logged: %s", out)
+		}
+	})
+}
+
+// A read error is a warning and LogSources returns normally.
 func Test_LogSources_readError(t *testing.T) {
 	store := storetest.NewMemory()
 	store.ListErr = errors.New("database is down")
@@ -347,7 +491,10 @@ func Test_LogSources_readError(t *testing.T) {
 	logs := logtest.New(t)
 	LogSources(context.Background(), newTestHandler(t, &config.Config{}, store))
 
-	if !logs.HasLevel(logrus.WarnLevel) {
-		t.Errorf("Wrong match. expect: a warning, got: %s", logs.Dump())
+	if lv, ok := levelOf(logs, "Could not read the config sources"); !ok || lv != logrus.WarnLevel {
+		t.Errorf("Wrong match. expect: a warning, got: %v %v, %s", lv, ok, logs.Dump())
+	}
+	if logs.Len() != 1 {
+		t.Errorf("Wrong match. expect: one line, got: %s", logs.Dump())
 	}
 }

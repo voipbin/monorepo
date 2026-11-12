@@ -15,32 +15,12 @@ var (
 	once         sync.Once
 )
 
-// Names of the environment variables that the config registry reads through EnvValue.
+// Names of the environment variables that the service reads without a flag.
 const (
-	envAWSAccessKey = "AWS_ACCESS_KEY"
-	envAWSSecretKey = "AWS_SECRET_KEY"
-
 	// EnvConfigEncryptionKeys is the environment variable of the master key list of the stored
 	// settings.
 	EnvConfigEncryptionKeys = "TRANSCRIBE_CONFIG_ENCRYPTION_KEYS"
 )
-
-// EnvValue returns the loaded value (flag or environment) of a variable name. It is the
-// environment lookup of the config registry, so the stored settings and the direct reads see the
-// same values. A name that is not loaded is "not set".
-func (c *Config) EnvValue(name string) (string, bool) {
-	var v string
-	switch name {
-	case envAWSAccessKey:
-		v = c.AWSAccessKey
-	case envAWSSecretKey:
-		v = c.AWSSecretKey
-	default:
-		return "", false
-	}
-
-	return v, v != ""
-}
 
 // Config holds process-wide configuration values loaded from command-line
 // flags and environment variables for the service.
@@ -52,15 +32,13 @@ type Config struct {
 	RedisAddress            string // RedisAddress is the address (including host and port) of the Redis server.
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
-	AWSAccessKey            string // AWSAccessKey is the AWS access key for AWS services.
-	AWSSecretKey            string // AWSSecretKey is the AWS secret key for AWS services.
 	PodIP                   string // PodIP is parsed from the POD_IP env var but currently unused - no code path binds a listener to it (kept for backward compat with the K8s Downward API wiring that was never carried over to Docker Compose; see komodo/docker-compose.yml's header comment).
 	StreamingListenPort     int    // StreamingListenPort is the TCP port on which the AudioSocket streaming listener binds (default: 8080).
 
 	// ConfigEncryptionKeys is the master key list of the stored settings
 	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
 	// command line flag. A value that can not be parsed does not stop the service: the stored
-	// secrets can not be used then and the environment keys keep working.
+	// secrets can not be used then (they are reported as undecryptable).
 	ConfigEncryptionKeys string
 }
 
@@ -86,8 +64,6 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
-	f.String("aws_access_key", "", "AWS access key")
-	f.String("aws_secret_key", "", "AWS secret key")
 	f.String("pod_ip", "", "Pod IP address for streaming listener")
 	f.Int("streaming_listen_port", 8080, "Streaming listener port")
 
@@ -99,8 +75,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
-		"aws_access_key":            "AWS_ACCESS_KEY",
-		"aws_secret_key":            "AWS_SECRET_KEY",
 		"pod_ip":                    "POD_IP",
 		"streaming_listen_port":     "STREAMING_LISTEN_PORT",
 	}
@@ -141,8 +115,6 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDatabase:           viper.GetInt("redis_database"),
-			AWSAccessKey:            viper.GetString("aws_access_key"),
-			AWSSecretKey:            viper.GetString("aws_secret_key"),
 			PodIP:                   viper.GetString("pod_ip"),
 			StreamingListenPort:     viper.GetInt("streaming_listen_port"),
 			ConfigEncryptionKeys:    viper.GetString("transcribe_config_encryption_keys"),

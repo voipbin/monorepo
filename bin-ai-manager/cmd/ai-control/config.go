@@ -68,7 +68,7 @@ func cmdConfig() *cobra.Command {
 and Gemini). These are platform keys. They are not the engine key of a customer AI ("ai create
 --engine-key"), which belongs to the customer and is stored on the AI.
 
-A stored value takes precedence over the environment variable of the same key. A change is
+The keys are stored in the database only; a key that is cleared is not configured. A change is
 used by the next call, with no restart. The daemon applies the table migration at its start; on a
 local database run "migrate up" first. The master key list is read from the environment
 (AI_CONFIG_ENCRYPTION_KEYS) and is never a flag. These commands need the database and the master
@@ -111,7 +111,7 @@ one line is refused.`,
 func cmdConfigClear() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clear",
-		Short: "Remove the stored value of a key (the environment variable applies again)",
+		Short: "Remove the stored value of a key (the key is then not configured)",
 		RunE:  runConfigClear,
 	}
 

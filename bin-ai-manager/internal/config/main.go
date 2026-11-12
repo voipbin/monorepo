@@ -22,32 +22,12 @@ var (
 	once         sync.Once
 )
 
-// Names of the environment variables that the config registry reads through EnvValue.
+// Names of the environment variables that the service reads without a flag.
 const (
-	envEngineKeyChatGPT = "ENGINE_KEY_CHATGPT"
-	envGoogleAPIKey     = "GOOGLE_API_KEY"
-
 	// EnvConfigEncryptionKeys is the environment variable of the master key list of the stored
 	// platform settings.
 	EnvConfigEncryptionKeys = "AI_CONFIG_ENCRYPTION_KEYS"
 )
-
-// EnvValue returns the loaded value (flag or environment) of a variable name. It is the
-// environment lookup of the config registry, so the stored settings and the direct reads see the
-// same values. A name that is not loaded is "not set".
-func (c *Config) EnvValue(name string) (string, bool) {
-	var v string
-	switch name {
-	case envEngineKeyChatGPT:
-		v = c.EngineKeyChatGPT
-	case envGoogleAPIKey:
-		v = c.GoogleAPIKey
-	default:
-		return "", false
-	}
-
-	return v, v != ""
-}
 
 // Config holds process-wide configuration values loaded from command-line
 // flags and environment variables for the service.
@@ -59,8 +39,6 @@ type Config struct {
 	RedisAddress            string // RedisAddress is the address (including host and port) of the Redis server.
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
-	EngineKeyChatGPT        string // EngineKeyChatGPT is the API key for ChatGPT engine.
-	GoogleAPIKey            string // GoogleAPIKey is the Google API key used for Gemini audit evaluation.
 
 	LocalLLMModels string // LocalLLMModels is the JSON list of operator-registered local (self-hosted) models. It holds no URL or key.
 
@@ -118,7 +96,7 @@ type Config struct {
 	// ConfigEncryptionKeys is the master key list of the stored platform settings
 	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
 	// command line flag. A value that can not be parsed does not stop the service (unlike the two
-	// lists above): the stored secrets can not be used then and the environment keys keep working.
+	// lists above): the stored secrets can not be used then (they are reported as undecryptable).
 	ConfigEncryptionKeys string
 
 	McpSecretEncryptionKeys   string // Comma-separated "<version>:<base64-32-byte-key>" pairs; the highest version is used for new writes, all listed versions remain available for decrypting existing rows.
@@ -181,8 +159,6 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
-	f.String("engine_key_chatgpt", "", "Engine key for chatgpt")
-	f.String("google_api_key", "", "Google API key for Gemini audit evaluation")
 	f.String("local_llm_models", "", "JSON list of operator-registered local (self-hosted OpenAI-compatible) models; no URL or key")
 	f.Int("aicall_conversation_idle_timeout_hours", 24, "Idle timeout (hours) for conversation-typed AIcalls before they expire")
 	f.Int("aicall_contact_case_recreate_rate_limit_minutes", 5, "Rate limit window (minutes) after a contact_case-typed AIcall terminates during which recreation for the same reference_id is blocked")
@@ -240,8 +216,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
-		"engine_key_chatgpt":        "ENGINE_KEY_CHATGPT",
-		"google_api_key":            "GOOGLE_API_KEY",
 
 		"local_llm_models": "LOCAL_LLM_MODELS",
 
@@ -336,8 +310,6 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDatabase:           viper.GetInt("redis_database"),
-			EngineKeyChatGPT:        viper.GetString("engine_key_chatgpt"),
-			GoogleAPIKey:            viper.GetString("google_api_key"),
 
 			LocalLLMModels: viper.GetString("local_llm_models"),
 

@@ -151,8 +151,7 @@ func run(db *sql.DB) error {
 	}
 	dbHandler := dbhandler.NewDBHandler(db, cacheHandler)
 
-	// the stored settings: the provider keys are read per use, stored value first, then the
-	// environment value
+	// the stored settings: the provider keys are read per use, the stored value only
 	configHandler, err := ttsconfig.New(config.Get(), dbHandler.ConfigStore())
 	if err != nil {
 		return errors.Wrapf(err, "could not create the config handler")

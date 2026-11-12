@@ -63,7 +63,7 @@ func runConfigCommand(args ...string) error {
 
 func Test_config_set_list_clear(t *testing.T) {
 	const secret = "synthetic-credential-value"
-	store, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys(), MailgunAPIKey: "env-value"}, secret+"\n")
+	store, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, secret+"\n")
 
 	if err := runConfigCommand("set", "--key", "mailgun.api_key", "--actor-id", testActor); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
@@ -81,8 +81,8 @@ func Test_config_set_list_clear(t *testing.T) {
 	if err := runConfigCommand("list"); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if strings.Contains(out.String(), secret) || strings.Contains(out.String(), "env-value") ||
-		!strings.Contains(out.String(), `"env_shadowed": true`) || !strings.Contains(out.String(), testActor) {
+	if strings.Contains(out.String(), secret) || strings.Contains(out.String(), `"env_shadowed": true`) ||
+		!strings.Contains(out.String(), `"env_shadowed": false`) || strings.Contains(out.String(), "env_name") || !strings.Contains(out.String(), testActor) {
 		t.Errorf("Wrong match. list output: %s", out.String())
 	}
 
@@ -90,7 +90,7 @@ func Test_config_set_list_clear(t *testing.T) {
 	if err := runConfigCommand("clear", "--key", "mailgun.api_key", "--actor-id", testActor); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if !strings.Contains(out.String(), `"source": "env"`) {
+	if !strings.Contains(out.String(), `"source": "none"`) {
 		t.Errorf("Wrong match. clear output: %s", out.String())
 	}
 }

@@ -112,7 +112,7 @@ func Test_processRequest_configs(t *testing.T) {
 	names := []string{}
 	for _, k := range service.Keys {
 		names = append(names, k.Key)
-		if k.Description == "" || k.EnvName == "" || k.Kind != "secret" {
+		if k.Description == "" || k.EnvName != "" || k.Kind != "secret" {
 			t.Errorf("Wrong match. got: %+v", k)
 		}
 	}

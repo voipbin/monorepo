@@ -57,14 +57,12 @@ printf '%s' "$NEW_TOKEN" | ./bin/message-control config set --key provider.telny
 DATABASE_DSN="user:pass@tcp(127.0.0.1:3306)/voipbin" \
 RABBITMQ_ADDRESS="amqp://guest:guest@localhost:5672" \
 REDIS_ADDRESS="127.0.0.1:6379" \
-AUTHTOKEN_MESSAGEBIRD="token" \
-AUTHTOKEN_TELNYX="token" \
 ./bin/message-manager
 ```
 
 ## CRITICAL: Provider tokens are read per request
 
-The MessageBird and Telnyx tokens are stored settings (`message_configs`, order: stored value, then `AUTHTOKEN_MESSAGEBIRD` / `AUTHTOKEN_TELNYX`, then empty). `requestexternal` receives a supplier function (`messageconfig.MessagebirdToken`, `TelnyxToken`) and calls it for every provider request. Never read the token from `config.Get()` in a send path and never cache it: a changed token must be used by the next request. A token that can not be read is an error (never replaced by the environment value). The Telnyx token here is not the one of `bin-number-manager`; a Telnyx key rotation needs both (see docs/operations.md, "Provider tokens"). The admin API route `/v1/configs` is handled before the request log entry exists and logs nothing of the request (the body of a secret write is the secret).
+The MessageBird and Telnyx tokens are stored settings (`message_configs`; the stored value only, a key without a row is empty, and `AUTHTOKEN_MESSAGEBIRD` / `AUTHTOKEN_TELNYX` are not read any more). `requestexternal` receives a supplier function (`messageconfig.MessagebirdToken`, `TelnyxToken`) and calls it for every provider request. Never read the token from `config.Get()` in a send path and never cache it: a changed token must be used by the next request. A token that can not be read is an error (never replaced by an empty token). The Telnyx token here is not the one of `bin-number-manager`; a Telnyx key rotation needs both (see docs/operations.md, "Provider tokens"). The admin API route `/v1/configs` is handled before the request log entry exists and logs nothing of the request (the body of a secret write is the secret).
 
 ## Architecture Summary
 

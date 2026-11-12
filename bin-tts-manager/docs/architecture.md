@@ -25,7 +25,7 @@ Key packages:
 | `pkg/buckethandler` | Local file storage for generated audio in `/shared-data` |
 | `pkg/cachehandler` | Redis cache for TTS metadata |
 | `pkg/dbhandler` | MySQL persistence, and the store of the configs tables (`config_store.go`) |
-| `internal/configkeys`, `internal/ttsconfig` | The stored provider keys: `aws.access_key`, `aws.secret_key`, `elevenlabs.api_key` (all secrets, encrypted) with the environment fallback. `ttsconfig.AWSCredentials` and `ttsconfig.ElevenlabsKey` return functions that read the keys when they are called (nothing is cached); `audiohandler` and `streaminghandler` call them per request. The Polly client built from the last key pair is reused while the pair is unchanged |
+| `internal/configkeys`, `internal/ttsconfig` | The stored provider keys: `aws.access_key`, `aws.secret_key`, `elevenlabs.api_key` (all secrets, encrypted, database only). `ttsconfig.AWSCredentials` and `ttsconfig.ElevenlabsKey` return functions that read the keys when they are called (nothing is cached); `audiohandler` and `streaminghandler` call them per request. The Polly client built from the last key pair is reused while the pair is unchanged |
 | `migrations` | Embedded golang-migrate SQL files (service-owned schema of `tts_manager_speaking` and of the stored settings `tts_configs` and `tts_config_histories`); applied by `cmd/tts-manager` through `bin-common-handler/pkg/migrationhandler` right after the database connection, before the cache and RabbitMQ; `tts-control migrate` is the recovery tool |
 | `models/tts` | Batch TTS structs |
 | `models/streaming` | Streaming session structs |

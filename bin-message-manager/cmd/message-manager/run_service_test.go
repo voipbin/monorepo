@@ -128,8 +128,6 @@ func newServiceEnv(t *testing.T) *serviceEnv {
 	cfg.RedisAddress = mr.Addr()
 	cfg.RedisPassword = ""
 	cfg.RedisDatabase = 0
-	cfg.AuthtokenMessagebird = "test-token-a"
-	cfg.AuthtokenTelnyx = "test-token-b"
 
 	restoreConnect := commondatabasehandler.SetConnectFunc(func(dsn string) (*sql.DB, error) {
 		env.connectDSN.Store(dsn)

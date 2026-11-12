@@ -17,16 +17,13 @@ var (
 
 // Config holds all configuration for the email-manager service
 type Config struct {
-	RabbitMQAddress          string
-	PrometheusEndpoint       string
-	PrometheusListenAddress  string
-	DatabaseDSN              string
-	RedisAddress             string
-	RedisPassword            string
-	RedisDatabase            int
-	SendgridAPIKey           string
-	MailgunAPIKey            string
-	MailgunWebhookSigningKey string
+	RabbitMQAddress         string
+	PrometheusEndpoint      string
+	PrometheusListenAddress string
+	DatabaseDSN             string
+	RedisAddress            string
+	RedisPassword           string
+	RedisDatabase           int
 
 	// ConfigEncryptionKeys is the master key list of the stored secrets
 	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
@@ -34,34 +31,11 @@ type Config struct {
 	ConfigEncryptionKeys string
 }
 
-// Names of the environment variables that the config registry reads through EnvValue.
+// Names of the environment variables that the service reads without a flag.
 const (
-	envSendgridAPIKey           = "SENDGRID_API_KEY"
-	envMailgunAPIKey            = "MAILGUN_API_KEY"
-	envMailgunWebhookSigningKey = "MAILGUN_WEBHOOK_SIGNING_KEY"
-
 	// EnvConfigEncryptionKeys is the environment variable of the master key list.
 	EnvConfigEncryptionKeys = "EMAIL_CONFIG_ENCRYPTION_KEYS"
 )
-
-// EnvValue returns the loaded value (flag or environment) of a variable name. It is the
-// environment lookup of the config registry, so the stored configs and the old direct reads see the
-// same values. A name that is not loaded is "not set".
-func (c *Config) EnvValue(name string) (string, bool) {
-	var v string
-	switch name {
-	case envSendgridAPIKey:
-		v = c.SendgridAPIKey
-	case envMailgunAPIKey:
-		v = c.MailgunAPIKey
-	case envMailgunWebhookSigningKey:
-		v = c.MailgunWebhookSigningKey
-	default:
-		return "", false
-	}
-
-	return v, v != ""
-}
 
 func Bootstrap(cmd *cobra.Command) error {
 	initLog()
@@ -84,21 +58,15 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
-	f.String("sendgrid_api_key", "", "SendGrid API key")
-	f.String("mailgun_api_key", "", "Mailgun API key")
-	f.String("mailgun_webhook_signing_key", "", "Mailgun webhook signing key")
 
 	bindings := map[string]string{
-		"rabbitmq_address":            "RABBITMQ_ADDRESS",
-		"prometheus_endpoint":         "PROMETHEUS_ENDPOINT",
-		"prometheus_listen_address":   "PROMETHEUS_LISTEN_ADDRESS",
-		"database_dsn":                "DATABASE_DSN",
-		"redis_address":               "REDIS_ADDRESS",
-		"redis_password":              "REDIS_PASSWORD",
-		"redis_database":              "REDIS_DATABASE",
-		"sendgrid_api_key":            "SENDGRID_API_KEY",
-		"mailgun_api_key":             "MAILGUN_API_KEY",
-		"mailgun_webhook_signing_key": "MAILGUN_WEBHOOK_SIGNING_KEY",
+		"rabbitmq_address":          "RABBITMQ_ADDRESS",
+		"prometheus_endpoint":       "PROMETHEUS_ENDPOINT",
+		"prometheus_listen_address": "PROMETHEUS_LISTEN_ADDRESS",
+		"database_dsn":              "DATABASE_DSN",
+		"redis_address":             "REDIS_ADDRESS",
+		"redis_password":            "REDIS_PASSWORD",
+		"redis_database":            "REDIS_DATABASE",
 	}
 
 	// the master key list has no flag: a flag value would show in the process list.
@@ -128,17 +96,14 @@ func Get() *Config {
 func LoadGlobalConfig() {
 	once.Do(func() {
 		globalConfig = Config{
-			RabbitMQAddress:          viper.GetString("rabbitmq_address"),
-			PrometheusEndpoint:       viper.GetString("prometheus_endpoint"),
-			PrometheusListenAddress:  viper.GetString("prometheus_listen_address"),
-			DatabaseDSN:              viper.GetString("database_dsn"),
-			RedisAddress:             viper.GetString("redis_address"),
-			RedisPassword:            viper.GetString("redis_password"),
-			RedisDatabase:            viper.GetInt("redis_database"),
-			SendgridAPIKey:           viper.GetString("sendgrid_api_key"),
-			MailgunAPIKey:            viper.GetString("mailgun_api_key"),
-			MailgunWebhookSigningKey: viper.GetString("mailgun_webhook_signing_key"),
-			ConfigEncryptionKeys:     viper.GetString("email_config_encryption_keys"),
+			RabbitMQAddress:         viper.GetString("rabbitmq_address"),
+			PrometheusEndpoint:      viper.GetString("prometheus_endpoint"),
+			PrometheusListenAddress: viper.GetString("prometheus_listen_address"),
+			DatabaseDSN:             viper.GetString("database_dsn"),
+			RedisAddress:            viper.GetString("redis_address"),
+			RedisPassword:           viper.GetString("redis_password"),
+			RedisDatabase:           viper.GetInt("redis_database"),
+			ConfigEncryptionKeys:    viper.GetString("email_config_encryption_keys"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

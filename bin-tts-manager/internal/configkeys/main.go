@@ -1,8 +1,8 @@
 // Package configkeys declares the configuration keys of bin-tts-manager.
 //
-// The three keys are the provider credentials that were read from the environment only. The two
+// The three keys are the provider credentials. They are stored in the database only. The two
 // AWS keys are independent secrets on purpose: the admin API writes one secret per call and each
-// key has one environment name. The consumer refuses a pair whose two keys come from different
+// key is one row. The consumer refuses a pair whose two keys come from different
 // sources (see ttsconfig.AWSCredentials).
 package configkeys
 
@@ -33,13 +33,13 @@ const (
 // maxSecretLen is the longest accepted key in bytes.
 const maxSecretLen = 512
 
-// Keys returns the declarations. The environment names are the variables that the service read
-// before the configs existed, so a database without rows behaves exactly as before.
+// Keys returns the declarations. The values are stored in the database only: a key has no
+// environment name, so a key without a row is not configured.
 func Keys() []confighandler.Key {
 	return []confighandler.Key{
-		{Name: KeyAWSAccessKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "AWS access key id used for Amazon Polly (batch fallback and streaming). Store it together with aws.secret_key.", Env: "AWS_ACCESS_KEY", MaxLen: maxSecretLen},
-		{Name: KeyAWSSecretKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "AWS secret access key used for Amazon Polly (batch fallback and streaming). Store it together with aws.access_key.", Env: "AWS_SECRET_KEY", MaxLen: maxSecretLen},
-		{Name: KeyElevenlabsAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "API key of the ElevenLabs streaming service.", Env: "ELEVENLABS_API_KEY", MaxLen: maxSecretLen},
+		{Name: KeyAWSAccessKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "AWS access key id used for Amazon Polly (batch fallback and streaming). Store it together with aws.secret_key.", MaxLen: maxSecretLen},
+		{Name: KeyAWSSecretKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "AWS secret access key used for Amazon Polly (batch fallback and streaming). Store it together with aws.access_key.", MaxLen: maxSecretLen},
+		{Name: KeyElevenlabsAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "API key of the ElevenLabs streaming service.", MaxLen: maxSecretLen},
 	}
 }
 

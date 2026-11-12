@@ -48,9 +48,6 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 DATABASE_DSN="user:pass@tcp(127.0.0.1:3306)/voipbin" \
 RABBITMQ_ADDRESS="amqp://guest:guest@localhost:5672" \
 REDIS_ADDRESS="127.0.0.1:6379" \
-SENDGRID_API_KEY="SG.xxx" \
-MAILGUN_API_KEY="xxx" \
-MAILGUN_WEBHOOK_SIGNING_KEY="xxx" \
 ./bin/email-manager
 ```
 
@@ -97,8 +94,8 @@ The schema of `email_emails` is owned by this service and applied at startup (go
 
 ## Provider credentials
 
-The SendGrid API key, the Mailgun API key and the Mailgun webhook signing key are resolved when they are used: the stored value (`email_configs`) first, then the environment variable (`SENDGRID_API_KEY`, `MAILGUN_API_KEY`, `MAILGUN_WEBHOOK_SIGNING_KEY`), so a database without rows behaves exactly as before. A change made with `email-control config set` is used by the next call without a restart. The key declarations are in `internal/configkeys`; the shared library is `bin-common-handler/pkg/confighandler`.
+The SendGrid API key, the Mailgun API key and the Mailgun webhook signing key are resolved when they are used, from the stored value (`email_configs`) only: the environment variables (`SENDGRID_API_KEY`, `MAILGUN_API_KEY`, `MAILGUN_WEBHOOK_SIGNING_KEY`) are not read any more, and a key without a row is not configured (VOIP-1721). A change made with `email-control config set` is used by the next call without a restart. The key declarations are in `internal/configkeys`; the shared library is `bin-common-handler/pkg/confighandler`.
 
-- A stored secret that can not be decrypted is an error; the environment value is never used instead. A database read error is an error as well, and a Mailgun webhook is then rejected (the provider retries).
+- A stored secret that can not be decrypted is an error; it is never treated as an empty key. A database read error is an error as well, and a Mailgun webhook is then rejected (the provider retries).
 - Master key list: environment variable `EMAIL_CONFIG_ENCRYPTION_KEYS` (`<version>:<base64 of 32 bytes>[,...]`, the entry with the highest version encrypts). It is environment only, there is no flag. Without it the service starts, secrets can not be stored and a stored secret is reported as undecryptable.
 - Adding a setting means a new key in `internal/configkeys` and the golden test there; a key never changes its kind.

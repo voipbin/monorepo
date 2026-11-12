@@ -57,7 +57,7 @@ func cmdConfig() *cobra.Command {
 		Short: "Stored configuration (provider credentials)",
 		Long: `Stored configuration of the provider credentials.
 
-A stored value takes precedence over the environment variable of the same key. A change is
+The credentials are stored in the database only; a key that is cleared is not configured. A change is
 used by the next call, with no restart. The daemon applies the table migration at its start; on a
 local database run "migrate up" first. The master key list is read from the environment
 (EMAIL_CONFIG_ENCRYPTION_KEYS) and is never a flag.`,
@@ -99,7 +99,7 @@ one line is refused.`,
 func cmdConfigClear() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clear",
-		Short: "Remove the stored value of a key (the environment variable applies again)",
+		Short: "Remove the stored value of a key (the key is then not configured)",
 		RunE:  runConfigClear,
 	}
 

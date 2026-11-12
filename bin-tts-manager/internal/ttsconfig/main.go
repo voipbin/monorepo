@@ -1,5 +1,5 @@
 // Package ttsconfig wires the stored configuration of bin-tts-manager: the master key, the
-// registry, the environment lookup and the suppliers that hand the provider credentials to the
+// registry and the suppliers that hand the provider credentials to the
 // handlers at the time of use.
 package ttsconfig
 
@@ -29,12 +29,12 @@ const (
 
 // ErrKeyUnavailable is returned when a provider key could not be read: a database read error, a
 // stored secret that can not be decrypted, a read that ran out of time, or an AWS pair whose two
-// keys come from different sources. It is never replaced by the value of the environment. A key
+// keys come from different sources. It is never replaced by an empty value. A key
 // that is simply not configured is not an error (an empty value). The error holds no key text.
 var ErrKeyUnavailable = errors.New("the TTS provider key could not be read")
 
 // ErrAWSSourceMismatch is wrapped by ErrKeyUnavailable when exactly one of the two AWS keys is
-// stored in the database: a stored key and an environment key are never combined.
+// stored in the database: a half stored pair is refused.
 var ErrAWSSourceMismatch = errors.New("the AWS access key and secret key come from different sources")
 
 // KeyFunc hands one provider key to a handler at the time of use. An empty value with no error
@@ -49,9 +49,8 @@ type AWSCredentialsFunc func(ctx context.Context) (accessKey, secretKey string, 
 //
 // An unparsable master key list never stops the service: the error is logged (without any key
 // text) and the handler works without a master key. Secrets can not be written then, and a stored
-// secret is reported as undecryptable, but the values of the environment keep working for the
-// keys that have no stored row. The only error is an invalid registry, which is a programming
-// error.
+// secret is reported as undecryptable. The only error is an invalid registry, which is a
+// programming error.
 func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Option) (confighandler.Handler, error) {
 	reg, err := configkeys.NewRegistry()
 	if err != nil {
@@ -64,7 +63,7 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 		crypto, _ = secretcrypto.New("", secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
 	}
 
-	return confighandler.NewHandler(reg, store, crypto, cfg.EnvValue, opts...), nil
+	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
 }
 
 // supplierConfig is the setting of a supplier.
@@ -93,8 +92,7 @@ func newSupplierConfig(opts []SupplierOption) *supplierConfig {
 
 // ElevenlabsKey returns the supplier of the ElevenLabs key. It reads the key on every call and
 // keeps nothing, so a changed key is used by the next call on every replica. A read error is
-// returned as an error (ErrKeyUnavailable) and is never turned into an empty value or into the
-// environment value.
+// returned as an error (ErrKeyUnavailable) and is never turned into an empty value.
 func ElevenlabsKey(h confighandler.Handler, opts ...SupplierOption) KeyFunc {
 	c := newSupplierConfig(opts)
 
@@ -113,9 +111,8 @@ func ElevenlabsKey(h confighandler.Handler, opts ...SupplierOption) KeyFunc {
 
 // AWSCredentials returns the supplier of the AWS key pair. It reads both keys on every call with
 // one time bound for the whole read, and keeps nothing. When exactly one of the two keys is stored
-// in the database it returns ErrKeyUnavailable wrapping ErrAWSSourceMismatch: a stored key and an
-// environment key are never combined. Both stored, both from the environment, or none: the pair
-// is returned. This is a check of the sources, not a transaction.
+// in the database it returns ErrKeyUnavailable wrapping ErrAWSSourceMismatch: a half stored pair is
+// refused. Both stored, or none: the pair is returned. This is a check of the sources, not a transaction.
 func AWSCredentials(h confighandler.Handler, opts ...SupplierOption) AWSCredentialsFunc {
 	c := newSupplierConfig(opts)
 
@@ -147,7 +144,8 @@ func awsSourcesDiffer(a, b confighandler.Source) bool {
 }
 
 // LogSources logs, once, where each key comes from (key name and source only, never a value). A
-// key that is not configured is logged at info level, because every provider key is optional. A
+// key that is not configured is logged at info level, because every provider key is optional
+// (they are read from the database only). A
 // read error is logged as a warning: the service starts anyway.
 func LogSources(ctx context.Context, h confighandler.Handler) {
 	log := logrus.WithField("func", "LogSources")
@@ -164,17 +162,19 @@ func LogSources(ctx context.Context, h confighandler.Handler) {
 	sources := map[string]confighandler.Source{}
 	for _, r := range list {
 		sources[r.Key] = r.Source
-		entry := log.WithFields(logrus.Fields{"key": r.Key, "source": r.Source, "env_shadowed": r.EnvShadowed})
+		entry := log.WithFields(logrus.Fields{"key": r.Key, "source": r.Source})
 
 		switch r.Source {
+		case confighandler.SourceNone:
+			entry.Infof("The config key is not configured (optional); it is read from the database only. key: %s", r.Key)
 		case confighandler.SourceDBUndecryptable, confighandler.SourceDBInvalid:
 			entry.Errorf("The stored config value can not be used. key: %s, source: %s", r.Key, r.Source)
 		default:
-			entry.Infof("Config key. key: %s, source: %s, env_shadowed: %v", r.Key, r.Source, r.EnvShadowed)
+			entry.Infof("Config key. key: %s, source: %s", r.Key, r.Source)
 		}
 	}
 
 	if awsSourcesDiffer(sources[configkeys.KeyAWSAccessKey], sources[configkeys.KeyAWSSecretKey]) {
-		log.Warnf("The AWS keys come from different sources, so the AWS credentials are refused. Store or clear both. keys: %s, %s", configkeys.KeyAWSAccessKey, configkeys.KeyAWSSecretKey)
+		log.Warnf("Only one of the two AWS keys is stored, so the AWS credentials are refused. Store or clear both. keys: %s, %s", configkeys.KeyAWSAccessKey, configkeys.KeyAWSSecretKey)
 	}
 }

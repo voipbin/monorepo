@@ -156,8 +156,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
 
-	// The AWS credential is stored in the database (the environment value applies when there is no
-	// row) and is read when a streaming starts, so a changed key is used by the next start.
+	// The AWS credential is stored in the database (a key without a row is not configured)
+	// and is read when a streaming starts, so a changed key is used by the next start.
 	configHandler, errConfig := transcribeconfig.New(config.Get(), dbhandler.NewConfigStore(sqlDB))
 	if errConfig != nil {
 		return errors.Wrapf(errConfig, "could not create the config handler")

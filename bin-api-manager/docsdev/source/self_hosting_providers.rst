@@ -10,6 +10,43 @@ installer's own ``docker-compose.yml.dist`` (the Docker Compose
 self-hosting stack); a Kubernetes/hosted-service deployment wires some
 of these variables differently and is out of scope for this page.
 
+Provider keys that are stored settings
+------------------------------------------
+
+The following provider keys are stored settings of their service. The
+service reads them from its database only; it does not read a ``.env``
+variable or a container environment variable for them, so setting the
+matching variable alone has no effect on these services:
+
+- ``ai-manager``: ``llm.openai_compat.api_key``, ``llm.gemini.api_key``
+- ``email-manager``: ``sendgrid.api_key``, ``mailgun.api_key``,
+  ``mailgun.webhook_signing_key``
+- ``message-manager``: ``provider.messagebird.auth_token``,
+  ``provider.telnyx.auth_token``
+- ``transcribe-manager``: ``aws.access_key``, ``aws.secret_key``
+- ``tts-manager``: ``aws.access_key``, ``aws.secret_key``,
+  ``elevenlabs.api_key``
+
+Store each key with the ``config set`` command of the service
+(``ai-control``, ``email-control``, ``message-control``,
+``transcribe-control`` or ``tts-control``, run inside the service
+container, with the value on standard input and an ``--actor-id``) or
+with the Service Config API (see Service Config). The change is used by
+the next request, with no restart. The master key variable of the
+service (for example ``EMAIL_CONFIG_ENCRYPTION_KEYS``) is still an
+environment variable and must be set before a secret can be stored.
+``config list`` shows the source of every key: ``db`` means that a value
+is stored, ``none`` means that the key is not configured. The services
+log a warning or an info line at start for a key that is not configured
+(the key name only).
+
+``pipecat-manager`` and ``pipecat-script-runner`` are different: they
+read their provider keys (``OPENAI_API_KEY``, ``GOOGLE_API_KEY``,
+``XAI_API_KEY``, ``ELEVENLABS_API_KEY``, ``OPENROUTER_API_KEY``) from the
+environment. A key that both a manager and the pipecat services use
+(``GOOGLE_API_KEY`` and ``ELEVENLABS_API_KEY``) therefore has two places
+and must be replaced in both.
+
 AI voice agent providers
 ----------------------------
 
@@ -22,7 +59,7 @@ AI voice agent providers
      - Env var(s)
    * - LLM / conversation (batch, e.g. audit evaluation)
      - OpenAI
-     - ``OPENAI_API_KEY`` (restart ``ai-manager``)
+     - Stored key ``llm.openai_compat.api_key`` (no restart)
    * - LLM / conversation (real-time voice pipeline)
      - OpenAI, Google Gemini, xAI
      - ``OPENAI_API_KEY``, ``GOOGLE_API_KEY``, ``XAI_API_KEY``
@@ -38,26 +75,25 @@ AI voice agent providers
        ``LOCAL_LLM_ENDPOINTS`` (restart ``pipecat-script-runner``)
    * - Speech-to-text
      - Deepgram, AWS Transcribe, Google Cloud Speech-to-Text
-     - ``DEEPGRAM_API_KEY``; ``AWS_ACCESS_KEY``/``AWS_SECRET_KEY``;
-       ``GOOGLE_APPLICATION_CREDENTIALS`` (restart ``transcribe-manager``)
+     - ``DEEPGRAM_API_KEY``; stored keys ``aws.access_key`` and
+       ``aws.secret_key`` (no restart); ``GOOGLE_APPLICATION_CREDENTIALS``
+       (restart ``transcribe-manager``)
    * - Text-to-speech
      - ElevenLabs, Cartesia, AWS Polly, Google Cloud TTS
-     - ``ELEVENLABS_API_KEY``, ``CARTESIA_API_KEY``;
-       ``AWS_ACCESS_KEY``/``AWS_SECRET_KEY``;
+     - ``CARTESIA_API_KEY``; stored keys ``elevenlabs.api_key``,
+       ``aws.access_key`` and ``aws.secret_key`` (no restart);
        ``GOOGLE_APPLICATION_CREDENTIALS`` (restart ``tts-manager``)
 
 ``GOOGLE_API_KEY`` and ``GOOGLE_APPLICATION_CREDENTIALS`` are two
 unrelated variables that happen to share the "Google" prefix. Do not
 confuse them:
 
-- ``GOOGLE_API_KEY`` is a Gemini API key. It is consumed by two
-  independent features: ``ai-manager``'s batch audit evaluation
-  (mapped internally to a ChatGPT-compatible engine key,
-  ``ENGINE_KEY_CHATGPT=${OPENAI_API_KEY}``, does **not** actually use
-  ``GOOGLE_API_KEY`` for this) and ``pipecat-manager``'s real-time voice
-  pipeline (the sidecar that actually reads ``GOOGLE_API_KEY`` directly
-  for live Gemini conversations). Restart ``pipecat-manager`` after
-  changing it for the voice-pipeline use.
+- ``GOOGLE_API_KEY`` is a Gemini API key. ``pipecat-manager``'s
+  real-time voice pipeline reads it from the environment for live Gemini
+  conversations (restart ``pipecat-manager`` after changing it).
+  ``ai-manager`` does not read it: its Gemini key (batch audit
+  evaluation, prompt proposal and the Gemini based summary, analysis
+  and builder calls) is the stored key ``llm.gemini.api_key``.
 - ``GOOGLE_APPLICATION_CREDENTIALS`` is a GCP service-account JSON key
   file path. It is mounted into **five** services in this installer's
   Docker Compose stack: ``api-manager``, ``rag-manager``,
@@ -206,11 +242,10 @@ consume that specific variable, per the tables above:
 
 .. code-block:: bash
 
-    sudo ./voipbin restart ai-manager           # OPENAI_API_KEY (batch)
     sudo ./voipbin restart pipecat-manager       # OPENAI_API_KEY, GOOGLE_API_KEY, XAI_API_KEY (real-time)
     sudo ./voipbin restart pipecat-script-runner # OPENROUTER_API_KEY (platform-managed models)
-    sudo ./voipbin restart transcribe-manager    # DEEPGRAM_API_KEY, AWS_*, GOOGLE_APPLICATION_CREDENTIALS
-    sudo ./voipbin restart tts-manager           # ELEVENLABS_API_KEY, CARTESIA_API_KEY, AWS_*, GOOGLE_APPLICATION_CREDENTIALS
+    sudo ./voipbin restart transcribe-manager    # DEEPGRAM_API_KEY, GOOGLE_APPLICATION_CREDENTIALS
+    sudo ./voipbin restart tts-manager           # CARTESIA_API_KEY, GOOGLE_APPLICATION_CREDENTIALS
     sudo ./voipbin restart rag-manager           # GOOGLE_APPLICATION_CREDENTIALS
     sudo ./voipbin restart storage-manager       # GOOGLE_APPLICATION_CREDENTIALS
     sudo ./voipbin restart api-manager           # GOOGLE_APPLICATION_CREDENTIALS
@@ -275,7 +310,7 @@ Telephony and messaging providers
    :widths: 25 40 35
 
    * - Provider
-     - Env var(s)
+     - Env var(s) or stored key
      - Consuming service
    * - Twilio (PSTN numbers)
      - ``TWILIO_SID``, ``TWILIO_API_KEY``
@@ -285,26 +320,26 @@ Telephony and messaging providers
        ``TELNYX_PROFILE_ID`` (all three required)
      - ``number-manager``
    * - MessageBird (SMS)
-     - ``MESSAGEBIRD_API_KEY``
+     - Stored key ``provider.messagebird.auth_token`` (no restart)
      - ``message-manager``
 
 The ``.env.template`` variable names above are what you set;
 ``number-manager`` itself binds them internally as ``TWILIO_TOKEN`` and
 ``TELNYX_TOKEN`` (``docker-compose.yml.dist`` maps
 ``TWILIO_TOKEN=${TWILIO_API_KEY}`` and
-``TELNYX_TOKEN=${TELNYX_API_KEY}``), and ``message-manager`` binds
-``MESSAGEBIRD_API_KEY`` internally as ``AUTHTOKEN_MESSAGEBIRD``. This
-only matters if you go looking for the raw variable name inside
-``number-manager``'s or ``message-manager``'s own config; the ``.env``
-names above are what you actually set. A token that an administrator
-stores later through the Service Config API (the ``message`` service) takes
-precedence over the ``.env`` value, which stays as the fallback. MessageBird
-has no dedicated feature write-up beyond its ``.env.template`` entry.
+``TELNYX_TOKEN=${TELNYX_API_KEY}``). This only matters if you go looking
+for the raw variable name inside ``number-manager``'s own config; the
+``.env`` names above are what you actually set for ``number-manager``.
+``message-manager`` does not read a ``.env`` variable: its MessageBird and
+Telnyx tokens (``provider.messagebird.auth_token`` and
+``provider.telnyx.auth_token``) are stored settings, set with
+``message-control config set`` or the Service Config API (the ``message``
+service). Without a stored Telnyx token the SMS and MMS sends of
+``message-manager`` fail at the provider.
 
 .. code-block:: bash
 
     sudo ./voipbin restart number-manager
-    sudo ./voipbin restart message-manager
 
 Email providers
 -------------------
@@ -314,18 +349,19 @@ Email providers
    :widths: 25 40 35
 
    * - Provider
-     - Env var
+     - How the key is set
      - Consuming service
    * - SendGrid
-     - ``SENDGRID_API_KEY``
+     - Stored key ``sendgrid.api_key`` (no restart)
      - ``email-manager``
    * - Mailgun
-     - ``MAILGUN_API_KEY``
+     - Stored keys ``mailgun.api_key`` and ``mailgun.webhook_signing_key``
+       (no restart)
      - ``email-manager``
 
-.. code-block:: bash
-
-    sudo ./voipbin restart email-manager
+``email-manager`` does not read a ``.env`` variable for these keys; store
+them with ``email-control config set`` or the Service Config API (the
+``email`` service).
 
 Configuring at least one of these two is required for the email-based
 signup flow (Path B in First login and API access) to actually deliver

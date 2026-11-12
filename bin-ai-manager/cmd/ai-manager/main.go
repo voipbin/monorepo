@@ -139,8 +139,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB, cache)
 
-	// The platform LLM keys are stored in the database (the environment value applies when there
-	// is no row) and are read when a call needs them, so a changed key is used by the next call.
+	// The platform LLM keys are stored in the database (a key without a row is not configured)
+	// and are read when a call needs them, so a changed key is used by the next call.
 	configHandler, errConfig := aiconfig.New(cfg, db.ConfigStore())
 	if errConfig != nil {
 		log.Errorf("Could not create the config handler. err: %v", errConfig)

@@ -52,8 +52,6 @@ func Test_newPlatformKeys(t *testing.T) {
 				ConfigEncryptionKeys:  testMasterKeyList(),
 				SummaryEngineBaseURL:  tt.summaryURL,
 				AnalysisEngineBaseURL: tt.analysisURL,
-				EngineKeyChatGPT:      "env-openai",
-				GoogleAPIKey:          "env-gemini",
 			}
 			h, err := aiconfig.New(cfg, storetest.NewMemory())
 			if err != nil {
