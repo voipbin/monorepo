@@ -144,7 +144,7 @@ message-control config clear --key provider.telnyx.auth_token --actor-id <uuid>
 
 ### Master key list
 
-Losing or mistyping `MESSAGE_CONFIG_ENCRYPTION_KEYS` does not stop the service. A stored token then reports `db_undecryptable` and its sends fail (see above), while a key with no row is not configured. Recover by restoring the list (the stored values are readable again), or by `config clear` of the affected keys and `config set` again: the stored value is lost. `config set` is refused while the list is missing or invalid. A retired master key version must stay in the list until no row uses it (`key_version` in `config list`). The deployment definition must pass the variable to the container; a variable that does not exist in the deployment system stops the container, so create it before the deploy.
+Losing or mistyping `MESSAGE_CONFIG_ENCRYPTION_KEYS` does not stop the service. A stored token then reports `db_undecryptable` and its sends fail (see above), while a key with no row is not configured. Recover by restoring the list (the stored values are readable again), or by `config clear` of the affected keys and `config set` again: the stored value is lost. `config set` is refused while the list is missing or invalid. A retired master key version must stay in the list until no row uses it (`key_version` in `config list`). The deployment definition must pass the variable to the container, and the variable must exist in the deployment system before the deploy. A missing variable does not stop the container: Komodo passes the unreplaced `[[...]]` text and the service behaves as for a malformed value.
 
 ## Prometheus Metrics
 
