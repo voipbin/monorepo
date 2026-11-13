@@ -68,6 +68,17 @@ func initNumberHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (numberha
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
+	providerHandler, err := newProviderHandler(reqHandler, db)
+	if err != nil {
+		return nil, err
+	}
+
+	return numberhandler.NewNumberHandler(reqHandler, db, notifyHandler, providerHandler), nil
+}
+
+// newProviderHandler creates the provider handler from the global config. It is the single place
+// that wires the key set and the credentials, shared by the number commands and the provider commands.
+func newProviderHandler(reqHandler requesthandler.RequestHandler, db dbhandler.DBHandler) (providerhandler.ProviderHandler, error) {
 	// the CLI rejects a malformed key set at once (the daemon only logs it)
 	crypto, err := providerhandler.NewSecretCrypto(config.Get().NumberSecretEncryptionKeys)
 	if err != nil {
@@ -81,9 +92,8 @@ func initNumberHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (numberha
 		config.Get().TwilioSID,
 		config.Get().TwilioToken,
 	)
-	providerHandler := providerhandler.NewProviderHandler(reqHandler, db, crypto, env)
 
-	return numberhandler.NewNumberHandler(reqHandler, db, notifyHandler, providerHandler), nil
+	return providerhandler.NewProviderHandler(reqHandler, db, crypto, env), nil
 }
 
 func initCommand() *cobra.Command {
@@ -113,6 +123,7 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdDelete())
 
 	cmdRoot.AddCommand(cmdSub)
+	cmdRoot.AddCommand(cmdProvider())
 	// the migrate commands open only the database, so they do not depend on Redis or RabbitMQ
 	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {
 		return migrationhandler.New(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable)

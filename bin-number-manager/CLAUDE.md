@@ -42,6 +42,10 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 ./bin/number-control number get-available --country-code US
 ./bin/number-control number update --id <uuid> --call-flow-id <flow-uuid>
 ./bin/number-control number delete --id <uuid>
+./bin/number-control provider list                      # state only: credential_source, has_secret, usable (never a secret)
+./bin/number-control provider update --name telnyx --actor-id <uuid> --config connection_id=<id>   # config first
+printf '%s' "$TOKEN" | ./bin/number-control provider secret set --name telnyx --actor-id <uuid>   # secret on stdin only
+./bin/number-control provider secret delete --name telnyx --actor-id <uuid>
 
 # Run locally
 DATABASE_DSN="user:pass@tcp(127.0.0.1:3306)/bin_manager" \

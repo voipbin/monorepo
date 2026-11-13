@@ -311,8 +311,8 @@ func Test_initCommand(t *testing.T) {
 		names = append(names, c.Name())
 	}
 	sort.Strings(names)
-	if !reflect.DeepEqual(names, []string{"migrate", "number"}) {
-		t.Errorf("Wrong match. expect: [migrate number], got: %v", names)
+	if !reflect.DeepEqual(names, []string{"migrate", "number", "provider"}) {
+		t.Errorf("Wrong match. expect: [migrate number provider], got: %v", names)
 	}
 
 	numberCmd, _, err := cmd.Find([]string{"number"})
