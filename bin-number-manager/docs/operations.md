@@ -65,6 +65,24 @@ On a new database the service creates its tables at startup (the baseline is `CR
 ./bin/number-control number delete --id <uuid>
 ```
 
+**Provider settings and secrets (database and key list only, no Redis or RabbitMQ):**
+```bash
+./bin/number-control provider list
+./bin/number-control provider update --name telnyx --actor-id <uuid> [--enabled=true|false] [--priority <n>] [--config connection_id=<id>] [--config profile_id=<id>]
+read -rs TOKEN; printf '%s' "$TOKEN" | ./bin/number-control provider secret set --name telnyx --actor-id <uuid>; unset TOKEN
+./bin/number-control provider secret delete --name telnyx --actor-id <uuid>
+```
+`name` is `telnyx` or `twilio`. The commands call the same provider handler as the admin API (`/v1/number_providers`) and print the provider view as JSON: `credential_source`, `has_secret`, `key_version`, `usable` and the non-secret `config`, never a secret, a ciphertext or a length.
+
+- **Order**: set the required config first (Telnyx `connection_id`; Twilio `sid` and `trunk_sid`), then the secret. The secret is refused until the config exists, and a config is applied only after a secret is stored. `--config key=` (empty value) removes a key. Write a bool flag with an equal sign (`--enabled=false`); a value after a bool flag is a positional argument and the command refuses positional arguments.
+- **The secret is read from stdin only** and is never an argument or a flag. Use a pipe (`printf` is a shell builtin, so the value is not in the process list) or a file only you can read (`< file`). `read -rs` is bash; do not `export` the variable. A terminal or `/dev/null` is refused; a pipe that you type into by hand (for example `exec -T` without a pipe) still shows what you type. One trailing newline is removed, surrounding spaces are removed by the handler, a value with more than one line is refused, and the longest secret is 1024 bytes.
+- **In a container** keep stdin attached without a terminal: `docker compose exec -T <service> /app/bin/number-control provider ...` or `kubectl exec -i ... -- /app/bin/number-control provider ...`. The image is distroless (no shell) and holds `/app/bin/number-control`. The container needs `DATABASE_DSN` and `NUMBER_SECRET_ENCRYPTION_KEYS` in its environment; do not pass `--database_dsn` or `--number_secret_encryption_keys` as arguments.
+- **`--actor-id`** is checked for the UUID format only, so `updated_by` and `secret_updated_by` record what the operator declares.
+- **No restart** is needed: the service resolves a provider at every call and keeps no cache of it.
+- **`secret delete`** removes the stored secret and keeps the config; the `credential_source` of the output tells which credential the provider uses afterwards. A provider that has no row yet is reported as not found.
+- **Do not change the account** of a provider that still has numbers (see Provider Credentials and Secret Keys).
+- **A malformed key list** makes every `provider` command fail (including `list` and `secret delete`); fix `NUMBER_SECRET_ENCRYPTION_KEYS` and run it again.
+
 **Run service locally:**
 ```bash
 DATABASE_DSN="user:pass@tcp(127.0.0.1:3306)/bin_manager" \
@@ -140,7 +158,7 @@ A provider uses one credential source at a time: with a stored secret in `number
 
 - **A malformed key list** does not stop the service (other services depend on it). The error is logged without the key material and the service starts as if no key were configured: stored secrets cannot be decrypted (the provider is `db_undecryptable`, no fallback to the environment) and new secrets are refused. `number-control` refuses to start instead. Run `number-control migrate up` before the other `number-control` commands on a database the service has not migrated yet.
 - **Key rotation**: (1) add the new version to `NUMBER_SECRET_ENCRYPTION_KEYS`, keep the old one, deploy; (2) enter the secret of each provider again (it is re-encrypted with the newest version; check `key_version` in the provider view); (3) when every provider shows the newest `key_version`, remove the old version. Removing a version first makes the rows of that version undecryptable. There is no re-encryption batch: the rows are few and the secrets are external values the admin holds.
-- **Recovery** of a provider that is `db_undecryptable`: restore the missing key version, or delete the stored secret (`DELETE /v1/number_providers/{name}/secret`), which returns the provider to the environment credentials.
+- **Recovery** of a provider that is `db_undecryptable`: restore the missing key version, or delete the stored secret (`DELETE /v1/number_providers/{name}/secret` or `number-control provider secret delete`), which returns the provider to the environment credentials.
 - **Upgrade note**: a secret stored by an earlier version (its ciphertext was bound to the provider name) cannot be decrypted by this version. Enter it again with `PUT /v1/number_providers/{name}/secret` once every instance runs the new image; until then the provider is `db_undecryptable`. A re-entered secret overwrites the stored one without decrypting it.
 - **Do not change the account** of a provider that still has numbers (a different token or, for Twilio, a different `sid` for the same provider, by replacing or deleting the stored secret): releasing a number needs the account it was bought on. Moving the same account's token into the DB is fine.
 - **Twilio** (disabled by default): the admin enters the config first (`sid` = the account SID, `trunk_sid` = the Elastic SIP Trunk that receives the calls of the numbers), then the secret (the account auth token); the secret is refused until both config keys exist. Twilio purchases use the stored credential only (`credential_source: db`); the environment `TWILIO_SID`/`TWILIO_TOKEN` can release numbers but never purchase, and then the provider shows `usable: false`. An enabled Twilio on the environment credential makes the `required_config` counter rise at every resolution of the provider (a purchase, a release, an admin change). API key SIDs (`SK...`) are not supported. A malformed `sid` makes release and search fail, and makes purchases skip Twilio (`provider_unusable_total{reason="factory"}` rises at a purchase while Twilio is enabled); a malformed `trunk_sid` only refuses purchases (`PROVIDER_CONFIG_INVALID`). A Twilio number is delivered to the trunk only when the trunk is set, so do not enable Twilio before the trunk routes to this platform.
