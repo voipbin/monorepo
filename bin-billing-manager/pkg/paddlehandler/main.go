@@ -27,15 +27,15 @@ type PaddleHandler interface {
 	GetPlanTypeByPriceID(priceID string) (account.PlanType, error)
 
 	// VerifyWebhook checks the signature header of a Paddle webhook against the body that was
-	// received. It returns nil when the signature is valid, and also when no webhook secret is
-	// configured (the check is skipped then). ErrSignatureInvalid means that the signature was
-	// rejected, and ErrKeyUnavailable means that the secret could not be read.
+	// received. It returns nil only when the signature is valid. ErrSignatureInvalid means that the
+	// signature was rejected, ErrCredentialNotConfigured means that no webhook secret is stored
+	// (the webhook is rejected), and ErrKeyUnavailable means that the secret could not be read.
 	VerifyWebhook(ctx context.Context, signature string, body []byte) error
 }
 
 // KeyFunc hands a Paddle credential to the handler at the time of use. An empty value with no
-// error means "not configured". An error means that the credential could not be read, and it is
-// never replaced by an empty value.
+// error means "not configured" (the callers answer with ErrCredentialNotConfigured). An error
+// means that the credential could not be read, and it is never replaced by an empty value.
 type KeyFunc = func(ctx context.Context) (string, error)
 
 type paddleHandler struct {
@@ -106,6 +106,9 @@ func (h *paddleHandler) CreatePortalSession(ctx context.Context, paddleCustomerI
 	apiKey, err := h.readKey(ctx, h.apiKey)
 	if err != nil {
 		return "", err
+	}
+	if apiKey == "" {
+		return "", fmt.Errorf("%w: api key", ErrCredentialNotConfigured)
 	}
 
 	reqBody := portalSessionRequest{

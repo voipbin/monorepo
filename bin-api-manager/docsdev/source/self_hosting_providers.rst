@@ -40,11 +40,15 @@ is stored, ``none`` means that the key is not configured. The services
 log a warning or an info line at start for a key that is not configured
 (the key name only).
 
-``billing-manager`` and ``pipecat-manager`` are different: a stored value
-is used first, and the environment variable is used when no value is
-stored. ``billing-manager`` has ``paddle.api_key`` (``PADDLE_API_KEY``)
-and ``paddle.webhook_secret_key`` (``PADDLE_WEBHOOK_SECRET_KEY``).
-``pipecat-manager`` has ``openai.api_key``, ``deepgram.api_key``,
+``billing-manager`` has ``paddle.api_key`` and
+``paddle.webhook_secret_key``. They are read from the stored value only,
+like the keys above: the service does not read an environment variable
+for them. Without a stored ``paddle.webhook_secret_key`` every Paddle
+webhook is rejected, and without a stored ``paddle.api_key`` the customer
+portal session of Paddle can not be created.
+
+``pipecat-manager`` is different: a stored value is used first, and the
+environment variable is used when no value is stored. It has ``openai.api_key``, ``deepgram.api_key``,
 ``cartesia.api_key``, ``xai.api_key``, ``elevenlabs.api_key``,
 ``google.api_key``, ``openrouter.api_key`` and ``local_llm.endpoints``
 (the variables ``OPENAI_API_KEY``, ``DEEPGRAM_API_KEY``,

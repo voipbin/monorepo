@@ -36,8 +36,7 @@ func initHandler() (servicehandler.ServiceHandler, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	// hook-control is a CLI tool, not a webhook receiver — no signature verification needed.
-	return servicehandler.NewServiceHandler(reqHandler, ""), nil
+	return servicehandler.NewServiceHandler(reqHandler), nil
 }
 
 func initCommand() *cobra.Command {

@@ -24,7 +24,8 @@ func billingPaddlePOST(c *gin.Context) {
 	if err := serviceHandler.Billing(ctx, c.Request); err != nil {
 		log.Errorf("Could not handle the billing webhook. err: %v", err)
 
-		// Return 400 for validation errors (bad signature, malformed body) so Paddle does not retry.
+		// Return 400 for validation errors (missing signature header, malformed body, a signature that
+		// billing rejected) so Paddle does not retry.
 		// Return 500 for transient errors (RPC failure) so Paddle retries later.
 		var valErr *servicehandler.ValidationError
 		if errors.As(err, &valErr) {

@@ -28,7 +28,6 @@ func Test_rootCmdFlags(t *testing.T) {
 		{name: "prometheus_listen_address", expectDefault: ":2112"},
 		{name: "ssl_privkey_base64", expectDefault: ""},
 		{name: "ssl_cert_base64", expectDefault: ""},
-		{name: "paddle_webhook_secret_key", expectDefault: ""},
 	}
 
 	for _, tt := range tests {
@@ -172,4 +171,12 @@ func Test_initProm(t *testing.T) {
 		return
 	}
 	t.Fatalf("the prometheus endpoint did not come up in time. last error: %v", lastErr)
+}
+
+// The signature of the Paddle webhooks is verified by the billing service only. The hook service has
+// no secret, so it has no flag for it.
+func Test_rootCmdFlags_noPaddleSecret(t *testing.T) {
+	if f := rootCmd.Flags().Lookup("paddle_webhook_secret_key"); f != nil {
+		t.Errorf("Wrong match. expect: no paddle_webhook_secret_key flag, got: %v", f)
+	}
 }

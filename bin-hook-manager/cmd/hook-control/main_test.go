@@ -170,11 +170,15 @@ func Test_initCommand(t *testing.T) {
 
 	for _, name := range []string{
 		"database_dsn", "prometheus_endpoint", "prometheus_listen_address", "rabbitmq_address",
-		"ssl_privkey_base64", "ssl_cert_base64", "paddle_webhook_secret_key",
+		"ssl_privkey_base64", "ssl_cert_base64",
 	} {
 		if root.PersistentFlags().Lookup(name) == nil {
 			t.Errorf("persistent flag %s is not defined", name)
 		}
+	}
+
+	if root.PersistentFlags().Lookup("paddle_webhook_secret_key") != nil {
+		t.Errorf("persistent flag paddle_webhook_secret_key must not exist")
 	}
 
 	// run a no-op subcommand through Execute so PersistentPreRunE is exercised:

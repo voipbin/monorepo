@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	hmhook "monorepo/bin-hook-manager/models/hook"
 
+	"github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-billing-manager/internal/logtest"
@@ -51,6 +52,7 @@ func Test_processV1HooksPaddlePost_signature(t *testing.T) {
 		{name: "valid signature continues to the event", body: testHookBody, expectVerify: true, expectStatus: 200},
 		{name: "rejected signature is 401 and the event is not processed", verifyErr: fmt.Errorf("%w: mismatch", paddlehandler.ErrSignatureInvalid), body: testHookBody, expectVerify: true, expectStatus: 401},
 		{name: "unreadable key is 500 and the event is not processed", verifyErr: fmt.Errorf("%w: boom", paddlehandler.ErrKeyUnavailable), body: testHookBody, expectVerify: true, expectStatus: 500},
+		{name: "no stored secret is 500 and the event is not processed", verifyErr: fmt.Errorf("%w: webhook secret", paddlehandler.ErrCredentialNotConfigured), body: testHookBody, expectVerify: true, expectStatus: 500},
 		{name: "any other error is 500", verifyErr: errors.New("unexpected"), body: testHookBody, expectVerify: true, expectStatus: 500},
 	}
 
@@ -109,6 +111,7 @@ func Test_processV1HooksPaddlePost_signatureIsNotLogged(t *testing.T) {
 	}{
 		{name: "rejected", verifyErr: fmt.Errorf("%w: mismatch", paddlehandler.ErrSignatureInvalid)},
 		{name: "unreadable key", verifyErr: fmt.Errorf("%w: boom", paddlehandler.ErrKeyUnavailable)},
+		{name: "no stored secret", verifyErr: fmt.Errorf("%w: webhook secret", paddlehandler.ErrCredentialNotConfigured)},
 	}
 
 	for _, tt := range tests {
@@ -149,5 +152,36 @@ func Test_processV1HooksPaddlePost_signatureIsNotLogged(t *testing.T) {
 				t.Errorf("Wrong match. a log line holds the signature or the body: %s", dump)
 			}
 		})
+	}
+}
+
+// A webhook secret that is not stored is reported as an error line of its own, so that the cause
+// (an operator action is missing) is visible and is not mistaken for an unreadable secret.
+func Test_processV1HooksPaddlePost_noStoredSecretIsLogged(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockPaddle := paddlehandler.NewMockPaddleHandler(mc)
+	h := &listenHandler{
+		sockHandler:    sockhandler.NewMockSockHandler(mc),
+		accountHandler: accounthandler.NewMockAccountHandler(mc),
+		paddleHandler:  mockPaddle,
+	}
+
+	mockPaddle.EXPECT().VerifyWebhook(gomock.Any(), testHookSignature, gomock.Any()).
+		Return(fmt.Errorf("%w: webhook secret", paddlehandler.ErrCredentialNotConfigured))
+
+	logs := logtest.New(t)
+	res, err := h.processV1HooksPaddlePost(t.Context(), &sock.Request{
+		URI:    "/v1/hooks/paddle",
+		Method: sock.RequestMethodPost,
+		Data:   buildSignedHookData(t, testHookBody, testHookSignature),
+	})
+	if err != nil || res == nil || res.StatusCode != 500 {
+		t.Fatalf("Wrong match. expect: 500, got: %v %v", res, err)
+	}
+
+	if !logs.HasLevel(logrus.ErrorLevel) || !strings.Contains(logs.Dump(), "is not stored") {
+		t.Errorf("Wrong match. expect: an error line that says the secret is not stored, got: %s", logs.Dump())
 	}
 }

@@ -2,15 +2,14 @@
 // registry and the suppliers that hand the Paddle credentials to the Paddle handler at the time of
 // use.
 //
-// A credential is resolved in this order: a stored value (the database), then the environment
-// variable of the key while no value is stored. A read or decrypt error is an error: it never
-// falls through to the environment.
+// A credential is read from the database only: the keys declare no environment variable and the
+// handler has no environment lookup. A key without a stored value is not configured (an empty
+// value, no error). A read or decrypt error is an error and is never turned into "not configured".
 package billingconfig
 
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/pkg/errors"
@@ -37,20 +36,14 @@ const (
 	logSourcesTimeout = 5 * time.Second
 )
 
-// New creates the config handler of the service on the given store. The environment variable of a
-// key is read with os.LookupEnv, so a key without a stored row keeps the value that the container
-// environment holds.
+// New creates the config handler of the service on the given store. The handler has no environment
+// lookup (nil), so a key without a stored row has no value.
 //
 // An unparsable master key list never stops the service: the error is logged (without any key
 // text) and the handler works without a master key. Secrets can not be written then, and a stored
 // secret is reported as undecryptable.
 // The only error is an invalid registry, which is a programming error.
 func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Option) (confighandler.Handler, error) {
-	return newWithEnv(cfg, store, os.LookupEnv, opts...)
-}
-
-// newWithEnv is New with the lookup of the environment injected, for tests.
-func newWithEnv(cfg *config.Config, store confighandler.Store, env confighandler.EnvLookup, opts ...confighandler.Option) (confighandler.Handler, error) {
 	reg, err := configkeys.NewRegistry()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create the config registry")
@@ -62,17 +55,17 @@ func newWithEnv(cfg *config.Config, store confighandler.Store, env confighandler
 		crypto, _ = secretcrypto.New("", secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
 	}
 
-	return confighandler.NewHandler(reg, store, crypto, env, opts...), nil
+	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
 }
 
 // Supplier returns the function that hands one secret key to the Paddle handler at the time of
 // use. It reads the key on every call and keeps nothing, so a changed key is used by the next call
 // on every replica.
 //
-// A key that is not configured is not an error (an empty value). A read error, a stored secret
-// that can not be decrypted, and a read that ran out of time are returned as an error
-// (paddlehandler.ErrKeyUnavailable) and are never turned into an empty value or into the value of
-// the environment.
+// A key that is not configured is not an error (an empty value): the caller decides what that means
+// (paddlehandler.ErrCredentialNotConfigured). A read error, a stored secret that can not be
+// decrypted, and a read that ran out of time are returned as an error
+// (paddlehandler.ErrKeyUnavailable) and are never turned into an empty value.
 func Supplier(h confighandler.Handler, key string) paddlehandler.KeyFunc {
 	return func(ctx context.Context) (string, error) {
 		cctx, cancel := context.WithTimeout(ctx, readTimeout)
@@ -93,8 +86,8 @@ func PaddleKeys(h confighandler.Handler) (apiKey, webhookSecret paddlehandler.Ke
 }
 
 // LogSources logs, once, where each key comes from (key name and source only, never a value). A
-// webhook secret that is not configured is a warning, because the signature is not checked then.
-// An API key that is not configured is an info line: Paddle is an optional feature of a self
+// webhook secret that is not configured is a warning, because every Paddle webhook is rejected
+// then. An API key that is not configured is an info line: Paddle is an optional feature of a self
 // hosted setup. A stored value that can not be used is an error. A read error is logged as a
 // warning: the service starts anyway.
 func LogSources(ctx context.Context, h confighandler.Handler) {
@@ -115,9 +108,9 @@ func LogSources(ctx context.Context, h confighandler.Handler) {
 		switch r.Source {
 		case confighandler.SourceNone:
 			if r.Key == configkeys.KeyPaddleWebhookSecretKey {
-				entry.Warnf("The config key is not configured, so the webhook signature is not checked. key: %s", r.Key)
+				entry.Warnf("The config key is not configured, so every Paddle webhook is rejected. key: %s", r.Key)
 			} else {
-				entry.Infof("The config key is not configured (optional). key: %s", r.Key)
+				entry.Infof("The config key is not configured (optional), so a portal session can not be created. key: %s", r.Key)
 			}
 		case confighandler.SourceDBUndecryptable, confighandler.SourceDBInvalid:
 			entry.Errorf("The stored config value can not be used. key: %s, source: %s", r.Key, r.Source)

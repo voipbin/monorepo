@@ -689,11 +689,14 @@ environment variable and must be set before a secret can be stored.
 is stored, <code class="docutils literal notranslate"><span class="pre">none</span></code> means that the key is not configured. The services
 log a warning or an info line at start for a key that is not configured
 (the key name only).</p>
-<p><code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> are different: a stored value
-is used first, and the environment variable is used when no value is
-stored. <code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> has <code class="docutils literal notranslate"><span class="pre">paddle.api_key</span></code> (<code class="docutils literal notranslate"><span class="pre">PADDLE_API_KEY</span></code>)
-and <code class="docutils literal notranslate"><span class="pre">paddle.webhook_secret_key</span></code> (<code class="docutils literal notranslate"><span class="pre">PADDLE_WEBHOOK_SECRET_KEY</span></code>).
-<code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> has <code class="docutils literal notranslate"><span class="pre">openai.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">deepgram.api_key</span></code>,
+<p><code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> has <code class="docutils literal notranslate"><span class="pre">paddle.api_key</span></code> and
+<code class="docutils literal notranslate"><span class="pre">paddle.webhook_secret_key</span></code>. They are read from the stored value only,
+like the keys above: the service does not read an environment variable
+for them. Without a stored <code class="docutils literal notranslate"><span class="pre">paddle.webhook_secret_key</span></code> every Paddle
+webhook is rejected, and without a stored <code class="docutils literal notranslate"><span class="pre">paddle.api_key</span></code> the customer
+portal session of Paddle can not be created.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> is different: a stored value is used first, and the
+environment variable is used when no value is stored. It has <code class="docutils literal notranslate"><span class="pre">openai.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">deepgram.api_key</span></code>,
 <code class="docutils literal notranslate"><span class="pre">cartesia.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">xai.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">elevenlabs.api_key</span></code>,
 <code class="docutils literal notranslate"><span class="pre">google.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">openrouter.api_key</span></code> and <code class="docutils literal notranslate"><span class="pre">local_llm.endpoints</span></code>
 (the variables <code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">DEEPGRAM_API_KEY</span></code>,
@@ -833,13 +836,13 @@ write a <code class="docutils literal notranslate"><span class="pre">$</span></c
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">LOCAL_LLM_ENDPOINTS</span></code> (secret, <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> only): a JSON
 object that maps an endpoint name to its connection, for example
-<code class="docutils literal notranslate"><span class="pre">{&quot;vllm-a&quot;:{&quot;base_url&quot;:&quot;http://llm.internal:8000/v1&quot;,&quot;api_key&quot;:&quot;&quot;}}</span></code>.
+<code class="docutils literal notranslate"><span class="pre">{"vllm-a":{"base_url":"http://llm.internal:8000/v1","api_key":""}}</span></code>.
 The name is lower case letters, digits and <code class="docutils literal notranslate"><span class="pre">-</span></code> (up to 32 characters).
 <code class="docutils literal notranslate"><span class="pre">base_url</span></code> is <code class="docutils literal notranslate"><span class="pre">http</span></code> or <code class="docutils literal notranslate"><span class="pre">https</span></code> without user information, query or
 fragment. An empty <code class="docutils literal notranslate"><span class="pre">api_key</span></code> is allowed.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">LOCAL_LLM_MODELS</span></code> (no secret, <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>): a
 JSON list, for example
-<code class="docutils literal notranslate"><span class="pre">[{&quot;endpoint&quot;:&quot;vllm-a&quot;,&quot;id&quot;:&quot;qwen3-8b&quot;,&quot;label&quot;:&quot;Qwen3</span> <span class="pre">8B&quot;,&quot;capabilities&quot;:[&quot;tool-calling&quot;],&quot;default&quot;:false}]</span></code>.
+<code class="docutils literal notranslate"><span class="pre">[{"endpoint":"vllm-a","id":"qwen3-8b","label":"Qwen3</span> <span class="pre">8B","capabilities":["tool-calling"],"default":false}]</span></code>.
 <code class="docutils literal notranslate"><span class="pre">id</span></code> may contain letters, digits and <code class="docutils literal notranslate"><span class="pre">.</span> <span class="pre">_</span> <span class="pre">:</span> <span class="pre">/</span> <span class="pre">-</span></code>. <code class="docutils literal notranslate"><span class="pre">label</span></code> is ASCII
 only (up to 64 characters). <code class="docutils literal notranslate"><span class="pre">capabilities</span></code> may contain <code class="docutils literal notranslate"><span class="pre">tool-calling</span></code>
 and <code class="docutils literal notranslate"><span class="pre">low-cost</span></code>; they are informational. At most one entry should set

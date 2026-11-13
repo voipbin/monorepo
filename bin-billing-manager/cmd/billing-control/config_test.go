@@ -65,7 +65,7 @@ func runConfigCommand(args ...string) error {
 func Test_config_set_list_clear(t *testing.T) {
 	const secret = "synthetic-credential-value"
 
-	// the variable is the fallback while no value is stored
+	// a variable of the former fallback is not read
 	t.Setenv("PADDLE_WEBHOOK_SECRET_KEY", "env-value")
 	store, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, secret+"\n")
 
@@ -89,17 +89,17 @@ func Test_config_set_list_clear(t *testing.T) {
 		!strings.Contains(out.String(), testActor) {
 		t.Errorf("Wrong match. list output: %s", out.String())
 	}
-	if !strings.Contains(out.String(), `"env_shadowed": true`) {
-		t.Errorf("Wrong match. expect: the stored value shadows the variable, list output: %s", out.String())
+	if strings.Contains(out.String(), `"env_shadowed": true`) || strings.Contains(out.String(), "env_name") {
+		t.Errorf("Wrong match. expect: no environment variable for the key, list output: %s", out.String())
 	}
 
 	out.Reset()
 	if err := runConfigCommand("clear", "--key", "paddle.webhook_secret_key", "--actor-id", testActor); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	// the variable is the fallback again, and its value is not printed
-	if !strings.Contains(out.String(), `"source": "env"`) || strings.Contains(out.String(), "env-value") {
-		t.Errorf("Wrong match. expect: source env after the clear, got: %s", out.String())
+	// the key has no value again (the variable is not a fallback), and its value is not printed
+	if !strings.Contains(out.String(), `"source": "none"`) || strings.Contains(out.String(), "env-value") {
+		t.Errorf("Wrong match. expect: source none after the clear, got: %s", out.String())
 	}
 }
 
@@ -251,7 +251,7 @@ func Test_config_throughTheRootCommand(t *testing.T) {
 	}
 
 	if !strings.Contains(out.String(), `"key": "paddle.api_key"`) || !strings.Contains(out.String(), `"key": "paddle.webhook_secret_key"`) ||
-		!strings.Contains(out.String(), `"source": "none"`) || !strings.Contains(out.String(), `"source": "env"`) || strings.Contains(out.String(), "env-access") {
+		!strings.Contains(out.String(), `"source": "none"`) || strings.Contains(out.String(), `"source": "env"`) || strings.Contains(out.String(), "env-access") {
 		t.Errorf("Wrong match. list output: %s", out.String())
 	}
 }

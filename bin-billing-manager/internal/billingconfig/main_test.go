@@ -50,9 +50,9 @@ func setSecret(t *testing.T, h confighandler.Handler, key, value string) {
 	}
 }
 
-// With no stored row the environment variable of the key is the value, for both keys. The
-// suppliers read it at the time of use (the variable is set after the handler exists).
-func Test_Supplier_noRowUsesTheEnvironment(t *testing.T) {
+// With no stored row a key has no value, whatever the process environment holds: the environment
+// variables of the former fallback are not read. This holds for both keys.
+func Test_Supplier_noRowIgnoresTheEnvironment(t *testing.T) {
 	tests := []struct {
 		name string
 		key  string
@@ -64,31 +64,44 @@ func Test_Supplier_noRowUsesTheEnvironment(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// the handler is created from New: the lookup is os.LookupEnv (a nil lookup would
-			// make this test fail, and so would a lookup that is captured at creation)
 			h := newTestHandler(t, &config.Config{}, storetest.NewMemory())
 			supplier := Supplier(h, tt.key)
 
-			t.Setenv(tt.env, "")
+			// the variable is set after the handler exists, so both the creation and the use are covered
+			t.Setenv(tt.env, "env-value-"+tt.name)
 			if v, err := supplier(context.Background()); err != nil || v != "" {
 				t.Errorf("Wrong match. expect: not configured, got: %q %v", v, err)
 			}
 
-			t.Setenv(tt.env, "env-value-"+tt.name)
-			if v, err := supplier(context.Background()); err != nil || v != "env-value-"+tt.name {
-				t.Errorf("Wrong match. expect: the environment value, got: %q %v", v, err)
-			}
-
 			_, res, err := h.Secret(context.Background(), tt.key)
-			if err != nil || res.Source != confighandler.SourceEnv || res.EnvShadowed {
-				t.Errorf("Wrong match. expect: source env, got: %+v %v", res, err)
+			if err != nil || res.Source != confighandler.SourceNone || res.EnvShadowed {
+				t.Errorf("Wrong match. expect: source none and nothing shadowed, got: %+v %v", res, err)
 			}
 		})
 	}
 }
 
-// With a stored row the stored value wins and the environment is shadowed, for both keys.
-func Test_Supplier_rowWinsOverTheEnvironment(t *testing.T) {
+// New builds the handler without an environment lookup: a variable of the process never reaches a
+// key, even while the stored value is cleared again.
+func Test_New_hasNoEnvironmentLookup(t *testing.T) {
+	t.Setenv("PADDLE_API_KEY", "process-env-value")
+	t.Setenv("PADDLE_WEBHOOK_SECRET_KEY", "process-env-value")
+
+	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
+	for _, key := range []string{configkeys.KeyPaddleAPIKey, configkeys.KeyPaddleWebhookSecretKey} {
+		setSecret(t, h, key, "stored-value")
+		if _, err := h.Clear(context.Background(), uuid.Must(uuid.NewV4()), key); err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
+
+		if v, err := Supplier(h, key)(context.Background()); err != nil || v != "" {
+			t.Errorf("Wrong match. %s: expect: no value after the clear, got: %q %v", key, v, err)
+		}
+	}
+}
+
+// A stored value is the value, and no variable is reported as shadowed, for both keys.
+func Test_Supplier_storedValue(t *testing.T) {
 	tests := []struct {
 		name string
 		key  string
@@ -108,47 +121,14 @@ func Test_Supplier_rowWinsOverTheEnvironment(t *testing.T) {
 				t.Errorf("Wrong match. expect: the stored value, got: %q %v", v, err)
 			}
 			_, res, _ := h.Secret(context.Background(), tt.key)
-			if res.Source != confighandler.SourceDB || !res.EnvShadowed {
-				t.Errorf("Wrong match. expect: source db and env shadowed, got: %+v", res)
+			if res.Source != confighandler.SourceDB || res.EnvShadowed {
+				t.Errorf("Wrong match. expect: source db and nothing shadowed, got: %+v", res)
 			}
 		})
 	}
 }
 
-// New hands os.LookupEnv to the library. A handler that is built with another lookup does not see
-// the process environment, which tells New (os.LookupEnv) from a nil lookup.
-func Test_New_usesTheProcessEnvironment(t *testing.T) {
-	t.Setenv("PADDLE_API_KEY", "process-env-value")
-
-	viaNew := Supplier(newTestHandler(t, &config.Config{}, storetest.NewMemory()), configkeys.KeyPaddleAPIKey)
-	if v, err := viaNew(context.Background()); err != nil || v != "process-env-value" {
-		t.Errorf("Wrong match. expect: the value of the process environment, got: %q %v", v, err)
-	}
-
-	nilEnv, err := newWithEnv(&config.Config{}, storetest.NewMemory(), nil)
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	if v, errGet := Supplier(nilEnv, configkeys.KeyPaddleAPIKey)(context.Background()); errGet != nil || v != "" {
-		t.Errorf("Wrong match. expect: nothing from a nil lookup, got: %q %v", v, errGet)
-	}
-
-	fake := func(name string) (string, bool) {
-		if name == "PADDLE_API_KEY" {
-			return "fake-value", true
-		}
-		return "", false
-	}
-	injected, err := newWithEnv(&config.Config{}, storetest.NewMemory(), fake)
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	if v, errGet := Supplier(injected, configkeys.KeyPaddleAPIKey)(context.Background()); errGet != nil || v != "fake-value" {
-		t.Errorf("Wrong match. expect: the injected value, got: %q %v", v, errGet)
-	}
-}
-
-// A change of the stored value or of the variable is used by the next call of the same supplier.
+// A change of the stored value is used by the next call of the same supplier.
 func Test_Supplier_resolvedAtRequestTime(t *testing.T) {
 	t.Setenv("PADDLE_WEBHOOK_SECRET_KEY", "env-1")
 	store := storetest.NewMemory()
@@ -161,15 +141,15 @@ func Test_Supplier_resolvedAtRequestTime(t *testing.T) {
 		act    func()
 		expect string
 	}{
-		{"environment", func() {}, "env-1"},
-		{"environment changed", func() { t.Setenv("PADDLE_WEBHOOK_SECRET_KEY", "env-2") }, "env-2"},
+		{"nothing stored", func() {}, ""},
+		{"environment changed", func() { t.Setenv("PADDLE_WEBHOOK_SECRET_KEY", "env-2") }, ""},
 		{"stored", func() { setSecret(t, h, configkeys.KeyPaddleWebhookSecretKey, "db-1") }, "db-1"},
 		{"stored again", func() { setSecret(t, h, configkeys.KeyPaddleWebhookSecretKey, "db-2") }, "db-2"},
 		{"cleared", func() {
 			if _, err := h.Clear(ctx, uuid.Must(uuid.NewV4()), configkeys.KeyPaddleWebhookSecretKey); err != nil {
 				t.Fatalf("Wrong match. expect: ok, got: %v", err)
 			}
-		}, "env-2"},
+		}, ""},
 	}
 	for _, step := range steps {
 		step.act()
@@ -179,8 +159,9 @@ func Test_Supplier_resolvedAtRequestTime(t *testing.T) {
 	}
 }
 
-// A read or decrypt error is an error and never falls through to the environment variable.
-func Test_Supplier_readErrorsDoNotFallBack(t *testing.T) {
+// A read or decrypt error is an error and is never turned into "not configured" (the variables of
+// the process are set to show that they play no part).
+func Test_Supplier_readErrorsAreErrors(t *testing.T) {
 	t.Setenv("PADDLE_API_KEY", "env-api")
 	t.Setenv("PADDLE_WEBHOOK_SECRET_KEY", "env-webhook")
 
@@ -238,8 +219,8 @@ func Test_Supplier_readErrorsDoNotFallBack(t *testing.T) {
 		store.GetErrByKey = map[string]error{configkeys.KeyPaddleWebhookSecretKey: errors.New("read failed")}
 		h := newTestHandler(t, &config.Config{}, store)
 
-		if v, err := Supplier(h, configkeys.KeyPaddleAPIKey)(context.Background()); err != nil || v != "env-api" {
-			t.Errorf("Wrong match. expect: the other key is read, got: %q %v", v, err)
+		if v, err := Supplier(h, configkeys.KeyPaddleAPIKey)(context.Background()); err != nil || v != "" {
+			t.Errorf("Wrong match. expect: the other key is read (not configured), got: %q %v", v, err)
 		}
 		if v, err := Supplier(h, configkeys.KeyPaddleWebhookSecretKey)(context.Background()); !errors.Is(err, paddlehandler.ErrKeyUnavailable) || v != "" {
 			t.Errorf("Wrong match. expect: ErrKeyUnavailable, got: %q %v", v, err)
@@ -295,7 +276,8 @@ func Test_Supplier_bounds(t *testing.T) {
 	}
 }
 
-// No key value reaches an error text or a log line, from the environment or from the database.
+// No key value reaches an error text or a log line, from the database (the variables of the
+// process are set to show that none of them is read or logged).
 func Test_Supplier_holdsNoValueInErrorsOrLogs(t *testing.T) {
 	const secret = "synthetic-credential-text"
 	t.Setenv("PADDLE_API_KEY", secret)
@@ -338,16 +320,15 @@ func Test_New_badMasterKeyIsLoggedWithoutTheText(t *testing.T) {
 	}
 }
 
-// Without a master key list the handler is created without an error, the environment still serves
-// the keys, and an empty list is not reported as an error.
+// Without a master key list the handler is created without an error, a key without a stored row
+// is not configured, and an empty list is not reported as an error.
 func Test_New_noMasterKey(t *testing.T) {
-	t.Setenv("PADDLE_API_KEY", "env-api")
 	logs := logtest.New(t)
 
 	h := newTestHandler(t, &config.Config{}, storetest.NewMemory())
 
-	if v, err := Supplier(h, configkeys.KeyPaddleAPIKey)(context.Background()); err != nil || v != "env-api" {
-		t.Errorf("Wrong match. expect: the environment value, got: %q %v", v, err)
+	if v, err := Supplier(h, configkeys.KeyPaddleAPIKey)(context.Background()); err != nil || v != "" {
+		t.Errorf("Wrong match. expect: not configured, got: %q %v", v, err)
 	}
 	if _, err := h.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), configkeys.KeyPaddleWebhookSecretKey, "x"); !errors.Is(err, confighandler.ErrKeyNotConfigured) {
 		t.Errorf("Wrong match. expect: key not configured, got: %v", err)
@@ -358,21 +339,22 @@ func Test_New_noMasterKey(t *testing.T) {
 }
 
 func Test_PaddleKeys(t *testing.T) {
-	t.Setenv("PADDLE_API_KEY", "env-api")
-	t.Setenv("PADDLE_WEBHOOK_SECRET_KEY", "env-webhook")
+	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
+	setSecret(t, h, configkeys.KeyPaddleAPIKey, "stored-api")
+	setSecret(t, h, configkeys.KeyPaddleWebhookSecretKey, "stored-webhook")
 
-	apiKey, webhookSecret := PaddleKeys(newTestHandler(t, &config.Config{}, storetest.NewMemory()))
-	if v, err := apiKey(context.Background()); err != nil || v != "env-api" {
-		t.Errorf("Wrong match. expect: env-api, got: %q %v", v, err)
+	apiKey, webhookSecret := PaddleKeys(h)
+	if v, err := apiKey(context.Background()); err != nil || v != "stored-api" {
+		t.Errorf("Wrong match. expect: stored-api, got: %q %v", v, err)
 	}
-	if v, err := webhookSecret(context.Background()); err != nil || v != "env-webhook" {
-		t.Errorf("Wrong match. expect: env-webhook, got: %q %v", v, err)
+	if v, err := webhookSecret(context.Background()); err != nil || v != "stored-webhook" {
+		t.Errorf("Wrong match. expect: stored-webhook, got: %q %v", v, err)
 	}
 }
 
-// LogSources: the webhook secret that is not configured is a warning (the signature is not
-// checked), the API key that is not configured is an info line, a value from the environment or the
-// database is an info line, an unusable stored value is an error, and no line holds a value.
+// LogSources: the webhook secret that is not configured is a warning (every webhook is rejected),
+// the API key that is not configured is an info line, a value from the database is an info line, an
+// unusable stored value is an error, and no line holds a value.
 func Test_LogSources(t *testing.T) {
 	t.Run("nothing configured", func(t *testing.T) {
 		t.Setenv("PADDLE_API_KEY", "")
@@ -387,6 +369,9 @@ func Test_LogSources(t *testing.T) {
 		if levels[configkeys.KeyPaddleWebhookSecretKey] != logrus.WarnLevel {
 			t.Errorf("Wrong match. expect: a warning for the webhook secret, got: %v", levels)
 		}
+		if !strings.Contains(logs.Dump(), "every Paddle webhook is rejected") || strings.Contains(logs.Dump(), "is not checked") {
+			t.Errorf("Wrong match. expect: the warning to say that webhooks are rejected, got: %s", logs.Dump())
+		}
 		if levels[configkeys.KeyPaddleAPIKey] != logrus.InfoLevel {
 			t.Errorf("Wrong match. expect: an info line for the API key, got: %v", levels)
 		}
@@ -395,7 +380,7 @@ func Test_LogSources(t *testing.T) {
 		}
 	})
 
-	t.Run("environment and database are info", func(t *testing.T) {
+	t.Run("none and database are info", func(t *testing.T) {
 		t.Setenv("PADDLE_API_KEY", "env-api-text")
 		t.Setenv("PADDLE_WEBHOOK_SECRET_KEY", "")
 		store := storetest.NewMemory()
@@ -412,7 +397,7 @@ func Test_LogSources(t *testing.T) {
 				t.Errorf("Wrong match. expect: info lines only, got: %v %s", e.Level, e.Message)
 			}
 		}
-		if sources[configkeys.KeyPaddleAPIKey] != confighandler.SourceEnv || sources[configkeys.KeyPaddleWebhookSecretKey] != confighandler.SourceDB {
+		if sources[configkeys.KeyPaddleAPIKey] != confighandler.SourceNone || sources[configkeys.KeyPaddleWebhookSecretKey] != confighandler.SourceDB {
 			t.Errorf("Wrong match. got: %v", sources)
 		}
 		logs.AssertAbsent(t, "env-api-text", "stored-secret-text")

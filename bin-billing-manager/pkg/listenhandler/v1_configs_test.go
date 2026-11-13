@@ -110,8 +110,9 @@ func Test_processRequest_configs(t *testing.T) {
 	}
 	names := []string{}
 	for _, k := range service.Keys {
+		// the keys are read from the database only: no environment name is reported
 		names = append(names, k.Key)
-		if k.Description == "" || k.EnvName == "" || k.Kind != "secret" {
+		if k.Description == "" || k.EnvName != "" || k.Kind != "secret" {
 			t.Errorf("Wrong match. got: %+v", k)
 		}
 	}

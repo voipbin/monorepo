@@ -62,14 +62,13 @@ func cmdConfig() *cobra.Command {
 		Long: `Stored platform configuration: the Paddle credentials of the billing service (paddle.api_key and
 paddle.webhook_secret_key). They are platform credentials.
 
-A stored value wins. While no value is stored, the environment variable of the key (PADDLE_API_KEY,
-PADDLE_WEBHOOK_SECRET_KEY) is used; "list" shows the source of each key and whether a stored value
-shadows the variable. The variable that "list" sees is the one of this process, which can differ
-from the one of the daemon. A change is used by the next call, with no restart.
+The keys are read from the database only: there is no environment variable fallback. "list" shows
+the source of each key (db or none) and never a value. A change is used by the next call, with no
+restart.
 
-While a webhook secret exists, the signature of every Paddle webhook is checked. A stored webhook
-secret must be the same value as the one of the hook service, and it must be stored only after every
-replica of the billing service and the hook service run the version that reads it.
+Without a stored webhook secret every Paddle webhook is rejected, and without a stored API key no
+customer portal session can be created. The stored webhook secret must be the value that Paddle
+signs with. See docs/operations.md for the order of the deployment and the rollback.
 
 The daemon applies the table migration at its start; on a local database run "migrate up" first.
 The master key list is read from the environment (BILLING_CONFIG_ENCRYPTION_KEYS) and is never a
@@ -112,7 +111,7 @@ one line is refused.`,
 func cmdConfigClear() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clear",
-		Short: "Remove the stored value of a key (the environment variable of the key is used again, if it is set)",
+		Short: "Remove the stored value of a key (the key has no value again: Paddle webhooks are rejected until one is stored)",
 		RunE:  runConfigClear,
 	}
 

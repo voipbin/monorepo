@@ -16,6 +16,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-common-handler/pkg/confighandler"
+
 	"monorepo/bin-billing-manager/internal/logtest"
 	"monorepo/bin-billing-manager/models/account"
 )
@@ -93,7 +95,8 @@ func newVerifyHandler(secret KeyFunc) *paddleHandler {
 	return &paddleHandler{webhookSecret: secret, priceMap: map[string]account.PlanType{}}
 }
 
-func Test_VerifyWebhook_noKeyIsSkipped(t *testing.T) {
+// With no stored secret the webhook is rejected, whatever the signature is: the check fails closed.
+func Test_VerifyWebhook_noKeyIsRejected(t *testing.T) {
 	tests := []struct {
 		name   string
 		secret KeyFunc
@@ -106,10 +109,14 @@ func Test_VerifyWebhook_noKeyIsSkipped(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := newVerifyHandler(tt.secret)
 
-			// the signature does not matter without a key: empty, garbage and valid all pass
-			for _, signature := range []string{"", "garbage", sign(testSecret, time.Now().Unix(), testBody)} {
-				if err := h.VerifyWebhook(context.Background(), signature, []byte(testBody)); err != nil {
-					t.Errorf("Wrong match. expect: nil (check skipped), got: %v", err)
+			// empty, garbage, valid in form and expired signatures are all rejected with the same error
+			for _, signature := range []string{"", "garbage", sign(testSecret, time.Now().Unix(), testBody), sign(testSecret, time.Now().Unix()-3600, testBody)} {
+				err := h.VerifyWebhook(context.Background(), signature, []byte(testBody))
+				if !errors.Is(err, ErrCredentialNotConfigured) {
+					t.Fatalf("Wrong match. expect: ErrCredentialNotConfigured, got: %v", err)
+				}
+				if errors.Is(err, ErrSignatureInvalid) || errors.Is(err, ErrKeyUnavailable) || errors.Is(err, confighandler.ErrKeyNotConfigured) {
+					t.Errorf("Wrong match. the error must not look like another kind of error: %v", err)
 				}
 			}
 		})
@@ -136,7 +143,7 @@ func Test_VerifyWebhook_withKey(t *testing.T) {
 	}
 }
 
-// A key that can not be read is an error of its own kind. It is never "no key" (skipped check) and
+// A key that can not be read is an error of its own kind. It is never "no key" and
 // never a rejected signature.
 func Test_VerifyWebhook_keyError(t *testing.T) {
 	tests := []struct {
@@ -183,32 +190,82 @@ func Test_VerifyWebhook_resolvedAtRequestTime(t *testing.T) {
 		t.Errorf("Wrong match. expect: nil for key B, got: %v", err)
 	}
 
-	// the secret disappears: the check is skipped again
+	// the secret disappears: the webhook is rejected
 	current = ""
-	if err := h.VerifyWebhook(ctx, "", []byte(testBody)); err != nil {
-		t.Errorf("Wrong match. expect: nil (skipped), got: %v", err)
+	if err := h.VerifyWebhook(ctx, sign("key-b", now, testBody), []byte(testBody)); !errors.Is(err, ErrCredentialNotConfigured) {
+		t.Errorf("Wrong match. expect: ErrCredentialNotConfigured, got: %v", err)
 	}
 }
 
-// The logs of the check hold the rejection category only: no signature, body, or secret.
-func Test_VerifyWebhook_logsHoldNoSecret(t *testing.T) {
+// The errors and the logs of the check hold the rejection category only: no signature, body, or
+// secret.
+func Test_VerifyWebhook_errorsAndLogsHoldNoSecret(t *testing.T) {
 	logs := logtest.New(t)
 	ctx := context.Background()
 
-	// no key: a warning without any text of the request
-	skipped := newVerifyHandler(nil)
-	if err := skipped.VerifyWebhook(ctx, "ts=1;h1=signature-text", []byte("body-text")); err != nil {
-		t.Fatalf("Wrong match. expect: nil, got: %v", err)
+	// no key: the error is returned and the check logs nothing
+	rejected := newVerifyHandler(nil)
+	err := rejected.VerifyWebhook(ctx, "ts=1;h1=signature-text", []byte("body-text"))
+	if !errors.Is(err, ErrCredentialNotConfigured) {
+		t.Fatalf("Wrong match. expect: ErrCredentialNotConfigured, got: %v", err)
 	}
-	if !logs.HasLevel(logrus.WarnLevel) {
-		t.Errorf("Wrong match. expect: a warning for the skipped check")
+	if logs.HasLevel(logrus.WarnLevel) {
+		t.Errorf("Wrong match. expect: no warning from the check")
+	}
+	for _, text := range []string{"signature-text", "body-text"} {
+		if strings.Contains(err.Error(), text) {
+			t.Errorf("Wrong match. expect: no request text in the error, got: %v", err)
+		}
 	}
 
-	// a rejected check: the error is returned, and nothing of the request is logged
+	// a rejected check: the error is returned, and nothing of the request is in it
 	h := newVerifyHandler(staticKey(testSecret))
-	_ = h.VerifyWebhook(ctx, "ts=1;h1=signature-text", []byte("body-text"))
+	err = h.VerifyWebhook(ctx, "ts=1;h1=signature-text", []byte("body-text"))
+	for _, text := range []string{testSecret, "signature-text", "body-text"} {
+		if err == nil || strings.Contains(err.Error(), text) {
+			t.Errorf("Wrong match. expect: a rejection without request text, got: %v", err)
+		}
+	}
+}
 
-	logs.AssertAbsent(t, testSecret, "signature-text", "body-text")
+// A portal session without a stored API key stops before any request leaves.
+func Test_CreatePortalSession_noKey(t *testing.T) {
+	tests := []struct {
+		name   string
+		apiKey KeyFunc
+	}{
+		{name: "no function", apiKey: nil},
+		{name: "empty value", apiKey: staticKey("")},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			requests := 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests++
+				w.WriteHeader(http.StatusCreated)
+			}))
+			defer server.Close()
+
+			h := &paddleHandler{
+				apiKey:     tt.apiKey,
+				baseURL:    server.URL,
+				httpClient: http.DefaultClient,
+				priceMap:   map[string]account.PlanType{},
+			}
+
+			url, err := h.CreatePortalSession(context.Background(), "ctm_synthetic_001")
+			if !errors.Is(err, ErrCredentialNotConfigured) || url != "" {
+				t.Errorf("Wrong match. expect: ErrCredentialNotConfigured and no url, got: %q %v", url, err)
+			}
+			if errors.Is(err, ErrKeyUnavailable) {
+				t.Errorf("Wrong match. a key that is not stored is not an unreadable key")
+			}
+			if requests != 0 {
+				t.Errorf("Wrong match. expect: no request to Paddle, got: %d", requests)
+			}
+		})
+	}
 }
 
 func Test_CreatePortalSession_keyResolvedPerCall(t *testing.T) {

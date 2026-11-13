@@ -17,7 +17,8 @@ func Test_NewRegistry(t *testing.T) {
 	}
 }
 
-// Test_goldenKinds pins the kind, the type and the environment name of every key. A key name is
+// Test_goldenKinds pins the kind, the type and the environment name (none: the keys are read from
+// the database only) of every key. A key name is
 // never moved to another kind: rows and history that exist under the old meaning would be
 // read as the new one. Declare a new key name instead, and update this table in the same change.
 func Test_goldenKinds(t *testing.T) {
@@ -28,8 +29,8 @@ func Test_goldenKinds(t *testing.T) {
 		env    string
 		maxLen int
 	}{
-		{"paddle.api_key", confighandler.KindSecret, confighandler.TypeString, "PADDLE_API_KEY", 512},
-		{"paddle.webhook_secret_key", confighandler.KindSecret, confighandler.TypeString, "PADDLE_WEBHOOK_SECRET_KEY", 512},
+		{"paddle.api_key", confighandler.KindSecret, confighandler.TypeString, "", 512},
+		{"paddle.webhook_secret_key", confighandler.KindSecret, confighandler.TypeString, "", 512},
 	}
 
 	keys := Keys()
