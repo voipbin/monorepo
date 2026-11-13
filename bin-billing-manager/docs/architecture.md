@@ -53,7 +53,7 @@ The `listenhandler` consumes from queue `bin-manager.billing-manager.request` an
 | GET | `/v1/accounts/{uuid}/is_valid_resource_limit` | Check resource limit |
 | PUT | `/v1/accounts/{uuid}/payment_info` | Update payment info |
 | GET | `/v1/accounts/{uuid}/paddle_portal_session` | Get Paddle billing portal URL |
-| POST | `/v1/hooks/paddle` | Process Paddle subscription/transaction webhook. The signature is checked first while `paddle.webhook_secret_key` exists (rejected: 401, key unreadable: 500) |
+| POST | `/v1/hooks/paddle` | Process Paddle subscription/transaction webhook. The signature is verified with the stored `paddle.webhook_secret_key` (rejected: 401, secret not stored or unreadable: 500) |
 | GET | `/v1/configs` | List the Paddle credential config keys with their resolved state (admin, no secret material), served by `configrpc` (routed before the request log entry, nothing of a config request is logged) |
 | PUT | `/v1/configs/{key}/secret` | Store a secret, write-only, with an expected revision (admin; `actor_id` required) |
 | DELETE | `/v1/configs/{key}` | Delete the stored value, with an expected revision (admin; `actor_id` required) |

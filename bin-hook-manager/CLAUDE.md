@@ -7,7 +7,7 @@ Public-facing HTTPS webhook gateway. Receives inbound HTTP webhook requests from
 ## Docs index
 
 - [docs/architecture.md](docs/architecture.md) — component layout, execution model (HTTP→RabbitMQ bridge), routing table
-- [docs/domain.md](docs/domain.md) — webhook types, Paddle verification, service handler interface
+- [docs/domain.md](docs/domain.md) — webhook types, Paddle forwarding, service handler interface
 - [docs/dependencies.md](docs/dependencies.md) — local monorepo deps, external services, target queues
 - [docs/operations.md](docs/operations.md) — config flags, CLI tool, common commands
 

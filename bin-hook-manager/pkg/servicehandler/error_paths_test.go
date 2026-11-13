@@ -10,7 +10,6 @@ import (
 	"strings"
 	"testing"
 	"testing/iotest"
-	"time"
 
 	gomock "go.uber.org/mock/gomock"
 
@@ -107,7 +106,7 @@ func Test_Billing_BodyReadError(t *testing.T) {
 			defer mc.Finish()
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			h := &serviceHandler{reqHandler: mockReq, paddleWebhookSecret: "synthetic-secret"}
+			h := &serviceHandler{reqHandler: mockReq}
 
 			r, _ := http.NewRequest(http.MethodPost, "http://hook.example.com/v1.0/billing/paddle", body())
 
@@ -153,7 +152,7 @@ func Test_Billing_BodySizeBoundary(t *testing.T) {
 			defer mc.Finish()
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			h := &serviceHandler{reqHandler: mockReq, paddleWebhookSecret: "synthetic-secret"}
+			h := &serviceHandler{reqHandler: mockReq}
 
 			r, _ := http.NewRequest(http.MethodPost, "http://hook.example.com/v1.0/billing/paddle", bytes.NewReader(make([]byte, tt.size)))
 
@@ -165,35 +164,6 @@ func Test_Billing_BodySizeBoundary(t *testing.T) {
 			}
 			if !strings.Contains(err.Error(), tt.expectMessage) {
 				t.Errorf("Wrong match. expect message containing: %s, got: %v", tt.expectMessage, err)
-			}
-		})
-	}
-}
-
-func Test_verifyPaddleSignature_MissingFields(t *testing.T) {
-	freshTS := fmt.Sprintf("%d", time.Now().Unix())
-	body := []byte(`{"event":"synthetic"}`)
-	validMAC := hmacSHA256("synthetic-secret", freshTS, body)
-
-	tests := []struct {
-		name string
-
-		signature string
-	}{
-		{name: "empty h1 value", signature: "ts=" + freshTS + ";h1="},
-		{name: "empty ts value", signature: "ts=;h1=" + validMAC},
-		{name: "neither field present", signature: "x=1;y=2"},
-		{name: "h1 present without ts", signature: "h1=" + validMAC + ";x=1"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := verifyPaddleSignature("synthetic-secret", tt.signature, body)
-			if err == nil {
-				t.Fatalf("Wrong match. expect: error, got: nil")
-			}
-			if !strings.Contains(err.Error(), "missing ts or h1") {
-				t.Errorf("Wrong match. expect: missing ts or h1, got: %v", err)
 			}
 		})
 	}

@@ -255,7 +255,6 @@ func Test_LoadGlobalConfig_fields(t *testing.T) {
 	viper.Set("rabbitmq_address", "amqp://rabbit-value")
 	viper.Set("ssl_privkey_base64", "privkey-value")
 	viper.Set("ssl_cert_base64", "cert-value")
-	viper.Set("paddle_webhook_secret_key", "paddle-value")
 
 	LoadGlobalConfig()
 
@@ -266,7 +265,6 @@ func Test_LoadGlobalConfig_fields(t *testing.T) {
 		RabbitMQAddress:         "amqp://rabbit-value",
 		SSLPrivkeyBase64:        "privkey-value",
 		SSLCertBase64:           "cert-value",
-		PaddleWebhookSecretKey:  "paddle-value",
 	}
 	if got := *Get(); got != want {
 		t.Errorf("Wrong match.\nexpect: %+v\ngot: %+v", want, got)

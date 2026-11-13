@@ -10,19 +10,23 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 // signatureTolerance is the largest allowed distance between the timestamp of a webhook signature
-// and the clock, in both directions. It is the same window that the hook service applies.
+// and the clock, in both directions.
 const signatureTolerance = 300 * time.Second
 
 var (
 	// ErrSignatureInvalid is returned when the signature of a webhook is rejected: it does not match,
-	// it is outside of the time window, it is malformed, or it is missing while a secret is
-	// configured. The error holds no signature, timestamp, body or key text.
+	// it is outside of the time window, it is malformed, or it is missing. The error holds no
+	// signature, timestamp, body or key text.
 	ErrSignatureInvalid = errors.New("the webhook signature is not valid")
+
+	// ErrCredentialNotConfigured is returned when a Paddle credential is needed and no value is
+	// stored for it: the webhook secret for the signature check, the API key for a portal session.
+	// It is not ErrKeyUnavailable (a value that could not be read) and not a rejected signature.
+	// The error holds no key text.
+	ErrCredentialNotConfigured = errors.New("the paddle credential is not configured")
 
 	// ErrKeyUnavailable is returned when a Paddle credential could not be read: a database read
 	// error, a stored secret that can not be decrypted, or a read that ran out of time. It is never
@@ -52,8 +56,8 @@ func (h *paddleHandler) readKey(ctx context.Context, f KeyFunc) (string, error) 
 // VerifyWebhook checks the Paddle-Signature header of a webhook against the body that was
 // received. The secret is read for every call and kept nowhere.
 //
-//   - No secret is configured: the check is skipped and nil is returned (a warning without any key
-//     text is logged).
+//   - No secret is stored: ErrCredentialNotConfigured. The webhook is rejected (fail closed),
+//     whatever the signature is.
 //   - The secret can not be read: ErrKeyUnavailable. The caller must not treat it as "no secret".
 //   - A secret exists: nil for a valid signature, ErrSignatureInvalid for every other case.
 func (h *paddleHandler) VerifyWebhook(ctx context.Context, signature string, body []byte) error {
@@ -63,16 +67,15 @@ func (h *paddleHandler) VerifyWebhook(ctx context.Context, signature string, bod
 	}
 
 	if secret == "" {
-		logrus.WithField("func", "VerifyWebhook").Warn("No Paddle webhook secret is configured, so the webhook signature is not checked.")
-		return nil
+		return fmt.Errorf("%w: webhook secret", ErrCredentialNotConfigured)
 	}
 
 	return verifySignature(secret, signature, body, time.Now())
 }
 
-// verifySignature verifies the Paddle-Signature header with HMAC-SHA256. It follows the check of
-// the hook service: the format is "ts=<timestamp>;h1=<hash>", and the hash is
-// HMAC-SHA256(secret, ts + ":" + body) in lower case hex. The error carries a category only.
+// verifySignature verifies the Paddle-Signature header with HMAC-SHA256. The format is
+// "ts=<timestamp>;h1=<hash>", and the hash is HMAC-SHA256(secret, ts + ":" + body) in lower case
+// hex. The error carries a category only.
 func verifySignature(secret, signature string, body []byte, now time.Time) error {
 	if signature == "" {
 		return fmt.Errorf("%w: missing", ErrSignatureInvalid)

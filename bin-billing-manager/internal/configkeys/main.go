@@ -2,8 +2,8 @@
 //
 // The two keys are the Paddle credentials of the service: the API key that opens a customer
 // portal session, and the secret that signs the webhooks of Paddle. They are independent secret
-// keys. Each one is read at the time of use: a stored value wins, and the environment variable
-// of the key is the fallback while no value is stored (see billingconfig).
+// keys. Each one is read from the database at the time of use. The keys have no environment
+// variable and no default: a key without a stored value is not configured (see billingconfig).
 package configkeys
 
 import (
@@ -23,20 +23,20 @@ const (
 	// portal session).
 	KeyPaddleAPIKey = "paddle.api_key"
 
-	// KeyPaddleWebhookSecretKey is the secret that signs the webhooks of Paddle. The signature of
-	// a webhook is checked only while a value exists.
+	// KeyPaddleWebhookSecretKey is the secret that signs the webhooks of Paddle. A webhook is
+	// rejected while no value is stored.
 	KeyPaddleWebhookSecretKey = "paddle.webhook_secret_key"
 )
 
 // maxSecretLen is the longest accepted Paddle credential in bytes.
 const maxSecretLen = 512
 
-// Keys returns the declarations. A key without a stored row is read from the environment variable
-// that is named here.
+// Keys returns the declarations. A key declares no environment variable, so a key without a
+// stored row has no value.
 func Keys() []confighandler.Key {
 	return []confighandler.Key{
-		{Name: KeyPaddleAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: "PADDLE_API_KEY", Description: "API key for the calls to the Paddle API (customer portal session). A stored value wins over the environment variable.", MaxLen: maxSecretLen},
-		{Name: KeyPaddleWebhookSecretKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: "PADDLE_WEBHOOK_SECRET_KEY", Description: "Secret that signs the Paddle webhooks. The signature is checked only while a value exists. A stored value must equal the value of the hook service.", MaxLen: maxSecretLen},
+		{Name: KeyPaddleAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "API key for the calls to the Paddle API (customer portal session). Without a stored value a portal session can not be created.", MaxLen: maxSecretLen},
+		{Name: KeyPaddleWebhookSecretKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "Secret that signs the Paddle webhooks. Without a stored value every Paddle webhook is rejected.", MaxLen: maxSecretLen},
 	}
 }
 

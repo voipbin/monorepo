@@ -145,9 +145,6 @@
     },
     {
       "flag": "ssl_cert_base64"
-    },
-    {
-      "flag": "paddle_webhook_secret_key"
     }
   ],
   "metrics": [],

@@ -128,9 +128,9 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	// The Paddle credentials are read from the database first and from the environment variable
-	// of the key while no value is stored. They are read when they are used, so a changed key is
-	// used by the next call. A read error is an error, never the environment.
+	// The Paddle credentials are read from the database only. They are read when they are used,
+	// so a changed key is used by the next call. A key that is not stored is not configured (a
+	// webhook is rejected, a portal session fails), and a read error is an error.
 	configHandler, errConfig := billingconfig.New(config.Get(), dbhandler.NewConfigStore(sqlDB))
 	if errConfig != nil {
 		return errors.Wrapf(errConfig, "could not create the config handler")

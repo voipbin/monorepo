@@ -3,7 +3,7 @@
 ## Purpose
 
 `bin-hook-manager` is a **thin proxy** — it has minimal domain logic. Its role is to:
-1. Authenticate/verify incoming webhooks (where platform requires it, e.g. Paddle signature)
+1. Reject requests that can not be genuine (for Paddle: a missing `Paddle-Signature` header or an oversized body). Signatures are verified by the receiving service, not here
 2. Transform HTTP payloads into RabbitMQ messages
 3. Route to the correct internal service based on URL path
 
@@ -21,15 +21,15 @@ Forwarded to: `message-manager`
 Inbound conversation events (LINE platform webhooks, etc.).
 Forwarded to: `conversation-manager`
 
-## Paddle Webhook Verification
+## Paddle Webhook Forwarding
 
-`bin-hook-manager` handles billing webhooks from Paddle (payment processor). Paddle webhooks are verified using `paddle_webhook_secret_key` before forwarding. The verified `Paddle-Signature` header is forwarded to billing as `received_signature`, and billing verifies it again. A 401 answer from billing is returned to Paddle as 400; every other billing error stays 500. This service keeps its own env check of the secret, so the secret stored for billing must be the same value.
+`bin-hook-manager` handles billing webhooks from Paddle (payment processor). It does not verify the signature and holds no Paddle secret. It rejects a body larger than 1 MiB and a request without the `Paddle-Signature` header (400), and forwards the header unchanged to billing as `received_signature`. The billing service verifies the signature with the secret stored for it and is the only place that does. A 401 answer from billing is returned to Paddle as 400; every other billing error (including billing answering 500 while no secret is stored) stays 500. The deployment order and the rollback rule are in [operations.md](operations.md).
 
 ## Hook Payload Model
 
 `models/hook/` contains simple data structures representing the webhook envelope:
 - Raw body passthrough with minimal transformation
-- No business logic or validation beyond signature verification
+- No business logic or validation beyond the body size and the signature header check
 
 ## Service Handler Interface
 

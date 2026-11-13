@@ -24,7 +24,7 @@ func Test_komodoComposePassesTheMasterKeyList(t *testing.T) {
 
 // The Kubernetes definition passes the master key list as an optional secret reference: a cluster
 // whose secret has no such key still starts the pod (the stored credentials are not usable then,
-// and the environment variables of the keys keep working).
+// and the Paddle webhooks are rejected until the credentials are stored).
 func Test_k8sDeploymentPassesTheMasterKeyList(t *testing.T) {
 	raw, err := os.ReadFile("../../k8s/deployment.yml")
 	if err != nil {

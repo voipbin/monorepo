@@ -50,7 +50,7 @@ Key
 * ``description`` (String): One line that tells what the key is for.
 * ``source`` (enum string): Where the value comes from. See :ref:`Where a Value Comes From <service-config-overview>`.
 * ``has_secret`` (Boolean): Whether a secret value exists. The secret itself is never returned.
-* ``env_name`` (String): The name of the environment variable that is read when no value is stored. The name only, never the value. Omitted when the key has none (for example the keys of the email, message, tts and transcribe services).
+* ``env_name`` (String): The name of the environment variable that is read when no value is stored. The name only, never the value. Omitted when the key has none (for example the keys of the email, message, tts, transcribe and billing services).
 * ``env_shadowed`` (Boolean): Whether the environment variable is set but not used, because a stored value takes precedence. Always false for a key that has no environment variable.
 * ``key_version`` (Integer): The version of the encryption key that encrypted the stored secret. 0 when none is stored.
 * ``revision`` (Integer): The revision of the stored value, to be sent back when the key is changed. 0 when no value is stored.
