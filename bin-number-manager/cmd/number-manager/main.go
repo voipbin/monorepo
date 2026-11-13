@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"net/http"
@@ -146,21 +147,17 @@ func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	// A malformed key set must not stop the daemon: other services depend on the numbers. The
-	// provider secrets of the DB stay unusable (fail closed) and the environment credentials apply.
+	// provider secrets of the DB stay unusable (fail closed): no provider can purchase, release or
+	// search until the key set is repaired, because no credential is read from the environment.
 	crypto, errCrypto := providerhandler.NewSecretCrypto(config.Get().NumberSecretEncryptionKeys)
 	if errCrypto != nil {
-		logrus.Errorf("The number secret encryption keys are malformed. The provider secrets of the DB cannot be used. err: %v", errCrypto)
+		logrus.Errorf("The number secret encryption keys are malformed. The provider secrets cannot be used, so no provider can purchase, release or search. err: %v", errCrypto)
 		crypto, _ = providerhandler.NewSecretCrypto("")
 	}
 
-	env := providerhandler.NewEnvCredentials(
-		config.Get().TelnyxConnectionID,
-		config.Get().TelnyxProfileID,
-		config.Get().TelnyxToken,
-		config.Get().TwilioSID,
-		config.Get().TwilioToken,
-	)
-	providerHandler := providerhandler.NewProviderHandler(reqHandler, db, crypto, env)
+	providerHandler := providerhandler.NewProviderHandler(reqHandler, db, crypto)
+
+	logPurchaseReadiness(context.Background(), providerHandler)
 
 	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler, providerHandler)
 
@@ -211,7 +208,24 @@ func logStartup(log *logrus.Entry, cfg *config.Config) {
 		"prometheus_listen_address": cfg.PrometheusListenAddress,
 		"redis_address":             cfg.RedisAddress,
 		"redis_database":            cfg.RedisDatabase,
-		"telnyx_connection_id":      cfg.TelnyxConnectionID,
-		"telnyx_profile_id":         cfg.TelnyxProfileID,
 	}).Info("Starting number-manager...")
+}
+
+// logPurchaseReadiness logs once at start whether a provider can be used for a purchase. The
+// credentials come from number_providers only, so an empty table would otherwise show up first as a
+// failed purchase. A read error is logged and never stops the start.
+func logPurchaseReadiness(ctx context.Context, providerHandler providerhandler.ProviderHandler) {
+	log := logrus.WithField("func", "logPurchaseReadiness")
+
+	candidates, err := providerHandler.PurchaseCandidates(ctx)
+	if err != nil {
+		log.Errorf("Could not check the providers for a number purchase. err: %v", err)
+		return
+	}
+
+	if len(candidates) == 0 {
+		log.Warn("No provider is usable for a number purchase. Store a provider secret with the provider admin API.")
+		return
+	}
+	log.Infof("The providers usable for a number purchase. count: %d", len(candidates))
 }

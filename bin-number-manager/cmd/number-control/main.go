@@ -85,15 +85,7 @@ func newProviderHandler(reqHandler requesthandler.RequestHandler, db dbhandler.D
 		return nil, errors.Wrapf(err, "could not parse the number secret encryption keys")
 	}
 
-	env := providerhandler.NewEnvCredentials(
-		config.Get().TelnyxConnectionID,
-		config.Get().TelnyxProfileID,
-		config.Get().TelnyxToken,
-		config.Get().TwilioSID,
-		config.Get().TwilioToken,
-	)
-
-	return providerhandler.NewProviderHandler(reqHandler, db, crypto, env), nil
+	return providerhandler.NewProviderHandler(reqHandler, db, crypto), nil
 }
 
 func initCommand() *cobra.Command {

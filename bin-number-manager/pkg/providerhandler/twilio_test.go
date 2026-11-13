@@ -52,19 +52,20 @@ func Test_Twilio_purchaseCandidates(t *testing.T) {
 	ctx := context.Background()
 	full := map[string]string{"sid": testTwilioSID, "trunk_sid": testTwilioTrunk}
 
-	t.Run("deploy default: the environment twilio credential does not change telnyx alone", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), "", NewEnvCredentials("c", "p", "t", testTwilioSID, "twilio-token"))
+	t.Run("without any row there is no candidate: twilio is disabled by default and telnyx has no secret", func(t *testing.T) {
+		h := newTestHandler(t, newFakeDB(), "")
 
 		res, err := h.PurchaseCandidates(ctx)
-		if err != nil || len(res) != 1 || res[0].Name != number.ProviderNameTelnyx {
-			t.Errorf("Wrong match. expect: telnyx only, got: %v, %v", candidateNames(res), err)
+		if err != nil || len(res) != 0 {
+			t.Errorf("Wrong match. expect: none, got: %v, %v", candidateNames(res), err)
 		}
 	})
 
 	t.Run("an enabled twilio with a DB secret and the sid and trunk_sid is a candidate, ordered by priority", func(t *testing.T) {
 		db := newFakeDB()
+		seedTelnyx(t, db)
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, true, 1, full)
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		res, err := h.PurchaseCandidates(ctx)
 		if err != nil {
@@ -77,8 +78,9 @@ func Test_Twilio_purchaseCandidates(t *testing.T) {
 
 	t.Run("a lower priority twilio stays behind telnyx", func(t *testing.T) {
 		db := newFakeDB()
+		seedTelnyx(t, db)
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, true, 20, full)
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		res, _ := h.PurchaseCandidates(ctx)
 		if got := candidateNames(res); len(got) != 2 || got[0] != number.ProviderNameTelnyx || got[1] != number.ProviderNameTwilio {
@@ -88,8 +90,9 @@ func Test_Twilio_purchaseCandidates(t *testing.T) {
 
 	t.Run("a disabled twilio is not a candidate", func(t *testing.T) {
 		db := newFakeDB()
+		seedTelnyx(t, db)
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, false, 1, full)
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		res, _ := h.PurchaseCandidates(ctx)
 		if got := candidateNames(res); len(got) != 1 || got[0] != number.ProviderNameTelnyx {
@@ -100,8 +103,9 @@ func Test_Twilio_purchaseCandidates(t *testing.T) {
 	// the old twilio rows can hold the sid only: they must stay out after the twilio became purchasable
 	t.Run("an enabled twilio row with the sid only is not a candidate", func(t *testing.T) {
 		db := newFakeDB()
+		seedTelnyx(t, db)
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, true, 1, map[string]string{"sid": testTwilioSID})
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		res, _ := h.PurchaseCandidates(ctx)
 		if got := candidateNames(res); len(got) != 1 || got[0] != number.ProviderNameTelnyx {
@@ -111,8 +115,9 @@ func Test_Twilio_purchaseCandidates(t *testing.T) {
 
 	t.Run("an enabled twilio row without any config is not a candidate", func(t *testing.T) {
 		db := newFakeDB()
+		seedTelnyx(t, db)
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, true, 1, nil)
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		res, _ := h.PurchaseCandidates(ctx)
 		if got := candidateNames(res); len(got) != 1 || got[0] != number.ProviderNameTelnyx {
@@ -122,8 +127,9 @@ func Test_Twilio_purchaseCandidates(t *testing.T) {
 
 	t.Run("a malformed sid is skipped and counted, telnyx stays", func(t *testing.T) {
 		db := newFakeDB()
+		seedTelnyx(t, db)
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, true, 1, map[string]string{"sid": "not-a-sid", "trunk_sid": testTwilioTrunk})
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		before := unusableCount(t, "twilio", "factory")
 		res, _ := h.PurchaseCandidates(ctx)
@@ -137,8 +143,9 @@ func Test_Twilio_purchaseCandidates(t *testing.T) {
 
 	t.Run("the surrounding whitespace of the stored sid and trunk_sid is removed", func(t *testing.T) {
 		db := newFakeDB()
+		seedTelnyx(t, db)
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, true, 1, map[string]string{"sid": " " + testTwilioSID + "\n", "trunk_sid": " " + testTwilioTrunk + " "})
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		res, _ := h.PurchaseCandidates(ctx)
 		if got := candidateNames(res); len(got) != 2 || got[0] != number.ProviderNameTwilio {
@@ -146,22 +153,24 @@ func Test_Twilio_purchaseCandidates(t *testing.T) {
 		}
 	})
 
-	t.Run("an enabled twilio on the environment credential is counted as unusable", func(t *testing.T) {
+	t.Run("an enabled twilio row without a secret is counted as unusable (no_secret)", func(t *testing.T) {
 		db := newFakeDB()
+		seedTelnyx(t, db)
 		db.rows[number.ProviderNameTwilio] = &provider.Provider{ProviderName: number.ProviderNameTwilio, Enabled: true, Priority: 1}
-		h := newTestHandler(t, db, "", NewEnvCredentials("c", "p", "t", testTwilioSID, "twilio-token"))
+		h := newTestHandler(t, db, "")
 
-		before := unusableCount(t, "twilio", "required_config")
+		before := unusableCount(t, "twilio", "no_secret")
 		_, _ = h.PurchaseCandidates(ctx)
-		if after := unusableCount(t, "twilio", "required_config"); after != before+1 {
+		if after := unusableCount(t, "twilio", "no_secret"); after != before+1 {
 			t.Errorf("Wrong metric. expect: %v, got: %v", before+1, after)
 		}
 	})
 
 	t.Run("a malformed trunk_sid stays a candidate (the purchase itself refuses it, see the numberhandlertwilio tests)", func(t *testing.T) {
 		db := newFakeDB()
+		seedTelnyx(t, db)
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, true, 1, map[string]string{"sid": testTwilioSID, "trunk_sid": "bad"})
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		res, _ := h.PurchaseCandidates(ctx)
 		if got := candidateNames(res); len(got) != 2 || got[0] != number.ProviderNameTwilio {
@@ -173,23 +182,25 @@ func Test_Twilio_purchaseCandidates(t *testing.T) {
 func Test_Twilio_releaseAndSearchNeedTheSidOnly(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("the environment credential can release although it cannot purchase", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), "", NewEnvCredentials("", "", "", testTwilioSID, "twilio-token"))
+	t.Run("a DB secret with the sid only can release although it cannot purchase", func(t *testing.T) {
+		db := newFakeDB()
+		db.rows[number.ProviderNameTwilio] = twilioRow(t, true, 1, map[string]string{"sid": testTwilioSID})
+		h := newTestHandler(t, db, testKeys(1))
 
 		if p, err := h.ForRelease(ctx, number.ProviderNameTwilio); err != nil || p == nil {
 			t.Errorf("Wrong match. expect: provider, got: %v, %v", p, err)
 		}
 
 		info, err := h.Get(ctx, number.ProviderNameTwilio)
-		if err != nil || info.Usable || info.CredentialSource != provider.CredentialSourceEnv {
-			t.Errorf("Wrong match. expect: env source and not usable, got: %+v, %v", info, err)
+		if err != nil || info.Usable || info.CredentialSource != provider.CredentialSourceDB {
+			t.Errorf("Wrong match. expect: db source and not usable, got: %+v, %v", info, err)
 		}
 	})
 
 	t.Run("a disabled twilio can release", func(t *testing.T) {
 		db := newFakeDB()
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, false, 1, map[string]string{"sid": testTwilioSID})
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		if p, err := h.ForRelease(ctx, number.ProviderNameTwilio); err != nil || p == nil {
 			t.Errorf("Wrong match. expect: provider, got: %v, %v", p, err)
@@ -199,7 +210,7 @@ func Test_Twilio_releaseAndSearchNeedTheSidOnly(t *testing.T) {
 	t.Run("a malformed trunk_sid does not block the release", func(t *testing.T) {
 		db := newFakeDB()
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, true, 1, map[string]string{"sid": testTwilioSID, "trunk_sid": "bad"})
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		if p, err := h.ForRelease(ctx, number.ProviderNameTwilio); err != nil || p == nil {
 			t.Errorf("Wrong match. expect: provider, got: %v, %v", p, err)
@@ -207,7 +218,7 @@ func Test_Twilio_releaseAndSearchNeedTheSidOnly(t *testing.T) {
 	})
 
 	t.Run("without the sid the release fails and the error holds no value", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), "", NewEnvCredentials("", "", "", "", "twilio-token"))
+		h := newTestHandler(t, newFakeDB(), "")
 
 		_, err := h.ForRelease(ctx, number.ProviderNameTwilio)
 		if err == nil {
@@ -219,19 +230,12 @@ func Test_Twilio_releaseAndSearchNeedTheSidOnly(t *testing.T) {
 	})
 
 	t.Run("a malformed sid fails the release", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), "", NewEnvCredentials("", "", "", "SK00000000000000000000000000000000", "twilio-token"))
+		db := newFakeDB()
+		db.rows[number.ProviderNameTwilio] = twilioRow(t, true, 1, map[string]string{"sid": "SK00000000000000000000000000000000"})
+		h := newTestHandler(t, db, testKeys(1))
 
 		if _, err := h.ForRelease(ctx, number.ProviderNameTwilio); err == nil {
 			t.Errorf("Wrong match. expect: error")
-		}
-	})
-
-	t.Run("the telnyx environment credential still works with the token alone", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), "", NewEnvCredentials("", "", "env-token", "", ""))
-
-		res, err := h.PurchaseCandidates(ctx)
-		if err != nil || len(res) != 1 || res[0].Name != number.ProviderNameTelnyx {
-			t.Errorf("Wrong match. expect: telnyx only, got: %v, %v", candidateNames(res), err)
 		}
 	})
 }
@@ -240,7 +244,7 @@ func Test_Twilio_adminRequiresTheConfigBeforeTheSecret(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("the secret is refused until the sid and trunk_sid are set", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), testKeys(1), envTelnyx())
+		h := newTestHandler(t, newFakeDB(), testKeys(1))
 
 		if _, err := h.UpdateSecret(ctx, number.ProviderNameTwilio, testActor, "fake-twilio"); !errors.Is(err, provider.ErrInvalidArgument) {
 			t.Errorf("Wrong match. expect: invalid argument, got: %v", err)
@@ -263,7 +267,7 @@ func Test_Twilio_adminRequiresTheConfigBeforeTheSecret(t *testing.T) {
 	t.Run("the trunk_sid cannot be removed while a secret is stored", func(t *testing.T) {
 		db := newFakeDB()
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, false, 20, map[string]string{"sid": testTwilioSID, "trunk_sid": testTwilioTrunk})
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		if _, err := h.Update(ctx, number.ProviderNameTwilio, testActor, nil, nil, map[string]string{"trunk_sid": ""}); !errors.Is(err, provider.ErrInvalidArgument) {
 			t.Errorf("Wrong match. expect: invalid argument, got: %v", err)
@@ -271,7 +275,7 @@ func Test_Twilio_adminRequiresTheConfigBeforeTheSecret(t *testing.T) {
 	})
 
 	t.Run("an unknown config key is still refused", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), testKeys(1), envTelnyx())
+		h := newTestHandler(t, newFakeDB(), testKeys(1))
 
 		if _, err := h.Update(ctx, number.ProviderNameTwilio, testActor, nil, nil, map[string]string{"auth_token": "x"}); !errors.Is(err, provider.ErrInvalidArgument) {
 			t.Errorf("Wrong match. expect: invalid argument, got: %v", err)
@@ -279,18 +283,26 @@ func Test_Twilio_adminRequiresTheConfigBeforeTheSecret(t *testing.T) {
 	})
 }
 
-func Test_NewEnvCredentials_twilioWhitespace(t *testing.T) {
-	env := NewEnvCredentials(" conn ", "prof", " tel-token\n", " "+testTwilioSID+"\n", " twilio-token\r\n")
+func Test_Twilio_storedValuesWithWhitespace(t *testing.T) {
+	ctx := context.Background()
+	db := newFakeDB()
+	h := newTestHandler(t, db, testKeys(1))
 
-	tw := env[number.ProviderNameTwilio]
-	if tw.Secret != "twilio-token" || tw.Config["sid"] != testTwilioSID {
-		t.Errorf("Wrong match. the whitespace of the twilio values must be removed. got: %q, %q", tw.Secret, tw.Config["sid"])
+	// the sid is trimmed by the factory, the secret by UpdateSecret
+	db.rows[number.ProviderNameTwilio] = &provider.Provider{
+		ProviderName: number.ProviderNameTwilio,
+		Config:       map[string]string{"sid": " " + testTwilioSID + "\n", "trunk_sid": testTwilioTrunk},
+	}
+	if _, err := h.UpdateSecret(ctx, number.ProviderNameTwilio, testActor, " twilio-token\r\n"); err != nil {
+		t.Fatal(err)
 	}
 
-	// the telnyx values are left as they are
-	tx := env[number.ProviderNameTelnyx]
-	if tx.Secret != " tel-token\n" || tx.Config["connection_id"] != " conn " {
-		t.Errorf("Wrong match. the telnyx values must not change. got: %q, %q", tx.Secret, tx.Config["connection_id"])
+	r, err := h.resolve(ctx, number.ProviderNameTwilio)
+	if err != nil || r.creds.Secret != "twilio-token" {
+		t.Fatalf("Wrong match. the secret must be trimmed. got: %v", err)
+	}
+	if p, err := h.ForRelease(ctx, number.ProviderNameTwilio); err != nil || p == nil {
+		t.Errorf("Wrong match. a sid with surrounding whitespace must work. got: %v, %v", p, err)
 	}
 }
 

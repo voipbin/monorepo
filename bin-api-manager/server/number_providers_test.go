@@ -415,7 +415,8 @@ func Test_numberProvidersIDSecretDelete(t *testing.T) {
 	msg := testNumberProviderMessage()
 	msg.HasSecret = false
 	msg.KeyVersion = 0
-	msg.CredentialSource = nmprovider.CredentialSourceEnv
+	msg.CredentialSource = nmprovider.CredentialSourceNone
+	msg.Usable = false
 	mockSvc.EXPECT().NumberProviderDeleteSecret(gomock.Any(), a, "telnyx").Return(msg, nil)
 
 	req, _ := http.NewRequest("DELETE", "/number_providers/telnyx/secret", nil)
@@ -425,7 +426,7 @@ func Test_numberProvidersIDSecretDelete(t *testing.T) {
 		t.Fatalf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 	}
 
-	expect := `{"provider_name":"telnyx","enabled":true,"priority":10,"has_secret":false,"key_version":0,"credential_source":"env","usable":true}`
+	expect := `{"provider_name":"telnyx","enabled":true,"priority":10,"has_secret":false,"key_version":0,"credential_source":"none","usable":false}`
 	if w.Body.String() != expect {
 		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", expect, w.Body.String())
 	}

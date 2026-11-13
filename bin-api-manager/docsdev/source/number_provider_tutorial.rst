@@ -31,9 +31,9 @@ Response (200 OK)
                 "provider_name": "telnyx",
                 "enabled": true,
                 "priority": 10,
-                "has_secret": false,
-                "key_version": 0,
-                "credential_source": "env",
+                "has_secret": true,
+                "key_version": 1,
+                "credential_source": "db",
                 "usable": true
             },
             {
@@ -127,7 +127,7 @@ To remove one ``config`` key, send it with an empty string value, for example ``
 
 Delete the stored secret
 ------------------------
-Use this to return to the platform environment credentials (``credential_source`` becomes ``none`` if the environment has none), or to recover a provider whose ``credential_source`` is ``db_undecryptable``.
+Use this to remove a stored secret (``credential_source`` becomes ``none`` and the carrier cannot serve until a new secret is stored), or to recover a provider whose ``credential_source`` is ``db_undecryptable``.
 
 .. code::
 
@@ -143,12 +143,12 @@ Response (200 OK)
         "priority": 10,
         "has_secret": false,
         "key_version": 0,
-        "credential_source": "env",
-        "usable": true,
+        "credential_source": "none",
+        "usable": false,
         "updated_by": "550e8400-e29b-41d4-a716-446655440000",
         "secret_updated_by": "00000000-0000-4000-8000-000000000002",
         "tm_update": "2026-01-04T05:06:07.000000Z",
         "tm_secret_update": "2026-01-04T05:06:07.000000Z"
     }
 
-A known provider for which no request has created a stored setting yet answers ``404``. See the account change warning in :ref:`Overview <number-provider-overview>` before you delete a secret.
+A known provider for which no request has created a stored setting yet answers ``404``. See the account change warning in :ref:`Overview <number-provider-overview>` before you delete a secret. Store the new secret first when the carrier is in use: until then no number can be purchased, released or searched through it.

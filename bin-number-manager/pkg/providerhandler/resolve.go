@@ -26,7 +26,7 @@ type resolved struct {
 	source provider.CredentialSource
 	creds  provider.Credentials
 
-	// hasSecret is true when the credential has a secret (from the DB or the environment).
+	// hasSecret is true when the row holds a secret that could be decrypted.
 	hasSecret bool
 
 	// usable is true when the provider is enabled and its credentials are complete.
@@ -50,10 +50,9 @@ func requiredConfigMissing(desc Descriptor, config map[string]string) (string, b
 
 // resolve merges the registry defaults, the row and the credentials of the provider.
 //
-// The credential source is atomic: with a secret in the row, the secret and the config come
-// from the row only; without it, both come from the environment only. A row secret that cannot
-// be decrypted never falls back to the environment, so the provider turns unusable instead of
-// silently switching to another account.
+// The credentials come from the row only: the secret and the config of the row. A provider
+// without a row secret has the source none and is not usable, whatever the config of its row
+// holds. A row secret that cannot be decrypted turns the provider unusable (db_undecryptable).
 func (h *providerHandler) resolve(ctx context.Context, name number.ProviderName) (*resolved, error) {
 	desc, ok := h.registry[name]
 	if !ok {
@@ -112,27 +111,9 @@ func (h *providerHandler) resolve(ctx context.Context, name number.ProviderName)
 		return res, nil
 	}
 
-	env, ok := h.env[name]
-	if !ok || env.Secret == "" {
-		res.source = provider.CredentialSourceNone
-		res.usable = false
-		h.observeUnusable(res, "no_secret")
-		return res, nil
-	}
-
-	res.source = provider.CredentialSourceEnv
-	res.creds = env
-	res.hasSecret = true
-
-	if key, missing := requiredConfigMissing(Descriptor{RequiredConfig: desc.RequiredEnvConfig}, env.Config); missing {
-		// release and search still work with the secret; only the purchase needs the key
-		log.Debugf("The environment credential misses a required config. key: %s", key)
-		res.usable = false
-		h.observeUnusable(res, "required_config")
-		return res, nil
-	}
-
-	res.usable = res.enabled
+	res.source = provider.CredentialSourceNone
+	res.usable = false
+	h.observeUnusable(res, "no_secret")
 
 	return res, nil
 }

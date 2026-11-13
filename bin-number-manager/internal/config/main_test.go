@@ -27,11 +27,7 @@ func TestLoadGlobalConfig(t *testing.T) {
 	viper.Set("redis_address", "localhost:6379")
 	viper.Set("redis_password", "test_pass")
 	viper.Set("redis_database", 1)
-	viper.Set("twilio_sid", "test_sid")
-	viper.Set("twilio_token", "test_token")
-	viper.Set("telnyx_connection_id", "test_conn_id")
-	viper.Set("telnyx_profile_id", "test_profile_id")
-	viper.Set("telnyx_token", "test_telnyx_token")
+	viper.Set("number_secret_encryption_keys", "1:test")
 
 	// Reset the once to allow re-execution
 	once = *new(sync.Once)
@@ -60,20 +56,8 @@ func TestLoadGlobalConfig(t *testing.T) {
 	if config.RedisDatabase != 1 {
 		t.Errorf("Expected RedisDatabase to be 1, got %d", config.RedisDatabase)
 	}
-	if config.TwilioSID != "test_sid" {
-		t.Errorf("Expected TwilioSID to be 'test_sid', got '%s'", config.TwilioSID)
-	}
-	if config.TwilioToken != "test_token" {
-		t.Errorf("Expected TwilioToken to be 'test_token', got '%s'", config.TwilioToken)
-	}
-	if config.TelnyxConnectionID != "test_conn_id" {
-		t.Errorf("Expected TelnyxConnectionID to be 'test_conn_id', got '%s'", config.TelnyxConnectionID)
-	}
-	if config.TelnyxProfileID != "test_profile_id" {
-		t.Errorf("Expected TelnyxProfileID to be 'test_profile_id', got '%s'", config.TelnyxProfileID)
-	}
-	if config.TelnyxToken != "test_telnyx_token" {
-		t.Errorf("Expected TelnyxToken to be 'test_telnyx_token', got '%s'", config.TelnyxToken)
+	if config.NumberSecretEncryptionKeys != "1:test" {
+		t.Errorf("Expected NumberSecretEncryptionKeys to be '1:test', got '%s'", config.NumberSecretEncryptionKeys)
 	}
 }
 
@@ -118,17 +102,30 @@ func TestBindConfig(t *testing.T) {
 		"redis_address",
 		"redis_password",
 		"redis_database",
-		"twilio_sid",
-		"twilio_token",
-		"telnyx_connection_id",
-		"telnyx_profile_id",
-		"telnyx_token",
+		"number_secret_encryption_keys",
 	}
 
 	for _, flagName := range expectedFlags {
 		flag := cmd.PersistentFlags().Lookup(flagName)
 		if flag == nil {
 			t.Errorf("Expected flag '%s' to be defined", flagName)
+		}
+	}
+}
+
+// Test_bindConfig_noProviderCredential checks that no provider credential can be set through the
+// config any more: the credentials of the providers are read from the database only.
+func Test_bindConfig_noProviderCredential(t *testing.T) {
+	viper.Reset()
+
+	cmd := &cobra.Command{}
+	if err := bindConfig(cmd); err != nil {
+		t.Fatalf("Expected no error from bindConfig, got %v", err)
+	}
+
+	for _, flagName := range []string{"twilio_sid", "twilio_token", "telnyx_connection_id", "telnyx_profile_id", "telnyx_token"} {
+		if cmd.PersistentFlags().Lookup(flagName) != nil {
+			t.Errorf("Expected flag '%s' to be removed", flagName)
 		}
 	}
 }

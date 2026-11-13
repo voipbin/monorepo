@@ -6589,17 +6589,15 @@ components:
       type: string
       description: |
         Where the credentials of the number provider come from.
-        `db` is the secret stored through the API, `env` is the platform environment, `none` means no credential exists,
+        `db` is the secret stored through the API, `none` means no secret is stored (the provider is not usable until one is stored),
         and `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).
       example: "db"
       enum:
         - db
-        - env
         - none
         - db_undecryptable
       x-enum-varnames:
         - NumberManagerNumberProviderCredentialSourceDB
-        - NumberManagerNumberProviderCredentialSourceEnv
         - NumberManagerNumberProviderCredentialSourceNone
         - NumberManagerNumberProviderCredentialSourceDBUndecryptable
     ServiceConfigServiceName:
@@ -6887,7 +6885,7 @@ components:
           $ref: '#/components/schemas/NumberManagerNumberProviderCredentialSource'
         usable:
           type: boolean
-          description: "Whether the provider can currently serve (enabled, with a usable credential and its required `config`; Twilio needs `sid` and `trunk_sid`, which the environment credentials cannot give). An enabled and usable provider takes part in number purchase."
+          description: "Whether the provider can currently serve (enabled, with a usable credential and its required `config`; Twilio needs `sid` and `trunk_sid`). An enabled and usable provider takes part in number purchase."
           example: true
         updated_by:
           type: string

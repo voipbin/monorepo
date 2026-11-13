@@ -681,7 +681,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">has_secret</span></code> (Boolean): Whether a secret is stored through the API. The secret itself is never returned.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">key_version</span></code> (Integer): The version of the encryption key that encrypted the stored secret. 0 when no secret is stored.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">credential_source</span></code> (enum string): Where the credentials come from. See <a class="reference internal" href="#number-provider-struct-number-provider-credential-source"><span class="std std-ref">Credential Source</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">usable</span></code> (Boolean): Whether the carrier can currently serve: it is enabled, has a credential, and has the <code class="docutils literal notranslate"><span class="pre">config</span></code> keys it requires (<code class="docutils literal notranslate"><span class="pre">twilio</span></code> needs <code class="docutils literal notranslate"><span class="pre">sid</span></code> and <code class="docutils literal notranslate"><span class="pre">trunk_sid</span></code> for a stored secret and for the environment credentials alike, and the environment has no <code class="docutils literal notranslate"><span class="pre">trunk_sid</span></code>). A carrier that is usable and enabled takes part in the purchase.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">usable</span></code> (Boolean): Whether the carrier can currently serve: it is enabled, has a stored credential, and has the <code class="docutils literal notranslate"><span class="pre">config</span></code> keys it requires (<code class="docutils literal notranslate"><span class="pre">twilio</span></code> needs <code class="docutils literal notranslate"><span class="pre">sid</span></code> and <code class="docutils literal notranslate"><span class="pre">trunk_sid</span></code>). A carrier that is usable and enabled takes part in the purchase.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">updated_by</span></code> (UUID): The agent who last changed <code class="docutils literal notranslate"><span class="pre">enabled</span></code>, <code class="docutils literal notranslate"><span class="pre">priority</span></code> or <code class="docutils literal notranslate"><span class="pre">config</span></code>. Returned from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. Omitted when never changed.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">secret_updated_by</span></code> (UUID): The agent who last changed the secret. Returned from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. Omitted when never changed.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): The time of the last change of the setting, including a secret change. Omitted when never changed.</p></li>
@@ -720,13 +720,10 @@
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">db</span></code></p></td>
 <td><p>The secret stored through <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/number_providers/{provider_name}/secret</span></code> is used, with the <code class="docutils literal notranslate"><span class="pre">config</span></code> of the provider.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">env</span></code></p></td>
-<td><p>No secret is stored. The credentials of the platform environment are used.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">none</span></code></p></td>
+<td><p>No secret is stored. The carrier is not usable until one is stored.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">none</span></code></p></td>
-<td><p>No credential exists.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">db_undecryptable</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">db_undecryptable</span></code></p></td>
 <td><p>A secret is stored but cannot be decrypted. The provider is unusable until the key is restored or the stored secret is deleted.</p></td>
 </tr>
 </tbody>

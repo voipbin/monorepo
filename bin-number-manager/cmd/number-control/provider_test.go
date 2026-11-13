@@ -807,14 +807,17 @@ func Test_provider_e2e_failures(t *testing.T) {
 	})
 }
 
-// Test_provider_e2e_environmentCredentials pins the wiring of the environment credentials in
-// newProviderHandler: until the fallback is removed, the provider view must show them.
-func Test_provider_e2e_environmentCredentials(t *testing.T) {
+// Test_provider_e2e_noEnvironmentCredentials pins the end-to-end behavior of the provider view
+// without a stored secret: the state is none, not usable and without a secret, whatever the process
+// environment holds. The configuration has no field for a provider credential and NewProviderHandler
+// takes none, so a restored environment wiring does not compile; the flag side is pinned by
+// Test_bindConfig_noProviderCredential. This test pins the result the operator sees.
+func Test_provider_e2e_noEnvironmentCredentials(t *testing.T) {
 	e := newProviderE2E(t, providerTestKeys())
-	config.Get().TelnyxToken = "env-fake-telnyx-token"
-	config.Get().TelnyxConnectionID = "env-fake-connection"
-	config.Get().TwilioToken = "env-fake-twilio-token"
-	config.Get().TwilioSID = "env-fake-sid"
+	t.Setenv("TELNYX_TOKEN", "env-fake-telnyx-token")
+	t.Setenv("TELNYX_CONNECTION_ID", "env-fake-connection")
+	t.Setenv("TWILIO_TOKEN", "env-fake-twilio-token")
+	t.Setenv("TWILIO_SID", "env-fake-sid")
 
 	res := e.run(t, "", "provider", "list")
 	if res.err != nil {
@@ -826,16 +829,10 @@ func Test_provider_e2e_environmentCredentials(t *testing.T) {
 		t.Fatalf("Wrong match. got: %s, err: %v", res.stdout, err)
 	}
 
-	got := map[string]map[string]any{}
 	for _, item := range list {
-		got[fmt.Sprint(item["provider_name"])] = item
-	}
-	if got["telnyx"]["credential_source"] != "env" || got["telnyx"]["usable"] != true {
-		t.Errorf("Wrong match. telnyx view: %v", got["telnyx"])
-	}
-	// the twilio environment credential cannot purchase (no trunk), so it is not usable
-	if got["twilio"]["credential_source"] != "env" || got["twilio"]["usable"] != false {
-		t.Errorf("Wrong match. twilio view: %v", got["twilio"])
+		if item["credential_source"] != "none" || item["usable"] != false || item["has_secret"] != false {
+			t.Errorf("Wrong match. view: %v", item)
+		}
 	}
 	if strings.Contains(res.all(), "env-fake-telnyx-token") || strings.Contains(res.all(), "env-fake-twilio-token") {
 		t.Errorf("Wrong match. an environment secret is in the output: %s", res.all())

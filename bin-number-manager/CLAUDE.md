@@ -17,7 +17,7 @@ Every number purchase calls `bin-billing-manager` for balance validation **befor
 
 ## CRITICAL: Provider Credentials
 
-A provider's credentials come from one source at a time: the row of `number_providers` when it holds an encrypted secret (the secret and the `config` of the row only), otherwise the `TELNYX_*` / `TWILIO_*` environment variables. A row secret that cannot be decrypted never falls back to the environment: the provider is unusable until the key list is restored or the DB secret is deleted. Never log or return a secret, a ciphertext or a key, and never print a `Provider` or `Credentials` value with a custom formatter that bypasses `String()`/`GoString()`. See [docs/operations.md](docs/operations.md) for key rotation and recovery.
+A provider's credentials come from its row of `number_providers` only (the encrypted secret and the `config` of the row). No `TELNYX_*` / `TWILIO_*` environment variable is read; a provider without a stored secret is `none` and unusable. A row secret that cannot be decrypted makes the provider unusable until the key list is restored or the DB secret is replaced. Never log or return a secret, a ciphertext or a key, and never print a `Provider` or `Credentials` value with a custom formatter that bypasses `String()`/`GoString()`. See [docs/operations.md](docs/operations.md) for key rotation and recovery.
 
 ## CRITICAL: Purchase Fallback Never Double Buys
 
@@ -51,7 +51,6 @@ printf '%s' "$TOKEN" | ./bin/number-control provider secret set --name telnyx --
 DATABASE_DSN="user:pass@tcp(127.0.0.1:3306)/bin_manager" \
 RABBITMQ_ADDRESS="amqp://guest:guest@localhost:5672" \
 REDIS_ADDRESS="127.0.0.1:6379" \
-TELNYX_TOKEN="<token>" \
 NUMBER_SECRET_ENCRYPTION_KEYS="1:<base64 of 32 random bytes>" \
 ./bin/number-manager
 ```
@@ -74,7 +73,7 @@ go test -v -run TestName ./pkg/numberhandler/...
 ## Database Tables
 
 - `number_numbers` — phone numbers (soft-delete with `tm_delete`). `ProviderNumber` is an in-memory model, not a table.
-- `number_providers` — provider settings: `enabled`, `priority`, non-secret `config`, the AES-256-GCM `secret_ciphertext` with its `key_version`, and the audit columns. A provider without a row uses the registry defaults and the environment credentials. The admin RPC is `/v1/number_providers` (the public API is added separately).
+- `number_providers` — provider settings: `enabled`, `priority`, non-secret `config`, the AES-256-GCM `secret_ciphertext` with its `key_version`, and the audit columns. A provider without a row uses the registry defaults and has no credential. The admin RPC is `/v1/number_providers` (the public API is added separately).
 
 ## Database migrations
 

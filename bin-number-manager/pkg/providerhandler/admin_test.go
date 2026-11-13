@@ -18,7 +18,7 @@ func intPtr(i int) *int    { return &i }
 
 func Test_List_Get_defaults(t *testing.T) {
 	ctx := context.Background()
-	h := newTestHandler(t, newFakeDB(), testKeys(1), envTelnyx())
+	h := newTestHandler(t, newFakeDB(), testKeys(1))
 
 	list, err := h.List(ctx)
 	if err != nil || len(list) != 2 {
@@ -29,7 +29,7 @@ func Test_List_Get_defaults(t *testing.T) {
 	}
 
 	tel := list[0]
-	if !tel.Enabled || tel.Priority != 10 || tel.HasSecret || tel.CredentialSource != provider.CredentialSourceEnv || !tel.Usable {
+	if !tel.Enabled || tel.Priority != 10 || tel.HasSecret || tel.CredentialSource != provider.CredentialSourceNone || tel.Usable {
 		t.Errorf("Wrong telnyx defaults. got: %+v", tel)
 	}
 	if list[1].Enabled || list[1].Priority != 20 || list[1].Usable {
@@ -46,7 +46,7 @@ func Test_Update(t *testing.T) {
 
 	t.Run("a priority-only update on a missing row keeps the registry default for enabled", func(t *testing.T) {
 		db := newFakeDB()
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		info, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, intPtr(50), nil)
 		if err != nil {
@@ -63,7 +63,7 @@ func Test_Update(t *testing.T) {
 
 	t.Run("config merge: a key is set, another is kept, an empty value deletes", func(t *testing.T) {
 		db := newFakeDB()
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		if _, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, nil, map[string]string{"connection_id": "c1", "profile_id": "p1"}); err != nil {
 			t.Fatal(err)
@@ -98,7 +98,7 @@ func Test_Update(t *testing.T) {
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				db := newFakeDB()
-				h := newTestHandler(t, db, testKeys(1), envTelnyx())
+				h := newTestHandler(t, db, testKeys(1))
 
 				_, err := h.Update(ctx, tt.p, tt.actor, tt.enabled, tt.priority, tt.config)
 				if !errors.Is(err, provider.ErrInvalidArgument) {
@@ -112,7 +112,7 @@ func Test_Update(t *testing.T) {
 	})
 
 	t.Run("unknown provider", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), testKeys(1), nil)
+		h := newTestHandler(t, newFakeDB(), testKeys(1))
 		if _, err := h.Update(ctx, "nope", testActor, boolPtr(true), nil, nil); !errors.Is(err, dbhandler.ErrNotFound) {
 			t.Errorf("Wrong match. expect: not found, got: %v", err)
 		}
@@ -120,7 +120,7 @@ func Test_Update(t *testing.T) {
 
 	t.Run("deleting a required key of a DB-secret row is rejected", func(t *testing.T) {
 		db := newFakeDB()
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		if _, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, nil, map[string]string{"connection_id": "c1"}); err != nil {
 			t.Fatal(err)
@@ -141,7 +141,7 @@ func Test_Update(t *testing.T) {
 	t.Run("a db error on the read does not create defaults", func(t *testing.T) {
 		db := newFakeDB()
 		db.updateErr = errTestDB
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		if _, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, boolPtr(false), nil, nil); !errors.Is(err, errTestDB) {
 			t.Errorf("Wrong match. expect: db failure, got: %v", err)
@@ -151,7 +151,7 @@ func Test_Update(t *testing.T) {
 	t.Run("ensure failure", func(t *testing.T) {
 		db := newFakeDB()
 		db.ensureErr = errTestDB
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		if _, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, boolPtr(false), nil, nil); !errors.Is(err, errTestDB) {
 			t.Errorf("Wrong match. expect: db failure, got: %v", err)
@@ -164,7 +164,7 @@ func Test_UpdateSecret(t *testing.T) {
 
 	t.Run("normal flow: config first, then the secret; the response carries no secret", func(t *testing.T) {
 		db := newFakeDB()
-		h := newTestHandler(t, db, testKeys(1, 2), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1, 2))
 
 		if _, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, nil, map[string]string{"connection_id": "c1"}); err != nil {
 			t.Fatal(err)
@@ -196,7 +196,7 @@ func Test_UpdateSecret(t *testing.T) {
 
 	t.Run("no key configured rejects the secret and creates no row", func(t *testing.T) {
 		db := newFakeDB()
-		h := newTestHandler(t, db, "", envTelnyx())
+		h := newTestHandler(t, db, "")
 
 		_, err := h.UpdateSecret(ctx, number.ProviderNameTelnyx, testActor, "fake")
 		if !errors.Is(err, provider.ErrSecretKeyNotConfigured) {
@@ -209,7 +209,7 @@ func Test_UpdateSecret(t *testing.T) {
 
 	t.Run("missing required config is rejected, also for a disabled provider", func(t *testing.T) {
 		db := newFakeDB()
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		if _, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, boolPtr(false), nil, nil); err != nil {
 			t.Fatal(err)
@@ -225,7 +225,7 @@ func Test_UpdateSecret(t *testing.T) {
 
 	t.Run("a provider without required config accepts the secret directly", func(t *testing.T) {
 		db := newFakeDB()
-		h := newTestHandler(t, db, testKeys(1), NewEnvCredentials("", "", "", testTwilioSID, ""))
+		h := newTestHandler(t, db, testKeys(1))
 		addPlain(h)
 
 		info, err := h.UpdateSecret(ctx, plainProvider, testActor, "fake-twilio")
@@ -235,7 +235,7 @@ func Test_UpdateSecret(t *testing.T) {
 	})
 
 	t.Run("validation", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), testKeys(1), envTelnyx())
+		h := newTestHandler(t, newFakeDB(), testKeys(1))
 
 		if _, err := h.UpdateSecret(ctx, number.ProviderNameTelnyx, uuid.Nil, "x"); !errors.Is(err, provider.ErrInvalidArgument) {
 			t.Errorf("nil actor: expect invalid argument, got: %v", err)
@@ -254,7 +254,7 @@ func Test_UpdateSecret(t *testing.T) {
 	t.Run("errors do not contain the secret", func(t *testing.T) {
 		db := newFakeDB()
 		db.updateErr = errors.New("db failure")
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 		_, _ = h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, nil, map[string]string{"connection_id": "c1"})
 		db.updateErr = nil
 		_, _ = h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, nil, map[string]string{"connection_id": "c1"})
@@ -270,9 +270,9 @@ func Test_UpdateSecret(t *testing.T) {
 func Test_DeleteSecret(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("deleting returns the provider to the env credentials", func(t *testing.T) {
+	t.Run("deleting leaves the provider without a credential (no environment fallback)", func(t *testing.T) {
 		db := newFakeDB()
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		_, _ = h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, nil, map[string]string{"connection_id": "c1"})
 		if _, err := h.UpdateSecret(ctx, number.ProviderNameTelnyx, testActor, "fake-db-token"); err != nil {
@@ -283,31 +283,36 @@ func Test_DeleteSecret(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if info.HasSecret || info.KeyVersion != 0 || info.CredentialSource != provider.CredentialSourceEnv || !info.Usable {
+		if info.HasSecret || info.KeyVersion != 0 || info.CredentialSource != provider.CredentialSourceNone || info.Usable {
 			t.Errorf("Wrong info. got: %+v", info)
+		}
+
+		// release and search fail until a new secret is stored
+		if _, err := h.ForRelease(ctx, number.ProviderNameTelnyx); err == nil {
+			t.Errorf("Wrong match. expect: no usable credential after the deletion, got: nil")
 		}
 	})
 
 	t.Run("an undecryptable secret can be deleted to recover", func(t *testing.T) {
 		db := newFakeDB()
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 		_, _ = h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, nil, map[string]string{"connection_id": "c1"})
 		_, _ = h.UpdateSecret(ctx, number.ProviderNameTelnyx, testActor, "fake-db-token")
 
 		// the key of the stored secret is gone
-		h2 := newTestHandler(t, db, testKeys(2), envTelnyx())
+		h2 := newTestHandler(t, db, testKeys(2))
 		if r, _ := h2.resolve(ctx, number.ProviderNameTelnyx); r.source != provider.CredentialSourceDBUndecryptable {
 			t.Fatalf("expect an undecryptable secret, got: %s", r.source)
 		}
 
 		info, err := h2.DeleteSecret(ctx, number.ProviderNameTelnyx, testActor)
-		if err != nil || info.CredentialSource != provider.CredentialSourceEnv || !info.Usable {
+		if err != nil || info.CredentialSource != provider.CredentialSourceNone || info.Usable {
 			t.Errorf("Wrong match. got: %+v, %v", info, err)
 		}
 	})
 
 	t.Run("no row is not found", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), testKeys(1), envTelnyx())
+		h := newTestHandler(t, newFakeDB(), testKeys(1))
 		if _, err := h.DeleteSecret(ctx, number.ProviderNameTelnyx, testActor); !errors.Is(err, dbhandler.ErrNotFound) {
 			t.Errorf("Wrong match. expect: not found, got: %v", err)
 		}
@@ -315,7 +320,7 @@ func Test_DeleteSecret(t *testing.T) {
 
 	t.Run("validation and failure", func(t *testing.T) {
 		db := newFakeDB()
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		if _, err := h.DeleteSecret(ctx, "nope", testActor); !errors.Is(err, dbhandler.ErrNotFound) {
 			t.Errorf("unknown provider: expect not found, got: %v", err)
@@ -338,7 +343,7 @@ func Test_Update_boundaries(t *testing.T) {
 		priority int
 		ok       bool
 	}{{0, true}, {1, true}, {maxPriority, true}, {maxPriority + 1, false}, {-1, false}} {
-		h := newTestHandler(t, newFakeDB(), testKeys(1), envTelnyx())
+		h := newTestHandler(t, newFakeDB(), testKeys(1))
 		_, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, intPtr(tt.priority), nil)
 		if (err == nil) != tt.ok {
 			t.Errorf("priority %d: expect ok=%v, got: %v", tt.priority, tt.ok, err)
@@ -347,7 +352,7 @@ func Test_Update_boundaries(t *testing.T) {
 
 	t.Run("an update of one field keeps the registry defaults of the others on a new row", func(t *testing.T) {
 		db := newFakeDB()
-		h := newTestHandler(t, db, testKeys(1), envTelnyx())
+		h := newTestHandler(t, db, testKeys(1))
 
 		info, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, boolPtr(false), nil, nil)
 		if err != nil || info.Enabled || info.Priority != 10 {
@@ -356,7 +361,7 @@ func Test_Update_boundaries(t *testing.T) {
 	})
 
 	t.Run("the number of config keys is limited at eight", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), testKeys(1), envTelnyx())
+		h := newTestHandler(t, newFakeDB(), testKeys(1))
 		keys := []string{"k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8", "k9"}
 		d := h.registry[number.ProviderNameTelnyx]
 		d.AllowedConfig = keys
@@ -380,7 +385,7 @@ func Test_Update_boundaries(t *testing.T) {
 	})
 
 	t.Run("the secret length is limited at 1024 bytes", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), testKeys(1), NewEnvCredentials("", "", "", testTwilioSID, ""))
+		h := newTestHandler(t, newFakeDB(), testKeys(1))
 		addPlain(h)
 
 		if _, err := h.UpdateSecret(ctx, plainProvider, testActor, strings.Repeat("a", 1024)); err != nil {
@@ -395,7 +400,7 @@ func Test_Update_boundaries(t *testing.T) {
 func Test_DeleteSecret_audit(t *testing.T) {
 	ctx := context.Background()
 	db := newFakeDB()
-	h := newTestHandler(t, db, testKeys(1), envTelnyx())
+	h := newTestHandler(t, db, testKeys(1))
 
 	_, _ = h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, nil, map[string]string{"connection_id": "c1"})
 	if _, err := h.UpdateSecret(ctx, number.ProviderNameTelnyx, uuid.FromStringOrNil("a0000000-0000-4000-8000-0000000000b2"), "fake"); err != nil {
@@ -414,7 +419,7 @@ func Test_DeleteSecret_audit(t *testing.T) {
 func Test_UpdateSecret_trimsWhitespace(t *testing.T) {
 	ctx := context.Background()
 	db := newFakeDB()
-	h := newTestHandler(t, db, testKeys(1), NewEnvCredentials("", "", "", testTwilioSID, ""))
+	h := newTestHandler(t, db, testKeys(1))
 	addPlain(h)
 
 	if _, err := h.UpdateSecret(ctx, plainProvider, testActor, "  fake-token\n"); err != nil {
