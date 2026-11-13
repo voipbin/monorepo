@@ -2631,6 +2631,14 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y mariadb-client
       - run:
+          name: Install libsoxr build dependencies
+          # bin-pipecat-manager's pipecat-control links libsoxr through cgo
+          # (github.com/zaf/resample); the other services need nothing here.
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y pkg-config libsoxr-dev
+            pkg-config --exists soxr
+      - run:
           name: Check migrations on a default-collation database
           no_output_timeout: 20m
           command: bash .circleci/scripts/check-service-migration-default-collation.sh
