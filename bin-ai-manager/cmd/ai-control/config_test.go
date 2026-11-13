@@ -110,10 +110,29 @@ func Test_config_list_ignoresOldEnvironment(t *testing.T) {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 
+	// The LLM keys declare no environment name, so they are none whatever the old variables hold.
+	// The 8 keys of the MCP OAuth apps are none here too, as their variables are not exported.
 	s := out.String()
-	if strings.Count(s, `"source": "none"`) != 2 || strings.Contains(s, `"source": "env"`) ||
+	if strings.Count(s, `"source": "none"`) != 10 || strings.Contains(s, `"source": "env"`) ||
 		strings.Contains(s, `"env_shadowed": true`) || strings.Contains(s, "env_name") || strings.Contains(s, "synthetic-old-env") {
-		t.Errorf("Wrong match. expect: two keys with source none and no env fields, got: %s", s)
+		t.Errorf("Wrong match. expect: ten keys with source none and no env fields, got: %s", s)
+	}
+}
+
+// The MCP OAuth keys declare an environment name, so this process shows them as env when its own
+// environment holds them. The daemon reads its own environment, which may differ from the one of
+// the process that runs the command, so a key can be none here and env in the daemon.
+func Test_config_list_showsMcpOAuthEnvironment(t *testing.T) {
+	t.Setenv("MCP_OAUTH_GITHUB_CLIENT_ID", "synthetic-env-id")
+
+	_, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, "")
+	if err := runConfigCommand("list"); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	s := out.String()
+	if strings.Count(s, `"source": "env"`) != 1 || strings.Count(s, `"source": "none"`) != 9 || strings.Contains(s, "synthetic-env-id") {
+		t.Errorf("Wrong match. expect: one key with source env and no value, got: %s", s)
 	}
 }
 

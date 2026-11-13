@@ -68,7 +68,7 @@ func Test_runnerStartScript_errorPaths(t *testing.T) {
 		mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).Return(nil)
 		mockPython.EXPECT().Start(
 			gomock.Any(), callPC.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		).Return(fmt.Errorf("runner unreachable"))
 
 		se := &pipecatcall.Session{Ctx: context.Background(), LLMRunnerType: "openai.gpt-5"}
@@ -104,10 +104,10 @@ func Test_runnerStartScript_errorPaths(t *testing.T) {
 		var got []aitool.Tool
 		mockPython.EXPECT().Start(
 			gomock.Any(), aiPC.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		).DoAndReturn(func(
 			_ context.Context, _ uuid.UUID, _ string, _ string, _ []map[string]any, _ string, _ string, _ string, _ string, _ string,
-			tools []aitool.Tool, _ *resolvedTeamData, _ *amai.VADConfig, _ bool, _ uuid.UUID, _ string, _ string,
+			tools []aitool.Tool, _ *resolvedTeamData, _ *amai.VADConfig, _ bool, _ uuid.UUID, _ string, _ string, _ any,
 		) error {
 			got = tools
 			return nil

@@ -70,8 +70,7 @@ func (h *mcpOAuthHandler) Complete(ctx context.Context, customerID uuid.UUID, st
 		return nil, errStateNotFoundOrUsed
 	}
 
-	vc, ok := h.vendors[row.Vendor]
-	if !ok {
+	if _, ok := h.vendors[row.Vendor]; !ok {
 		// Should be unreachable (Start already validated the vendor at
 		// state-creation time), but fail closed rather than panic on a
 		// map lookup for an unknown key. This is deliberately NOT
@@ -108,6 +107,14 @@ func (h *mcpOAuthHandler) Complete(ctx context.Context, customerID uuid.UUID, st
 				"The MCP server was not found.",
 			)
 		}
+	}
+
+	// Resolve the vendor app once, ahead of the single-use delete: a failed
+	// read is known before the exchange, so it must not burn the state row
+	// and force the customer to start over. The result is fixed for this call.
+	vc, err := h.resolveVendor(ctx, row.Vendor)
+	if err != nil {
+		return nil, cerrors.Internal(commonoutline.ServiceNameAIManager, "MCP_OAUTH_CREDENTIALS_UNAVAILABLE", "the oauth app of the vendor could not be read").Wrap(err)
 	}
 
 	// Single-use: delete the state row BEFORE the token exchange (design

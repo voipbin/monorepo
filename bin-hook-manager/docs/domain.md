@@ -23,7 +23,7 @@ Forwarded to: `conversation-manager`
 
 ## Paddle Webhook Verification
 
-`bin-hook-manager` handles billing webhooks from Paddle (payment processor). Paddle webhooks are verified using `paddle_webhook_secret_key` before forwarding. This is the primary reason this service needs a secret key config.
+`bin-hook-manager` handles billing webhooks from Paddle (payment processor). Paddle webhooks are verified using `paddle_webhook_secret_key` before forwarding. The verified `Paddle-Signature` header is forwarded to billing as `received_signature`, and billing verifies it again. A 401 answer from billing is returned to Paddle as 400; every other billing error stays 500. This service keeps its own env check of the secret, so the secret stored for billing must be the same value.
 
 ## Hook Payload Model
 

@@ -11,34 +11,8 @@ import (
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 )
 
-func Test_newVendorCatalog_Credentials(t *testing.T) {
-	catalog := newVendorCatalog("gh-id", "gh-secret", "ln-id", "ln-secret", "as-id", "as-secret", "", "")
-
-	tests := []struct {
-		vendor     string
-		wantID     string
-		wantSecret string
-	}{
-		{VendorGitHub, "gh-id", "gh-secret"},
-		{VendorLinear, "ln-id", "ln-secret"},
-		{VendorAsana, "as-id", "as-secret"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.vendor, func(t *testing.T) {
-			vc, ok := catalog[tt.vendor]
-			if !ok {
-				t.Fatalf("vendor %q missing from catalog", tt.vendor)
-			}
-			if vc.ClientID != tt.wantID || vc.ClientSecret != tt.wantSecret {
-				t.Errorf("credentials = (%q, %q), want (%q, %q)", vc.ClientID, vc.ClientSecret, tt.wantID, tt.wantSecret)
-			}
-		})
-	}
-}
-
 func Test_newVendorCatalog_Asana(t *testing.T) {
-	vc := newVendorCatalog("", "", "", "", "as-id", "as-secret", "", "")[VendorAsana]
+	vc := newVendorCatalog()[VendorAsana]
 
 	if vc.MCPServerURL != "https://mcp.asana.com/v2/mcp" {
 		t.Errorf("MCPServerURL = %q", vc.MCPServerURL)
@@ -55,7 +29,7 @@ func Test_newVendorCatalog_Asana(t *testing.T) {
 }
 
 func Test_buildAuthorizeURL_Asana(t *testing.T) {
-	vc := newVendorCatalog("", "", "", "", "as-id", "as-secret", "", "")[VendorAsana]
+	vc := vendorConfig{vendorMeta: newVendorCatalog()[VendorAsana], Credentials: Credentials{ClientID: "as-id", ClientSecret: "as-secret"}}
 
 	raw := buildAuthorizeURL(vc, "state-1", "challenge-1")
 	u, err := url.Parse(raw)

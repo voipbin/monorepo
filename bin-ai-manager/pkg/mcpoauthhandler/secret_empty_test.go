@@ -25,7 +25,7 @@ func Test_NewMcpOAuthHandler_errorHoldsNoKeyText(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := NewMcpOAuthHandler(nil, tt.keys, "", "", "", "", "", "", "", "")
+			res, err := NewMcpOAuthHandler(nil, tt.keys, noCredentials)
 			if err == nil || res != nil {
 				t.Fatalf("expected an error and a nil handler, got %v / %v", res, err)
 			}
@@ -38,7 +38,7 @@ func Test_NewMcpOAuthHandler_errorHoldsNoKeyText(t *testing.T) {
 
 func Test_NewMcpOAuthHandler_blankEntriesMeanNoKey(t *testing.T) {
 	for _, keys := range []string{"", ","} {
-		res, err := NewMcpOAuthHandler(nil, keys, "", "", "", "", "", "", "", "")
+		res, err := NewMcpOAuthHandler(nil, keys, noCredentials)
 		if err != nil || res == nil {
 			t.Errorf("a list of blank entries (%q) must build a handler without a key, got %v / %v", keys, res, err)
 		}
@@ -56,7 +56,7 @@ func Test_GetValidAccessToken_NoKeyFails(t *testing.T) {
 		t.Fatalf("could not encrypt: %v", err)
 	}
 
-	noKeyHandler, err := NewMcpOAuthHandler(dbhandler.NewMockDBHandler(mc), "", "", "", "", "", "", "", "", "")
+	noKeyHandler, err := NewMcpOAuthHandler(dbhandler.NewMockDBHandler(mc), "", noCredentials)
 	if err != nil {
 		t.Fatalf("could not build the handler: %v", err)
 	}
@@ -108,5 +108,25 @@ func Test_GetValidAccessToken_emptyColumns(t *testing.T) {
 				t.Errorf("expected %q, got %v", tt.expect, err)
 			}
 		})
+	}
+}
+
+// noCredentials answers "not configured" for every vendor.
+func noCredentials(_ context.Context, _ string) (Credentials, error) {
+	return Credentials{}, nil
+}
+
+func Test_NewMcpOAuthHandler_nilCredentialsIsAnError(t *testing.T) {
+	res, err := NewMcpOAuthHandler(nil, "SENTINELKEYTEXT", nil)
+	if err == nil || res != nil {
+		t.Fatalf("expected an error and a nil handler, got %v / %v", res, err)
+	}
+	if strings.Contains(err.Error(), "SENTINEL") {
+		t.Errorf("the error holds the key list text: %v", err)
+	}
+
+	res, err = NewMcpOAuthHandler(nil, "", nil)
+	if err == nil || res != nil {
+		t.Fatalf("expected an error for nil credentials, got %v / %v", res, err)
 	}
 }

@@ -31,6 +31,8 @@ var serviceConfigServices = map[string]bool{
 	"message":    true,
 	"tts":        true,
 	"transcribe": true,
+	"billing":    true,
+	"pipecat":    true,
 }
 
 // serviceConfigAuthorize checks that the identity may manage the configs: direct access is

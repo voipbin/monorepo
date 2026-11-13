@@ -63,12 +63,17 @@ func cmdConfig() *cobra.Command {
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			return loadConfig(cmd)
 		},
-		Short: "Stored platform configuration (the LLM API keys)",
+		Short: "Stored platform configuration (the LLM API keys and the MCP OAuth apps)",
 		Long: `Stored platform configuration: the API keys of the platform LLM provider (OpenAI compatible
-and Gemini). These are platform keys. They are not the engine key of a customer AI ("ai create
---engine-key"), which belongs to the customer and is stored on the AI.
+and Gemini) and the OAuth apps (client_id and client_secret) of the MCP vendors. These are platform
+settings. They are not the engine key of a customer AI ("ai create --engine-key"), which belongs to
+the customer and is stored on the AI.
 
-The keys are stored in the database only; a key that is cleared is not configured. A change is
+The LLM keys are stored in the database only; a key that is cleared is not configured. The OAuth app
+of a vendor is read from the database when its client_secret is stored, and from the environment of
+the daemon (MCP_OAUTH_<VENDOR>_CLIENT_ID and _CLIENT_SECRET) otherwise. Store the client_id before the
+client_secret, and clear both. "list" reads the environment of this process, not the one of the
+daemon, so an app that the daemon reads from its environment can show as none here. A change is
 used by the next call, with no restart. The daemon applies the table migration at its start; on a
 local database run "migrate up" first. The master key list is read from the environment
 (AI_CONFIG_ENCRYPTION_KEYS) and is never a flag. These commands need the database and the master

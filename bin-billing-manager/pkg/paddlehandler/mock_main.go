@@ -70,3 +70,17 @@ func (mr *MockPaddleHandlerMockRecorder) GetPlanTypeByPriceID(priceID any) *gomo
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPlanTypeByPriceID", reflect.TypeOf((*MockPaddleHandler)(nil).GetPlanTypeByPriceID), priceID)
 }
+
+// VerifyWebhook mocks base method.
+func (m *MockPaddleHandler) VerifyWebhook(ctx context.Context, signature string, body []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyWebhook", ctx, signature, body)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VerifyWebhook indicates an expected call of VerifyWebhook.
+func (mr *MockPaddleHandlerMockRecorder) VerifyWebhook(ctx, signature, body any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyWebhook", reflect.TypeOf((*MockPaddleHandler)(nil).VerifyWebhook), ctx, signature, body)
+}

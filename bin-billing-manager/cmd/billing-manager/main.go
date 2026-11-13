@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"os"
 	"os/signal"
@@ -8,6 +9,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -15,9 +17,11 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"monorepo/bin-billing-manager/internal/billingconfig"
 	"monorepo/bin-billing-manager/internal/config"
 	"monorepo/bin-billing-manager/migrations"
 	"monorepo/bin-billing-manager/pkg/accounthandler"
@@ -124,8 +128,19 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
+	// The Paddle credentials are read from the database first and from the environment variable
+	// of the key while no value is stored. They are read when they are used, so a changed key is
+	// used by the next call. A read error is an error, never the environment.
+	configHandler, errConfig := billingconfig.New(config.Get(), dbhandler.NewConfigStore(sqlDB))
+	if errConfig != nil {
+		return errors.Wrapf(errConfig, "could not create the config handler")
+	}
+	billingconfig.LogSources(context.Background(), configHandler)
+
+	apiKey, webhookSecret := billingconfig.PaddleKeys(configHandler)
 	paddleHandler := paddlehandler.NewPaddleHandler(
-		config.Get().PaddleAPIKey,
+		apiKey,
+		webhookSecret,
 		config.Get().PaddlePriceIDBasic,
 		config.Get().PaddlePriceIDProfessional,
 	)
@@ -139,7 +154,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	subHandler, failedHandler := buildFailedEventHandler(db, sockHandler, accountHandler, billingHandler)
 
 	// run listen
-	if err := runListen(sockHandler, accountHandler, billingHandler, paddleHandler, failedHandler); err != nil {
+	if err := runListen(sockHandler, accountHandler, billingHandler, paddleHandler, failedHandler, configrpc.NewServer(configHandler, serviceName)); err != nil {
 		return err
 	}
 
@@ -192,12 +207,12 @@ func runSubscribe(subHandler subscribehandler.SubscribeHandler) error {
 }
 
 // runListen runs the listen handler
-func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler, paddleHandler paddlehandler.PaddleHandler, failedHandler failedeventhandler.FailedEventHandler) error {
+func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler, paddleHandler paddlehandler.PaddleHandler, failedHandler failedeventhandler.FailedEventHandler, configServer *configrpc.Server) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
 
-	listenHandler := listenhandler.NewListenHandler(sockHandler, accoutHandler, billingHandler, paddleHandler, failedHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, accoutHandler, billingHandler, paddleHandler, failedHandler, configServer)
 
 	if err := listenHandler.Run(string(commonoutline.QueueNameBillingRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		log.Errorf("Could not run the listenhandler correctly. err: %v", err)

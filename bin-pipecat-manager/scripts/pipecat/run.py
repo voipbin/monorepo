@@ -209,8 +209,13 @@ async def init_pipeline(
     customer_id: str = None,
     llm_base_url: str = None,
     llm_base_key: str = None,
+    platform_keys: dict = None,
 ) -> dict:
-    """Initialize the pipeline. Returns context dict. Raises on failure."""
+    """Initialize the pipeline. Returns context dict. Raises on failure.
+
+    platform_keys holds the stored platform keys that the Go service resolved for this session
+    (see PK_* below). It is passed down as an argument and is never stored in a module variable
+    or in the returned context, so concurrent sessions can not see each other's keys."""
     if resolved_team:
         ctx = await init_team_pipeline(
             id, resolved_team,
@@ -222,6 +227,7 @@ async def init_pipeline(
             llm_messages=llm_messages,
             vad_config=vad_config,
             smart_turn_enabled=smart_turn_enabled,
+            platform_keys=platform_keys,
         )
         ctx["type"] = "team"
         return ctx
@@ -235,6 +241,7 @@ async def init_pipeline(
             customer_id=customer_id,
             llm_base_url=llm_base_url,
             llm_base_key=llm_base_key,
+            platform_keys=platform_keys,
         )
         ctx["type"] = "single"
         return ctx
@@ -264,6 +271,7 @@ async def init_single_ai_pipeline(
     customer_id: str = None,
     llm_base_url: str = None,
     llm_base_key: str = None,
+    platform_keys: dict = None,
 ) -> dict:
     """Initialize single AI pipeline. Returns context dict. Raises on failure."""
     total_start = time.monotonic()
@@ -284,7 +292,7 @@ async def init_single_ai_pipeline(
     if stt_type:
         async def init_stt_and_input_ws():
             start = time.monotonic()
-            stt_service = create_stt_service(stt_type, language=stt_language)
+            stt_service = create_stt_service(stt_type, language=stt_language, platform_keys=platform_keys)
             vad_analyzer = SileroVADAnalyzer(params=build_vad_params(vad_config, smart_turn_enabled=smart_turn_enabled))
             turn_analyzer = None
             if smart_turn_enabled:
@@ -302,7 +310,7 @@ async def init_single_ai_pipeline(
     if tts_type:
         async def init_tts():
             start = time.monotonic()
-            tts_service = create_tts_service(tts_type, voice_id=tts_voice_id, language=tts_language)
+            tts_service = create_tts_service(tts_type, voice_id=tts_voice_id, language=tts_language, platform_keys=platform_keys)
             logger.info(f"[INIT][tts] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
             return {
                 "tts_service": tts_service,
@@ -314,6 +322,7 @@ async def init_single_ai_pipeline(
         llm_service, aggregator = create_llm_service(
             llm_type, llm_key, llm_messages, openai_tools, pipeline_id=id,
             customer_id=customer_id, llm_base_url=llm_base_url, llm_base_key=llm_base_key,
+            platform_keys=platform_keys,
         )
         logger.info(f"[INIT][llm] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
         return {
@@ -499,14 +508,35 @@ def _parse_language(language_str: str) -> Language:
         return Language.EN_US
 
 
+# Names of the stored platform keys in the platform_keys of a request. They are the key names of
+# the Go service (internal/configkeys) and are part of the wire contract.
+PK_OPENAI = "openai.api_key"
+PK_DEEPGRAM = "deepgram.api_key"
+PK_CARTESIA = "cartesia.api_key"
+PK_XAI = "xai.api_key"
+PK_ELEVENLABS = "elevenlabs.api_key"
+PK_GOOGLE = "google.api_key"  # Gemini LLM only. Google STT and TTS use a service account.
+PK_OPENROUTER = "openrouter.api_key"  # the platform OpenRouter key only, never a customer key
+PK_LOCAL_ENDPOINTS = "local_llm.endpoints"
+
+
+def _platform_key(platform_keys, name: str, env_name: str):
+    """The platform key `name` of the request, else the environment variable `env_name`.
+
+    An empty value counts as not set, as it does for the environment. The value is never logged."""
+    value = (platform_keys or {}).get(name)
+    return value if value else os.getenv(env_name)
+
+
 def create_tts_service(name: str, **options):
     name = name.lower()
+    platform_keys = options.get("platform_keys")
     voice_id = options.get("voice_id") or "default_voice_id"
     language = options.get("language")
 
     if name == "cartesia":
         return _keep_usable(CartesiaTTSService(
-            api_key=os.getenv("CARTESIA_API_KEY"),
+            api_key=_platform_key(platform_keys, PK_CARTESIA, "CARTESIA_API_KEY"),
             voice_id=voice_id,
             model="sonic-3.5",
             language=language,
@@ -514,7 +544,7 @@ def create_tts_service(name: str, **options):
         ))
     elif name == "elevenlabs":
         return _keep_usable(ElevenLabsTTSService(
-            api_key=os.getenv("ELEVENLABS_API_KEY"),
+            api_key=_platform_key(platform_keys, PK_ELEVENLABS, "ELEVENLABS_API_KEY"),
             voice_id=voice_id,
             model="eleven_turbo_v2_5",
             language=language,
@@ -543,6 +573,7 @@ def create_tts_service(name: str, **options):
 
 def create_stt_service(name: str, **options):
     name = name.lower()
+    platform_keys = options.get("platform_keys")
     language = options.get("language") or None
     if name == "deepgram":
         live_options = LiveOptions(
@@ -552,7 +583,7 @@ def create_stt_service(name: str, **options):
             profanity_filter=True,
         )
         return _keep_usable(_harden_deepgram(DeepgramSTTService(
-            api_key=os.getenv("DEEPGRAM_API_KEY"),
+            api_key=_platform_key(platform_keys, PK_DEEPGRAM, "DEEPGRAM_API_KEY"),
             live_options=live_options,
         )))
     elif name == "google":
@@ -676,13 +707,10 @@ def _valid_local_base_url(value) -> bool:
     )
 
 
-def load_local_endpoints(raw=None) -> int:
-    """Parse LOCAL_LLM_ENDPOINTS (default: the environment) into the module registry.
+def parse_local_endpoints(raw) -> tuple:
+    """Parse the JSON text of the local endpoints. Returns (loaded, skipped).
 
-    Returns the number of loaded endpoints. Never raises and never logs the value."""
-    global _local_endpoints
-    if raw is None:
-        raw = os.getenv("LOCAL_LLM_ENDPOINTS", "")
+    It changes no module state, never raises and never logs the value."""
     loaded: dict = {}
     skipped = 0
     if raw and raw.strip():
@@ -704,9 +732,33 @@ def load_local_endpoints(raw=None) -> int:
                 loaded[name] = {"base_url": item["base_url"], "api_key": item.get("api_key", "")}
             else:
                 skipped += 1
+    return loaded, skipped
+
+
+def load_local_endpoints(raw=None) -> int:
+    """Parse LOCAL_LLM_ENDPOINTS (default: the environment) into the module registry.
+
+    Returns the number of loaded endpoints. Never raises and never logs the value."""
+    global _local_endpoints
+    if raw is None:
+        raw = os.getenv("LOCAL_LLM_ENDPOINTS", "")
+    loaded, skipped = parse_local_endpoints(raw)
     _local_endpoints = loaded
     logger.info(f"Local llm endpoints loaded: {len(loaded)}, skipped: {skipped}")
     return len(loaded)
+
+
+def _local_endpoints_for(platform_keys) -> dict:
+    """The local endpoints of one session.
+
+    A stored value in the request replaces the environment registry as a whole (the two are not
+    merged) and is parsed for this call only, so the module registry is not changed and a
+    concurrent session is not affected. Without a value the registry that was loaded from the
+    environment is used."""
+    raw = (platform_keys or {}).get(PK_LOCAL_ENDPOINTS)
+    if raw:
+        return parse_local_endpoints(raw)[0]
+    return _local_endpoints
 
 
 load_local_endpoints()
@@ -723,8 +775,12 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         raise ValueError(f"Wrong LLM format: {type}. Expected format: 'service.model' or 'service:model' (e.g., 'openai.gpt-4o-mini')")
 
     service_name = service_name.lower()
+    platform_keys = options.get("platform_keys")
+    # Priority of the key: the key of the customer (openai, grok, gemini only), then the platform
+    # key of the request, then the environment of this process. platform_openrouter and local never
+    # use the key of the customer.
     if service_name == "openai":
-        api_key = key or os.getenv("OPENAI_API_KEY")
+        api_key = key or _platform_key(platform_keys, PK_OPENAI, "OPENAI_API_KEY")
         llm = OpenAILLMService(api_key=api_key, model=model_name)
 
         # Universal LLMContext + LLMContextAggregatorPair (the legacy
@@ -739,7 +795,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         return llm, aggregator
 
     elif service_name == "grok":
-        api_key = key or os.getenv("XAI_API_KEY")
+        api_key = key or _platform_key(platform_keys, PK_XAI, "XAI_API_KEY")
         llm = OpenAILLMService(
             api_key=api_key,
             model=model_name,
@@ -754,7 +810,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         return llm, aggregator
 
     elif service_name == "gemini":
-        api_key = key or os.getenv("GOOGLE_API_KEY")
+        api_key = key or _platform_key(platform_keys, PK_GOOGLE, "GOOGLE_API_KEY")
         llm = GoogleLLMService(api_key=api_key, model=model_name, stream_idle_timeout_secs=None)
 
         # Use universal LLMContext so GeminiLLMAdapter properly converts
@@ -782,8 +838,8 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
     elif service_name == "platform_openrouter":
         # Internal service name emitted only by the Go resolver
         # (platform_openrouter.<slug>). The key argument is intentionally
-        # ignored: the platform key comes from the environment only.
-        api_key = os.getenv("OPENROUTER_API_KEY", "")
+        # ignored: the platform key comes from the request or the environment only.
+        api_key = _platform_key(platform_keys, PK_OPENROUTER, "OPENROUTER_API_KEY") or ""
         if not api_key:
             raise ValueError("OpenRouter is not configured")
         llm = _build_openrouter_llm(api_key, model_name)
@@ -815,7 +871,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         # Operator-registered local endpoint (local.<endpoint>.<model id>). The key
         # argument is ignored: only the operator-configured key is used.
         endpoint_name, _, local_model = model_name.partition(".")
-        endpoint = _local_endpoints.get(endpoint_name)
+        endpoint = _local_endpoints_for(platform_keys).get(endpoint_name)
         if endpoint is None or not local_model:
             raise ValueError(_LOCAL_ERROR)
         llm = OpenAILLMService(
@@ -958,6 +1014,7 @@ async def init_team_pipeline(
     llm_messages: list = None,
     vad_config: dict = None,
     smart_turn_enabled: bool = False,
+    platform_keys: dict = None,
 ) -> dict:
     """Initialize team pipeline. Returns context dict. Raises on failure.
 
@@ -1001,6 +1058,7 @@ async def init_team_pipeline(
             customer_id=customer_id,
             llm_base_url=ai.get("llm_base_url"),
             llm_base_key=ai.get("llm_base_key"),
+            platform_keys=platform_keys,
         )
         # Design 2.5: flows tools default to cancel_on_interruption=False, which
         # makes 1.12 compose an ASYNC TOOLS system instruction; keep the member
@@ -1013,11 +1071,13 @@ async def init_team_pipeline(
             tts_services[mid] = create_tts_service(
                 ai["tts_type"],
                 voice_id=ai.get("tts_voice_id"), language=tts_language,
+                platform_keys=platform_keys,
             )
 
         if stt_type and ai.get("stt_type"):
             stt_services[mid] = create_stt_service(
                 ai["stt_type"], language=stt_language,
+                platform_keys=platform_keys,
             )
 
         logger.info(f"[TEAM][INIT] Member {mid} services created in {time.monotonic() - start:.3f}s")

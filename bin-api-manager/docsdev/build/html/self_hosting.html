@@ -1250,12 +1250,24 @@ environment variable and must be set before a secret can be stored.
 is stored, <code class="docutils literal notranslate"><span class="pre">none</span></code> means that the key is not configured. The services
 log a warning or an info line at start for a key that is not configured
 (the key name only).</p>
-<p><code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> are different: they
-read their provider keys (<code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code>,
-<code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">ELEVENLABS_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">OPENROUTER_API_KEY</span></code>) from the
-environment. A key that both a manager and the pipecat services use
-(<code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">ELEVENLABS_API_KEY</span></code>) therefore has two places
-and must be replaced in both.</p>
+<p><code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> are different: a stored value
+is used first, and the environment variable is used when no value is
+stored. <code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> has <code class="docutils literal notranslate"><span class="pre">paddle.api_key</span></code> (<code class="docutils literal notranslate"><span class="pre">PADDLE_API_KEY</span></code>)
+and <code class="docutils literal notranslate"><span class="pre">paddle.webhook_secret_key</span></code> (<code class="docutils literal notranslate"><span class="pre">PADDLE_WEBHOOK_SECRET_KEY</span></code>).
+<code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> has <code class="docutils literal notranslate"><span class="pre">openai.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">deepgram.api_key</span></code>,
+<code class="docutils literal notranslate"><span class="pre">cartesia.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">xai.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">elevenlabs.api_key</span></code>,
+<code class="docutils literal notranslate"><span class="pre">google.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">openrouter.api_key</span></code> and <code class="docutils literal notranslate"><span class="pre">local_llm.endpoints</span></code>
+(the variables <code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">DEEPGRAM_API_KEY</span></code>,
+<code class="docutils literal notranslate"><span class="pre">CARTESIA_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">ELEVENLABS_API_KEY</span></code>,
+<code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">OPENROUTER_API_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">LOCAL_LLM_ENDPOINTS</span></code>).
+Store them with the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">set</span></code> command of <code class="docutils literal notranslate"><span class="pre">billing-control</span></code> or
+<code class="docutils literal notranslate"><span class="pre">pipecat-control</span></code> or with the Service Config API (the <code class="docutils literal notranslate"><span class="pre">billing</span></code> and
+<code class="docutils literal notranslate"><span class="pre">pipecat</span></code> services). A change of a <code class="docutils literal notranslate"><span class="pre">pipecat</span></code> key is used from the next
+session. A key that both a manager and the pipecat services use
+(<code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">ELEVENLABS_API_KEY</span></code>) is a separate setting in
+each service and must be replaced in both. The <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code>
+keeps its <code class="docutils literal notranslate"><span class="pre">.env</span></code> variables as the fallback for a key that
+<code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> does not pass.</p>
 </section>
 <section id="ai-voice-agent-providers">
 <h3>AI voice agent providers<a class="headerlink" href="#ai-voice-agent-providers" title="Link to this heading">¶</a></h3>
@@ -1746,10 +1758,14 @@ by default; never enable on a public install.</p></td>
 <h3>Third-party integrations<a class="headerlink" href="#third-party-integrations" title="Link to this heading">¶</a></h3>
 <p>Voice AI, transcription, TTS, phone number provisioning, and email/SMS
 providers are configured through their own keys. Most are variables in
-<code class="docutils literal notranslate"><span class="pre">.env</span></code>; the provider keys of <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">email-manager</span></code>,
-<code class="docutils literal notranslate"><span class="pre">message-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code> are
-stored settings that are set with the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">set</span></code> command of the
-service or the Service Config API, and are not read from <code class="docutils literal notranslate"><span class="pre">.env</span></code>. See
+<code class="docutils literal notranslate"><span class="pre">.env</span></code>; the provider keys of <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> (the LLM keys),
+<code class="docutils literal notranslate"><span class="pre">email-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">message-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code> and
+<code class="docutils literal notranslate"><span class="pre">tts-manager</span></code> are stored settings that are set with the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">set</span></code>
+command of the service or the Service Config API, and are not read from
+<code class="docutils literal notranslate"><span class="pre">.env</span></code>. The Paddle keys of <code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> and the platform keys of
+the voice AI vendors of <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> can also be stored settings;
+a stored value is used first, and the <code class="docutils literal notranslate"><span class="pre">.env</span></code> variable is used when no
+value is stored. See
 the Provider configuration section for the full list of keys, which
 service to restart after setting each, and the AI-provider-specific
 details (shared credentials, multi-service consumers). Until a

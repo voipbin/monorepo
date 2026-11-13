@@ -23,7 +23,7 @@ func Test_NewListenHandler(t *testing.T) {
 	mockPaddle := paddlehandler.NewMockPaddleHandler(mc)
 	mockFailed := failedeventhandler.NewMockFailedEventHandler(mc)
 
-	res := NewListenHandler(mockSock, mockAccount, mockBilling, mockPaddle, mockFailed)
+	res := NewListenHandler(mockSock, mockAccount, mockBilling, mockPaddle, mockFailed, nil)
 	h, ok := res.(*listenHandler)
 	if !ok {
 		t.Fatalf("Wrong match. expect: *listenHandler, got: %T", res)

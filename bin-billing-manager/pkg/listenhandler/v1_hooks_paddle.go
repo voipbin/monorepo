@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-billing-manager/models/account"
+	"monorepo/bin-billing-manager/pkg/paddlehandler"
 )
 
 // paddleEvent is the minimal Paddle v2 event envelope.
@@ -94,6 +96,22 @@ func (h *listenHandler) processV1HooksPaddlePost(ctx context.Context, m *sock.Re
 	if err := json.Unmarshal(m.Data, &hook); err != nil {
 		log.Errorf("Could not unmarshal hook data: %v", err)
 		return simpleResponse(400), nil
+	}
+
+	// Verify the signature of the webhook. This is a second check behind the hook service, and it
+	// uses the secret that is stored for this service (or its environment fallback). No secret
+	// means no check. A secret that can not be read is an error answer, never a skipped check.
+	// The signature and the body are not logged here: the log entry above holds the whole request,
+	// so this check logs through its own entry.
+	if errVerify := h.paddleHandler.VerifyWebhook(ctx, hook.ReceivedSignature, hook.ReceivedData); errVerify != nil {
+		logSig := logrus.WithField("func", "processV1HooksPaddlePost")
+		if errors.Is(errVerify, paddlehandler.ErrSignatureInvalid) {
+			logSig.Warnf("The Paddle webhook signature was rejected. err: %v", errVerify)
+			return simpleResponse(401), nil
+		}
+
+		logSig.Errorf("Could not verify the Paddle webhook signature. err: %v", errVerify)
+		return simpleResponse(500), nil
 	}
 
 	// Parse the Paddle event from the raw webhook body

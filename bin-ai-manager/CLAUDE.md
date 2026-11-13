@@ -24,6 +24,10 @@ The stored key is `llm.openai_compat.api_key` (set with `ai-control config set -
 
 **Gemini audit uses a separate key.** The `geminiaudithandler` requires a Google API key (`AIza...`), stored as `llm.gemini.api_key` (database only; `GOOGLE_API_KEY` is read by bin-pipecat-manager from its own environment, not by this service). This is distinct from `llm.openai_compat.api_key` which holds an OpenAI-style key (`sk-...`). Both keys are read for each call through `internal/aiconfig` (never cache them; they have no environment source); see docs/operations.md, "Platform LLM keys". They can also be written through the admin API (`/service_configs/ai`, served as `/v1/configs` by the shared `configrpc`, history source `api`); that route is handled before the request log entry exists and must never log the request, because the body of a secret write is the secret.
 
+## MCP OAuth app credentials
+
+The OAuth app of each MCP vendor is two config keys per vendor (`mcp_oauth.<vendor>.client_secret`, the anchor of an atomic group, and `mcp_oauth.<vendor>.client_id`, declared in `internal/configkeys`). They are resolved each time a request needs them, from the database when the `client_secret` has a row and from the environment (`MCP_OAUTH_<VENDOR>_CLIENT_ID`/`_SECRET`, read with `os.LookupEnv` by `aiconfig.New`) otherwise. `internal/config` has no field or flag for them. `mcpoauthhandler.NewMcpOAuthHandler(db, cryptoKeys, credentials)` takes a `CredentialsFunc` and no vendor strings: `vendors.go` holds only the static metadata, the credentials are resolved by `resolveVendor` once per request (Start, Complete) and once per refresh exchange (in `exchangeAndStore`, bounded to 2 seconds), and `isValidVendor` never resolves. A read error or an incomplete stored pair is an error and never falls back to the environment; a vendor with neither value keeps the old behavior. `client_id` is a plain parameter, so only `ai-control` can write it. Write the `client_id` before the `client_secret`, and clear both; see docs/operations.md, "MCP OAuth app credentials".
+
 ## Common commands
 
 ```bash

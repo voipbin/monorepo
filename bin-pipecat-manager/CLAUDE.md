@@ -45,7 +45,7 @@ cd scripts/pipecat && pip install -r requirements.txt && uvicorn main:app --host
 
 ## Database migrations
 
-The schema of `pipecat_pipecatcalls` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax.
+The schema of `pipecat_pipecatcalls`, `pipecat_configs` and `pipecat_config_histories` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax.
 
 - Files: `migrations/NNNNNN_<description>.up.sql` and `.down.sql` (six digits, from 000001 without gaps). `000001_baseline` is the schema at the time of the conversion (`CREATE TABLE IF NOT EXISTS`, no table options, down is the no-op `SELECT 1`). Version table: `pipecat_schema_migrations`.
 - `cmd/pipecat-manager` runs `migrationhandler.Run` in `createDBHandler`, right after the database connection and before the cache and RabbitMQ. Failure stops the start (non-zero exit). The Python script-runner containers do not touch the database.
@@ -53,8 +53,18 @@ The schema of `pipecat_pipecatcalls` is owned by this service and applied at sta
 - The migration code is the shared `bin-common-handler/pkg/migrationhandler`. Rules for new files (one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract), the checks and the recovery steps are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
 - A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do).
 - New database: the service creates its tables at startup (the baseline is `CREATE TABLE IF NOT EXISTS`); no other schema tool runs first.
+- `000002` and `000003` add the two config tables (CHECK constraints are `chk_pipecat_configs_*` and `chk_pipecat_config_histories_*`).
 - Update `scripts/database_scripts_test/table_*.sql` (the sqlite test schema) by hand when the schema changes.
 - Structure checks: `go test ./migrations/`. Git relative check: `scripts/check-service-migrations.sh bin-pipecat-manager` after `git fetch origin main`. Dynamic check on scratch containers: `scripts/verify-service-migrations.sh bin-pipecat-manager` (repo root).
+
+## Stored platform keys
+
+- Eight vendor keys can be stored encrypted in `pipecat_configs` (`internal/configkeys`): `openai.api_key`, `deepgram.api_key`, `cartesia.api_key`, `xai.api_key`, `elevenlabs.api_key`, `google.api_key`, `openrouter.api_key`, `local_llm.endpoints`. The key names are also the keys of `platform_keys` in the runner request, so they never change.
+- Order: database, then the environment of the Go process (`os.LookupEnv`, passed to `confighandler.NewHandler` on purpose). The runner then uses its own environment for any key that is missing in the request. OpenAI, Grok and Gemini prefer the key of the customer; platform OpenRouter and local never use a customer key.
+- `runnerStartScript` calls `sessionPlatformKeys` once, for a single AI and a team alike, and passes the map to `PythonRunner.Start`. Only the vendors that the session uses are resolved. Reads are bounded to 2 seconds in total; a key that can not be read is left out with one warning (key name, pipecatcall id, reason; never a value).
+- The map type is `map[string]amai.RedactedString` (plain only in the JSON body); Python declares `platform_keys` with `repr=False`. Do not change either to a plain string. Never log the request body.
+- The master key list `PIPECAT_CONFIG_ENCRYPTION_KEYS` is mapped to the Go containers (`pipecat-manager-1`, `-2`) only. The runner has no database access and no master key; `cmd/pipecat-manager/komodo_compose_test.go` pins this.
+- Manage with `pipecat-control config list|set|clear` or the admin API (`/service_configs/pipecat`). See [docs/operations.md](docs/operations.md) (Stored platform keys).
 
 ## Testing pattern
 

@@ -223,9 +223,6 @@
       "flag": "redis_database"
     },
     {
-      "flag": "paddle_api_key"
-    },
-    {
       "flag": "paddle_price_id_basic"
     },
     {

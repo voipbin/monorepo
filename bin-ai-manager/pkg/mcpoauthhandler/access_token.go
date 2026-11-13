@@ -92,7 +92,7 @@ func (h *mcpOAuthHandler) GetValidAccessToken(ctx context.Context, m *mcpserver.
 		return "", errors.Wrap(err, "could not decrypt oauth refresh token")
 	}
 
-	vc, ok := h.vendors[m.OAuthVendor]
+	meta, ok := h.vendors[m.OAuthVendor]
 	if !ok {
 		return "", errors.Errorf("mcp server names an unknown oauth vendor: %q", m.OAuthVendor)
 	}
@@ -110,7 +110,7 @@ func (h *mcpOAuthHandler) GetValidAccessToken(ctx context.Context, m *mcpserver.
 	// token it spent, is given its result. Presenting a spent refresh token
 	// again fails at a rotating vendor, and a vendor that detects reuse revokes
 	// the whole grant.
-	ex, err := h.refreshExchange(ctx, m, vc, refreshToken, now)
+	ex, err := h.refreshExchange(ctx, m, meta, refreshToken, now)
 	if err != nil {
 		return "", err
 	}
@@ -136,7 +136,7 @@ func (h *mcpOAuthHandler) GetValidAccessToken(ctx context.Context, m *mcpserver.
 // The backoff is checked only when a new exchange would start: a caller that
 // can join one in flight, or be handed a usable result, costs the vendor
 // nothing, and refusing it would fail a call that has a valid token to use.
-func (h *mcpOAuthHandler) refreshExchange(ctx context.Context, m *mcpserver.McpServer, vc vendorConfig, refreshToken string, now *time.Time) (*tokenExchange, error) {
+func (h *mcpOAuthHandler) refreshExchange(ctx context.Context, m *mcpserver.McpServer, meta vendorMeta, refreshToken string, now *time.Time) (*tokenExchange, error) {
 	digest := sha256.Sum256([]byte(refreshToken))
 	key := m.ID.String() + ":" + hex.EncodeToString(digest[:])
 
@@ -177,7 +177,7 @@ func (h *mcpOAuthHandler) refreshExchange(ctx context.Context, m *mcpserver.McpS
 	exchangeCtx := context.WithoutCancel(ctx)
 	go func() {
 		defer close(ex.done)
-		ex.accessToken, ex.expiresAt, ex.err = h.exchangeAndStore(exchangeCtx, m, vc, refreshToken, now)
+		ex.accessToken, ex.expiresAt, ex.err = h.exchangeAndStore(exchangeCtx, m, meta, refreshToken, now)
 		ex.finishedAt = h.utilHandler.TimeNow()
 		if ex.err != nil {
 			refreshExchangesMu.Lock()
@@ -211,7 +211,23 @@ func (ex *tokenExchange) usable(now *time.Time) bool {
 // exchangeAndStore performs one refresh against the vendor and stores the
 // rotated tokens. The vendor call is bounded by h.httpClient's timeout and
 // the write by persistRotatedTokenTimeout.
-func (h *mcpOAuthHandler) exchangeAndStore(ctx context.Context, m *mcpserver.McpServer, vc vendorConfig, refreshToken string, now *time.Time) (string, *time.Time, error) {
+//
+// The vendor app is resolved once, here, at the start of the exchange: the
+// exchange is shared by every caller holding the same refresh token, so the
+// number of resolutions does not depend on the number of callers. The ctx is
+// detached from the caller, so the resolution has its own bound. A failed
+// resolution never reaches the vendor, so the refresh token is not spent and
+// no backoff is set (the vendor did nothing wrong); the next call resolves
+// again.
+func (h *mcpOAuthHandler) exchangeAndStore(ctx context.Context, m *mcpserver.McpServer, meta vendorMeta, refreshToken string, now *time.Time) (string, *time.Time, error) {
+	resolveCtx, cancelResolve := context.WithTimeout(ctx, credentialResolveTimeout)
+	creds, err := h.credentials(resolveCtx, m.OAuthVendor)
+	cancelResolve()
+	if err != nil {
+		return "", nil, errors.Wrap(err, "could not resolve the oauth app of the vendor")
+	}
+	vc := vendorConfig{vendorMeta: meta, Credentials: creds}
+
 	tok, err := h.refreshToken(ctx, vc, refreshToken)
 	if err != nil {
 		h.setRefreshBackoff(m.ID.String())

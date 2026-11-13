@@ -1,6 +1,6 @@
 import asyncio
 import json
-from typing import Optional, List
+from typing import Optional, List, Dict
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -112,6 +112,9 @@ class PipelineRequest(BaseModel):
     customer_id: Optional[str] = None
     llm_base_url: Optional[str] = Field(default=None, repr=False)
     llm_base_key: Optional[str] = Field(default=None, repr=False)
+    # Stored platform keys of the vendors that this session uses, by key name (see run.PK_*).
+    # repr=False keeps the values out of repr() and of the text of a validation error.
+    platform_keys: Optional[Dict[str, str]] = Field(default=None, repr=False)
     llm_messages: Optional[List[Message]] = Field(default_factory=list)
     stt_type: Optional[str] = None
     stt_language: Optional[str] = None
@@ -194,6 +197,7 @@ async def run_pipeline_endpoint(req: PipelineRequest):
             customer_id=req.customer_id,
             llm_base_url=req.llm_base_url,
             llm_base_key=req.llm_base_key,
+            platform_keys=req.platform_keys,
         )
     except BaseException as e:
         if custom:

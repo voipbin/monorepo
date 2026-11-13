@@ -25,6 +25,8 @@ const (
 	configServiceMessage    = "message"
 	configServiceTTS        = "tts"
 	configServiceTranscribe = "transcribe"
+	configServiceBilling    = "billing"
+	configServicePipecat    = "pipecat"
 )
 
 // configQueue returns the request queue of the service of the config API, and the label of the
@@ -42,6 +44,10 @@ func configQueue(service string) (commonoutline.QueueName, string, error) {
 		return commonoutline.QueueNameTTSRequest, "tts/configs", nil
 	case configServiceTranscribe:
 		return commonoutline.QueueNameTranscribeRequest, "transcribe/configs", nil
+	case configServiceBilling:
+		return commonoutline.QueueNameBillingRequest, "billing/configs", nil
+	case configServicePipecat:
+		return commonoutline.QueueNamePipecatRequest, "pipecat/configs", nil
 	}
 
 	return "", "", ErrConfigServiceUnknown

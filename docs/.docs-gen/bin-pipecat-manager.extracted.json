@@ -47,6 +47,10 @@
       "local_path": "../bin-direct-manager"
     },
     {
+      "module_path": "monorepo/bin-push-manager",
+      "local_path": "../bin-push-manager"
+    },
+    {
       "module_path": "monorepo/bin-talk-manager",
       "local_path": "../bin-talk-manager"
     },
@@ -162,6 +166,12 @@
       "flag": "prometheus_listen_address"
     },
     {
+      "flag": "log_level"
+    },
+    {
+      "flag": "info"
+    },
+    {
       "flag": "database_dsn"
     },
     {
@@ -172,6 +182,9 @@
     },
     {
       "flag": "redis_database"
+    },
+    {
+      "flag": "local_llm_models"
     }
   ],
   "metrics": [
@@ -183,6 +196,9 @@
     },
     {
       "name": "pipecat_manager_llm_idle_watchdog_fired_total"
+    },
+    {
+      "name": "pipecat_manager_mcp_tool_list_fallback_total"
     },
     {
       "name": "pipecat_manager_pipeline_error_total"

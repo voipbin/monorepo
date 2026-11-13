@@ -406,6 +406,166 @@ func Test_config_transcribeService(t *testing.T) {
 	}
 }
 
+// The service billing is sent to the queue of the billing manager and to no other queue, for all four calls,
+// with the same uri, method and body as the other services.
+func Test_config_billingService(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	const target = "bin-manager.billing-manager.request"
+	ok := &sock.Response{StatusCode: 200, DataType: "application/json", Data: []byte(testConfigKeyRaw)}
+
+	tests := []struct {
+		name   string
+		expect *sock.Request
+		resp   *sock.Response
+		call   func(r *requestHandler) error
+	}{
+		{
+			"service",
+			&sock.Request{URI: "/v1/configs", Method: sock.RequestMethodGet, DataType: ContentTypeJSON},
+			&sock.Response{StatusCode: 200, DataType: "application/json", Data: []byte(`{"secret_writable":true,"keys":[` + testConfigKeyRaw + `]}`)},
+			func(r *requestHandler) error {
+				res, err := r.ConfigV1ServiceGet(context.Background(), "billing")
+				if err == nil && res.Service != "billing" {
+					return fmt.Errorf("wrong service: %q", res.Service)
+				}
+				return err
+			},
+		},
+		{
+			"secret",
+			&sock.Request{
+				URI:      "/v1/configs/paddle.api_key/secret",
+				Method:   sock.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"actor_id":"` + testConfigActor.String() + `","secret":"` + testConfigSecret + `","revision":2}`),
+			},
+			ok,
+			func(r *requestHandler) error {
+				_, err := r.ConfigV1KeySecretSet(context.Background(), "billing", "paddle.api_key", testConfigActor, testConfigSecret, 2)
+				return err
+			},
+		},
+		{
+			"delete",
+			&sock.Request{
+				URI:      "/v1/configs/paddle.api_key",
+				Method:   sock.RequestMethodDelete,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"actor_id":"` + testConfigActor.String() + `","revision":2}`),
+			},
+			ok,
+			func(r *requestHandler) error {
+				_, err := r.ConfigV1KeyClear(context.Background(), "billing", "paddle.api_key", testConfigActor, 2)
+				return err
+			},
+		},
+		{
+			"histories",
+			&sock.Request{URI: "/v1/configs/paddle.api_key/histories", Method: sock.RequestMethodGet, DataType: ContentTypeJSON},
+			&sock.Response{StatusCode: 200, DataType: "application/json", Data: []byte(`{"result":[],"next_page_token":""}`)},
+			func(r *requestHandler) error {
+				_, err := r.ConfigV1KeyHistoryList(context.Background(), "billing", "paddle.api_key", "", 0)
+				return err
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{sock: mockSock}
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), target, tt.expect).Return(tt.resp, nil)
+
+			if err := tt.call(&reqHandler); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+// The service pipecat is sent to the queue of the pipecat manager and to no other queue, for all four calls,
+// with the same uri, method and body as the other services.
+func Test_config_pipecatService(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	const target = "bin-manager.pipecat-manager.request"
+	ok := &sock.Response{StatusCode: 200, DataType: "application/json", Data: []byte(testConfigKeyRaw)}
+
+	tests := []struct {
+		name   string
+		expect *sock.Request
+		resp   *sock.Response
+		call   func(r *requestHandler) error
+	}{
+		{
+			"service",
+			&sock.Request{URI: "/v1/configs", Method: sock.RequestMethodGet, DataType: ContentTypeJSON},
+			&sock.Response{StatusCode: 200, DataType: "application/json", Data: []byte(`{"secret_writable":true,"keys":[` + testConfigKeyRaw + `]}`)},
+			func(r *requestHandler) error {
+				res, err := r.ConfigV1ServiceGet(context.Background(), "pipecat")
+				if err == nil && res.Service != "pipecat" {
+					return fmt.Errorf("wrong service: %q", res.Service)
+				}
+				return err
+			},
+		},
+		{
+			"secret",
+			&sock.Request{
+				URI:      "/v1/configs/local_llm.endpoints/secret",
+				Method:   sock.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"actor_id":"` + testConfigActor.String() + `","secret":"` + testConfigSecret + `","revision":2}`),
+			},
+			ok,
+			func(r *requestHandler) error {
+				_, err := r.ConfigV1KeySecretSet(context.Background(), "pipecat", "local_llm.endpoints", testConfigActor, testConfigSecret, 2)
+				return err
+			},
+		},
+		{
+			"delete",
+			&sock.Request{
+				URI:      "/v1/configs/local_llm.endpoints",
+				Method:   sock.RequestMethodDelete,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"actor_id":"` + testConfigActor.String() + `","revision":2}`),
+			},
+			ok,
+			func(r *requestHandler) error {
+				_, err := r.ConfigV1KeyClear(context.Background(), "pipecat", "local_llm.endpoints", testConfigActor, 2)
+				return err
+			},
+		},
+		{
+			"histories",
+			&sock.Request{URI: "/v1/configs/local_llm.endpoints/histories", Method: sock.RequestMethodGet, DataType: ContentTypeJSON},
+			&sock.Response{StatusCode: 200, DataType: "application/json", Data: []byte(`{"result":[],"next_page_token":""}`)},
+			func(r *requestHandler) error {
+				_, err := r.ConfigV1KeyHistoryList(context.Background(), "pipecat", "local_llm.endpoints", "", 0)
+				return err
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{sock: mockSock}
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), target, tt.expect).Return(tt.resp, nil)
+
+			if err := tt.call(&reqHandler); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
 // The label of the metrics is a fixed text per service, never a key name.
 func Test_configQueue(t *testing.T) {
 	tests := []struct {
@@ -419,6 +579,8 @@ func Test_configQueue(t *testing.T) {
 		{"message", "bin-manager.message-manager.request", "message/configs", nil},
 		{"tts", "bin-manager.tts-manager.request", "tts/configs", nil},
 		{"transcribe", "bin-manager.transcribe-manager.request", "transcribe/configs", nil},
+		{"billing", "bin-manager.billing-manager.request", "billing/configs", nil},
+		{"pipecat", "bin-manager.pipecat-manager.request", "pipecat/configs", nil},
 		{"voice", "", "", ErrConfigServiceUnknown},
 		{"", "", "", ErrConfigServiceUnknown},
 	}
@@ -443,7 +605,7 @@ func Test_config_unknownService(t *testing.T) {
 	reqHandler := requestHandler{sock: mockSock}
 	ctx := context.Background()
 
-	for _, service := range []string{"", "nothing", "EMAIL", "AI", "MESSAGE", "TTS", "TRANSCRIBE", "ai/../x", "tts/../x", "transcribe/../x", "email/../x"} {
+	for _, service := range []string{"", "nothing", "EMAIL", "AI", "MESSAGE", "TTS", "TRANSCRIBE", "ai/../x", "tts/../x", "transcribe/../x", "email/../x", "BILLING", "PIPECAT", "billing/../x", "pipecat/../x"} {
 		if _, err := reqHandler.ConfigV1ServiceGet(ctx, service); !errors.Is(err, ErrConfigServiceUnknown) {
 			t.Errorf("Wrong match. service %q expect: ErrConfigServiceUnknown, got: %v", service, err)
 		}

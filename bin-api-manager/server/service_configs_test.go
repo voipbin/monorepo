@@ -356,6 +356,96 @@ func Test_serviceConfigs_messageService(t *testing.T) {
 	}
 }
 
+// The service billing is routed like email: the service name reaches the service handler as it is.
+func Test_serviceConfigs_billingService(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	a := testNumberProviderAgent()
+	r, w, _, _, _ := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
+
+	mockSvc.EXPECT().ServiceConfigGet(gomock.Any(), a, "billing").Return(&configrpc.Service{Service: "billing", SecretWritable: true, Keys: []configrpc.Key{*testServiceConfigKey()}}, nil)
+	do(r, w, "GET", "/service_configs/billing", "")
+	if w.Code != http.StatusOK || !strings.HasPrefix(w.Body.String(), `{"service":"billing",`) {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+
+	mockSvc.EXPECT().ServiceConfigKeySecretSet(gomock.Any(), a, "billing", "paddle.api_key", testServiceConfigSecret, int64(2)).Return(testServiceConfigKey(), nil)
+	w = httptest.NewRecorder()
+	do(r, w, "PUT", "/service_configs/billing/keys/paddle.api_key/secret", `{"secret":"`+testServiceConfigSecret+`","revision":2}`)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+}
+
+// The service pipecat is routed like email, for the key with an underscore in the name.
+func Test_serviceConfigs_pipecatService(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	a := testNumberProviderAgent()
+	r, w, _, _, _ := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
+
+	mockSvc.EXPECT().ServiceConfigKeySecretSet(gomock.Any(), a, "pipecat", "local_llm.endpoints", testServiceConfigSecret, int64(1)).Return(testServiceConfigKey(), nil)
+	do(r, w, "PUT", "/service_configs/pipecat/keys/local_llm.endpoints/secret", `{"secret":"`+testServiceConfigSecret+`","revision":1}`)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+
+	mockSvc.EXPECT().ServiceConfigKeyClear(gomock.Any(), a, "pipecat", "local_llm.endpoints", int64(3)).Return(testServiceConfigKey(), nil)
+	w = httptest.NewRecorder()
+	do(r, w, "DELETE", "/service_configs/pipecat/keys/local_llm.endpoints?revision=3", "")
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. got: %d %s", w.Code, w.Body.String())
+	}
+}
+
+// The longest secret of a key (2020 bytes, the local_llm.endpoints key of pipecat) in the worst
+// case of JSON escaping (every byte a quote or a backslash, 4040 bytes) with the longest
+// revision fits in the body limit, and reaches the service handler unchanged. This holds the
+// limit: lowering it or the secret limit going up breaks this test.
+func Test_serviceConfigsKeySecretPut_worstCaseBody(t *testing.T) {
+	tests := []struct {
+		name   string
+		secret string
+	}{
+		{"quotes", strings.Repeat(`"`, 2020)},
+		{"backslashes", strings.Repeat(`\`, 2020)},
+		{"mixed", strings.Repeat(`"\`, 1010)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			a := testNumberProviderAgent()
+			r, w, _, _, _ := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
+
+			if len(tt.secret) != 2020 {
+				t.Fatalf("Wrong test data. expect: 2020 bytes, got: %d", len(tt.secret))
+			}
+			encoded, err := json.Marshal(tt.secret)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			// the value of the encoder is the worst case itself: 2 bytes per byte, in the quotes of the string.
+			body := `{"secret":` + string(encoded) + `,"revision":4294967295}`
+			if len(body) > serviceConfigMaxBodyBytes {
+				t.Fatalf("Wrong match. the body is over the limit. limit: %d, got: %d", serviceConfigMaxBodyBytes, len(body))
+			}
+
+			mockSvc.EXPECT().ServiceConfigKeySecretSet(gomock.Any(), a, "pipecat", "local_llm.endpoints", tt.secret, int64(4294967295)).Return(testServiceConfigKey(), nil)
+			do(r, w, "PUT", "/service_configs/pipecat/keys/local_llm.endpoints/secret", body)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: 200, got: %d %s", w.Code, w.Body.String())
+			}
+		})
+	}
+}
+
 // The service tts is routed like email: the generated binding passes the service name on as it is.
 func Test_serviceConfigs_ttsService(t *testing.T) {
 	mc := gomock.NewController(t)

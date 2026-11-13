@@ -15,7 +15,7 @@ func Test_pythonRunner_requestBuildErrors(t *testing.T) {
 	t.Run("start with llm messages that json can not encode", func(t *testing.T) {
 		messages := []map[string]any{{"content": make(chan int)}}
 
-		err := h.Start(context.Background(), id, "openai.gpt-5", "", messages, "", "", "", "", "", nil, nil, nil, false, uuid.Nil, "", "")
+		err := h.Start(context.Background(), id, "openai.gpt-5", "", messages, "", "", "", "", "", nil, nil, nil, false, uuid.Nil, "", "", nil)
 		if err == nil || !strings.Contains(err.Error(), "could not marshal request body for python runner") {
 			t.Errorf("Wrong error: %v", err)
 		}
@@ -25,7 +25,7 @@ func Test_pythonRunner_requestBuildErrors(t *testing.T) {
 	var noCtx context.Context
 
 	t.Run("start without a context", func(t *testing.T) {
-		err := h.Start(noCtx, id, "openai.gpt-5", "", nil, "", "", "", "", "", nil, nil, nil, false, uuid.Nil, "", "")
+		err := h.Start(noCtx, id, "openai.gpt-5", "", nil, "", "", "", "", "", nil, nil, nil, false, uuid.Nil, "", "", nil)
 		if err == nil || !strings.Contains(err.Error(), "could not create request for python runner") {
 			t.Errorf("Wrong error: %v", err)
 		}
