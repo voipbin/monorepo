@@ -12,7 +12,7 @@ Out of scope: `bin-pipecat-manager`, the MCP OAuth keys of `bin-ai-manager`, `co
 
 - Not stored: `VerifyWebhook` returns `paddlehandler.ErrCredentialNotConfigured` (distinct from `ErrKeyUnavailable` and from `confighandler.ErrKeyNotConfigured`). The listen handler answers 500, the hook service passes a 500 on, so the sender may retry. A rejected signature stays 401 (hook: 400). The alternative 401 mixes a server side configuration state with a forged request and may not be retried by the sender; answering 200 and dropping the event loses it.
 - The retry behavior of the sender (4xx and 5xx, and whether a retry carries a new signature timestamp) is not verified. Events rejected while no secret was stored may have to be resent from the sender dashboard.
-- The hook service keeps the body size limit, the check that the `Paddle-Signature` header exists (400 if missing), and forwards the header unchanged. It no longer verifies the signature. Accepted risk: a request with any header value now reaches the billing service by RPC before it is rejected; there is no rate limit in the hook service.
+- The hook service keeps the body size limit, the check that the `Paddle-Signature` header exists (400 if missing), and forwards the header unchanged. It no longer verifies the signature.
 - `CreatePortalSession` returns `ErrCredentialNotConfigured` before any request leaves when the API key is not stored. The caller still answers 400.
 - `configkeys` declares no environment name for the two keys, and `billingconfig.New` passes a nil environment lookup (like email, message, tts and transcribe). `config list` then reports the source `db` or `none`, no `env_name`, and `env_shadowed` is always false.
 

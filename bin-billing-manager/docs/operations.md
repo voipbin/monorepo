@@ -150,7 +150,7 @@ Whether Paddle retries a rejected webhook (4xx and 5xx) and whether a retry carr
 
 #### Risk and prerequisites
 
-- A request with any `Paddle-Signature` header value reaches the billing service by RPC before it is rejected, because the hook service no longer verifies the signature. The hook service has no rate limit.
+- The hook service no longer verifies the signature. It checks the body size and that the `Paddle-Signature` header exists, and the billing service verifies the signature.
 - Before the deployment check with `billing-control config list` that `paddle.api_key` and `paddle.webhook_secret_key` have the source `db` and `has_secret` true, and that the stored webhook secret is the value that Paddle signs with. A secret that is stored but differs from that value rejects every genuine webhook with 401 (reported as 400 by the hook service). One way to check the value: deploy the billing service first, while the hook service still verifies, send a test event from Paddle and confirm in the billing log that it passed the check. A rejection by the hook service in this test does not show whether the stored value is wrong.
 - The deployment definition of the billing service must pass `BILLING_CONFIG_ENCRYPTION_KEYS` (Komodo: `BIN_MANAGER__BILLING_MANAGER_CONFIG_ENCRYPTION_KEYS`; Kubernetes: the optional key of the `voipbin` secret). Without it a secret can not be stored.
 - The flag `--paddle_api_key` and the variables `PADDLE_API_KEY` and `PADDLE_WEBHOOK_SECRET_KEY` are not read by the billing service any more.

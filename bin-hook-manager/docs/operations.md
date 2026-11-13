@@ -17,7 +17,7 @@ SSL certificates are decoded from base64 at startup and written to `/tmp/`. Ensu
 
 ## Paddle webhooks
 
-The hook service does not verify the Paddle signature and has no Paddle secret setting. It checks the body size and that the `Paddle-Signature` header exists, and forwards the request to the billing service, which verifies the signature with the secret stored for it (see `bin-billing-manager/docs/operations.md`, "Webhook signature check"). A request with any header value reaches the billing service before it is rejected, and this service has no rate limit.
+The hook service does not verify the Paddle signature and has no Paddle secret setting. It checks the body size and that the `Paddle-Signature` header exists, and forwards the request to the billing service, which verifies the signature with the secret stored for it (see `bin-billing-manager/docs/operations.md`, "Webhook signature check").
 
 Deployment order: store `paddle.webhook_secret_key` and `paddle.api_key` in the billing service first, deploy the billing service and wait until every replica runs the new image, then deploy this service. Rollback: roll back this service first or together with the billing service. An older version of this service verifies the signature with `PADDLE_WEBHOOK_SECRET_KEY`: its manifest passes the variable (the Komodo variable `BIN_MANAGER__PADDLE_WEBHOOK_SECRET_KEY` and the cluster secret key are not deleted by this change), and the value must equal the secret that Paddle signs with (update it first if the stored secret was rotated). Remove the variable and the cluster secret key in a separate step after the rollback window.
 
