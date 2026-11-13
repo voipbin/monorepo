@@ -41,15 +41,9 @@ type Descriptor struct {
 	// AllowedConfig is the list of the non-secret config keys the admin may set.
 	AllowedConfig []string
 
-	// RequiredConfig is the list of config keys a row needs when its credential source is the DB.
-	// The environment credential is checked against RequiredEnvConfig instead.
+	// RequiredConfig is the list of config keys a row needs. A provider whose row lacks one is not
+	// usable (so never a purchase candidate), while it can still serve release and search.
 	RequiredConfig []string
-
-	// RequiredEnvConfig is the list of config keys the environment credential needs. A provider
-	// whose environment credential lacks one is not usable (so never a purchase candidate), while
-	// it can still serve release and search. It is empty for a provider that works with the
-	// environment token alone.
-	RequiredEnvConfig []string
 
 	// Purchasable is false when the provider cannot buy numbers (it is never a purchase candidate).
 	Purchasable bool
@@ -90,9 +84,6 @@ type providerHandler struct {
 	crypto      *secretcrypto.Crypto
 
 	registry map[number.ProviderName]Descriptor
-
-	// env is the credential from the environment variables, used while a provider has no secret in the DB.
-	env map[number.ProviderName]provider.Credentials
 }
 
 // limits of the admin input
@@ -137,20 +128,18 @@ func ObservePurchase(name number.ProviderName, result string) {
 	promProviderPurchase.WithLabelValues(string(name), result).Inc()
 }
 
-// NewProviderHandler returns a ProviderHandler. env holds the credentials of the environment
-// variables per provider; they are used for a provider that has no secret in the DB.
+// NewProviderHandler returns a ProviderHandler. The credentials of a provider come from its row in
+// number_providers only.
 func NewProviderHandler(
 	r requesthandler.RequestHandler,
 	db dbhandler.DBHandler,
 	crypto *secretcrypto.Crypto,
-	env map[number.ProviderName]provider.Credentials,
 ) ProviderHandler {
 	return &providerHandler{
 		utilHandler: utilhandler.NewUtilHandler(),
 		db:          db,
 		crypto:      crypto,
 		registry:    newRegistry(r, db),
-		env:         env,
 	}
 }
 
@@ -177,30 +166,11 @@ func newRegistry(r requesthandler.RequestHandler, db dbhandler.DBHandler) map[nu
 				}
 				return numberhandlertwilio.NewNumberHandler(r, db, c.Config[configSID], c.Config[configTrunkSID], c.Secret), nil
 			},
-			AllowedConfig:     []string{configSID, configTrunkSID},
-			RequiredConfig:    []string{configSID, configTrunkSID},
-			RequiredEnvConfig: []string{configSID, configTrunkSID},
-			Purchasable:       true,
-			DefaultEnabled:    false,
-			DefaultPriority:   20,
-		},
-	}
-}
-
-// NewEnvCredentials returns the credentials of the environment variables per provider.
-func NewEnvCredentials(telnyxConnectionID, telnyxProfileID, telnyxToken, twilioSID, twilioToken string) map[number.ProviderName]provider.Credentials {
-	return map[number.ProviderName]provider.Credentials{
-		number.ProviderNameTelnyx: {
-			Secret: telnyxToken,
-			Config: map[string]string{
-				configConnectionID: telnyxConnectionID,
-				configProfileID:    telnyxProfileID,
-			},
-		},
-		// the surrounding whitespace is removed: a newline in the token breaks the basic auth header
-		number.ProviderNameTwilio: {
-			Secret: strings.TrimSpace(twilioToken),
-			Config: map[string]string{configSID: strings.TrimSpace(twilioSID)},
+			AllowedConfig:   []string{configSID, configTrunkSID},
+			RequiredConfig:  []string{configSID, configTrunkSID},
+			Purchasable:     true,
+			DefaultEnabled:  false,
+			DefaultPriority: 20,
 		},
 	}
 }

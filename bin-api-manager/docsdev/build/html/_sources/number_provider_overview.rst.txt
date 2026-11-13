@@ -18,12 +18,12 @@ With the Number Provider API you can:
 - Enable or disable a carrier for number purchase
 - Set the purchase order (a lower ``priority`` is tried first)
 - Store the carrier credentials (write-only) and the non-secret settings of the carrier
-- Delete the stored credentials to return to the credentials of the platform environment
+- Delete the stored credentials (the carrier cannot serve until a new secret is stored)
 
 
 How Providers Are Chosen
 ------------------------
-When a number is purchased, VoIPBin tries the carriers that are *usable* in ascending ``priority`` (ties are ordered by ``provider_name``). A carrier is usable when it is enabled, has a credential, and has all the ``config`` keys it requires (``twilio`` needs ``sid`` and ``trunk_sid``, which the environment credential cannot give).
+When a number is purchased, VoIPBin tries the carriers that are *usable* in ascending ``priority`` (ties are ordered by ``provider_name``). A carrier is usable when it is enabled, has a stored credential, and has all the ``config`` keys it requires (``twilio`` needs ``sid`` and ``trunk_sid``).
 
 VoIPBin falls back to the next carrier only when the current carrier definitively refused the order. If the outcome of an order is unknown (for example a timeout), the purchase stops instead of ordering from another carrier, so a number is never bought twice. To route around a failing carrier, disable it.
 
@@ -31,23 +31,22 @@ A fallback is useful only when the next carrier holds the same number. The avail
 
 .. note:: **AI Implementation Hint**
 
-   ``telnyx`` and ``twilio`` can purchase numbers. ``twilio`` is listed with ``enabled`` false and takes part in a purchase only after an administrator enters its ``config`` (``sid`` and ``trunk_sid``) and secret, and enables it. Enter the ``config`` before the secret; the secret is refused until both keys exist. The environment credentials of ``twilio`` can release numbers but never purchase, so ``usable`` is false for them.
+   ``telnyx`` and ``twilio`` can purchase numbers. ``twilio`` is listed with ``enabled`` false and takes part in a purchase only after an administrator enters its ``config`` (``sid`` and ``trunk_sid``) and secret, and enables it. Enter the ``config`` before the secret; the secret is refused until both keys exist. A carrier without a stored secret cannot purchase, release or search; there is no platform environment credential.
 
 
 Credentials
 -----------
-A carrier uses one credential source at a time:
+The credentials of a carrier come from the stored setting only:
 
 * ``db``: the secret stored through ``PUT /number_providers/{provider_name}/secret``, together with the ``config`` of the provider.
-* ``env``: the credentials of the platform environment, used while no secret is stored.
-* ``none``: no credential exists.
-* ``db_undecryptable``: a secret is stored but cannot be decrypted (for example the encryption key was removed). The provider is unusable and is **not** replaced by the environment credentials. Restore the key, or delete the stored secret with ``DELETE /number_providers/{provider_name}/secret``.
+* ``none``: no secret is stored. The carrier is not usable until one is stored.
+* ``db_undecryptable``: a secret is stored but cannot be decrypted (for example the encryption key was removed). The provider is unusable and is **not** replaced by any other credential. Restore the key, or delete the stored secret with ``DELETE /number_providers/{provider_name}/secret``.
 
 The secret is write-only. It is never returned, logged or sent in an event. A response only tells ``has_secret``, the ``key_version`` of the key that encrypted it, and who changed it.
 
 .. warning:: **Changing the account**
 
-   Numbers are released through the account that purchased them. Replacing the stored secret with the token of another account (or, for ``twilio``, the ``sid`` of another account), or deleting the stored secret so the environment account is used, makes the release of the numbers bought through the previous account fail. Change the account only when no number of that provider remains, or when the new secret belongs to the same account.
+   Numbers are released through the account that purchased them. Replacing the stored secret with the token of another account (or, for ``twilio``, the ``sid`` of another account), or deleting the stored secret, makes the release of the numbers bought through the previous account fail. Change the account only when no number of that provider remains, or when the new secret belongs to the same account.
 
 Storing a secret needs the encryption key to be configured on the platform. Without it the request is answered with ``503 Service Unavailable``.
 

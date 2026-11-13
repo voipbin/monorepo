@@ -272,7 +272,8 @@ func (h *providerHandler) UpdateSecret(ctx context.Context, name number.Provider
 	return h.Get(ctx, name)
 }
 
-// DeleteSecret removes the DB secret of the provider, so the provider uses the environment credentials again.
+// DeleteSecret removes the DB secret of the provider. The provider has no credential afterwards (the
+// source is none) until a new secret is stored: it is not usable and cannot release or search.
 func (h *providerHandler) DeleteSecret(ctx context.Context, name number.ProviderName, actor uuid.UUID) (*provider.Info, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "DeleteSecret",

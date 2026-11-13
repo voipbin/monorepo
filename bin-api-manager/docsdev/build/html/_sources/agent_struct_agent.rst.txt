@@ -128,3 +128,27 @@ A push device of an agent: one installed app that can receive notifications. Ret
 .. note:: **AI Implementation Hint**
 
    The push token is never part of a response. Registering the same token again keeps the ``id`` and moves ``tm_update``.
+
+.. _agent-struct-agent-push_settings:
+
+Push settings
+-------------
+The push notification settings of an agent. Returned by ``GET`` and ``PUT /service_agents/me/push_settings`` and by ``PUT`` and ``DELETE /service_agents/me/push_mutes/{chat_id}``.
+
+.. code::
+
+    {
+        "kinds": {
+            "chat_mentioned": true,
+            "chat_message": false,
+            "conversation_message": true,
+            "case_assigned": true,
+            "case_note": false
+        },
+        "muted_chat_ids": [
+            "5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11"
+        ]
+    }
+
+* ``kinds`` (Object): Every kind the agent can switch, with ``true`` for on and ``false`` for off. The keys are ``chat_mentioned``, ``chat_message``, ``conversation_message``, ``case_assigned`` and ``case_note``.
+* ``muted_chat_ids`` (Array of UUID): The chats the agent muted, the oldest mute first. Each ID is a chat ``id`` returned from ``GET /service_agents/talk_chats``. Empty when no chat is muted.

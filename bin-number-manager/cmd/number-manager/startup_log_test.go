@@ -23,9 +23,6 @@ func Test_logStartup(t *testing.T) {
 		"RabbitMQAddress",
 		"DatabaseDSN",
 		"RedisPassword",
-		"TwilioSID",
-		"TwilioToken",
-		"TelnyxToken",
 		"NumberSecretEncryptionKeys",
 	}
 
@@ -35,8 +32,6 @@ func Test_logStartup(t *testing.T) {
 		"PrometheusListenAddress": "prometheus_listen_address",
 		"RedisAddress":            "redis_address",
 		"RedisDatabase":           "redis_database",
-		"TelnyxConnectionID":      "telnyx_connection_id",
-		"TelnyxProfileID":         "telnyx_profile_id",
 	}
 
 	var cfg config.Config

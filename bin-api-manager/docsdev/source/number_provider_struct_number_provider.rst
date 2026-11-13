@@ -34,7 +34,7 @@ Number Provider
 * ``has_secret`` (Boolean): Whether a secret is stored through the API. The secret itself is never returned.
 * ``key_version`` (Integer): The version of the encryption key that encrypted the stored secret. 0 when no secret is stored.
 * ``credential_source`` (enum string): Where the credentials come from. See :ref:`Credential Source <number-provider-struct-number-provider-credential-source>`.
-* ``usable`` (Boolean): Whether the carrier can currently serve: it is enabled, has a credential, and has the ``config`` keys it requires (``twilio`` needs ``sid`` and ``trunk_sid`` for a stored secret and for the environment credentials alike, and the environment has no ``trunk_sid``). A carrier that is usable and enabled takes part in the purchase.
+* ``usable`` (Boolean): Whether the carrier can currently serve: it is enabled, has a stored credential, and has the ``config`` keys it requires (``twilio`` needs ``sid`` and ``trunk_sid``). A carrier that is usable and enabled takes part in the purchase.
 * ``updated_by`` (UUID): The agent who last changed ``enabled``, ``priority`` or ``config``. Returned from ``GET /agents``. Omitted when never changed.
 * ``secret_updated_by`` (UUID): The agent who last changed the secret. Returned from ``GET /agents``. Omitted when never changed.
 * ``tm_update`` (String, ISO 8601): The time of the last change of the setting, including a secret change. Omitted when never changed.
@@ -72,10 +72,8 @@ Credential Source
      - Description
    * - ``db``
      - The secret stored through ``PUT /number_providers/{provider_name}/secret`` is used, with the ``config`` of the provider.
-   * - ``env``
-     - No secret is stored. The credentials of the platform environment are used.
    * - ``none``
-     - No credential exists.
+     - No secret is stored. The carrier is not usable until one is stored.
    * - ``db_undecryptable``
      - A secret is stored but cannot be decrypted. The provider is unusable until the key is restored or the stored secret is deleted.
 

@@ -38,7 +38,6 @@ type CredentialSource string
 // list of credential sources
 const (
 	CredentialSourceDB              CredentialSource = "db"
-	CredentialSourceEnv             CredentialSource = "env"
 	CredentialSourceNone            CredentialSource = "none"
 	CredentialSourceDBUndecryptable CredentialSource = "db_undecryptable"
 )

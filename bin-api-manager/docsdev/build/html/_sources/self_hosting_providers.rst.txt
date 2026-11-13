@@ -313,24 +313,25 @@ Telephony and messaging providers
      - Env var(s) or stored key
      - Consuming service
    * - Twilio (PSTN numbers)
-     - ``TWILIO_SID``, ``TWILIO_API_KEY``
+     - Stored provider setting (``sid``, ``trunk_sid`` and the secret), no ``.env`` variable
      - ``number-manager``
    * - Telnyx (PSTN numbers and messaging)
-     - ``TELNYX_API_KEY``, ``TELNYX_CONNECTION_ID``,
-       ``TELNYX_PROFILE_ID`` (all three required)
+     - Stored provider setting (``connection_id`` and the secret; ``profile_id`` is optional), no ``.env`` variable
      - ``number-manager``
    * - MessageBird (SMS)
      - Stored key ``provider.messagebird.auth_token`` (no restart)
      - ``message-manager``
 
-The ``.env.template`` variable names above are what you set;
-``number-manager`` itself binds them internally as ``TWILIO_TOKEN`` and
-``TELNYX_TOKEN`` (``docker-compose.yml.dist`` maps
-``TWILIO_TOKEN=${TWILIO_API_KEY}`` and
-``TELNYX_TOKEN=${TELNYX_API_KEY}``). This only matters if you go looking
-for the raw variable name inside ``number-manager``'s own config; the
-``.env`` names above are what you actually set for ``number-manager``.
-``message-manager`` does not read a ``.env`` variable: its MessageBird and
+``number-manager`` reads the Twilio and Telnyx credentials from the stored
+Number Provider settings only; it does not read ``TWILIO_*`` or
+``TELNYX_*`` variables from the ``.env`` file or the container
+environment, so setting them has no effect. Store the ``config`` and the
+secret of each carrier with the Number Provider API (see Number Provider);
+the master key variable ``NUMBER_SECRET_ENCRYPTION_KEYS`` is still an
+environment variable and must be set before a secret can be stored.
+Without a stored Telnyx secret and ``connection_id`` no number can be
+purchased and the available number search fails.
+``message-manager`` does not read a ``.env`` variable either: its MessageBird and
 Telnyx tokens (``provider.messagebird.auth_token`` and
 ``provider.telnyx.auth_token``) are stored settings, set with
 ``message-control config set`` or the Service Config API (the ``message``

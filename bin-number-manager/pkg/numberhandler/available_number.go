@@ -14,7 +14,7 @@ import (
 // GetAvailableNumbers gets the numbers from the number providers
 func (h *numberHandler) GetAvailableNumbers(ctx context.Context, countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {
 
-	// the search is fixed to the telnyx; the credentials are resolved from the DB or the environment
+	// the search is fixed to the telnyx; the credentials are resolved from the DB
 	p, err := h.providerHandler.ForSearch(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not get the search provider: %w", err)

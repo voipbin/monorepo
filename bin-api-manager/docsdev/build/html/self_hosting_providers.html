@@ -986,12 +986,11 @@ sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class=
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Twilio (PSTN numbers)</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">TWILIO_SID</span></code>, <code class="docutils literal notranslate"><span class="pre">TWILIO_API_KEY</span></code></p></td>
+<td><p>Stored provider setting (<code class="docutils literal notranslate"><span class="pre">sid</span></code>, <code class="docutils literal notranslate"><span class="pre">trunk_sid</span></code> and the secret), no <code class="docutils literal notranslate"><span class="pre">.env</span></code> variable</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">number-manager</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>Telnyx (PSTN numbers and messaging)</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">TELNYX_CONNECTION_ID</span></code>,
-<code class="docutils literal notranslate"><span class="pre">TELNYX_PROFILE_ID</span></code> (all three required)</p></td>
+<td><p>Stored provider setting (<code class="docutils literal notranslate"><span class="pre">connection_id</span></code> and the secret; <code class="docutils literal notranslate"><span class="pre">profile_id</span></code> is optional), no <code class="docutils literal notranslate"><span class="pre">.env</span></code> variable</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">number-manager</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>MessageBird (SMS)</p></td>
@@ -1001,14 +1000,16 @@ sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class=
 </tbody>
 </table>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">.env.template</span></code> variable names above are what you set;
-<code class="docutils literal notranslate"><span class="pre">number-manager</span></code> itself binds them internally as <code class="docutils literal notranslate"><span class="pre">TWILIO_TOKEN</span></code> and
-<code class="docutils literal notranslate"><span class="pre">TELNYX_TOKEN</span></code> (<code class="docutils literal notranslate"><span class="pre">docker-compose.yml.dist</span></code> maps
-<code class="docutils literal notranslate"><span class="pre">TWILIO_TOKEN=${TWILIO_API_KEY}</span></code> and
-<code class="docutils literal notranslate"><span class="pre">TELNYX_TOKEN=${TELNYX_API_KEY}</span></code>). This only matters if you go looking
-for the raw variable name inside <code class="docutils literal notranslate"><span class="pre">number-manager</span></code>’s own config; the
-<code class="docutils literal notranslate"><span class="pre">.env</span></code> names above are what you actually set for <code class="docutils literal notranslate"><span class="pre">number-manager</span></code>.
-<code class="docutils literal notranslate"><span class="pre">message-manager</span></code> does not read a <code class="docutils literal notranslate"><span class="pre">.env</span></code> variable: its MessageBird and
+<p><code class="docutils literal notranslate"><span class="pre">number-manager</span></code> reads the Twilio and Telnyx credentials from the stored
+Number Provider settings only; it does not read <code class="docutils literal notranslate"><span class="pre">TWILIO_*</span></code> or
+<code class="docutils literal notranslate"><span class="pre">TELNYX_*</span></code> variables from the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file or the container
+environment, so setting them has no effect. Store the <code class="docutils literal notranslate"><span class="pre">config</span></code> and the
+secret of each carrier with the Number Provider API (see Number Provider);
+the master key variable <code class="docutils literal notranslate"><span class="pre">NUMBER_SECRET_ENCRYPTION_KEYS</span></code> is still an
+environment variable and must be set before a secret can be stored.
+Without a stored Telnyx secret and <code class="docutils literal notranslate"><span class="pre">connection_id</span></code> no number can be
+purchased and the available number search fails.
+<code class="docutils literal notranslate"><span class="pre">message-manager</span></code> does not read a <code class="docutils literal notranslate"><span class="pre">.env</span></code> variable either: its MessageBird and
 Telnyx tokens (<code class="docutils literal notranslate"><span class="pre">provider.messagebird.auth_token</span></code> and
 <code class="docutils literal notranslate"><span class="pre">provider.telnyx.auth_token</span></code>) are stored settings, set with
 <code class="docutils literal notranslate"><span class="pre">message-control</span> <span class="pre">config</span> <span class="pre">set</span></code> or the Service Config API (the <code class="docutils literal notranslate"><span class="pre">message</span></code>

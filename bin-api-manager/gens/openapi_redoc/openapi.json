@@ -14754,7 +14754,7 @@
       },
       "delete": {
         "summary": "Delete the stored secret of a number provider",
-        "description": "Deletes the stored secret of the given number provider, so the provider uses the credentials of the platform environment again (`credential_source` becomes `env`, or `none` when the platform environment has no credential for the provider).\nThis is the recovery path when a stored secret cannot be decrypted. It returns 404 when no request has created a stored setting for the provider yet (a rejected secret request can also create one).\nSwitching from a stored account to the environment account makes the numbers purchased through the stored account impossible to release.\nRequires the project super admin permission.\n",
+        "description": "Deletes the stored secret of the given number provider, so the provider has no credential (`credential_source` becomes `none`) and is not usable until a new secret is stored. There is no fallback to a platform environment credential.\nThis is the recovery path when a stored secret cannot be decrypted. It returns 404 when no request has created a stored setting for the provider yet (a rejected secret request can also create one).\nUntil a new secret is stored, the numbers purchased through the provider cannot be released and no number can be purchased or searched through it. Store the new secret first when the provider is in use.\nRequires the project super admin permission.\n",
         "tags": [
           "NumberProvider"
         ],
@@ -34324,17 +34324,15 @@
       },
       "NumberManagerNumberProviderCredentialSource": {
         "type": "string",
-        "description": "Where the credentials of the number provider come from.\n`db` is the secret stored through the API, `env` is the platform environment, `none` means no credential exists,\nand `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).\n",
+        "description": "Where the credentials of the number provider come from.\n`db` is the secret stored through the API, `none` means no secret is stored (the provider is not usable until one is stored),\nand `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).\n",
         "example": "db",
         "enum": [
           "db",
-          "env",
           "none",
           "db_undecryptable"
         ],
         "x-enum-varnames": [
           "NumberManagerNumberProviderCredentialSourceDB",
-          "NumberManagerNumberProviderCredentialSourceEnv",
           "NumberManagerNumberProviderCredentialSourceNone",
           "NumberManagerNumberProviderCredentialSourceDBUndecryptable"
         ]
@@ -34698,7 +34696,7 @@
           },
           "usable": {
             "type": "boolean",
-            "description": "Whether the provider can currently serve (enabled, with a usable credential and its required `config`; Twilio needs `sid` and `trunk_sid`, which the environment credentials cannot give). An enabled and usable provider takes part in number purchase.",
+            "description": "Whether the provider can currently serve (enabled, with a usable credential and its required `config`; Twilio needs `sid` and `trunk_sid`). An enabled and usable provider takes part in number purchase.",
             "example": true
           },
           "updated_by": {

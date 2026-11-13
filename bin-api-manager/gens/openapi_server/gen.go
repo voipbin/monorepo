@@ -2564,7 +2564,6 @@ func (e NumberManagerAvailableNumberFeature) Valid() bool {
 const (
 	NumberManagerNumberProviderCredentialSourceDB              NumberManagerNumberProviderCredentialSource = "db"
 	NumberManagerNumberProviderCredentialSourceDBUndecryptable NumberManagerNumberProviderCredentialSource = "db_undecryptable"
-	NumberManagerNumberProviderCredentialSourceEnv             NumberManagerNumberProviderCredentialSource = "env"
 	NumberManagerNumberProviderCredentialSourceNone            NumberManagerNumberProviderCredentialSource = "none"
 )
 
@@ -2574,8 +2573,6 @@ func (e NumberManagerNumberProviderCredentialSource) Valid() bool {
 	case NumberManagerNumberProviderCredentialSourceDB:
 		return true
 	case NumberManagerNumberProviderCredentialSourceDBUndecryptable:
-		return true
-	case NumberManagerNumberProviderCredentialSourceEnv:
 		return true
 	case NumberManagerNumberProviderCredentialSourceNone:
 		return true
@@ -7203,7 +7200,7 @@ type NumberManagerNumberProvider struct {
 	Config *map[string]string `json:"config,omitempty"`
 
 	// CredentialSource Where the credentials of the number provider come from.
-	// `db` is the secret stored through the API, `env` is the platform environment, `none` means no credential exists,
+	// `db` is the secret stored through the API, `none` means no secret is stored (the provider is not usable until one is stored),
 	// and `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).
 	CredentialSource *NumberManagerNumberProviderCredentialSource `json:"credential_source,omitempty"`
 
@@ -7234,12 +7231,12 @@ type NumberManagerNumberProvider struct {
 	// UpdatedBy The agent who last changed `enabled`, `priority` or `config`. The agent ID returned from the `GET /agents` response. Omitted when never changed.
 	UpdatedBy *string `json:"updated_by,omitempty"`
 
-	// Usable Whether the provider can currently serve (enabled, with a usable credential and its required `config`; Twilio needs `sid` and `trunk_sid`, which the environment credentials cannot give). An enabled and usable provider takes part in number purchase.
+	// Usable Whether the provider can currently serve (enabled, with a usable credential and its required `config`; Twilio needs `sid` and `trunk_sid`). An enabled and usable provider takes part in number purchase.
 	Usable *bool `json:"usable,omitempty"`
 }
 
 // NumberManagerNumberProviderCredentialSource Where the credentials of the number provider come from.
-// `db` is the secret stored through the API, `env` is the platform environment, `none` means no credential exists,
+// `db` is the secret stored through the API, `none` means no secret is stored (the provider is not usable until one is stored),
 // and `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).
 type NumberManagerNumberProviderCredentialSource string
 

@@ -676,9 +676,9 @@
             <span class="s2">"provider_name"</span><span class="p">:</span> <span class="s2">"telnyx"</span><span class="p">,</span>
             <span class="s2">"enabled"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
             <span class="s2">"priority"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-            <span class="s2">"has_secret"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-            <span class="s2">"key_version"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="s2">"credential_source"</span><span class="p">:</span> <span class="s2">"env"</span><span class="p">,</span>
+            <span class="s2">"has_secret"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+            <span class="s2">"key_version"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">"credential_source"</span><span class="p">:</span> <span class="s2">"db"</span><span class="p">,</span>
             <span class="s2">"usable"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">},</span>
         <span class="p">{</span>
@@ -759,7 +759,7 @@
 </section>
 <section id="delete-the-stored-secret">
 <h3>Delete the stored secret<a class="headerlink" href="#delete-the-stored-secret" title="Link to this heading">¶</a></h3>
-<p>Use this to return to the platform environment credentials (<code class="docutils literal notranslate"><span class="pre">credential_source</span></code> becomes <code class="docutils literal notranslate"><span class="pre">none</span></code> if the environment has none), or to recover a provider whose <code class="docutils literal notranslate"><span class="pre">credential_source</span></code> is <code class="docutils literal notranslate"><span class="pre">db_undecryptable</span></code>.</p>
+<p>Use this to remove a stored secret (<code class="docutils literal notranslate"><span class="pre">credential_source</span></code> becomes <code class="docutils literal notranslate"><span class="pre">none</span></code> and the carrier cannot serve until a new secret is stored), or to recover a provider whose <code class="docutils literal notranslate"><span class="pre">credential_source</span></code> is <code class="docutils literal notranslate"><span class="pre">db_undecryptable</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/number_providers/telnyx/secret?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
@@ -770,8 +770,8 @@
     <span class="s2">"priority"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
     <span class="s2">"has_secret"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
     <span class="s2">"key_version"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="s2">"credential_source"</span><span class="p">:</span> <span class="s2">"env"</span><span class="p">,</span>
-    <span class="s2">"usable"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">"credential_source"</span><span class="p">:</span> <span class="s2">"none"</span><span class="p">,</span>
+    <span class="s2">"usable"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
     <span class="s2">"updated_by"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
     <span class="s2">"secret_updated_by"</span><span class="p">:</span> <span class="s2">"00000000-0000-4000-8000-000000000002"</span><span class="p">,</span>
     <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-01-04T05:06:07.000000Z"</span><span class="p">,</span>
@@ -779,7 +779,7 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>A known provider for which no request has created a stored setting yet answers <code class="docutils literal notranslate"><span class="pre">404</span></code>. See the account change warning in <a class="reference internal" href="number_provider_overview.html#number-provider-overview"><span class="std std-ref">Overview</span></a> before you delete a secret.</p>
+<p>A known provider for which no request has created a stored setting yet answers <code class="docutils literal notranslate"><span class="pre">404</span></code>. See the account change warning in <a class="reference internal" href="number_provider_overview.html#number-provider-overview"><span class="std std-ref">Overview</span></a> before you delete a secret. Store the new secret first when the carrier is in use: until then no number can be purchased, released or searched through it.</p>
 </section>
 </section>
 </section>

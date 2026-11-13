@@ -269,3 +269,82 @@ Delete one of the calling agent's push devices. A device of another agent or cus
 .. note:: **AI Implementation Hint**
 
    The response never contains the push token. Registering again with the same token refreshes the device and returns the same ``id``.
+
+Get the push notification settings
+----------------------------------
+
+Everything is on and nothing is muted until the agent changes it. This requires an agent token (a token of a signed-in agent).
+
+.. code::
+
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/service_agents/me/push_settings?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "kinds": {
+            "chat_mentioned": true,
+            "chat_message": true,
+            "conversation_message": true,
+            "case_assigned": true,
+            "case_note": true
+        },
+        "muted_chat_ids": []
+    }
+
+Switch push notification kinds
+------------------------------
+
+Switch kinds on (``true``) or off (``false``). A kind that is not in the body is not changed. The response is the settings after the change.
+
+.. code::
+
+    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/service_agents/me/push_settings?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "kinds": {
+                "chat_message": false,
+                "case_note": false
+            }
+        }'
+
+    {
+        "kinds": {
+            "chat_mentioned": true,
+            "chat_message": false,
+            "conversation_message": true,
+            "case_assigned": true,
+            "case_note": false
+        },
+        "muted_chat_ids": []
+    }
+
+Mute and unmute a chat
+----------------------
+
+Mute a chat so that its ``chat_message`` notifications stop. A mention of the agent in the chat is still delivered. The ``chat_id`` is the chat ``id`` returned by ``GET /service_agents/talk_chats``.
+
+.. code::
+
+    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/service_agents/me/push_mutes/5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "kinds": {
+            "chat_mentioned": true,
+            "chat_message": true,
+            "conversation_message": true,
+            "case_assigned": true,
+            "case_note": true
+        },
+        "muted_chat_ids": [
+            "5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11"
+        ]
+    }
+
+Unmute it again. Unmuting a chat that is not muted also returns ``200``.
+
+.. code::
+
+    $ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/service_agents/me/push_mutes/5d7f9b1c-3e4a-4c68-8a0e-2c4e6a8c0e11?token=<YOUR_AUTH_TOKEN>'
+
+.. note:: **AI Implementation Hint**
+
+   A key in ``kinds`` that is not one of the five switchable kinds (for example ``call_incoming``) returns ``400 INVALID_KIND`` and nothing is changed. A chat that does not exist or belongs to another customer returns ``404 CHAT_NOT_FOUND``. If a ``PUT /service_agents/me/push_settings`` call fails with a ``5xx`` error, send the same request again: some of the kinds may be changed already and the call can be repeated.

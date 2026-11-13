@@ -187,21 +187,6 @@
     },
     {
       "flag": "redis_database"
-    },
-    {
-      "flag": "twilio_sid"
-    },
-    {
-      "flag": "twilio_token"
-    },
-    {
-      "flag": "telnyx_connection_id"
-    },
-    {
-      "flag": "telnyx_profile_id"
-    },
-    {
-      "flag": "telnyx_token"
     }
   ],
   "metrics": [
