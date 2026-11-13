@@ -19,7 +19,7 @@ import (
 )
 
 func Test_newVendorCatalog_HubSpot(t *testing.T) {
-	vc, ok := newVendorCatalog("gh-id", "gh-secret", "li-id", "li-secret", "", "", "hs-id", "hs-secret")[VendorHubSpot]
+	vc, ok := newVendorCatalog()[VendorHubSpot]
 	if !ok {
 		t.Fatal("the hubspot vendor is missing from the catalog")
 	}
@@ -39,13 +39,10 @@ func Test_newVendorCatalog_HubSpot(t *testing.T) {
 	if len(vc.Scopes) != 0 {
 		t.Errorf("Scopes = %v, want none: the connector scope is fixed at install time", vc.Scopes)
 	}
-	if vc.ClientID != "hs-id" || vc.ClientSecret != "hs-secret" {
-		t.Errorf("credentials were not injected: %q / %q", vc.ClientID, vc.ClientSecret)
-	}
 }
 
 func Test_buildAuthorizeURL_HubSpot(t *testing.T) {
-	vc := newVendorCatalog("", "", "", "", "", "", "hs-id", "hs-secret")[VendorHubSpot]
+	vc := vendorConfig{vendorMeta: newVendorCatalog()[VendorHubSpot], Credentials: Credentials{ClientID: "hs-id", ClientSecret: "hs-secret"}}
 
 	raw := buildAuthorizeURL(vc, "the-state", "the-challenge")
 	u, err := url.Parse(raw)
@@ -214,7 +211,7 @@ func Test_HubSpot_UnconfiguredBehavesLikeOtherVendors(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	h, err := NewMcpOAuthHandler(mockDB, "1:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=", "", "", "", "", "", "", "", "")
+	h, err := NewMcpOAuthHandler(mockDB, "1:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=", noCredentials)
 	if err != nil {
 		t.Fatalf("could not build handler: %v", err)
 	}

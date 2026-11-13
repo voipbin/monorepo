@@ -105,17 +105,19 @@ func Test_processRequest_configs(t *testing.T) {
 		t.Fatalf("Wrong match. got: %v %v", res, err)
 	}
 	var service configrpc.Service
-	if errUnmarshal := json.Unmarshal(res.Data, &service); errUnmarshal != nil || len(service.Keys) != 2 || !service.SecretWritable {
+	if errUnmarshal := json.Unmarshal(res.Data, &service); errUnmarshal != nil || len(service.Keys) != 10 || !service.SecretWritable {
 		t.Fatalf("Wrong match. got: %s %v", res.Data, errUnmarshal)
 	}
 	names := []string{}
 	for _, k := range service.Keys {
 		names = append(names, k.Key)
-		if k.Description == "" || k.EnvName != "" || k.Kind != "secret" {
+		// The LLM keys have no environment name; the MCP OAuth keys have one each.
+		isMCP := strings.HasPrefix(k.Key, "mcp_oauth.")
+		if k.Description == "" || (k.EnvName != "") != isMCP || (k.Kind != "secret" && (!isMCP || k.Kind != "param")) {
 			t.Errorf("Wrong match. got: %+v", k)
 		}
 	}
-	if strings.Join(names, ",") != "llm.openai_compat.api_key,llm.gemini.api_key" {
+	if !strings.HasPrefix(strings.Join(names, ","), "llm.openai_compat.api_key,llm.gemini.api_key,mcp_oauth.github.client_secret,mcp_oauth.github.client_id,") {
 		t.Errorf("Wrong match. got: %v", names)
 	}
 

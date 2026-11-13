@@ -147,11 +147,9 @@ func Test_GetValidAccessToken_RefreshesAndPersists(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	h.vendors[VendorLinear] = vendorConfig{
+	h.vendors[VendorLinear] = vendorMeta{
 		AuthorizeURL: "https://linear.app/oauth/authorize",
 		TokenURL:     srv.URL,
-		ClientID:     "linear-client-id",
-		ClientSecret: "linear-client-secret",
 	}
 	h.httpClient = &http.Client{Timeout: 2 * time.Second}
 
@@ -242,10 +240,8 @@ func Test_GetValidAccessToken_RefreshFailureSetsBackoff(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	h.vendors[VendorLinear] = vendorConfig{
-		TokenURL:     srv.URL,
-		ClientID:     "linear-client-id",
-		ClientSecret: "linear-client-secret",
+	h.vendors[VendorLinear] = vendorMeta{
+		TokenURL: srv.URL,
 	}
 	h.httpClient = &http.Client{Timeout: 2 * time.Second}
 
@@ -355,11 +351,9 @@ func expiredOAuthServer(t *testing.T, mockDB *dbhandler.MockDBHandler, vendor ht
 	srv := httptest.NewServer(vendor)
 	t.Cleanup(srv.Close)
 
-	h.vendors[VendorLinear] = vendorConfig{
+	h.vendors[VendorLinear] = vendorMeta{
 		AuthorizeURL: "https://linear.app/oauth/authorize",
 		TokenURL:     srv.URL,
-		ClientID:     "linear-client-id",
-		ClientSecret: "linear-client-secret",
 	}
 	h.httpClient = &http.Client{Timeout: 5 * time.Second}
 

@@ -10,6 +10,9 @@
       "pattern": "/v1/ais$"
     },
     {
+      "pattern": "/v1/ai_models$"
+    },
+    {
       "pattern": "/v1/ais/{{UUID}}/activate_insight$"
     },
     {
@@ -52,6 +55,9 @@
       "pattern": "/v1/aicalls/{{UUID}}/tool_execute$"
     },
     {
+      "pattern": "/v1/aicalls/{{UUID}}/tools/mcp$"
+    },
+    {
       "pattern": "/v1/aiaudits\\?"
     },
     {
@@ -88,6 +94,9 @@
       "pattern": "/v1/messages/{{UUID}}$"
     },
     {
+      "pattern": "^/v1/messages/draft-decision$"
+    },
+    {
       "pattern": "/v1/services/type/aicall$"
     },
     {
@@ -106,6 +115,9 @@
       "pattern": "/v1/summaries$"
     },
     {
+      "pattern": "/v1/summaries/{{UUID}}/regenerate$"
+    },
+    {
       "pattern": "/v1/summaries/{{UUID}}$"
     },
     {
@@ -122,19 +134,28 @@
     },
     {
       "pattern": "/v1/teams/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/mcp_servers\\?"
+    },
+    {
+      "pattern": "/v1/mcp_servers$"
+    },
+    {
+      "pattern": "/v1/mcp_servers/oauth/start$"
+    },
+    {
+      "pattern": "/v1/mcp_servers/oauth/callback\\?"
+    },
+    {
+      "pattern": "/v1/mcp_servers/oauth/complete$"
+    },
+    {
+      "pattern": "/v1/mcp_servers/{{UUID}}$"
     }
   ],
   "events_subscribed": [],
   "events_published": [
-    {
-      "event_type_symbol": "ai.EventTypeCreated"
-    },
-    {
-      "event_type_symbol": "ai.EventTypeDeleted"
-    },
-    {
-      "event_type_symbol": "ai.EventTypeUpdated"
-    },
     {
       "event_type_symbol": "message.EventTypeMessageCreated"
     },
@@ -224,6 +245,10 @@
       "local_path": "../bin-pipecat-manager"
     },
     {
+      "module_path": "monorepo/bin-push-manager",
+      "local_path": "../bin-push-manager"
+    },
+    {
       "module_path": "monorepo/bin-queue-manager",
       "local_path": "../bin-queue-manager"
     },
@@ -272,107 +297,7 @@
       "local_path": "../bin-webhook-manager"
     }
   ],
-  "config_vars": [
-    {
-      "flag": "rabbitmq_address"
-    },
-    {
-      "flag": "prometheus_endpoint"
-    },
-    {
-      "flag": "prometheus_listen_address"
-    },
-    {
-      "flag": "database_dsn"
-    },
-    {
-      "flag": "redis_address"
-    },
-    {
-      "flag": "redis_password"
-    },
-    {
-      "flag": "redis_database"
-    },
-    {
-      "flag": "engine_key_chatgpt"
-    },
-    {
-      "flag": "google_api_key"
-    },
-    {
-      "flag": "aicall_conversation_idle_timeout_hours"
-    },
-    {
-      "flag": "aicall_contact_case_recreate_rate_limit_minutes"
-    },
-    {
-      "flag": "aicall_send_cooldown_seconds"
-    },
-    {
-      "flag": "aicall_listen_evaluate_interval_seconds"
-    },
-    {
-      "flag": "aicall_listen_window_size"
-    },
-    {
-      "flag": "aicall_listen_qa_context_size"
-    },
-    {
-      "flag": "aicall_listen_max_turns_per_aicall"
-    },
-    {
-      "flag": "aicall_listen_buffer_ttl_hours"
-    },
-    {
-      "flag": "aicall_listen_turn_pipecatcall_id_ttl_seconds"
-    },
-    {
-      "flag": "aicall_listen_default_language"
-    },
-    {
-      "flag": "aicall_listen_confbridge_ready_poll_interval_seconds"
-    },
-    {
-      "flag": "aicall_listen_confbridge_ready_max_wait_seconds"
-    },
-    {
-      "flag": "aicall_listen_ensure_goroutine_timeout_seconds"
-    },
-    {
-      "flag": "aicall_listen_start_lock_ttl_seconds"
-    },
-    {
-      "flag": "aicall_listen_start_lock_release_timeout_seconds"
-    },
-    {
-      "flag": "aicall_listen_conversation_max_message_chars"
-    },
-    {
-      "flag": "aicall_listen_conversation_flush_jitter_ms"
-    },
-    {
-      "flag": "analysis_default_model"
-    },
-    {
-      "flag": "analysis_allowed_models"
-    },
-    {
-      "flag": "analysis_engine_base_url"
-    },
-    {
-      "flag": "analysis_reasoning_effort"
-    },
-    {
-      "flag": "none"
-    },
-    {
-      "flag": "analysis_max_input_bytes"
-    },
-    {
-      "flag": "analysis_max_output_tokens"
-    }
-  ],
+  "config_vars": [],
   "metrics": [
     {
       "name": "aicall_backstop_reply_total"
@@ -394,6 +319,9 @@
     },
     {
       "name": "aicall_idle_expired_total"
+    },
+    {
+      "name": "aicall_insight_session_refresh_total"
     },
     {
       "name": "aicall_interrupt_attempted_total"
@@ -435,7 +363,43 @@
       "name": "analysis_gateway_run_total"
     },
     {
+      "name": "builder_chat_duration_seconds"
+    },
+    {
+      "name": "builder_chat_total"
+    },
+    {
+      "name": "builder_tokens_total"
+    },
+    {
+      "name": "carrier_inflight"
+    },
+    {
+      "name": "carrier_lookup_duration_seconds"
+    },
+    {
+      "name": "carrier_lookup_total"
+    },
+    {
+      "name": "carrier_token_exchange_total"
+    },
+    {
       "name": "conversation_reply_send_total"
+    },
+    {
+      "name": "flow_builder_chat_duration_seconds"
+    },
+    {
+      "name": "flow_builder_chat_total"
+    },
+    {
+      "name": "flow_builder_tokens_total"
+    },
+    {
+      "name": "mcp_tool_advertised_total"
+    },
+    {
+      "name": "mcp_tool_call_outcome_total"
     },
     {
       "name": "message_create_total"
@@ -457,6 +421,7 @@
     }
   ],
   "missing_fields": [
-    "events_subscribed"
+    "events_subscribed",
+    "config_vars"
   ]
 }

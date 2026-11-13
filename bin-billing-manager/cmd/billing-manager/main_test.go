@@ -64,7 +64,7 @@ func Test_runListen(t *testing.T) {
 		mockSock := sockhandler.NewMockSockHandler(mc)
 		mockSock.EXPECT().QueueCreate(queue, "normal").Return(errTestCause)
 
-		err := runListen(mockSock, nil, nil, nil, nil)
+		err := runListen(mockSock, nil, nil, nil, nil, nil)
 		if !errors.Is(err, errTestCause) {
 			t.Errorf("wrong error. expect the queue failure, got: %v", err)
 		}
@@ -87,7 +87,7 @@ func Test_runListen(t *testing.T) {
 				return nil
 			})
 
-		if err := runListen(mockSock, nil, nil, nil, nil); err != nil {
+		if err := runListen(mockSock, nil, nil, nil, nil, nil); err != nil {
 			t.Fatalf("expected ok, got: %v", err)
 		}
 

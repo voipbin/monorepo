@@ -260,6 +260,8 @@ func Test_processV1HooksPaddlePost(t *testing.T) {
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			mockPaddle := paddlehandler.NewMockPaddleHandler(mc)
+			// the signature check is covered by v1_hooks_paddle_signature_test.go
+			mockPaddle.EXPECT().VerifyWebhook(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			h := &listenHandler{
 				sockHandler:    mockSock,

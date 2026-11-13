@@ -47,7 +47,7 @@ REDIS_ADDRESS="127.0.0.1:6379" \
 
 ## Database Migrations
 
-The schema of `billing_accounts`, `billing_billings` and `billing_failed_events` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`, shared code in `bin-common-handler/pkg/migrationhandler`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax. The full rules (file naming, one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract, baseline text rules) are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
+The schema of `billing_accounts`, `billing_billings`, `billing_failed_events`, `billing_configs` and `billing_config_histories` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`, shared code in `bin-common-handler/pkg/migrationhandler`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax. The full rules (file naming, one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract, baseline text rules) are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
 
 - Files: `migrations/NNNNNN_<table>_<verb>_<type>_<items>.up.sql` and `.down.sql`. `000001_baseline` is the schema at the time of the conversion (`CREATE TABLE IF NOT EXISTS`, no table options; its down is the no-op `SELECT 1`). Version table: `billing_schema_migrations`.
 - `cmd/billing-manager` runs `migrationhandler.Run` right after the database connection, before the cache and RabbitMQ. Failure stops the start (non-zero exit).
@@ -55,6 +55,16 @@ The schema of `billing_accounts`, `billing_billings` and `billing_failed_events`
 - A new database is created with `CHARACTER SET utf8 COLLATE utf8_general_ci` (like the install scripts do).
 - Update `scripts/database_scripts_test/table_billing*.sql` in this service (the sqlite test schema) by hand when the schema changes.
 - Verification: `go test ./migrations/` (structure) and, from the repo root, `scripts/verify-service-migrations.sh bin-billing-manager` (both engines).
+
+## Paddle credentials are read per request
+
+The Paddle API key and the Paddle webhook secret are two stored settings (`paddle.api_key`, `paddle.webhook_secret_key`, table `billing_configs`, history in `billing_config_histories`). They are resolved through `internal/billingconfig` for every use: a stored value wins, and the environment variable of the key (`PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET_KEY`) is the fallback while no value is stored. `billingconfig.New` hands `os.LookupEnv` to the shared `confighandler`; never pass `nil` there (it would turn the fallback off) and never read these variables directly or cache the values anywhere. A database read error or a decrypt error is an error (`paddlehandler.ErrKeyUnavailable`) and never falls through to the environment.
+
+- The API key is read by `paddlehandler.CreatePortalSession` before the HTTP request is built; a read error means no request leaves.
+- `processV1HooksPaddlePost` calls `paddleHandler.VerifyWebhook` after the hook envelope is parsed. No secret means no check; a rejected signature is 401; an unreadable secret is 500. The algorithm and the 300 second window are the same as in `bin-hook-manager` (`verifyPaddleSignature`); keep them in step. Never log the signature or the body in this path: use a new `WithField("func", ...)` entry, not the entry that holds `"request": m`.
+- They can be written with `billing-control config` or the admin API (`/service_configs/billing`, served as `/v1/configs` by the shared `configrpc`). That route is handled at the top of `processRequest`, before the request log entry exists, and must never log the request, because the body of a secret write is the secret. The master key list is `BILLING_CONFIG_ENCRYPTION_KEYS` (environment only, no flag).
+- The `PaddleAPIKey` config field and the `--paddle_api_key` flag were removed.
+- Storing the webhook secret in the database has an operational precondition (it must equal the value of the hook service, and both services must run the image that reads it). See docs/operations.md, "Paddle credentials".
 
 ## Architecture Summary
 
@@ -76,3 +86,5 @@ go test -v ./pkg/accounthandler -run Test_IsValidBalance
 - `billing_accounts` — billing accounts with balance (soft-delete with `tm_delete`)
 - `billing_billings` — billing records per event (soft-delete with `tm_delete`)
 - `billing_failed_events` — retry queue (hard-deleted on success)
+- `billing_configs`: stored platform settings (the Paddle credentials, secrets encrypted)
+- `billing_config_histories`: change history of the stored settings (no secret material)

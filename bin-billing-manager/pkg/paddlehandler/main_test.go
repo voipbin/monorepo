@@ -10,6 +10,11 @@ import (
 	"monorepo/bin-billing-manager/models/account"
 )
 
+// staticKey is a key function that always returns the given value.
+func staticKey(v string) KeyFunc {
+	return func(context.Context) (string, error) { return v, nil }
+}
+
 func Test_CreatePortalSession(t *testing.T) {
 	tests := []struct {
 		name             string
@@ -92,14 +97,14 @@ func Test_CreatePortalSession(t *testing.T) {
 				defer server.Close()
 
 				h = &paddleHandler{
-					apiKey:     "test-api-key",
+					apiKey:     staticKey("test-api-key"),
 					baseURL:    server.URL,
 					httpClient: http.DefaultClient,
 					priceMap:   map[string]account.PlanType{},
 				}
 			} else {
 				h = &paddleHandler{
-					apiKey:     "test-api-key",
+					apiKey:     staticKey("test-api-key"),
 					baseURL:    "http://localhost:0",
 					httpClient: http.DefaultClient,
 					priceMap:   map[string]account.PlanType{},
@@ -148,7 +153,7 @@ func Test_GetPlanTypeByPriceID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewPaddleHandler("test-key", "pri_basic_123", "pri_pro_456")
+			h := NewPaddleHandler(staticKey("test-key"), nil, "pri_basic_123", "pri_pro_456")
 
 			plan, err := h.GetPlanTypeByPriceID(tt.priceID)
 			if (err != nil) != tt.expectErr {
@@ -196,7 +201,7 @@ func Test_NewPaddleHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewPaddleHandler("test-key", tt.priceIDBasic, tt.priceIDProfessional)
+			h := NewPaddleHandler(staticKey("test-key"), nil, tt.priceIDBasic, tt.priceIDProfessional)
 			ph := h.(*paddleHandler)
 			if len(ph.priceMap) != tt.expectMapLen {
 				t.Errorf("priceMap length = %d, expected = %d", len(ph.priceMap), tt.expectMapLen)
@@ -212,7 +217,7 @@ func Test_NewPaddleHandler(t *testing.T) {
 // as a failed call. The scheme is not supported by the HTTP client, so nothing leaves the process.
 func Test_CreatePortalSession_requestFails(t *testing.T) {
 	h := &paddleHandler{
-		apiKey:     "test-key",
+		apiKey:     staticKey("test-key"),
 		baseURL:    "unsupported://paddle.invalid",
 		httpClient: http.DefaultClient,
 		priceMap:   map[string]account.PlanType{},

@@ -592,11 +592,11 @@ async def test_init_team_pipeline_voice_mode_builds_member_tts_stt_from_member_c
     )
 
     mocks.create_tts_service.assert_called_once_with(
-        "google", voice_id="v-a", language="en-US",
+        "google", voice_id="v-a", language="en-US", platform_keys=None,
     )
     assert mocks.create_stt_service.call_args_list == [
-        call("google", language="en-US"),
-        call("whisper", language="en-US"),
+        call("google", language="en-US", platform_keys=None),
+        call("whisper", language="en-US", platform_keys=None),
     ]
     # The request-level TTS/STT types must never reach a member's service factory.
     for tts_call in mocks.create_tts_service.call_args_list:

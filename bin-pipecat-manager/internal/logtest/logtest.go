@@ -1,6 +1,7 @@
 // Package logtest captures the standard logrus logger in tests, so that a test can prove that a
 // code path does not write a given text (for example a conversation sentence) into the logs.
-// It has the same content as the package of bin-ai-manager (two consumers, so it is not shared).
+// It started as a copy of the package of bin-ai-manager (two consumers, so it is not shared) and
+// adds Entries and HasLevel.
 package logtest
 
 import (
@@ -66,6 +67,21 @@ func (c *Capture) Dump() string {
 // Len returns the number of captured entries.
 func (c *Capture) Len() int {
 	return len(c.hook.AllEntries())
+}
+
+// Entries returns the captured entries.
+func (c *Capture) Entries() []*logrus.Entry {
+	return c.hook.AllEntries()
+}
+
+// HasLevel reports whether any captured entry has the given level.
+func (c *Capture) HasLevel(level logrus.Level) bool {
+	for _, e := range c.hook.AllEntries() {
+		if e.Level == level {
+			return true
+		}
+	}
+	return false
 }
 
 // HasField reports whether any captured entry has the field key.

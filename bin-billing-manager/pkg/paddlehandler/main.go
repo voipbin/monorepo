@@ -25,17 +25,30 @@ const (
 type PaddleHandler interface {
 	CreatePortalSession(ctx context.Context, paddleCustomerID string) (string, error)
 	GetPlanTypeByPriceID(priceID string) (account.PlanType, error)
+
+	// VerifyWebhook checks the signature header of a Paddle webhook against the body that was
+	// received. It returns nil when the signature is valid, and also when no webhook secret is
+	// configured (the check is skipped then). ErrSignatureInvalid means that the signature was
+	// rejected, and ErrKeyUnavailable means that the secret could not be read.
+	VerifyWebhook(ctx context.Context, signature string, body []byte) error
 }
+
+// KeyFunc hands a Paddle credential to the handler at the time of use. An empty value with no
+// error means "not configured". An error means that the credential could not be read, and it is
+// never replaced by an empty value.
+type KeyFunc = func(ctx context.Context) (string, error)
 
 type paddleHandler struct {
-	apiKey     string
-	baseURL    string
-	httpClient *http.Client
-	priceMap   map[string]account.PlanType
+	apiKey        KeyFunc
+	webhookSecret KeyFunc
+	baseURL       string
+	httpClient    *http.Client
+	priceMap      map[string]account.PlanType
 }
 
-// NewPaddleHandler creates a new PaddleHandler.
-func NewPaddleHandler(apiKey string, priceIDBasic string, priceIDProfessional string) PaddleHandler {
+// NewPaddleHandler creates a new PaddleHandler. The two credentials are functions that are called
+// for every use, so a changed key is used by the next call and nothing is kept in the handler.
+func NewPaddleHandler(apiKey KeyFunc, webhookSecret KeyFunc, priceIDBasic string, priceIDProfessional string) PaddleHandler {
 	priceMap := make(map[string]account.PlanType)
 	if priceIDBasic != "" {
 		priceMap[priceIDBasic] = account.PlanTypeBasic
@@ -45,8 +58,9 @@ func NewPaddleHandler(apiKey string, priceIDBasic string, priceIDProfessional st
 	}
 
 	return &paddleHandler{
-		apiKey:  apiKey,
-		baseURL: defaultPaddleBaseURL,
+		apiKey:        apiKey,
+		webhookSecret: webhookSecret,
+		baseURL:       defaultPaddleBaseURL,
 		httpClient: &http.Client{
 			Timeout: defaultTimeout,
 		},
@@ -87,6 +101,13 @@ func (h *paddleHandler) CreatePortalSession(ctx context.Context, paddleCustomerI
 		return "", fmt.Errorf("paddle_customer_id is empty")
 	}
 
+	// The key is read for this call only, and a key that can not be read stops the call before
+	// any request leaves: it is never replaced by an empty key or by another source.
+	apiKey, err := h.readKey(ctx, h.apiKey)
+	if err != nil {
+		return "", err
+	}
+
 	reqBody := portalSessionRequest{
 		CustomerID: paddleCustomerID,
 	}
@@ -101,7 +122,7 @@ func (h *paddleHandler) CreatePortalSession(ctx context.Context, paddleCustomerI
 		return "", fmt.Errorf("could not create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+h.apiKey)
+	req.Header.Set("Authorization", "Bearer "+apiKey)
 
 	log.Infof("Calling Paddle API for portal session. paddle_customer_id: %s", paddleCustomerID)
 

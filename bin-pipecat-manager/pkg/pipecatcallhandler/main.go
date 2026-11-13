@@ -72,6 +72,7 @@ type pipecatcallHandler struct {
 	toolHandler    toolhandler.ToolHandler
 
 	pythonRunner        PythonRunner
+	platformKeys        PlatformKeyResolver
 	audiosocketHandler  AudiosocketHandler
 	websocketHandler    WebsocketHandler
 	pipecatframeHandler PipecatframeHandler
@@ -92,8 +93,9 @@ func NewPipecatcallHandler(
 	toolHandler toolhandler.ToolHandler,
 
 	hostID string,
+	opts ...Option,
 ) PipecatcallHandler {
-	return &pipecatcallHandler{
+	h := &pipecatcallHandler{
 		utilHandler:    utilhandler.NewUtilHandler(),
 		requestHandler: reqHandler,
 		notifyHandler:  notifyHandler,
@@ -112,5 +114,23 @@ func NewPipecatcallHandler(
 
 		muTerminated:        sync.Mutex{},
 		terminatedPublished: make(map[uuid.UUID]struct{}),
+	}
+
+	for _, opt := range opts {
+		opt(h)
+	}
+
+	return h
+}
+
+// Option configures NewPipecatcallHandler.
+type Option func(*pipecatcallHandler)
+
+// WithPlatformKeyResolver sets the resolver of the platform keys that are handed to the runner
+// with the start request. Without it no platform key is sent and the runner uses its own
+// environment.
+func WithPlatformKeyResolver(r PlatformKeyResolver) Option {
+	return func(h *pipecatcallHandler) {
+		h.platformKeys = r
 	}
 }

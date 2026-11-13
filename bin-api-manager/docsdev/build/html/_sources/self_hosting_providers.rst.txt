@@ -40,12 +40,24 @@ is stored, ``none`` means that the key is not configured. The services
 log a warning or an info line at start for a key that is not configured
 (the key name only).
 
-``pipecat-manager`` and ``pipecat-script-runner`` are different: they
-read their provider keys (``OPENAI_API_KEY``, ``GOOGLE_API_KEY``,
-``XAI_API_KEY``, ``ELEVENLABS_API_KEY``, ``OPENROUTER_API_KEY``) from the
-environment. A key that both a manager and the pipecat services use
-(``GOOGLE_API_KEY`` and ``ELEVENLABS_API_KEY``) therefore has two places
-and must be replaced in both.
+``billing-manager`` and ``pipecat-manager`` are different: a stored value
+is used first, and the environment variable is used when no value is
+stored. ``billing-manager`` has ``paddle.api_key`` (``PADDLE_API_KEY``)
+and ``paddle.webhook_secret_key`` (``PADDLE_WEBHOOK_SECRET_KEY``).
+``pipecat-manager`` has ``openai.api_key``, ``deepgram.api_key``,
+``cartesia.api_key``, ``xai.api_key``, ``elevenlabs.api_key``,
+``google.api_key``, ``openrouter.api_key`` and ``local_llm.endpoints``
+(the variables ``OPENAI_API_KEY``, ``DEEPGRAM_API_KEY``,
+``CARTESIA_API_KEY``, ``XAI_API_KEY``, ``ELEVENLABS_API_KEY``,
+``GOOGLE_API_KEY``, ``OPENROUTER_API_KEY`` and ``LOCAL_LLM_ENDPOINTS``).
+Store them with the ``config set`` command of ``billing-control`` or
+``pipecat-control`` or with the Service Config API (the ``billing`` and
+``pipecat`` services). A change of a ``pipecat`` key is used from the next
+session. A key that both a manager and the pipecat services use
+(``GOOGLE_API_KEY`` and ``ELEVENLABS_API_KEY``) is a separate setting in
+each service and must be replaced in both. The ``pipecat-script-runner``
+keeps its ``.env`` variables as the fallback for a key that
+``pipecat-manager`` does not pass.
 
 AI voice agent providers
 ----------------------------

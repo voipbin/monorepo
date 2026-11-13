@@ -98,10 +98,11 @@ func Test_initCommand(t *testing.T) {
 		path           string
 		expectChildren []string
 	}{
-		{"", []string{"account", "billing", "migrate", "topup"}},
+		{"", []string{"account", "billing", "config", "migrate", "topup"}},
 		{"account", []string{"add-balance", "add-tokens", "create", "delete", "get", "list", "set-status", "subtract-balance", "subtract-tokens", "update", "update-payment-info", "update-plan-type"}},
 		{"billing", []string{"get", "list"}},
 		{"topup", []string{"run"}},
+		{"config", []string{"clear", "list", "set"}},
 		{"migrate", []string{"down", "force", "status", "up"}},
 	}
 

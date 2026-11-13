@@ -51,6 +51,8 @@ func Test_Billing(t *testing.T) {
 			expectReq: &hmhook.Hook{
 				ReceivedURI:  "hook.voipbin.net/v1.0/billing/paddle",
 				ReceivedData: body,
+
+				ReceivedSignature: validSignature,
 			},
 		},
 	}
@@ -116,6 +118,8 @@ func Test_Billing_Error(t *testing.T) {
 			expectReq: &hmhook.Hook{
 				ReceivedURI:  "hook.voipbin.net/v1.0/billing/paddle",
 				ReceivedData: body,
+
+				ReceivedSignature: validSignature,
 			},
 			expectError: fmt.Errorf("billing hook error"),
 		},
@@ -327,4 +331,139 @@ func hmacSHA256(secret, ts string, body []byte) string {
 	mac := hmac.New(sha256.New, []byte(secret))
 	mac.Write([]byte(ts + ":" + string(body)))
 	return hex.EncodeToString(mac.Sum(nil))
+}
+
+func Test_Billing_SignatureForwarded(t *testing.T) {
+	secret := "pdl_ntfset_test_secret"
+	body := []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`)
+
+	freshTS := strconv.FormatInt(time.Now().Unix(), 10)
+	// The header carries an extra unknown field and the parts are in the reverse order. The
+	// value must reach billing byte for byte.
+	signature := "h1=" + hmacSHA256(secret, freshTS, body) + ";ts=" + freshTS + ";x=Y"
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := serviceHandler{
+		reqHandler:          mockReq,
+		paddleWebhookSecret: secret,
+	}
+
+	ctx := context.Background()
+	r, _ := http.NewRequest("POST", "http://hook.voipbin.net/v1.0/billing/paddle", bytes.NewReader(body))
+	r.Host = "hook.voipbin.net"
+	r.Header.Set("Paddle-Signature", signature)
+
+	expectReq := &hmhook.Hook{
+		ReceivedURI:       "hook.voipbin.net/v1.0/billing/paddle",
+		ReceivedData:      body,
+		ReceivedSignature: signature,
+	}
+	mockReq.EXPECT().BillingV1PaddleHook(ctx, expectReq).Return(nil)
+
+	if err := h.Billing(ctx, r); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+func Test_Billing_BillingRejection(t *testing.T) {
+	secret := "pdl_ntfset_test_secret"
+	body := []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`)
+
+	freshTS := strconv.FormatInt(time.Now().Unix(), 10)
+	validSignature := "ts=" + freshTS + ";h1=" + hmacSHA256(secret, freshTS, body)
+
+	tests := []struct {
+		name string
+
+		billingErr error
+
+		expectValidation bool
+	}{
+		{
+			name:             "unauthorized is a validation error",
+			billingErr:       requesthandler.ErrUnauthorized,
+			expectValidation: true,
+		},
+		{
+			name:             "wrapped unauthorized is a validation error",
+			billingErr:       fmt.Errorf("wrapped: %w", requesthandler.ErrUnauthorized),
+			expectValidation: true,
+		},
+		{
+			name:             "bad request keeps the current behavior",
+			billingErr:       requesthandler.ErrBadRequest,
+			expectValidation: false,
+		},
+		{
+			name:             "internal keeps the current behavior",
+			billingErr:       requesthandler.ErrInternal,
+			expectValidation: false,
+		},
+		{
+			name:             "other error keeps the current behavior",
+			billingErr:       fmt.Errorf("billing hook error"),
+			expectValidation: false,
+		},
+		{
+			name:             "timeout keeps the current behavior",
+			billingErr:       context.DeadlineExceeded,
+			expectValidation: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := serviceHandler{
+				reqHandler:          mockReq,
+				paddleWebhookSecret: secret,
+			}
+
+			ctx := context.Background()
+			r, _ := http.NewRequest("POST", "http://hook.voipbin.net/v1.0/billing/paddle", bytes.NewReader(body))
+			r.Host = "hook.voipbin.net"
+			r.Header.Set("Paddle-Signature", validSignature)
+
+			mockReq.EXPECT().BillingV1PaddleHook(ctx, gomock.Any()).Return(tt.billingErr)
+
+			err := h.Billing(ctx, r)
+			if err == nil {
+				t.Fatal("Expected error, got nil")
+			}
+
+			var valErr *ValidationError
+			if got := errors.As(err, &valErr); got != tt.expectValidation {
+				t.Errorf("Wrong match. expect ValidationError: %v, got: %v (%T)", tt.expectValidation, got, err)
+			}
+		})
+	}
+}
+
+func Test_Billing_NotForwardedWhenRejectedLocally(t *testing.T) {
+	secret := "pdl_ntfset_test_secret"
+	body := []byte(`{"event_id":"evt_001"}`)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	// No call to BillingV1PaddleHook is expected: gomock fails the test on any call.
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := serviceHandler{
+		reqHandler:          mockReq,
+		paddleWebhookSecret: secret,
+	}
+
+	r, _ := http.NewRequest("POST", "http://hook.voipbin.net/v1.0/billing/paddle", bytes.NewReader(body))
+	r.Host = "hook.voipbin.net"
+	r.Header.Set("Paddle-Signature", "ts=1234567890;h1=00")
+
+	if err := h.Billing(context.Background(), r); err == nil {
+		t.Error("Expected error, got nil")
+	}
 }

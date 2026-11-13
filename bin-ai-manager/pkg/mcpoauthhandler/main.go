@@ -1,6 +1,7 @@
 // Package mcpoauthhandler implements the vendor-fixed OAuth 2.1 flow used
 // to connect a customer-registered McpServer to a vendor (GitHub, Linear, Asana, HubSpot) without
-// the customer ever handling a client_id/client_secret. See
+// the customer ever handling a client_id/client_secret. The OAuth app of each
+// vendor is resolved per request through a CredentialsFunc. See
 // docs/plans/2026-09-12-mcp-server-oauth-support-design.md.
 package mcpoauthhandler
 
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
@@ -58,7 +60,12 @@ type mcpOAuthHandler struct {
 	utilHandler utilhandler.UtilHandler
 	db          dbhandler.DBHandler
 	crypto      *secretcrypto.Crypto
-	vendors     map[string]vendorConfig
+
+	// vendors is the static catalog (URLs and scopes). It holds no credential.
+	vendors map[string]vendorMeta
+
+	// credentials resolves the OAuth app of a vendor at the time of use.
+	credentials CredentialsFunc
 
 	// httpClient performs the outbound vendor token-endpoint POST in
 	// Complete. Overridable in unit tests only.
@@ -67,30 +74,31 @@ type mcpOAuthHandler struct {
 
 // NewMcpOAuthHandler creates a new McpOAuthHandler. cryptoKeys is the raw
 // MCP_SECRET_ENCRYPTION_KEYS config value (reused byte-for-byte, design
-// §4/§12 -- no new key set). Vendor client_id/client_secret are read from
-// the corresponding env vars (design §6).
+// §4/§12 -- no new key set). credentials resolves the client_id/client_secret
+// of a vendor each time a request needs them (nothing is cached here); it is
+// required, so that a missing wiring is an error and not an app that is
+// silently "not configured".
 func NewMcpOAuthHandler(
 	db dbhandler.DBHandler,
 	cryptoKeys string,
-	githubClientID string,
-	githubClientSecret string,
-	linearClientID string,
-	linearClientSecret string,
-	asanaClientID string,
-	asanaClientSecret string,
-	hubspotClientID string,
-	hubspotClientSecret string,
+	credentials CredentialsFunc,
 ) (McpOAuthHandler, error) {
+	// The key list is parsed first, so that its error never depends on
+	// the other argument and holds no key text.
 	crypto, err := mcpserverhandler.NewSecretCrypto(cryptoKeys)
 	if err != nil {
 		return nil, err
+	}
+	if credentials == nil {
+		return nil, errors.New("credentials func is required")
 	}
 
 	return &mcpOAuthHandler{
 		utilHandler: utilhandler.NewUtilHandler(),
 		db:          db,
 		crypto:      crypto,
-		vendors:     newVendorCatalog(githubClientID, githubClientSecret, linearClientID, linearClientSecret, asanaClientID, asanaClientSecret, hubspotClientID, hubspotClientSecret),
+		vendors:     newVendorCatalog(),
+		credentials: credentials,
 		httpClient:  &http.Client{Timeout: 15 * time.Second},
 	}, nil
 }

@@ -54,7 +54,7 @@ Every PR that changes a migration file or the migration runner states, with evid
 |---|---|---|
 | bin-agent-manager | agent_addresses, agent_agents | `bin-agent-manager/migrations/` |
 | bin-ai-manager | ai_ai_audits, ai_ai_prompt_histories, ai_ai_prompt_proposals, ai_aicall_participants, ai_aicalls, ai_ais, ai_config_histories, ai_configs, ai_mcp_oauth_states, ai_mcp_servers, ai_messages, ai_summaries, ai_teams | `bin-ai-manager/migrations/` |
-| bin-billing-manager | billing_accounts, billing_billings, billing_failed_events | `bin-billing-manager/migrations/` |
+| bin-billing-manager | billing_accounts, billing_billings, billing_config_histories, billing_configs, billing_failed_events | `bin-billing-manager/migrations/` |
 | bin-call-manager | call_bridges, call_calls, call_channels, call_confbridges, call_groupcalls, call_outbound_configs, call_recordings | `bin-call-manager/migrations/` |
 | bin-campaign-manager | campaign_campaigncalls, campaign_campaigns, campaign_outplans | `bin-campaign-manager/migrations/` |
 | bin-conference-manager | conference_conferencecalls, conference_conferences | `bin-conference-manager/migrations/` |
@@ -67,7 +67,7 @@ Every PR that changes a migration file or the migration runner states, with evid
 | bin-message-manager | message_config_histories, message_configs, message_messages | `bin-message-manager/migrations/` |
 | bin-number-manager | number_numbers, number_providers | `bin-number-manager/migrations/` |
 | bin-outdial-manager | outdial_outdials, outdial_outdialtargetcalls, outdial_outdialtargets | `bin-outdial-manager/migrations/` |
-| bin-pipecat-manager | pipecat_pipecatcalls | `bin-pipecat-manager/migrations/` |
+| bin-pipecat-manager | pipecat_config_histories, pipecat_configs, pipecat_pipecatcalls | `bin-pipecat-manager/migrations/` |
 | bin-push-manager | push_chat_mutes, push_devices, push_kind_prefs | `bin-push-manager/migrations/` |
 | bin-queue-manager | queue_queuecallreferences, queue_queuecalls, queue_queues | `bin-queue-manager/migrations/` |
 | bin-registrar-manager | registrar_customer_domains, registrar_extensions, registrar_sip_auths, registrar_trunks | `bin-registrar-manager/migrations/` |
@@ -104,6 +104,8 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | ai_teams | bin-ai-manager | AI team groupings |
 | billing_accounts | bin-billing-manager | Billing account balances |
 | billing_billings | bin-billing-manager | Individual billing events |
+| billing_config_histories | bin-billing-manager | Change history of the stored settings (no values) |
+| billing_configs | bin-billing-manager | Stored settings (the Paddle keys, encrypted) |
 | billing_failed_events | bin-billing-manager | Retry queue for failed billing events |
 | call_bridges | bin-call-manager | Bridges joining call channels |
 | call_calls | bin-call-manager | Active and historical calls |
@@ -147,6 +149,8 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | outdial_outdials | bin-outdial-manager | Outbound dialer sessions |
 | outdial_outdialtargetcalls | bin-outdial-manager | Calls placed to outdialtargets |
 | outdial_outdialtargets | bin-outdial-manager | Individual dial targets |
+| pipecat_config_histories | bin-pipecat-manager | Change history of the stored settings (no values) |
+| pipecat_configs | bin-pipecat-manager | Stored settings (the platform keys of the voice AI vendors, encrypted) |
 | pipecat_pipecatcalls | bin-pipecat-manager | Pipecat AI voice sessions |
 | push_chat_mutes | bin-push-manager | Chats an agent muted (a row means muted) |
 | push_devices | bin-push-manager | Agent device push tokens (FCM) |

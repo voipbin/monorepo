@@ -112,18 +112,10 @@ type Config struct {
 	// deploy of new code if something goes wrong in production.
 	McpToolExposureEnabled bool
 
-	// MCP server OAuth 2.1 support (docs/plans/
-	// 2026-09-12-mcp-server-oauth-support-design.md §6). VoIPBin-owned,
-	// vendor-fixed OAuth app credentials -- NOT per-customer, NOT in the
-	// database.
-	McpOAuthGithubClientID      string
-	McpOAuthGithubClientSecret  string
-	McpOAuthLinearClientID      string
-	McpOAuthLinearClientSecret  string
-	McpOAuthAsanaClientID       string
-	McpOAuthAsanaClientSecret   string
-	McpOAuthHubspotClientID     string
-	McpOAuthHubspotClientSecret string
+	// The MCP OAuth app credentials of the vendors are not fields of this
+	// struct: they are config keys (internal/configkeys, "mcp_oauth.<vendor>.*")
+	// read per request through internal/aiconfig, from the database or from the
+	// MCP_OAUTH_<VENDOR>_CLIENT_{ID,SECRET} environment variables.
 
 	// Assistant Builder (docs/plans/2026-10-01-conversational-assistant-builder-design.md
 	// 4.6). There is no on/off setting; it is available when the key is set. The model, reasoning effort, token cap, concurrency
@@ -192,14 +184,6 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("mcp_secret_encryption_keys", "", "Comma-separated <version>:<base64-32-byte-key> pairs for MCP server secret envelope encryption")
 	f.Int("mcp_tool_call_timeout_seconds", 10, "Timeout (seconds) for one whole MCP tools/list or tools/call, including its session handshake; the session close may run up to 250 ms past it")
 	f.Bool("mcp_tool_exposure_enabled", true, "Global rollback switch for MCP tool advertisement/dispatch to the LLM (PR B2, design B27); false makes ResolveMcpTools behave as if no AI has MCP tools")
-	f.String("mcp_oauth_github_client_id", "", "GitHub OAuth App client_id for MCP server OAuth (design doc 2026-09-12-mcp-server-oauth-support)")
-	f.String("mcp_oauth_github_client_secret", "", "GitHub OAuth App client_secret for MCP server OAuth")
-	f.String("mcp_oauth_linear_client_id", "", "Linear OAuth application client_id for MCP server OAuth")
-	f.String("mcp_oauth_linear_client_secret", "", "Linear OAuth application client_secret for MCP server OAuth")
-	f.String("mcp_oauth_asana_client_id", "", "Asana OAuth app client_id for MCP server OAuth")
-	f.String("mcp_oauth_asana_client_secret", "", "Asana OAuth app client_secret for MCP server OAuth")
-	f.String("mcp_oauth_hubspot_client_id", "", "HubSpot MCP connector client_id for MCP server OAuth")
-	f.String("mcp_oauth_hubspot_client_secret", "", "HubSpot MCP connector client_secret for MCP server OAuth")
 	f.String("ai_builder_model", "gemini-3.8-flash", "Model for the Assistant Builder (served through the analysis engine's base URL and key)")
 	f.String("ai_builder_reasoning_effort", "none", "reasoning_effort for the Assistant Builder (none disables Gemini thinking; empty omits the field). Not measured yet")
 	f.Int("ai_builder_max_output_tokens", 4096, "Max output tokens of one Assistant Builder reply. Not measured yet")
@@ -255,14 +239,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"mcp_secret_encryption_keys":      "MCP_SECRET_ENCRYPTION_KEYS",
 		"mcp_tool_call_timeout_seconds":   "MCP_TOOL_CALL_TIMEOUT_SECONDS",
 		"mcp_tool_exposure_enabled":       "MCP_TOOL_EXPOSURE_ENABLED",
-		"mcp_oauth_github_client_id":      "MCP_OAUTH_GITHUB_CLIENT_ID",
-		"mcp_oauth_github_client_secret":  "MCP_OAUTH_GITHUB_CLIENT_SECRET",
-		"mcp_oauth_linear_client_id":      "MCP_OAUTH_LINEAR_CLIENT_ID",
-		"mcp_oauth_linear_client_secret":  "MCP_OAUTH_LINEAR_CLIENT_SECRET",
-		"mcp_oauth_asana_client_id":       "MCP_OAUTH_ASANA_CLIENT_ID",
-		"mcp_oauth_asana_client_secret":   "MCP_OAUTH_ASANA_CLIENT_SECRET",
-		"mcp_oauth_hubspot_client_id":     "MCP_OAUTH_HUBSPOT_CLIENT_ID",
-		"mcp_oauth_hubspot_client_secret": "MCP_OAUTH_HUBSPOT_CLIENT_SECRET",
 
 		"ai_builder_model":               "AI_BUILDER_MODEL",
 		"ai_builder_reasoning_effort":    "AI_BUILDER_REASONING_EFFORT",
@@ -355,15 +331,6 @@ func LoadGlobalConfig() {
 			McpSecretEncryptionKeys:     viper.GetString("mcp_secret_encryption_keys"),
 			McpToolCallTimeoutSeconds:   viper.GetInt("mcp_tool_call_timeout_seconds"),
 			McpToolExposureEnabled:      viper.GetBool("mcp_tool_exposure_enabled"),
-
-			McpOAuthGithubClientID:      viper.GetString("mcp_oauth_github_client_id"),
-			McpOAuthGithubClientSecret:  viper.GetString("mcp_oauth_github_client_secret"),
-			McpOAuthLinearClientID:      viper.GetString("mcp_oauth_linear_client_id"),
-			McpOAuthLinearClientSecret:  viper.GetString("mcp_oauth_linear_client_secret"),
-			McpOAuthAsanaClientID:       viper.GetString("mcp_oauth_asana_client_id"),
-			McpOAuthAsanaClientSecret:   viper.GetString("mcp_oauth_asana_client_secret"),
-			McpOAuthHubspotClientID:     viper.GetString("mcp_oauth_hubspot_client_id"),
-			McpOAuthHubspotClientSecret: viper.GetString("mcp_oauth_hubspot_client_secret"),
 
 			AIBuilderModel:             viper.GetString("ai_builder_model"),
 			AIBuilderReasoningEffort:   viper.GetString("ai_builder_reasoning_effort"),

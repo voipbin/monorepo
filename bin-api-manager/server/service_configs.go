@@ -11,9 +11,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// serviceConfigMaxBodyBytes caps the request body of the secret update. The largest secret that a
-// key accepts today (512 bytes for the email, ai, message, tts and transcribe keys, up to 6 bytes per byte once JSON escaped) fits
-// in it with room. Check it again when a service with a longer secret limit is added.
+// serviceConfigMaxBodyBytes caps the request body of the secret update. The longest secret that a
+// key accepts is 2020 bytes (the local_llm.endpoints key of pipecat; the other keys of email, ai,
+// message, tts, transcribe, billing and pipecat accept 512 bytes). Without a control character, a
+// byte takes at most 2 bytes once JSON escaped (a quote or a backslash), so the worst body is 4040
+// bytes of secret, plus 11 bytes of the head `{"secret":"` and 24 bytes of the tail
+// `","revision":4294967295}`: 4075 bytes. That fits in the limit with 21 bytes to spare, and a test
+// holds it. Check it again when a key with a longer secret limit is added; the registry limit
+// (2020 bytes) is the upper bound of every key.
 const serviceConfigMaxBodyBytes = 4 * 1024
 
 // serviceConfigSecretBody is the body of the secret update. The fields are pointers so that a

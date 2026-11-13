@@ -2,6 +2,7 @@ package config
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -19,6 +20,26 @@ func Test_Config_hasNoProviderKeyFields(t *testing.T) {
 	}
 	if _, ok := reflect.TypeOf(&Config{}).MethodByName("EnvValue"); ok {
 		t.Errorf("Wrong match. expect: no EnvValue method, got: a method")
+	}
+}
+
+// The MCP OAuth app credentials are config keys read by internal/aiconfig, so Config has no field
+// and no flag for them, and the load ignores the variables.
+func Test_Config_hasNoMcpOAuthFields(t *testing.T) {
+	typ := reflect.TypeOf(Config{})
+	for i := 0; i < typ.NumField(); i++ {
+		if strings.HasPrefix(typ.Field(i).Name, "McpOAuth") {
+			t.Errorf("Wrong match. expect: no McpOAuth field, got: %s", typ.Field(i).Name)
+		}
+	}
+
+	t.Setenv("MCP_OAUTH_GITHUB_CLIENT_ID", "synthetic-id")
+	t.Setenv("MCP_OAUTH_GITHUB_CLIENT_SECRET", "synthetic-secret")
+	cmd, _ := loadForTest(t)
+	for _, name := range []string{"mcp_oauth_github_client_id", "mcp_oauth_github_client_secret"} {
+		if cmd.PersistentFlags().Lookup(name) != nil {
+			t.Errorf("Wrong match. expect: no flag %s, got: a flag", name)
+		}
 	}
 }
 

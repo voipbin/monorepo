@@ -24,10 +24,14 @@ func Test_ServiceConfig_services(t *testing.T) {
 		{"ai", "llm.gemini.api_key"},
 		{"message", "provider.telnyx.auth_token"},
 		{"transcribe", "aws.secret_key"},
+		{"billing", "paddle.api_key"},
+		{"billing", "paddle.webhook_secret_key"},
+		{"pipecat", "openrouter.api_key"},
+		{"pipecat", "local_llm.endpoints"},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.service, func(t *testing.T) {
+		t.Run(tt.service+"/"+tt.key, func(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 

@@ -269,7 +269,7 @@ func Test_runnerStartScript_customEndpoint(t *testing.T) {
 		gomock.Any(), pc.ID, "customendpoint.my-model", "",
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		testEndpointCustomerID, testEndpointURL, testEndpointKey,
+		testEndpointCustomerID, testEndpointURL, testEndpointKey, gomock.Any(),
 	).Return(nil)
 
 	if err := h.runnerStartScript(pc, se); err != nil {
@@ -313,9 +313,9 @@ func Test_runnerStartScript_customEndpointTeam(t *testing.T) {
 		gomock.Any(), pc.ID, gomock.Any(), "",
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		testEndpointCustomerID, "", "",
+		testEndpointCustomerID, "", "", gomock.Any(),
 	).DoAndReturn(func(_ context.Context, _ uuid.UUID, _ string, _ string, _ any, _, _, _, _, _ string,
-		_ any, team *resolvedTeamData, _ any, _ bool, _ uuid.UUID, _, _ string) error {
+		_ any, team *resolvedTeamData, _ any, _ bool, _ uuid.UUID, _, _ string, _ any) error {
 		if team == nil || len(team.Members) != 1 {
 			t.Fatalf("expected one member, got %+v", team)
 		}
@@ -414,7 +414,7 @@ func Test_pythonRunnerStart_requestBody(t *testing.T) {
 	id := uuid.FromStringOrNil("7e1f0a52-1111-2222-3333-4444555566ee")
 
 	if err := r.Start(context.Background(), id, "customendpoint.my-model", "", nil, "", "", "", "", "", nil, nil, nil, false,
-		testEndpointCustomerID, testEndpointURL, testEndpointKey); err != nil {
+		testEndpointCustomerID, testEndpointURL, testEndpointKey, nil); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	var m map[string]any
@@ -426,7 +426,7 @@ func Test_pythonRunnerStart_requestBody(t *testing.T) {
 	}
 
 	// Team requests send the fields empty and omit them.
-	if err := r.Start(context.Background(), id, "openai.gpt-5", "k", nil, "", "", "", "", "", nil, nil, nil, false, testEndpointCustomerID, "", ""); err != nil {
+	if err := r.Start(context.Background(), id, "openai.gpt-5", "k", nil, "", "", "", "", "", nil, nil, nil, false, testEndpointCustomerID, "", "", nil); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	m = map[string]any{}
@@ -442,19 +442,19 @@ func Test_pythonRunnerStart_requestBody(t *testing.T) {
 	status = http.StatusUnprocessableEntity
 	respBody = "echo " + testEndpointKey
 	err := r.Start(context.Background(), id, "customendpoint.my-model", "", nil, "", "", "", "", "", nil, nil, nil, false,
-		testEndpointCustomerID, testEndpointURL, testEndpointKey)
+		testEndpointCustomerID, testEndpointURL, testEndpointKey, nil)
 	if err == nil || strings.Contains(err.Error(), testEndpointKey) {
 		t.Errorf("error must exist and not carry the body: %v", err)
 	}
 	// A failed team request with a member endpoint is handled the same way.
 	team := &resolvedTeamData{Members: []resolvedMemberData{{AI: resolvedAIData{LLMBaseURL: testEndpointURL, LLMBaseKey: testEndpointKey}}}}
-	err = r.Start(context.Background(), id, "openai.gpt-5", "", nil, "", "", "", "", "", nil, team, nil, false, testEndpointCustomerID, "", "")
+	err = r.Start(context.Background(), id, "openai.gpt-5", "", nil, "", "", "", "", "", nil, team, nil, false, testEndpointCustomerID, "", "", nil)
 	if err == nil || strings.Contains(err.Error(), testEndpointKey) {
 		t.Errorf("team error must exist and not carry the body: %v", err)
 	}
 	// Without an endpoint the error keeps the status and the body length, not the body: the runner
 	// answer can carry request text (VOIP-1633).
-	err = r.Start(context.Background(), id, "openai.gpt-5", "", nil, "", "", "", "", "", nil, nil, nil, false, testEndpointCustomerID, "", "")
+	err = r.Start(context.Background(), id, "openai.gpt-5", "", nil, "", "", "", "", "", nil, nil, nil, false, testEndpointCustomerID, "", "", nil)
 	if err == nil || !strings.Contains(err.Error(), "body_len:") || strings.Contains(err.Error(), testEndpointKey) {
 		t.Errorf("a request without an endpoint keeps the status and the body length only: %v", err)
 	}
@@ -524,9 +524,9 @@ func Test_startReferenceTypeAIcall_customEndpoint(t *testing.T) {
 					gomock.Any(), pcID, gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 				).DoAndReturn(func(_ context.Context, _ uuid.UUID, llmType string, llmKey string, _ any, _, _, _, _, _ string,
-					_ any, _ any, _ any, _ bool, _ uuid.UUID, url string, key string) error {
+					_ any, _ any, _ any, _ bool, _ uuid.UUID, url string, key string, _ any) error {
 					if llmType != "customendpoint.my-model" || llmKey != "" {
 						t.Errorf("unexpected runner type or legacy key: %q %q", llmType, llmKey)
 					}
@@ -626,8 +626,8 @@ func Test_customEndpoint_noLogEntryCarriesUrlOrKey(t *testing.T) {
 	}, nil).Times(2) // start path and runner start
 	started := make(chan struct{}, 1)
 	mockPython.EXPECT().Start(gomock.Any(), pcID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		DoAndReturn(func(_ context.Context, _ uuid.UUID, _ string, _ string, _ any, _, _, _, _, _ string, _ any, _ any, _ any, _ bool, _ uuid.UUID, _, _ string) error {
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ uuid.UUID, _ string, _ string, _ any, _, _, _, _, _ string, _ any, _ any, _ any, _ bool, _ uuid.UUID, _, _ string, _ any) error {
 			started <- struct{}{}
 			return nil
 		}).Times(1)
@@ -824,7 +824,7 @@ func Test_runnerStartScript_teamSendsNoTopLevelEndpoint(t *testing.T) {
 		gomock.Any(), pc.ID, gomock.Any(), "",
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		testEndpointCustomerID, "", "",
+		testEndpointCustomerID, "", "", gomock.Any(),
 	).Return(nil)
 
 	if err := h.runnerStartScript(pc, se); err != nil {

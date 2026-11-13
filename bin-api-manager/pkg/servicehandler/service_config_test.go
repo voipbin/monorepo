@@ -218,6 +218,8 @@ func Test_ServiceConfig_validation(t *testing.T) {
 		{"upper case message service", "MESSAGE", testServiceConfigKey, 0, serviceerrors.ErrNotFound},
 		{"upper case tts service", "TTS", testServiceConfigKey, 0, serviceerrors.ErrNotFound},
 		{"upper case transcribe service", "TRANSCRIBE", testServiceConfigKey, 0, serviceerrors.ErrNotFound},
+		{"upper case billing service", "BILLING", testServiceConfigKey, 0, serviceerrors.ErrNotFound},
+		{"upper case pipecat service", "PIPECAT", testServiceConfigKey, 0, serviceerrors.ErrNotFound},
 		{"a service that has no config api", "voice", testServiceConfigKey, 0, serviceerrors.ErrNotFound},
 		{"empty key", "email", "", 0, serviceerrors.ErrInvalidArgument},
 		{"key with a slash", "email", "a/secret", 0, serviceerrors.ErrInvalidArgument},

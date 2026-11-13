@@ -55,6 +55,7 @@ type PythonRunner interface {
 		customerID uuid.UUID,
 		llmBaseURL string,
 		llmBaseKey string,
+		platformKeys map[string]amai.RedactedString,
 	) error
 	Stop(ctx context.Context, pipecatcallID uuid.UUID) error
 }
@@ -81,6 +82,7 @@ func (h *pythonRunner) Start(
 	customerID uuid.UUID,
 	llmBaseURL string,
 	llmBaseKey string,
+	platformKeys map[string]amai.RedactedString,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Start",
@@ -104,6 +106,12 @@ func (h *pythonRunner) Start(
 		CustomerID       uuid.UUID         `json:"customer_id,omitempty"`
 		LLMBaseURL       string            `json:"llm_base_url,omitempty"`
 		LLMBaseKey       string            `json:"llm_base_key,omitempty"`
+
+		// PlatformKeys are the stored platform keys of the vendors that the session uses, by
+		// configuration key name. The value type prints as redacted in every text form, and is
+		// plain only in the JSON body, which is what the runner reads. They are separate from
+		// LLMKey (the key of the customer).
+		PlatformKeys map[string]amai.RedactedString `json:"platform_keys,omitempty"`
 	}{
 		ID:               pipecatcallID,
 		LLMType:          llmType,
@@ -121,6 +129,7 @@ func (h *pythonRunner) Start(
 		CustomerID:       customerID,
 		LLMBaseURL:       llmBaseURL,
 		LLMBaseKey:       llmBaseKey,
+		PlatformKeys:     platformKeys,
 	}
 
 	jsonData, err := json.Marshal(reqBody)

@@ -7,6 +7,23 @@ import (
 	"github.com/spf13/viper"
 )
 
+// resetLoadState gives the test a fresh once and config, and restores a fresh once and the
+// previous config afterwards, so the singleton does not leak across tests.
+func resetLoadState(t *testing.T) {
+	t.Helper()
+
+	saved := globalConfig
+	once = sync.Once{}
+	globalConfig = Config{}
+	viper.Reset()
+
+	t.Cleanup(func() {
+		once = sync.Once{}
+		globalConfig = saved
+		viper.Reset()
+	})
+}
+
 // Test_LoadGlobalConfig loads the process config from viper once and keeps the first values.
 func Test_LoadGlobalConfig(t *testing.T) {
 	savedConfig := globalConfig
@@ -25,7 +42,7 @@ func Test_LoadGlobalConfig(t *testing.T) {
 	viper.Set("database_dsn", "test-dsn")
 	viper.Set("redis_address", "cache-host-test")
 	viper.Set("redis_database", 3)
-	viper.Set("paddle_api_key", "test-paddle-key")
+	viper.Set("billing_config_encryption_keys", "1:test-master-keys")
 	viper.Set("paddle_price_id_basic", "pri_basic_test")
 	viper.Set("paddle_price_id_professional", "pri_pro_test")
 
@@ -38,7 +55,7 @@ func Test_LoadGlobalConfig(t *testing.T) {
 		DatabaseDSN:               "test-dsn",
 		RedisAddress:              "cache-host-test",
 		RedisDatabase:             3,
-		PaddleAPIKey:              "test-paddle-key",
+		ConfigEncryptionKeys:      "1:test-master-keys",
 		PaddlePriceIDBasic:        "pri_basic_test",
 		PaddlePriceIDProfessional: "pri_pro_test",
 	}

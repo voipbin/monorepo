@@ -88,8 +88,8 @@ func Test_Supplier_noRowIsNoneWhateverTheOldEnvironmentHolds(t *testing.T) {
 	}
 
 	list, err := h.Describe(context.Background())
-	if err != nil || len(list) != 2 {
-		t.Fatalf("Wrong match. expect: 2 keys, got: %v %v", list, err)
+	if err != nil || len(list) != len(configkeys.Keys()) {
+		t.Fatalf("Wrong match. expect: %d keys, got: %v %v", len(configkeys.Keys()), list, err)
 	}
 	for _, r := range list {
 		if r.Source != confighandler.SourceNone || r.EnvShadowed {
@@ -98,9 +98,9 @@ func Test_Supplier_noRowIsNoneWhateverTheOldEnvironmentHolds(t *testing.T) {
 	}
 }
 
-// The registry of the service has no environment name for any key. A handler built straight from
-// it with a lookup that serves the old variable names still resolves none without a row, and a
-// stored row wins when the lookup serves a value.
+// The LLM keys of the registry have no environment name. A handler built straight from it with a
+// lookup that serves the old variable names still resolves none without a row, and a stored row
+// wins when the lookup serves a value.
 func Test_registry_lookupWithOldNamesIsNotUsed(t *testing.T) {
 	reg, err := configkeys.NewRegistry()
 	if err != nil {
@@ -157,8 +157,11 @@ func Test_registry_lookupWithOldNamesIsNotUsed(t *testing.T) {
 		})
 	}
 
-	if len(asked) != 0 {
-		t.Errorf("Wrong match. expect: the lookup is never asked, got: %v", asked)
+	// Only the MCP OAuth keys declare an environment name. The names of the LLM keys are never asked.
+	for _, name := range asked {
+		if !strings.HasPrefix(name, "MCP_OAUTH_") {
+			t.Errorf("Wrong match. expect: only MCP_OAUTH_ names asked, got: %q", name)
+		}
 	}
 }
 
@@ -583,7 +586,7 @@ func Test_LogSources_levels(t *testing.T) {
 				configkeys.KeyGeminiAPIKey:       logrus.InfoLevel,
 			},
 			expectMsg: map[string]string{
-				configkeys.KeyOpenAICompatAPIKey: "The config key is not configured; it is read from the database only. key: llm.openai_compat.api_key",
+				configkeys.KeyOpenAICompatAPIKey: "The config key is not configured. key: llm.openai_compat.api_key",
 				configkeys.KeyGeminiAPIKey:       "Config key. key: llm.gemini.api_key, source: db",
 			},
 		},
@@ -595,7 +598,7 @@ func Test_LogSources_levels(t *testing.T) {
 				configkeys.KeyGeminiAPIKey:       logrus.ErrorLevel,
 			},
 			expectMsg: map[string]string{
-				configkeys.KeyOpenAICompatAPIKey: "The config key is not configured; it is read from the database only. key: llm.openai_compat.api_key",
+				configkeys.KeyOpenAICompatAPIKey: "The config key is not configured. key: llm.openai_compat.api_key",
 				configkeys.KeyGeminiAPIKey:       "The stored config value can not be used. key: llm.gemini.api_key",
 			},
 		},
@@ -621,11 +624,18 @@ func Test_LogSources_levels(t *testing.T) {
 					continue
 				}
 				seen[key] = true
+				// The MCP OAuth keys are not configured in these cases: a warning like the LLM key.
+				if strings.HasPrefix(key, "mcp_oauth.") {
+					if e.Level != logrus.WarnLevel || e.Message != "The config key is not configured. key: "+key {
+						t.Errorf("Wrong match. key %s expect: a warning that it is not configured, got: %v %q", key, e.Level, e.Message)
+					}
+					continue
+				}
 				if e.Level != tt.expectLevel[key] || !strings.Contains(e.Message, tt.expectMsg[key]) {
 					t.Errorf("Wrong match. key %s expect: %v %q, got: %v %q", key, tt.expectLevel[key], tt.expectMsg[key], e.Level, e.Message)
 				}
 			}
-			if len(seen) != 2 {
+			if len(seen) != len(configkeys.Keys()) {
 				t.Errorf("Wrong match. expect: a line per key, got: %v", seen)
 			}
 		})

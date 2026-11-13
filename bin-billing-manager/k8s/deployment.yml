@@ -63,6 +63,12 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: PADDLE_API_KEY
+            - name: BILLING_CONFIG_ENCRYPTION_KEYS
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: BILLING_CONFIG_ENCRYPTION_KEYS
+                  optional: true
             - name: PADDLE_PRICE_ID_BASIC
               valueFrom:
                 secretKeyRef:

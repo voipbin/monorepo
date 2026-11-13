@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	hmhook "monorepo/bin-hook-manager/models/hook"
 
 	"github.com/sirupsen/logrus"
@@ -106,9 +108,19 @@ func (h *serviceHandler) Billing(ctx context.Context, r *http.Request) error {
 	req := &hmhook.Hook{
 		ReceivedURI:  r.Host + r.URL.Path,
 		ReceivedData: data,
+
+		// The header is forwarded as received so that billing can verify it again against the
+		// secret it holds. The value is never logged by this function after verification.
+		ReceivedSignature: sig,
 	}
 
 	if err := h.reqHandler.BillingV1PaddleHook(ctx, req); err != nil {
+		// Only an explicit rejection of the signature by billing (unauthorized) is a client
+		// error. Every other failure, including a bad request answer, keeps the existing
+		// behavior (not a ValidationError, so the HTTP layer answers 500).
+		if errors.Is(err, requesthandler.ErrUnauthorized) {
+			return &ValidationError{fmt.Errorf("billing rejected the webhook signature: %w", err)}
+		}
 		return fmt.Errorf("could not send the hook: %w", err)
 	}
 

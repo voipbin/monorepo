@@ -1,11 +1,12 @@
 // Package aiconfig wires the stored configuration of bin-ai-manager: the master key, the
-// registry and the suppliers that hand the platform LLM keys to the
-// handlers at the time of use.
+// registry, the suppliers that hand the platform LLM keys to the handlers at the time of use, and
+// the resolver of the MCP OAuth app of a vendor.
 package aiconfig
 
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -39,6 +40,11 @@ const (
 // value). The error holds no key text.
 var ErrKeyUnavailable = errors.New("the platform LLM key could not be read")
 
+// ErrMCPOAuthIncomplete is returned when the client_secret of an MCP OAuth app has a stored row
+// but the client_id has none (or an empty one). The group is then read from the database only, so
+// the environment value of the client_id is not used. The error holds no value.
+var ErrMCPOAuthIncomplete = errors.New("the MCP OAuth app is stored incompletely")
+
 // KeyFunc hands a platform key to a handler at the time of use. An empty value with no error means
 // "not configured".
 type KeyFunc = func(ctx context.Context) (string, error)
@@ -51,6 +57,9 @@ type KeyFunc = func(ctx context.Context) (string, error)
 // older key lists of this service stop the start on an error; this one does not, so that a
 // mistake in a list that is new does not take the LLM calls down.
 // The only error is an invalid registry, which is a programming error.
+//
+// The environment is read with os.LookupEnv for the keys that declare an environment name (the MCP
+// OAuth app keys). The platform LLM keys declare none, so they are never read from the environment.
 func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Option) (confighandler.Handler, error) {
 	reg, err := configkeys.NewRegistry()
 	if err != nil {
@@ -63,7 +72,7 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 		crypto, _ = secretcrypto.New("", secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
 	}
 
-	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
+	return confighandler.NewHandler(reg, store, crypto, os.LookupEnv, opts...), nil
 }
 
 // supplierConfig is the setting of a supplier.
@@ -102,6 +111,67 @@ func Supplier(h confighandler.Handler, key string, opts ...SupplierOption) KeyFu
 
 		return secret.Reveal(), nil
 	}
+}
+
+// mcpOAuthReadAttempts is the number of times the pair is read when the two reads disagree about
+// the source of the group (a write landed between them).
+const mcpOAuthReadAttempts = 2
+
+// MCPOAuthClient resolves the (client_id, client_secret) pair of the MCP OAuth app of a vendor.
+//
+// The pair comes from one source: the database when the client_secret (the anchor of the group) has
+// a stored row, the environment otherwise. With a stored client_secret and no stored client_id the
+// result is ErrMCPOAuthIncomplete, never the environment client_id. A read error or a stored value
+// that can not be decrypted is returned as ErrKeyUnavailable and is never replaced by the
+// environment. Neither set is not an error: the result is an empty pair ("not configured").
+// An unknown vendor is an error. No value is part of an error text.
+func MCPOAuthClient(ctx context.Context, h confighandler.Handler, vendor string, opts ...SupplierOption) (clientID, clientSecret string, err error) {
+	secretKey, ok := configkeys.MCPOAuthClientSecretKey(vendor)
+	idKey, _ := configkeys.MCPOAuthClientIDKey(vendor)
+	if !ok {
+		return "", "", fmt.Errorf("unknown MCP OAuth vendor: %q", vendor)
+	}
+
+	c := &supplierConfig{timeout: defaultReadTimeout}
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	cctx, cancel := context.WithTimeout(ctx, c.timeout)
+	defer cancel()
+
+	for attempt := 0; attempt < mcpOAuthReadAttempts; attempt++ {
+		secret, rs, errSecret := h.Secret(cctx, secretKey)
+		if errSecret != nil {
+			return "", "", fmt.Errorf("%w: %w", ErrKeyUnavailable, errSecret)
+		}
+
+		id, ri, errID := h.String(cctx, idKey)
+		if errID != nil {
+			return "", "", fmt.Errorf("%w: %w", ErrKeyUnavailable, errID)
+		}
+
+		switch {
+		case rs.Source == confighandler.SourceDB:
+			// The group is read from the database only.
+			if ri.Source != confighandler.SourceDB || id == "" {
+				return "", "", fmt.Errorf("%w: key %s has no stored client_id", ErrMCPOAuthIncomplete, secretKey)
+			}
+
+			return id, secret.Reveal(), nil
+
+		case ri.Source == confighandler.SourceDB:
+			// The client_secret had no row but the client_id has one: the client_secret row was
+			// written between the two reads. Read the pair again.
+			continue
+
+		default:
+			// Environment or nothing, for both. One side alone is passed on as it is, as before.
+			return id, secret.Reveal(), nil
+		}
+	}
+
+	return "", "", fmt.Errorf("%w: the MCP OAuth app of %q changed while it was read", ErrKeyUnavailable, vendor)
 }
 
 // IsGeminiBaseURL tells whether a base URL is the Gemini OpenAI compatible endpoint.
@@ -156,7 +226,7 @@ func LogSources(ctx context.Context, h confighandler.Handler) {
 
 		switch r.Source {
 		case confighandler.SourceNone:
-			entry.Warnf("The config key is not configured; it is read from the database only. key: %s", r.Key)
+			entry.Warnf("The config key is not configured. key: %s", r.Key)
 		case confighandler.SourceDBUndecryptable, confighandler.SourceDBInvalid:
 			entry.Errorf("The stored config value can not be used. key: %s, source: %s", r.Key, r.Source)
 		default:

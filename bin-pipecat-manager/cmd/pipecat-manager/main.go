@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,8 +11,10 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
+	"monorepo/bin-pipecat-manager/internal/pipecatconfig"
 	"monorepo/bin-pipecat-manager/migrations"
 	"monorepo/bin-pipecat-manager/pkg/cachehandler"
 	"monorepo/bin-pipecat-manager/pkg/dbhandler"
@@ -109,7 +112,7 @@ func initProm(endpoint, listen string) {
 func run() error {
 	log := logrus.WithField("func", "run")
 
-	dbHandler, err := createDBHandler()
+	dbHandler, sqlDB, err := createDBHandler()
 	if err != nil {
 		return errors.Wrapf(err, "could not create dbhandler")
 	}
@@ -147,11 +150,24 @@ func run() error {
 		}
 	}()
 
-	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(requestHandler, notifyHandler, dbHandler, toolHandler, listenIP)
+	// The platform keys of the vendors are stored in the database (the environment value applies
+	// when there is no row). They are read when a session starts and are sent to the runner with
+	// the start request, so a changed key is used by the next session.
+	startupConfig := config.Get()
+	configHandler, errConfig := pipecatconfig.New(&startupConfig, dbhandler.NewConfigStore(sqlDB))
+	if errConfig != nil {
+		return errors.Wrapf(errConfig, "could not create the config handler")
+	}
+	pipecatconfig.LogSources(context.Background(), configHandler)
+
+	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(
+		requestHandler, notifyHandler, dbHandler, toolHandler, listenIP,
+		pipecatcallhandler.WithPlatformKeyResolver(pipecatconfig.NewKeyResolver(configHandler)),
+	)
 	httpHandler := httphandler.NewHTTPHandler(requestHandler, pipecatcallHandler)
 
 	// run listen
-	if errListen := runListen(sockHandler, listenIP, pipecatcallHandler); errListen != nil {
+	if errListen := runListen(sockHandler, listenIP, pipecatcallHandler, configrpc.NewServer(configHandler, serviceName)); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errors.Wrapf(errListen, "could not start runListen")
 	}
@@ -170,8 +186,9 @@ func runListen(
 	sockHandler sockhandler.SockHandler,
 	hostID string,
 	pipecatcallHandler pipecatcallhandler.PipecatcallHandler,
+	configServer *configrpc.Server,
 ) error {
-	listenHandler := listenhandler.NewListenHandler(sockHandler, pipecatcallHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, pipecatcallHandler, configServer)
 
 	// run
 	listenQueue := fmt.Sprintf("%s.%s", commonoutline.QueueNamePipecatRequest, hostID)
@@ -193,31 +210,32 @@ func runHTTP(httpHandler httphandler.HTTPHandler) error {
 }
 
 // createDBHandler connects to the database, applies the schema migrations and connects to the cachehandler
-func createDBHandler() (dbhandler.DBHandler, error) {
+// It also returns the database connection, which the config store uses.
+func createDBHandler() (dbhandler.DBHandler, *sql.DB, error) {
 	// connect to database
 	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
 		logrus.Errorf("Could not access to database. err: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	// apply the schema migrations of the owned table before the cache and anything else use it
 	if errMigrate := migrationhandler.Run(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable); errMigrate != nil {
 		logrus.Errorf("Could not apply the database migrations. err: %v", errMigrate)
-		return nil, errMigrate
+		return nil, nil, errMigrate
 	}
 
 	// connect to cache
 	cache := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
 	if err := cache.Connect(); err != nil {
 		logrus.Errorf("Could not connect to cache server. err: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	// create dbhandler
 	dbHandler := dbhandler.NewHandler(db, cache)
 
-	return dbHandler, nil
+	return dbHandler, db, nil
 }
 
 // logStartup logs the settings at startup. The credentials of the config are left out on purpose.

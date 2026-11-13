@@ -31,8 +31,7 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `local_llm_models` | `LOCAL_LLM_MODELS` | JSON list of operator-registered local (self-hosted OpenAI-compatible) models: `[{"endpoint","id","label","capabilities","default"}]`. No URL or key. Empty means none. `ai-manager` and `ai-control` both read it (`ai-control` needs it to accept `local.` models). Invalid entries are skipped and logged as an error (counts only); the service still starts. The connection details live in the runner only (`LOCAL_LLM_ENDPOINTS`, see bin-pipecat-manager). | no |
 | `engine_base_key_encryption_keys` | `ENGINE_BASE_KEY_ENCRYPTION_KEYS` | Comma-separated `<version>:<base64 32 bytes>` pairs (same format as `MCP_SECRET_ENCRYPTION_KEYS`, a separate key set) for the keys customers store with `customendpoint.` models. The highest version encrypts, every listed version decrypts. A malformed value stops the start; empty starts with a warning and storing an endpoint key then fails with a server error. Generate with `openssl rand -base64 32`, prefix `1:`. Losing the key set makes stored endpoint keys unusable (fail closed; customers send the key again). Rotation: add the new version to every replica first, in a quiet window; keep retired versions until no row uses them. The Komodo variable `BIN_MANAGER__AI_MANAGER_ENGINE_BASE_KEY_ENCRYPTION_KEYS` must exist before the merge (a missing variable stops the container), and the separate operator install repository must carry the same variable. The container env name `ENGINE_BASE_KEY_ENCRYPTION_KEYS` has no service prefix, while the Komodo variable carries the `AI_MANAGER_` prefix because only ai-manager uses it. | no |
 | (no flag) | `AI_CONFIG_ENCRYPTION_KEYS` | Master key list of the stored platform keys: comma-separated `<version>:<base64 32 bytes>`. Environment only, never a flag. Unlike `ENGINE_BASE_KEY_ENCRYPTION_KEYS` and `MCP_SECRET_ENCRYPTION_KEYS`, a malformed or empty value does not stop the start: the service logs the problem (never the value), refuses to store a secret and reports the stored keys as undecryptable | no |
-| `mcp_oauth_asana_client_id` | `MCP_OAUTH_ASANA_CLIENT_ID` | Asana OAuth app client_id for MCP server OAuth. Empty keeps the service startable; the Asana connection then fails at Asana | no |
-| `mcp_oauth_asana_client_secret` | `MCP_OAUTH_ASANA_CLIENT_SECRET` | Asana OAuth app client_secret for MCP server OAuth | no |
+| (no flag) | `MCP_OAUTH_GITHUB_CLIENT_ID`, `MCP_OAUTH_GITHUB_CLIENT_SECRET`, `MCP_OAUTH_LINEAR_CLIENT_ID`, `MCP_OAUTH_LINEAR_CLIENT_SECRET`, `MCP_OAUTH_ASANA_CLIENT_ID`, `MCP_OAUTH_ASANA_CLIENT_SECRET`, `MCP_OAUTH_HUBSPOT_CLIENT_ID`, `MCP_OAUTH_HUBSPOT_CLIENT_SECRET` | OAuth app (client_id and client_secret) of each MCP vendor. Environment only, no flag: they are read with `os.LookupEnv` when a request needs them, and only while the vendor has no stored client_secret. A stored app (database) wins; see "MCP OAuth app credentials" below. Empty keeps the service startable; the connection of that vendor then fails at the vendor. A `client_id` value is limited to 256 bytes | no |
 | `aicall_conversation_idle_timeout_hours` | `AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS` | Hours before idle AIcall expires | no |
 | `aicall_draft_decision_expiry_seconds` | `AICALL_DRAFT_DECISION_EXPIRY_SECONDS` | Seconds after its creation during which an SMS, email or call draft card can still be approved or rejected. Default `600`; a value of zero or less uses `600`. Evaluated on each decision, there is no timer | no |
 | `aicall_insight_session_idle_minutes` | `AICALL_INSIGHT_SESSION_IDLE_MINUTES` | Idle minutes after which reopening an Insight Case panel starts a NEW assistant session: the customer prompt is refreshed from the AI's current prompt and only rows from the new session are replayed to the model. `0` or less disables the refresh. Default `30` | no |
@@ -91,7 +90,7 @@ With no key for the analysis engine's provider, `GET /v1/ai_builder/status` quie
 
 ## Platform LLM keys
 
-The platform LLM keys are two stored settings. They are read from the database only: a key without a stored row is not configured (an empty key), and the environment variables `ENGINE_KEY_CHATGPT` and `GOOGLE_API_KEY` are not read by this service any more. Enter each key with `ai-control config set` or the admin API; `config clear` removes the key, and the key is then not configured.
+The two platform LLM keys are stored settings. They are read from the database only: a key without a stored row is not configured (an empty key), and the environment variables `ENGINE_KEY_CHATGPT` and `GOOGLE_API_KEY` are not read by this service any more. Enter each key with `ai-control config set` or the admin API; `config clear` removes the key, and the key is then not configured.
 
 | Stored key | Used by |
 |------------|---------|
@@ -123,6 +122,43 @@ Rotation:
 `GOOGLE_API_KEY` is also an input of the pipecat service, which reads it from its own environment (this service does not read it). After a Gemini key rotation, replace the stored key and update the pipecat environment variable as well (and restart the runner); the stored value does not reach pipecat.
 
 Recovery: a stored value that can not be decrypted (the master key is missing, mistyped or changed) is not replaced by an empty key. The calls that need that key fail with an unavailable key, `config list` shows `db_undecryptable`, and the startup logs an error line. Restore the master key list, or run `config clear --key <key>` and set the key again. A deployment that has no `AI_CONFIG_ENCRYPTION_KEYS` starts normally; `config set` is refused and a stored key is reported as undecryptable.
+
+## MCP OAuth app credentials
+
+The OAuth app of each MCP vendor (GitHub, Linear, Asana, HubSpot) is a pair of settings, a `client_id` and a `client_secret`, that is read each time a request needs it (connect start, connect completion, and the token refresh). Nothing is cached, so a change is used by the next request of every replica, with no restart.
+
+| Stored key | Kind | Environment name used when nothing is stored |
+|------------|------|----------------------------------------------|
+| `mcp_oauth.<vendor>.client_secret` | secret (encrypted), the anchor of the pair | `MCP_OAUTH_<VENDOR>_CLIENT_SECRET` |
+| `mcp_oauth.<vendor>.client_id` | parameter (plain text, at most 256 bytes) | `MCP_OAUTH_<VENDOR>_CLIENT_ID` |
+
+`<vendor>` is `github`, `linear`, `asana` or `hubspot`.
+
+Resolution order is `database`, then `environment`, and it is decided for the pair as a whole by the `client_secret` row:
+
+- No `client_secret` row: both values come from the environment (as before this feature). A vendor with neither value is "not configured": the connect start still builds the authorize URL with an empty `client_id` and the vendor refuses it, as before.
+- A `client_secret` row: both values come from the database only. The environment values are not used, not even for a missing `client_id`. A stored `client_secret` without a stored `client_id` is an error for that vendor (connect start and completion fail with a server error, `MCP_OAUTH_CREDENTIALS_UNAVAILABLE`, and a refresh returns the error), never an environment fallback.
+- A database read error or a stored value that can not be decrypted is also an error, never an environment fallback. A failed resolution before the token call spends no refresh token and sets no backoff, so the next request tries again.
+
+Operating rules:
+
+1. **Write order: `client_id` first, `client_secret` last.** The `client_secret` row switches the pair to the database, so it must be the last write; with the `client_id` written first the pair is never half stored. The `client_id` is a plain parameter (`KindParam`): it can only be written with `ai-control config set`, not with the admin API (`/service_configs/ai`), and its value is readable in the history. The `client_secret` can be written with either.
+2. **Removal: clear both keys.** Clear the `client_secret` and the `client_id`. If only the `client_secret` is cleared, the pair goes back to the environment values while a stored `client_id` row is left behind and ignored.
+3. **Use the same app.** The refresh token of an already connected MCP server is bound to the app that issued it. Store the `client_id` and `client_secret` of the same vendor app that the environment holds now; a different app breaks every connection of that vendor until the customer reconnects.
+4. **Do not store the pair while a rolling deploy is half done.** An older replica reads the environment only, so replicas would use different apps.
+5. **Check the length of the environment `client_id` first.** The 256 byte limit applies to a `client_id` that comes from the environment too. A longer value is an error for that vendor and does not fall back to anything.
+6. The deployment keeps passing the eight environment variables (they stay valid as the fallback until the pair is stored).
+
+```bash
+# client_id first (plain text, still read from stdin), then the client_secret
+printf '%s\n' "$CLIENT_ID" | ./ai-control config set --key mcp_oauth.github.client_id --actor-id <uuid>
+printf '%s\n' "$CLIENT_SECRET" | ./ai-control config set --key mcp_oauth.github.client_secret --actor-id <uuid>
+./ai-control config list
+```
+
+`ai-control config list` reads the environment of the process that runs the command, not the one of the daemon. The daemon reads the vendor values from its own environment, so a vendor that the daemon serves from its environment can show as `none` in a command that was started without those variables. The service logs the source of every key at start (key name and source, never a value), and a vendor that is not configured is a warning there.
+
+The token refresh runs detached from the request that triggered it. It resolves the pair once, at the start of the exchange (bounded to 2 seconds), and all callers that share the exchange share that result; a rotation of the app during an exchange applies from the next exchange.
 
 ## Prometheus Metrics
 

@@ -31,7 +31,7 @@ func Test_pythonRunner_transportErrors(t *testing.T) {
 	id := uuid.FromStringOrNil("a1b2c3d4-5001-4000-8000-000000000001")
 
 	start := func() error {
-		return (&pythonRunner{}).Start(context.Background(), id, "openai.gpt-5", "", nil, "", "", "", "", "", nil, nil, nil, false, uuid.Nil, "", "")
+		return (&pythonRunner{}).Start(context.Background(), id, "openai.gpt-5", "", nil, "", "", "", "", "", nil, nil, nil, false, uuid.Nil, "", "", nil)
 	}
 	stop := func() error {
 		return (&pythonRunner{}).Stop(context.Background(), id)

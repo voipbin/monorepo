@@ -13,6 +13,13 @@ import (
 	amai "monorepo/bin-ai-manager/models/ai"
 )
 
+// Names of the environment variables that the service reads without a flag.
+const (
+	// EnvConfigEncryptionKeys is the environment variable of the master key list of the stored
+	// platform keys. Only the Go service reads it; the python runner never gets it.
+	EnvConfigEncryptionKeys = "PIPECAT_CONFIG_ENCRYPTION_KEYS"
+)
+
 // Config holds the application configuration
 type Config struct {
 	DatabaseDSN             string
@@ -22,6 +29,13 @@ type Config struct {
 	RedisAddress            string
 	RedisDatabase           int
 	RedisPassword           string
+
+	// ConfigEncryptionKeys is the master key list of the stored platform keys
+	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
+	// command line flag. A value that can not be parsed does not stop the service: the stored
+	// secrets can not be used then (they are reported as undecryptable and the runner falls back
+	// to its own environment).
+	ConfigEncryptionKeys string
 }
 
 var (
@@ -66,6 +80,12 @@ func bindConfig(cmd *cobra.Command) error {
 		"local_llm_models":          "LOCAL_LLM_MODELS",
 	}
 
+	// the master key list of the stored platform keys has no flag: a flag value would show in
+	// the process list.
+	if errBind := viper.BindEnv("pipecat_config_encryption_keys", EnvConfigEncryptionKeys); errBind != nil {
+		return errors.Wrapf(errBind, "could not bind the env. key: %s", EnvConfigEncryptionKeys)
+	}
+
 	for flagKey, envKey := range bindings {
 		if errBind := viper.BindPFlag(flagKey, f.Lookup(flagKey)); errBind != nil {
 			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
@@ -99,6 +119,7 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDatabase:           viper.GetInt("redis_database"),
+			ConfigEncryptionKeys:    viper.GetString("pipecat_config_encryption_keys"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

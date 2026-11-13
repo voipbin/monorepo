@@ -119,10 +119,10 @@ func expectPythonStartStop(mockPython *MockPythonRunner, pcID uuid.UUID) (<-chan
 
 	mockPython.EXPECT().Start(
 		gomock.Any(), pcID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 	).DoAndReturn(func(
 		ctx context.Context, _ uuid.UUID, _ string, _ string, _ []map[string]any, _ string, _ string, _ string, _ string, _ string,
-		_ []aitool.Tool, _ *resolvedTeamData, _ *amai.VADConfig, _ bool, _ uuid.UUID, _ string, _ string,
+		_ []aitool.Tool, _ *resolvedTeamData, _ *amai.VADConfig, _ bool, _ uuid.UUID, _ string, _ string, _ any,
 	) error {
 		ctxCh <- ctx
 		return nil

@@ -26,7 +26,6 @@ func (h *mcpOAuthHandler) Start(ctx context.Context, customerID uuid.UUID, vendo
 	if !h.isValidVendor(vendor) {
 		return "", "", cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_OAUTH_VENDOR", "unknown oauth vendor: "+vendor)
 	}
-	vc := h.vendors[vendor]
 
 	// Reconnect ownership check (design §9, Round 1 IDOR fix): a bare
 	// mcp_server_id must be verified to belong to the requesting
@@ -57,6 +56,14 @@ func (h *mcpOAuthHandler) Start(ctx context.Context, customerID uuid.UUID, vendo
 				"The MCP server was not found.",
 			)
 		}
+	}
+
+	// Resolve the vendor app once, after the ownership check and before any
+	// state row exists, so a failed read leaves no orphan row. The result is
+	// fixed for this request.
+	vc, err := h.resolveVendor(ctx, vendor)
+	if err != nil {
+		return "", "", cerrors.Internal(commonoutline.ServiceNameAIManager, "MCP_OAUTH_CREDENTIALS_UNAVAILABLE", "the oauth app of the vendor could not be read").Wrap(err)
 	}
 
 	state, err := generateRandomToken(32)

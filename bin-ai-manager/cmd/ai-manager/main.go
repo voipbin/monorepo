@@ -183,18 +183,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		log.Errorf("Could not create mcp server handler. err: %v", err)
 		return err
 	}
-	mcpOAuthHandler, err := mcpoauthhandler.NewMcpOAuthHandler(
-		db,
-		cfg.McpSecretEncryptionKeys,
-		cfg.McpOAuthGithubClientID,
-		cfg.McpOAuthGithubClientSecret,
-		cfg.McpOAuthLinearClientID,
-		cfg.McpOAuthLinearClientSecret,
-		cfg.McpOAuthAsanaClientID,
-		cfg.McpOAuthAsanaClientSecret,
-		cfg.McpOAuthHubspotClientID,
-		cfg.McpOAuthHubspotClientSecret,
-	)
+	mcpOAuthHandler, err := mcpoauthhandler.NewMcpOAuthHandler(db, cfg.McpSecretEncryptionKeys, mcpOAuthCredentials(configHandler))
 	if err != nil {
 		log.Errorf("Could not create mcp oauth handler. err: %v", err)
 		return err

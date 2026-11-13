@@ -224,6 +224,11 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		llmBaseKey = ""
 	}
 
+	// The platform keys of the vendors that this session uses, resolved here once for a single AI
+	// and for a team alike. The call runs in the goroutine that starts the runner, in parallel with
+	// the connection to Asterisk.
+	platformKeys := h.sessionPlatformKeys(se.Ctx, pc, se, resolvedTeam)
+
 	if errStart := h.pythonRunner.Start(
 		se.Ctx,
 		pc.ID,
@@ -242,6 +247,7 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 		pc.CustomerID,
 		llmBaseURL,
 		llmBaseKey,
+		platformKeys,
 	); errStart != nil {
 		return errors.Wrapf(errStart, "could not start python client")
 	}

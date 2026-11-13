@@ -21,6 +21,14 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
+// fakeCredentials returns a CredentialsFunc that answers from a fixed map. A vendor that is not in
+// the map is "not configured" (an empty pair).
+func fakeCredentials(m map[string]Credentials) CredentialsFunc {
+	return func(_ context.Context, vendor string) (Credentials, error) {
+		return m[vendor], nil
+	}
+}
+
 // newTestHandler builds an *mcpOAuthHandler wired to mocks, with a real
 // crypto (not exercised by Start/CallbackExists, only relevant for
 // Complete's token-encryption path).
@@ -29,10 +37,12 @@ func newTestHandler(t *testing.T, db dbhandler.DBHandler) *mcpOAuthHandler {
 	h, err := NewMcpOAuthHandler(
 		db,
 		"1:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=",
-		"github-client-id", "github-client-secret",
-		"linear-client-id", "linear-client-secret",
-		"asana-client-id", "asana-client-secret",
-		"hubspot-client-id", "hubspot-client-secret",
+		fakeCredentials(map[string]Credentials{
+			VendorGitHub:  {ClientID: "github-client-id", ClientSecret: "github-client-secret"},
+			VendorLinear:  {ClientID: "linear-client-id", ClientSecret: "linear-client-secret"},
+			VendorAsana:   {ClientID: "asana-client-id", ClientSecret: "asana-client-secret"},
+			VendorHubSpot: {ClientID: "hubspot-client-id", ClientSecret: "hubspot-client-secret"},
+		}),
 	)
 	if err != nil {
 		t.Fatalf("could not build test mcpOAuthHandler: %v", err)
@@ -438,12 +448,10 @@ func Test_Complete_ReconnectSuccessPersistsTokens(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	h.vendors[VendorLinear] = vendorConfig{
+	h.vendors[VendorLinear] = vendorMeta{
 		MCPServerURL: "https://mcp.linear.app/mcp",
 		AuthorizeURL: "https://linear.app/oauth/authorize",
 		TokenURL:     srv.URL,
-		ClientID:     "linear-client-id",
-		ClientSecret: "linear-client-secret",
 	}
 	h.httpClient = &http.Client{Timeout: 2 * time.Second}
 

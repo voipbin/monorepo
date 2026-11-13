@@ -15,23 +15,76 @@ All Go flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
 | `log_level` | `LOG_LEVEL` | Log level: `debug`, `info`, `warn` or `error` (case-insensitive). Debug lines are written only when this is `debug`. Debug lines carry ids and lengths, never conversation text, prompts or model answers (VOIP-1633). Applies to the Go service and its control CLI only | `info` |
 | `local_llm_models` | `LOCAL_LLM_MODELS` | JSON list of operator-registered local models (no URL or key); same value as ai-manager. Read through `config.LocalLLMModels()`, deliberately not a `Config` field, so a log of the whole `Config` can never include it. Invalid entries are skipped and logged as an error (counts only). | no |
+| (no flag) | `PIPECAT_CONFIG_ENCRYPTION_KEYS` | Master key list that encrypts the stored platform keys (`<version>:<base64 32 bytes>[,...]`). Environment only, never a flag, never logged. Mapped to the Go containers `pipecat-manager-1` and `-2` only; the Python runner containers do not get it. Without a valid list the service starts, the stored secrets are reported as undecryptable and nothing can be written | no |
 | `POD_IP` | `POD_IP` | Per-container identity (`pipecat-manager-1` / `-2` in `komodo/docker-compose.yml`); used as HostID for per-pod routing | yes |
 
 Python environment variables (set in `.env` or exported):
 
 | Env | Purpose |
 |-----|---------|
-| `OPENAI_API_KEY` | OpenAI LLM |
-| `XAI_API_KEY` | Grok (xAI) LLM |
-| `GOOGLE_API_KEY` | Gemini LLM only (passed explicitly to `GoogleLLMService`) |
-| `OPENROUTER_API_KEY` | Platform-held OpenRouter key for catalog models routed as `platform_openrouter.<slug>` (Claude, Llama, DeepSeek, Qwen, Mistral). Read only by the Python runner, never from the customer `engine_key`. Requests are sent with ZDR routing (`zdr`, `data_collection: deny`, `require_parameters`). An empty key makes these models fail at runner init with `OpenRouter is not configured`; an invalid non-empty key yields the provider authentication error like any other provider key (no special casing). |
-| `LOCAL_LLM_ENDPOINTS` | Secret JSON object `{"<endpoint>": {"base_url": "http://host:8000/v1", "api_key": ""}}` for `local.<endpoint>.<id>` models. Injected into the runner containers only; Go services never read it. `base_url` must be http or https without user information, query or fragment. An empty `api_key` becomes a fixed placeholder (never the `OPENAI_API_KEY`). A malformed value, a rule-violating entry or a missing endpoint fails the session start with the fixed message `local engine model is not available`; the value, URL and key are never put in an error or log line. The loaded endpoint count is logged at runner start. Do not set `OPENAI_ORG_ID` or `OPENAI_PROJECT_ID` on the runner. |
+| `OPENAI_API_KEY` | OpenAI LLM. Order of use: the key of the customer, then the stored `openai.api_key` of the request (`platform_keys`), then this variable |
+| `XAI_API_KEY` | Grok (xAI) LLM. Order of use: the key of the customer, then the stored `xai.api_key`, then this variable |
+| `GOOGLE_API_KEY` | Gemini LLM only (passed explicitly to `GoogleLLMService`). Order of use: the key of the customer, then the stored `google.api_key`, then this variable |
+| `OPENROUTER_API_KEY` | Platform-held OpenRouter key for catalog models routed as `platform_openrouter.<slug>` (Claude, Llama, DeepSeek, Qwen, Mistral). Read by the Python runner only, never from the customer `engine_key`; the stored `openrouter.api_key` of the request is used first and this variable is the fallback. Requests are sent with ZDR routing (`zdr`, `data_collection: deny`, `require_parameters`). An empty key makes these models fail at runner init with `OpenRouter is not configured`; an invalid non-empty key yields the provider authentication error like any other provider key (no special casing). |
+| `LOCAL_LLM_ENDPOINTS` | Secret JSON object `{"<endpoint>": {"base_url": "http://host:8000/v1", "api_key": ""}}` for `local.<endpoint>.<id>` models. The runner reads it from its own environment as the fallback; the Go service can also hold the same value in the database (`local_llm.endpoints`, see "Stored platform keys") and sends it with the start request, and a value in the request replaces this variable as a whole for that session (they are not merged). The Go containers do not have this variable. `base_url` must be http or https without user information, query or fragment. An empty `api_key` becomes a fixed placeholder (never the `OPENAI_API_KEY`). A malformed value, a rule-violating entry or a missing endpoint fails the session start with the fixed message `local engine model is not available`; the value, URL and key are never put in an error or log line. The loaded endpoint count is logged at runner start. Do not set `OPENAI_ORG_ID` or `OPENAI_PROJECT_ID` on the runner. |
 | `ANTHROPIC_API_KEY` | Not used today. The runner's LLM dispatch (`run.py`) handles only OpenAI, Grok and Gemini, and no deployment provisions this key. |
-| `DEEPGRAM_API_KEY` | Deepgram STT |
-| `CARTESIA_API_KEY` | Cartesia TTS |
+| `DEEPGRAM_API_KEY` | Deepgram STT. Order of use: the stored `deepgram.api_key` of the request, then this variable |
+| `CARTESIA_API_KEY` | Cartesia TTS. Order of use: the stored `cartesia.api_key` of the request, then this variable |
 | `LOG_LEVEL` | Runner log level: `DEBUG`, `INFO`, `WARNING`, `ERROR` or `CRITICAL` (case-insensitive). Unset or invalid means `INFO` (an invalid value logs one warning). Read from the process environment at start; a `.env` value is not used, because `load_dotenv` runs after the imports. Policy (`log_config.py`): pipecat library records are limited to `max(LOG_LEVEL, INFO)`, so `DEBUG` never prints the library's conversation lines (`Generating chat from context`). Library `WARNING` and above records are replaced by `library message withheld (len=N)` (module, function, line and level stay in the JSON record) except from `pipecat.pipeline.worker` and `pipecat.transports.websocket.client`. Runner lines log tool argument keys and lengths and HTTP error body lengths, never the content. Not wired into `komodo/docker-compose.yml`; enabling `DEBUG` needs a literal `LOG_LEVEL=DEBUG` runner env entry and a redeploy. |
-| `ELEVENLABS_API_KEY` | ElevenLabs TTS |
+| `ELEVENLABS_API_KEY` | ElevenLabs TTS. Order of use: the stored `elevenlabs.api_key` of the request, then this variable |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Google Cloud TTS/STT. `GoogleTTSService`/`GoogleSTTService` take no api_key and fall back to Application Default Credentials, so they need a service account key file, not `GOOGLE_API_KEY`. On GKE this came implicitly from the node metadata server; on bare metal the Komodo stack mounts the shared `bin-manager` service account at `/run/secrets/google_service_account.json` (VOIP-1482). |
+
+## Stored platform keys
+
+The platform API keys of the vendors can be stored encrypted in the database (tables `pipecat_configs` and `pipecat_config_histories`) instead of only in the environment. The Go service reads the keys that a session uses when the session starts and sends them to the Python runner in the start request (`platform_keys`). The runner has no database access and no master key. A key that is not stored (or cannot be read) is left out of the request, and the runner uses its own environment variable for it, as before.
+
+| Config key | Environment variable | Used by sessions that run |
+|------------|----------------------|---------------------------|
+| `openai.api_key` | `OPENAI_API_KEY` | an OpenAI model without a key of the customer |
+| `xai.api_key` | `XAI_API_KEY` | a Grok model without a key of the customer |
+| `google.api_key` | `GOOGLE_API_KEY` | a Gemini model without a key of the customer (Google STT and TTS use the service account, not this key) |
+| `openrouter.api_key` | `OPENROUTER_API_KEY` | a platform OpenRouter model (`platform_openrouter.`); a customer key is never used for it |
+| `local_llm.endpoints` | `LOCAL_LLM_ENDPOINTS` | a local model (`local.`); a customer key is never used for it |
+| `deepgram.api_key` | `DEEPGRAM_API_KEY` | Deepgram STT |
+| `cartesia.api_key` | `CARTESIA_API_KEY` | Cartesia TTS |
+| `elevenlabs.api_key` | `ELEVENLABS_API_KEY` | ElevenLabs TTS |
+
+Order of use of a key, per vendor:
+
+| Vendor | Order |
+|--------|-------|
+| OpenAI, Grok, Gemini | key of the customer, then the stored key, then the environment |
+| Deepgram, Cartesia, ElevenLabs | stored key, then the environment |
+| platform OpenRouter, local endpoints | stored key, then the environment (the key of the customer is never used) |
+
+Only the keys of the vendors that the session uses are read and sent. A session with a key of the customer still gets the platform key of the same vendor in the request (the runner prefers the key of the customer).
+
+Manage the keys with the CLI (the value is read from stdin, never from an argument) or the admin API (`/service_configs/pipecat`, project super admin only):
+
+```bash
+printf '%s\n' "$NEW_KEY" | ./pipecat-control config set --key deepgram.api_key --actor-id <uuid>
+./pipecat-control config list
+./pipecat-control config clear --key deepgram.api_key --actor-id <uuid>
+```
+
+Behavior to know:
+
+- A stored value wins over the environment variable of the key. `config clear` makes the environment variable apply again.
+- A change is used by the next session that starts, with no restart. A running session keeps the keys it started with.
+- `config list` and the admin API show the source as seen by the Go process. Only five variables are in the Go container (`OPENAI_API_KEY`, `XAI_API_KEY`, `DEEPGRAM_API_KEY`, `CARTESIA_API_KEY`, `ELEVENLABS_API_KEY`). `GOOGLE_API_KEY`, `OPENROUTER_API_KEY` and `LOCAL_LLM_ENDPOINTS` are in the runner containers only, so `list` shows `none` for these three even when the runner has them. `none` does not mean that the runner has no key. The Go containers are not given the three variables on purpose (no more copies of the secrets).
+- Because the Go process has the five variables, a session without a stored row for one of them sends the environment value of the Go container in the request, which is the value the runner has too. A stored value replaces it.
+- Keys that ai-manager or tts-manager also hold (OpenAI, Google, ElevenLabs) are stored separately here. When one of these is rotated, update both places.
+- `local_llm.endpoints` is one line of JSON (`{"<endpoint>": {"base_url": "...", "api_key": "..."}}`), at most 2020 bytes, and it is stored as a whole. A value in the request replaces the runner's `LOCAL_LLM_ENDPOINTS` for that session; the two are not merged. If the stored text is not valid or has no matching endpoint, the session start fails with the fixed message `local engine model is not available`; it does not fall back to the environment. The list of models still comes from `LOCAL_LLM_MODELS`: a model that is in that list but has no endpoint fails with the same fixed message, as before this change.
+- A secret is written as `secret` in a JSON body; the admin API refuses a body over 4 KB with `INVALID_JSON_BODY` (400). The limit counts bytes, so a value close to 2020 bytes with many characters that JSON escapes can exceed it.
+- The values are never in a log line, an error text, a history row or a response. A key that can not be read (database error, undecryptable value, out of time) is logged once per session as a warning with the key name, the pipecatcall id and a reason (`read_error`, `undecryptable`, `invalid`, `timeout`), and is left out of the request, so the runner uses its own environment for it. All keys of a session are read within 2 seconds in total.
+- A value longer than the limit of its key can not be written; a long value that is only in the environment is passed on unchanged.
+
+Prerequisites before storing a key (storing earlier is harmless but a session may ignore it):
+
+1. Create the Komodo variable `BIN_MANAGER__PIPECAT_MANAGER_CONFIG_ENCRYPTION_KEYS` before the deploy. A missing Komodo variable stops the containers from starting; an empty value starts the service and only refuses writes.
+2. Deploy the new image to both Go containers and both runner containers. An old runner ignores `platform_keys`, so a key stored before that is not used by sessions that land on it.
+3. Check the current length of `LOCAL_LLM_ENDPOINTS` before moving it into the database: more than 2020 bytes can not be stored.
+4. Check one session of each vendor that you stored a key for.
 
 ## Prometheus Metrics
 
@@ -85,13 +138,15 @@ The Go side handles every RTVI `error` message from the runner (pipecat's pipeli
 ./bin/pipecat-control pipecatcall send-message --id <uuid> --message <text>
 ```
 
+Stored platform keys (database only, no Redis or RabbitMQ; see "Stored platform keys"): `./bin/pipecat-control config list|set|clear`. A `pipecatcall start` from this CLI resolves the keys the same way as the daemon.
+
 Migration status (database only, no Redis or RabbitMQ): `./bin/pipecat-control migrate status`.
 
 Requires `soxr` system library installed.
 
 ## Database Migrations
 
-The service applies the migrations of its table `pipecat_pipecatcalls` itself (`migrations/`, embedded) on every start of `pipecat-manager`, after the database connection and before the cache and RabbitMQ; version table `pipecat_schema_migrations`.
+The service applies the migrations of its tables `pipecat_pipecatcalls`, `pipecat_configs` and `pipecat_config_histories` itself (`migrations/`, embedded) on every start of `pipecat-manager`, after the database connection and before the cache and RabbitMQ; version table `pipecat_schema_migrations`.
 
 | Situation | Behavior | Action |
 |-----------|----------|--------|
