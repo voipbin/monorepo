@@ -11,7 +11,7 @@ Prerequisites
 
 .. note:: **AI Implementation Hint**
 
-   The examples use obviously fake values. Never place a real secret in a document, a log or a chat message. A secret is accepted only in the request body of ``PUT /number_providers/{provider_name}/secret``, never in the URL. That request stores the secret in the database row only, and the platform does not read it now; the secret that is used is the environment variable.
+   The examples use obviously fake values. Never place a real secret in a document, a log or a chat message.
 
 
 List the number providers
@@ -32,7 +32,6 @@ Response (200 OK)
                 "enabled": true,
                 "priority": 10,
                 "has_secret": true,
-                "key_version": 1,
                 "credential_source": "env",
                 "usable": true
             },
@@ -41,7 +40,6 @@ Response (200 OK)
                 "enabled": false,
                 "priority": 20,
                 "has_secret": false,
-                "key_version": 0,
                 "credential_source": "none",
                 "usable": false
             }
@@ -62,7 +60,7 @@ Get one number provider
 
 Store the settings of a provider
 --------------------------------
-Set the non-secret ``config`` (it can also come from ``TELNYX_CONNECTION_ID``, ``TELNYX_PROFILE_ID`` or ``TWILIO_ACCOUNT_SID``). The secret request below is kept for compatibility; it requires the ``config`` keys the provider needs and has no effect on purchases.
+Set the non-secret ``config`` (it can also come from ``TELNYX_CONNECTION_ID``, ``TELNYX_PROFILE_ID`` or ``TWILIO_ACCOUNT_SID``).
 
 Request (settings)
 
@@ -74,16 +72,6 @@ Request (settings)
             "config": {
                 "connection_id": "1234567890123456789"
             }
-        }'
-
-Request (secret, stored but not used)
-
-.. code::
-
-    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/number_providers/telnyx/secret?token=<YOUR_AUTH_TOKEN>' \
-        --header 'Content-Type: application/json' \
-        --data-raw '{
-            "secret": "example-secret-token"
         }'
 
 Response (200 OK)
@@ -98,16 +86,13 @@ Response (200 OK)
             "connection_id": "1234567890123456789"
         },
         "has_secret": true,
-        "key_version": 1,
         "credential_source": "env",
         "usable": true,
         "updated_by": "550e8400-e29b-41d4-a716-446655440000",
-        "secret_updated_by": "00000000-0000-4000-8000-000000000002",
-        "tm_update": "2026-01-03T04:05:06.000000Z",
-        "tm_secret_update": "2026-01-03T04:05:06.000000Z"
+        "tm_update": "2026-01-03T04:05:06.000000Z"
     }
 
-The response shows ``has_secret`` and ``key_version`` only. ``has_secret`` and ``credential_source`` follow the environment variable of the platform, not the stored secret. The secret is never returned.
+``has_secret`` and ``credential_source`` follow the environment variable of the platform. The secret is never returned.
 
 
 Change the purchase order or disable a provider
@@ -124,31 +109,4 @@ Change the purchase order or disable a provider
 
 To remove one ``config`` key, send it with an empty string value, for example ``{"config": {"profile_id": ""}}``.
 
-
-Delete the stored secret
-------------------------
-Use this to remove a stored secret. It changes the stored row only: ``has_secret`` and ``credential_source`` in the response still follow the environment variable, so they stay ``true`` and ``env`` while the variable is set.
-
-.. code::
-
-    $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/number_providers/telnyx/secret?token=<YOUR_AUTH_TOKEN>'
-
-Response (200 OK)
-
-.. code::
-
-    {
-        "provider_name": "telnyx",
-        "enabled": true,
-        "priority": 10,
-        "has_secret": true,
-        "key_version": 0,
-        "credential_source": "env",
-        "usable": true,
-        "updated_by": "550e8400-e29b-41d4-a716-446655440000",
-        "secret_updated_by": "00000000-0000-4000-8000-000000000002",
-        "tm_update": "2026-01-04T05:06:07.000000Z",
-        "tm_secret_update": "2026-01-04T05:06:07.000000Z"
-    }
-
-A known provider for which no request has created a stored setting yet answers ``404``. See the account change warning in :ref:`Overview <number-provider-overview>` before you change the secret variable of a carrier that is in use.
+See the account change warning in :ref:`Overview <number-provider-overview>` before you change the secret variable of a carrier that is in use.

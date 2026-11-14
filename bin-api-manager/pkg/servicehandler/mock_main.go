@@ -39,7 +39,6 @@ import (
 	campaigncall "monorepo/bin-campaign-manager/models/campaigncall"
 	outplan "monorepo/bin-campaign-manager/models/outplan"
 	address "monorepo/bin-common-handler/models/address"
-	configrpc "monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	conference "monorepo/bin-conference-manager/models/conference"
 	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
 	casenote "monorepo/bin-contact-manager/models/casenote"
@@ -3549,21 +3548,6 @@ func (mr *MockServiceHandlerMockRecorder) NumberList(ctx, a, size, token any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberList", reflect.TypeOf((*MockServiceHandler)(nil).NumberList), ctx, a, size, token)
 }
 
-// NumberProviderDeleteSecret mocks base method.
-func (m *MockServiceHandler) NumberProviderDeleteSecret(ctx context.Context, a *auth.AuthIdentity, name string) (*provider.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberProviderDeleteSecret", ctx, a, name)
-	ret0, _ := ret[0].(*provider.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NumberProviderDeleteSecret indicates an expected call of NumberProviderDeleteSecret.
-func (mr *MockServiceHandlerMockRecorder) NumberProviderDeleteSecret(ctx, a, name any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberProviderDeleteSecret", reflect.TypeOf((*MockServiceHandler)(nil).NumberProviderDeleteSecret), ctx, a, name)
-}
-
 // NumberProviderGet mocks base method.
 func (m *MockServiceHandler) NumberProviderGet(ctx context.Context, a *auth.AuthIdentity, name string) (*provider.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -3607,21 +3591,6 @@ func (m *MockServiceHandler) NumberProviderUpdate(ctx context.Context, a *auth.A
 func (mr *MockServiceHandlerMockRecorder) NumberProviderUpdate(ctx, a, name, enabled, priority, config any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberProviderUpdate", reflect.TypeOf((*MockServiceHandler)(nil).NumberProviderUpdate), ctx, a, name, enabled, priority, config)
-}
-
-// NumberProviderUpdateSecret mocks base method.
-func (m *MockServiceHandler) NumberProviderUpdateSecret(ctx context.Context, a *auth.AuthIdentity, name, secret string) (*provider.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberProviderUpdateSecret", ctx, a, name, secret)
-	ret0, _ := ret[0].(*provider.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NumberProviderUpdateSecret indicates an expected call of NumberProviderUpdateSecret.
-func (mr *MockServiceHandlerMockRecorder) NumberProviderUpdateSecret(ctx, a, name, secret any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberProviderUpdateSecret", reflect.TypeOf((*MockServiceHandler)(nil).NumberProviderUpdateSecret), ctx, a, name, secret)
 }
 
 // NumberRenew mocks base method.
@@ -6193,66 +6162,6 @@ func (m *MockServiceHandler) ServiceAgentTransferStart(ctx context.Context, a *a
 func (mr *MockServiceHandlerMockRecorder) ServiceAgentTransferStart(ctx, a, transferType, transfererCallID, transfereeAddresses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTransferStart", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTransferStart), ctx, a, transferType, transfererCallID, transfereeAddresses)
-}
-
-// ServiceConfigGet mocks base method.
-func (m *MockServiceHandler) ServiceConfigGet(ctx context.Context, a *auth.AuthIdentity, service string) (*configrpc.Service, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceConfigGet", ctx, a, service)
-	ret0, _ := ret[0].(*configrpc.Service)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ServiceConfigGet indicates an expected call of ServiceConfigGet.
-func (mr *MockServiceHandlerMockRecorder) ServiceConfigGet(ctx, a, service any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceConfigGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceConfigGet), ctx, a, service)
-}
-
-// ServiceConfigKeyClear mocks base method.
-func (m *MockServiceHandler) ServiceConfigKeyClear(ctx context.Context, a *auth.AuthIdentity, service, key string, revision int64) (*configrpc.Key, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceConfigKeyClear", ctx, a, service, key, revision)
-	ret0, _ := ret[0].(*configrpc.Key)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ServiceConfigKeyClear indicates an expected call of ServiceConfigKeyClear.
-func (mr *MockServiceHandlerMockRecorder) ServiceConfigKeyClear(ctx, a, service, key, revision any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceConfigKeyClear", reflect.TypeOf((*MockServiceHandler)(nil).ServiceConfigKeyClear), ctx, a, service, key, revision)
-}
-
-// ServiceConfigKeyHistoryList mocks base method.
-func (m *MockServiceHandler) ServiceConfigKeyHistoryList(ctx context.Context, a *auth.AuthIdentity, service, key, pageToken string, pageSize int) (*configrpc.HistoryList, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceConfigKeyHistoryList", ctx, a, service, key, pageToken, pageSize)
-	ret0, _ := ret[0].(*configrpc.HistoryList)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ServiceConfigKeyHistoryList indicates an expected call of ServiceConfigKeyHistoryList.
-func (mr *MockServiceHandlerMockRecorder) ServiceConfigKeyHistoryList(ctx, a, service, key, pageToken, pageSize any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceConfigKeyHistoryList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceConfigKeyHistoryList), ctx, a, service, key, pageToken, pageSize)
-}
-
-// ServiceConfigKeySecretSet mocks base method.
-func (m *MockServiceHandler) ServiceConfigKeySecretSet(ctx context.Context, a *auth.AuthIdentity, service, key, secret string, revision int64) (*configrpc.Key, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceConfigKeySecretSet", ctx, a, service, key, secret, revision)
-	ret0, _ := ret[0].(*configrpc.Key)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ServiceConfigKeySecretSet indicates an expected call of ServiceConfigKeySecretSet.
-func (mr *MockServiceHandlerMockRecorder) ServiceConfigKeySecretSet(ctx, a, service, key, secret, revision any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceConfigKeySecretSet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceConfigKeySecretSet), ctx, a, service, key, secret, revision)
 }
 
 // SpeakingCreate mocks base method.

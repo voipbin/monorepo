@@ -128,7 +128,6 @@ What you can build
    :caption: Billing & Operations
 
    billing_account
-   service_config
    storage
    tag
 
