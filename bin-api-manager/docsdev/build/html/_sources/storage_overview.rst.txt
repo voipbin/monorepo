@@ -74,7 +74,7 @@ Core file management operations.
 
 .. note:: **AI Implementation Hint**
 
-   ``POST /storage_files`` only accepts two multipart form fields: ``file`` (the binary content) and ``type`` (required, either ``rag`` for a knowledge base file or ``media`` for a file to attach to a message, see :ref:`Message Overview <message-overview>`). Any other form field (e.g. ``name``) is ignored -- the resulting file record's ``name`` and ``detail`` fields are always empty for files created through this endpoint. The maximum upload size is 30 MB. This endpoint requires **CustomerAdmin** or **CustomerManager** permission.
+   ``POST /storage_files`` only accepts two multipart form fields: ``file`` (the binary content) and ``type`` (required, either ``rag`` for a knowledge base file or ``media`` for a file to attach to a message or an email, see :ref:`Message Overview <message-overview>` and :ref:`Email Overview <email-overview>`). Any other form field (e.g. ``name``) is ignored -- the resulting file record's ``name`` and ``detail`` fields are always empty for files created through this endpoint. The maximum upload size is 30 MB. This endpoint requires **CustomerAdmin** or **CustomerManager** permission.
 
 .. code::
 

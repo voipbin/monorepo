@@ -8,9 +8,9 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-email-manager/models/email"
 	mmailgun "monorepo/bin-email-manager/models/mailgun"
-	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/mailgun/mailgun-go/v4"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -110,8 +110,9 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 	if errVar := message.AddVariable(mmailgun.UserVariableMessageID, m.ID.String()); errVar != nil {
 		return "", errors.Wrapf(errVar, "could not add the message id variable. email_id: %s", m.ID)
 	}
+	usedNames := map[string]bool{}
 	for _, a := range m.Attachments {
-		filename, data, err := h.getAttachment(ctx, &a)
+		filename, data, err := h.getAttachment(ctx, m.CustomerID, &a, usedNames)
 		if err != nil {
 			return "", errors.Wrapf(err, "could not get attachment. reference_type: %s, reference_id: %s", a.ReferenceType, a.ReferenceID)
 		}
@@ -137,36 +138,18 @@ func (h *engineMailgun) Send(ctx context.Context, m *email.Email) (string, error
 	return id, nil
 }
 
-func (h *engineMailgun) getAttachment(ctx context.Context, e *email.Attachment) (string, []byte, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "getAttachment",
-		"attachment": e,
-	})
-
-	var f *smbucketfile.BucketFile
-	var err error
-
-	var filename string
-	switch e.ReferenceType {
-	case email.AttachmentReferenceTypeRecording:
-		f, err = h.reqHandler.StorageV1RecordingGet(ctx, e.ReferenceID, 60000)
-		if err != nil {
-			return "", nil, errors.Wrap(err, "could not get recording")
-		}
-		log.WithField("recording", f).Debugf("Got recording attachment. recording_id: %s", f.ReferenceID)
-
-		filename = fmt.Sprintf("%s.zip", f.ReferenceID)
-
-	default:
-		return "", nil, errors.Errorf("unknown attachment reference type: %v", e.ReferenceType)
+func (h *engineMailgun) getAttachment(ctx context.Context, customerID uuid.UUID, e *email.Attachment, usedNames map[string]bool) (string, []byte, error) {
+	filename, _, downloadURI, err := resolveAttachment(ctx, h.reqHandler, customerID, e)
+	if err != nil {
+		return "", nil, err
 	}
 
 	// Note: Mailgun expects attachment data as raw bytes, so we use `download` here.
 	// In contrast, the Sendgrid engine uses `downloadToBase64` because Sendgrid expects base64-encoded attachments.
-	data, err := download(ctx, f.DownloadURI)
+	data, err := download(ctx, downloadURI)
 	if err != nil {
 		return "", nil, errors.Wrapf(err, "could not download attachment")
 	}
 
-	return filename, data, nil
+	return uniqueFilename(usedNames, filename), data, nil
 }

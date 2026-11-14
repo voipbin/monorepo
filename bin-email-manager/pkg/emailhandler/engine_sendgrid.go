@@ -4,12 +4,11 @@ package emailhandler
 
 import (
 	"context"
-	"fmt"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-email-manager/models/email"
-	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
 
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
@@ -100,8 +99,9 @@ func (h *engineSendgrid) Send(ctx context.Context, m *email.Email) (string, erro
 	message.AddPersonalizations(personalize)
 
 	// add attachments
+	usedNames := map[string]bool{}
 	for _, a := range m.Attachments {
-		attach, err := h.getAttachment(ctx, &a)
+		attach, err := h.getAttachment(ctx, m.CustomerID, &a, usedNames)
 		if err != nil {
 			return "", errors.Wrapf(err, "could not get attachment. reference_type: %s, reference_id: %s", a.ReferenceType, a.ReferenceID)
 		}
@@ -151,32 +151,13 @@ func (h *engineSendgrid) Send(ctx context.Context, m *email.Email) (string, erro
 }
 
 // getAttachment returns the sendgrid attachment from the given email attachment
-func (h *engineSendgrid) getAttachment(ctx context.Context, e *email.Attachment) (*mail.Attachment, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "getAttachment",
-		"attachment": e,
-	})
-
-	var f *smbucketfile.BucketFile
-	var err error
-
-	var fileType, filename string
-	switch e.ReferenceType {
-	case email.AttachmentReferenceTypeRecording:
-		f, err = h.reqHandler.StorageV1RecordingGet(ctx, e.ReferenceID, 60000)
-		if err != nil {
-			return nil, errors.Wrap(err, "could not get recording")
-		}
-		log.WithField("recording", f).Debugf("Got recording attachment. recording_id: %s", f.ReferenceID)
-
-		fileType = "application/zip"
-		filename = fmt.Sprintf("%s.zip", f.ReferenceID)
-
-	default:
-		return nil, errors.Errorf("unknown attachment reference type: %v", e.ReferenceType)
+func (h *engineSendgrid) getAttachment(ctx context.Context, customerID uuid.UUID, e *email.Attachment, usedNames map[string]bool) (*mail.Attachment, error) {
+	filename, fileType, downloadURI, err := resolveAttachment(ctx, h.reqHandler, customerID, e)
+	if err != nil {
+		return nil, err
 	}
 
-	encodedAttachment, err := downloadToBase64(ctx, f.DownloadURI)
+	encodedAttachment, err := downloadToBase64(ctx, downloadURI)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not download attachment")
 	}
@@ -184,7 +165,7 @@ func (h *engineSendgrid) getAttachment(ctx context.Context, e *email.Attachment)
 	res := mail.NewAttachment()
 	res.SetContent(encodedAttachment)
 	res.SetType(fileType)
-	res.SetFilename(filename)
+	res.SetFilename(uniqueFilename(usedNames, filename))
 	res.SetDisposition("attachment") //  "attachment" = download, "inline" = display in email if possible
 
 	return res, nil

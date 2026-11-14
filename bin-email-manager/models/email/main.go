@@ -85,5 +85,6 @@ type AttachmentReferenceType string
 
 const (
 	AttachmentReferenceTypeNone      AttachmentReferenceType = ""
-	AttachmentReferenceTypeRecording AttachmentReferenceType = "recording"
+	AttachmentReferenceTypeRecording AttachmentReferenceType = "recording" // reference_id is a recording id
+	AttachmentReferenceTypeFile      AttachmentReferenceType = "file"      // reference_id is a storage file id (type talk, media or recording)
 )

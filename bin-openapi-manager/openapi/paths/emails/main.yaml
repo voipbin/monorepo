@@ -49,7 +49,7 @@ post:
               description: The content of the email.
               type: string
             attachments:
-              description: List of attachments to include in the email.
+              description: List of attachments to include in the email. Each attachment must belong to the customer. At most 5 attachments, and at most 18 MiB in total (original file sizes). A refused attachment returns 400 (not valid, too many, too large), 404 (not found, deleted or not owned by the customer) or 503 (the attachments could not be checked right now, the request can be retried).
               type: array
               items:
                 $ref: '#/components/schemas/EmailManagerEmailAttachment'

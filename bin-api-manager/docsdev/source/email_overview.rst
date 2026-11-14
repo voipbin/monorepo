@@ -14,7 +14,7 @@ VoIPBin's Email API provides a reliable and scalable email delivery service for 
 With the Email API you can:
 
 - Send plain-text emails to one or more recipients
-- Attach existing VoIPBin resources (e.g. call recordings) to your emails
+- Attach existing VoIPBin resources (call recordings and storage files) to your emails
 - Track email delivery status
 - Integrate email into automated workflows
 
@@ -158,7 +158,12 @@ Send emails through the VoIPBin API with full control over content and formattin
 
 **Email with Attachment:**
 
-Attachments reference an existing VoIPBin resource by ``reference_type`` and ``reference_id`` (for example a call recording) -- you cannot upload arbitrary file content.
+Attachments reference an existing VoIPBin resource by ``reference_type`` and ``reference_id`` -- you cannot upload arbitrary file content in the email request. Two reference types are supported:
+
+- ``recording``: a call recording. The ``reference_id`` is the recording ID, and the files of the recording are attached as one zip file.
+- ``file``: a storage file of type ``talk``, ``media`` or ``recording``, for example an image or a document that was uploaded with ``POST /storage_files`` (type ``media``). The ``reference_id`` is the storage file ID. Files of type ``rag`` can not be attached.
+
+An attachment must belong to your customer account. A file that does not exist, is deleted, or belongs to another customer is answered with ``404`` (the three cases are not told apart). An email can have at most 5 attachments, and the total size of the original files can be at most 18 MiB. An email that breaks a limit, lists an attachment twice, or uses another ``reference_type`` is refused with ``400`` before it is created, and a ``503`` means that the attachments could not be checked right now and the request can be retried.
 
 .. code::
 
@@ -221,7 +226,7 @@ Understanding email structure helps you create effective messages.
    * - content
      - Plain text body of the email. There is no separate HTML body.
    * - attachments
-     - List of attachments referencing existing VoIPBin resources. See :ref:`Attachment <email-struct-attachment>`.
+     - List of attachments referencing existing VoIPBin resources (at most 5, at most 18 MiB in total). See :ref:`Attachment <email-struct-attachment>`.
 
 
 
@@ -388,9 +393,13 @@ Troubleshooting
    * - Symptom
      - Solution
    * - Attachment missing from email
-     - Verify ``reference_type``/``reference_id`` point to an existing, accessible resource (e.g. a recording owned by the same customer)
-   * - Request rejected
-     - Attachments only support referencing existing VoIPBin resources; arbitrary file uploads are not supported
+     - Verify ``reference_type``/``reference_id`` point to an existing, accessible resource (e.g. a recording or a storage file owned by the same customer). A file deleted after the email was created makes the send fail, and the email stays in ``initiated`` status
+   * - Request rejected (400)
+     - Attachments only support referencing existing VoIPBin resources (``recording`` or ``file``); arbitrary file uploads are not supported. At most 5 attachments and 18 MiB in total; a ``file`` must be of type ``talk``, ``media`` or ``recording``
+   * - Request rejected (404)
+     - An attachment was not found, is deleted, or belongs to another customer
+   * - Request rejected (503)
+     - The attachments could not be checked right now; retry the request
 
 
 

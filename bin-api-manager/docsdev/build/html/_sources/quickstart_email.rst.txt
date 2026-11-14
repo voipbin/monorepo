@@ -37,7 +37,7 @@ Send an email by providing the destination, subject, content, and attachments:
             "attachments": []
         }'
 
-To attach a call recording, replace the empty ``attachments`` array above with an entry like the following. The only supported attachment ``reference_type`` is ``recording``; ``reference_id`` is a recording ID from ``GET /recordings``.
+To attach a call recording, replace the empty ``attachments`` array above with an entry like the following. The supported attachment ``reference_type`` values are ``recording`` (``reference_id`` is a recording ID from ``GET /recordings``) and ``file`` (``reference_id`` is a storage file ID from ``GET /storage_files``, a file of type ``talk``, ``media`` or ``recording``). At most 5 attachments and 18 MiB in total.
 
 .. code::
 

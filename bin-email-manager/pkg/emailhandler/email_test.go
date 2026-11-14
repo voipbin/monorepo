@@ -143,6 +143,7 @@ func Test_Create(t *testing.T) {
 				ID:                         tt.customerID,
 				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
 			}, nil)
+			mockReq.EXPECT().StorageV1FileList(gomock.Any(), "", uint64(100), testRecordingFilters(tt.customerID, tt.attachments[0].ReferenceID)).Return(testRecordingFiles(tt.customerID, 100), nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeEmail, "", len(tt.destinations)).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().EmailCreate(ctx, tt.expectEmail).Return(nil)

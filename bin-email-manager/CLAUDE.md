@@ -1,6 +1,6 @@
 # bin-email-manager
 
-Email delivery service — sends emails via Mailgun (primary) and SendGrid (failover), tracks delivery status via provider webhooks, and supports call recording attachments via bin-storage-manager.
+Email delivery service — sends emails via Mailgun (primary) and SendGrid (failover), tracks delivery status via provider webhooks, and supports attachments (call recordings and storage files) via bin-storage-manager.
 
 > Cross-cutting rules (verification workflow, branch/commit format, worktrees, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md).
 
@@ -56,7 +56,7 @@ REDIS_ADDRESS="127.0.0.1:6379" \
 - **No SubscribeHandler** — purely RPC-driven + inbound webhooks
 - **ListenHandler**: consumes `QueueNameEmailRequest`
 - **Provider engines**: `engine_sendgrid.go` and `engine_mailgun.go`; tried in order (Mailgun, then SendGrid)
-- **Attachments**: resolved via RPC to bin-storage-manager before send
+- **Attachments**: checked in `Create` (owner, state, count, total size; see `pkg/emailhandler/attachment.go`) and resolved via RPC to bin-storage-manager when the email is sent
 - **Database**: Squirrel SQL builder (not raw SQL)
 
 ## Testing

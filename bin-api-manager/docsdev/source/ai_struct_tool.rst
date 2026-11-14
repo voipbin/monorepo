@@ -173,14 +173,18 @@ Sends an email to one or more email addresses.
                 "items": {
                     "type": "object",
                     "properties": {
-                        "reference_type": { "type": "string", "enum": ["recording"] },
-                        "reference_id": { "type": "string", "description": "UUID of the attachment" }
+                        "reference_type": { "type": "string", "enum": ["recording", "file"] },
+                        "reference_id": { "type": "string", "description": "UUID of the recording or of the storage file" }
                     }
                 }
             }
         },
         "required": ["destinations", "subject", "content"]
     }
+
+.. note:: **AI Implementation Hint**
+
+   ``attachments`` takes at most 5 entries and at most 18 MiB in total. ``reference_type`` ``recording`` takes a recording id and ``file`` takes a storage file id (a file of type ``talk``, ``media`` or ``recording``). The LLM must use only ids that it was given in its instructions or by the caller and must not invent an id. A resource that does not exist or does not belong to your account makes the tool call fail and no email is sent.
 
 .. _ai-struct-tool-send_message:
 

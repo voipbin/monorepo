@@ -1987,6 +1987,7 @@ func (e CustomerManagerCustomerWebhookMethod) Valid() bool {
 
 // Defines values for EmailManagerEmailAttachmentReferenceType.
 const (
+	EmailManagerEmailAttachmentReferenceTypeFile      EmailManagerEmailAttachmentReferenceType = "file"
 	EmailManagerEmailAttachmentReferenceTypeNone      EmailManagerEmailAttachmentReferenceType = ""
 	EmailManagerEmailAttachmentReferenceTypeRecording EmailManagerEmailAttachmentReferenceType = "recording"
 )
@@ -1994,6 +1995,8 @@ const (
 // Valid indicates whether the value is a known member of the EmailManagerEmailAttachmentReferenceType enum.
 func (e EmailManagerEmailAttachmentReferenceType) Valid() bool {
 	switch e {
+	case EmailManagerEmailAttachmentReferenceTypeFile:
+		return true
 	case EmailManagerEmailAttachmentReferenceTypeNone:
 		return true
 	case EmailManagerEmailAttachmentReferenceTypeRecording:
@@ -7759,20 +7762,33 @@ type EmailManagerEmail struct {
 
 // EmailManagerEmailAttachment defines model for EmailManagerEmailAttachment.
 type EmailManagerEmailAttachment struct {
-	// ReferenceId The unique identifier of the referenced resource (e.g., recording ID). Returned from the corresponding resource endpoint.
+	// ReferenceId The unique identifier of the attached resource: the recording id for `recording`, the storage file id for `file`. Returned from the corresponding resource endpoint.
 	//
 	// Example: e5f6a7b8-c9d0-1234-5678-90abcdef0123
 	ReferenceId string `json:"reference_id"`
 
-	// ReferenceType Type of the action.
+	// ReferenceType Type of the resource that is attached to the email.
 	//
-	// Example: recording
+	// * `recording`: a call recording. The `reference_id` is the recording id, and the files of the recording are attached as one zip file.
+	// * `file`: a storage file of type `talk`, `media` or `recording`. The `reference_id` is the file id returned from the `POST /storage_files` response (uploaded with type `media`) or from the `GET /storage_files` response.
+	// * Empty: not valid for an attachment. The email is refused.
+	//
+	// An attachment must belong to the customer that sends the email. At most 5 attachments are allowed, and the total size of the original files can be at most 18 MiB.
+	//
+	//
+	// Example: file
 	ReferenceType EmailManagerEmailAttachmentReferenceType `json:"reference_type"`
 }
 
-// EmailManagerEmailAttachmentReferenceType Type of the action.
+// EmailManagerEmailAttachmentReferenceType Type of the resource that is attached to the email.
 //
-// Example: recording
+// * `recording`: a call recording. The `reference_id` is the recording id, and the files of the recording are attached as one zip file.
+// * `file`: a storage file of type `talk`, `media` or `recording`. The `reference_id` is the file id returned from the `POST /storage_files` response (uploaded with type `media`) or from the `GET /storage_files` response.
+// * Empty: not valid for an attachment. The email is refused.
+//
+// An attachment must belong to the customer that sends the email. At most 5 attachments are allowed, and the total size of the original files can be at most 18 MiB.
+//
+// Example: file
 type EmailManagerEmailAttachmentReferenceType string
 
 // EmailManagerEmailStatus Email status.
@@ -12696,7 +12712,7 @@ type GetEmailsParams struct {
 
 // PostEmailsJSONBody defines parameters for PostEmails.
 type PostEmailsJSONBody struct {
-	// Attachments List of attachments to include in the email.
+	// Attachments List of attachments to include in the email. Each attachment must belong to the customer. At most 5 attachments, and at most 18 MiB in total (original file sizes). A refused attachment returns 400 (not valid, too many, too large), 404 (not found, deleted or not owned by the customer) or 503 (the attachments could not be checked right now, the request can be retried).
 	Attachments []EmailManagerEmailAttachment `json:"attachments"`
 
 	// Content The content of the email.

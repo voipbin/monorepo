@@ -666,7 +666,7 @@
 <p>With the Email API you can:</p>
 <ul class="simple">
 <li><p>Send plain-text emails to one or more recipients</p></li>
-<li><p>Attach existing VoIPBin resources (e.g. call recordings) to your emails</p></li>
+<li><p>Attach existing VoIPBin resources (call recordings and storage files) to your emails</p></li>
 <li><p>Track email delivery status</p></li>
 <li><p>Integrate email into automated workflows</p></li>
 </ul>
@@ -812,7 +812,12 @@
 </pre></div>
 </div>
 <p><strong>Email with Attachment:</strong></p>
-<p>Attachments reference an existing VoIPBin resource by <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (for example a call recording) – you cannot upload arbitrary file content.</p>
+<p>Attachments reference an existing VoIPBin resource by <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> – you cannot upload arbitrary file content in the email request. Two reference types are supported:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">recording</span></code>: a call recording. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> is the recording ID, and the files of the recording are attached as one zip file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">file</span></code>: a storage file of type <code class="docutils literal notranslate"><span class="pre">talk</span></code>, <code class="docutils literal notranslate"><span class="pre">media</span></code> or <code class="docutils literal notranslate"><span class="pre">recording</span></code>, for example an image or a document that was uploaded with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage_files</span></code> (type <code class="docutils literal notranslate"><span class="pre">media</span></code>). The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> is the storage file ID. Files of type <code class="docutils literal notranslate"><span class="pre">rag</span></code> can not be attached.</p></li>
+</ul>
+<p>An attachment must belong to your customer account. A file that does not exist, is deleted, or belongs to another customer is answered with <code class="docutils literal notranslate"><span class="pre">404</span></code> (the three cases are not told apart). An email can have at most 5 attachments, and the total size of the original files can be at most 18 MiB. An email that breaks a limit, lists an attachment twice, or uses another <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> is refused with <code class="docutils literal notranslate"><span class="pre">400</span></code> before it is created, and a <code class="docutils literal notranslate"><span class="pre">503</span></code> means that the attachments could not be checked right now and the request can be retried.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/emails?token=&lt;token&gt;' \
     --header 'Content-Type: application/json' \
     --data '{
@@ -876,7 +881,7 @@
 <td><p>Plain text body of the email. There is no separate HTML body.</p></td>
 </tr>
 <tr class="row-even"><td><p>attachments</p></td>
-<td><p>List of attachments referencing existing VoIPBin resources. See <a class="reference internal" href="email_struct_attachment.html#email-struct-attachment"><span class="std std-ref">Attachment</span></a>.</p></td>
+<td><p>List of attachments referencing existing VoIPBin resources (at most 5, at most 18 MiB in total). See <a class="reference internal" href="email_struct_attachment.html#email-struct-attachment"><span class="std std-ref">Attachment</span></a>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1043,10 +1048,16 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Attachment missing from email</p></td>
-<td><p>Verify <code class="docutils literal notranslate"><span class="pre">reference_type</span></code>/<code class="docutils literal notranslate"><span class="pre">reference_id</span></code> point to an existing, accessible resource (e.g. a recording owned by the same customer)</p></td>
+<td><p>Verify <code class="docutils literal notranslate"><span class="pre">reference_type</span></code>/<code class="docutils literal notranslate"><span class="pre">reference_id</span></code> point to an existing, accessible resource (e.g. a recording or a storage file owned by the same customer). A file deleted after the email was created makes the send fail, and the email stays in <code class="docutils literal notranslate"><span class="pre">initiated</span></code> status</p></td>
 </tr>
-<tr class="row-odd"><td><p>Request rejected</p></td>
-<td><p>Attachments only support referencing existing VoIPBin resources; arbitrary file uploads are not supported</p></td>
+<tr class="row-odd"><td><p>Request rejected (400)</p></td>
+<td><p>Attachments only support referencing existing VoIPBin resources (<code class="docutils literal notranslate"><span class="pre">recording</span></code> or <code class="docutils literal notranslate"><span class="pre">file</span></code>); arbitrary file uploads are not supported. At most 5 attachments and 18 MiB in total; a <code class="docutils literal notranslate"><span class="pre">file</span></code> must be of type <code class="docutils literal notranslate"><span class="pre">talk</span></code>, <code class="docutils literal notranslate"><span class="pre">media</span></code> or <code class="docutils literal notranslate"><span class="pre">recording</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Request rejected (404)</p></td>
+<td><p>An attachment was not found, is deleted, or belongs to another customer</p></td>
+</tr>
+<tr class="row-odd"><td><p>Request rejected (503)</p></td>
+<td><p>The attachments could not be checked right now; retry the request</p></td>
 </tr>
 </tbody>
 </table>
