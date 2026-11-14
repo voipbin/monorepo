@@ -66,15 +66,13 @@ cartesia, xai, elevenlabs, google, openrouter) and the local llm endpoints (loca
 line of JSON, at most 2020 bytes). They are platform keys; a key that a customer brings is not
 part of this.
 
-A stored value wins over the environment variable of the key. A change is used by the next session
-that starts, with no restart; a session that is running keeps the value it started with. The
-daemon reads the keys that a session uses and hands them to the runner with the start request, so
-the runner needs no database access and no master key.
+The stored value is the only source of a key: there is no environment variable fallback. A key
+without a stored value is not configured, and a session that needs it is rejected. A change is used
+by the next session that starts, with no restart; a session that is running keeps the value it
+started with. The daemon reads the keys that a session uses and hands them to the runner with the
+start request, so the runner needs no database access and no master key.
 
-"list" shows the source of this process only (stored in the database, or an environment variable
-of this process, or none). The runner has its own environment, and the keys that are not in the
-environment of this process (google, openrouter and the local endpoints) show as none even when
-the runner has them in its own environment.
+"list" shows the source of each key (stored in the database, or none).
 
 The daemon applies the table migration at its start; on a local database run "migrate up" first.
 The master key list is read from the environment (PIPECAT_CONFIG_ENCRYPTION_KEYS) and is never a
@@ -117,7 +115,7 @@ one line is refused.`,
 func cmdConfigClear() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clear",
-		Short: "Remove the stored value of a key (the environment variable applies again)",
+		Short: "Remove the stored value of a key (the key is then not configured)",
 		RunE:  runConfigClear,
 	}
 

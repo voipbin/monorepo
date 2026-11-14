@@ -65,7 +65,7 @@ func runConfigCommand(args ...string) error {
 func Test_config_set_list_clear(t *testing.T) {
 	const secret = "synthetic-credential-value"
 
-	// the variable of the key is set: the stored value wins and the list says the variable is shadowed
+	// the legacy variable of the key is set: it is no source, the stored value is the only one
 	t.Setenv("DEEPGRAM_API_KEY", "env-value")
 	store, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, secret+"\n")
 
@@ -89,16 +89,16 @@ func Test_config_set_list_clear(t *testing.T) {
 		!strings.Contains(out.String(), testActor) {
 		t.Errorf("Wrong match. list output: %s", out.String())
 	}
-	if !strings.Contains(out.String(), `"env_shadowed": true`) || strings.Contains(out.String(), "env_name") {
-		t.Errorf("Wrong match. expect: env_shadowed true and no env_name, list output: %s", out.String())
+	if strings.Contains(out.String(), `"env_shadowed": true`) || strings.Contains(out.String(), "env_name") {
+		t.Errorf("Wrong match. expect: no env_shadowed and no env_name, list output: %s", out.String())
 	}
 
 	out.Reset()
 	if err := runConfigCommand("clear", "--key", "deepgram.api_key", "--actor-id", testActor); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if !strings.Contains(out.String(), `"source": "env"`) || strings.Contains(out.String(), "env-value") {
-		t.Errorf("Wrong match. expect: source env after the clear (the variable applies again), got: %s", out.String())
+	if !strings.Contains(out.String(), `"source": "none"`) || strings.Contains(out.String(), `"source": "env"`) || strings.Contains(out.String(), "env-value") {
+		t.Errorf("Wrong match. expect: source none after the clear (the variable does not apply), got: %s", out.String())
 	}
 }
 
@@ -244,10 +244,10 @@ func Test_config_throughTheRootCommand(t *testing.T) {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 
-	// the environment of this process is a source (os.LookupEnv): the key whose variable is set
-	// shows env, the others none, and no value is printed.
+	// the environment of this process is no source: every key shows none, also the one whose legacy
+	// variable is set, and no value is printed.
 	if !strings.Contains(out.String(), `"key": "openai.api_key"`) || !strings.Contains(out.String(), `"key": "deepgram.api_key"`) ||
-		!strings.Contains(out.String(), `"source": "none"`) || strings.Count(out.String(), `"source": "env"`) != 1 || strings.Contains(out.String(), "env-access") {
+		strings.Count(out.String(), `"source": "none"`) != 8 || strings.Contains(out.String(), `"source": "env"`) || strings.Contains(out.String(), "env-access") {
 		t.Errorf("Wrong match. list output: %s", out.String())
 	}
 }

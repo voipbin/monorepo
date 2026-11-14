@@ -97,3 +97,54 @@ func Test_komodoComposeMasterKeyOccurrences(t *testing.T) {
 		t.Errorf("Wrong match. expect: 4 mentions (2 lines), got: %d", got)
 	}
 }
+
+// environmentNames returns the variable names of the "- NAME=value" lines of a service block.
+// Comment lines are not variables.
+func environmentNames(block string) map[string]bool {
+	names := map[string]bool{}
+	for _, line := range strings.Split(block, "\n") {
+		line = strings.TrimSpace(line)
+		if !strings.HasPrefix(line, "- ") {
+			continue
+		}
+		if name, _, found := strings.Cut(strings.TrimPrefix(line, "- "), "="); found {
+			names[name] = true
+		}
+	}
+
+	return names
+}
+
+// The stored platform keys are the only source of the vendor keys: no service gets a vendor key
+// or the local endpoints as a variable. The service account path stays with the runners and the
+// list of the local models stays with the Go services.
+func Test_komodoComposeHasNoPlatformKeyVariables(t *testing.T) {
+	blocks := composeServiceBlocks(t)
+
+	keyVariables := []string{
+		"OPENAI_API_KEY", "XAI_API_KEY", "GOOGLE_API_KEY", "CARTESIA_API_KEY",
+		"ELEVENLABS_API_KEY", "DEEPGRAM_API_KEY", "OPENROUTER_API_KEY", "LOCAL_LLM_ENDPOINTS",
+	}
+	for _, name := range []string{"pipecat-manager-1", "pipecat-manager-2", "pipecat-script-runner-1", "pipecat-script-runner-2"} {
+		names := environmentNames(blocks[name])
+		if len(names) == 0 {
+			t.Fatalf("Wrong match. the service %s has no environment variables", name)
+		}
+		for _, v := range keyVariables {
+			if names[v] {
+				t.Errorf("Wrong match. %s must not get %s", name, v)
+			}
+		}
+	}
+
+	for _, name := range []string{"pipecat-manager-1", "pipecat-manager-2"} {
+		if !environmentNames(blocks[name])["LOCAL_LLM_MODELS"] {
+			t.Errorf("Wrong match. %s expect: LOCAL_LLM_MODELS", name)
+		}
+	}
+	for _, name := range []string{"pipecat-script-runner-1", "pipecat-script-runner-2"} {
+		if !environmentNames(blocks[name])["GOOGLE_APPLICATION_CREDENTIALS"] {
+			t.Errorf("Wrong match. %s expect: GOOGLE_APPLICATION_CREDENTIALS", name)
+		}
+	}
+}

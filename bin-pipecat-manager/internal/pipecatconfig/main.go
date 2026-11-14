@@ -4,7 +4,6 @@ package pipecatconfig
 
 import (
 	"context"
-	"os"
 	"sort"
 	"time"
 
@@ -26,7 +25,7 @@ const (
 	maxSecretPlaintext = 2020
 
 	// readTimeout bounds all reads of one session together (not one read per key). A key that is
-	// not read in time is left out and the runner uses its own environment for it.
+	// not read in time is left out of the request, and the runner rejects a session that needs it.
 	readTimeout = 2 * time.Second
 
 	// logSourcesTimeout bounds the read of the sources at start up.
@@ -35,10 +34,9 @@ const (
 
 // New creates the config handler of the service on the given store.
 //
-// The environment lookup is os.LookupEnv: a key without a stored row is read from the environment
-// variable that the key declares, which is the behavior before the keys were stored in the
-// database. (Only the variables that the Go container has are visible here. The runner has its
-// own environment and falls back to it for the keys that are not in the request.)
+// The handler gets no environment lookup and no key declares an environment variable, so the
+// database is the only source of a key. A key without a stored row has no value. The runner uses
+// the keys of its request only.
 //
 // An unparsable master key list never stops the service: the error is logged (without any key
 // text) and the handler works without a master key. Secrets can not be written then, and a stored
@@ -56,7 +54,7 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 		crypto, _ = secretcrypto.New("", secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
 	}
 
-	return confighandler.NewHandler(reg, store, crypto, os.LookupEnv, opts...), nil
+	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
 }
 
 // KeyResolver resolves the platform keys of a session. It implements
@@ -71,16 +69,16 @@ func NewKeyResolver(h confighandler.Handler) *KeyResolver {
 	return &KeyResolver{h: h, timeout: readTimeout}
 }
 
-// Resolve reads the named keys (database first, then the environment of this process) and returns
-// the values by key name. It reads on every call and keeps nothing, so a changed key is used by
+// Resolve reads the named keys from the database and returns the values by key name.
+// It reads on every call and keeps nothing, so a changed key is used by
 // the next session on every replica.
 //
 // It never returns an error and never blocks a session start for longer than the read bound (2
 // seconds for all keys together). A key that can not be read (database error, undecryptable
 // value, invalid value, out of time) is left out of the result and one warning is logged with the
 // session id and the key name and a reason class, never with a value or the error text. The runner
-// then uses its own environment for a key that is missing in the request. A key without a value
-// is left out silently. An empty result is nil.
+// rejects a session that needs a key that is missing in the request. A key without a value is
+// left out silently. An empty result is nil.
 func (r *KeyResolver) Resolve(ctx context.Context, pipecatcallID uuid.UUID, keyNames []string) map[string]amai.RedactedString {
 	names := uniqueSorted(keyNames)
 	if len(names) == 0 {
@@ -105,7 +103,7 @@ func (r *KeyResolver) Resolve(ctx context.Context, pipecatcallID uuid.UUID, keyN
 				"pipecatcall_id": pipecatcallID,
 				"key":            name,
 				"reason":         reasonOf(cctx, err),
-			}).Warn("Could not read the platform key. The runner uses its own environment for it.")
+			}).Warn("Could not read the platform key. It is left out of the runner request.")
 			continue
 		}
 		if secret == "" {
@@ -153,8 +151,7 @@ func uniqueSorted(in []string) []string {
 
 // LogSources logs, once, where each key comes from (key name and source only, never a value). A
 // key that is not configured is an info line, because every vendor key is optional. A read error
-// is logged as a warning: the service starts anyway. The sources are those of this process; the
-// runner has its own environment.
+// is logged as a warning: the service starts anyway.
 func LogSources(ctx context.Context, h confighandler.Handler) {
 	log := logrus.WithField("func", "LogSources")
 
@@ -172,7 +169,7 @@ func LogSources(ctx context.Context, h confighandler.Handler) {
 
 		switch r.Source {
 		case confighandler.SourceNone:
-			entry.Infof("The config key is not set in the database or in this process. The runner may still have it in its own environment. key: %s", r.Key)
+			entry.Infof("The config key is not set in the database. A session that needs it is rejected. key: %s", r.Key)
 		case confighandler.SourceDBUndecryptable, confighandler.SourceDBInvalid:
 			entry.Errorf("The stored config value can not be used. key: %s, source: %s", r.Key, r.Source)
 		default:

@@ -104,11 +104,6 @@ services:
       - REDIS_DATABASE=1
       - PROMETHEUS_ENDPOINT=/metrics
       - PROMETHEUS_LISTEN_ADDRESS=:2112
-      - CARTESIA_API_KEY=[[BIN_MANAGER__CARTESIA_API_KEY]]
-      - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
-      - OPENAI_API_KEY=[[BIN_MANAGER__OPENAI_API_KEY]]
-      - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
-      - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
       - LOCAL_LLM_MODELS=[[BIN_MANAGER__LOCAL_LLM_MODELS]]
       - PIPECAT_CONFIG_ENCRYPTION_KEYS=[[BIN_MANAGER__PIPECAT_MANAGER_CONFIG_ENCRYPTION_KEYS]]
       - POD_IP=pipecat-manager-1
@@ -141,27 +136,18 @@ services:
     depends_on:
       pipecat-manager-1:
         condition: service_healthy
-    # The env the GKE pipecat-script-runner container received
-    # (former k8s/deployment.yml) - the Python side calls the STT/LLM/TTS APIs
-    # directly - PLUS the Google service account GKE supplied implicitly.
+    # The runner gets no vendor key and no local endpoint as a variable: the keys
+    # are stored in the database by pipecat-manager and reach the runner in the
+    # start request (VOIP-1728).
     #
-    # VOIP-1482: GOOGLE_API_KEY is the Gemini LLM key and is read only by
-    # GoogleLLMService (run.py passes it explicitly). Cloud TTS/STT take no
-    # api_key: GoogleTTSService/GoogleSTTService fall back to Application
-    # Default Credentials, which on GKE came from the node metadata server
-    # and on bare metal must come from this mounted service account key.
+    # VOIP-1482: Cloud TTS/STT take no api_key: GoogleTTSService/GoogleSTTService
+    # fall back to Application Default Credentials, which on GKE came from the
+    # node metadata server and on bare metal must come from this mounted service
+    # account key.
     secrets:
       - source: gcp_sa_json
         target: google_service_account.json
     environment:
-      - CARTESIA_API_KEY=[[BIN_MANAGER__CARTESIA_API_KEY]]
-      - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
-      - OPENAI_API_KEY=[[BIN_MANAGER__OPENAI_API_KEY]]
-      - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
-      - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
-      - GOOGLE_API_KEY=[[BIN_MANAGER__GOOGLE_API_KEY]]
-      - OPENROUTER_API_KEY=[[BIN_MANAGER__OPENROUTER_API_KEY]]
-      - LOCAL_LLM_ENDPOINTS=[[BIN_MANAGER__LOCAL_LLM_ENDPOINTS]]
       - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/google_service_account.json
     command: ["python", "/app/scripts/pipecat/main.py"]
 
@@ -187,11 +173,6 @@ services:
       - REDIS_DATABASE=1
       - PROMETHEUS_ENDPOINT=/metrics
       - PROMETHEUS_LISTEN_ADDRESS=:2112
-      - CARTESIA_API_KEY=[[BIN_MANAGER__CARTESIA_API_KEY]]
-      - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
-      - OPENAI_API_KEY=[[BIN_MANAGER__OPENAI_API_KEY]]
-      - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
-      - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
       - LOCAL_LLM_MODELS=[[BIN_MANAGER__LOCAL_LLM_MODELS]]
       - PIPECAT_CONFIG_ENCRYPTION_KEYS=[[BIN_MANAGER__PIPECAT_MANAGER_CONFIG_ENCRYPTION_KEYS]]
       - POD_IP=pipecat-manager-2
@@ -218,27 +199,18 @@ services:
     depends_on:
       pipecat-manager-2:
         condition: service_healthy
-    # The env the GKE pipecat-script-runner container received
-    # (former k8s/deployment.yml) - the Python side calls the STT/LLM/TTS APIs
-    # directly - PLUS the Google service account GKE supplied implicitly.
+    # The runner gets no vendor key and no local endpoint as a variable: the keys
+    # are stored in the database by pipecat-manager and reach the runner in the
+    # start request (VOIP-1728).
     #
-    # VOIP-1482: GOOGLE_API_KEY is the Gemini LLM key and is read only by
-    # GoogleLLMService (run.py passes it explicitly). Cloud TTS/STT take no
-    # api_key: GoogleTTSService/GoogleSTTService fall back to Application
-    # Default Credentials, which on GKE came from the node metadata server
-    # and on bare metal must come from this mounted service account key.
+    # VOIP-1482: Cloud TTS/STT take no api_key: GoogleTTSService/GoogleSTTService
+    # fall back to Application Default Credentials, which on GKE came from the
+    # node metadata server and on bare metal must come from this mounted service
+    # account key.
     secrets:
       - source: gcp_sa_json
         target: google_service_account.json
     environment:
-      - CARTESIA_API_KEY=[[BIN_MANAGER__CARTESIA_API_KEY]]
-      - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
-      - OPENAI_API_KEY=[[BIN_MANAGER__OPENAI_API_KEY]]
-      - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
-      - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
-      - GOOGLE_API_KEY=[[BIN_MANAGER__GOOGLE_API_KEY]]
-      - OPENROUTER_API_KEY=[[BIN_MANAGER__OPENROUTER_API_KEY]]
-      - LOCAL_LLM_ENDPOINTS=[[BIN_MANAGER__LOCAL_LLM_ENDPOINTS]]
       - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/google_service_account.json
     command: ["python", "/app/scripts/pipecat/main.py"]
 networks:

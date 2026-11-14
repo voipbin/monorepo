@@ -43,7 +43,7 @@ scripts/pipecat/  (Python, port 8000)
 | Transport (Go) | `pkg/listenhandler` | Shared queue: create/get pipecatcall, `/v1/configs` (stored platform keys). Per-pod queue: stop, message-send, ping |
 | Transport (Go) | `pkg/httphandler` | WebSocket upgrade for Pipecat Python; tool execution callbacks from Python |
 | Session (Go) | `pkg/pipecatcallhandler` | In-memory session registry; audio bridge between Asterisk and Python; resolves the stored platform keys of a session for the runner request |
-| Config (Go) | `internal/pipecatconfig`, `internal/configkeys` | Stored platform keys: registry, master key, resolver (database first, then the environment) |
+| Config (Go) | `internal/pipecatconfig`, `internal/configkeys` | Stored platform keys: registry, master key, resolver (database only, no environment fallback) |
 | Pipeline (Python) | `scripts/pipecat/` | STT → LLM → TTS execution via pipecat-ai library |
 | Data (Go) | `pkg/dbhandler` | MySQL: pipecatcall records and the config store (`pipecat_configs`, `pipecat_config_histories`); Redis: session cache |
 
@@ -77,7 +77,7 @@ POST /v1/pipecatcalls
     ↓ RPC to call-manager → get external media URI
     ↓ Go dials Asterisk WebSocket at MediaURI
     ↓ wait for MEDIA_START text message
-    ↓ resolve the stored platform keys the session uses (database, else environment; 2 s bound)
+    ↓ resolve the stored platform keys the session uses (database only; 2 s bound)
     ↓ HTTP POST localhost:8000/run (with platform_keys) → Python starts Pipecat pipeline
     ↓ Python connects back to Go via WebSocket (frames.proto)
     ↓ bidirectional audio + tool call frames
