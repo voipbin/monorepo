@@ -1048,7 +1048,7 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Attachment missing from email</p></td>
-<td><p>Verify <code class="docutils literal notranslate"><span class="pre">reference_type</span></code>/<code class="docutils literal notranslate"><span class="pre">reference_id</span></code> point to an existing, accessible resource (e.g. a recording or a storage file owned by the same customer). A file deleted after the email was created is not attached</p></td>
+<td><p>Verify <code class="docutils literal notranslate"><span class="pre">reference_type</span></code>/<code class="docutils literal notranslate"><span class="pre">reference_id</span></code> point to an existing, accessible resource (e.g. a recording or a storage file owned by the same customer). A file deleted after the email was created makes the send fail, and the email stays in <code class="docutils literal notranslate"><span class="pre">initiated</span></code> status</p></td>
 </tr>
 <tr class="row-odd"><td><p>Request rejected (400)</p></td>
 <td><p>Attachments only support referencing existing VoIPBin resources (<code class="docutils literal notranslate"><span class="pre">recording</span></code> or <code class="docutils literal notranslate"><span class="pre">file</span></code>); arbitrary file uploads are not supported. At most 5 attachments and 18 MiB in total; a <code class="docutils literal notranslate"><span class="pre">file</span></code> must be of type <code class="docutils literal notranslate"><span class="pre">talk</span></code>, <code class="docutils literal notranslate"><span class="pre">media</span></code> or <code class="docutils literal notranslate"><span class="pre">recording</span></code></p></td>

@@ -393,7 +393,7 @@ Troubleshooting
    * - Symptom
      - Solution
    * - Attachment missing from email
-     - Verify ``reference_type``/``reference_id`` point to an existing, accessible resource (e.g. a recording or a storage file owned by the same customer). A file deleted after the email was created is not attached
+     - Verify ``reference_type``/``reference_id`` point to an existing, accessible resource (e.g. a recording or a storage file owned by the same customer). A file deleted after the email was created makes the send fail, and the email stays in ``initiated`` status
    * - Request rejected (400)
      - Attachments only support referencing existing VoIPBin resources (``recording`` or ``file``); arbitrary file uploads are not supported. At most 5 attachments and 18 MiB in total; a ``file`` must be of type ``talk``, ``media`` or ``recording``
    * - Request rejected (404)

@@ -35,7 +35,7 @@ Rules checked by `Create` before anything is stored (`pkg/emailhandler/attachmen
 - The attachment must belong to the customer of the email. A `file` must exist, not be deleted and have the customer id of the email; a `recording` is checked by listing its files with the customer id (empty list: not found; a list of 100 files is refused because it may be cut). A missing, deleted and foreign resource give the same answer (404 `ATTACHMENT_NOT_FOUND`).
 - A `file` of type `rag` or of an empty type is refused (400 `ATTACHMENT_FILE_TYPE_INVALID`). Other refusals are 400 (`ATTACHMENT_REFERENCE_INVALID`, `ATTACHMENT_DUPLICATE`, `ATTACHMENT_TOO_MANY`, `ATTACHMENT_TOO_LARGE`, `ATTACHMENT_SIZE_INVALID`).
 - All storage requests of the check share one deadline of 2 seconds. A storage error or the deadline gives 503 `ATTACHMENT_CHECK_UNAVAILABLE` and no email is created.
-- The `bin-storage-manager` download request of a recording does not take a customer, so the check here is the only ownership check. The engines check the attachment again when they send (a file deleted after `Create` is not attached).
+- The `bin-storage-manager` download request of a recording does not take a customer, so the check here is the only ownership check. The engines check the attachment again when they send (a file deleted after `Create` makes the send fail and the email stays `initiated`).
 
 ## Key Business Rules
 
