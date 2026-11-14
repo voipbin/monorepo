@@ -224,14 +224,3 @@ func Test_Update_boundaries(t *testing.T) {
 		}
 	})
 }
-
-// plainProvider is a test only provider without any required config.
-const plainProvider = number.ProviderName("plain")
-
-func addPlain(h *providerHandler) {
-	h.registry[plainProvider] = Descriptor{
-		Factory:         h.registry[number.ProviderNameTelnyx].Factory,
-		AllowedConfig:   []string{"k"},
-		DefaultPriority: 50,
-	}
-}
