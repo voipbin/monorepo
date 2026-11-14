@@ -55,7 +55,7 @@ The schema of `tts_manager_speaking`, `tts_configs` and `tts_config_histories` (
 - Files: `migrations/NNNNNN_<table>_<verb>_<type>_<items>.up.sql` and `.down.sql`. `000001_baseline` is the schema at the time of the conversion; its down is a no-op. Version table: `tts_schema_migrations`.
 - `cmd/tts-manager` runs `migrationhandler.Run` right after the database connection, before the cache and RabbitMQ. Failure stops the start (non-zero exit).
 - The configs tables are platform wide (no customer column) and have no table options. `tts_manager_speaking` keeps the table option `DEFAULT CHARSET=utf8` (written as `DEFAULT CHARSET=utf8mb3`); the structure test `migrations/migrations_test.go` lists it.
-- `scripts/database_scripts_test/` holds the sqlite test schema of the two configs tables (used by the config store tests); update it by hand when those tables change. `tts_manager_speaking` has no sqlite test schema.
+- `scripts/database_scripts_test/` holds the sqlite test schema of the two configs tables (no code or test reads or writes these tables now); update it by hand when those tables change. `tts_manager_speaking` has no sqlite test schema.
 - `tts-control create` reads the provider keys from the environment; it does not use the database.
 - `tts-control migrate status|up|down|force <version>` talks to the database only (no Redis or RabbitMQ). Run `up`, `down` and `force` only against a local throwaway database or as the recovery step in [docs/operations.md](docs/operations.md).
 - Verification: `go test ./migrations/` (structure) and, from the repo root, `scripts/verify-service-migrations.sh bin-tts-manager` (both engines).

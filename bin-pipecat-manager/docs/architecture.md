@@ -45,7 +45,7 @@ scripts/pipecat/  (Python, port 8000)
 | Session (Go) | `pkg/pipecatcallhandler` | In-memory session registry; audio bridge between Asterisk and Python; sends no platform key (the runner reads its environment variables) |
 | Config (Go) | `internal/configkeys` | The key names of the `platform_keys` map of the runner request (the runner reads its own environment variables) |
 | Pipeline (Python) | `scripts/pipecat/` | STT → LLM → TTS execution via pipecat-ai library |
-| Data (Go) | `pkg/dbhandler` | MySQL: pipecatcall records and the config store (`pipecat_configs`, `pipecat_config_histories`); Redis: session cache |
+| Data (Go) | `pkg/dbhandler` | MySQL: pipecatcall records; Redis: session cache |
 
 ## Request Routing
 

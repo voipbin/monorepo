@@ -197,7 +197,6 @@ func runHTTP(httpHandler httphandler.HTTPHandler) error {
 }
 
 // createDBHandler connects to the database, applies the schema migrations and connects to the cachehandler
-// It also returns the database connection, which the config store uses.
 func createDBHandler() (dbhandler.DBHandler, error) {
 	// connect to database
 	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)

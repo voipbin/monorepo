@@ -2,50 +2,11 @@ package main
 
 import (
 	"os"
-	"regexp"
 	"strings"
 	"testing"
 
 	"go.yaml.in/yaml/v3"
 )
-
-// composeServiceBlocks splits the services of the compose file into blocks by the key of the
-// service (two spaces of indent), so a test can tell which container gets a variable. A block
-// ends at the next service key or at the next top level key.
-func composeServiceBlocks(t *testing.T) map[string]string {
-	t.Helper()
-
-	raw, err := os.ReadFile("../../komodo/docker-compose.yml")
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-
-	_, services, found := strings.Cut(string(raw), "\nservices:\n")
-	if !found {
-		t.Fatalf("Wrong match. the compose file has no services section")
-	}
-
-	key := regexp.MustCompile(`^  ([a-z0-9-]+):\s*$`)
-	top := regexp.MustCompile(`^[a-z]`)
-
-	blocks := map[string]string{}
-	current := ""
-	for _, line := range strings.Split(services, "\n") {
-		if top.MatchString(line) {
-			break
-		}
-		if m := key.FindStringSubmatch(line); m != nil {
-			current = m[1]
-			blocks[current] = ""
-			continue
-		}
-		if current != "" {
-			blocks[current] += line + "\n"
-		}
-	}
-
-	return blocks
-}
 
 // composeEnvironment returns the environment of each service of the compose file as a map of
 // variable name to value. The file is parsed, so a changed layout can not hide a wrong line.

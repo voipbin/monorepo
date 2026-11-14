@@ -187,7 +187,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 
 	ctx := context.Background()
 
-	// every log line uses logM, never m: the body of a secret request must not be logged
+	// every log line uses logM, never m: the body of a number provider request must not be logged
 	logM := logSafeRequest(m)
 
 	log := logrus.WithFields(logrus.Fields{

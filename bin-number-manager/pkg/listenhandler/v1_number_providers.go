@@ -13,7 +13,7 @@ import (
 )
 
 // All the handlers of this file log logM, the copy of the request whose body is redacted: the
-// body of a secret request must never reach a log.
+// body of a number provider request must never reach a log.
 
 // providerNameFromURI returns the provider name of the matched URI.
 func providerNameFromURI(m []string) number.ProviderName {

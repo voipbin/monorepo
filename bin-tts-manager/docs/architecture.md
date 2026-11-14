@@ -24,7 +24,7 @@ Key packages:
 | `pkg/audiohandler` | Multi-provider TTS synthesis (GCP Cloud TTS, AWS Polly) |
 | `pkg/buckethandler` | Local file storage for generated audio in `/shared-data` |
 | `pkg/cachehandler` | Redis cache for TTS metadata |
-| `pkg/dbhandler` | MySQL persistence, and the store of the configs tables (`config_store.go`) |
+| `pkg/dbhandler` | MySQL persistence |
 | `internal/configkeys`, `internal/ttsconfig` | The provider keys come from `AWS_ACCESS_KEY`, `AWS_SECRET_KEY` and `ELEVENLABS_API_KEY` (environment only, via `bin-common-handler/pkg/envsecret`). `ttsconfig.AWSCredentials()` and `ttsconfig.ElevenlabsKey()` return functions that read the variables when they are called (nothing is cached); `audiohandler` and `streaminghandler` call them per request; `LogStates` logs the variable states at start. Nothing is stored in the database. The Polly client built from the last key pair is reused while the pair is unchanged |
 | `migrations` | Embedded golang-migrate SQL files (service-owned schema of `tts_manager_speaking` and of `tts_configs` and `tts_config_histories`, which the code no longer reads or writes); applied by `cmd/tts-manager` through `bin-common-handler/pkg/migrationhandler` right after the database connection, before the cache and RabbitMQ; `tts-control migrate` is the recovery tool |
 | `models/tts` | Batch TTS structs |
