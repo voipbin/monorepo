@@ -6,9 +6,9 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Environment variables and maintenance - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -708,13 +708,12 @@ by default; never enable on a public install.</p></td>
 <h2>Third-party integrations<a class="headerlink" href="#third-party-integrations" title="Link to this heading">¶</a></h2>
 <p>Voice AI, transcription, TTS, phone number provisioning, and email/SMS
 providers are configured through their own keys. Most are variables in
-<code class="docutils literal notranslate"><span class="pre">.env</span></code>; the provider keys of <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> (the LLM keys),
-<code class="docutils literal notranslate"><span class="pre">email-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">message-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code> and
-<code class="docutils literal notranslate"><span class="pre">tts-manager</span></code> are stored settings that are set with the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">set</span></code>
-command of the service or the Service Config API, and are not read from
-<code class="docutils literal notranslate"><span class="pre">.env</span></code>. The Paddle keys of <code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> are stored settings too and are
-not read from <code class="docutils literal notranslate"><span class="pre">.env</span></code>. The platform keys of the voice AI vendors of
-<code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> are stored settings too and are not read from <code class="docutils literal notranslate"><span class="pre">.env</span></code>. See
+<code class="docutils literal notranslate"><span class="pre">.env</span></code> (the keys of <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">email-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">message-manager</span></code>,
+<code class="docutils literal notranslate"><span class="pre">number-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code>,
+<code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> and the voice AI runner of <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> are
+environment variables of the service container, such as <code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code>,
+<code class="docutils literal notranslate"><span class="pre">SENDGRID_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code> or <code class="docutils literal notranslate"><span class="pre">PADDLE_API_KEY</span></code>; a value that
+was stored with <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">set</span></code> or the Service Config API is not read). See
 the Provider configuration section for the full list of keys, which
 service to restart after setting each, and the AI-provider-specific
 details (shared credentials, multi-service consumers). Until a

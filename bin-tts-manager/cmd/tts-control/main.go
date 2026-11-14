@@ -16,7 +16,6 @@ import (
 	"monorepo/bin-tts-manager/internal/ttsconfig"
 	"monorepo/bin-tts-manager/migrations"
 	"monorepo/bin-tts-manager/models/tts"
-	"monorepo/bin-tts-manager/pkg/dbhandler"
 	"monorepo/bin-tts-manager/pkg/ttshandler"
 
 	"github.com/gofrs/uuid"
@@ -38,9 +37,9 @@ func main() {
 // opened. Tests replace it.
 var openTTSHandler = initHandler
 
-// initHandler opens the database for the provider keys (read the same way as the daemon reads
-// them: the stored value only) and creates the TTS handler. The returned
-// function closes the database.
+// initHandler connects to the database as before and creates the TTS handler. The provider keys are
+// read the same way as the daemon reads them: from the environment only. The returned function
+// closes the database.
 func initHandler() (ttshandler.TTSHandler, func(), error) {
 	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {
@@ -48,19 +47,13 @@ func initHandler() (ttshandler.TTSHandler, func(), error) {
 	}
 	closeFunc := func() { commondatabasehandler.Close(db) }
 
-	configHandler, err := ttsconfig.New(config.Get(), dbhandler.NewConfigStore(db))
-	if err != nil {
-		closeFunc()
-		return nil, nil, errors.Wrap(err, "could not create the config handler")
-	}
-
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 
 	handler := ttshandler.NewTTSHandler(
-		ttsconfig.AWSCredentials(configHandler),
+		ttsconfig.AWSCredentials(),
 		config.Get().GCPTTSEndpoint,
 		"/tmp/tts-media", // Default media bucket directory for CLI
 		"localhost",      // Default local address for CLI

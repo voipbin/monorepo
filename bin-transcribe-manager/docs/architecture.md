@@ -27,7 +27,7 @@ Key packages:
 | `pkg/notifyhandler` | Publishes events to the global topic exchange `bin-manager.event`; as of VOIP-1407 this is the sole publish path (the fanout exchange `bin-manager.transcribe-manager.event` is no longer published to) |
 | `models/transcribe` | Transcribe session struct, status enum |
 | `internal/config` | Cobra + Viper configuration (singleton pattern) |
-| `internal/transcribeconfig` | Resolves the AWS credential for each streaming start: stored value (table `transcribe_configs`, encrypted, database only); the two keys are used only together |
+| `internal/transcribeconfig` | Resolves the AWS credential for each streaming start from `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` (environment only, via `bin-common-handler/pkg/envsecret`); the two variables are used only together; `LogStates` logs their states at start. The stored settings (table `transcribe_configs`, encrypted) are kept for the config commands and the admin API and are not read by a start |
 | `internal/configkeys` | The declared config keys (`aws.access_key`, `aws.secret_key`) |
 
 ## Layer Responsibilities

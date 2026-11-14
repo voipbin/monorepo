@@ -17,7 +17,7 @@ Every number purchase calls `bin-billing-manager` for balance validation **befor
 
 ## CRITICAL: Provider Credentials
 
-A provider's credentials come from its row of `number_providers` only (the encrypted secret and the `config` of the row). No `TELNYX_*` / `TWILIO_*` environment variable is read; a provider without a stored secret is `none` and unusable. A row secret that cannot be decrypted makes the provider unusable until the key list is restored or the DB secret is replaced. Never log or return a secret, a ciphertext or a key, and never print a `Provider` or `Credentials` value with a custom formatter that bypasses `String()`/`GoString()`. See [docs/operations.md](docs/operations.md) for key rotation and recovery.
+The secret of a provider comes from an environment variable only: `TELNYX_API_KEY` (telnyx) and `TWILIO_AUTH_TOKEN` (twilio). The stored ciphertext of `number_providers` is never read or decrypted. A secret variable that is unset, empty or an unresolved `[[...]]` placeholder gives `credential_source: none` and the provider is unusable (purchase, release and search). The config comes from the row; a config key that the row does not have (or has empty) is filled from `TELNYX_CONNECTION_ID`, `TELNYX_PROFILE_ID` or `TWILIO_ACCOUNT_SID`, so the row wins over the variable. `trunk_sid` has no variable. The admin view (`Info.Config`) shows the row config only: a filled variable value must never be shown there, or a read and write back would freeze it into the row. Never log or return a secret, a ciphertext or a key, and never print a `Provider` or `Credentials` value with a custom formatter that bypasses `String()`/`GoString()`. See [docs/operations.md](docs/operations.md) for key rotation and recovery.
 
 ## CRITICAL: Purchase Fallback Never Double Buys
 
@@ -44,7 +44,7 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 ./bin/number-control number delete --id <uuid>
 ./bin/number-control provider list                      # state only: credential_source, has_secret, usable (never a secret)
 ./bin/number-control provider update --name telnyx --actor-id <uuid> --config connection_id=<id>   # config first
-printf '%s' "$TOKEN" | ./bin/number-control provider secret set --name telnyx --actor-id <uuid>   # secret on stdin only
+printf '%s' "$TOKEN" | ./bin/number-control provider secret set --name telnyx --actor-id <uuid>   # secret on stdin only; the stored secret is not used, the service reads the environment variable
 ./bin/number-control provider secret delete --name telnyx --actor-id <uuid>
 
 # Run locally
@@ -59,7 +59,7 @@ NUMBER_SECRET_ENCRYPTION_KEYS="1:<base64 of 32 random bytes>" \
 
 - **ListenHandler**: consumes `bin-manager.number-manager.request`; routes to numberhandler
 - **SubscribeHandler**: `customer_deleted` → release all customer numbers; `flow_deleted` → clear flow references
-- **Provider dispatch**: numberhandler asks `providerhandler` (registry of `numberhandlertelnyx` and `numberhandlertwilio`, both implementing the provider interface; Twilio is disabled by default and purchases only with the DB credential and the `sid`/`trunk_sid` config, priority and credentials from `number_providers`; the stored secrets use the shared `bin-common-handler/pkg/secretcrypto` through the adapter `providerhandler/secret.go`)
+- **Provider dispatch**: numberhandler asks `providerhandler` (registry of `numberhandlertelnyx` and `numberhandlertwilio`, both implementing the provider interface; Twilio is disabled by default and purchases only with the DB credential and the `sid`/`trunk_sid` config, purchases only with the secret variable and the `sid`/`trunk_sid` config; enabled flag, priority and config come from `number_providers`, the secret and the config fill from the environment via `bin-common-handler/pkg/envsecret`; the admin write path still encrypts a stored secret with `bin-common-handler/pkg/secretcrypto` through `providerhandler/secret.go`, but resolve never reads it)
 - **ProviderNumber record**: created alongside Number; holds provider's own reference ID for release operations
 
 ## Testing
@@ -73,7 +73,7 @@ go test -v -run TestName ./pkg/numberhandler/...
 ## Database Tables
 
 - `number_numbers` — phone numbers (soft-delete with `tm_delete`). `ProviderNumber` is an in-memory model, not a table.
-- `number_providers` — provider settings: `enabled`, `priority`, non-secret `config`, the AES-256-GCM `secret_ciphertext` with its `key_version`, and the audit columns. A provider without a row uses the registry defaults and has no credential. The admin RPC is `/v1/number_providers` (the public API is added separately).
+- `number_providers` — provider settings: `enabled`, `priority`, non-secret `config`, the AES-256-GCM `secret_ciphertext` with its `key_version`, and the audit columns. The `secret_ciphertext` is legacy: it is written by the admin API but never read. A provider without a row uses the registry defaults; its credential comes from the environment. The admin RPC is `/v1/number_providers` (the public API is added separately).
 
 ## Database migrations
 

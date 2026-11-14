@@ -1,41 +1,36 @@
-// Package ttsconfig wires the stored configuration of bin-tts-manager: the master key, the
-// registry and the suppliers that hand the provider credentials to the
-// handlers at the time of use.
+// Package ttsconfig wires the configuration of bin-tts-manager: the handler of the stored settings
+// (the master key and the registry, used by the config commands and the admin API) and the
+// suppliers that hand the provider credentials to the handlers at the time of use. The credentials
+// come from the environment only; the stored settings are not read.
 package ttsconfig
 
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/pkg/confighandler"
+	"monorepo/bin-common-handler/pkg/envsecret"
 	"monorepo/bin-common-handler/pkg/secretcrypto"
 
 	"monorepo/bin-tts-manager/internal/config"
 	"monorepo/bin-tts-manager/internal/configkeys"
 )
 
-const (
-	// maxSecretPlaintext is the longest secret the cipher accepts. It is the second guard behind
-	// the MaxLen of each key and fits the column (2048 bytes minus nonce and tag).
-	maxSecretPlaintext = 2020
+// maxSecretPlaintext is the longest secret the cipher accepts. It is the second guard behind the
+// MaxLen of each key and fits the column (2048 bytes minus nonce and tag).
+const maxSecretPlaintext = 2020
 
-	// defaultReadTimeout bounds one read of the keys of a call (the whole pair for AWS).
-	defaultReadTimeout = 5 * time.Second
-)
-
-// ErrKeyUnavailable is returned when a provider key could not be read: a database read error, a
-// stored secret that can not be decrypted, a read that ran out of time, or an AWS pair whose two
-// keys come from different sources. It is never replaced by an empty value. A key
-// that is simply not configured is not an error (an empty value). The error holds no key text.
+// ErrKeyUnavailable is returned when a provider key is refused: an AWS pair of which only one
+// variable is set. It is never replaced by an empty value. A key that is simply not configured is
+// not an error (an empty value). The error holds no key text.
 var ErrKeyUnavailable = errors.New("the TTS provider key could not be read")
 
-// ErrAWSSourceMismatch is wrapped by ErrKeyUnavailable when exactly one of the two AWS keys is
-// stored in the database: a half stored pair is refused.
-var ErrAWSSourceMismatch = errors.New("the AWS access key and secret key come from different sources")
+// ErrAWSPairIncomplete is wrapped by ErrKeyUnavailable when exactly one of the two AWS variables is
+// set: a half pair is refused.
+var ErrAWSPairIncomplete = errors.New("only one of the AWS access key and secret key is set")
 
 // KeyFunc hands one provider key to a handler at the time of use. An empty value with no error
 // means "not configured".
@@ -66,115 +61,61 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
 }
 
-// supplierConfig is the setting of a supplier.
-type supplierConfig struct {
-	timeout time.Duration
-}
-
-// SupplierOption configures a supplier.
-type SupplierOption func(*supplierConfig)
-
-// WithTimeout sets the timeout of one whole read of a supplier (default 5 seconds).
-func WithTimeout(d time.Duration) SupplierOption {
-	return func(c *supplierConfig) {
-		c.timeout = d
-	}
-}
-
-func newSupplierConfig(opts []SupplierOption) *supplierConfig {
-	c := &supplierConfig{timeout: defaultReadTimeout}
-	for _, opt := range opts {
-		opt(c)
-	}
-
-	return c
-}
-
-// ElevenlabsKey returns the supplier of the ElevenLabs key. It reads the key on every call and
-// keeps nothing, so a changed key is used by the next call on every replica. A read error is
-// returned as an error (ErrKeyUnavailable) and is never turned into an empty value.
-func ElevenlabsKey(h confighandler.Handler, opts ...SupplierOption) KeyFunc {
-	c := newSupplierConfig(opts)
-
+// ElevenlabsKey returns the supplier of the ElevenLabs key. The key is the value of
+// ELEVENLABS_API_KEY at the time of use; the supplier keeps nothing and the stored value is not
+// read. A variable that is not set, is empty or holds an unresolved placeholder is not configured:
+// an empty value and no error.
+func ElevenlabsKey() KeyFunc {
 	return func(ctx context.Context) (string, error) {
-		cctx, cancel := context.WithTimeout(ctx, c.timeout)
-		defer cancel()
+		value, _ := envsecret.Lookup(configkeys.EnvElevenlabsAPIKey)
 
-		secret, _, err := h.Secret(cctx, configkeys.KeyElevenlabsAPIKey)
-		if err != nil {
-			return "", fmt.Errorf("%w: %w", ErrKeyUnavailable, err)
-		}
-
-		return secret.Reveal(), nil
+		return value, nil
 	}
 }
 
-// AWSCredentials returns the supplier of the AWS key pair. It reads both keys on every call with
-// one time bound for the whole read, and keeps nothing. When exactly one of the two keys is stored
-// in the database it returns ErrKeyUnavailable wrapping ErrAWSSourceMismatch: a half stored pair is
-// refused. Both stored, or none: the pair is returned. This is a check of the sources, not a transaction.
-func AWSCredentials(h confighandler.Handler, opts ...SupplierOption) AWSCredentialsFunc {
-	c := newSupplierConfig(opts)
-
+// AWSCredentials returns the supplier of the AWS key pair. It reads both variables on every call
+// and keeps nothing; the stored settings are not read. Both set: the pair. Neither set (not set,
+// empty or an unresolved placeholder): not configured, empty values and no error. Exactly one
+// set: ErrKeyUnavailable wrapping ErrAWSPairIncomplete, a half pair is refused.
+func AWSCredentials() AWSCredentialsFunc {
 	return func(ctx context.Context) (string, string, error) {
-		cctx, cancel := context.WithTimeout(ctx, c.timeout)
-		defer cancel()
+		access, _ := envsecret.Lookup(configkeys.EnvAWSAccessKey)
+		secret, _ := envsecret.Lookup(configkeys.EnvAWSSecretKey)
 
-		access, accessRes, err := h.Secret(cctx, configkeys.KeyAWSAccessKey)
-		if err != nil {
-			return "", "", fmt.Errorf("%w: %w", ErrKeyUnavailable, err)
+		if (access == "") != (secret == "") {
+			return "", "", fmt.Errorf("%w: %w", ErrKeyUnavailable, ErrAWSPairIncomplete)
 		}
 
-		secret, secretRes, err := h.Secret(cctx, configkeys.KeyAWSSecretKey)
-		if err != nil {
-			return "", "", fmt.Errorf("%w: %w", ErrKeyUnavailable, err)
-		}
-
-		if awsSourcesDiffer(accessRes.Source, secretRes.Source) {
-			return "", "", fmt.Errorf("%w: %w", ErrKeyUnavailable, ErrAWSSourceMismatch)
-		}
-
-		return access.Reveal(), secret.Reveal(), nil
+		return access, secret, nil
 	}
 }
 
-// awsSourcesDiffer tells whether exactly one of the two sources is the database.
-func awsSourcesDiffer(a, b confighandler.Source) bool {
-	return (a == confighandler.SourceDB) != (b == confighandler.SourceDB)
-}
+// LogStates logs, once, the state of each variable (name and state only, never a value). A variable
+// that is not set is an info line, because every provider key is optional; a placeholder (the text
+// of an unresolved deployment variable) is a warning. When exactly one of the two AWS variables is
+// set, one more warning tells that the AWS credentials are refused.
+func LogStates() {
+	log := logrus.WithField("func", "LogStates")
 
-// LogSources logs, once, where each key comes from (key name and source only, never a value). A
-// key that is not configured is logged at info level, because every provider key is optional
-// (they are read from the database only). A
-// read error is logged as a warning: the service starts anyway.
-func LogSources(ctx context.Context, h confighandler.Handler) {
-	log := logrus.WithField("func", "LogSources")
+	awsSet := 0
+	for _, name := range []string{configkeys.EnvAWSAccessKey, configkeys.EnvAWSSecretKey, configkeys.EnvElevenlabsAPIKey} {
+		_, state := envsecret.Lookup(name)
+		entry := log.WithFields(logrus.Fields{"variable": name, "state": state.String()})
 
-	cctx, cancel := context.WithTimeout(ctx, defaultReadTimeout)
-	defer cancel()
-
-	list, err := h.Describe(cctx)
-	if err != nil {
-		log.Warnf("Could not read the config sources. err: %v", err)
-		return
-	}
-
-	sources := map[string]confighandler.Source{}
-	for _, r := range list {
-		sources[r.Key] = r.Source
-		entry := log.WithFields(logrus.Fields{"key": r.Key, "source": r.Source})
-
-		switch r.Source {
-		case confighandler.SourceNone:
-			entry.Infof("The config key is not configured (optional); it is read from the database only. key: %s", r.Key)
-		case confighandler.SourceDBUndecryptable, confighandler.SourceDBInvalid:
-			entry.Errorf("The stored config value can not be used. key: %s, source: %s", r.Key, r.Source)
+		switch state {
+		case envsecret.Set:
+			if name != configkeys.EnvElevenlabsAPIKey {
+				awsSet++
+			}
+			entry.Infof("The variable is set. variable: %s", name)
+		case envsecret.Placeholder:
+			entry.Warnf("The variable holds an unresolved placeholder. variable: %s", name)
 		default:
-			entry.Infof("Config key. key: %s, source: %s", r.Key, r.Source)
+			entry.Infof("The variable is not set. variable: %s", name)
 		}
 	}
 
-	if awsSourcesDiffer(sources[configkeys.KeyAWSAccessKey], sources[configkeys.KeyAWSSecretKey]) {
-		log.Warnf("Only one of the two AWS keys is stored, so the AWS credentials are refused. Store or clear both. keys: %s, %s", configkeys.KeyAWSAccessKey, configkeys.KeyAWSSecretKey)
+	if awsSet == 1 {
+		log.Warnf("Only one of the two AWS variables is set, so the AWS credentials are refused. Set or unset both. variables: %s, %s", configkeys.EnvAWSAccessKey, configkeys.EnvAWSSecretKey)
 	}
 }

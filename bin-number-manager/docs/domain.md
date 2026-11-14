@@ -44,7 +44,7 @@ Internal mapping between a Number (by UUID) and the provider's own reference for
 
 ### Provider Strategy
 
-The code knows a fixed set of providers (`providerhandler` registry: `telnyx`, `twilio`). A provider has a row in `number_providers` only after an admin changed it; without a row it uses the registry defaults (telnyx: enabled, priority 10; twilio: disabled, priority 20) and no credential (a provider is usable only after its secret is stored). Adding a provider means adding a registry entry and an implementation of the provider interface (search, purchase, release, tag update); no migration is needed.
+The code knows a fixed set of providers (`providerhandler` registry: `telnyx`, `twilio`). A provider has a row in `number_providers` only after an admin changed it; without a row it uses the registry defaults (telnyx: enabled, priority 10; twilio: disabled, priority 20) and its credential from the environment (a provider is usable only when its secret variable holds a value). Adding a provider means adding a registry entry and an implementation of the provider interface (search, purchase, release, tag update); no migration is needed.
 
 Provider capabilities:
 
@@ -58,7 +58,7 @@ Provider capabilities:
 Twilio is disabled by default. Twilio numbers carry the account `sid` in the API path, so release and search need a well formed `sid` too (`AC` and 32 hex digits).
 
 Purchase (`POST /v1/numbers`) after the balance check:
-1. The usable providers that can purchase are tried in ascending `priority` (ties by name). A provider is usable when it is enabled and has a stored secret and the required `config` keys exist (Telnyx: `connection_id`; Twilio: `sid` and `trunk_sid`).
+1. The usable providers that can purchase are tried in ascending `priority` (ties by name). A provider is usable when it is enabled and has its secret variable (`TELNYX_API_KEY`, `TWILIO_AUTH_TOKEN`) set and the required `config` keys exist, in the row or in the config variable (Telnyx: `connection_id`; Twilio: `sid` and `trunk_sid`).
 2. Fallback to the next provider happens only when the provider definitively refused the order (`ErrPurchaseRejected`: for Telnyx and Twilio HTTP 400, 401, 403, 404, 422; for Telnyx also an order whose status is `failure`; for Twilio also a request that was not sent because the number or the `trunk_sid` is malformed). Any other failure (network error, timeout, 408, 409, 429, 5xx, a redirect, a success answer that cannot be read or has no valid number sid, a failed lookup after the order) may have created an order, so the purchase stops with `ErrPurchaseUnconfirmed` and the log carries `PURCHASE_UNCONFIRMED`. An operator checks the provider, and may disable the provider to route around it.
 3. A fallback only helps when the next provider holds the same number; the available number search is Telnyx only. The number a customer picked is a Telnyx stock, so an enabled Twilio with priority 1 usually refuses (Twilio error 21422, HTTP 400) and the purchase falls back to Telnyx at the cost of one more request. A Twilio number needing an address or a bundle (errors 21631, 21649) is refused the same way.
 4. The number is recorded with the provider that sold it. If the registration fails, the number is released at that provider (`ROLLBACK_RELEASE_FAILED` in the log when the release fails too).
@@ -67,7 +67,7 @@ Release (`DELETE /v1/numbers/{uuid}`, renewal without balance, customer deletion
 
 ### Provider Settings (`number_providers`)
 
-One row per provider that an admin changed: `provider_name` (key), `enabled`, `priority` (lower is tried first), `config` (non-secret values such as the Telnyx `connection_id` and `profile_id`), `secret_ciphertext` with its `key_version` (AES-256-GCM, never returned), and the audit columns `updated_by`, `tm_update`, `secret_updated_by`, `tm_secret_update`. The admin view adds `has_secret`, `credential_source` (`db`, `none`, `db_undecryptable`) and `usable`. The row `config` is used only while the row holds a secret.
+One row per provider that an admin changed: `provider_name` (key), `enabled`, `priority` (lower is tried first), `config` (non-secret values such as the Telnyx `connection_id` and `profile_id`), `secret_ciphertext` with its `key_version` (AES-256-GCM, never returned and never read by the service; legacy), and the audit columns `updated_by`, `tm_update`, `secret_updated_by`, `tm_secret_update`. The admin view adds `has_secret`, `credential_source` (`env` or `none`; `db` and `db_undecryptable` are not produced any more) and `usable`. `has_secret` and `credential_source` follow the effective secret (the secret variable); `config` is the row config only. A config key the row does not have is filled from its variable when the credentials are used (`TELNYX_CONNECTION_ID`, `TELNYX_PROFILE_ID`, `TWILIO_ACCOUNT_SID`), the row value wins.
 
 The public admin API (`/number_providers`) returns `provider.WebhookMessage` (`models/provider/webhook.go`), produced by `Info.ConvertWebhookMessage()`: the same fields as the admin view, never a secret or a ciphertext.
 

@@ -67,6 +67,11 @@ func (c *Capture) Len() int {
 	return len(c.hook.AllEntries())
 }
 
+// Entries returns the captured entries.
+func (c *Capture) Entries() []*logrus.Entry {
+	return c.hook.AllEntries()
+}
+
 // HasField reports whether any captured entry has the field key.
 func (c *Capture) HasField(key string) bool {
 	for _, e := range c.hook.AllEntries() {

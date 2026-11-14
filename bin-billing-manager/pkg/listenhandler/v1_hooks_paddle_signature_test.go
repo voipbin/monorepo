@@ -155,7 +155,7 @@ func Test_processV1HooksPaddlePost_signatureIsNotLogged(t *testing.T) {
 	}
 }
 
-// A webhook secret that is not stored is reported as an error line of its own, so that the cause
+// A webhook secret that is not configured is reported as an error line of its own, so that the cause
 // (an operator action is missing) is visible and is not mistaken for an unreadable secret.
 func Test_processV1HooksPaddlePost_noStoredSecretIsLogged(t *testing.T) {
 	mc := gomock.NewController(t)
@@ -181,7 +181,7 @@ func Test_processV1HooksPaddlePost_noStoredSecretIsLogged(t *testing.T) {
 		t.Fatalf("Wrong match. expect: 500, got: %v %v", res, err)
 	}
 
-	if !logs.HasLevel(logrus.ErrorLevel) || !strings.Contains(logs.Dump(), "is not stored") {
-		t.Errorf("Wrong match. expect: an error line that says the secret is not stored, got: %s", logs.Dump())
+	if !logs.HasLevel(logrus.ErrorLevel) || !strings.Contains(logs.Dump(), "PADDLE_WEBHOOK_SECRET") {
+		t.Errorf("Wrong match. expect: an error line that names the variable, got: %s", logs.Dump())
 	}
 }

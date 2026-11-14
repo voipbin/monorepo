@@ -14694,7 +14694,7 @@
     "/number_providers/{provider_name}/secret": {
       "put": {
         "summary": "Store the secret of a number provider",
-        "description": "Stores the secret (for example the API token) of the given number provider, encrypted. The secret is write-only: it is never returned, logged or placed in an event. The response tells only `has_secret`, the `key_version` that encrypted it and who changed it.\nThe value is trimmed of surrounding whitespace, and must be 1 to 1024 bytes long after that (multi-byte characters count per byte).\nThe provider's required `config` keys must already be set (see `PUT /number_providers/{provider_name}`), otherwise the request is rejected with 400. When the platform has no encryption key the request is answered with 503 before the `config` rule is checked.\nReplacing the secret with the token of another account makes the numbers purchased through the previous account impossible to release.\nRequires the project super admin permission.\n",
+        "description": "Stores the secret (for example the API token) of the given number provider, encrypted. The secret is write-only: it is never returned, logged or placed in an event. The response tells only `has_secret`, the `key_version` that encrypted it and who changed it.\nThe service does not use the stored secret: the provider secret is read from the platform environment, so this call does not change the credential of the provider, and `has_secret` and `credential_source` in the response follow the platform environment.\nThe value is trimmed of surrounding whitespace, and must be 1 to 1024 bytes long after that (multi-byte characters count per byte).\nThe provider's required `config` keys must already be set (see `PUT /number_providers/{provider_name}`), otherwise the request is rejected with 400. When the platform has no encryption key the request is answered with 503 before the `config` rule is checked.\nReplacing the secret with the token of another account makes the numbers purchased through the previous account impossible to release.\nRequires the project super admin permission.\n",
         "tags": [
           "NumberProvider"
         ],
@@ -14754,7 +14754,7 @@
       },
       "delete": {
         "summary": "Delete the stored secret of a number provider",
-        "description": "Deletes the stored secret of the given number provider, so the provider has no credential (`credential_source` becomes `none`) and is not usable until a new secret is stored. There is no fallback to a platform environment credential.\nThis is the recovery path when a stored secret cannot be decrypted. It returns 404 when no request has created a stored setting for the provider yet (a rejected secret request can also create one).\nUntil a new secret is stored, the numbers purchased through the provider cannot be released and no number can be purchased or searched through it. Store the new secret first when the provider is in use.\nRequires the project super admin permission.\n",
+        "description": "Deletes the secret that was stored through the API. The service does not use the stored secret, so the credential of the provider does not change: `credential_source` stays `env` and `has_secret` stays true while the platform environment holds a secret for the provider, and both are `none` and false otherwise.\nIt returns 404 when no request has created a stored setting for the provider yet (a rejected secret request can also create one).\nRequires the project super admin permission.\n",
         "tags": [
           "NumberProvider"
         ],
@@ -34326,15 +34326,17 @@
       },
       "NumberManagerNumberProviderCredentialSource": {
         "type": "string",
-        "description": "Where the credentials of the number provider come from.\n`db` is the secret stored through the API, `none` means no secret is stored (the provider is not usable until one is stored),\nand `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).\n",
-        "example": "db",
+        "description": "Where the credentials of the number provider come from.\n`env` is the secret of the platform environment (the service reads it from an environment variable) and is the only source of a usable credential,\nand `none` means the platform environment has no secret for the provider (the provider is not usable until it is set).\n`db` and `db_undecryptable` are kept in the response for older readers: the service does not produce them, because it no longer reads a secret stored through the API.\n",
+        "example": "env",
         "enum": [
           "db",
+          "env",
           "none",
           "db_undecryptable"
         ],
         "x-enum-varnames": [
           "NumberManagerNumberProviderCredentialSourceDB",
+          "NumberManagerNumberProviderCredentialSourceEnv",
           "NumberManagerNumberProviderCredentialSourceNone",
           "NumberManagerNumberProviderCredentialSourceDBUndecryptable"
         ]
@@ -34682,19 +34684,19 @@
             "additionalProperties": {
               "type": "string"
             },
-            "description": "The non-secret settings of the provider (for example the Telnyx `connection_id`). Omitted when empty.",
+            "description": "The non-secret settings stored for the provider (for example the Telnyx `connection_id`). Omitted when empty. It shows the stored values only. A setting that the stored values do not have (or have empty) is taken from the platform environment when the provider is used, so a provider that is configured only through the environment shows no `config`.",
             "example": {
               "connection_id": "1234567890123456789"
             }
           },
           "has_secret": {
             "type": "boolean",
-            "description": "Whether a secret is stored through the API. The secret itself is never returned.",
+            "description": "Whether the provider has a secret in the platform environment. A secret stored through the API does not count, because the service does not use it. The secret itself is never returned.",
             "example": true
           },
           "key_version": {
             "type": "integer",
-            "description": "The version of the encryption key that encrypted the stored secret. 0 when no secret is stored.",
+            "description": "The version of the encryption key that encrypted the secret stored through the API (legacy, the stored secret is not used). 0 when no secret is stored.",
             "example": 1
           },
           "credential_source": {

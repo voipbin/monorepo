@@ -30,11 +30,12 @@ type Config struct {
 	RedisDatabase           int
 	RedisPassword           string
 
-	// ConfigEncryptionKeys is the master key list of the stored platform keys
+	// ConfigEncryptionKeys is the master key list of the stored settings
 	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
 	// command line flag. A value that can not be parsed does not stop the service: the stored
-	// secrets can not be used then (they are reported as undecryptable and a session that needs
-	// a key is rejected).
+	// secrets can not be used then (they are reported as undecryptable). The platform keys of the
+	// vendors are not part of this config: the runner container reads them from its own
+	// environment variables.
 	ConfigEncryptionKeys string
 }
 

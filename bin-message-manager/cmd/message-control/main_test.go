@@ -14,11 +14,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"monorepo/bin-common-handler/pkg/confighandler/storetest"
-
 	"monorepo/bin-message-manager/internal/config"
 	"monorepo/bin-message-manager/internal/configkeys"
-	"monorepo/bin-message-manager/internal/messageconfig"
 )
 
 type roundTripFunc func(req *http.Request) (*http.Response, error)
@@ -51,23 +48,11 @@ func Test_newRequestExternal_tokenOrder(t *testing.T) {
 		}, nil
 	})
 
-	// two stored tokens with different values: the Telnyx request must carry the Telnyx one
-	cfg := &config.Config{ConfigEncryptionKeys: testMasterKeys()}
+	// two tokens with different values: the Telnyx request must carry the Telnyx one
+	t.Setenv(configkeys.EnvMessagebirdAPIKey, "fake-mb")
+	t.Setenv(configkeys.EnvTelnyxAPIKey, "fake-tn")
 
-	configHandler, err := messageconfig.New(cfg, storetest.NewMemory())
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	for key, value := range map[string]string{
-		configkeys.KeyMessagebirdAuthToken: "fake-mb",
-		configkeys.KeyTelnyxAuthToken:      "fake-tn",
-	} {
-		if _, errSet := configHandler.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), key, value); errSet != nil {
-			t.Fatalf("Wrong match. expect: ok, got: %v", errSet)
-		}
-	}
-
-	h := newRequestExternal(configHandler)
+	h := newRequestExternal()
 	if _, err := h.TelnyxSendMessage(context.Background(), "+15550000001", "+15550000002", "hello"); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}

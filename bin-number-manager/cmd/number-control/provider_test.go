@@ -618,7 +618,17 @@ func jsonKeys(t *testing.T, raw string) []string {
 	return res
 }
 
+// clearCredentialEnv unsets the credential variables of the providers for the test.
+func clearCredentialEnv(t *testing.T) {
+	t.Helper()
+
+	for _, name := range []string{"TELNYX_API_KEY", "TELNYX_CONNECTION_ID", "TELNYX_PROFILE_ID", "TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN"} {
+		t.Setenv(name, "")
+	}
+}
+
 func Test_provider_e2e(t *testing.T) {
+	clearCredentialEnv(t)
 	e := newProviderE2E(t, providerTestKeys())
 
 	// a provider without a row: the defaults, a literal key set (no secret field can slip in)
@@ -663,8 +673,12 @@ func Test_provider_e2e(t *testing.T) {
 	}
 	view := map[string]any{}
 	_ = json.Unmarshal([]byte(res.stdout), &view)
-	if view["has_secret"] != true || view["credential_source"] != "db" || view["key_version"] != float64(1) || view["usable"] != true {
+	// the stored secret is not used: the view follows the variable, which is not set here
+	if view["has_secret"] != false || view["credential_source"] != "none" || view["key_version"] != float64(1) || view["usable"] != false {
 		t.Errorf("Wrong match. secret set view: %v", view)
+	}
+	if !strings.Contains(res.stderr, "TELNYX_API_KEY") || !strings.Contains(res.stderr, "stored value is not used") {
+		t.Errorf("Wrong match. the notice of the variable is missing: %q", res.stderr)
 	}
 
 	// the positive control: the captured log is not empty, so its silence about the secret means something
@@ -700,7 +714,7 @@ func Test_provider_e2e(t *testing.T) {
 
 	// list shows the state only
 	res = e.run(t, "", "provider", "list")
-	if res.err != nil || strings.Contains(res.all(), canary) || !strings.Contains(res.stdout, `"has_secret": true`) {
+	if res.err != nil || strings.Contains(res.all(), canary) || !strings.Contains(res.stdout, `"has_secret": false`) {
 		t.Errorf("Wrong match. list after set: err: %v, output: %s", res.err, res.stdout)
 	}
 
@@ -713,6 +727,9 @@ func Test_provider_e2e(t *testing.T) {
 	_ = json.Unmarshal([]byte(res.stdout), &view)
 	if view["has_secret"] != false || view["credential_source"] != "none" {
 		t.Errorf("Wrong match. secret delete view: %v", view)
+	}
+	if !strings.Contains(res.stderr, "TELNYX_API_KEY") || !strings.Contains(res.stderr, "stored value is not used") {
+		t.Errorf("Wrong match. the notice of the variable is missing: %q", res.stderr)
 	}
 	if cfg, _ := view["config"].(map[string]any); cfg["connection_id"] != "conn-fake-1" {
 		t.Errorf("Wrong match. the config must stay: %v", view["config"])
@@ -807,17 +824,16 @@ func Test_provider_e2e_failures(t *testing.T) {
 	})
 }
 
-// Test_provider_e2e_noEnvironmentCredentials pins the end-to-end behavior of the provider view
-// without a stored secret: the state is none, not usable and without a secret, whatever the process
-// environment holds. The configuration has no field for a provider credential and NewProviderHandler
-// takes none, so a restored environment wiring does not compile; the flag side is pinned by
-// Test_bindConfig_noProviderCredential. This test pins the result the operator sees.
-func Test_provider_e2e_noEnvironmentCredentials(t *testing.T) {
+// Test_provider_e2e_environmentCredentials pins what the operator sees when the credential
+// variables are set: the secret comes from the variable (source env), the stored row config is
+// shown as it is, and no secret value appears in the output.
+func Test_provider_e2e_environmentCredentials(t *testing.T) {
+	clearCredentialEnv(t)
 	e := newProviderE2E(t, providerTestKeys())
-	t.Setenv("TELNYX_TOKEN", "env-fake-telnyx-token")
+	t.Setenv("TELNYX_API_KEY", "env-fake-telnyx-token")
 	t.Setenv("TELNYX_CONNECTION_ID", "env-fake-connection")
-	t.Setenv("TWILIO_TOKEN", "env-fake-twilio-token")
-	t.Setenv("TWILIO_SID", "env-fake-sid")
+	t.Setenv("TWILIO_AUTH_TOKEN", "env-fake-twilio-token")
+	t.Setenv("TWILIO_ACCOUNT_SID", "env-fake-sid")
 
 	res := e.run(t, "", "provider", "list")
 	if res.err != nil {
@@ -830,8 +846,18 @@ func Test_provider_e2e_noEnvironmentCredentials(t *testing.T) {
 	}
 
 	for _, item := range list {
-		if item["credential_source"] != "none" || item["usable"] != false || item["has_secret"] != false {
+		if item["credential_source"] != "env" || item["has_secret"] != true {
 			t.Errorf("Wrong match. view: %v", item)
+		}
+		if _, ok := item["config"]; ok {
+			t.Errorf("Wrong match. a variable value is shown as the config: %v", item)
+		}
+		// telnyx is usable through the variables, twilio is disabled by default and needs a trunk_sid
+		if item["provider_name"] == "telnyx" && item["usable"] != true {
+			t.Errorf("Wrong match. telnyx view: %v", item)
+		}
+		if item["provider_name"] == "twilio" && item["usable"] != false {
+			t.Errorf("Wrong match. twilio view: %v", item)
 		}
 	}
 	if strings.Contains(res.all(), "env-fake-telnyx-token") || strings.Contains(res.all(), "env-fake-twilio-token") {

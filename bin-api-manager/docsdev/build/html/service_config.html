@@ -6,9 +6,9 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Overview" href="service_config_overview.html"><link rel="prev" title="Billing" href="billing_struct_billing.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Service Config - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -653,7 +653,7 @@
         <article role="main" id="furo-main-content">
           <section id="service-config">
 <span id="service-config-main"></span><h1>Service Config<a class="headerlink" href="#service-config" title="Link to this heading">¶</a></h1>
-<p>A service config is a stored setting of a platform service, such as the credentials that the email service uses to talk to its providers, the LLM keys of the AI service or the SMS and MMS provider tokens of the message service, the provider keys of the text to speech service, the AWS credential of the transcribe service, the Paddle keys of the billing service or the platform keys of the voice AI vendors of the pipecat service. The Service Config API lets a platform administrator see where the value of each key comes from, store or delete a secret, and read who changed it. Only secret keys can be changed through this API for now.</p>
+<p>A service config is a stored setting of a platform service, such as the credentials that the email service uses to talk to its providers, the LLM keys of the AI service or the SMS and MMS provider tokens of the message service, the provider keys of the text to speech service, the AWS credential of the transcribe service, the Paddle keys of the billing service or the platform keys of the voice AI vendors of the pipecat service. The Service Config API lets a platform administrator see where the value of each key comes from, store or delete a secret, and read who changed it. Only secret keys can be changed through this API for now. The services read their platform secrets from environment variables, so a value stored through this API is not used now (see the note in the overview).</p>
 <p><strong>API Reference:</strong> <a class="reference external" href="https://api.voipbin.net/redoc/#tag/ServiceConfig">Service config endpoints</a></p>
 <div class="toctree-wrapper compound">
 <ul>

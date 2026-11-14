@@ -65,7 +65,7 @@ func runConfigCommand(args ...string) error {
 func Test_config_set_list_clear(t *testing.T) {
 	const secret = "synthetic-credential-value"
 
-	// the old variable is set and must change nothing
+	// the variable that the service reads is set; the list of the stored settings does not show it
 	t.Setenv("AWS_SECRET_KEY", "env-value")
 	store, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, secret+"\n")
 
@@ -101,6 +101,57 @@ func Test_config_set_list_clear(t *testing.T) {
 	if !strings.Contains(out.String(), `"source": "none"`) || strings.Contains(out.String(), `"source": "env"`) {
 		t.Errorf("Wrong match. expect: source none after the clear, got: %s", out.String())
 	}
+}
+
+// After a set or a clear, one line on stderr names the variable that is read and says that the stored
+// value is not used. The output on stdout stays the JSON only.
+func Test_config_noticeOnStderr(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		key  string
+		env  string
+	}{
+		{name: "set access key", args: []string{"set", "--key", "aws.access_key", "--actor-id", testActor}, key: "aws.access_key", env: "AWS_ACCESS_KEY"},
+		{name: "set secret key", args: []string{"set", "--key", "aws.secret_key", "--actor-id", testActor}, key: "aws.secret_key", env: "AWS_SECRET_KEY"},
+		{name: "clear access key", args: []string{"clear", "--key", "aws.access_key", "--actor-id", testActor}, key: "aws.access_key", env: "AWS_ACCESS_KEY"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, "synthetic-credential-value\n")
+			errOut := &bytes.Buffer{}
+			saved := configErr
+			configErr = errOut
+			t.Cleanup(func() { configErr = saved })
+
+			if err := runConfigCommand(tt.args...); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			got := errOut.String()
+			if strings.Count(got, "\n") != 1 || !strings.Contains(got, tt.env) || !strings.Contains(got, "not used") || strings.Contains(got, "synthetic-credential-value") {
+				t.Errorf("Wrong match. expect: one line that names %s, got: %q", tt.env, got)
+			}
+			if strings.Contains(out.String(), tt.env) {
+				t.Errorf("Wrong match. the notice must not be on stdout: %s", out.String())
+			}
+		})
+	}
+
+	t.Run("a failed set prints no notice", func(t *testing.T) {
+		useConfigHarness(t, &config.Config{}, "v\n")
+		errOut := &bytes.Buffer{}
+		saved := configErr
+		configErr = errOut
+		t.Cleanup(func() { configErr = saved })
+
+		if err := runConfigCommand("set", "--key", "aws.access_key", "--actor-id", testActor); err == nil {
+			t.Fatalf("Wrong match. expect: an error")
+		}
+		if errOut.Len() != 0 {
+			t.Errorf("Wrong match. expect: no notice, got: %q", errOut.String())
+		}
+	})
 }
 
 func Test_config_errors(t *testing.T) {

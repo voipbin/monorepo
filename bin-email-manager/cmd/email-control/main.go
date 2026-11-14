@@ -16,7 +16,6 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-email-manager/internal/config"
-	"monorepo/bin-email-manager/internal/configkeys"
 	"monorepo/bin-email-manager/internal/emailconfig"
 	"monorepo/bin-email-manager/migrations"
 	"monorepo/bin-email-manager/models/email"
@@ -71,17 +70,9 @@ func initEmailHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (emailhand
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameEmailEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	configHandler, err := emailconfig.New(config.Get(), db.ConfigStore())
-	if err != nil {
-		return nil, errors.Wrap(err, "could not create the config handler")
-	}
+	sendgridKey, mailgunKey, mailgunSigningKey := emailconfig.Suppliers()
 
-	return emailhandler.NewEmailHandler(
-		db, reqHandler, notifyHandler,
-		emailconfig.Supplier(configHandler, configkeys.KeySendgridAPIKey),
-		emailconfig.Supplier(configHandler, configkeys.KeyMailgunAPIKey),
-		emailconfig.Supplier(configHandler, configkeys.KeyMailgunWebhookSigningKey),
-	), nil
+	return emailhandler.NewEmailHandler(db, reqHandler, notifyHandler, sendgridKey, mailgunKey, mailgunSigningKey), nil
 }
 
 func initCommand() *cobra.Command {

@@ -44,7 +44,7 @@ func testNumberProviderMessage() *nmprovider.WebhookMessage {
 		Priority:         10,
 		HasSecret:        true,
 		KeyVersion:       1,
-		CredentialSource: nmprovider.CredentialSourceDB,
+		CredentialSource: nmprovider.CredentialSourceEnv,
 		Usable:           true,
 	}
 }
@@ -123,7 +123,7 @@ func Test_numberProvidersGet(t *testing.T) {
 		t.Fatalf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 	}
 
-	expect := `{"result":[{"provider_name":"telnyx","enabled":true,"priority":10,"has_secret":true,"key_version":1,"credential_source":"db","usable":true}],"next_page_token":""}`
+	expect := `{"result":[{"provider_name":"telnyx","enabled":true,"priority":10,"has_secret":true,"key_version":1,"credential_source":"env","usable":true}],"next_page_token":""}`
 	if w.Body.String() != expect {
 		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", expect, w.Body.String())
 	}
@@ -164,7 +164,7 @@ func Test_numberProvidersIDGet(t *testing.T) {
 		t.Fatalf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 	}
 
-	expect := `{"provider_name":"telnyx","enabled":true,"priority":10,"has_secret":true,"key_version":1,"credential_source":"db","usable":true}`
+	expect := `{"provider_name":"telnyx","enabled":true,"priority":10,"has_secret":true,"key_version":1,"credential_source":"env","usable":true}`
 	if w.Body.String() != expect {
 		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", expect, w.Body.String())
 	}

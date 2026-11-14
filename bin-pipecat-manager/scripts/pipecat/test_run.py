@@ -60,18 +60,17 @@ class TestCreateLLMService:
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
     @patch("run.OpenAILLMService")
-    def test_grok_ignores_the_env_var_and_rejects_without_a_key(self, mock_service, mock_context, mock_pair):
-        """XAI_API_KEY of the process is not a source: no key is a rejection before the SDK."""
+    def test_grok_uses_the_env_var_without_a_key_and_rejects_without_both(self, mock_service, mock_context, mock_pair):
+        """XAI_API_KEY of the container is the platform source; neither it nor a key is a rejection before the SDK."""
         from run import create_llm_service
 
         with patch.dict(os.environ, {"XAI_API_KEY": "env-xai-key"}):
-            with pytest.raises(ValueError, match="xAI is not configured"):
-                create_llm_service(
-                    type="grok.grok-3-mini",
-                    key="",
-                    messages=[],
-                    tools=[]
-                )
+            create_llm_service(type="grok.grok-3-mini", key="", messages=[], tools=[])
+        assert mock_service.call_args.kwargs["api_key"] == "env-xai-key"
+        mock_service.reset_mock()
+
+        with pytest.raises(ValueError, match="xAI is not configured"):
+            create_llm_service(type="grok.grok-3-mini", key="", messages=[], tools=[])
 
         mock_service.assert_not_called()
 
@@ -97,18 +96,17 @@ class TestCreateLLMService:
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
     @patch("run.GoogleLLMService")
-    def test_gemini_ignores_the_env_var_and_rejects_without_a_key(self, mock_service, mock_context, mock_pair):
-        """GOOGLE_API_KEY of the process is not a source: no key is a rejection before the SDK."""
+    def test_gemini_uses_the_env_var_without_a_key_and_rejects_without_both(self, mock_service, mock_context, mock_pair):
+        """GOOGLE_API_KEY of the container is the platform source; neither it nor a key is a rejection before the SDK."""
         from run import create_llm_service
 
         with patch.dict(os.environ, {"GOOGLE_API_KEY": "env-google-key"}):
-            with pytest.raises(ValueError, match="Google is not configured"):
-                create_llm_service(
-                    type="gemini.gemini-1.5-pro",
-                    key="",
-                    messages=[],
-                    tools=[]
-                )
+            create_llm_service(type="gemini.gemini-1.5-pro", key="", messages=[], tools=[])
+        assert mock_service.call_args.kwargs["api_key"] == "env-google-key"
+        mock_service.reset_mock()
+
+        with pytest.raises(ValueError, match="Google is not configured"):
+            create_llm_service(type="gemini.gemini-1.5-pro", key="", messages=[], tools=[])
 
         mock_service.assert_not_called()
 
@@ -972,7 +970,7 @@ class TestPlatformOpenRouter:
     """platform_openrouter.<slug>: platform-held key, ZDR provider routing.
 
     The customer key argument is ignored by design, and the platform key comes
-    from the platform_keys of the request only (never from the process environment). The customer-keyed
+    from the platform_keys of the request, else the OPENROUTER_API_KEY of the container. The customer-keyed
     `openrouter.<id>` form is covered by TestCustomOpenRouter; the colon form
     `openrouter:<id>` must stay "Unsupported LLM service".
     """
@@ -1043,14 +1041,11 @@ class TestPlatformOpenRouter:
 
     @pytest.mark.parametrize("platform_keys", [None, {}, {"openrouter.api_key": ""}])
     @patch("run.OpenRouterLLMService")
-    def test_missing_or_empty_request_key_raises_whatever_the_env_has(self, mock_service, platform_keys):
+    def test_missing_request_key_and_variable_raises_whatever_else_is_set(self, mock_service, platform_keys):
         from run import create_llm_service
 
-        # Neither OPENROUTER_API_KEY nor OPENAI_API_KEY of the process rescues a missing platform key.
-        environ = {k: v for k, v in os.environ.items()}
-        environ["OPENROUTER_API_KEY"] = "dummy-or-env-not-real"
-        environ["OPENAI_API_KEY"] = "dummy-openai-env-not-real"
-        with patch.dict(os.environ, environ, clear=True):
+        # The OPENAI_API_KEY of the process is another vendor and does not rescue a missing platform key.
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "dummy-openai-env-not-real"}):
             with pytest.raises(ValueError, match="OpenRouter is not configured"):
                 # A customer key must NOT rescue a missing platform key.
                 create_llm_service(

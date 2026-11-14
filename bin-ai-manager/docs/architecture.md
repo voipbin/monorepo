@@ -21,7 +21,7 @@ cmd/ai-manager/main.go
 
 **Supporting binaries:**
 - `cmd/ai-control/` — CLI tool for direct DB/cache operations (bypasses RabbitMQ); `migrate` command for the schema migrations
-- `migrations/` — embedded golang-migrate SQL files (service-owned schema of the thirteen `ai_*` tables, including the stored platform settings `ai_configs` and `ai_config_histories`); `cmd/ai-manager` applies them right after the database connection, before the cache and RabbitMQ
+- `migrations/` — embedded golang-migrate SQL files (service-owned schema of the thirteen `ai_*` tables, including the stored platform settings `ai_configs` and `ai_config_histories`, which no read path uses); `cmd/ai-manager` applies them right after the database connection, before the cache and RabbitMQ
 
 ## Layer Responsibilities
 
@@ -37,7 +37,7 @@ cmd/ai-manager/main.go
 | Domain | `pkg/toolhandler` | LLM tool definitions; dispatches tool calls to downstream managers |
 | Engine | `pkg/engine_openai_handler` | OpenAI Chat Completions API (also Grok via base URL override) |
 | Engine | `pkg/engine_dialogflow_handler` | Google Dialogflow CX/ES |
-| Config | `internal/aiconfig`, `internal/configkeys`, `pkg/dbhandler/config_store.go` | Stored platform LLM keys (encrypted, database only) and the MCP OAuth app of each vendor (`client_id` and `client_secret`, database only; a vendor without a stored pair is not configured). `aiconfig.KeyForBaseURL` and `GeminiKey` return a function that reads the key when it is called (nothing is cached); the engines, the Gemini handlers and the Builder availability check call it per request. `aiconfig.MCPOAuthClient` resolves the pair of a vendor for `pkg/mcpoauthhandler` (through the `CredentialsFunc` wired in `cmd/ai-manager`) at the time of use |
+| Config | `internal/aiconfig`, `internal/configkeys`, `pkg/dbhandler/config_store.go` | The platform LLM keys (`OPENAI_API_KEY`, `GOOGLE_API_KEY`) and the MCP OAuth app of each vendor (`<VENDOR>_MCP_OAUTH_CLIENT_ID` and `_CLIENT_SECRET`) are read from environment variables through `pkg/envsecret` of bin-common-handler; a variable that is not set, is empty or is an unresolved placeholder is not configured. `aiconfig.KeyForBaseURL` and `GeminiKey` return a function that reads the variable when it is called (nothing is cached); the engines, the Gemini handlers and the Builder availability check call it per request. `aiconfig.MCPOAuthClient` resolves the pair of a vendor for `pkg/mcpoauthhandler` (through the `CredentialsFunc` wired in `cmd/ai-manager`) at the time of use; `aiconfig.LogStates` logs the state of each variable at start. The stored settings (`aiconfig.New`, the config store, encrypted) serve the admin API and `ai-control config` only and are not read by any call |
 | Data | `pkg/dbhandler` | MySQL CRUD via Squirrel SQL builder |
 | Data | `pkg/cachehandler` | Redis cache for AI/AIcall lookups |
 

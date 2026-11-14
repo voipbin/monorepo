@@ -45,6 +45,13 @@ type Descriptor struct {
 	// usable (so never a purchase candidate), while it can still serve release and search.
 	RequiredConfig []string
 
+	// EnvSecret is the environment variable that holds the secret of the provider.
+	EnvSecret string
+
+	// EnvConfig maps a config key to the environment variable that fills it when the row has no
+	// value for the key.
+	EnvConfig map[string]string
+
 	// Purchasable is false when the provider cannot buy numbers (it is never a purchase candidate).
 	Purchasable bool
 
@@ -150,6 +157,8 @@ func newRegistry(r requesthandler.RequestHandler, db dbhandler.DBHandler) map[nu
 			Factory: func(c provider.Credentials) (Provider, error) {
 				return numberhandlertelnyx.NewNumberHandler(r, db, c.Config[configConnectionID], c.Config[configProfileID], c.Secret), nil
 			},
+			EnvSecret:       envTelnyxAPIKey,
+			EnvConfig:       map[string]string{configConnectionID: envTelnyxConnectionID, configProfileID: envTelnyxProfileID},
 			AllowedConfig:   []string{configConnectionID, configProfileID},
 			RequiredConfig:  []string{configConnectionID},
 			Purchasable:     true,
@@ -166,6 +175,8 @@ func newRegistry(r requesthandler.RequestHandler, db dbhandler.DBHandler) map[nu
 				}
 				return numberhandlertwilio.NewNumberHandler(r, db, c.Config[configSID], c.Config[configTrunkSID], c.Secret), nil
 			},
+			EnvSecret:       envTwilioAuthToken,
+			EnvConfig:       map[string]string{configSID: envTwilioAccountSID},
 			AllowedConfig:   []string{configSID, configTrunkSID},
 			RequiredConfig:  []string{configSID, configTrunkSID},
 			Purchasable:     true,
@@ -181,4 +192,13 @@ const (
 	configProfileID    = "profile_id"
 	configSID          = "sid"
 	configTrunkSID     = "trunk_sid"
+)
+
+// environment variables of the platform credentials
+const (
+	envTelnyxAPIKey       = "TELNYX_API_KEY"
+	envTelnyxConnectionID = "TELNYX_CONNECTION_ID"
+	envTelnyxProfileID    = "TELNYX_PROFILE_ID"
+	envTwilioAccountSID   = "TWILIO_ACCOUNT_SID"
+	envTwilioAuthToken    = "TWILIO_AUTH_TOKEN"
 )

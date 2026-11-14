@@ -68,6 +68,18 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: REDIS_DATABASE
+            - name: AWS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: AWS_ACCESS_KEY
+                  optional: true
+            - name: AWS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: AWS_SECRET_KEY
+                  optional: true
             - name: STREAMING_LISTEN_PORT
               value: "8080"
             - name: STT_PROVIDER_PRIORITY

@@ -53,6 +53,36 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: REDIS_DATABASE
+            - name: TELNYX_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: TELNYX_API_KEY
+                  optional: true
+            - name: TELNYX_CONNECTION_ID
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: TELNYX_CONNECTION_ID
+                  optional: true
+            - name: TELNYX_PROFILE_ID
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: TELNYX_PROFILE_ID
+                  optional: true
+            - name: TWILIO_ACCOUNT_SID
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: TWILIO_ACCOUNT_SID
+                  optional: true
+            - name: TWILIO_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: TWILIO_AUTH_TOKEN
+                  optional: true
             - name: NUMBER_SECRET_ENCRYPTION_KEYS
               valueFrom:
                 secretKeyRef:

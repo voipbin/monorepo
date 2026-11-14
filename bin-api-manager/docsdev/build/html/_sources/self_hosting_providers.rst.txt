@@ -10,56 +10,77 @@ installer's own ``docker-compose.yml.dist`` (the Docker Compose
 self-hosting stack); a Kubernetes/hosted-service deployment wires some
 of these variables differently and is out of scope for this page.
 
-Provider keys that are stored settings
-------------------------------------------
+Platform provider keys are environment variables
+------------------------------------------------------
 
-The following provider keys are stored settings of their service. The
-service reads them from its database only; it does not read a ``.env``
-variable or a container environment variable for them, so setting the
-matching variable alone has no effect on these services:
+The platform keys of the providers below are read from environment
+variables of the service container, and only from there. A change needs a
+restart of the service (a restart of ``pipecat-script-runner`` for the
+``pipecat`` keys). An unset variable, an empty variable, or a value that is
+still an unresolved placeholder (a text that starts with ``[[``) means that
+the key is not configured: the service does not stop, and a call that needs
+the key fails with the provider error. Each service logs the state of its
+variables once at start (the variable name only, never a value).
 
-- ``ai-manager``: ``llm.openai_compat.api_key``, ``llm.gemini.api_key``
-- ``email-manager``: ``sendgrid.api_key``, ``mailgun.api_key``,
-  ``mailgun.webhook_signing_key``
-- ``message-manager``: ``provider.messagebird.auth_token``,
-  ``provider.telnyx.auth_token``
-- ``transcribe-manager``: ``aws.access_key``, ``aws.secret_key``
-- ``tts-manager``: ``aws.access_key``, ``aws.secret_key``,
-  ``elevenlabs.api_key``
+.. list-table::
+   :header-rows: 1
+   :widths: 30 45 25
 
-Store each key with the ``config set`` command of the service
-(``ai-control``, ``email-control``, ``message-control``,
-``transcribe-control`` or ``tts-control``, run inside the service
-container, with the value on standard input and an ``--actor-id``) or
-with the Service Config API (see Service Config). The change is used by
-the next request, with no restart. The master key variable of the
-service (for example ``EMAIL_CONFIG_ENCRYPTION_KEYS``) is still an
-environment variable and must be set before a secret can be stored.
-``config list`` shows the source of every key: ``db`` means that a value
-is stored, ``none`` means that the key is not configured. The services
-log a warning or an info line at start for a key that is not configured
-(the key name only).
+   * - Variable
+     - Used for
+     - Services
+   * - ``OPENAI_API_KEY``
+     - OpenAI key (the platform default key of the LLM calls and the real-time voice pipeline)
+     - ``ai-manager``, ``pipecat-script-runner``
+   * - ``GOOGLE_API_KEY``
+     - Gemini API key
+     - ``ai-manager``, ``pipecat-script-runner``
+   * - ``XAI_API_KEY``, ``OPENROUTER_API_KEY``, ``DEEPGRAM_API_KEY``, ``CARTESIA_API_KEY``
+     - xAI, OpenRouter, Deepgram and Cartesia keys
+     - ``pipecat-script-runner``
+   * - ``LOCAL_LLM_ENDPOINTS``
+     - One line of JSON that maps a local endpoint name to its ``base_url`` and ``api_key``
+     - ``pipecat-script-runner``
+   * - ``ELEVENLABS_API_KEY``
+     - ElevenLabs key
+     - ``tts-manager``, ``pipecat-script-runner``
+   * - ``AWS_ACCESS_KEY``, ``AWS_SECRET_KEY``
+     - AWS credential (Polly and Transcribe)
+     - ``tts-manager``, ``transcribe-manager``
+   * - ``SENDGRID_API_KEY``, ``MAILGUN_API_KEY``, ``MAILGUN_WEBHOOK_SIGNING_KEY``
+     - Email providers
+     - ``email-manager``
+   * - ``MESSAGEBIRD_API_KEY``, ``TELNYX_API_KEY``
+     - SMS and MMS providers
+     - ``message-manager``
+   * - ``TELNYX_API_KEY``, ``TELNYX_CONNECTION_ID``, ``TELNYX_PROFILE_ID``, ``TWILIO_ACCOUNT_SID``, ``TWILIO_AUTH_TOKEN``
+     - Number providers (see the telephony table below)
+     - ``number-manager``
+   * - ``PADDLE_API_KEY``, ``PADDLE_WEBHOOK_SECRET``
+     - Paddle account
+     - ``billing-manager``
 
-``billing-manager`` has ``paddle.api_key`` and
-``paddle.webhook_secret_key``. They are read from the stored value only,
-like the keys above: the service does not read an environment variable
-for them. Without a stored ``paddle.webhook_secret_key`` every Paddle
-webhook is rejected, and without a stored ``paddle.api_key`` the customer
-portal session of Paddle can not be created.
+A variable that two services use has one name and must hold the same value
+for both (for example ``OPENAI_API_KEY`` of ``ai-manager`` and of
+``pipecat-script-runner``, or ``TELNYX_API_KEY`` of ``message-manager`` and
+``number-manager``). A rotation of the vendor account is one change of the
+variable in the deployment, followed by a restart of the services that use it.
 
-``pipecat-manager`` has ``openai.api_key``, ``deepgram.api_key``,
-``cartesia.api_key``, ``xai.api_key``, ``elevenlabs.api_key``,
-``google.api_key``, ``openrouter.api_key`` and ``local_llm.endpoints``. They
-are read from the stored value only, like the keys above: neither
-``pipecat-manager`` nor ``pipecat-script-runner`` reads an environment
-variable for them. A session that needs a key that is not stored fails (the
-runner answers ``<vendor> is not configured``).
-Store them with the ``config set`` command of ``billing-control`` or
-``pipecat-control`` or with the Service Config API (the ``billing`` and
-``pipecat`` services). A change of a ``pipecat`` key is used from the next
-session. A key that both a manager and the pipecat services use
-(the Google and ElevenLabs keys) is a separate setting in
-each service and must be replaced in both.
+The AWS pair is used only together: when exactly one of the two variables is
+set, the pair is refused (``tts-manager`` fails the request, and the start log
+of ``tts-manager`` and ``transcribe-manager`` warns). Without
+``PADDLE_WEBHOOK_SECRET`` every Paddle webhook is rejected, and without
+``PADDLE_API_KEY`` the customer portal session of Paddle can not be created.
+The ``pipecat-manager`` Go service reads no provider key; the runner reads
+its variables from its own container and uses the key of a request first,
+when the request carries one. A session that needs a key that is not set
+fails (the runner answers ``<vendor> is not configured``).
+
+Values that were stored through the ``config set`` commands or the Service
+Config API (see Service Config) are not read by these services now. A
+``config set`` or ``clear`` of such a key prints a notice that names the
+variable that is read, and the stored value has no effect. After a rotation
+through the variable, a stored value that is left behind is stale.
 
 AI voice agent providers
 ----------------------------
@@ -73,43 +94,42 @@ AI voice agent providers
      - Env var(s)
    * - LLM / conversation (batch, e.g. audit evaluation)
      - OpenAI
-     - Stored key ``llm.openai_compat.api_key`` (no restart)
+     - ``OPENAI_API_KEY`` (restart ``ai-manager``)
    * - LLM / conversation (real-time voice pipeline)
      - OpenAI, Google Gemini, xAI
-     - Stored keys ``openai.api_key``, ``google.api_key`` and
-       ``xai.api_key`` of ``pipecat-manager`` (no restart)
+     - ``OPENAI_API_KEY``, ``GOOGLE_API_KEY`` and ``XAI_API_KEY``
+       (restart ``pipecat-script-runner``)
    * - LLM / conversation (real-time voice pipeline, platform-managed models)
      - OpenRouter (serves the Anthropic Claude, Meta Llama, DeepSeek, Qwen,
        and Mistral models that ``GET /ai_models`` lists with
        ``platform_managed`` set to ``true``)
-     - Stored key ``openrouter.api_key`` of ``pipecat-manager`` (no restart)
+     - ``OPENROUTER_API_KEY`` (restart ``pipecat-script-runner``)
    * - LLM / conversation (real-time voice pipeline, local models)
      - Self-hosted OpenAI-compatible servers (vLLM, llama.cpp, Ollama, and similar)
      - ``LOCAL_LLM_MODELS`` (restart ``ai-manager`` and ``pipecat-manager``),
-       stored key ``local_llm.endpoints`` of ``pipecat-manager`` (no restart)
+       ``LOCAL_LLM_ENDPOINTS`` (restart ``pipecat-script-runner``)
    * - Speech-to-text
      - Deepgram, AWS Transcribe, Google Cloud Speech-to-Text
-     - Stored key ``deepgram.api_key`` of ``pipecat-manager`` (no
-       restart); stored keys ``aws.access_key`` and
-       ``aws.secret_key`` (no restart); ``GOOGLE_APPLICATION_CREDENTIALS``
+     - ``DEEPGRAM_API_KEY`` (restart ``pipecat-script-runner``);
+       ``AWS_ACCESS_KEY`` and ``AWS_SECRET_KEY`` (restart
+       ``transcribe-manager``); ``GOOGLE_APPLICATION_CREDENTIALS``
        (restart ``transcribe-manager``)
    * - Text-to-speech
      - ElevenLabs, Cartesia, AWS Polly, Google Cloud TTS
-     - Stored keys ``cartesia.api_key`` of ``pipecat-manager``,
-       ``elevenlabs.api_key``,
-       ``aws.access_key`` and ``aws.secret_key`` (no restart);
-       ``GOOGLE_APPLICATION_CREDENTIALS`` (restart ``tts-manager``)
+     - ``CARTESIA_API_KEY`` (restart ``pipecat-script-runner``);
+       ``ELEVENLABS_API_KEY``, ``AWS_ACCESS_KEY`` and ``AWS_SECRET_KEY``
+       (restart ``tts-manager``); ``GOOGLE_APPLICATION_CREDENTIALS``
+       (restart ``tts-manager``)
 
-The stored ``google.api_key`` and ``GOOGLE_APPLICATION_CREDENTIALS`` are two
+``GOOGLE_API_KEY`` and ``GOOGLE_APPLICATION_CREDENTIALS`` are two
 unrelated settings that happen to share the "Google" prefix. Do not
 confuse them:
 
-- ``google.api_key`` is a Gemini API key. ``pipecat-manager``'s
-  real-time voice pipeline reads the stored value for live Gemini
-  conversations (no restart after changing it).
-  ``ai-manager`` does not read it: its Gemini key (batch audit
-  evaluation, prompt proposal and the Gemini based summary, analysis
-  and builder calls) is the stored key ``llm.gemini.api_key``.
+- ``GOOGLE_API_KEY`` is a Gemini API key. The real-time voice pipeline
+  (``pipecat-script-runner``) uses it for live Gemini conversations, and
+  ``ai-manager`` uses it for batch audit evaluation, prompt proposal and the
+  Gemini based summary, analysis and builder calls. Both read the same
+  variable name, so both must hold the same key.
 - ``GOOGLE_APPLICATION_CREDENTIALS`` is a GCP service-account JSON key
   file path. It is mounted into **five** services in this installer's
   Docker Compose stack: ``api-manager``, ``rag-manager``,
@@ -117,11 +137,11 @@ confuse them:
   ``storage-manager`` treats a missing value as fatal for signed
   download/upload URLs; ``tts-manager`` falls back to AWS Polly if
   unset. ``pipecat-manager`` does **not** consume this variable in the
-  Docker Compose stack (it only uses the stored ``google.api_key``, above) --
+  Docker Compose stack (it only uses ``GOOGLE_API_KEY``, above) --
   restarting ``pipecat-manager`` for a ``GOOGLE_APPLICATION_CREDENTIALS``
   change has no effect.
 
-The stored ``xai.api_key`` has no dedicated feature write-up; it is
+``XAI_API_KEY`` has no dedicated feature write-up; it is
 consumed by ``pipecat-manager``'s real-time voice pipeline as an LLM
 alternative, not by ``ai-manager``.
 
@@ -132,15 +152,13 @@ Models that ``GET /ai_models`` reports with ``platform_managed`` set to
 ``true`` (Anthropic Claude, Meta Llama, DeepSeek, Qwen, and Mistral) do
 not use the per-AI ``engine_key`` that a user enters. In the real-time
 voice pipeline they are served through OpenRouter with a key that you,
-the operator, supply once as the stored key ``openrouter.api_key`` of
-``pipecat-manager`` (``pipecat-control config set``). Notes
-on how it behaves:
+the operator, supply once as the variable ``OPENROUTER_API_KEY`` of
+``pipecat-script-runner``. Notes on how it behaves:
 
-- ``pipecat-manager`` (the Go service) reads the stored key when a
-  session starts and hands it to ``pipecat-script-runner`` in the start
-  request, so a change is used from the next session and needs no restart.
-  The runner reads no environment variable for it.
-- Without a stored key these models stay selectable in the catalog (there
+- ``pipecat-script-runner`` reads the variable when a session starts, so
+  a changed value needs a restart of the runner container and is used from
+  the next session. ``pipecat-manager`` (the Go service) reads no key.
+- Without the variable these models stay selectable in the catalog (there
   is no global on/off switch), but a session that uses one fails when the
   runner initializes the LLM service, with the error
   ``OpenRouter is not configured``. Other models (OpenAI, Gemini, xAI)
@@ -153,9 +171,9 @@ on how it behaves:
   ``data_collection`` set to ``deny``, and only to endpoints that
   support tool calling. This is fixed and not configurable.
 - ``pipecat-script-runner`` is pinned by image digest in
-  ``docker-compose.yml.dist``. The stored key has an effect only after the
-  ``pipecat-manager`` and ``pipecat-script-runner`` images that read the
-  stored keys are adopted (for example with ``scripts/sync-compose-images.sh``).
+  ``docker-compose.yml.dist``. The variable has an effect only after a
+  ``pipecat-script-runner`` image that reads the environment keys is adopted
+  (for example with ``scripts/sync-compose-images.sh``).
 
 Local models (self-hosted OpenAI-compatible servers)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -173,8 +191,8 @@ no separate on/off switch. This is not the same as the OpenRouter models above:
 Two settings. Write each value as compact JSON (no space after a colon or
 comma); write a ``$`` character as ``$$`` in the Docker Compose variable.
 
-- ``local_llm.endpoints`` (secret, a stored key of ``pipecat-manager``, at
-  most 2020 bytes, set with ``pipecat-control config set``): a JSON
+- ``LOCAL_LLM_ENDPOINTS`` (secret, a variable of
+  ``pipecat-script-runner``): a JSON
   object that maps an endpoint name to its connection, for example
   ``{"vllm-a":{"base_url":"http://llm.internal:8000/v1","api_key":""}}``.
   The name is lower case letters, digits and ``-`` (up to 32 characters).
@@ -192,7 +210,7 @@ comma); write a ``$`` character as ``$$`` in the Docker Compose variable.
   The endpoint name, ``id`` and ``label`` are shown to users, so do not put
   internal host names in them.
 
-To enable: store the endpoints, set ``LOCAL_LLM_MODELS``, redeploy
+To enable: set ``LOCAL_LLM_ENDPOINTS`` on the runner and ``LOCAL_LLM_MODELS``, redeploy
 ``pipecat-manager`` and ``pipecat-script-runner`` together (same image),
 then redeploy ``ai-manager`` last. To remove a model: move the AIs that use it to another
 model first, then redeploy ``ai-manager`` first and the pipecat services
@@ -257,7 +275,7 @@ consume that specific variable, per the tables above:
 
 .. code-block:: bash
 
-    sudo ./voipbin restart pipecat-manager       # LOCAL_LLM_MODELS (the pipecat keys are stored settings: no restart)
+    sudo ./voipbin restart pipecat-manager       # LOCAL_LLM_MODELS (restart ``pipecat-script-runner`` for the pipecat keys)
     sudo ./voipbin restart transcribe-manager    # GOOGLE_APPLICATION_CREDENTIALS
     sudo ./voipbin restart tts-manager           # GOOGLE_APPLICATION_CREDENTIALS
     sudo ./voipbin restart rag-manager           # GOOGLE_APPLICATION_CREDENTIALS
@@ -324,33 +342,39 @@ Telephony and messaging providers
    :widths: 25 40 35
 
    * - Provider
-     - Env var(s) or stored key
+     - Env var(s)
      - Consuming service
    * - Twilio (PSTN numbers)
-     - Stored provider setting (``sid``, ``trunk_sid`` and the secret), no ``.env`` variable
+     - ``TWILIO_ACCOUNT_SID`` and ``TWILIO_AUTH_TOKEN``
      - ``number-manager``
-   * - Telnyx (PSTN numbers and messaging)
-     - Stored provider setting (``connection_id`` and the secret; ``profile_id`` is optional), no ``.env`` variable
+   * - Telnyx (PSTN numbers)
+     - ``TELNYX_API_KEY``, ``TELNYX_CONNECTION_ID`` and ``TELNYX_PROFILE_ID`` (optional)
      - ``number-manager``
+   * - Telnyx (SMS and MMS)
+     - ``TELNYX_API_KEY``
+     - ``message-manager``
    * - MessageBird (SMS)
-     - Stored key ``provider.messagebird.auth_token`` (no restart)
+     - ``MESSAGEBIRD_API_KEY``
      - ``message-manager``
 
-``number-manager`` reads the Twilio and Telnyx credentials from the stored
-Number Provider settings only; it does not read ``TWILIO_*`` or
-``TELNYX_*`` variables from the ``.env`` file or the container
-environment, so setting them has no effect. Store the ``config`` and the
-secret of each carrier with the Number Provider API (see Number Provider);
-the master key variable ``NUMBER_SECRET_ENCRYPTION_KEYS`` is still an
-environment variable and must be set before a secret can be stored.
-Without a stored Telnyx secret and ``connection_id`` no number can be
-purchased and the available number search fails.
-``message-manager`` does not read a ``.env`` variable either: its MessageBird and
-Telnyx tokens (``provider.messagebird.auth_token`` and
-``provider.telnyx.auth_token``) are stored settings, set with
-``message-control config set`` or the Service Config API (the ``message``
-service). Without a stored Telnyx token the SMS and MMS sends of
-``message-manager`` fail at the provider.
+``number-manager`` reads the carrier secret (``TELNYX_API_KEY`` or
+``TWILIO_AUTH_TOKEN``) from the environment only. A secret that is stored
+through the Number Provider API is not used. The ``enabled``, ``priority``
+and ``config`` of the Number Provider settings are still read from the
+database. The three variables ``TELNYX_CONNECTION_ID``,
+``TELNYX_PROFILE_ID`` and ``TWILIO_ACCOUNT_SID`` fill a ``config`` key that
+the stored setting does not have, so a deployment without any stored
+setting works with the variables alone; a value that is stored in the
+``config`` wins over the variable (a ``config`` value left from before
+hides a changed variable, so check ``config`` after a change). ``trunk_sid``
+of Twilio has no variable and is set in the ``config``. Without the secret
+variable no number can be purchased or released and the available number
+search fails. The Number Provider API still accepts a secret, but the
+stored value is not used (see Number Provider).
+``message-manager`` reads its MessageBird and Telnyx keys the same way
+(``MESSAGEBIRD_API_KEY`` and ``TELNYX_API_KEY``). Without ``TELNYX_API_KEY``
+the SMS and MMS sends of ``message-manager`` fail at the provider.
+Restart the service after a change of a variable.
 
 .. code-block:: bash
 
@@ -364,19 +388,15 @@ Email providers
    :widths: 25 40 35
 
    * - Provider
-     - How the key is set
+     - Env var(s)
      - Consuming service
    * - SendGrid
-     - Stored key ``sendgrid.api_key`` (no restart)
+     - ``SENDGRID_API_KEY`` (restart ``email-manager``)
      - ``email-manager``
    * - Mailgun
-     - Stored keys ``mailgun.api_key`` and ``mailgun.webhook_signing_key``
-       (no restart)
+     - ``MAILGUN_API_KEY`` and ``MAILGUN_WEBHOOK_SIGNING_KEY`` (restart
+       ``email-manager``)
      - ``email-manager``
-
-``email-manager`` does not read a ``.env`` variable for these keys; store
-them with ``email-control config set`` or the Service Config API (the
-``email`` service).
 
 Configuring at least one of these two is required for the email-based
 signup flow (Path B in First login and API access) to actually deliver

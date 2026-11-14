@@ -1,13 +1,15 @@
-"""Stored platform keys: the platform_keys of a /run request and how the runner uses them.
+"""Platform keys: the platform_keys of a /run request and how the runner uses them.
 
-Source of a key (the same table as docs/operations.md). The process environment is never a source:
-- openai, grok, gemini: the key of the customer, then platform_keys. Neither: not configured.
-- cartesia, elevenlabs, deepgram: platform_keys. Not there: not configured.
-- platform_openrouter: platform_keys. The key of the customer is ignored.
-- local: platform_keys["local_llm.endpoints"] of the request, parsed for that session only; the key
-  of the customer is ignored.
-A key that is not there is rejected before the vendor SDK object is built, because the SDK clients
-fall back to the process environment when they get None or an empty key.
+Source of a key (the same table as docs/operations.md):
+- openai, grok, gemini: the key of the customer, then platform_keys, then the environment variable
+  of the runner container. None of them: not configured.
+- cartesia, elevenlabs, deepgram: platform_keys, then the environment variable.
+- platform_openrouter: platform_keys, then the environment variable. The key of the customer is ignored.
+- local: platform_keys["local_llm.endpoints"] of the request, else the variable LOCAL_LLM_ENDPOINTS,
+  parsed for that session only; the key of the customer is ignored.
+An empty value or an unresolved placeholder (starts with "[[") counts as not set. A key that is not
+there is rejected before the vendor SDK object is built, because the SDK clients fall back to their
+own environment variable when they get None or an empty key.
 
 All keys here are fake. No test calls a vendor.
 """
@@ -90,17 +92,31 @@ class TestCustomerKeyServices:
         assert svc.call_args.kwargs["api_key"] == "platform-value"
 
     @pytest.mark.parametrize("platform_keys", [None, {}, "empty"])
-    def test_env_is_ignored_and_the_session_is_rejected_before_the_sdk(self, type_, pk, env, service, vendor, platform_keys, monkeypatch):
-        monkeypatch.setenv(env, "env-value")
+    def test_env_is_used_without_a_request_key(self, type_, pk, env, service, vendor, platform_keys, monkeypatch):
+        monkeypatch.setenv(env, "  env-value  ")
         if platform_keys == "empty":
             platform_keys = {pk: ""}
-        err, svc = _llm_rejected(type_, platform_keys=platform_keys, service=service)
+        svc = _llm(type_, platform_keys=platform_keys, service=service)
+        assert svc.call_args.kwargs["api_key"] == "env-value"
+
+    @pytest.mark.parametrize("value", [None, "", "   ", "[[BIN_MANAGER__X]]", " [[BIN_MANAGER__X]]"])
+    def test_unset_empty_and_placeholder_are_rejected_before_the_sdk(self, type_, pk, env, service, vendor, value, monkeypatch):
+        if value is not None:
+            monkeypatch.setenv(env, value)
+        err, svc = _llm_rejected(type_, platform_keys=None, service=service)
         assert str(err) == f"{vendor} is not configured"
-        assert "env-value" not in str(err)
+        assert "BIN_MANAGER" not in str(err)
         svc.assert_not_called()
 
-    def test_a_key_of_another_vendor_is_not_used(self, type_, pk, env, service, vendor, monkeypatch):
-        monkeypatch.setenv(env, "env-value")
+    def test_a_placeholder_does_not_hide_a_request_key(self, type_, pk, env, service, vendor, monkeypatch):
+        monkeypatch.setenv(env, "[[BIN_MANAGER__X]]")
+        svc = _llm(type_, platform_keys={pk: "platform-value"}, service=service)
+        assert svc.call_args.kwargs["api_key"] == "platform-value"
+
+    def test_a_variable_of_another_vendor_is_not_used(self, type_, pk, env, service, vendor, monkeypatch):
+        for other_env in ("OPENAI_API_KEY", "XAI_API_KEY", "GOOGLE_API_KEY"):
+            if other_env != env:
+                monkeypatch.setenv(other_env, "other-value")
         other = {k: "other-value" for k in (run.PK_OPENAI, run.PK_XAI, run.PK_GOOGLE) if k != pk}
         err, svc = _llm_rejected(type_, platform_keys=other, service=service)
         assert str(err) == f"{vendor} is not configured"
@@ -117,11 +133,20 @@ class TestOpenRouter:
         assert "customer-or" not in repr(build.call_args)
 
     @pytest.mark.parametrize("platform_keys", [None, {}, {run.PK_OPENROUTER: ""}])
-    def test_env_is_ignored_and_the_session_is_rejected_before_the_sdk(self, platform_keys, monkeypatch):
+    def test_env_is_used_without_a_request_key(self, platform_keys, monkeypatch):
         monkeypatch.setenv("OPENROUTER_API_KEY", "env-or")
         with patch("run._build_openrouter_llm") as build, patch("run.LLMContextAggregatorPair"), patch("run.LLMContext"):
+            run.create_llm_service("platform_openrouter.m", "customer-or", [], [], platform_keys=platform_keys)
+        assert build.call_args.args[0] == "env-or"
+        assert "customer-or" not in repr(build.call_args)
+
+    @pytest.mark.parametrize("value", [None, "", "  ", "[[BIN_MANAGER__OPENROUTER_API_KEY]]"])
+    def test_unset_empty_and_placeholder_are_rejected_before_the_sdk(self, value, monkeypatch):
+        if value is not None:
+            monkeypatch.setenv("OPENROUTER_API_KEY", value)
+        with patch("run._build_openrouter_llm") as build, patch("run.LLMContextAggregatorPair"), patch("run.LLMContext"):
             with pytest.raises(ValueError) as e:
-                run.create_llm_service("platform_openrouter.m", "customer-or", [], [], platform_keys=platform_keys)
+                run.create_llm_service("platform_openrouter.m", "customer-or", [], [], platform_keys=None)
         assert str(e.value) == "OpenRouter is not configured"
         build.assert_not_called()
 
@@ -142,29 +167,41 @@ class TestOpenRouter:
     ("cartesia", run.PK_CARTESIA, "CARTESIA_API_KEY", "CartesiaTTSService", "Cartesia"),
     ("elevenlabs", run.PK_ELEVENLABS, "ELEVENLABS_API_KEY", "ElevenLabsTTSService", "ElevenLabs"),
 ])
-def test_tts_uses_the_platform_key_only(name, pk, env, cls, vendor, monkeypatch):
+def test_tts_request_key_wins_then_env_then_rejected(name, pk, env, cls, vendor, monkeypatch):
     monkeypatch.setenv(env, "env-value")
     with patch(f"run.{cls}") as svc, patch("run._keep_usable", side_effect=lambda s: s):
         run.create_tts_service(name, voice_id="v", platform_keys={pk: "platform-value"})
         assert svc.call_args.kwargs["api_key"] == "platform-value"
-        svc.reset_mock()
         for platform_keys in (None, {}, {pk: ""}):
+            run.create_tts_service(name.upper(), voice_id="v", platform_keys=platform_keys)
+            assert svc.call_args.kwargs["api_key"] == "env-value"
+        svc.reset_mock()
+        for value in ("", "  ", "[[BIN_MANAGER__X]]"):
+            monkeypatch.setenv(env, value)
             with pytest.raises(ValueError) as e:
-                run.create_tts_service(name.upper(), voice_id="v", platform_keys=platform_keys)
+                run.create_tts_service(name.upper(), voice_id="v", platform_keys=None)
             assert str(e.value) == f"{vendor} is not configured"
+        monkeypatch.delenv(env)
+        with pytest.raises(ValueError) as e:
+            run.create_tts_service(name, voice_id="v")
+        assert str(e.value) == f"{vendor} is not configured"
         svc.assert_not_called()
 
 
-def test_stt_uses_the_platform_key_only(monkeypatch):
+def test_stt_request_key_wins_then_env_then_rejected(monkeypatch):
     monkeypatch.setenv("DEEPGRAM_API_KEY", "env-value")
     with patch("run.DeepgramSTTService") as svc, patch("run._keep_usable", side_effect=lambda s: s), \
          patch("run._harden_deepgram", side_effect=lambda s: s), patch("run.LiveOptions"):
         run.create_stt_service("deepgram", language="en-US", platform_keys={run.PK_DEEPGRAM: "platform-value"})
         assert svc.call_args.kwargs["api_key"] == "platform-value"
-        svc.reset_mock()
         for platform_keys in (None, {}, {run.PK_DEEPGRAM: ""}):
+            run.create_stt_service("deepgram", language="en-US", platform_keys=platform_keys)
+            assert svc.call_args.kwargs["api_key"] == "env-value"
+        svc.reset_mock()
+        for value in ("", "  ", "[[BIN_MANAGER__DEEPGRAM_API_KEY]]"):
+            monkeypatch.setenv("DEEPGRAM_API_KEY", value)
             with pytest.raises(ValueError) as e:
-                run.create_stt_service("deepgram", language="en-US", platform_keys=platform_keys)
+                run.create_stt_service("deepgram", language="en-US", platform_keys=None)
             assert str(e.value) == "Deepgram is not configured"
         svc.assert_not_called()
 
@@ -201,23 +238,54 @@ class TestLocalEndpoints:
         with pytest.raises(ValueError, match=FIXED_LOCAL):
             _local({run.PK_LOCAL_ENDPOINTS: _endpoints()}, type_="local.only-env.m")
 
-    def test_environment_is_ignored_without_a_request_value(self, monkeypatch):
-        monkeypatch.setenv("LOCAL_LLM_ENDPOINTS", _endpoints())
-        for platform_keys in (None, {}, {run.PK_LOCAL_ENDPOINTS: ""}):
-            with pytest.raises(ValueError) as e:
-                _local(platform_keys)
-            assert str(e.value) == FIXED_LOCAL
-            assert SECRET_URL not in str(e.value)
+    @pytest.mark.parametrize("platform_keys", [None, {}, {run.PK_LOCAL_ENDPOINTS: ""}])
+    def test_environment_is_used_without_a_request_value(self, platform_keys, monkeypatch):
+        monkeypatch.setenv("LOCAL_LLM_ENDPOINTS", "  " + _endpoints() + "  ")
+        svc = _local(platform_keys)
+        assert svc.call_args.kwargs == {"api_key": "local-key-1", "model": "qwen3-8b", "base_url": SECRET_URL}
+
+    def test_request_value_wins_over_the_environment(self, monkeypatch):
+        monkeypatch.setenv("LOCAL_LLM_ENDPOINTS", _endpoints(**{"vllm-a": {"base_url": "http://env.example.invalid/v1"}}))
+        svc = _local({run.PK_LOCAL_ENDPOINTS: _endpoints()})
+        assert svc.call_args.kwargs["base_url"] == SECRET_URL
+
+    @pytest.mark.parametrize("value", [None, "", "   ", "[[BIN_MANAGER__LOCAL_LLM_ENDPOINTS]]"])
+    def test_unset_empty_and_placeholder_environment_give_the_fixed_error(self, value, monkeypatch):
+        if value is not None:
+            monkeypatch.setenv("LOCAL_LLM_ENDPOINTS", value)
+        with pytest.raises(ValueError) as e:
+            _local(None)
+        assert str(e.value) == FIXED_LOCAL
+
+    def test_a_bad_environment_value_is_the_fixed_error_without_the_value(self, monkeypatch, logs):
+        monkeypatch.setenv("LOCAL_LLM_ENDPOINTS", "{" + SECRET_URL + SENTINEL)
+        with pytest.raises(ValueError) as e:
+            _local(None)
+        assert str(e.value) == FIXED_LOCAL
+        assert SECRET_URL not in _text(logs) and SENTINEL not in _text(logs)
+
+    def test_the_environment_is_read_for_each_call(self, monkeypatch):
+        """No module state: a changed variable is seen by the next call."""
+        monkeypatch.setenv("LOCAL_LLM_ENDPOINTS", _endpoints(**{"vllm-a": {"base_url": "http://one.example.invalid/v1"}}))
+        assert _local(None).call_args.kwargs["base_url"] == "http://one.example.invalid/v1"
+        monkeypatch.setenv("LOCAL_LLM_ENDPOINTS", _endpoints(**{"vllm-a": {"base_url": "http://two.example.invalid/v1"}}))
+        assert _local(None).call_args.kwargs["base_url"] == "http://two.example.invalid/v1"
+        monkeypatch.delenv("LOCAL_LLM_ENDPOINTS")
+        with pytest.raises(ValueError, match=FIXED_LOCAL):
+            _local(None)
 
     def test_the_module_has_no_environment_registry(self):
         assert not hasattr(run, "load_local_endpoints") and not hasattr(run, "_local_endpoints")
 
     def test_importing_the_module_does_not_read_the_environment(self):
-        """A fresh interpreter with the variable set: a local model is still rejected."""
+        """Fresh interpreter: the variable is set before the import and removed before the call. A
+        value read at import time would still be served."""
         here = Path(__file__).parent
         code = (
+            "import os\n"
             "import conftest, run\n"
             "from unittest.mock import patch\n"
+            "del os.environ['LOCAL_LLM_ENDPOINTS']\n"
             "with patch('run.LLMContextAggregatorPair'), patch('run.LLMContext'), patch('run.OpenAILLMService') as svc:\n"
             "    try:\n"
             "        run.create_llm_service('local.vllm-a.qwen3-8b', '', [], [], platform_keys=None)\n"
@@ -272,6 +340,60 @@ class TestLocalEndpoints:
         run.parse_local_endpoints("{" + SECRET_URL + SENTINEL)
         run.parse_local_endpoints(_endpoints())
         assert SECRET_URL not in _text(logs) and SENTINEL not in _text(logs)
+
+
+# --- the start log of the variables ------------------------------------------------------------------
+
+ENV_NAMES = ("OPENAI_API_KEY", "DEEPGRAM_API_KEY", "CARTESIA_API_KEY", "XAI_API_KEY",
+             "ELEVENLABS_API_KEY", "GOOGLE_API_KEY", "OPENROUTER_API_KEY", "LOCAL_LLM_ENDPOINTS")
+
+
+class TestLogEnvState:
+    def _records(self):
+        records = []
+        sink = logger.add(lambda m: records.append((m.record["level"].name, m.record["message"])), level="DEBUG")
+        try:
+            run.log_env_state()
+        finally:
+            logger.remove(sink)
+        return records
+
+    def test_one_line_per_variable_with_its_state_and_never_a_value(self, monkeypatch):
+        monkeypatch.setenv("OPENAI_API_KEY", SENTINEL)
+        monkeypatch.setenv("DEEPGRAM_API_KEY", "[[BIN_MANAGER__DEEPGRAM_API_KEY]]")
+        monkeypatch.setenv("CARTESIA_API_KEY", "   ")
+        monkeypatch.setenv("LOCAL_LLM_ENDPOINTS", _endpoints())
+        records = self._records()
+        by_name = {n: [r for r in records if n in r[1]] for n in ENV_NAMES}
+        assert all(len(v) == 1 for v in by_name.values()), by_name
+        assert "set" in by_name["OPENAI_API_KEY"][0][1] and "not set" not in by_name["OPENAI_API_KEY"][0][1]
+        assert "unresolved placeholder" in by_name["DEEPGRAM_API_KEY"][0][1]
+        assert by_name["DEEPGRAM_API_KEY"][0][0] == "WARNING"
+        assert "not set" in by_name["CARTESIA_API_KEY"][0][1]
+        assert "not set" in by_name["XAI_API_KEY"][0][1]
+        text = _text(m for _, m in records)
+        assert SENTINEL not in text and SECRET_URL not in text and "local-key-1" not in text
+
+    def test_it_reads_the_environment_at_the_time_of_the_call(self, monkeypatch):
+        assert "not set" in [m for _, m in self._records() if "OPENAI_API_KEY" in m][0]
+        monkeypatch.setenv("OPENAI_API_KEY", SENTINEL)
+        assert "not set" not in [m for _, m in self._records() if "OPENAI_API_KEY" in m][0]
+
+    def test_main_calls_it_once_after_load_dotenv(self):
+        """Fresh interpreter: the order of load_dotenv and log_env_state while main is imported."""
+        here = Path(__file__).parent
+        code = (
+            "import conftest, run, dotenv\n"
+            "from unittest.mock import patch\n"
+            "calls = []\n"
+            "with patch('dotenv.load_dotenv', side_effect=lambda **kw: calls.append(('dotenv', kw))), \\\n"
+            "     patch('run.log_env_state', side_effect=lambda: calls.append(('log', None))):\n"
+            "    import main\n"
+            "print('CALLS:' + repr([c[0] for c in calls]) + repr([c[1] for c in calls if c[0] == 'dotenv']))\n"
+        )
+        out = subprocess.run([sys.executable, "-c", code], cwd=here, capture_output=True, text=True, timeout=120)
+        assert out.returncode == 0, out.stderr[-500:]
+        assert "CALLS:['dotenv', 'log'][{'override': True}]" in out.stdout
 
 
 # --- the keys travel down the call chain -------------------------------------------------------------

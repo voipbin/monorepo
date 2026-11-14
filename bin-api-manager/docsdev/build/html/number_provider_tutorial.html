@@ -6,9 +6,9 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Provider" href="provider.html"><link rel="prev" title="Number Provider" href="number_provider_struct_number_provider.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -657,41 +657,41 @@
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>An authentication token with <strong>ProjectSuperAdmin</strong> permission. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code>.</p></li>
-<li><p>The carrier account values: the API token and, for Telnyx, the <code class="docutils literal notranslate"><span class="pre">connection_id</span></code> of the connection used for number orders.</p></li>
+<li><p>The carrier secret (<code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code> or <code class="docutils literal notranslate"><span class="pre">TWILIO_AUTH_TOKEN</span></code>) must be set as an environment variable of <code class="docutils literal notranslate"><span class="pre">number-manager</span></code> by the platform operator. For Telnyx the <code class="docutils literal notranslate"><span class="pre">connection_id</span></code> is set in the <code class="docutils literal notranslate"><span class="pre">config</span></code> or as <code class="docutils literal notranslate"><span class="pre">TELNYX_CONNECTION_ID</span></code>.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The examples use obviously fake values. Never place a real secret in a document, a log or a chat message. The secret is accepted only in the request body of <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/number_providers/{provider_name}/secret</span></code>, never in the URL.</p>
+<p>The examples use obviously fake values. Never place a real secret in a document, a log or a chat message. A secret is accepted only in the request body of <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/number_providers/{provider_name}/secret</span></code>, never in the URL. That request stores the secret in the database row only, and the platform does not read it now; the secret that is used is the environment variable.</p>
 </div>
 <section id="list-the-number-providers">
 <h3>List the number providers<a class="headerlink" href="#list-the-number-providers" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/number_providers?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/number_providers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <p>Response (200 OK)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"result"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">"provider_name"</span><span class="p">:</span> <span class="s2">"telnyx"</span><span class="p">,</span>
-            <span class="s2">"enabled"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-            <span class="s2">"priority"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-            <span class="s2">"has_secret"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-            <span class="s2">"key_version"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="s2">"credential_source"</span><span class="p">:</span> <span class="s2">"db"</span><span class="p">,</span>
-            <span class="s2">"usable"</span><span class="p">:</span> <span class="n">true</span>
+            <span class="s2">&quot;provider_name&quot;</span><span class="p">:</span> <span class="s2">&quot;telnyx&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+            <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+            <span class="s2">&quot;has_secret&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+            <span class="s2">&quot;key_version&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;credential_source&quot;</span><span class="p">:</span> <span class="s2">&quot;env&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;usable&quot;</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"provider_name"</span><span class="p">:</span> <span class="s2">"twilio"</span><span class="p">,</span>
-            <span class="s2">"enabled"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-            <span class="s2">"priority"</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
-            <span class="s2">"has_secret"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-            <span class="s2">"key_version"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="s2">"credential_source"</span><span class="p">:</span> <span class="s2">"none"</span><span class="p">,</span>
-            <span class="s2">"usable"</span><span class="p">:</span> <span class="n">false</span>
+            <span class="s2">&quot;provider_name&quot;</span><span class="p">:</span> <span class="s2">&quot;twilio&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+            <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+            <span class="s2">&quot;has_secret&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+            <span class="s2">&quot;key_version&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;credential_source&quot;</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;usable&quot;</span><span class="p">:</span> <span class="n">false</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">"next_page_token"</span><span class="p">:</span> <span class="s2">""</span>
+    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -699,87 +699,87 @@
 </section>
 <section id="get-one-number-provider">
 <h3>Get one number provider<a class="headerlink" href="#get-one-number-provider" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/number_providers/telnyx?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/number_providers/telnyx?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 </section>
-<section id="store-the-settings-and-the-secret-of-a-provider">
-<h3>Store the settings and the secret of a provider<a class="headerlink" href="#store-the-settings-and-the-secret-of-a-provider" title="Link to this heading">¶</a></h3>
-<p>Set the non-secret <code class="docutils literal notranslate"><span class="pre">config</span></code> first, because storing a secret requires the <code class="docutils literal notranslate"><span class="pre">config</span></code> keys the provider needs.</p>
+<section id="store-the-settings-of-a-provider">
+<h3>Store the settings of a provider<a class="headerlink" href="#store-the-settings-of-a-provider" title="Link to this heading">¶</a></h3>
+<p>Set the non-secret <code class="docutils literal notranslate"><span class="pre">config</span></code> (it can also come from <code class="docutils literal notranslate"><span class="pre">TELNYX_CONNECTION_ID</span></code>, <code class="docutils literal notranslate"><span class="pre">TELNYX_PROFILE_ID</span></code> or <code class="docutils literal notranslate"><span class="pre">TWILIO_ACCOUNT_SID</span></code>). The secret request below is kept for compatibility; it requires the <code class="docutils literal notranslate"><span class="pre">config</span></code> keys the provider needs and has no effect on purchases.</p>
 <p>Request (settings)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/number_providers/telnyx?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "config": {
-            "connection_id": "1234567890123456789"
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/number_providers/telnyx?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;config&quot;: {
+            &quot;connection_id&quot;: &quot;1234567890123456789&quot;
         }
-    }'
+    }&#39;
 </pre></div>
 </div>
-<p>Request (secret)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/number_providers/telnyx/secret?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "secret": "example-secret-token"
-    }'
+<p>Request (secret, stored but not used)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/number_providers/telnyx/secret?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;secret&quot;: &quot;example-secret-token&quot;
+    }&#39;
 </pre></div>
 </div>
 <p>Response (200 OK)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"provider_name"</span><span class="p">:</span> <span class="s2">"telnyx"</span><span class="p">,</span>
-    <span class="s2">"enabled"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-    <span class="s2">"priority"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-    <span class="s2">"config"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"connection_id"</span><span class="p">:</span> <span class="s2">"1234567890123456789"</span>
+    <span class="s2">&quot;provider_name&quot;</span><span class="p">:</span> <span class="s2">&quot;telnyx&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;connection_id&quot;</span><span class="p">:</span> <span class="s2">&quot;1234567890123456789&quot;</span>
     <span class="p">},</span>
-    <span class="s2">"has_secret"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-    <span class="s2">"key_version"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="s2">"credential_source"</span><span class="p">:</span> <span class="s2">"db"</span><span class="p">,</span>
-    <span class="s2">"usable"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-    <span class="s2">"updated_by"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
-    <span class="s2">"secret_updated_by"</span><span class="p">:</span> <span class="s2">"00000000-0000-4000-8000-000000000002"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-01-03T04:05:06.000000Z"</span><span class="p">,</span>
-    <span class="s2">"tm_secret_update"</span><span class="p">:</span> <span class="s2">"2026-01-03T04:05:06.000000Z"</span>
+    <span class="s2">&quot;has_secret&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;key_version&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;credential_source&quot;</span><span class="p">:</span> <span class="s2">&quot;env&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;usable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;updated_by&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;secret_updated_by&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-4000-8000-000000000002&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-03T04:05:06.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_secret_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-03T04:05:06.000000Z&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The response shows <code class="docutils literal notranslate"><span class="pre">has_secret</span></code> and <code class="docutils literal notranslate"><span class="pre">key_version</span></code> only. The secret is never returned.</p>
+<p>The response shows <code class="docutils literal notranslate"><span class="pre">has_secret</span></code> and <code class="docutils literal notranslate"><span class="pre">key_version</span></code> only. <code class="docutils literal notranslate"><span class="pre">has_secret</span></code> and <code class="docutils literal notranslate"><span class="pre">credential_source</span></code> follow the environment variable of the platform, not the stored secret. The secret is never returned.</p>
 </section>
 <section id="change-the-purchase-order-or-disable-a-provider">
 <h3>Change the purchase order or disable a provider<a class="headerlink" href="#change-the-purchase-order-or-disable-a-provider" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/number_providers/telnyx?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "enabled": false,
-        "priority": 5
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/number_providers/telnyx?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;enabled&quot;: false,
+        &quot;priority&quot;: 5
+    }&#39;
 </pre></div>
 </div>
 <p>To remove one <code class="docutils literal notranslate"><span class="pre">config</span></code> key, send it with an empty string value, for example <code class="docutils literal notranslate"><span class="pre">{&quot;config&quot;:</span> <span class="pre">{&quot;profile_id&quot;:</span> <span class="pre">&quot;&quot;}}</span></code>.</p>
 </section>
 <section id="delete-the-stored-secret">
 <h3>Delete the stored secret<a class="headerlink" href="#delete-the-stored-secret" title="Link to this heading">¶</a></h3>
-<p>Use this to remove a stored secret (<code class="docutils literal notranslate"><span class="pre">credential_source</span></code> becomes <code class="docutils literal notranslate"><span class="pre">none</span></code> and the carrier cannot serve until a new secret is stored), or to recover a provider whose <code class="docutils literal notranslate"><span class="pre">credential_source</span></code> is <code class="docutils literal notranslate"><span class="pre">db_undecryptable</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/number_providers/telnyx/secret?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<p>Use this to remove a stored secret. It changes the stored row only: <code class="docutils literal notranslate"><span class="pre">has_secret</span></code> and <code class="docutils literal notranslate"><span class="pre">credential_source</span></code> in the response still follow the environment variable, so they stay <code class="docutils literal notranslate"><span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">env</span></code> while the variable is set.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/number_providers/telnyx/secret?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <p>Response (200 OK)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"provider_name"</span><span class="p">:</span> <span class="s2">"telnyx"</span><span class="p">,</span>
-    <span class="s2">"enabled"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-    <span class="s2">"priority"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-    <span class="s2">"has_secret"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-    <span class="s2">"key_version"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="s2">"credential_source"</span><span class="p">:</span> <span class="s2">"none"</span><span class="p">,</span>
-    <span class="s2">"usable"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-    <span class="s2">"updated_by"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
-    <span class="s2">"secret_updated_by"</span><span class="p">:</span> <span class="s2">"00000000-0000-4000-8000-000000000002"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-01-04T05:06:07.000000Z"</span><span class="p">,</span>
-    <span class="s2">"tm_secret_update"</span><span class="p">:</span> <span class="s2">"2026-01-04T05:06:07.000000Z"</span>
+    <span class="s2">&quot;provider_name&quot;</span><span class="p">:</span> <span class="s2">&quot;telnyx&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">&quot;has_secret&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;key_version&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;credential_source&quot;</span><span class="p">:</span> <span class="s2">&quot;env&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;usable&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;updated_by&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;secret_updated_by&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-4000-8000-000000000002&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-04T05:06:07.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_secret_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-04T05:06:07.000000Z&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>A known provider for which no request has created a stored setting yet answers <code class="docutils literal notranslate"><span class="pre">404</span></code>. See the account change warning in <a class="reference internal" href="number_provider_overview.html#number-provider-overview"><span class="std std-ref">Overview</span></a> before you delete a secret. Store the new secret first when the carrier is in use: until then no number can be purchased, released or searched through it.</p>
+<p>A known provider for which no request has created a stored setting yet answers <code class="docutils literal notranslate"><span class="pre">404</span></code>. See the account change warning in <a class="reference internal" href="number_provider_overview.html#number-provider-overview"><span class="std std-ref">Overview</span></a> before you change the secret variable of a carrier that is in use.</p>
 </section>
 </section>
 </section>
@@ -846,7 +846,7 @@
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#list-the-number-providers">List the number providers</a></li>
 <li><a class="reference internal" href="#get-one-number-provider">Get one number provider</a></li>
-<li><a class="reference internal" href="#store-the-settings-and-the-secret-of-a-provider">Store the settings and the secret of a provider</a></li>
+<li><a class="reference internal" href="#store-the-settings-of-a-provider">Store the settings of a provider</a></li>
 <li><a class="reference internal" href="#change-the-purchase-order-or-disable-a-provider">Change the purchase order or disable a provider</a></li>
 <li><a class="reference internal" href="#delete-the-stored-secret">Delete the stored secret</a></li>
 </ul>

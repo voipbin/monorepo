@@ -869,7 +869,7 @@ async def test_mixed_direct_and_openrouter_team_builds_both_services(monkeypatch
                                         platform_keys={"openrouter.api_key": "request-or-key"})
         assert mocks.create_llm_service.call_count == 2
         mock_openai.assert_called_once_with(api_key="customer-openai-key", model="gpt-4o")
-        # the request key is used, the process environment value is not
+        # the request key wins over the environment value
         assert mock_or.call_args.kwargs["api_key"] == "request-or-key"
         assert mock_or.Settings.call_args.kwargs["model"] == "anthropic/claude-haiku-4.5"
         assert "stale-customer-key" not in repr(mock_or.call_args)

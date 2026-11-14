@@ -1,21 +1,21 @@
-// Package billingconfig wires the stored configuration of bin-billing-manager: the master key, the
-// registry and the suppliers that hand the Paddle credentials to the Paddle handler at the time of
-// use.
+// Package billingconfig wires the configuration of bin-billing-manager: the suppliers that hand the
+// Paddle credentials to the Paddle handler at the time of use, and the master key and registry of
+// the stored settings code.
 //
-// A credential is read from the database only: the keys declare no environment variable and the
-// handler has no environment lookup. A key without a stored value is not configured (an empty
-// value, no error). A read or decrypt error is an error and is never turned into "not configured".
+// A credential is read from its environment variable only (PADDLE_API_KEY and
+// PADDLE_WEBHOOK_SECRET). The stored settings are not read: the handler of New has no environment
+// lookup and no supplier consumes it. A variable that is unset or an unresolved placeholder means
+// that the key is not configured (an empty value, no error).
 package billingconfig
 
 import (
 	"context"
-	"fmt"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/pkg/confighandler"
+	"monorepo/bin-common-handler/pkg/envsecret"
 	"monorepo/bin-common-handler/pkg/secretcrypto"
 
 	"monorepo/bin-billing-manager/internal/config"
@@ -27,17 +27,11 @@ const (
 	// maxSecretPlaintext is the longest secret the cipher accepts. It is the second guard behind
 	// the MaxLen of each key and fits the column (2048 bytes minus nonce and tag).
 	maxSecretPlaintext = 2020
-
-	// readTimeout bounds the read of one credential. It stays below the time that a caller waits
-	// for a portal session or a webhook answer.
-	readTimeout = 2 * time.Second
-
-	// logSourcesTimeout bounds the read of the sources at start up.
-	logSourcesTimeout = 5 * time.Second
 )
 
-// New creates the config handler of the service on the given store. The handler has no environment
-// lookup (nil), so a key without a stored row has no value.
+// New creates the config handler of the stored settings (the control commands and the admin API)
+// on the given store. The handler has no environment lookup (nil) and no read path of the service
+// consumes it.
 //
 // An unparsable master key list never stops the service: the error is logged (without any key
 // text) and the handler works without a master key. Secrets can not be written then, and a stored
@@ -58,64 +52,44 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
 }
 
-// Supplier returns the function that hands one secret key to the Paddle handler at the time of
-// use. It reads the key on every call and keeps nothing, so a changed key is used by the next call
-// on every replica.
+// Supplier returns the function that hands the secret of one environment variable to the Paddle
+// handler at the time of use. It reads the variable on every call and keeps nothing.
 //
-// A key that is not configured is not an error (an empty value): the caller decides what that means
-// (paddlehandler.ErrCredentialNotConfigured). A read error, a stored secret that can not be
-// decrypted, and a read that ran out of time are returned as an error
-// (paddlehandler.ErrKeyUnavailable) and are never turned into an empty value.
-func Supplier(h confighandler.Handler, key string) paddlehandler.KeyFunc {
+// A variable that is unset, empty or an unresolved placeholder is not configured: an empty value
+// and no error. The caller decides what that means (paddlehandler.ErrCredentialNotConfigured).
+func Supplier(envName string) paddlehandler.KeyFunc {
 	return func(ctx context.Context) (string, error) {
-		cctx, cancel := context.WithTimeout(ctx, readTimeout)
-		defer cancel()
+		value, _ := envsecret.Lookup(envName)
 
-		secret, _, err := h.Secret(cctx, key)
-		if err != nil {
-			return "", fmt.Errorf("%w: %w", paddlehandler.ErrKeyUnavailable, err)
-		}
-
-		return secret.Reveal(), nil
+		return value, nil
 	}
 }
 
 // PaddleKeys returns the suppliers of the API key and of the webhook secret.
-func PaddleKeys(h confighandler.Handler) (apiKey, webhookSecret paddlehandler.KeyFunc) {
-	return Supplier(h, configkeys.KeyPaddleAPIKey), Supplier(h, configkeys.KeyPaddleWebhookSecretKey)
+func PaddleKeys() (apiKey, webhookSecret paddlehandler.KeyFunc) {
+	return Supplier(configkeys.EnvPaddleAPIKey), Supplier(configkeys.EnvPaddleWebhookSecret)
 }
 
-// LogSources logs, once, where each key comes from (key name and source only, never a value). A
-// webhook secret that is not configured is a warning, because every Paddle webhook is rejected
-// then. An API key that is not configured is an info line: Paddle is an optional feature of a self
-// hosted setup. A stored value that can not be used is an error. A read error is logged as a
-// warning: the service starts anyway.
-func LogSources(ctx context.Context, h confighandler.Handler) {
-	log := logrus.WithField("func", "LogSources")
+// LogStates logs, once, the state of each variable (name and state only, never a value). A webhook
+// secret that is not usable is a warning, because every Paddle webhook is rejected then. An API key
+// that is not set is an info line: Paddle is an optional feature of a self hosted setup. An
+// unresolved placeholder is a warning for both.
+func LogStates() {
+	log := logrus.WithField("func", "LogStates")
 
-	cctx, cancel := context.WithTimeout(ctx, logSourcesTimeout)
-	defer cancel()
+	for _, name := range []string{configkeys.EnvPaddleAPIKey, configkeys.EnvPaddleWebhookSecret} {
+		_, state := envsecret.Lookup(name)
+		entry := log.WithFields(logrus.Fields{"variable": name, "state": state.String()})
 
-	list, err := h.Describe(cctx)
-	if err != nil {
-		log.Warnf("Could not read the config sources. err: %v", err)
-		return
-	}
-
-	for _, r := range list {
-		entry := log.WithFields(logrus.Fields{"key": r.Key, "source": r.Source})
-
-		switch r.Source {
-		case confighandler.SourceNone:
-			if r.Key == configkeys.KeyPaddleWebhookSecretKey {
-				entry.Warnf("The config key is not configured, so every Paddle webhook is rejected. key: %s", r.Key)
-			} else {
-				entry.Infof("The config key is not configured (optional), so a portal session can not be created. key: %s", r.Key)
-			}
-		case confighandler.SourceDBUndecryptable, confighandler.SourceDBInvalid:
-			entry.Errorf("The stored config value can not be used. key: %s, source: %s", r.Key, r.Source)
+		switch {
+		case state == envsecret.Placeholder:
+			entry.Warnf("The variable holds an unresolved placeholder, so the key is not configured. variable: %s", name)
+		case state == envsecret.Unset && name == configkeys.EnvPaddleWebhookSecret:
+			entry.Warnf("The variable is not set, so every Paddle webhook is rejected. variable: %s", name)
+		case state == envsecret.Unset:
+			entry.Infof("The variable is not set (optional), so a portal session can not be created. variable: %s", name)
 		default:
-			entry.Infof("Config key. key: %s, source: %s", r.Key, r.Source)
+			entry.Infof("The variable is set. variable: %s", name)
 		}
 	}
 }

@@ -16,6 +16,7 @@ import (
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-email-manager/internal/config"
+	"monorepo/bin-email-manager/internal/configkeys"
 	"monorepo/bin-email-manager/internal/emailconfig"
 	"monorepo/bin-email-manager/pkg/dbhandler"
 )
@@ -29,6 +30,9 @@ const maxStdinBytes = 4096
 
 // configOut is where the config commands print. Tests replace it.
 var configOut io.Writer = os.Stdout
+
+// configErr is where the notes of the config commands print. Tests replace it.
+var configErr io.Writer = os.Stderr
 
 // configIn is where the secret value is read from. Tests replace it.
 var configIn io.Reader = os.Stdin
@@ -54,11 +58,13 @@ func newConfigHandler(db *sql.DB) (confighandler.Handler, error) {
 func cmdConfig() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config",
-		Short: "Stored configuration (provider credentials)",
-		Long: `Stored configuration of the provider credentials.
+		Short: "Stored settings of the provider credentials (not read by the service)",
+		Long: `Stored settings of the provider credentials.
 
-The credentials are stored in the database only; a key that is cleared is not configured. A change is
-used by the next call, with no restart. The daemon applies the table migration at its start; on a
+The service does not read these values. It reads the environment variables SENDGRID_API_KEY,
+MAILGUN_API_KEY and MAILGUN_WEBHOOK_SIGNING_KEY; a stored value is used by nothing (but by an older
+image, see docs/operations.md). "set" and "clear" print a note that names the variable. "list" shows
+the stored state of each key and never a value. The daemon applies the table migration at its start; on a
 local database run "migrate up" first. The master key list is read from the environment
 (EMAIL_CONFIG_ENCRYPTION_KEYS) and is never a flag.`,
 	}
@@ -99,7 +105,7 @@ one line is refused.`,
 func cmdConfigClear() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clear",
-		Short: "Remove the stored value of a key (the key is then not configured)",
+		Short: "Remove the stored value of a key (the service reads the environment variable, not this value)",
 		RunE:  runConfigClear,
 	}
 
@@ -256,8 +262,20 @@ func setConfig(h confighandler.Handler, key string, actor uuid.UUID) error {
 		return errors.Wrap(err, "failed to store the value")
 	}
 
+	printEnvNote(key)
+
 	out := toOutput(res)
 	return printConfig(&out)
+}
+
+// printEnvNote tells that the stored value is not the one in use: the service reads the variable.
+func printEnvNote(key string) {
+	name, ok := configkeys.EnvName(key)
+	if !ok {
+		return
+	}
+
+	_, _ = fmt.Fprintf(configErr, "note: the service reads the environment variable %s; the stored value is not used.\n", name)
 }
 
 func runConfigClear(cmd *cobra.Command, args []string) error {
@@ -279,6 +297,8 @@ func runConfigClear(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to clear the value")
 	}
+
+	printEnvNote(key)
 
 	out := toOutput(res)
 	return printConfig(&out)

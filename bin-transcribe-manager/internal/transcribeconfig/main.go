@@ -1,45 +1,34 @@
-// Package transcribeconfig wires the stored configuration of bin-transcribe-manager: the master
-// key, the registry and the supplier that hands the AWS credential to the
-// streaming handler at the time of use.
+// Package transcribeconfig wires the configuration of bin-transcribe-manager: the handler of the
+// stored settings (the master key and the registry, used by the config commands and the admin API)
+// and the supplier that hands the AWS credential to the streaming handler at the time of use. The
+// credential comes from the environment only; the stored settings are not read.
 package transcribeconfig
 
 import (
 	"context"
-	"fmt"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/pkg/confighandler"
+	"monorepo/bin-common-handler/pkg/envsecret"
 	"monorepo/bin-common-handler/pkg/secretcrypto"
 
 	"monorepo/bin-transcribe-manager/internal/config"
 	"monorepo/bin-transcribe-manager/internal/configkeys"
 )
 
-const (
-	// maxSecretPlaintext is the longest secret the cipher accepts. It is the second guard behind
-	// the MaxLen of each key and fits the column (2048 bytes minus nonce and tag).
-	maxSecretPlaintext = 2020
+// maxSecretPlaintext is the longest secret the cipher accepts. It is the second guard behind the
+// MaxLen of each key and fits the column (2048 bytes minus nonce and tag).
+const maxSecretPlaintext = 2020
 
-	// readTimeout bounds the two reads of the credential together. It stays below the time that a
-	// caller waits for a transcribe start.
-	readTimeout = 2 * time.Second
-
-	// logSourcesTimeout bounds the read of the sources at start up.
-	logSourcesTimeout = 5 * time.Second
-)
-
-// ErrKeyUnavailable is returned when the AWS credential could not be read: a database read
-// error, a stored secret that can not be decrypted, or a read that ran out of time. It is never
-// replaced by an empty pair. A credential that is simply not configured is not an
-// error (an empty pair). The error holds no key text.
+// ErrKeyUnavailable stays for the stored settings code until its removal. The environment read can
+// not fail, so AWSKeys never returns it.
 var ErrKeyUnavailable = errors.New("the AWS credential could not be read")
 
 // AWSKeysFunc hands the AWS credential to the streaming handler at the time of use. An empty
-// pair with no error means "AWS is not available" (not configured, or the two keys are not both
-// set from the same source).
+// pair with no error means "AWS is not available" (not configured, or only one of the two variables
+// is set).
 type AWSKeysFunc = func(ctx context.Context) (accessKey, secretKey string, err error)
 
 // New creates the config handler of the service on the given store.
@@ -64,78 +53,50 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 }
 
 // AWSKeys returns the function that hands the AWS credential to the streaming handler at the
-// time of use. It reads both keys on every call and keeps nothing, so a changed key is used by
-// the next call on every replica.
+// time of use. It reads both variables on every call and keeps nothing; the stored settings are
+// not read.
 //
-// The two keys are one credential, so a pair is handed out only when both have a value from the
-// same source (the database). Every other state is "AWS is not available" (an empty pair, no
-// error): no key, or one key only. A state that involves a stored row is logged as a warning (key
-// names and sources only); the state without any row keeps the debug level it had.
-//
-// A read error is returned as an error (ErrKeyUnavailable) and is never turned into "not
-// available".
-func AWSKeys(h confighandler.Handler) AWSKeysFunc {
+// The two variables are one credential, so a pair is handed out only when both hold a value. Every
+// other state is "AWS is not available" (an empty pair, no error): neither variable (not set, empty
+// or an unresolved placeholder), or one variable only. The half pair is logged once at start by
+// LogStates; nothing is logged per call.
+func AWSKeys() AWSKeysFunc {
 	return func(ctx context.Context) (string, string, error) {
-		log := logrus.WithField("func", "AWSKeys")
+		accessKey, _ := envsecret.Lookup(configkeys.EnvAWSAccessKey)
+		secretKey, _ := envsecret.Lookup(configkeys.EnvAWSSecretKey)
 
-		cctx, cancel := context.WithTimeout(ctx, readTimeout)
-		defer cancel()
-
-		access, accessRes, err := h.Secret(cctx, configkeys.KeyAWSAccessKey)
-		if err != nil {
-			return "", "", fmt.Errorf("%w: %w", ErrKeyUnavailable, err)
+		if accessKey == "" || secretKey == "" {
+			return "", "", nil
 		}
 
-		secret, secretRes, err := h.Secret(cctx, configkeys.KeyAWSSecretKey)
-		if err != nil {
-			return "", "", fmt.Errorf("%w: %w", ErrKeyUnavailable, err)
-		}
-
-		accessKey, secretKey := access.Reveal(), secret.Reveal()
-		if accessKey != "" && secretKey != "" && accessRes.Source == secretRes.Source {
-			return accessKey, secretKey, nil
-		}
-
-		entry := log.WithFields(logrus.Fields{
-			"access_key_source": accessRes.Source,
-			"secret_key_source": secretRes.Source,
-		})
-		if accessRes.Source == confighandler.SourceDB || secretRes.Source == confighandler.SourceDB {
-			entry.Warn("The AWS credential is not available: the two keys are not both set from the same source.")
-		} else {
-			entry.Debug("The AWS credential is not available: the two keys are not both set.")
-		}
-
-		return "", "", nil
+		return accessKey, secretKey, nil
 	}
 }
 
-// LogSources logs, once, where each key comes from (key name and source only, never a value). A
-// key that is not configured is an info line, because AWS is an optional provider (the keys are
-// read from the database only). A read error
-// is logged as a warning: the service starts anyway.
-func LogSources(ctx context.Context, h confighandler.Handler) {
-	log := logrus.WithField("func", "LogSources")
+// LogStates logs, once, the state of each variable (name and state only, never a value). A variable
+// that is not set is an info line, because AWS is an optional provider; a placeholder (the text of
+// an unresolved deployment variable) is a warning. When exactly one of the two variables is set, one
+// more warning tells that AWS is not available.
+func LogStates() {
+	log := logrus.WithField("func", "LogStates")
 
-	cctx, cancel := context.WithTimeout(ctx, logSourcesTimeout)
-	defer cancel()
+	set := 0
+	for _, name := range []string{configkeys.EnvAWSAccessKey, configkeys.EnvAWSSecretKey} {
+		_, state := envsecret.Lookup(name)
+		entry := log.WithFields(logrus.Fields{"variable": name, "state": state.String()})
 
-	list, err := h.Describe(cctx)
-	if err != nil {
-		log.Warnf("Could not read the config sources. err: %v", err)
-		return
+		switch state {
+		case envsecret.Set:
+			set++
+			entry.Infof("The variable is set. variable: %s", name)
+		case envsecret.Placeholder:
+			entry.Warnf("The variable holds an unresolved placeholder. variable: %s", name)
+		default:
+			entry.Infof("The variable is not set. variable: %s", name)
+		}
 	}
 
-	for _, r := range list {
-		entry := log.WithFields(logrus.Fields{"key": r.Key, "source": r.Source})
-
-		switch r.Source {
-		case confighandler.SourceNone:
-			entry.Infof("The config key is not configured (optional); it is read from the database only. key: %s", r.Key)
-		case confighandler.SourceDBUndecryptable, confighandler.SourceDBInvalid:
-			entry.Errorf("The stored config value can not be used. key: %s, source: %s", r.Key, r.Source)
-		default:
-			entry.Infof("Config key. key: %s, source: %s", r.Key, r.Source)
-		}
+	if set == 1 {
+		log.Warnf("Only one of the two AWS variables is set, so AWS is not available. variables: %s, %s", configkeys.EnvAWSAccessKey, configkeys.EnvAWSSecretKey)
 	}
 }

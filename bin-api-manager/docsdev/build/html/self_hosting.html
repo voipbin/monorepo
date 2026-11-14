@@ -6,9 +6,9 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Glossary" href="glossary.html"><link rel="prev" title="Tutorial" href="websocket_tutorial.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Installation - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -1049,7 +1049,7 @@ mode; you own both.</p>
 <code class="docutils literal notranslate"><span class="pre">conference.</span></code>, <code class="docutils literal notranslate"><span class="pre">trunk.</span></code>, and <code class="docutils literal notranslate"><span class="pre">registrar.</span></code> of your domain; a wildcard
 covers all six. A wildcard requires the DNS-01 challenge:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>certbot<span class="w"> </span>certonly<span class="w"> </span>--preferred-challenges<span class="w"> </span>dns<span class="w"> </span>--manual<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span>example.com<span class="w"> </span>-d<span class="w"> </span><span class="s1">'*.example.com'</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">'*.registrar.example.com'</span>
+<span class="w">  </span>-d<span class="w"> </span>example.com<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;*.example.com&#39;</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;*.registrar.example.com&#39;</span>
 </pre></div>
 </div>
 </section>
@@ -1076,7 +1076,7 @@ covers all six. A wildcard requires the DNS-01 challenge:</p>
 <h4>Certificate renewal<a class="headerlink" href="#certificate-renewal" title="Link to this heading">¶</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">install-certs.sh</span></code> is idempotent and usable as a certbot deploy hook:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>certbot<span class="w"> </span>renew<span class="w"> </span>--deploy-hook<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">'/path/to/install/scripts/install-certs.sh /etc/letsencrypt/live/example.com/fullchain.pem /etc/letsencrypt/live/example.com/privkey.pem'</span>
+<span class="w">  </span><span class="s1">&#39;/path/to/install/scripts/install-certs.sh /etc/letsencrypt/live/example.com/fullchain.pem /etc/letsencrypt/live/example.com/privkey.pem&#39;</span>
 </pre></div>
 </div>
 <div class="admonition warning">
@@ -1133,8 +1133,8 @@ often a certificate problem, not an auth problem.</p>
 Works immediately, no email provider required.</p>
 <p><strong>Path B: email-based signup</strong>, the same flow the hosted service at
 <code class="docutils literal notranslate"><span class="pre">voipbin.net</span></code> uses (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code>). This only works if you have
-already configured an email provider (the stored key <code class="docutils literal notranslate"><span class="pre">sendgrid.api_key</span></code> or
-<code class="docutils literal notranslate"><span class="pre">mailgun.api_key</span></code>, see Provider configuration) so the verification
+already configured an email provider (the variable <code class="docutils literal notranslate"><span class="pre">SENDGRID_API_KEY</span></code> or
+<code class="docutils literal notranslate"><span class="pre">MAILGUN_API_KEY</span></code>, see Provider configuration) so the verification
 email can actually be delivered. Without one, the signup call succeeds
 but the verification email never arrives. Use this path only if you have
 already set up email delivery; otherwise use Path A.</p>
@@ -1146,33 +1146,33 @@ set the agent’s password explicitly (a fresh admin agent is created with
 a random, unusable password):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Create the customer</span>
 docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>customer<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--name<span class="w"> </span><span class="s2">"My Company"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--email<span class="w"> </span><span class="s2">"admin@example.com"</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;My Company&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--email<span class="w"> </span><span class="s2">&quot;admin@example.com&quot;</span>
 
 <span class="c1"># 2. Get the customer ID</span>
 <span class="nv">CUSTOMER_ID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>customer<span class="w"> </span>list<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.[] | select(.email == "admin@example.com") | .id'</span><span class="k">)</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.[] | select(.email == &quot;admin@example.com&quot;) | .id&#39;</span><span class="k">)</span>
 
 <span class="c1"># 3. Wait a few seconds for agent-manager to process the event via RabbitMQ</span>
 sleep<span class="w"> </span><span class="m">5</span>
 
-<span class="c1"># 4. Get the auto-created admin agent's ID</span>
+<span class="c1"># 4. Get the auto-created admin agent&#39;s ID</span>
 <span class="nv">AGENT_ID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-agent-mgr<span class="w"> </span>/app/bin/agent-control<span class="w"> </span>agent<span class="w"> </span>list<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">"</span><span class="nv">$CUSTOMER_ID</span><span class="s2">"</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.[0].id'</span><span class="k">)</span>
+<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$CUSTOMER_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.[0].id&#39;</span><span class="k">)</span>
 
 <span class="c1"># 5. Set a real password</span>
 docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-agent-mgr<span class="w"> </span>/app/bin/agent-control<span class="w"> </span>agent<span class="w"> </span>update-password<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--id<span class="w"> </span><span class="s2">"</span><span class="nv">$AGENT_ID</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--password<span class="w"> </span><span class="s2">"your-secure-password"</span>
+<span class="w">  </span>--id<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$AGENT_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--password<span class="w"> </span><span class="s2">&quot;your-secure-password&quot;</span>
 </pre></div>
 </div>
 <section id="get-a-jwt-token">
 <h4>Get a JWT token<a class="headerlink" href="#get-a-jwt-token" title="Link to this heading">¶</a></h4>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://api.voipbin.test:8443/auth/login<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"username": "admin@example.com", "password": "your-secure-password"}'</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;username&quot;: &quot;admin@example.com&quot;, &quot;password&quot;: &quot;your-secure-password&quot;}&#39;</span>
 
-<span class="c1"># Response: {"username": "...", "token": "JWT_TOKEN_HERE"}</span>
+<span class="c1"># Response: {&quot;username&quot;: &quot;...&quot;, &quot;token&quot;: &quot;JWT_TOKEN_HERE&quot;}</span>
 </pre></div>
 </div>
 </section>
@@ -1181,9 +1181,9 @@ docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </spa
 <p>An accesskey is a long-lived API token, separate from the short-lived
 JWT above, meant for scripts and integrations:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>accesskey<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">"</span><span class="nv">$CUSTOMER_ID</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--name<span class="w"> </span><span class="s2">"API Key"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--detail<span class="w"> </span><span class="s2">"For automation"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$CUSTOMER_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;API Key&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--detail<span class="w"> </span><span class="s2">&quot;For automation&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--expire<span class="w"> </span>87600h
 </pre></div>
 </div>
@@ -1192,12 +1192,12 @@ for automation use. Use a shorter value for keys you intend to rotate.</p>
 </section>
 <section id="create-your-first-extension">
 <h4>Create your first extension<a class="headerlink" href="#create-your-first-extension" title="Link to this heading">¶</a></h4>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">TOKEN</span><span class="o">=</span><span class="s2">"&lt;jwt_token_from_above&gt;"</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">TOKEN</span><span class="o">=</span><span class="s2">&quot;&lt;jwt_token_from_above&gt;&quot;</span>
 
 curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://api.voipbin.test:8443/v1.0/extensions<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"extension": "2000", "password": "your-secure-password-here", "name": "Extension 2000"}'</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;extension&quot;: &quot;2000&quot;, &quot;password&quot;: &quot;your-secure-password-here&quot;, &quot;name&quot;: &quot;Extension 2000&quot;}&#39;</span>
 </pre></div>
 </div>
 </section>
@@ -1222,52 +1222,92 @@ setting it. All facts below are verified directly against this
 installer’s own <code class="docutils literal notranslate"><span class="pre">docker-compose.yml.dist</span></code> (the Docker Compose
 self-hosting stack); a Kubernetes/hosted-service deployment wires some
 of these variables differently and is out of scope for this page.</p>
-<section id="provider-keys-that-are-stored-settings">
-<h3>Provider keys that are stored settings<a class="headerlink" href="#provider-keys-that-are-stored-settings" title="Link to this heading">¶</a></h3>
-<p>The following provider keys are stored settings of their service. The
-service reads them from its database only; it does not read a <code class="docutils literal notranslate"><span class="pre">.env</span></code>
-variable or a container environment variable for them, so setting the
-matching variable alone has no effect on these services:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>: <code class="docutils literal notranslate"><span class="pre">llm.openai_compat.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">llm.gemini.api_key</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">email-manager</span></code>: <code class="docutils literal notranslate"><span class="pre">sendgrid.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">mailgun.api_key</span></code>,
-<code class="docutils literal notranslate"><span class="pre">mailgun.webhook_signing_key</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">message-manager</span></code>: <code class="docutils literal notranslate"><span class="pre">provider.messagebird.auth_token</span></code>,
-<code class="docutils literal notranslate"><span class="pre">provider.telnyx.auth_token</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>: <code class="docutils literal notranslate"><span class="pre">aws.access_key</span></code>, <code class="docutils literal notranslate"><span class="pre">aws.secret_key</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tts-manager</span></code>: <code class="docutils literal notranslate"><span class="pre">aws.access_key</span></code>, <code class="docutils literal notranslate"><span class="pre">aws.secret_key</span></code>,
-<code class="docutils literal notranslate"><span class="pre">elevenlabs.api_key</span></code></p></li>
-</ul>
-<p>Store each key with the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">set</span></code> command of the service
-(<code class="docutils literal notranslate"><span class="pre">ai-control</span></code>, <code class="docutils literal notranslate"><span class="pre">email-control</span></code>, <code class="docutils literal notranslate"><span class="pre">message-control</span></code>,
-<code class="docutils literal notranslate"><span class="pre">transcribe-control</span></code> or <code class="docutils literal notranslate"><span class="pre">tts-control</span></code>, run inside the service
-container, with the value on standard input and an <code class="docutils literal notranslate"><span class="pre">--actor-id</span></code>) or
-with the Service Config API (see Service Config). The change is used by
-the next request, with no restart. The master key variable of the
-service (for example <code class="docutils literal notranslate"><span class="pre">EMAIL_CONFIG_ENCRYPTION_KEYS</span></code>) is still an
-environment variable and must be set before a secret can be stored.
-<code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">list</span></code> shows the source of every key: <code class="docutils literal notranslate"><span class="pre">db</span></code> means that a value
-is stored, <code class="docutils literal notranslate"><span class="pre">none</span></code> means that the key is not configured. The services
-log a warning or an info line at start for a key that is not configured
-(the key name only).</p>
-<p><code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> are different: a stored value
-is used first, and the environment variable is used when no value is
-stored. <code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> has <code class="docutils literal notranslate"><span class="pre">paddle.api_key</span></code> (<code class="docutils literal notranslate"><span class="pre">PADDLE_API_KEY</span></code>)
-and <code class="docutils literal notranslate"><span class="pre">paddle.webhook_secret_key</span></code> (<code class="docutils literal notranslate"><span class="pre">PADDLE_WEBHOOK_SECRET_KEY</span></code>).
-<code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> has <code class="docutils literal notranslate"><span class="pre">openai.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">deepgram.api_key</span></code>,
-<code class="docutils literal notranslate"><span class="pre">cartesia.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">xai.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">elevenlabs.api_key</span></code>,
-<code class="docutils literal notranslate"><span class="pre">google.api_key</span></code>, <code class="docutils literal notranslate"><span class="pre">openrouter.api_key</span></code> and <code class="docutils literal notranslate"><span class="pre">local_llm.endpoints</span></code>
-(the variables <code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">DEEPGRAM_API_KEY</span></code>,
-<code class="docutils literal notranslate"><span class="pre">CARTESIA_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">ELEVENLABS_API_KEY</span></code>,
-<code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">OPENROUTER_API_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">LOCAL_LLM_ENDPOINTS</span></code>).
-Store them with the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">set</span></code> command of <code class="docutils literal notranslate"><span class="pre">billing-control</span></code> or
-<code class="docutils literal notranslate"><span class="pre">pipecat-control</span></code> or with the Service Config API (the <code class="docutils literal notranslate"><span class="pre">billing</span></code> and
-<code class="docutils literal notranslate"><span class="pre">pipecat</span></code> services). A change of a <code class="docutils literal notranslate"><span class="pre">pipecat</span></code> key is used from the next
-session. A key that both a manager and the pipecat services use
-(<code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">ELEVENLABS_API_KEY</span></code>) is a separate setting in
-each service and must be replaced in both. The <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code>
-keeps its <code class="docutils literal notranslate"><span class="pre">.env</span></code> variables as the fallback for a key that
-<code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> does not pass.</p>
+<section id="platform-provider-keys-are-environment-variables">
+<h3>Platform provider keys are environment variables<a class="headerlink" href="#platform-provider-keys-are-environment-variables" title="Link to this heading">¶</a></h3>
+<p>The platform keys of the providers below are read from environment
+variables of the service container, and only from there. A change needs a
+restart of the service (a restart of <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> for the
+<code class="docutils literal notranslate"><span class="pre">pipecat</span></code> keys). An unset variable, an empty variable, or a value that is
+still an unresolved placeholder (a text that starts with <code class="docutils literal notranslate"><span class="pre">[[</span></code>) means that
+the key is not configured: the service does not stop, and a call that needs
+the key fails with the provider error. Each service logs the state of its
+variables once at start (the variable name only, never a value).</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 45.0%" />
+<col style="width: 25.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Variable</p></th>
+<th class="head"><p>Used for</p></th>
+<th class="head"><p>Services</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code></p></td>
+<td><p>OpenAI key (the platform default key of the LLM calls and the real-time voice pipeline)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code></p></td>
+<td><p>Gemini API key</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">OPENROUTER_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">DEEPGRAM_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">CARTESIA_API_KEY</span></code></p></td>
+<td><p>xAI, OpenRouter, Deepgram and Cartesia keys</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">LOCAL_LLM_ENDPOINTS</span></code></p></td>
+<td><p>One line of JSON that maps a local endpoint name to its <code class="docutils literal notranslate"><span class="pre">base_url</span></code> and <code class="docutils literal notranslate"><span class="pre">api_key</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ELEVENLABS_API_KEY</span></code></p></td>
+<td><p>ElevenLabs key</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tts-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code></p></td>
+<td><p>AWS credential (Polly and Transcribe)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tts-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SENDGRID_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">MAILGUN_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">MAILGUN_WEBHOOK_SIGNING_KEY</span></code></p></td>
+<td><p>Email providers</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">email-manager</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">MESSAGEBIRD_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code></p></td>
+<td><p>SMS and MMS providers</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">message-manager</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">TELNYX_CONNECTION_ID</span></code>, <code class="docutils literal notranslate"><span class="pre">TELNYX_PROFILE_ID</span></code>, <code class="docutils literal notranslate"><span class="pre">TWILIO_ACCOUNT_SID</span></code>, <code class="docutils literal notranslate"><span class="pre">TWILIO_AUTH_TOKEN</span></code></p></td>
+<td><p>Number providers (see the telephony table below)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">number-manager</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">PADDLE_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">PADDLE_WEBHOOK_SECRET</span></code></p></td>
+<td><p>Paddle account</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">billing-manager</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A variable that two services use has one name and must hold the same value
+for both (for example <code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code> of <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> and of
+<code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code>, or <code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code> of <code class="docutils literal notranslate"><span class="pre">message-manager</span></code> and
+<code class="docutils literal notranslate"><span class="pre">number-manager</span></code>). A rotation of the vendor account is one change of the
+variable in the deployment, followed by a restart of the services that use it.</p>
+<p>The AWS pair is used only together: when exactly one of the two variables is
+set, the pair is refused (<code class="docutils literal notranslate"><span class="pre">tts-manager</span></code> fails the request, and the start log
+of <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code> warns). Without
+<code class="docutils literal notranslate"><span class="pre">PADDLE_WEBHOOK_SECRET</span></code> every Paddle webhook is rejected, and without
+<code class="docutils literal notranslate"><span class="pre">PADDLE_API_KEY</span></code> the customer portal session of Paddle can not be created.
+The <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> Go service reads no provider key; the runner reads
+its variables from its own container and uses the key of a request first,
+when the request carries one. A session that needs a key that is not set
+fails (the runner answers <code class="docutils literal notranslate"><span class="pre">&lt;vendor&gt;</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">configured</span></code>).</p>
+<p>Values that were stored through the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">set</span></code> commands or the Service
+Config API (see Service Config) are not read by these services now. A
+<code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">set</span></code> or <code class="docutils literal notranslate"><span class="pre">clear</span></code> of such a key prints a notice that names the
+variable that is read, and the stored value has no effect. After a rotation
+through the variable, a stored value that is left behind is stale.</p>
 </section>
 <section id="ai-voice-agent-providers">
 <h3>AI voice agent providers<a class="headerlink" href="#ai-voice-agent-providers" title="Link to this heading">¶</a></h3>
@@ -1287,12 +1327,12 @@ keeps its <code class="docutils literal notranslate"><span class="pre">.env</spa
 <tbody>
 <tr class="row-even"><td><p>LLM / conversation (batch, e.g. audit evaluation)</p></td>
 <td><p>OpenAI</p></td>
-<td><p>Stored key <code class="docutils literal notranslate"><span class="pre">llm.openai_compat.api_key</span></code> (no restart)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code> (restart <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>)</p></td>
 </tr>
 <tr class="row-odd"><td><p>LLM / conversation (real-time voice pipeline)</p></td>
 <td><p>OpenAI, Google Gemini, xAI</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code>
-(restart <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code>
+(restart <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code>)</p></td>
 </tr>
 <tr class="row-even"><td><p>LLM / conversation (real-time voice pipeline, platform-managed models)</p></td>
 <td><p>OpenRouter (serves the Anthropic Claude, Meta Llama, DeepSeek, Qwen,
@@ -1307,29 +1347,30 @@ and Mistral models that <code class="docutils literal notranslate"><span class="
 </tr>
 <tr class="row-even"><td><p>Speech-to-text</p></td>
 <td><p>Deepgram, AWS Transcribe, Google Cloud Speech-to-Text</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">DEEPGRAM_API_KEY</span></code>; stored keys <code class="docutils literal notranslate"><span class="pre">aws.access_key</span></code> and
-<code class="docutils literal notranslate"><span class="pre">aws.secret_key</span></code> (no restart); <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code>
+<td><p><code class="docutils literal notranslate"><span class="pre">DEEPGRAM_API_KEY</span></code> (restart <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code>);
+<code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code> (restart
+<code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>); <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code>
 (restart <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>)</p></td>
 </tr>
 <tr class="row-odd"><td><p>Text-to-speech</p></td>
 <td><p>ElevenLabs, Cartesia, AWS Polly, Google Cloud TTS</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">CARTESIA_API_KEY</span></code>; stored keys <code class="docutils literal notranslate"><span class="pre">elevenlabs.api_key</span></code>,
-<code class="docutils literal notranslate"><span class="pre">aws.access_key</span></code> and <code class="docutils literal notranslate"><span class="pre">aws.secret_key</span></code> (no restart);
-<code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> (restart <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code>)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">CARTESIA_API_KEY</span></code> (restart <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code>);
+<code class="docutils literal notranslate"><span class="pre">ELEVENLABS_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code>
+(restart <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code>); <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code>
+(restart <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code>)</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> are two
-unrelated variables that happen to share the “Google” prefix. Do not
+unrelated settings that happen to share the “Google” prefix. Do not
 confuse them:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> is a Gemini API key. <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>’s
-real-time voice pipeline reads it from the environment for live Gemini
-conversations (restart <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> after changing it).
-<code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> does not read it: its Gemini key (batch audit
-evaluation, prompt proposal and the Gemini based summary, analysis
-and builder calls) is the stored key <code class="docutils literal notranslate"><span class="pre">llm.gemini.api_key</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> is a Gemini API key. The real-time voice pipeline
+(<code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code>) uses it for live Gemini conversations, and
+<code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> uses it for batch audit evaluation, prompt proposal and the
+Gemini based summary, analysis and builder calls. Both read the same
+variable name, so both must hold the same key.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> is a GCP service-account JSON key
 file path. It is mounted into <strong>five</strong> services in this installer’s
 Docker Compose stack: <code class="docutils literal notranslate"><span class="pre">api-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>,
@@ -1341,25 +1382,23 @@ Docker Compose stack (it only uses <code class="docutils literal notranslate"><s
 restarting <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> for a <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code>
 change has no effect.</p></li>
 </ul>
-<p><code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code> has no dedicated feature write-up beyond its
-<code class="docutils literal notranslate"><span class="pre">.env.template</span></code> entry; it is consumed by <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>’s
-real-time voice pipeline as an LLM alternative, not by <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code> has no dedicated feature write-up; it is
+consumed by <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>’s real-time voice pipeline as an LLM
+alternative, not by <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>.</p>
 <section id="openrouter-key-for-platform-managed-models">
 <h4>OpenRouter key for platform-managed models<a class="headerlink" href="#openrouter-key-for-platform-managed-models" title="Link to this heading">¶</a></h4>
 <p>Models that <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ai_models</span></code> reports with <code class="docutils literal notranslate"><span class="pre">platform_managed</span></code> set to
 <code class="docutils literal notranslate"><span class="pre">true</span></code> (Anthropic Claude, Meta Llama, DeepSeek, Qwen, and Mistral) do
 not use the per-AI <code class="docutils literal notranslate"><span class="pre">engine_key</span></code> that a user enters. In the real-time
 voice pipeline they are served through OpenRouter with a key that you,
-the operator, supply once as <code class="docutils literal notranslate"><span class="pre">OPENROUTER_API_KEY</span></code> in <code class="docutils literal notranslate"><span class="pre">.env</span></code>. Notes
-on how it behaves in this installer’s Docker Compose stack:</p>
+the operator, supply once as the variable <code class="docutils literal notranslate"><span class="pre">OPENROUTER_API_KEY</span></code> of
+<code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code>. Notes on how it behaves:</p>
 <ul class="simple">
-<li><p>The variable is passed to the <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> service only.
-<code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> (the Go service) does not read it, so restarting
-<code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> for this key has no effect. Restart
-<code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> instead.</p></li>
-<li><p>The installer writes <code class="docutils literal notranslate"><span class="pre">OPENROUTER_API_KEY=</span></code> empty by default. With an
-empty key these models stay selectable in the catalog (there is no
-global on/off switch), but a session that uses one fails when the
+<li><p><code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> reads the variable when a session starts, so
+a changed value needs a restart of the runner container and is used from
+the next session. <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> (the Go service) reads no key.</p></li>
+<li><p>Without the variable these models stay selectable in the catalog (there
+is no global on/off switch), but a session that uses one fails when the
 runner initializes the LLM service, with the error
 <code class="docutils literal notranslate"><span class="pre">OpenRouter</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">configured</span></code>. Other models (OpenAI, Gemini, xAI)
 are not affected.</p></li>
@@ -1371,10 +1410,9 @@ any other LLM provider.</p></li>
 <code class="docutils literal notranslate"><span class="pre">data_collection</span></code> set to <code class="docutils literal notranslate"><span class="pre">deny</span></code>, and only to endpoints that
 support tool calling. This is fixed and not configurable.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> is pinned by image digest in
-<code class="docutils literal notranslate"><span class="pre">docker-compose.yml.dist</span></code>. The key has an effect only after the
-runner image that contains the platform-managed model support is
-adopted (for example with <code class="docutils literal notranslate"><span class="pre">scripts/sync-compose-images.sh</span></code>). Setting the key
-while the pinned image is older does nothing.</p></li>
+<code class="docutils literal notranslate"><span class="pre">docker-compose.yml.dist</span></code>. The variable has an effect only after a
+<code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> image that reads the environment keys is adopted
+(for example with <code class="docutils literal notranslate"><span class="pre">scripts/sync-compose-images.sh</span></code>).</p></li>
 </ul>
 </section>
 <section id="local-models-self-hosted-openai-compatible-servers">
@@ -1385,14 +1423,14 @@ completions API. Registered models appear in <code class="docutils literal notra
 <code class="docutils literal notranslate"><span class="pre">Local</span></code> and an <code class="docutils literal notranslate"><span class="pre">id</span></code> of <code class="docutils literal notranslate"><span class="pre">local.&lt;endpoint&gt;.&lt;model&gt;</span></code>. Users only pick the
 model; the server address and key are never shown. Private network
 addresses and plain <code class="docutils literal notranslate"><span class="pre">http</span></code> are allowed, because the server is inside your
-trust boundary. Nothing is listed until you set the variables below. There is
+trust boundary. Nothing is listed until you set the settings below. There is
 no separate on/off switch. This is not the same as the OpenRouter models above:
 <code class="docutils literal notranslate"><span class="pre">platform_managed</span></code> only says that you, the operator, supply the connection.</p>
-<p>Two variables, kept apart on purpose so that the secret stays in the runner
-only. Write each value as compact JSON (no space after a colon or comma) and
-write a <code class="docutils literal notranslate"><span class="pre">$</span></code> character as <code class="docutils literal notranslate"><span class="pre">$$</span></code> in Docker Compose.</p>
+<p>Two settings. Write each value as compact JSON (no space after a colon or
+comma); write a <code class="docutils literal notranslate"><span class="pre">$</span></code> character as <code class="docutils literal notranslate"><span class="pre">$$</span></code> in the Docker Compose variable.</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">LOCAL_LLM_ENDPOINTS</span></code> (secret, <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> only): a JSON
+<li><p><code class="docutils literal notranslate"><span class="pre">LOCAL_LLM_ENDPOINTS</span></code> (secret, a variable of
+<code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code>): a JSON
 object that maps an endpoint name to its connection, for example
 <code class="docutils literal notranslate"><span class="pre">{&quot;vllm-a&quot;:{&quot;base_url&quot;:&quot;http://llm.internal:8000/v1&quot;,&quot;api_key&quot;:&quot;&quot;}}</span></code>.
 The name is lower case letters, digits and <code class="docutils literal notranslate"><span class="pre">-</span></code> (up to 32 characters).
@@ -1410,9 +1448,9 @@ and <code class="docutils literal notranslate"><span class="pre">low-cost</span>
 The endpoint name, <code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">label</span></code> are shown to users, so do not put
 internal host names in them.</p></li>
 </ul>
-<p>To enable: set both variables, redeploy <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> and
-<code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> together (same image), then redeploy
-<code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> last. To remove a model: move the AIs that use it to another
+<p>To enable: set <code class="docutils literal notranslate"><span class="pre">LOCAL_LLM_ENDPOINTS</span></code> on the runner and <code class="docutils literal notranslate"><span class="pre">LOCAL_LLM_MODELS</span></code>, redeploy
+<code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> together (same image),
+then redeploy <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> last. To remove a model: move the AIs that use it to another
 model first, then redeploy <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> first and the pipecat services
 afterwards. A session that uses a removed or unreachable model fails. Do not set
 <code class="docutils literal notranslate"><span class="pre">OPENAI_ORG_ID</span></code> or <code class="docutils literal notranslate"><span class="pre">OPENAI_PROJECT_ID</span></code> on the runner: the OpenAI client
@@ -1469,10 +1507,9 @@ records a <code class="docutils literal notranslate"><span class="pre">pipeline_
 </ul>
 <p>After setting an AI provider key, restart the service(s) that actually
 consume that specific variable, per the tables above:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>pipecat-manager<span class="w">       </span><span class="c1"># OPENAI_API_KEY, GOOGLE_API_KEY, XAI_API_KEY (real-time)</span>
-sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>pipecat-script-runner<span class="w"> </span><span class="c1"># OPENROUTER_API_KEY (platform-managed models)</span>
-sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>transcribe-manager<span class="w">    </span><span class="c1"># DEEPGRAM_API_KEY, GOOGLE_APPLICATION_CREDENTIALS</span>
-sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>tts-manager<span class="w">           </span><span class="c1"># CARTESIA_API_KEY, GOOGLE_APPLICATION_CREDENTIALS</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>pipecat-manager<span class="w">       </span><span class="c1"># LOCAL_LLM_MODELS (restart ``pipecat-script-runner`` for the pipecat keys)</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>transcribe-manager<span class="w">    </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>tts-manager<span class="w">           </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>rag-manager<span class="w">           </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>storage-manager<span class="w">       </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>api-manager<span class="w">           </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
@@ -1553,41 +1590,48 @@ sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class=
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Provider</p></th>
-<th class="head"><p>Env var(s) or stored key</p></th>
+<th class="head"><p>Env var(s)</p></th>
 <th class="head"><p>Consuming service</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Twilio (PSTN numbers)</p></td>
-<td><p>Stored provider setting (<code class="docutils literal notranslate"><span class="pre">sid</span></code>, <code class="docutils literal notranslate"><span class="pre">trunk_sid</span></code> and the secret), no <code class="docutils literal notranslate"><span class="pre">.env</span></code> variable</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">TWILIO_ACCOUNT_SID</span></code> and <code class="docutils literal notranslate"><span class="pre">TWILIO_AUTH_TOKEN</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">number-manager</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>Telnyx (PSTN numbers and messaging)</p></td>
-<td><p>Stored provider setting (<code class="docutils literal notranslate"><span class="pre">connection_id</span></code> and the secret; <code class="docutils literal notranslate"><span class="pre">profile_id</span></code> is optional), no <code class="docutils literal notranslate"><span class="pre">.env</span></code> variable</p></td>
+<tr class="row-odd"><td><p>Telnyx (PSTN numbers)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">TELNYX_CONNECTION_ID</span></code> and <code class="docutils literal notranslate"><span class="pre">TELNYX_PROFILE_ID</span></code> (optional)</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">number-manager</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>MessageBird (SMS)</p></td>
-<td><p>Stored key <code class="docutils literal notranslate"><span class="pre">provider.messagebird.auth_token</span></code> (no restart)</p></td>
+<tr class="row-even"><td><p>Telnyx (SMS and MMS)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">message-manager</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>MessageBird (SMS)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MESSAGEBIRD_API_KEY</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">message-manager</span></code></p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">number-manager</span></code> reads the Twilio and Telnyx credentials from the stored
-Number Provider settings only; it does not read <code class="docutils literal notranslate"><span class="pre">TWILIO_*</span></code> or
-<code class="docutils literal notranslate"><span class="pre">TELNYX_*</span></code> variables from the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file or the container
-environment, so setting them has no effect. Store the <code class="docutils literal notranslate"><span class="pre">config</span></code> and the
-secret of each carrier with the Number Provider API (see Number Provider);
-the master key variable <code class="docutils literal notranslate"><span class="pre">NUMBER_SECRET_ENCRYPTION_KEYS</span></code> is still an
-environment variable and must be set before a secret can be stored.
-Without a stored Telnyx secret and <code class="docutils literal notranslate"><span class="pre">connection_id</span></code> no number can be
-purchased and the available number search fails.
-<code class="docutils literal notranslate"><span class="pre">message-manager</span></code> does not read a <code class="docutils literal notranslate"><span class="pre">.env</span></code> variable either: its MessageBird and
-Telnyx tokens (<code class="docutils literal notranslate"><span class="pre">provider.messagebird.auth_token</span></code> and
-<code class="docutils literal notranslate"><span class="pre">provider.telnyx.auth_token</span></code>) are stored settings, set with
-<code class="docutils literal notranslate"><span class="pre">message-control</span> <span class="pre">config</span> <span class="pre">set</span></code> or the Service Config API (the <code class="docutils literal notranslate"><span class="pre">message</span></code>
-service). Without a stored Telnyx token the SMS and MMS sends of
-<code class="docutils literal notranslate"><span class="pre">message-manager</span></code> fail at the provider.</p>
+<p><code class="docutils literal notranslate"><span class="pre">number-manager</span></code> reads the carrier secret (<code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code> or
+<code class="docutils literal notranslate"><span class="pre">TWILIO_AUTH_TOKEN</span></code>) from the environment only. A secret that is stored
+through the Number Provider API is not used. The <code class="docutils literal notranslate"><span class="pre">enabled</span></code>, <code class="docutils literal notranslate"><span class="pre">priority</span></code>
+and <code class="docutils literal notranslate"><span class="pre">config</span></code> of the Number Provider settings are still read from the
+database. The three variables <code class="docutils literal notranslate"><span class="pre">TELNYX_CONNECTION_ID</span></code>,
+<code class="docutils literal notranslate"><span class="pre">TELNYX_PROFILE_ID</span></code> and <code class="docutils literal notranslate"><span class="pre">TWILIO_ACCOUNT_SID</span></code> fill a <code class="docutils literal notranslate"><span class="pre">config</span></code> key that
+the stored setting does not have, so a deployment without any stored
+setting works with the variables alone; a value that is stored in the
+<code class="docutils literal notranslate"><span class="pre">config</span></code> wins over the variable (a <code class="docutils literal notranslate"><span class="pre">config</span></code> value left from before
+hides a changed variable, so check <code class="docutils literal notranslate"><span class="pre">config</span></code> after a change). <code class="docutils literal notranslate"><span class="pre">trunk_sid</span></code>
+of Twilio has no variable and is set in the <code class="docutils literal notranslate"><span class="pre">config</span></code>. Without the secret
+variable no number can be purchased or released and the available number
+search fails. The Number Provider API still accepts a secret, but the
+stored value is not used (see Number Provider).
+<code class="docutils literal notranslate"><span class="pre">message-manager</span></code> reads its MessageBird and Telnyx keys the same way
+(<code class="docutils literal notranslate"><span class="pre">MESSAGEBIRD_API_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code>). Without <code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code>
+the SMS and MMS sends of <code class="docutils literal notranslate"><span class="pre">message-manager</span></code> fail at the provider.
+Restart the service after a change of a variable.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>number-manager
 </pre></div>
 </div>
@@ -1603,26 +1647,23 @@ service). Without a stored Telnyx token the SMS and MMS sends of
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Provider</p></th>
-<th class="head"><p>How the key is set</p></th>
+<th class="head"><p>Env var(s)</p></th>
 <th class="head"><p>Consuming service</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>SendGrid</p></td>
-<td><p>Stored key <code class="docutils literal notranslate"><span class="pre">sendgrid.api_key</span></code> (no restart)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SENDGRID_API_KEY</span></code> (restart <code class="docutils literal notranslate"><span class="pre">email-manager</span></code>)</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">email-manager</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>Mailgun</p></td>
-<td><p>Stored keys <code class="docutils literal notranslate"><span class="pre">mailgun.api_key</span></code> and <code class="docutils literal notranslate"><span class="pre">mailgun.webhook_signing_key</span></code>
-(no restart)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MAILGUN_API_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">MAILGUN_WEBHOOK_SIGNING_KEY</span></code> (restart
+<code class="docutils literal notranslate"><span class="pre">email-manager</span></code>)</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">email-manager</span></code></p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">email-manager</span></code> does not read a <code class="docutils literal notranslate"><span class="pre">.env</span></code> variable for these keys; store
-them with <code class="docutils literal notranslate"><span class="pre">email-control</span> <span class="pre">config</span> <span class="pre">set</span></code> or the Service Config API (the
-<code class="docutils literal notranslate"><span class="pre">email</span></code> service).</p>
 <p>Configuring at least one of these two is required for the email-based
 signup flow (Path B in First login and API access) to actually deliver
 its verification email.</p>
@@ -1758,14 +1799,12 @@ by default; never enable on a public install.</p></td>
 <h3>Third-party integrations<a class="headerlink" href="#third-party-integrations" title="Link to this heading">¶</a></h3>
 <p>Voice AI, transcription, TTS, phone number provisioning, and email/SMS
 providers are configured through their own keys. Most are variables in
-<code class="docutils literal notranslate"><span class="pre">.env</span></code>; the provider keys of <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code> (the LLM keys),
-<code class="docutils literal notranslate"><span class="pre">email-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">message-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code> and
-<code class="docutils literal notranslate"><span class="pre">tts-manager</span></code> are stored settings that are set with the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">set</span></code>
-command of the service or the Service Config API, and are not read from
-<code class="docutils literal notranslate"><span class="pre">.env</span></code>. The Paddle keys of <code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> and the platform keys of
-the voice AI vendors of <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> can also be stored settings;
-a stored value is used first, and the <code class="docutils literal notranslate"><span class="pre">.env</span></code> variable is used when no
-value is stored. See
+<code class="docutils literal notranslate"><span class="pre">.env</span></code> (the keys of <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">email-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">message-manager</span></code>,
+<code class="docutils literal notranslate"><span class="pre">number-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code>,
+<code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> and the voice AI runner of <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> are
+environment variables of the service container, such as <code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code>,
+<code class="docutils literal notranslate"><span class="pre">SENDGRID_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code> or <code class="docutils literal notranslate"><span class="pre">PADDLE_API_KEY</span></code>; a value that
+was stored with <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">set</span></code> or the Service Config API is not read). See
 the Provider configuration section for the full list of keys, which
 service to restart after setting each, and the AI-provider-specific
 details (shared credentials, multi-service consumers). Until a
@@ -1862,7 +1901,7 @@ auto-skips whatever cannot be probed at the current stage.</p>
 <span class="pre">&lt;detail&gt;</span></code>; every failure (and every fixable warning) is immediately
 followed by a <code class="docutils literal notranslate"><span class="pre">FIX</span> <span class="pre">&lt;name&gt;:</span> <span class="pre">&lt;exact</span> <span class="pre">command&gt;</span></code> line:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./scripts/doctor.sh
-./scripts/doctor.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s1">'^FIX '</span><span class="w">   </span><span class="c1"># extract every recovery command</span>
+./scripts/doctor.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s1">&#39;^FIX &#39;</span><span class="w">   </span><span class="c1"># extract every recovery command</span>
 </pre></div>
 </div>
 <p>Exit codes: <code class="docutils literal notranslate"><span class="pre">0</span></code> only when nothing failed (warnings and skips do not
@@ -2091,7 +2130,7 @@ the full output of <code class="docutils literal notranslate"><span class="pre">
 </ul>
 </li>
 <li><a class="reference internal" href="#provider-configuration">Provider configuration</a><ul>
-<li><a class="reference internal" href="#provider-keys-that-are-stored-settings">Provider keys that are stored settings</a></li>
+<li><a class="reference internal" href="#platform-provider-keys-are-environment-variables">Platform provider keys are environment variables</a></li>
 <li><a class="reference internal" href="#ai-voice-agent-providers">AI voice agent providers</a><ul>
 <li><a class="reference internal" href="#openrouter-key-for-platform-managed-models">OpenRouter key for platform-managed models</a></li>
 <li><a class="reference internal" href="#local-models-self-hosted-openai-compatible-servers">Local models (self-hosted OpenAI-compatible servers)</a></li>

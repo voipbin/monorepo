@@ -7,11 +7,11 @@ Prerequisites
 +++++++++++++
 
 * An authentication token with **ProjectSuperAdmin** permission. Obtain one via ``POST /auth/login``.
-* The carrier account values: the API token and, for Telnyx, the ``connection_id`` of the connection used for number orders.
+* The carrier secret (``TELNYX_API_KEY`` or ``TWILIO_AUTH_TOKEN``) must be set as an environment variable of ``number-manager`` by the platform operator. For Telnyx the ``connection_id`` is set in the ``config`` or as ``TELNYX_CONNECTION_ID``.
 
 .. note:: **AI Implementation Hint**
 
-   The examples use obviously fake values. Never place a real secret in a document, a log or a chat message. The secret is accepted only in the request body of ``PUT /number_providers/{provider_name}/secret``, never in the URL.
+   The examples use obviously fake values. Never place a real secret in a document, a log or a chat message. A secret is accepted only in the request body of ``PUT /number_providers/{provider_name}/secret``, never in the URL. That request stores the secret in the database row only, and the platform does not read it now; the secret that is used is the environment variable.
 
 
 List the number providers
@@ -33,7 +33,7 @@ Response (200 OK)
                 "priority": 10,
                 "has_secret": true,
                 "key_version": 1,
-                "credential_source": "db",
+                "credential_source": "env",
                 "usable": true
             },
             {
@@ -60,9 +60,9 @@ Get one number provider
     $ curl --location --request GET 'https://api.voipbin.net/v1.0/number_providers/telnyx?token=<YOUR_AUTH_TOKEN>'
 
 
-Store the settings and the secret of a provider
------------------------------------------------
-Set the non-secret ``config`` first, because storing a secret requires the ``config`` keys the provider needs.
+Store the settings of a provider
+--------------------------------
+Set the non-secret ``config`` (it can also come from ``TELNYX_CONNECTION_ID``, ``TELNYX_PROFILE_ID`` or ``TWILIO_ACCOUNT_SID``). The secret request below is kept for compatibility; it requires the ``config`` keys the provider needs and has no effect on purchases.
 
 Request (settings)
 
@@ -76,7 +76,7 @@ Request (settings)
             }
         }'
 
-Request (secret)
+Request (secret, stored but not used)
 
 .. code::
 
@@ -99,7 +99,7 @@ Response (200 OK)
         },
         "has_secret": true,
         "key_version": 1,
-        "credential_source": "db",
+        "credential_source": "env",
         "usable": true,
         "updated_by": "550e8400-e29b-41d4-a716-446655440000",
         "secret_updated_by": "00000000-0000-4000-8000-000000000002",
@@ -107,7 +107,7 @@ Response (200 OK)
         "tm_secret_update": "2026-01-03T04:05:06.000000Z"
     }
 
-The response shows ``has_secret`` and ``key_version`` only. The secret is never returned.
+The response shows ``has_secret`` and ``key_version`` only. ``has_secret`` and ``credential_source`` follow the environment variable of the platform, not the stored secret. The secret is never returned.
 
 
 Change the purchase order or disable a provider
@@ -127,7 +127,7 @@ To remove one ``config`` key, send it with an empty string value, for example ``
 
 Delete the stored secret
 ------------------------
-Use this to remove a stored secret (``credential_source`` becomes ``none`` and the carrier cannot serve until a new secret is stored), or to recover a provider whose ``credential_source`` is ``db_undecryptable``.
+Use this to remove a stored secret. It changes the stored row only: ``has_secret`` and ``credential_source`` in the response still follow the environment variable, so they stay ``true`` and ``env`` while the variable is set.
 
 .. code::
 
@@ -141,14 +141,14 @@ Response (200 OK)
         "provider_name": "telnyx",
         "enabled": true,
         "priority": 10,
-        "has_secret": false,
+        "has_secret": true,
         "key_version": 0,
-        "credential_source": "none",
-        "usable": false,
+        "credential_source": "env",
+        "usable": true,
         "updated_by": "550e8400-e29b-41d4-a716-446655440000",
         "secret_updated_by": "00000000-0000-4000-8000-000000000002",
         "tm_update": "2026-01-04T05:06:07.000000Z",
         "tm_secret_update": "2026-01-04T05:06:07.000000Z"
     }
 
-A known provider for which no request has created a stored setting yet answers ``404``. See the account change warning in :ref:`Overview <number-provider-overview>` before you delete a secret. Store the new secret first when the carrier is in use: until then no number can be purchased, released or searched through it.
+A known provider for which no request has created a stored setting yet answers ``404``. See the account change warning in :ref:`Overview <number-provider-overview>` before you change the secret variable of a carrier that is in use.

@@ -27,7 +27,7 @@ warnings.simplefilter("ignore")
 
 import run  # noqa: E402
 
-# The factories take the vendor keys from the request only (never from the environment).
+# The factories take the vendor keys from the request first (then from the environment of the runner).
 KEYS = {run.PK_CARTESIA: "x", run.PK_ELEVENLABS: "x", run.PK_DEEPGRAM: "x"}
 import team_flow, routing_llm, routing_stt, routing_tts, main, tools, task, message_filters, gemini_tool_filter  # noqa
 import pipecat.services.deepgram.stt as dgmod  # noqa: E402

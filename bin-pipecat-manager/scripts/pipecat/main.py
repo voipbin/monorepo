@@ -12,10 +12,11 @@ import log_config
 log_config.setup()  # before run is imported: its import time log lines follow the policy
 
 import custom_endpoint_net as ce_net
-from run import init_pipeline, execute_pipeline
+from run import init_pipeline, execute_pipeline, log_env_state
 from task import task_manager
 
 load_dotenv(override=True)
+log_env_state()  # after load_dotenv: it logs the values that the runner uses
 
 app = FastAPI(title="Python Pipeline API")
 
@@ -112,7 +113,8 @@ class PipelineRequest(BaseModel):
     customer_id: Optional[str] = None
     llm_base_url: Optional[str] = Field(default=None, repr=False)
     llm_base_key: Optional[str] = Field(default=None, repr=False)
-    # Stored platform keys of the vendors that this session uses, by key name (see run.PK_*).
+    # Optional platform keys of the vendors that this session uses, by key name (see run.PK_*). The Go
+    # service no longer sends them: without them the runner reads its environment variables.
     # repr=False keeps the values out of repr() and of the text of a validation error.
     platform_keys: Optional[Dict[str, str]] = Field(default=None, repr=False)
     llm_messages: Optional[List[Message]] = Field(default_factory=list)

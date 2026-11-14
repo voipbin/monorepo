@@ -72,6 +72,24 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: REDIS_DATABASE
+            - name: AWS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: AWS_ACCESS_KEY
+                  optional: true
+            - name: AWS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: AWS_SECRET_KEY
+                  optional: true
+            - name: ELEVENLABS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: ELEVENLABS_API_KEY
+                  optional: true
             - name: CLICKHOUSE_ADDRESS
               valueFrom:
                 secretKeyRef:

@@ -10,7 +10,6 @@ import (
 	"monorepo/bin-common-handler/models/address"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/confighandler"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -69,18 +68,14 @@ func initMessageHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (message
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
-	// the same token rule as the daemon: the stored token only
-	configHandler, err := messageconfig.New(config.Get(), dbhandler.NewConfigStore(sqlDB))
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not create the config handler")
-	}
-	requestExternal := newRequestExternal(configHandler)
+	// the same token rule as the daemon: the environment only
+	requestExternal := newRequestExternal()
 
 	return messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, requestExternal), nil
 }
 
-func newRequestExternal(configHandler confighandler.Handler) requestexternal.RequestExternal {
-	return requestexternal.NewRequestExternal(messageconfig.MessagebirdToken(configHandler), messageconfig.TelnyxToken(configHandler))
+func newRequestExternal() requestexternal.RequestExternal {
+	return requestexternal.NewRequestExternal(messageconfig.MessagebirdToken(), messageconfig.TelnyxToken())
 }
 
 func initCommand() *cobra.Command {

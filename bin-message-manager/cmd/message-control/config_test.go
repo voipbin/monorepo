@@ -100,6 +100,57 @@ func Test_config_set_list_clear(t *testing.T) {
 	}
 }
 
+// After a set or a clear, one line on stderr names the variable that is read and says that the stored
+// value is not used. The output on stdout stays the JSON only.
+func Test_config_noticeOnStderr(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		key  string
+		env  string
+	}{
+		{name: "set telnyx", args: []string{"set", "--key", "provider.telnyx.auth_token", "--actor-id", testActor}, key: "provider.telnyx.auth_token", env: "TELNYX_API_KEY"},
+		{name: "set messagebird", args: []string{"set", "--key", "provider.messagebird.auth_token", "--actor-id", testActor}, key: "provider.messagebird.auth_token", env: "MESSAGEBIRD_API_KEY"},
+		{name: "clear telnyx", args: []string{"clear", "--key", "provider.telnyx.auth_token", "--actor-id", testActor}, key: "provider.telnyx.auth_token", env: "TELNYX_API_KEY"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, "synthetic-credential-value\n")
+			errOut := &bytes.Buffer{}
+			saved := configErr
+			configErr = errOut
+			t.Cleanup(func() { configErr = saved })
+
+			if err := runConfigCommand(tt.args...); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			got := errOut.String()
+			if strings.Count(got, "\n") != 1 || !strings.Contains(got, tt.env) || !strings.Contains(got, "not used") || strings.Contains(got, "synthetic-credential-value") {
+				t.Errorf("Wrong match. expect: one line that names %s, got: %q", tt.env, got)
+			}
+			if strings.Contains(out.String(), tt.env) {
+				t.Errorf("Wrong match. the notice must not be on stdout: %s", out.String())
+			}
+		})
+	}
+
+	t.Run("a failed set prints no notice", func(t *testing.T) {
+		useConfigHarness(t, &config.Config{}, "v\n")
+		errOut := &bytes.Buffer{}
+		saved := configErr
+		configErr = errOut
+		t.Cleanup(func() { configErr = saved })
+
+		if err := runConfigCommand("set", "--key", "provider.telnyx.auth_token", "--actor-id", testActor); err == nil {
+			t.Fatalf("Wrong match. expect: an error")
+		}
+		if errOut.Len() != 0 {
+			t.Errorf("Wrong match. expect: no notice, got: %q", errOut.String())
+		}
+	})
+}
+
 func Test_config_errors(t *testing.T) {
 	tests := []struct {
 		name  string

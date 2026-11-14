@@ -9,7 +9,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-// The platform LLM keys are stored in the database only, so Config has no field for them.
+// The platform LLM keys are read from the environment by internal/aiconfig when a call needs them,
+// so Config has no field for them.
 func Test_Config_hasNoProviderKeyFields(t *testing.T) {
 	typ := reflect.TypeOf(Config{})
 
@@ -23,8 +24,8 @@ func Test_Config_hasNoProviderKeyFields(t *testing.T) {
 	}
 }
 
-// The MCP OAuth app credentials are config keys read by internal/aiconfig, so Config has no field
-// and no flag for them, and the load ignores the variables.
+// The MCP OAuth app credentials are read from their environment variables by internal/aiconfig, so
+// Config has no field and no flag for them, and the load does not touch the variables.
 func Test_Config_hasNoMcpOAuthFields(t *testing.T) {
 	typ := reflect.TypeOf(Config{})
 	for i := 0; i < typ.NumField(); i++ {
@@ -33,10 +34,10 @@ func Test_Config_hasNoMcpOAuthFields(t *testing.T) {
 		}
 	}
 
-	t.Setenv("MCP_OAUTH_GITHUB_CLIENT_ID", "synthetic-id")
-	t.Setenv("MCP_OAUTH_GITHUB_CLIENT_SECRET", "synthetic-secret")
+	t.Setenv("GITHUB_MCP_OAUTH_CLIENT_ID", "synthetic-id")
+	t.Setenv("GITHUB_MCP_OAUTH_CLIENT_SECRET", "synthetic-secret")
 	cmd, _ := loadForTest(t)
-	for _, name := range []string{"mcp_oauth_github_client_id", "mcp_oauth_github_client_secret"} {
+	for _, name := range []string{"github_mcp_oauth_client_id", "github_mcp_oauth_client_secret"} {
 		if cmd.PersistentFlags().Lookup(name) != nil {
 			t.Errorf("Wrong match. expect: no flag %s, got: a flag", name)
 		}
@@ -62,16 +63,18 @@ func loadForTest(t *testing.T) (*cobra.Command, Config) {
 	return cmd, *Get()
 }
 
-// A deployment that still exports the old variables starts normally: the load succeeds, the old
-// names are not flags, and the master key and every other field are the same as without them.
-func Test_LoadGlobalConfig_oldProviderVariablesAreIgnored(t *testing.T) {
+// The variables of the platform keys are not part of the loaded configuration: the load succeeds,
+// the names are not flags, and the master key and every other field are the same as without them.
+// The old name of the OpenAI key is not read by anything either.
+func Test_LoadGlobalConfig_platformKeyVariablesAreNotConfig(t *testing.T) {
 	t.Setenv(EnvConfigEncryptionKeys, "1:prefixed-value")
 	t.Setenv("DATABASE_DSN", "user:pass@tcp(127.0.0.1:3306)/db")
 
 	_, without := loadForTest(t)
 
+	t.Setenv("OPENAI_API_KEY", "synthetic-env-openai")
 	t.Setenv("ENGINE_KEY_CHATGPT", "synthetic-old-env-openai")
-	t.Setenv("GOOGLE_API_KEY", "synthetic-old-env-gemini")
+	t.Setenv("GOOGLE_API_KEY", "synthetic-env-gemini")
 
 	cmd, with := loadForTest(t)
 
@@ -79,9 +82,9 @@ func Test_LoadGlobalConfig_oldProviderVariablesAreIgnored(t *testing.T) {
 		t.Errorf("Wrong match. expect: the master key and the DSN as set, got: %q %q", with.ConfigEncryptionKeys, with.DatabaseDSN)
 	}
 	if !reflect.DeepEqual(without, with) {
-		t.Errorf("Wrong match. expect: the old variables change no field, got: %+v and %+v", without, with)
+		t.Errorf("Wrong match. expect: the variables change no field, got: %+v and %+v", without, with)
 	}
-	for _, name := range []string{"engine_key_chatgpt", "google_api_key"} {
+	for _, name := range []string{"engine_key_chatgpt", "openai_api_key", "google_api_key"} {
 		if cmd.PersistentFlags().Lookup(name) != nil {
 			t.Errorf("Wrong match. expect: no flag %s, got: a flag", name)
 		}

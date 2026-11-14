@@ -17,6 +17,7 @@ import (
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-message-manager/internal/config"
+	"monorepo/bin-message-manager/internal/configkeys"
 	"monorepo/bin-message-manager/internal/messageconfig"
 	"monorepo/bin-message-manager/pkg/dbhandler"
 )
@@ -30,6 +31,9 @@ const maxStdinBytes = 4096
 
 // configOut is where the config commands print. Tests replace it.
 var configOut io.Writer = os.Stdout
+
+// configErr is where the notice after a change is printed. Tests replace it.
+var configErr io.Writer = os.Stderr
 
 // configIn is where the secret value is read from. Tests replace it.
 var configIn io.Reader = os.Stdin
@@ -58,17 +62,14 @@ func cmdConfig() *cobra.Command {
 		// The root PersistentPreRunE only binds the flags and loads the configuration; it does not
 		// connect to Redis or RabbitMQ, so these commands need the database and the master key
 		// list only. The stored keys are declared in internal/configkeys and are checked on write.
-		Short: "Stored platform configuration (the SMS and MMS provider tokens)",
-		Long: `Stored platform configuration: the authentication tokens of the SMS and MMS providers,
-MessageBird (provider.messagebird.auth_token) and Telnyx (provider.telnyx.auth_token). They are
-platform credentials and are set separately.
+		Short: "Stored settings of the SMS and MMS provider tokens (not read by the service)",
+		Long: `Stored settings of the authentication tokens of the SMS and MMS providers, MessageBird
+(provider.messagebird.auth_token) and Telnyx (provider.telnyx.auth_token).
 
-The tokens are stored in the database only; a key that is cleared is not configured. A change is used by the next send on every replica, with no restart. Set a value
-only after every replica runs the image that has the config commands. The Telnyx token of this
-service is a different setting from the Telnyx token of the number service (a different source),
-so a rotation of the Telnyx account needs both places to be changed. To check a stored value
-without sending a message, use "list": the source of the key must be db and has_secret true.
-The daemon applies the table migration at its start; on a local database run "migrate up" first.
+The service does not read these stored values. It reads the environment variables
+MESSAGEBIRD_API_KEY and TELNYX_API_KEY (the Telnyx variable is shared with the number service), so
+a token is rotated in the deployment variables and a change here has no effect on a send. A
+stored value that is left behind is read only by an older image. The daemon applies the table migration at its start; on a local database run "migrate up" first.
 The master key list is read from the environment (MESSAGE_CONFIG_ENCRYPTION_KEYS) and is never a
 flag. These commands need the database and the master key list only.`,
 	}
@@ -266,8 +267,16 @@ func setConfig(h confighandler.Handler, key string, actor uuid.UUID) error {
 		return errors.Wrap(err, "failed to store the value")
 	}
 
+	printEnvNotice(key)
+
 	out := toOutput(res)
 	return printConfig(&out)
+}
+
+// printEnvNotice tells on stderr which variable the service reads, so that a stored value is not
+// mistaken for the token in use. The stdout stays the JSON only.
+func printEnvNotice(key string) {
+	_, _ = fmt.Fprintf(configErr, "Note: the service reads the environment variable %s; the stored value is not used.\n", configkeys.EnvName(key))
 }
 
 func runConfigClear(cmd *cobra.Command, args []string) error {
@@ -289,6 +298,8 @@ func runConfigClear(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to clear the value")
 	}
+
+	printEnvNotice(key)
 
 	out := toOutput(res)
 	return printConfig(&out)

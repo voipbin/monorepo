@@ -139,15 +139,16 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB, cache)
 
-	// The platform LLM keys are stored in the database (a key without a row is not configured)
-	// and are read when a call needs them, so a changed key is used by the next call.
+	// The platform LLM keys and the MCP OAuth apps are read from environment variables when a
+	// call needs them (a variable that is not set is not configured). The config handler is for
+	// the admin API only.
 	configHandler, errConfig := aiconfig.New(cfg, db.ConfigStore())
 	if errConfig != nil {
 		log.Errorf("Could not create the config handler. err: %v", errConfig)
 		return errConfig
 	}
-	aiconfig.LogSources(context.Background(), configHandler)
-	keys := newPlatformKeys(configHandler, cfg)
+	aiconfig.LogStates()
+	keys := newPlatformKeys(cfg)
 
 	// rabbitmq sock connect
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
@@ -183,7 +184,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		log.Errorf("Could not create mcp server handler. err: %v", err)
 		return err
 	}
-	mcpOAuthHandler, err := mcpoauthhandler.NewMcpOAuthHandler(db, cfg.McpSecretEncryptionKeys, mcpOAuthCredentials(configHandler))
+	mcpOAuthHandler, err := mcpoauthhandler.NewMcpOAuthHandler(db, cfg.McpSecretEncryptionKeys, mcpOAuthCredentials())
 	if err != nil {
 		log.Errorf("Could not create mcp oauth handler. err: %v", err)
 		return err
@@ -247,8 +248,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	aiprompthistoryHandler := aiprompthistoryhandler.New(db, utilHandler)
 
-	// A Gemini key that is not configured is logged by aiconfig.LogSources above (key name and
-	// source only); audit and proposal requests then fail with evaluator_unavailable.
+	// A Gemini key that is not configured is logged by aiconfig.LogStates above (variable name and
+	// state only); audit and proposal requests then fail with evaluator_unavailable.
 	aiauditHandler := aiaudithandler.NewAIAuditHandler(db, geminiaudithandler.NewGeminiAuditHandler(keys.gemini))
 	aiauditHandler.SweepStaleAudits(context.Background())
 

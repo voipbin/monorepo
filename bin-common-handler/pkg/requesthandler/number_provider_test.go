@@ -20,7 +20,7 @@ import (
 
 const (
 	testNumberProviderTarget = "bin-manager.number-manager.request"
-	testNumberProviderBody   = `{"provider_name":"telnyx","enabled":true,"priority":10,"has_secret":true,"key_version":1,"credential_source":"db","usable":true}`
+	testNumberProviderBody   = `{"provider_name":"telnyx","enabled":true,"priority":10,"has_secret":true,"key_version":1,"credential_source":"env","usable":true}`
 	testSecretValue          = "test-secret-value"
 )
 
@@ -30,7 +30,7 @@ var testNumberProviderInfo = &nmprovider.Info{
 	Priority:         10,
 	HasSecret:        true,
 	KeyVersion:       1,
-	CredentialSource: nmprovider.CredentialSourceDB,
+	CredentialSource: nmprovider.CredentialSourceEnv,
 	Usable:           true,
 }
 

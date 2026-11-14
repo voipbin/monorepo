@@ -2,12 +2,9 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"testing"
 
-	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/confighandler/storetest"
+	"monorepo/bin-common-handler/pkg/confighandler"
 
 	"monorepo/bin-ai-manager/internal/aiconfig"
 	"monorepo/bin-ai-manager/internal/config"
@@ -19,53 +16,33 @@ const (
 	testOpenAIURL = "https://api.openai.com/v1"
 )
 
-func testMasterKeyList() string {
-	raw := make([]byte, 32)
-	for i := range raw {
-		raw[i] = byte(0x30 + i)
-	}
-
-	return "1:" + base64.StdEncoding.EncodeToString(raw)
-}
-
-// Each consumer gets the key of its provider, and a changed key is used by the next call of every
-// consumer. The summary and the analysis have a provider of their own, which is not the one of
-// the conversation (always the OpenAI default endpoint) or of the audit and proposal (always
+// Each consumer gets the key of its provider, and a changed variable is used by the next call of
+// every consumer. The summary and the analysis have a provider of their own, which is not the one
+// of the conversation (always the OpenAI default endpoint) or of the audit and proposal (always
 // Gemini).
 func Test_newPlatformKeys(t *testing.T) {
 	tests := []struct {
-		name            string
-		summaryURL      string
-		analysisURL     string
-		expectSummary   string
-		expectAnalysis  string
-		storedOpenAIKey string
-		storedGemini    string
+		name           string
+		summaryURL     string
+		analysisURL    string
+		expectSummary  string
+		expectAnalysis string
 	}{
-		{"summary gemini, analysis openai", testGeminiURL, testOpenAIURL, "gemini-value", "openai-value", "openai-value", "gemini-value"},
-		{"summary openai, analysis gemini", testOpenAIURL, testGeminiURL, "openai-value", "gemini-value", "openai-value", "gemini-value"},
-		{"both default", "", "", "openai-value", "openai-value", "openai-value", "gemini-value"},
+		{"summary gemini, analysis openai", testGeminiURL, testOpenAIURL, "gemini-value", "openai-value"},
+		{"summary openai, analysis gemini", testOpenAIURL, testGeminiURL, "openai-value", "gemini-value"},
+		{"both default", "", "", "openai-value", "openai-value"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv(configkeys.EnvOpenAIAPIKey, "openai-value")
+			t.Setenv(configkeys.EnvGoogleAPIKey, "gemini-value")
+
 			cfg := &config.Config{
-				ConfigEncryptionKeys:  testMasterKeyList(),
 				SummaryEngineBaseURL:  tt.summaryURL,
 				AnalysisEngineBaseURL: tt.analysisURL,
 			}
-			h, err := aiconfig.New(cfg, storetest.NewMemory())
-			if err != nil {
-				t.Fatalf("Wrong match. expect: ok, got: %v", err)
-			}
-			actor := uuid.Must(uuid.NewV4())
-			if _, err := h.SetSecret(context.Background(), actor, configkeys.KeyOpenAICompatAPIKey, tt.storedOpenAIKey); err != nil {
-				t.Fatalf("Wrong match. expect: ok, got: %v", err)
-			}
-			if _, err := h.SetSecret(context.Background(), actor, configkeys.KeyGeminiAPIKey, tt.storedGemini); err != nil {
-				t.Fatalf("Wrong match. expect: ok, got: %v", err)
-			}
 
-			keys := newPlatformKeys(h, cfg)
+			keys := newPlatformKeys(cfg)
 			check := func(round string, conv, summary, analysis, gemini string) {
 				for _, c := range []struct {
 					name   string
@@ -83,22 +60,71 @@ func Test_newPlatformKeys(t *testing.T) {
 				}
 			}
 
-			check("stored", "openai-value", tt.expectSummary, tt.expectAnalysis, "gemini-value")
+			check("set", "openai-value", tt.expectSummary, tt.expectAnalysis, "gemini-value")
 
 			// a rotation is used by the next call of every consumer, with the same functions
-			if _, err := h.SetSecret(context.Background(), actor, configkeys.KeyOpenAICompatAPIKey, "openai-rotated"); err != nil {
-				t.Fatalf("Wrong match. expect: ok, got: %v", err)
-			}
-			if _, err := h.SetSecret(context.Background(), actor, configkeys.KeyGeminiAPIKey, "gemini-rotated"); err != nil {
-				t.Fatalf("Wrong match. expect: ok, got: %v", err)
-			}
-			rot := func(stored string) string {
-				if stored == "gemini-value" {
+			t.Setenv(configkeys.EnvOpenAIAPIKey, "openai-rotated")
+			t.Setenv(configkeys.EnvGoogleAPIKey, "gemini-rotated")
+			rot := func(v string) string {
+				if v == "gemini-value" {
 					return "gemini-rotated"
 				}
 				return "openai-rotated"
 			}
 			check("rotated", "openai-rotated", rot(tt.expectSummary), rot(tt.expectAnalysis), "gemini-rotated")
 		})
+	}
+}
+
+// A variable that is not set or still a placeholder is not configured for every consumer.
+func Test_newPlatformKeys_notConfigured(t *testing.T) {
+	t.Setenv(configkeys.EnvOpenAIAPIKey, "")
+	t.Setenv(configkeys.EnvGoogleAPIKey, "[[BIN_MANAGER__GOOGLE_API_KEY]]")
+
+	keys := newPlatformKeys(&config.Config{SummaryEngineBaseURL: testGeminiURL})
+	for name, fn := range map[string]aiconfig.KeyFunc{"conversation": keys.conversation, "summary": keys.summary, "analysis": keys.analysis, "gemini": keys.gemini} {
+		if got, err := fn(context.Background()); err != nil || got != "" {
+			t.Errorf("Wrong match. %s expect: empty, got: %q %v", name, got, err)
+		}
+	}
+}
+
+// failingStore fails the test when the stored settings are read: the platform keys come from the
+// environment only. The methods that are not listed panic through the nil Store.
+type failingStore struct {
+	confighandler.Store
+	t *testing.T
+}
+
+func (s failingStore) Get(context.Context, string) (*confighandler.Row, error) {
+	s.t.Errorf("Wrong match. the stored settings must not be read")
+	return nil, confighandler.ErrNotFound
+}
+
+func (s failingStore) List(context.Context) ([]*confighandler.Row, error) {
+	s.t.Errorf("Wrong match. the stored settings must not be read")
+	return nil, nil
+}
+
+// The suppliers have no store, and the handler built on a store that fails when it is touched is
+// not touched by them, whatever the variables hold.
+func Test_platformKeys_neverReadTheStore(t *testing.T) {
+	t.Setenv(configkeys.EnvOpenAIAPIKey, "openai-value")
+	t.Setenv(configkeys.EnvGoogleAPIKey, "")
+
+	h, err := aiconfig.New(&config.Config{}, failingStore{t: t})
+	if err != nil || h == nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	keys := newPlatformKeys(&config.Config{})
+	if got, errKey := keys.conversation(context.Background()); errKey != nil || got != "openai-value" {
+		t.Errorf("Wrong match. expect: openai-value, got: %q %v", got, errKey)
+	}
+	if got, errKey := keys.gemini(context.Background()); errKey != nil || got != "" {
+		t.Errorf("Wrong match. expect: empty, got: %q %v", got, errKey)
+	}
+	if _, _, errPair := aiconfig.MCPOAuthClient(configkeys.VendorGitHub); errPair != nil {
+		t.Errorf("Wrong match. expect: no error, got: %v", errPair)
 	}
 }

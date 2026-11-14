@@ -18,6 +18,7 @@ import (
 
 	"monorepo/bin-billing-manager/internal/billingconfig"
 	"monorepo/bin-billing-manager/internal/config"
+	"monorepo/bin-billing-manager/internal/configkeys"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
@@ -30,6 +31,9 @@ const maxStdinBytes = 4096
 
 // configOut is where the config commands print. Tests replace it.
 var configOut io.Writer = os.Stdout
+
+// configErr is where the notes of the config commands print. Tests replace it.
+var configErr io.Writer = os.Stderr
 
 // configIn is where the secret value is read from. Tests replace it.
 var configIn io.Reader = os.Stdin
@@ -58,17 +62,17 @@ func cmdConfig() *cobra.Command {
 		// The root PersistentPreRunE only binds the flags and loads the configuration; it does not
 		// connect to Redis or RabbitMQ, so these commands need the database and the master key
 		// list only. The stored keys are declared in internal/configkeys and are checked on write.
-		Short: "Stored platform configuration (the Paddle credentials)",
-		Long: `Stored platform configuration: the Paddle credentials of the billing service (paddle.api_key and
-paddle.webhook_secret_key). They are platform credentials.
+		Short: "Stored settings of the Paddle credentials (not read by the service)",
+		Long: `Stored settings of the Paddle credentials of the billing service (paddle.api_key and
+paddle.webhook_secret_key).
 
-The keys are read from the database only: there is no environment variable fallback. "list" shows
-the source of each key (db or none) and never a value. A change is used by the next call, with no
-restart.
+The service does not read these values. It reads the environment variables PADDLE_API_KEY and
+PADDLE_WEBHOOK_SECRET; a stored value is left over from the former behavior and is used by nothing
+(but by an older image, see docs/operations.md). "set" and "clear" print a note that names the
+variable. "list" shows the stored state of each key and never a value.
 
-Without a stored webhook secret every Paddle webhook is rejected, and without a stored API key no
-customer portal session can be created. The stored webhook secret must be the value that Paddle
-signs with. See docs/operations.md for the order of the deployment and the rollback.
+Without PADDLE_WEBHOOK_SECRET every Paddle webhook is rejected, and without PADDLE_API_KEY no
+customer portal session can be created.
 
 The daemon applies the table migration at its start; on a local database run "migrate up" first.
 The master key list is read from the environment (BILLING_CONFIG_ENCRYPTION_KEYS) and is never a
@@ -111,7 +115,7 @@ one line is refused.`,
 func cmdConfigClear() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clear",
-		Short: "Remove the stored value of a key (the key has no value again: Paddle webhooks are rejected until one is stored)",
+		Short: "Remove the stored value of a key (the service reads the environment variable, not this value)",
 		RunE:  runConfigClear,
 	}
 
@@ -268,8 +272,20 @@ func setConfig(h confighandler.Handler, key string, actor uuid.UUID) error {
 		return errors.Wrap(err, "failed to store the value")
 	}
 
+	printEnvNote(key)
+
 	out := toOutput(res)
 	return printConfig(&out)
+}
+
+// printEnvNote tells that the stored value is not the one in use: the service reads the variable.
+func printEnvNote(key string) {
+	name, ok := configkeys.EnvName(key)
+	if !ok {
+		return
+	}
+
+	_, _ = fmt.Fprintf(configErr, "note: the service reads the environment variable %s; the stored value is not used.\n", name)
 }
 
 func runConfigClear(cmd *cobra.Command, args []string) error {
@@ -291,6 +307,8 @@ func runConfigClear(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to clear the value")
 	}
+
+	printEnvNote(key)
 
 	out := toOutput(res)
 	return printConfig(&out)

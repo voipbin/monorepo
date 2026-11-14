@@ -48,10 +48,10 @@ Key
 * ``kind`` (enum string): ``secret``, ``param`` or ``select``. A ``secret`` is encrypted and write-only.
 * ``type`` (enum string): The value type: ``string``, ``int``, ``bool``, ``duration`` or ``enum``.
 * ``description`` (String): One line that tells what the key is for.
-* ``source`` (enum string): Where the value comes from. See :ref:`Where a Value Comes From <service-config-overview>`.
-* ``has_secret`` (Boolean): Whether a secret value exists. The secret itself is never returned.
-* ``env_name`` (String): The name of the environment variable that is read when no value is stored. The name only, never the value. Omitted when the key has none (for example the keys of the ai, email, message, tts, transcribe, billing and pipecat services).
-* ``env_shadowed`` (Boolean): Whether the environment variable is set but not used, because a stored value takes precedence. Always false for a key that has no environment variable.
+* ``source`` (enum string): Where the stored value stands (the services read their platform secrets from environment variables, not from the stored value). See :ref:`Where a Value Comes From <service-config-overview>`.
+* ``has_secret`` (Boolean): Whether a secret value is stored. The services do not read the stored value now. The secret itself is never returned.
+* ``env_name`` (String): The name of an environment variable that the key declares. Not set for any key of the supported services now, because the services read their platform secrets from environment variables without this API (see the overview). The name only, never the value. Omitted when the key has none (the keys of the ai, email, message, tts, transcribe, billing and pipecat services).
+* ``env_shadowed`` (Boolean): Always false for the keys of the supported services, which have no ``env_name``.
 * ``key_version`` (Integer): The version of the encryption key that encrypted the stored secret. 0 when none is stored.
 * ``revision`` (Integer): The revision of the stored value, to be sent back when the key is changed. 0 when no value is stored.
 * ``updated_by`` (UUID): The agent who last changed the stored value. Returned from ``GET /agents``. Omitted when no value is stored.

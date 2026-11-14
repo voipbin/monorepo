@@ -30,8 +30,8 @@ Supporting binary:
 | Subscribe | `pkg/subscribehandler` | Consumes customer/flow events via pattern bindings on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407); cascading deletes and flow-ref cleanup |
 | Business | `pkg/numberhandler` | Number CRUD, provider dispatch, billing validation |
 | Provider | `pkg/numberhandlertelnyx` | Telnyx API: purchase, release, list available numbers |
-| Provider registry | `pkg/providerhandler` | Known providers, priority order, credentials (stored in `number_providers` only), admin settings |
-| Secret crypto | `pkg/providerhandler/secret.go` over `bin-common-handler/pkg/secretcrypto` | Encrypts and decrypts the provider secrets stored in `number_providers` (AES-256-GCM, versioned keys, no associated data, 1024 byte limit); the adapter maps the library errors to the `provider` package errors |
+| Provider registry | `pkg/providerhandler` | Known providers, priority order, credentials (secret and config variables of the environment via `bin-common-handler/pkg/envsecret`, config of the row first), admin settings |
+| Secret crypto | `pkg/providerhandler/secret.go` over `bin-common-handler/pkg/secretcrypto` | Encrypts the provider secrets that the admin API stores in `number_providers`; the stored values are not read by credential resolution (AES-256-GCM, versioned keys, no associated data, 1024 byte limit); the adapter maps the library errors to the `provider` package errors |
 | Provider | `pkg/numberhandlertwilio` | Twilio API: purchase, release, list available numbers (tag update is a no-op) |
 | External | `pkg/requestexternal` | HTTP client wrapper for provider APIs |
 | Data | `pkg/dbhandler` | MySQL queries for numbers |
@@ -70,8 +70,8 @@ The `listenhandler` consumes from queue `bin-manager.number-manager.request` and
 | GET | `/v1/number_providers` | List the providers with their resolved state (admin, no secret material) |
 | GET | `/v1/number_providers/{name}` | Get one provider (admin) |
 | PUT | `/v1/number_providers/{name}` | Update `enabled`, `priority`, `config` (admin; `actor_id` required) |
-| PUT | `/v1/number_providers/{name}/secret` | Store the provider secret, write-only (admin; `actor_id` required) |
-| DELETE | `/v1/number_providers/{name}/secret` | Delete the stored secret; the provider has no credential until a new one is stored (admin) |
+| PUT | `/v1/number_providers/{name}/secret` | Store the provider secret, write-only; the stored value is not used by the service (admin; `actor_id` required) |
+| DELETE | `/v1/number_providers/{name}/secret` | Delete the stored secret; the credential in use (the secret variable) is not changed (admin) |
 | GET | `/v1/numbers?` | List owned numbers (pagination) |
 | POST | `/v1/numbers` | Purchase (create) number from provider |
 | GET | `/v1/numbers/{uuid}` | Get number details |

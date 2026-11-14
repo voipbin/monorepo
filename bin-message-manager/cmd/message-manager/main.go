@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"net/http"
 	"os"
@@ -160,15 +159,16 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler, cfg *config.Confi
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	// The provider tokens are stored in the database (a key without a row is not configured)
-	// and are read when a message is sent, so a changed token is used by the next send.
+	// The provider tokens are read from the environment (MESSAGEBIRD_API_KEY, TELNYX_API_KEY) when a
+	// message is sent. The handler of the stored settings serves the config commands and the admin
+	// API only; its values are not read by a send.
 	configHandler, errConfig := messageconfig.New(cfg, dbhandler.NewConfigStore(sqlDB))
 	if errConfig != nil {
 		return errors.Wrapf(errConfig, "could not create the config handler")
 	}
-	messageconfig.LogSources(context.Background(), configHandler)
+	messageconfig.LogStates()
 
-	requestExternal := requestexternal.NewRequestExternal(messageconfig.MessagebirdToken(configHandler), messageconfig.TelnyxToken(configHandler))
+	requestExternal := requestexternal.NewRequestExternal(messageconfig.MessagebirdToken(), messageconfig.TelnyxToken())
 
 	messageHandler := messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, requestExternal)
 	listenHandler := listenhandler.NewListenHandler(sockHandler, messageHandler, configrpc.NewServer(configHandler, serviceName))

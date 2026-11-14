@@ -65,7 +65,7 @@ func runConfigCommand(args ...string) error {
 func Test_config_set_list_clear(t *testing.T) {
 	const secret = "synthetic-credential-value"
 
-	// the legacy variable of the key is set: it is no source, the stored value is the only one
+	// the variable of the key is set: the runner reads it, the stored value is only a record of this CLI
 	t.Setenv("DEEPGRAM_API_KEY", "env-value")
 	store, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, secret+"\n")
 
@@ -98,7 +98,65 @@ func Test_config_set_list_clear(t *testing.T) {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 	if !strings.Contains(out.String(), `"source": "none"`) || strings.Contains(out.String(), `"source": "env"`) || strings.Contains(out.String(), "env-value") {
-		t.Errorf("Wrong match. expect: source none after the clear (the variable does not apply), got: %s", out.String())
+		t.Errorf("Wrong match. expect: source none after the clear (the variable is not a source of this config handler), got: %s", out.String())
+	}
+}
+
+// A stored value is not read by the runner, so set and clear tell which environment variable is
+// read. The note goes to stderr: stdout stays the JSON of the key.
+func Test_config_set_clear_noteTheEnvironmentVariable(t *testing.T) {
+	tests := []struct {
+		key  string
+		want string
+	}{
+		{"openai.api_key", "OPENAI_API_KEY"},
+		{"deepgram.api_key", "DEEPGRAM_API_KEY"},
+		{"cartesia.api_key", "CARTESIA_API_KEY"},
+		{"xai.api_key", "XAI_API_KEY"},
+		{"elevenlabs.api_key", "ELEVENLABS_API_KEY"},
+		{"google.api_key", "GOOGLE_API_KEY"},
+		{"openrouter.api_key", "OPENROUTER_API_KEY"},
+		{"local_llm.endpoints", "LOCAL_LLM_ENDPOINTS"},
+	}
+
+	for _, tt := range tests {
+		for _, command := range []string{"set", "clear"} {
+			t.Run(tt.key+"_"+command, func(t *testing.T) {
+				const secret = "synthetic-credential-value"
+				_, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, secret+"\n")
+				errOut := &bytes.Buffer{}
+				saved := configErr
+				configErr = errOut
+				t.Cleanup(func() { configErr = saved })
+
+				if err := runConfigCommand(command, "--key", tt.key, "--actor-id", testActor); err != nil {
+					t.Fatalf("Wrong match. expect: ok, got: %v", err)
+				}
+
+				if got := errOut.String(); strings.Count(got, tt.want) != 1 || strings.Count(got, "\n") != 1 ||
+					!strings.Contains(got, "not used") {
+					t.Errorf("Wrong match. expect: one line that names %s and says the stored value is not used, got: %q", tt.want, got)
+				}
+				if strings.Contains(out.String(), tt.want) || strings.Contains(errOut.String(), secret) {
+					t.Errorf("Wrong match. the note belongs to stderr only and holds no value. stdout: %s", out.String())
+				}
+			})
+		}
+	}
+}
+
+func Test_config_failedWriteNotesNothing(t *testing.T) {
+	useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, "x\n")
+	errOut := &bytes.Buffer{}
+	saved := configErr
+	configErr = errOut
+	t.Cleanup(func() { configErr = saved })
+
+	if err := runConfigCommand("set", "--key", "no.such_key", "--actor-id", testActor); err == nil {
+		t.Fatalf("Wrong match. expect: an error for an unknown key, got: nil")
+	}
+	if errOut.Len() != 0 {
+		t.Errorf("Wrong match. expect: no note after a failure, got: %q", errOut.String())
 	}
 }
 

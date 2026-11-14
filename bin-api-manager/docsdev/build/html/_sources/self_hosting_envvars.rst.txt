@@ -40,13 +40,12 @@ Third-party integrations
 
 Voice AI, transcription, TTS, phone number provisioning, and email/SMS
 providers are configured through their own keys. Most are variables in
-``.env``; the provider keys of ``ai-manager`` (the LLM keys),
-``email-manager``, ``message-manager``, ``transcribe-manager`` and
-``tts-manager`` are stored settings that are set with the ``config set``
-command of the service or the Service Config API, and are not read from
-``.env``. The Paddle keys of ``billing-manager`` are stored settings too and are
-not read from ``.env``. The platform keys of the voice AI vendors of
-``pipecat-manager`` are stored settings too and are not read from ``.env``. See
+``.env`` (the keys of ``ai-manager``, ``email-manager``, ``message-manager``,
+``number-manager``, ``transcribe-manager``, ``tts-manager``,
+``billing-manager`` and the voice AI runner of ``pipecat-manager`` are
+environment variables of the service container, such as ``OPENAI_API_KEY``,
+``SENDGRID_API_KEY``, ``TELNYX_API_KEY`` or ``PADDLE_API_KEY``; a value that
+was stored with ``config set`` or the Service Config API is not read). See
 the Provider configuration section for the full list of keys, which
 service to restart after setting each, and the AI-provider-specific
 details (shared credentials, multi-service consumers). Until a

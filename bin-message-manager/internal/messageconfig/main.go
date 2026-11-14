@@ -1,40 +1,29 @@
-// Package messageconfig wires the stored configuration of bin-message-manager: the master key,
-// the registry and the suppliers that hand a provider token to the
-// request layer at the time of use.
+// Package messageconfig wires the configuration of bin-message-manager: the handler of the stored
+// settings (the master key and the registry, used by the config commands and the admin API) and the
+// suppliers that hand a provider token to the request layer at the time of use. The tokens come
+// from the environment only; the stored settings are not read.
 package messageconfig
 
 import (
 	"context"
-	"fmt"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/pkg/confighandler"
+	"monorepo/bin-common-handler/pkg/envsecret"
 	"monorepo/bin-common-handler/pkg/secretcrypto"
 
 	"monorepo/bin-message-manager/internal/config"
 	"monorepo/bin-message-manager/internal/configkeys"
 )
 
-const (
-	// maxSecretPlaintext is the longest secret the cipher accepts. It is the second guard behind
-	// the MaxLen of each key and fits the column (2048 bytes minus nonce and tag).
-	maxSecretPlaintext = 2020
+// maxSecretPlaintext is the longest secret the cipher accepts. It is the second guard behind the
+// MaxLen of each key and fits the column (2048 bytes minus nonce and tag).
+const maxSecretPlaintext = 2020
 
-	// readTimeout bounds the read of one token. A send runs in the background, so the bound only
-	// keeps a stuck database from holding a send for ever.
-	readTimeout = 2 * time.Second
-
-	// logSourcesTimeout bounds the read of the sources at start up.
-	logSourcesTimeout = 5 * time.Second
-)
-
-// ErrKeyUnavailable is returned when a token could not be read: a database read error, a stored
-// secret that can not be decrypted, or a read that ran out of time. It is never replaced by an
-// empty token. A token that is simply not configured is not an error (an empty
-// token, as before the configs existed). The error holds no key text.
+// ErrKeyUnavailable stays for the stored settings code until its removal. The environment read can
+// not fail, so the suppliers never return it.
 var ErrKeyUnavailable = errors.New("the provider token could not be read")
 
 // TokenFunc hands a provider token to the request layer at the time of use. An empty token with
@@ -62,69 +51,51 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
 }
 
-// MessagebirdToken returns the supplier of the MessageBird token.
-func MessagebirdToken(h confighandler.Handler) TokenFunc {
-	return token(h, configkeys.KeyMessagebirdAuthToken)
+// MessagebirdToken returns the supplier of the MessageBird token. The token is the value of
+// MESSAGEBIRD_API_KEY at the time of use; the stored value is not read.
+func MessagebirdToken() TokenFunc {
+	return token(configkeys.EnvMessagebirdAPIKey)
 }
 
-// TelnyxToken returns the supplier of the Telnyx token. It reads only the key of this service:
-// the Telnyx token of bin-number-manager is a different setting and is never consulted.
-func TelnyxToken(h confighandler.Handler) TokenFunc {
-	return token(h, configkeys.KeyTelnyxAuthToken)
+// TelnyxToken returns the supplier of the Telnyx token (TELNYX_API_KEY, the variable that
+// bin-number-manager reads too).
+func TelnyxToken() TokenFunc {
+	return token(configkeys.EnvTelnyxAPIKey)
 }
 
-// token returns the function that reads one token on every call and keeps nothing, so a changed
-// token is used by the next call on every replica. The value is the stored one, or empty
-// when the key has no row.
-//
-// A read error (including a stored secret that can not be decrypted and a read that ran out of
-// time) is returned as ErrKeyUnavailable and is never turned into an
-// empty token.
-func token(h confighandler.Handler, key string) TokenFunc {
+// token returns the function that reads one variable on every call and keeps nothing, so a changed
+// variable is used by the next call after a restart of the replica. A variable that is not set,
+// is empty or holds an unresolved placeholder is not configured: an empty token and no error.
+func token(name string) TokenFunc {
 	return func(ctx context.Context) (string, error) {
-		cctx, cancel := context.WithTimeout(ctx, readTimeout)
-		defer cancel()
+		value, _ := envsecret.Lookup(name)
 
-		secret, _, err := h.Secret(cctx, key)
-		if err != nil {
-			return "", fmt.Errorf("%w: %w", ErrKeyUnavailable, err)
-		}
-
-		return secret.Reveal(), nil
+		return value, nil
 	}
 }
 
-// LogSources logs, once, where each key comes from (key name and source only, never a value). The
-// tokens are stored in the database only. A Telnyx token that is not configured is a warning,
-// because Telnyx is the first provider of every send; a MessageBird token that is not configured is
-// an info line, because MessageBird only serves the targets that Telnyx refused. A read error is
-// logged as a warning: the service starts anyway.
-func LogSources(ctx context.Context, h confighandler.Handler) {
-	log := logrus.WithField("func", "LogSources")
+// LogStates logs, once, the state of each variable (name and state only, never a value). A Telnyx
+// variable that is not set is a warning, because Telnyx is the first provider of every send; a
+// MessageBird variable that is not set is an info line, because MessageBird only serves the targets
+// that Telnyx refused. A placeholder (the text of an unresolved deployment variable) is a warning.
+func LogStates() {
+	log := logrus.WithField("func", "LogStates")
 
-	cctx, cancel := context.WithTimeout(ctx, logSourcesTimeout)
-	defer cancel()
+	for _, name := range []string{configkeys.EnvMessagebirdAPIKey, configkeys.EnvTelnyxAPIKey} {
+		_, state := envsecret.Lookup(name)
+		entry := log.WithFields(logrus.Fields{"variable": name, "state": state.String()})
 
-	list, err := h.Describe(cctx)
-	if err != nil {
-		log.Warnf("Could not read the config sources. err: %v", err)
-		return
-	}
-
-	for _, r := range list {
-		entry := log.WithFields(logrus.Fields{"key": r.Key, "source": r.Source})
-
-		switch r.Source {
-		case confighandler.SourceNone:
-			if r.Key == configkeys.KeyTelnyxAuthToken {
-				entry.Warnf("The config key is not configured; it is read from the database only. key: %s", r.Key)
-			} else {
-				entry.Infof("The config key is not configured; it is read from the database only. key: %s", r.Key)
-			}
-		case confighandler.SourceDBUndecryptable, confighandler.SourceDBInvalid:
-			entry.Errorf("The stored config value can not be used. key: %s, source: %s", r.Key, r.Source)
+		switch state {
+		case envsecret.Set:
+			entry.Infof("The variable is set. variable: %s", name)
+		case envsecret.Placeholder:
+			entry.Warnf("The variable holds an unresolved placeholder. variable: %s", name)
 		default:
-			entry.Infof("Config key. key: %s, source: %s", r.Key, r.Source)
+			if name == configkeys.EnvTelnyxAPIKey {
+				entry.Warnf("The variable is not set. variable: %s", name)
+			} else {
+				entry.Infof("The variable is not set. variable: %s", name)
+			}
 		}
 	}
 }

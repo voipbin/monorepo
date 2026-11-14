@@ -128,3 +128,68 @@ func Test_MCPOAuthVendors_copy(t *testing.T) {
 		t.Errorf("Wrong match. expect: the list is not shared")
 	}
 }
+
+// The environment variable names are the ones of the deployment definition, and the two platform
+// keys keep their shared names.
+func Test_envNames(t *testing.T) {
+	if EnvOpenAIAPIKey != "OPENAI_API_KEY" || EnvGoogleAPIKey != "GOOGLE_API_KEY" {
+		t.Errorf("Wrong match. expect: OPENAI_API_KEY and GOOGLE_API_KEY, got: %q %q", EnvOpenAIAPIKey, EnvGoogleAPIKey)
+	}
+
+	expect := map[string][2]string{
+		VendorGitHub:  {"GITHUB_MCP_OAUTH_CLIENT_ID", "GITHUB_MCP_OAUTH_CLIENT_SECRET"},
+		VendorLinear:  {"LINEAR_MCP_OAUTH_CLIENT_ID", "LINEAR_MCP_OAUTH_CLIENT_SECRET"},
+		VendorAsana:   {"ASANA_MCP_OAUTH_CLIENT_ID", "ASANA_MCP_OAUTH_CLIENT_SECRET"},
+		VendorHubSpot: {"HUBSPOT_MCP_OAUTH_CLIENT_ID", "HUBSPOT_MCP_OAUTH_CLIENT_SECRET"},
+	}
+	for _, vendor := range MCPOAuthVendors() {
+		idName, secretName, ok := MCPOAuthEnvNames(vendor)
+		if !ok || idName != expect[vendor][0] || secretName != expect[vendor][1] {
+			t.Errorf("Wrong match. %s expect: %v, got: %q %q %v", vendor, expect[vendor], idName, secretName, ok)
+		}
+	}
+
+	if idName, secretName, ok := MCPOAuthEnvNames("unknown"); ok || idName != "" || secretName != "" {
+		t.Errorf("Wrong match. expect: unknown vendor not found, got: %q %q %v", idName, secretName, ok)
+	}
+}
+
+// No key declares an environment name: a handler with a lookup would resolve the database first,
+// and the admin listing must not suggest that the handler reads the environment.
+func Test_keysDeclareNoEnv(t *testing.T) {
+	for _, k := range Keys() {
+		if k.Env != "" {
+			t.Errorf("Wrong match. %s expect: no Env, got: %q", k.Name, k.Env)
+		}
+	}
+}
+
+// EnvNameOfKey names the variable that replaces a stored key: the one a read uses.
+func Test_EnvNameOfKey(t *testing.T) {
+	tests := []struct {
+		key    string
+		expect string
+		ok     bool
+	}{
+		{KeyOpenAICompatAPIKey, "OPENAI_API_KEY", true},
+		{KeyGeminiAPIKey, "GOOGLE_API_KEY", true},
+		{"mcp_oauth.github.client_id", "GITHUB_MCP_OAUTH_CLIENT_ID", true},
+		{"mcp_oauth.github.client_secret", "GITHUB_MCP_OAUTH_CLIENT_SECRET", true},
+		{"mcp_oauth.asana.client_secret", "ASANA_MCP_OAUTH_CLIENT_SECRET", true},
+		{"mcp_oauth.unknown.client_id", "", false},
+		{"not.a.key", "", false},
+	}
+	for _, tt := range tests {
+		got, ok := EnvNameOfKey(tt.key)
+		if got != tt.expect || ok != tt.ok {
+			t.Errorf("Wrong match. %s expect: %q %v, got: %q %v", tt.key, tt.expect, tt.ok, got, ok)
+		}
+	}
+
+	// every declared key has a variable
+	for _, k := range Keys() {
+		if _, ok := EnvNameOfKey(k.Name); !ok {
+			t.Errorf("Wrong match. %s expect: a variable name", k.Name)
+		}
+	}
+}
