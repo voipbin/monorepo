@@ -65,6 +65,10 @@ func (h *mcpOAuthHandler) Start(ctx context.Context, customerID uuid.UUID, vendo
 	if err != nil {
 		return "", "", cerrors.Internal(commonoutline.ServiceNameAIManager, "MCP_OAUTH_CREDENTIALS_UNAVAILABLE", "the oauth app of the vendor could not be read").Wrap(err)
 	}
+	if !vc.configured() {
+		// Fail closed: no state row and no authorize URL with an empty client_id.
+		return "", "", notConfiguredError()
+	}
 
 	state, err := generateRandomToken(32)
 	if err != nil {

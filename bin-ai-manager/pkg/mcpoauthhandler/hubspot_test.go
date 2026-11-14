@@ -203,9 +203,9 @@ func Test_Complete_HubSpot_NewServer(t *testing.T) {
 }
 
 // Test_HubSpot_UnconfiguredBehavesLikeOtherVendors pins that an empty
-// client id/secret is not rejected by the catalog: hubspot stays a valid vendor
-// and a self-hosting operator may leave its env empty, exactly as for GitHub
-// and Linear. The vendor refuses the empty client_id at its own endpoint.
+// client id/secret is not rejected by the catalog: hubspot stays a valid vendor,
+// exactly as for GitHub and Linear. A flow for a vendor whose app is not stored
+// fails closed in Start and Complete (MCP_OAUTH_VENDOR_NOT_CONFIGURED), not here.
 func Test_HubSpot_UnconfiguredBehavesLikeOtherVendors(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

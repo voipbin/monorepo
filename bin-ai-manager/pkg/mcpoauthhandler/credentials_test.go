@@ -19,6 +19,7 @@ import (
 	"monorepo/bin-ai-manager/models/mcpoauthstate"
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	commonerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
@@ -137,24 +138,64 @@ func Test_Start_resolvesOnce(t *testing.T) {
 	}
 }
 
-// A vendor with nothing configured keeps the behavior of before: the authorize URL is built with an
-// empty client_id and the vendor refuses it.
-func Test_Start_notConfiguredKeepsTheCurrentBehavior(t *testing.T) {
+// assertNotConfigured checks that err is the internal error of a vendor whose app is not stored.
+func assertNotConfigured(t *testing.T, err error) {
+	t.Helper()
+
+	var ve *commonerrors.VoipbinError
+	if !errors.As(err, &ve) {
+		t.Fatalf("Wrong match. expect: a VoipbinError, got: %T %v", err, err)
+	}
+	if ve.Status != commonerrors.StatusInternal || ve.Reason != "MCP_OAUTH_VENDOR_NOT_CONFIGURED" {
+		t.Errorf("Wrong match. expect: internal MCP_OAUTH_VENDOR_NOT_CONFIGURED, got: %v %q", ve.Status, ve.Reason)
+	}
+}
+
+// The pairs that are not usable: nothing, or one value alone (the contract of CredentialsFunc
+// allows both, so the handler does not rely on the adapter to prevent them).
+var unusablePairs = map[string]Credentials{
+	"nothing":            {},
+	"client_id only":     {ClientID: "the-id"},
+	"client_secret only": {ClientSecret: "the-secret"},
+}
+
+// A vendor whose app is not stored fails closed: the error is the not configured reason and no
+// state row is created, so there is no authorize URL with an empty client_id.
+func Test_Start_notConfiguredFailsClosed(t *testing.T) {
+	for name, pair := range unusablePairs {
+		t.Run(name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockDB.EXPECT().McpOAuthStateCreate(gomock.Any(), gomock.Any()).Times(0)
+			h := newCountingHandler(t, mockDB, &countingCredentials{pair: pair})
+
+			authorizeURL, linkToken, err := h.Start(context.Background(), uuid.Must(uuid.NewV4()), VendorGitHub, nil)
+			if err == nil || authorizeURL != "" || linkToken != "" {
+				t.Fatalf("Wrong match. expect: an error and no URL or token, got: %q %q %v", authorizeURL, linkToken, err)
+			}
+			assertNotConfigured(t, err)
+		})
+	}
+}
+
+// A stored pair builds the authorize URL with its client_id (the guard does not touch this path).
+func Test_Start_configuredBuildsTheURL(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := newCountingHandler(t, mockDB, &countingCredentials{})
-
 	mockDB.EXPECT().McpOAuthStateCreate(gomock.Any(), gomock.Any()).Return(nil)
+	h := newCountingHandler(t, mockDB, &countingCredentials{pair: Credentials{ClientID: "the-id", ClientSecret: "the-secret"}})
 
 	authorizeURL, linkToken, err := h.Start(context.Background(), uuid.Must(uuid.NewV4()), VendorGitHub, nil)
 	if err != nil || linkToken == "" {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 	u, _ := url.Parse(authorizeURL)
-	if v, ok := u.Query()["client_id"]; !ok || len(v) != 1 || v[0] != "" {
-		t.Errorf("Wrong match. expect: an empty client_id parameter, got: %v", u.Query())
+	if got := u.Query().Get("client_id"); got != "the-id" {
+		t.Errorf("Wrong match. expect: the-id, got: %q", got)
 	}
 }
 
@@ -235,6 +276,75 @@ func Test_Complete_resolveErrorKeepsTheState(t *testing.T) {
 	}
 	if cc.count() != 1 {
 		t.Errorf("Wrong match. expect: 1 resolution, got: %d", cc.count())
+	}
+}
+
+// A vendor whose app is not stored fails closed in Complete, before the single-use delete: the state
+// row is kept, nothing is created and the vendor is not called.
+func Test_Complete_notConfiguredKeepsTheState(t *testing.T) {
+	for name, pair := range unusablePairs {
+		t.Run(name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			var vendorCalls atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				vendorCalls.Add(1)
+			}))
+			defer srv.Close()
+
+			cc := &countingCredentials{pair: pair}
+			h, mockDB, customerID, state := completeFixture(t, mc, cc)
+			h.vendors[VendorLinear] = vendorMeta{TokenURL: srv.URL}
+
+			mockDB.EXPECT().McpOAuthStateDelete(gomock.Any(), gomock.Any()).Times(0)
+			mockDB.EXPECT().McpServerCreate(gomock.Any(), gomock.Any()).Times(0)
+
+			res, err := h.Complete(context.Background(), customerID, state, "the-code")
+			if err == nil || res != nil {
+				t.Fatalf("Wrong match. expect: an error and no server, got: %v %v", res, err)
+			}
+			assertNotConfigured(t, err)
+			if vendorCalls.Load() != 0 {
+				t.Errorf("Wrong match. expect: no vendor call, got: %d", vendorCalls.Load())
+			}
+		})
+	}
+}
+
+// The refresh path is not changed: an empty pair is not turned into the not configured error. It
+// reaches the vendor (which refuses an empty client_id), the failure sets the backoff, as before.
+func Test_GetValidAccessToken_emptyPairIsNotTheNotConfiguredError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	var vendorCalls atomic.Int32
+	var emptyClientID atomic.Bool
+	vendor := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = r.ParseForm()
+		vendorCalls.Add(1)
+		emptyClientID.Store(r.PostForm.Get("client_id") == "")
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = w.Write([]byte(`{"error":"invalid_client"}`))
+	})
+
+	h, m := expiredOAuthServer(t, mockDB, vendor, "refresh-0")
+	h.credentials = (&countingCredentials{}).fn
+
+	_, err := h.GetValidAccessToken(context.Background(), m)
+	if err == nil {
+		t.Fatal("Wrong match. expect: an error")
+	}
+	if strings.Contains(err.Error(), "MCP_OAUTH_VENDOR_NOT_CONFIGURED") {
+		t.Errorf("Wrong match. expect: not the not configured reason, got: %v", err)
+	}
+	if vendorCalls.Load() != 1 || !emptyClientID.Load() {
+		t.Errorf("Wrong match. expect: one vendor call with an empty client_id, got: %d (empty: %v)", vendorCalls.Load(), emptyClientID.Load())
+	}
+	if !h.isInRefreshBackoff(m.ID.String()) {
+		t.Error("Wrong match. expect: a backoff after the vendor refused")
 	}
 }
 

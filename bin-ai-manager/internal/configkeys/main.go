@@ -7,13 +7,12 @@
 // and they are rotated separately.
 //
 // The MCP OAuth app of each vendor is an atomic group of a client_secret (the anchor, a secret) and
-// a client_id (a plain parameter). A group is read from the database when its client_secret has a
-// row, from the environment otherwise, so the two never come from different sources.
+// a client_id (a plain parameter). A group is read from the database only, and only when its
+// client_secret has a row: without it the app is not configured. No key declares an environment
+// name.
 package configkeys
 
 import (
-	"strings"
-
 	"monorepo/bin-common-handler/pkg/confighandler"
 )
 
@@ -47,8 +46,7 @@ const (
 	// maxSecretLen is the longest accepted API key in bytes.
 	maxSecretLen = 512
 
-	// maxClientIDLen is the longest accepted OAuth client_id in bytes. It applies to a value read
-	// from the environment too.
+	// maxClientIDLen is the longest accepted OAuth client_id in bytes.
 	maxClientIDLen = 256
 )
 
@@ -90,11 +88,6 @@ func MCPOAuthClientIDKey(vendor string) (string, bool) {
 	return "mcp_oauth." + vendor + ".client_id", true
 }
 
-// mcpOAuthEnvName returns the upper case environment name part of a vendor.
-func mcpOAuthEnvName(vendor, field string) string {
-	return "MCP_OAUTH_" + strings.ToUpper(vendor) + "_" + field
-}
-
 // mcpOAuthKeys declares the atomic group of one vendor: the client_secret (anchor) first, then the
 // client_id. The client_id is not a secret: its stored value is readable in the history.
 func mcpOAuthKeys(vendor, label string) []confighandler.Key {
@@ -103,14 +96,14 @@ func mcpOAuthKeys(vendor, label string) []confighandler.Key {
 	group := "mcp_oauth." + vendor
 
 	return []confighandler.Key{
-		{Name: secretName, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: mcpOAuthEnvName(vendor, "CLIENT_SECRET"), MaxLen: maxSecretLen, Group: group, Atomic: true, Description: "OAuth client_secret of the " + label + " app that connects customer MCP servers. The anchor of the " + label + " app: a stored value makes client_id come from the database too."},
-		{Name: idName, Kind: confighandler.KindParam, Type: confighandler.TypeString, Env: mcpOAuthEnvName(vendor, "CLIENT_ID"), MaxLen: maxClientIDLen, Group: group, Atomic: true, Description: "OAuth client_id of the " + label + " app that connects customer MCP servers. Write it before the client_secret."},
+		{Name: secretName, Kind: confighandler.KindSecret, Type: confighandler.TypeString, MaxLen: maxSecretLen, Group: group, Atomic: true, Description: "OAuth client_secret of the " + label + " app that connects customer MCP servers. The anchor of the " + label + " app: the app is configured only when this value and the client_id are stored. Write it after the client_id."},
+		{Name: idName, Kind: confighandler.KindParam, Type: confighandler.TypeString, MaxLen: maxClientIDLen, Group: group, Atomic: true, Description: "OAuth client_id of the " + label + " app that connects customer MCP servers. Write it before the client_secret."},
 	}
 }
 
-// Keys returns the declarations. The LLM keys are stored in the database only: they have no
-// environment name, so such a key without a row is not configured. The MCP OAuth keys have an
-// environment name that is used while the group has no stored client_secret.
+// Keys returns the declarations. Every key is stored in the database only: no key declares an
+// environment name, so a key without a row is not configured. The MCP OAuth keys are an atomic
+// group anchored on the client_secret: without a stored client_secret the client_id row is not read.
 func Keys() []confighandler.Key {
 	keys := []confighandler.Key{
 		{Name: KeyOpenAICompatAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "API key of the OpenAI compatible provider that serves the conversation engine, and the summary, analysis and builder LLM calls when their base URL is not the Gemini endpoint.", MaxLen: maxSecretLen},

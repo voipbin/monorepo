@@ -116,6 +116,11 @@ func (h *mcpOAuthHandler) Complete(ctx context.Context, customerID uuid.UUID, st
 	if err != nil {
 		return nil, cerrors.Internal(commonoutline.ServiceNameAIManager, "MCP_OAUTH_CREDENTIALS_UNAVAILABLE", "the oauth app of the vendor could not be read").Wrap(err)
 	}
+	if !vc.configured() {
+		// Fail closed, ahead of the single-use delete: the state row is kept and the vendor is
+		// not called.
+		return nil, notConfiguredError()
+	}
 
 	// Single-use: delete the state row BEFORE the token exchange (design
 	// §7a Layer 1) -- a replayed /oauth/complete call for the same state

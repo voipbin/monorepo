@@ -2,8 +2,11 @@ package listenhandler
 
 import (
 	stderrors "errors"
+	"net/http"
 	"testing"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -180,5 +183,67 @@ func Test_processV1McpServersOAuthCompletePost_error(t *testing.T) {
 	}
 	if res == nil || res.StatusCode != 400 {
 		t.Errorf("expected 400, got: %v", res)
+	}
+}
+
+// A vendor whose app is not stored reaches the caller as a typed internal error: status 500, the
+// voipbin error data type and the reason MCP_OAUTH_VENDOR_NOT_CONFIGURED, for the start and the
+// completion of the flow alike.
+func Test_processV1McpServersOAuth_notConfigured(t *testing.T) {
+	tests := []struct {
+		name  string
+		uri   string
+		data  string
+		setup func(m *mcpoauthhandler.MockMcpOAuthHandler, err error)
+	}{
+		{
+			name: "start",
+			uri:  "/v1/mcp_servers/oauth/start",
+			data: `{"customer_id":"58e7502c-a770-11ed-9b86-7fabe2dba847","vendor":"github"}`,
+			setup: func(m *mcpoauthhandler.MockMcpOAuthHandler, err error) {
+				m.EXPECT().Start(gomock.Any(), gomock.Any(), "github", nil).Return("", "", err)
+			},
+		},
+		{
+			name: "complete",
+			uri:  "/v1/mcp_servers/oauth/complete",
+			data: `{"customer_id":"58e7502c-a770-11ed-9b86-7fabe2dba847","state":"s1","code":"c1"}`,
+			setup: func(m *mcpoauthhandler.MockMcpOAuthHandler, err error) {
+				m.EXPECT().Complete(gomock.Any(), gomock.Any(), "s1", "c1").Return(nil, err)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockOAuth := mcpoauthhandler.NewMockMcpOAuthHandler(mc)
+			h := &listenHandler{
+				sockHandler:     sockhandler.NewMockSockHandler(mc),
+				mcpOAuthHandler: mockOAuth,
+			}
+
+			tt.setup(mockOAuth, cerrors.Internal(commonoutline.ServiceNameAIManager, "MCP_OAUTH_VENDOR_NOT_CONFIGURED", "the oauth app of the vendor is not configured"))
+
+			res, err := h.processRequest(&sock.Request{
+				URI:      tt.uri,
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(tt.data),
+			})
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res == nil || res.StatusCode != http.StatusInternalServerError || res.DataType != cerrors.DataTypeVoipbinError {
+				t.Fatalf("Wrong match. expect: 500 with the voipbin error data type, got: %+v", res)
+			}
+
+			ve := cerrors.FromResponse(res)
+			if ve == nil || ve.Reason != "MCP_OAUTH_VENDOR_NOT_CONFIGURED" || ve.Status != cerrors.StatusInternal {
+				t.Errorf("Wrong match. expect: internal MCP_OAUTH_VENDOR_NOT_CONFIGURED, got: %+v", ve)
+			}
+		})
 	}
 }

@@ -31,7 +31,6 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `local_llm_models` | `LOCAL_LLM_MODELS` | JSON list of operator-registered local (self-hosted OpenAI-compatible) models: `[{"endpoint","id","label","capabilities","default"}]`. No URL or key. Empty means none. `ai-manager` and `ai-control` both read it (`ai-control` needs it to accept `local.` models). Invalid entries are skipped and logged as an error (counts only); the service still starts. The connection details are a stored setting of bin-pipecat-manager (`local_llm.endpoints`, see bin-pipecat-manager), not a variable of any service. | no |
 | `engine_base_key_encryption_keys` | `ENGINE_BASE_KEY_ENCRYPTION_KEYS` | Comma-separated `<version>:<base64 32 bytes>` pairs (same format as `MCP_SECRET_ENCRYPTION_KEYS`, a separate key set) for the keys customers store with `customendpoint.` models. The highest version encrypts, every listed version decrypts. A malformed value stops the start; empty starts with a warning and storing an endpoint key then fails with a server error. Generate with `openssl rand -base64 32`, prefix `1:`. Losing the key set makes stored endpoint keys unusable (fail closed; customers send the key again). Rotation: add the new version to every replica first, in a quiet window; keep retired versions until no row uses them. The Komodo variable `BIN_MANAGER__AI_MANAGER_ENGINE_BASE_KEY_ENCRYPTION_KEYS` must exist before the merge (a missing variable stops the container), and the separate operator install repository must carry the same variable. The container env name `ENGINE_BASE_KEY_ENCRYPTION_KEYS` has no service prefix, while the Komodo variable carries the `AI_MANAGER_` prefix because only ai-manager uses it. | no |
 | (no flag) | `AI_CONFIG_ENCRYPTION_KEYS` | Master key list of the stored platform keys: comma-separated `<version>:<base64 32 bytes>`. Environment only, never a flag. Unlike `ENGINE_BASE_KEY_ENCRYPTION_KEYS` and `MCP_SECRET_ENCRYPTION_KEYS`, a malformed or empty value does not stop the start: the service logs the problem (never the value), refuses to store a secret and reports the stored keys as undecryptable | no |
-| (no flag) | `MCP_OAUTH_GITHUB_CLIENT_ID`, `MCP_OAUTH_GITHUB_CLIENT_SECRET`, `MCP_OAUTH_LINEAR_CLIENT_ID`, `MCP_OAUTH_LINEAR_CLIENT_SECRET`, `MCP_OAUTH_ASANA_CLIENT_ID`, `MCP_OAUTH_ASANA_CLIENT_SECRET`, `MCP_OAUTH_HUBSPOT_CLIENT_ID`, `MCP_OAUTH_HUBSPOT_CLIENT_SECRET` | OAuth app (client_id and client_secret) of each MCP vendor. Environment only, no flag: they are read with `os.LookupEnv` when a request needs them, and only while the vendor has no stored client_secret. A stored app (database) wins; see "MCP OAuth app credentials" below. Empty keeps the service startable; the connection of that vendor then fails at the vendor. A `client_id` value is limited to 256 bytes | no |
 | `aicall_conversation_idle_timeout_hours` | `AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS` | Hours before idle AIcall expires | no |
 | `aicall_draft_decision_expiry_seconds` | `AICALL_DRAFT_DECISION_EXPIRY_SECONDS` | Seconds after its creation during which an SMS, email or call draft card can still be approved or rejected. Default `600`; a value of zero or less uses `600`. Evaluated on each decision, there is no timer | no |
 | `aicall_insight_session_idle_minutes` | `AICALL_INSIGHT_SESSION_IDLE_MINUTES` | Idle minutes after which reopening an Insight Case panel starts a NEW assistant session: the customer prompt is refreshed from the AI's current prompt and only rows from the new session are replayed to the model. `0` or less disables the refresh. Default `30` | no |
@@ -125,29 +124,29 @@ Recovery: a stored value that can not be decrypted (the master key is missing, m
 
 ## MCP OAuth app credentials
 
-The OAuth app of each MCP vendor (GitHub, Linear, Asana, HubSpot) is a pair of settings, a `client_id` and a `client_secret`, that is read each time a request needs it (connect start, connect completion, and the token refresh). Nothing is cached, so a change is used by the next request of every replica, with no restart.
+The OAuth app of each MCP vendor (GitHub, Linear, Asana, HubSpot) is a pair of settings, a `client_id` and a `client_secret`. They are read from the database only (stored with `ai-control config set`, or the `client_secret` through the admin API), each time a request needs them (connect start, connect completion, and the token refresh). Nothing is cached, so a change is used by the next request of every replica, with no restart. The service reads no environment variable for them.
 
-| Stored key | Kind | Environment name used when nothing is stored |
-|------------|------|----------------------------------------------|
-| `mcp_oauth.<vendor>.client_secret` | secret (encrypted), the anchor of the pair | `MCP_OAUTH_<VENDOR>_CLIENT_SECRET` |
-| `mcp_oauth.<vendor>.client_id` | parameter (plain text, at most 256 bytes) | `MCP_OAUTH_<VENDOR>_CLIENT_ID` |
+| Stored key | Kind |
+|------------|------|
+| `mcp_oauth.<vendor>.client_secret` | secret (encrypted), the anchor of the pair |
+| `mcp_oauth.<vendor>.client_id` | parameter (plain text, at most 256 bytes) |
 
 `<vendor>` is `github`, `linear`, `asana` or `hubspot`.
 
-Resolution order is `database`, then `environment`, and it is decided for the pair as a whole by the `client_secret` row:
+The pair is decided by the `client_secret` row:
 
-- No `client_secret` row: both values come from the environment (as before this feature). A vendor with neither value is "not configured": the connect start still builds the authorize URL with an empty `client_id` and the vendor refuses it, as before.
-- A `client_secret` row: both values come from the database only. The environment values are not used, not even for a missing `client_id`. A stored `client_secret` without a stored `client_id` is an error for that vendor (connect start and completion fail with a server error, `MCP_OAUTH_CREDENTIALS_UNAVAILABLE`, and a refresh returns the error), never an environment fallback.
-- A database read error or a stored value that can not be decrypted is also an error, never an environment fallback. A failed resolution before the token call spends no refresh token and sets no backoff, so the next request tries again.
+- Both stored: the stored pair is used.
+- Nothing stored, or only a `client_id` row (the `client_id` of a pair without a `client_secret` row is not read): the vendor is "not configured". Connect start and connect completion fail with a server error, `MCP_OAUTH_VENDOR_NOT_CONFIGURED`, before anything is created: no authorize URL is returned, no state is stored, and the state of a pending completion is kept. A token refresh of an already connected MCP server is not changed by this: it uses whatever the pair resolves to, and the vendor refuses an empty app.
+- A `client_secret` row without a `client_id` row (or with an empty one): the pair is incomplete. Connect start and completion fail with a server error, `MCP_OAUTH_CREDENTIALS_UNAVAILABLE`, and a refresh returns the error.
+- A database read error or a stored value that can not be decrypted is also `MCP_OAUTH_CREDENTIALS_UNAVAILABLE`. A failed resolution before the token call spends no refresh token and sets no backoff, so the next request tries again.
 
 Operating rules:
 
-1. **Write order: `client_id` first, `client_secret` last.** The `client_secret` row switches the pair to the database, so it must be the last write; with the `client_id` written first the pair is never half stored. The `client_id` is a plain parameter (`KindParam`): it can only be written with `ai-control config set`, not with the admin API (`/service_configs/ai`), and its value is readable in the history. The `client_secret` can be written with either.
-2. **Removal: clear both keys.** Clear the `client_secret` and the `client_id`. If only the `client_secret` is cleared, the pair goes back to the environment values while a stored `client_id` row is left behind and ignored.
-3. **Use the same app.** The refresh token of an already connected MCP server is bound to the app that issued it. Store the `client_id` and `client_secret` of the same vendor app that the environment holds now; a different app breaks every connection of that vendor until the customer reconnects.
-4. **Do not store the pair while a rolling deploy is half done.** An older replica reads the environment only, so replicas would use different apps.
-5. **Check the length of the environment `client_id` first.** The 256 byte limit applies to a `client_id` that comes from the environment too. A longer value is an error for that vendor and does not fall back to anything.
-6. The deployment keeps passing the eight environment variables (they stay valid as the fallback until the pair is stored).
+1. **Write order: `client_id` first, `client_secret` last.** The `client_secret` row makes the pair complete, so it must be the last write. The `client_id` is a plain parameter (`KindParam`): it can only be written with `ai-control config set`, not with the admin API (`/service_configs/ai`), and its value is readable in the history. The `client_secret` can be written with either.
+2. **Removal: clear both keys.** Clear the `client_secret` and the `client_id`. Clearing the `client_secret` alone already makes the vendor not configured and leaves the `client_id` row behind, unused.
+3. **Use the same app.** The refresh token of an already connected MCP server is bound to the app that issued it. Store the `client_id` and `client_secret` of the vendor app that the existing connections were made with; a different app breaks every connection of that vendor until the customer reconnects.
+4. **Store the pair of every vendor before deploying the image that reads the database only.** Without a stored pair a vendor refuses connections (`MCP_OAUTH_VENDOR_NOT_CONFIGURED`). Check with `ai-control config list`: the `client_id` and `client_secret` keys of the four vendors must show source `db` (the output never holds a value). Store the pair of all four vendors completely (client_id first, client_secret last) before the deploy: a replica that runs an image from before the removal of the environment fallback reads the same stored pair, because a stored `client_secret` row makes that image read the database only, so both images use the same app during a rolling deploy. A vendor with a missing or half stored pair differs between the two images (the older image uses the environment values, this image refuses the connection).
+5. **Rollback.** An image from before the removal of the environment fallback reads `MCP_OAUTH_<VENDOR>_CLIENT_ID` and `MCP_OAUTH_<VENDOR>_CLIENT_SECRET` from its environment when a vendor has no stored pair, and its deployment definition passes those eight variables. The deployment definition of this version does not, so roll back the image and the deployment definition together, and keep the variables in the deployment platform (do not delete them) until the rollback window has ended. A pair that is stored in the database wins over them in the older image too.
 
 ```bash
 # client_id first (plain text, still read from stdin), then the client_secret
@@ -156,7 +155,7 @@ printf '%s\n' "$CLIENT_SECRET" | ./ai-control config set --key mcp_oauth.github.
 ./ai-control config list
 ```
 
-`ai-control config list` reads the environment of the process that runs the command, not the one of the daemon. The daemon reads the vendor values from its own environment, so a vendor that the daemon serves from its environment can show as `none` in a command that was started without those variables. The service logs the source of every key at start (key name and source, never a value), and a vendor that is not configured is a warning there.
+`ai-control config list` shows the state of the database that the daemon reads (source `db`, or `none` for a key that is not stored). The service logs the source of every key at start (key name and source, never a value), and a key that is not configured is a warning there.
 
 The token refresh runs detached from the request that triggered it. It resolves the pair once, at the start of the exchange (bounded to 2 seconds), and all callers that share the exchange share that result; a rotation of the app during an exchange applies from the next exchange.
 

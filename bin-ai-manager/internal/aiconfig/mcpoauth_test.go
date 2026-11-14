@@ -17,11 +17,19 @@ import (
 	"monorepo/bin-ai-manager/internal/configkeys"
 )
 
-const (
-	testVendor      = configkeys.VendorLinear
-	envLinearID     = "MCP_OAUTH_LINEAR_CLIENT_ID"
-	envLinearSecret = "MCP_OAUTH_LINEAR_CLIENT_SECRET"
-)
+const testVendor = configkeys.VendorLinear
+
+// setOldEnvironment sets the old environment variables of every vendor to fake values. They are no
+// longer read: a test that calls it asserts that they change nothing.
+func setOldEnvironment(t *testing.T) {
+	t.Helper()
+
+	for _, vendor := range configkeys.MCPOAuthVendors() {
+		upper := strings.ToUpper(vendor)
+		t.Setenv("MCP_OAUTH_"+upper+"_CLIENT_ID", "env-id")
+		t.Setenv("MCP_OAUTH_"+upper+"_CLIENT_SECRET", "env-secret")
+	}
+}
 
 // storeMcpOAuth writes the stored pair of a vendor in the documented order: the client_id first,
 // the client_secret (the anchor) last.
@@ -50,30 +58,29 @@ func newMcpOAuthHandler(t *testing.T, store confighandler.Store) confighandler.H
 	return newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
 }
 
-// With no stored row the pair comes from the environment, and the source is env.
-func Test_MCPOAuthClient_noRowUsesTheEnvironment(t *testing.T) {
-	t.Setenv(envLinearID, "env-id")
-	t.Setenv(envLinearSecret, "env-secret")
+// The pair is read from the database only: with the old environment variables set and nothing
+// stored, the result is an empty pair ("not configured") and every key reports source none.
+func Test_MCPOAuthClient_environmentIsIgnored(t *testing.T) {
+	setOldEnvironment(t)
 
 	h := newMcpOAuthHandler(t, storetest.NewMemory())
 
 	id, secret, err := MCPOAuthClient(context.Background(), h, testVendor)
-	if err != nil || id != "env-id" || secret != "env-secret" {
-		t.Errorf("Wrong match. expect: the environment pair, got: %q %q %v", id, secret, err)
+	if err != nil || id != "" || secret != "" {
+		t.Errorf("Wrong match. expect: an empty pair and no error, got: %q %q %v", id, secret, err)
 	}
 
 	for _, key := range []string{"mcp_oauth.linear.client_id", "mcp_oauth.linear.client_secret"} {
 		res, errDescribe := describeKey(h, key)
-		if errDescribe != nil || res.Source != confighandler.SourceEnv {
-			t.Errorf("Wrong match. %s expect: source env, got: %+v %v", key, res, errDescribe)
+		if errDescribe != nil || res.Source != confighandler.SourceNone || res.EnvShadowed {
+			t.Errorf("Wrong match. %s expect: source none, not shadowed, got: %+v %v", key, res, errDescribe)
 		}
 	}
 }
 
-// With a stored pair the database wins, and the environment is shadowed.
-func Test_MCPOAuthClient_storedPairWinsOverTheEnvironment(t *testing.T) {
-	t.Setenv(envLinearID, "env-id")
-	t.Setenv(envLinearSecret, "env-secret")
+// A stored pair is used as it is, with the old environment variables set.
+func Test_MCPOAuthClient_storedPair(t *testing.T) {
+	setOldEnvironment(t)
 
 	h := newMcpOAuthHandler(t, storetest.NewMemory())
 	storeMcpOAuth(t, h, testVendor, "db-id", "db-secret")
@@ -82,13 +89,19 @@ func Test_MCPOAuthClient_storedPairWinsOverTheEnvironment(t *testing.T) {
 	if err != nil || id != "db-id" || secret != "db-secret" {
 		t.Errorf("Wrong match. expect: the stored pair, got: %q %q %v", id, secret, err)
 	}
+
+	for _, key := range []string{"mcp_oauth.linear.client_id", "mcp_oauth.linear.client_secret"} {
+		res, errDescribe := describeKey(h, key)
+		if errDescribe != nil || res.Source != confighandler.SourceDB || res.EnvShadowed {
+			t.Errorf("Wrong match. %s expect: source db, not shadowed, got: %+v %v", key, res, errDescribe)
+		}
+	}
 }
 
-// The group is atomic. The client_secret (anchor) is stored and the client_id is not: the
-// environment client_id is not used, and the result is the incomplete error.
+// The group is atomic. The client_secret (anchor) is stored and the client_id is not: the result is
+// the incomplete error and never a value from anywhere else.
 func Test_MCPOAuthClient_anchorWithoutClientIDIsIncomplete(t *testing.T) {
-	t.Setenv(envLinearID, "env-id")
-	t.Setenv(envLinearSecret, "env-secret")
+	setOldEnvironment(t)
 
 	h := newMcpOAuthHandler(t, storetest.NewMemory())
 	storeMcpOAuth(t, h, testVendor, "", "db-secret")
@@ -104,12 +117,24 @@ func Test_MCPOAuthClient_anchorWithoutClientIDIsIncomplete(t *testing.T) {
 	}
 }
 
-// The client_secret is cleared and the client_id row is left: the group is in environment mode
-// again, so the pair is the environment pair. This is why the documented way to remove an app is to
-// clear both keys: a left client_id row is ignored, and the environment pair is then used whole.
-func Test_MCPOAuthClient_clearedAnchorLeavesTheEnvironmentMode(t *testing.T) {
-	t.Setenv(envLinearID, "env-id")
-	t.Setenv(envLinearSecret, "env-secret")
+// Only the client_id is stored (the middle of the documented write order): the group is anchored on
+// the client_secret, so the client_id row is not read and the app is "not configured".
+func Test_MCPOAuthClient_clientIDAloneIsNotConfigured(t *testing.T) {
+	setOldEnvironment(t)
+
+	h := newMcpOAuthHandler(t, storetest.NewMemory())
+	storeMcpOAuth(t, h, testVendor, "db-id", "")
+
+	id, secret, err := MCPOAuthClient(context.Background(), h, testVendor)
+	if err != nil || id != "" || secret != "" {
+		t.Errorf("Wrong match. expect: an empty pair and no error, got: %q %q %v", id, secret, err)
+	}
+}
+
+// The client_secret is cleared and the client_id row is left: the app is "not configured", and the
+// old environment variables are not used instead.
+func Test_MCPOAuthClient_clearedAnchorIsNotConfigured(t *testing.T) {
+	setOldEnvironment(t)
 
 	h := newMcpOAuthHandler(t, storetest.NewMemory())
 	storeMcpOAuth(t, h, testVendor, "db-id", "db-secret")
@@ -119,12 +144,12 @@ func Test_MCPOAuthClient_clearedAnchorLeavesTheEnvironmentMode(t *testing.T) {
 	}
 
 	id, secret, err := MCPOAuthClient(context.Background(), h, testVendor)
-	if err != nil || id != "env-id" || secret != "env-secret" {
-		t.Errorf("Wrong match. expect: the environment pair, got: %q %q %v", id, secret, err)
+	if err != nil || id != "" || secret != "" {
+		t.Errorf("Wrong match. expect: an empty pair and no error, got: %q %q %v", id, secret, err)
 	}
 }
 
-// Neither stored nor in the environment is "not configured": an empty pair and no error.
+// Nothing stored is "not configured": an empty pair and no error.
 func Test_MCPOAuthClient_notConfigured(t *testing.T) {
 	h := newMcpOAuthHandler(t, storetest.NewMemory())
 
@@ -134,23 +159,9 @@ func Test_MCPOAuthClient_notConfigured(t *testing.T) {
 	}
 }
 
-// One side alone in the environment is passed on as before (not an error).
-func Test_MCPOAuthClient_environmentOneSideKeepsTheCurrentBehavior(t *testing.T) {
-	t.Setenv(envLinearID, "env-id")
-
-	h := newMcpOAuthHandler(t, storetest.NewMemory())
-
-	id, secret, err := MCPOAuthClient(context.Background(), h, testVendor)
-	if err != nil || id != "env-id" || secret != "" {
-		t.Errorf("Wrong match. expect: the id alone and no error, got: %q %q %v", id, secret, err)
-	}
-}
-
-// A read that fails is ErrKeyUnavailable and never the environment pair.
-func Test_MCPOAuthClient_readErrorIsNotTheEnvironment(t *testing.T) {
-	const envID, envSecret = "env-id-zz1", "env-secret-zz1"
-	t.Setenv(envLinearID, envID)
-	t.Setenv(envLinearSecret, envSecret)
+// A read that fails is ErrKeyUnavailable and never an empty or another value.
+func Test_MCPOAuthClient_readErrorIsErrKeyUnavailable(t *testing.T) {
+	setOldEnvironment(t)
 
 	actor := uuid.Must(uuid.NewV4())
 
@@ -218,7 +229,7 @@ func Test_MCPOAuthClient_readErrorIsNotTheEnvironment(t *testing.T) {
 			if !errors.Is(err, ErrKeyUnavailable) || id != "" || secret != "" {
 				t.Fatalf("Wrong match. expect: ErrKeyUnavailable and no value, got: %q %q %v", id, secret, err)
 			}
-			for _, v := range []string{envID, envSecret, "db-secret", "db-id"} {
+			for _, v := range []string{"env-id", "env-secret", "db-secret", "db-id"} {
 				if strings.Contains(err.Error(), v) {
 					t.Errorf("Wrong match. the error holds a value: %v", err)
 				}
@@ -270,8 +281,7 @@ func (s *hookStore) Get(ctx context.Context, key string) (*confighandler.Row, er
 // A pair that is written while it is read (the anchor lands between the two reads) is never
 // returned half and half: the read is repeated and gives the stored pair.
 func Test_MCPOAuthClient_writeBetweenTheReadsGivesNoMixedPair(t *testing.T) {
-	t.Setenv(envLinearID, "env-id")
-	t.Setenv(envLinearSecret, "env-secret")
+	setOldEnvironment(t)
 
 	mem := storetest.NewMemory()
 	writer := newMcpOAuthHandler(t, mem)
@@ -370,48 +380,28 @@ func Test_MCPOAuthClient_timeout(t *testing.T) {
 	}
 }
 
-// A client_id of the environment that is longer than the key allows is an error and not a value.
-func Test_MCPOAuthClient_environmentClientIDTooLongIsAnError(t *testing.T) {
-	t.Setenv(envLinearID, strings.Repeat("a", 257))
-	t.Setenv(envLinearSecret, "env-secret")
-
-	h := newMcpOAuthHandler(t, storetest.NewMemory())
-
-	id, secret, err := MCPOAuthClient(context.Background(), h, testVendor)
-	if !errors.Is(err, ErrKeyUnavailable) || id != "" || secret != "" {
-		t.Errorf("Wrong match. expect: ErrKeyUnavailable and no value, got: %q %q %v", id, secret, err)
-	}
-}
-
-// The names of the environment variables of the registry are the names New reads: every key that
-// declares an environment name gets its value from os.LookupEnv, under exactly that name. A name
-// that differs by one letter would leave the app silently not configured.
-func Test_New_readsEveryDeclaredEnvironmentName(t *testing.T) {
-	var declared int
+// The old environment variables of every vendor (the names the service read before) and of the two
+// LLM keys change nothing: no key declares an environment name and New passes no lookup.
+func Test_New_ignoresTheEnvironment(t *testing.T) {
 	for _, k := range configkeys.Keys() {
-		if k.Env == "" {
-			continue
+		if k.Env != "" {
+			t.Fatalf("Wrong match. %s expect: no environment name, got: %q", k.Name, k.Env)
 		}
-		declared++
-		t.Setenv(k.Env, "value-of-"+k.Env)
 	}
-	if declared != 8 {
-		t.Fatalf("Wrong match. expect: 8 keys with an environment name, got: %d", declared)
-	}
+
+	setOldEnvironment(t)
+	t.Setenv("ENGINE_KEY_CHATGPT", "synthetic-old-env-openai")
+	t.Setenv("GOOGLE_API_KEY", "synthetic-old-env-gemini")
 
 	h := newMcpOAuthHandler(t, storetest.NewMemory())
 
 	for _, vendor := range configkeys.MCPOAuthVendors() {
-		upper := strings.ToUpper(vendor)
 		id, secret, err := MCPOAuthClient(context.Background(), h, vendor)
-		if err != nil || id != "value-of-MCP_OAUTH_"+upper+"_CLIENT_ID" || secret != "value-of-MCP_OAUTH_"+upper+"_CLIENT_SECRET" {
-			t.Errorf("Wrong match. %s expect: the values of its variables, got: %q %q %v", vendor, id, secret, err)
+		if err != nil || id != "" || secret != "" {
+			t.Errorf("Wrong match. %s expect: an empty pair and no error, got: %q %q %v", vendor, id, secret, err)
 		}
 	}
 
-	// The LLM keys have no environment name: their old variables change nothing.
-	t.Setenv("ENGINE_KEY_CHATGPT", "synthetic-old-env-openai")
-	t.Setenv("GOOGLE_API_KEY", "synthetic-old-env-gemini")
 	for _, key := range []string{configkeys.KeyOpenAICompatAPIKey, configkeys.KeyGeminiAPIKey} {
 		got, err := Supplier(h, key)(context.Background())
 		if err != nil || got != "" {
@@ -421,10 +411,9 @@ func Test_New_readsEveryDeclaredEnvironmentName(t *testing.T) {
 }
 
 // A stored but empty client_id (the parameter accepts an empty value) with a stored client_secret
-// is as incomplete as a missing client_id row, and the environment is not used for it.
+// is as incomplete as a missing client_id row.
 func Test_MCPOAuthClient_storedEmptyClientIDIsIncomplete(t *testing.T) {
-	t.Setenv(envLinearID, "env-id")
-	t.Setenv(envLinearSecret, "env-secret")
+	setOldEnvironment(t)
 
 	h := newMcpOAuthHandler(t, storetest.NewMemory())
 	actor := uuid.Must(uuid.NewV4())

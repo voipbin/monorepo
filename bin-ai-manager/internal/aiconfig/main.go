@@ -6,7 +6,6 @@ package aiconfig
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -42,7 +41,7 @@ var ErrKeyUnavailable = errors.New("the platform LLM key could not be read")
 
 // ErrMCPOAuthIncomplete is returned when the client_secret of an MCP OAuth app has a stored row
 // but the client_id has none (or an empty one). The group is then read from the database only, so
-// the environment value of the client_id is not used. The error holds no value.
+// the pair is not usable. The error holds no value.
 var ErrMCPOAuthIncomplete = errors.New("the MCP OAuth app is stored incompletely")
 
 // KeyFunc hands a platform key to a handler at the time of use. An empty value with no error means
@@ -58,8 +57,8 @@ type KeyFunc = func(ctx context.Context) (string, error)
 // mistake in a list that is new does not take the LLM calls down.
 // The only error is an invalid registry, which is a programming error.
 //
-// The environment is read with os.LookupEnv for the keys that declare an environment name (the MCP
-// OAuth app keys). The platform LLM keys declare none, so they are never read from the environment.
+// No key reads the environment: the handler is built without an environment lookup, so every key
+// (the platform LLM keys and the MCP OAuth app keys) is resolved from the database only.
 func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Option) (confighandler.Handler, error) {
 	reg, err := configkeys.NewRegistry()
 	if err != nil {
@@ -72,7 +71,7 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 		crypto, _ = secretcrypto.New("", secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
 	}
 
-	return confighandler.NewHandler(reg, store, crypto, os.LookupEnv, opts...), nil
+	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
 }
 
 // supplierConfig is the setting of a supplier.
@@ -119,11 +118,12 @@ const mcpOAuthReadAttempts = 2
 
 // MCPOAuthClient resolves the (client_id, client_secret) pair of the MCP OAuth app of a vendor.
 //
-// The pair comes from one source: the database when the client_secret (the anchor of the group) has
-// a stored row, the environment otherwise. With a stored client_secret and no stored client_id the
-// result is ErrMCPOAuthIncomplete, never the environment client_id. A read error or a stored value
-// that can not be decrypted is returned as ErrKeyUnavailable and is never replaced by the
-// environment. Neither set is not an error: the result is an empty pair ("not configured").
+// The pair is read from the database only, and only when the client_secret (the anchor of the group)
+// has a stored row. With a stored client_secret and no stored client_id the result is
+// ErrMCPOAuthIncomplete. A read error or a stored value that can not be decrypted is returned as
+// ErrKeyUnavailable. Nothing stored is not an error: the result is an empty pair ("not configured"),
+// and so is a client_id row alone, because the client_id of a group without an anchor row is not
+// read.
 // An unknown vendor is an error. No value is part of an error text.
 func MCPOAuthClient(ctx context.Context, h confighandler.Handler, vendor string, opts ...SupplierOption) (clientID, clientSecret string, err error) {
 	secretKey, ok := configkeys.MCPOAuthClientSecretKey(vendor)
@@ -166,7 +166,8 @@ func MCPOAuthClient(ctx context.Context, h confighandler.Handler, vendor string,
 			continue
 
 		default:
-			// Environment or nothing, for both. One side alone is passed on as it is, as before.
+			// Nothing stored for the pair (the client_id of a group without an anchor row is not
+			// read): an empty pair, "not configured".
 			return id, secret.Reveal(), nil
 		}
 	}
