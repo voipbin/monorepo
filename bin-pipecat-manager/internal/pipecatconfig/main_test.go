@@ -104,8 +104,8 @@ func Test_envIsNeverASource(t *testing.T) {
 
 	h := newTestHandler(t, &config.Config{}, storetest.NewMemory())
 	list, err := h.Describe(context.Background())
-	if err != nil || len(list) != 8 {
-		t.Fatalf("Wrong match. expect: 8 keys, got: %d %v", len(list), err)
+	if err != nil || len(list) != len(configkeys.Keys()) {
+		t.Fatalf("Wrong match. expect: every key, got: %d %v", len(list), err)
 	}
 	for _, r := range list {
 		if r.Source != confighandler.SourceNone {
@@ -119,7 +119,7 @@ func Test_envIsNeverASource(t *testing.T) {
 	}
 }
 
-// A stored row wins over the environment, for every key.
+// A stored row is the value, whatever the legacy variable holds, for every key.
 func Test_Resolve_dbWinsOverEnv(t *testing.T) {
 	store := storetest.NewMemory()
 	writer := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)

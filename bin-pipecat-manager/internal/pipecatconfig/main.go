@@ -69,7 +69,8 @@ func NewKeyResolver(h confighandler.Handler) *KeyResolver {
 	return &KeyResolver{h: h, timeout: readTimeout}
 }
 
-// Resolve reads the named keys from the database and returns the values by key name. It reads on every call and keeps nothing, so a changed key is used by
+// Resolve reads the named keys from the database and returns the values by key name.
+// It reads on every call and keeps nothing, so a changed key is used by
 // the next session on every replica.
 //
 // It never returns an error and never blocks a session start for longer than the read bound (2

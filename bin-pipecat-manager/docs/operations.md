@@ -50,7 +50,7 @@ Source of a key, per vendor:
 | platform OpenRouter | stored key (the key of the customer is never used); not stored: `OpenRouter is not configured` |
 | local endpoints | stored value; not stored, or no matching endpoint: `local engine model is not available` |
 
-The runner answers a rejected session with HTTP 400 and this fixed text, which names the vendor only. The Go service logs `non-200 status` and cancels the session, so the caller sees the session end without a classified error; the vendor name is in the runner log.
+The runner answers a rejected session with HTTP 400 and this fixed text, which names the vendor only (a session that uses a customer specified endpoint gets that endpoint's own fixed text instead). The Go service logs `non-200 status` and cancels the session, so the caller sees the session end without a classified error; the vendor name is in the runner log.
 
 Only the keys of the vendors that the session uses are read and sent. A session with a key of the customer still gets the platform key of the same vendor in the request (the runner prefers the key of the customer).
 
@@ -77,7 +77,7 @@ Behavior to know:
 Prerequisites before this version runs (a key that is not stored makes the sessions that need it fail):
 
 1. Create the Komodo variable `BIN_MANAGER__PIPECAT_MANAGER_CONFIG_ENCRYPTION_KEYS` before the deploy. A missing variable does not stop the containers: Komodo passes the unreplaced `[[...]]` text as the value, the service starts, logs an error that the value is invalid, and refuses writes (stored secrets are reported as undecryptable). An empty value also starts the service and only refuses writes.
-2. Store every key that the platform uses (`config set`) before the new image is deployed. The image before this change falls back to the environment lines of the old stack definition, so rolling back the image works only together with reverting the stack definition that removed those lines.
+2. Store every key that the platform uses (`config set`) before the new image is deployed. The image before this change falls back to the environment lines of the old stack definition, so rolling back the image works only together with reverting the stack definition that removed those lines; the Komodo variables that those lines referenced must still exist then.
 3. Check the length of the local endpoints value before storing it: more than 2020 bytes can not be stored.
 4. Deploy the new image to both Go containers and both runner containers. An old runner ignores `platform_keys`.
 5. Check one session of each vendor that you stored a key for.
