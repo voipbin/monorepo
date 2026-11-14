@@ -18,6 +18,15 @@ def _is_idless_result(m: dict) -> bool:
     return m.get("role") == "tool" and not m.get("tool_call_id")
 
 
+def _is_plain(m: dict) -> bool:
+    """A row that is neither a tool-call request nor a tool result."""
+    return m.get("role") != "tool" and not m.get("tool_calls")
+
+
+def _only_plain_rows_between(candidates: list[dict], i: int, j: int) -> bool:
+    return all(_is_plain(candidates[k]) for k in range(i + 1, j))
+
+
 def _repair_idless_pairs(candidates: list[dict]) -> list[dict]:
     """Handle tool calls and results that carry no id (VOIP-1633, design 2.3).
 
@@ -28,6 +37,10 @@ def _repair_idless_pairs(candidates: list[dict]) -> list[dict]:
     pairs; one unpaired call at the end is dropped. Any other shape (orphan result, two calls in a row,
     several calls in one row, rows that are not adjacent) cannot be paired without guessing, so every
     id-less row is dropped. Rows with ids are never touched; the input is not mutated.
+
+    The call and its result need not be adjacent (VOIP-1733): plain rows (a sentence, a user row) stored
+    between them are allowed, because they cannot be tool rows of another call, so the pairing is as
+    certain as for adjacent rows. _restore_tool_adjacency then moves those rows out from between the two.
     """
     idless = [i for i, m in enumerate(candidates) if _is_idless_call(m) or _is_idless_result(m)]
     if not idless:
@@ -44,7 +57,8 @@ def _repair_idless_pairs(candidates: list[dict]) -> list[dict]:
         if p + 1 >= len(idless):
             break
         j = idless[p + 1]
-        if j != i + 1 or len(call["tool_calls"]) != 1 or not _is_idless_result(candidates[j]):
+        paired = _only_plain_rows_between(candidates, i, j) and len(call["tool_calls"]) == 1 and _is_idless_result(candidates[j])
+        if not paired:
             pairs = []
             break
         pairs.append((i, j))
@@ -64,6 +78,93 @@ def _repair_idless_pairs(candidates: list[dict]) -> list[dict]:
             result.append(m)
     logger.warning(f"[tool_history] id-less tool rows. kept_pairs={len(pairs)} dropped_rows={len(idless) - 2 * len(pairs)}")
     return result
+
+
+def _restore_tool_adjacency(candidates: list[dict]) -> list[dict]:
+    """Make every tool result directly follow its tool call (VOIP-1733).
+
+    ai-manager stores the call row when the tool starts, the result row when it returns, and the bot
+    sentence row when the sentence event arrives, so a sentence the model produced together with the call
+    can be stored between the two. OpenAI rejects such a history (a tool_calls message must be followed by
+    its tool messages), and pipecat's Gemini adapter pairs function_call and function_response turns the same way.
+
+    Input: candidates after _repair_idless_pairs, so every tool_calls entry and tool row has an id.
+    A. Claim: for each call row in order, claim for each of its ids the first unclaimed tool row with that
+       id after the call. All ids answered: the call forms a block and the claims are kept. Otherwise the
+       call is unanswerable and releases its claims.
+    B. Hoist: the plain assistant rows (sentences) that follow a block's call directly (rows claimed by a
+       block are transparent), before its last result, are emitted before the call. This is the order a model
+       emits them in, and it is kept as a separate row because the Gemini adapter drops the content of a
+       tool_calls row. Anything after the last result (the answer) is never moved.
+    C. Emit once: a block call is emitted as hoisted rows, call, results (in tool_calls order). Rows that sat
+       between a call and its results stay in their order after the block. Unanswerable calls and tool rows
+       no block claimed (orphan, placed before their call, duplicate) are dropped.
+    The result is idempotent and the input is not mutated; the same row objects are returned. A result
+    placed before its call is dropped with the call (it used to pass the pairing check below).
+    """
+    n = len(candidates)
+
+    def is_call(m: dict) -> bool:
+        return m.get("role") == "assistant" and bool(m.get("tool_calls"))
+
+    claimed = {}  # tool row index -> call row index
+    blocks = {}  # call row index -> list of result row indexes in tool_calls order
+    for i, m in enumerate(candidates):
+        if not is_call(m):
+            continue
+        taken = []
+        for tc in m["tool_calls"]:
+            found = next(
+                (
+                    k
+                    for k in range(i + 1, n)
+                    if k not in claimed
+                    and k not in taken
+                    and candidates[k].get("role") == "tool"
+                    and candidates[k].get("tool_call_id") == tc.get("id")
+                ),
+                None,
+            )
+            if found is None:
+                taken = None
+                break
+            taken.append(found)
+        if taken is None:
+            continue
+        for k in taken:
+            claimed[k] = i
+        blocks[i] = taken
+
+    hoisted = {}  # call row index -> sentence row indexes
+    hoisted_rows = set()
+    for i, results in blocks.items():
+        last = max(results)
+        rows = []
+        k = i + 1
+        while k < last:
+            if k in claimed:
+                k += 1
+            elif candidates[k].get("role") == "assistant" and not candidates[k].get("tool_calls"):
+                rows.append(k)
+                hoisted_rows.add(k)
+                k += 1
+            else:
+                break
+        hoisted[i] = rows
+
+    output = []
+    for i, m in enumerate(candidates):
+        if i in blocks:
+            output.extend(candidates[k] for k in hoisted[i])
+            output.append(m)
+            output.extend(candidates[k] for k in blocks[i])
+        elif i in claimed or i in hoisted_rows:
+            continue
+        elif is_call(m) or m.get("role") == "tool":
+            continue  # unanswerable call, or a tool row that no call claimed
+        else:
+            output.append(m)
+    return output
 
 
 def filter_valid_messages(messages: list[dict]) -> list[dict]:
@@ -90,6 +191,7 @@ def filter_valid_messages(messages: list[dict]) -> list[dict]:
     """
     candidates = [m for m in messages if m.get("role") and (m.get("content") or m.get("tool_calls"))]
     candidates = _repair_idless_pairs(candidates)
+    candidates = _restore_tool_adjacency(candidates)
     result_ids = {m.get("tool_call_id") for m in candidates if m.get("role") == "tool"}
 
     # Pass 1: compute-only, no emission. Which assistant tool_calls entries

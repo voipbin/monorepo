@@ -229,7 +229,6 @@ def test_idless_pair_split_by_an_id_row_is_dropped():
 @pytest.mark.parametrize("name, messages", [
     ("parallel A1 A2 R1 R2", [_idless_call("a"), _idless_call("b"), _idless_result("ra"), _idless_result("rb")]),
     ("parallel A1 A2 R2 R1", [_idless_call("a"), _idless_call("b"), _idless_result("rb"), _idless_result("ra")]),
-    ("text between call and result", [_idless_call("a"), {"role": "assistant", "content": "wait"}, _idless_result("ra")]),
     ("window cut leaves A2 R1 R2", [_idless_call("b"), _idless_result("ra"), _idless_result("rb")]),
     ("lost result then a later pair", [_idless_call("a"), _idless_call("b"), _idless_result("rb")]),
     ("leading orphan result", [_idless_result("ra"), _idless_call("b"), _idless_result("rb")]),
@@ -343,3 +342,226 @@ def test_no_wrong_pairing_for_window_cut_alone_or_lost_results_alone():
                 assert _wrong_pairs(order, 0, lost) == [], (order, lost)
                 checked += 1
     assert checked > 10000
+
+
+# ---------------------------------------------------------------------------
+# VOIP-1733: a tool result must directly follow its tool call
+#
+# CHAR = characterisation (passes on the code before this change), RED = fails on it.
+# ---------------------------------------------------------------------------
+def _user(text="q"):
+    return {"role": "user", "content": text}
+
+
+def _say(text="I'll connect you now."):
+    return {"role": "assistant", "content": text}
+
+
+def _multi_call(*ids):
+    return {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [{"id": i, "type": "function", "function": {"name": f"tool_{i}", "arguments": "{}"}} for i in ids],
+    }
+
+
+def assert_valid_order(out, original):
+    """The order rules every provider relies on, applied to the output of the filter.
+
+    1. Each assistant row with tool_calls is directly followed by one tool row per call id, in tool_calls order.
+    2. No tool row is anywhere else (no orphan, no duplicate).
+    3. Every plain row of the input (not a call row, not a tool row, with content) is present exactly once.
+       Only these moves are allowed: a hoisted sentence before its call, a row that sat between a call
+       and its result after the result block, and results in tool_calls order. Rows dropped on purpose are
+       unanswerable calls, orphan, misplaced and duplicate results, and ambiguous id-less rows.
+    """
+    i = 0
+    while i < len(out):
+        m = out[i]
+        if m["role"] == "assistant" and m.get("tool_calls"):
+            ids = [tc["id"] for tc in m["tool_calls"]]
+            following = out[i + 1:i + 1 + len(ids)]
+            assert [f.get("tool_call_id") for f in following] == ids and all(f["role"] == "tool" for f in following), (i, out)
+            i += 1 + len(ids)
+            continue
+        assert m["role"] != "tool", ("orphan or misplaced tool row", i, out)
+        i += 1
+    plain_in = [id(m) for m in original if m.get("role") not in (None, "tool") and m.get("content") and not m.get("tool_calls")]
+    plain_out = [id(m) for m in out if m["role"] != "tool" and not m.get("tool_calls")]
+    assert sorted(plain_in) == sorted(plain_out)
+
+
+def _check(messages, expected):
+    before = copy.deepcopy(messages)
+    out = filter_valid_messages(messages)
+    assert messages == before, "the input must not be mutated"
+    assert out == expected
+    assert_valid_order(out, messages)
+    assert filter_valid_messages(out) == out, "filtering is idempotent"
+    return out
+
+
+def test_plain_history_unchanged():  # S1, CHAR
+    msgs = [_user("a"), _say("b"), _user("c")]
+    _check(msgs, msgs)
+
+
+def test_followup_turn_after_clean_tool_turn():  # S2, CHAR
+    msgs = [_user(), _assistant_call("a"), _tool_result("a"), _say("done"), _user("next")]
+    _check(msgs, msgs)
+
+
+def test_sentence_between_call_and_result_moves_before_call():  # S3, RED
+    u, c, s, r, a = _user(), _assistant_call("a"), _say(), _tool_result("a"), _say("connected")
+    _check([u, c, s, r, a], [u, s, c, r, a])
+
+
+def test_answer_and_trailing_sentence_are_not_moved():  # S3, CHAR
+    u, c, r, a = _user(), _assistant_call("a"), _tool_result("a"), _say("answer")
+    _check([u, c, r, a], [u, c, r, a])
+    _check([c, r, a], [c, r, a])
+
+
+def test_serial_calls_unchanged():  # S4, CHAR
+    msgs = [_user(), _assistant_call("a"), _tool_result("a"), _assistant_call("b"), _tool_result("b"), _say("done")]
+    _check(msgs, msgs)
+
+
+def test_serial_calls_sentence_in_first_pair():  # S4, RED
+    ca, s, ra, cb, rb, a = _assistant_call("a"), _say(), _tool_result("a"), _assistant_call("b"), _tool_result("b"), _say("done")
+    _check([ca, s, ra, cb, rb, a], [s, ca, ra, cb, rb, a])
+
+
+def test_parallel_separate_rows_become_serial_pairs():  # S5, RED
+    ca, cb, ra, rb = _assistant_call("a"), _assistant_call("b"), _tool_result("a"), _tool_result("b")
+    _check([ca, cb, ra, rb], [ca, ra, cb, rb])
+
+
+def test_parallel_rows_with_sentence_mixed_tool_names():  # S5, S14, RED
+    ca = _assistant_call("a", name="mcp_search_flights")
+    cb = _assistant_call("b", name="set_variables")
+    s, ra, rb = _say(), _tool_result("a"), _tool_result("b")
+    out = _check([ca, cb, s, ra, rb], [ca, ra, s, cb, rb])
+    assert out[0]["tool_calls"][0]["function"]["name"] == "mcp_search_flights"
+    assert out[3]["tool_calls"][0]["function"]["name"] == "set_variables"
+    # the sentence also stays valid when it sits between the two results
+    ca, cb, ra, s, rb = _assistant_call("a"), _assistant_call("b"), _tool_result("a"), _say(), _tool_result("b")
+    _check([ca, cb, ra, s, rb], [ca, ra, s, cb, rb])
+
+
+def test_multi_id_row_results_follow_in_call_order():  # S5, RED
+    c, ra, rb = _multi_call("a", "b"), _tool_result("a"), _tool_result("b")
+    _check([c, rb, ra], [c, ra, rb])
+
+
+def test_multi_id_row_with_missing_result_is_dropped():  # S5, CHAR
+    _check([_multi_call("a", "b"), _tool_result("a")], [])
+
+
+def test_duplicate_result_keeps_first():  # S5, RED
+    c, r1 = _assistant_call("a"), _tool_result("a", "first")
+    r2 = _tool_result("a", "second")
+    _check([c, r1, r2], [c, r1])
+
+
+def test_duplicate_call_id_one_result_drops_second_call():  # S5, RED
+    c1, c2, r = _assistant_call("a"), _assistant_call("a"), _tool_result("a")
+    _check([c1, c2, r], [c1, r])
+
+
+def test_duplicate_call_id_two_results_both_kept():  # S5, CHAR
+    msgs = [_assistant_call("a"), _tool_result("a", "1"), _assistant_call("a"), _tool_result("a", "2")]
+    _check(msgs, msgs)
+
+
+def test_unanswerable_call_releases_its_claims():  # S5, CHAR (mutation target)
+    # c1 claims the result of b first and then finds no result for a: it is dropped and must give b back to c2
+    c1, c2, r = _multi_call("b", "a"), _assistant_call("b"), _tool_result("b")
+    _check([c1, c2, r], [c2, r])
+
+
+def test_failed_result_kept_and_adjacent():  # S6, CHAR
+    msgs = [_user(), _assistant_call("a"), _tool_result("a", '{"result": "failed", "message": "boom"}'), _say("sorry")]
+    _check(msgs, msgs)
+
+
+def test_unpaired_call_with_sentence_and_followup():  # S7, S8, CHAR
+    u, c, s, u2 = _user(), _assistant_call("a", name="no_such_tool"), _say(), _user("again")
+    _check([u, c, s, u2], [u, s, u2])
+
+
+def test_result_before_its_call_is_dropped():  # S9, RED
+    _check([_tool_result("a"), _assistant_call("a")], [])
+
+
+def test_id_bearing_window_cut_drops_only_the_orphan_result():  # S10, CHAR
+    ra, cb, rb = _tool_result("a"), _assistant_call("b"), _tool_result("b")
+    _check([ra, cb, rb], [cb, rb])
+
+
+def test_user_row_between_call_and_result_moves_after_result():  # S11, RED
+    u, c, u2, r, a = _user(), _assistant_call("a"), _user("hurry"), _tool_result("a"), _say("done")
+    _check([u, c, u2, r, a], [u, c, r, u2, a])
+
+
+def test_card_call_and_result_pass_through_unchanged():  # S13, RED (order), CHAR (content)
+    call = _assistant_call("a", name="emit_info_card")
+    call["tool_calls"][0]["function"]["arguments"] = "{}"
+    result = _tool_result("a", '{"result": "success"}')
+    s = _say()
+    out = _check([call, s, result], [s, call, result])
+    assert out[1] is call and out[2] is result
+
+
+def test_filter_is_idempotent_and_does_not_mutate_input():  # S15, idempotence CHAR, checker RED
+    c, s, r = _assistant_call("a"), _say(), _tool_result("a")
+    inputs = [
+        [_user(), c, s, r, _say("x")],
+        [_assistant_call("a"), _assistant_call("b"), _tool_result("a"), _tool_result("b")],
+        [_user(), _assistant_call("a"), _user("hurry"), _tool_result("a")],
+        [_multi_call("a", "b"), _tool_result("b"), _tool_result("a")],
+        [_idless_call("a"), _say(), _idless_result("ra")],
+    ]
+    for msgs in inputs:
+        before = copy.deepcopy(msgs)
+        out = filter_valid_messages(msgs)
+        assert msgs == before
+        assert filter_valid_messages(out) == out
+        assert_valid_order(out, msgs)
+
+
+def test_idless_pair_with_sentence_between_is_kept():  # S3 id-less, RED
+    c, s, r = _idless_call("a"), _say("wait"), _idless_result("ra")
+    out = filter_valid_messages([c, s, r])
+    assert out[0] is s
+    assert _ids(out) == [("call", "a", "legacy_call_1"), ("result", "ra", "legacy_call_1")]
+    assert [m["role"] for m in out] == ["assistant", "assistant", "tool"] and out[1].get("tool_calls")
+    assert_valid_order(out, [c, s, r])
+
+
+def test_idless_pair_with_user_row_between_is_kept():  # S11 id-less, RED
+    u, c, u2, r = _user(), _idless_call("a"), _user("hurry"), _idless_result("ra")
+    out = filter_valid_messages([u, c, u2, r])
+    assert [m["role"] for m in out] == ["user", "assistant", "tool", "user"]
+    assert _ids(out) == [("call", "a", "legacy_call_1"), ("result", "ra", "legacy_call_1")]
+    assert_valid_order(out, [u, c, u2, r])
+
+
+def test_idless_call_without_result_is_dropped():  # S8 id-less, CHAR
+    u, c, s, u2 = _user(), _idless_call("a"), _say(), _user("again")
+    _check([u, c, s, u2], [u, s, u2])
+
+
+def test_idless_parallel_calls_are_dropped():  # S5 id-less, CHAR (remaining limit)
+    _check([_idless_call("a"), _idless_call("b"), _idless_result("ra"), _idless_result("rb")], [])
+
+
+def test_unanswerable_call_between_stops_the_hoist_scan():  # S5, characterises the scan rule
+    ca, cx, s, ra = _assistant_call("a"), _assistant_call("x"), _say(), _tool_result("a")
+    _check([ca, cx, s, ra], [ca, ra, s])
+
+
+def test_repeated_id_inside_one_call_row_needs_one_result_per_entry():  # S5, CHAR
+    _check([_multi_call("a", "a"), _tool_result("a")], [])
+    msgs = [_multi_call("a", "a"), _tool_result("a", "1"), _tool_result("a", "2")]
+    _check(msgs, msgs)
