@@ -102,7 +102,6 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdSendMessage())
 
 	cmdRoot.AddCommand(cmdSub)
-	cmdRoot.AddCommand(cmdConfig())
 	// the migrate commands open only the database, so they do not depend on Redis or RabbitMQ
 	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {
 		return migrationhandler.New(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable)

@@ -28,9 +28,9 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `redis_address` | `REDIS_ADDRESS` | Redis host:port | yes |
 | `redis_password` | `REDIS_PASSWORD` | Redis auth | no |
 | `redis_database` | `REDIS_DATABASE` | Redis DB index | no |
-| `local_llm_models` | `LOCAL_LLM_MODELS` | JSON list of operator-registered local (self-hosted OpenAI-compatible) models: `[{"endpoint","id","label","capabilities","default"}]`. No URL or key. Empty means none. `ai-manager` and `ai-control` both read it (`ai-control` needs it to accept `local.` models). Invalid entries are skipped and logged as an error (counts only); the service still starts. The connection details are a stored setting of bin-pipecat-manager (`local_llm.endpoints`, see bin-pipecat-manager), not a variable of any service. | no |
+| `local_llm_models` | `LOCAL_LLM_MODELS` | JSON list of operator-registered local (self-hosted OpenAI-compatible) models: `[{"endpoint","id","label","capabilities","default"}]`. No URL or key. Empty means none. `ai-manager` and `ai-control` both read it (`ai-control` needs it to accept `local.` models). Invalid entries are skipped and logged as an error (counts only); the service still starts. The connection details are the `LOCAL_LLM_ENDPOINTS` variable of the pipecat runner container (see bin-pipecat-manager), not a variable of this service. | no |
 | `engine_base_key_encryption_keys` | `ENGINE_BASE_KEY_ENCRYPTION_KEYS` | Comma-separated `<version>:<base64 32 bytes>` pairs (same format as `MCP_SECRET_ENCRYPTION_KEYS`, a separate key set) for the keys customers store with `customendpoint.` models. The highest version encrypts, every listed version decrypts. A malformed value stops the start; empty starts with a warning and storing an endpoint key then fails with a server error. Generate with `openssl rand -base64 32`, prefix `1:`. Losing the key set makes stored endpoint keys unusable (fail closed; customers send the key again). Rotation: add the new version to every replica first, in a quiet window; keep retired versions until no row uses them. The Komodo variable `BIN_MANAGER__AI_MANAGER_ENGINE_BASE_KEY_ENCRYPTION_KEYS` must exist before the merge (a missing variable stops the container), and the separate operator install repository must carry the same variable. The container env name `ENGINE_BASE_KEY_ENCRYPTION_KEYS` has no service prefix, while the Komodo variable carries the `AI_MANAGER_` prefix because only ai-manager uses it. | no |
-| (no flag) | `AI_CONFIG_ENCRYPTION_KEYS` | Master key list of the stored platform settings (the admin API and `ai-control config`; the platform keys themselves are read from `OPENAI_API_KEY`, `GOOGLE_API_KEY` and the MCP OAuth variables, see below): comma-separated `<version>:<base64 32 bytes>`. Environment only, never a flag. Unlike `ENGINE_BASE_KEY_ENCRYPTION_KEYS` and `MCP_SECRET_ENCRYPTION_KEYS`, a malformed or empty value does not stop the start: the service logs the problem (never the value), refuses to store a secret and reports the stored keys as undecryptable | no |
+| (no flag) | `AI_CONFIG_ENCRYPTION_KEYS` | Not read by the code. The deployment definition still passes it; a later change removes the line | no |
 | (no flag) | `OPENAI_API_KEY` | Platform API key of the OpenAI compatible provider. Environment only; unset, empty or an unresolved placeholder means not configured. Shared with bin-pipecat-manager | no |
 | (no flag) | `GOOGLE_API_KEY` | Platform Google API key of the Gemini endpoint. Environment only; same rules. Shared with bin-pipecat-manager | no |
 | (no flag) | `<VENDOR>_MCP_OAUTH_CLIENT_ID`, `<VENDOR>_MCP_OAUTH_CLIENT_SECRET` | OAuth app of an MCP vendor (`GITHUB`, `LINEAR`, `ASANA`, `HUBSPOT`). Environment only; the secret needs the id (see "MCP OAuth app credentials") | no |
@@ -92,14 +92,14 @@ With no key for the analysis engine's provider, `GET /v1/ai_builder/status` quie
 
 ## Platform LLM keys
 
-The two platform LLM keys are read from environment variables, and only from there. A variable that is not set, is empty, or still holds an unresolved placeholder of the deployment (a value that starts with `[[`, see the missing deployment variable note of the compose docs) means the key is not configured (an empty key, no error). The stored settings of the same keys (`ai-control config set`, the admin API) are not read by this service: a value that is stored there has no effect, and `ai-control config set` and `clear` say so on stderr after the change.
+The two platform LLM keys are read from environment variables, and only from there. A variable that is not set, is empty, or still holds an unresolved placeholder of the deployment (a value that starts with `[[`, see the missing deployment variable note of the compose docs) means the key is not configured (an empty key, no error). Nothing is stored in the database and no admin API or command writes them.
 
 | Variable | Used by |
 |----------|---------|
 | `OPENAI_API_KEY` | The conversation engine, and the summary, analysis and Builder calls when their base URL is not the Gemini endpoint. Shared name: bin-pipecat-manager reads the same variable |
 | `GOOGLE_API_KEY` | Audit and prompt proposal, and the summary, analysis and Builder calls when their base URL is the Gemini endpoint (a base URL that contains `generativelanguage`). Shared name: bin-pipecat-manager reads the same variable |
 
-`OPENAI_API_KEY` was named `ENGINE_KEY_CHATGPT` in this service before the stored settings (the secret key of the deployment platform had the name `OPENAI_API_KEY` already). `ENGINE_KEY_CHATGPT` is not read any more.
+`OPENAI_API_KEY` was named `ENGINE_KEY_CHATGPT` in this service before it was renamed (the secret key of the deployment platform had the name `OPENAI_API_KEY` already). `ENGINE_KEY_CHATGPT` is not read any more.
 
 These are platform keys. They are not the `engine_key` of a customer AI, which belongs to the customer and is stored encrypted on the AI.
 
@@ -115,20 +115,20 @@ Rotation:
 3. Check it at once with a call that needs the key (a Builder status and one chat turn, or one audit). If the provider answers an authentication error, set the right value again.
 4. Revoke the old key at the provider after the check.
 
-The stored settings code and the admin API (`/service_configs/ai`, served as `/v1/configs`) stay, but a stored value is not used and becomes stale after a rotation of the variable. Rollback is the previous image together with the previous deployment definition: an image from before this change reads the stored value, so keep a value that is stored there equal to the variable until the rollback window has ended. The deployment variables are not deleted by this change.
+Rollback is the previous image together with the previous deployment definition. The deployment variables are not deleted by this change. The tables `ai_configs` and `ai_config_histories` are no longer read or written by the code.
 
-The master key list `AI_CONFIG_ENCRYPTION_KEYS` (environment only) belongs to the stored settings and is passed to the container as before; the `config` commands need the database and the master key list only and do not validate the rest of the configuration.
+The master key list `AI_CONFIG_ENCRYPTION_KEYS` is not read by the code. The deployment definition still passes it to the container; a later change removes the line.
 
 ## MCP OAuth app credentials
 
-The OAuth app of each MCP vendor (GitHub, Linear, Asana, HubSpot) is a pair of environment variables, a client id and a client secret. They are read each time a request needs them (connect start, connect completion, and the token refresh). Nothing is cached in the service, so a changed value reaches a replica with its restart. The stored settings of these keys are not read.
+The OAuth app of each MCP vendor (GitHub, Linear, Asana, HubSpot) is a pair of environment variables, a client id and a client secret. They are read each time a request needs them (connect start, connect completion, and the token refresh). Nothing is cached in the service, so a changed value reaches a replica with its restart.
 
 | Variable | Kind |
 |----------|------|
 | `<VENDOR>_MCP_OAUTH_CLIENT_SECRET` | secret |
 | `<VENDOR>_MCP_OAUTH_CLIENT_ID` | client id |
 
-`<VENDOR>` is `GITHUB`, `LINEAR`, `ASANA` or `HUBSPOT`. These variables were named `MCP_OAUTH_<VENDOR>_CLIENT_ID` and `MCP_OAUTH_<VENDOR>_CLIENT_SECRET` before the stored settings; the old names are not read. They exist in the compose definition only (Kubernetes does not pass them), as before.
+`<VENDOR>` is `GITHUB`, `LINEAR`, `ASANA` or `HUBSPOT`. These variables were named `MCP_OAUTH_<VENDOR>_CLIENT_ID` and `MCP_OAUTH_<VENDOR>_CLIENT_SECRET` before the rename; the old names are not read. They exist in the compose definition only (Kubernetes does not pass them), as before.
 
 The pair is decided by the client secret variable (unset, empty and an unresolved placeholder all mean "not set"):
 
@@ -142,9 +142,8 @@ Operating rules:
 2. **Removal.** Remove both variables of the vendor (or leave them unset). Removing the secret alone already makes the vendor not configured.
 3. **Use the same app.** The refresh token of an already connected MCP server is bound to the app that issued it. Set the id and the secret of the vendor app that the existing connections were made with; a different app breaks every connection of that vendor until the customer reconnects.
 4. **Before the deploy.** Every variable of the four vendors that are in use must exist in the deployment variable store with the name above. Without a value the compose line keeps the placeholder text, which the service refuses to use, and the vendor refuses connections (`MCP_OAUTH_VENDOR_NOT_CONFIGURED`). Check the start log: one line per variable with its state, never a value.
-5. **Rollback.** Roll back the image together with its deployment definition. An image from before this change reads the stored pair, and an image from before the stored settings reads `MCP_OAUTH_<VENDOR>_CLIENT_ID` and `MCP_OAUTH_<VENDOR>_CLIENT_SECRET`; keep the variables in the deployment platform (do not delete them) until the rollback window has ended.
+5. **Rollback.** Roll back the image together with its deployment definition. An image from before the stored settings reads `MCP_OAUTH_<VENDOR>_CLIENT_ID` and `MCP_OAUTH_<VENDOR>_CLIENT_SECRET`; keep the variables in the deployment platform (do not delete them) until the rollback window has ended.
 
-`ai-control config list` shows the stored rows only (source `db`, or `none`); it does not show whether the variables are set, and a stored value is not used. `ai-control config set` and `clear` print the name of the variable that is read on stderr.
 
 The token refresh runs detached from the request that triggered it. It resolves the pair once, at the start of the exchange (bounded to 2 seconds), and all callers that share the exchange share that result; a rotation of the app during an exchange applies from the next exchange.
 
@@ -267,11 +266,6 @@ The service applies the migrations of its thirteen tables itself (`migrations/`,
 ./bin/ai-control ai list   --customer_id <uuid> [--limit 100] [--token]
 ./bin/ai-control ai update --id <uuid> [--name] [--engine_type] [--engine_model] [--parameter] [--init_prompt]
 ./bin/ai-control ai delete --id <uuid>
-
-# Platform LLM keys (database and master key list only; the value is read from stdin)
-./bin/ai-control config list
-./bin/ai-control config set   --key <key> --actor-id <uuid>
-./bin/ai-control config clear --key <key> --actor-id <uuid>
 
 # Schema migrations (database only)
 ./bin/ai-control migrate status

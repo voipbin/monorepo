@@ -15,13 +15,6 @@ var (
 	once         sync.Once
 )
 
-// Names of the environment variables that the service reads without a flag.
-const (
-	// EnvConfigEncryptionKeys is the environment variable of the master key list of the stored
-	// settings.
-	EnvConfigEncryptionKeys = "TRANSCRIBE_CONFIG_ENCRYPTION_KEYS"
-)
-
 // Config holds process-wide configuration values loaded from command-line
 // flags and environment variables for the service.
 type Config struct {
@@ -35,11 +28,6 @@ type Config struct {
 	PodIP                   string // PodIP is parsed from the POD_IP env var but currently unused - no code path binds a listener to it (kept for backward compat with the K8s Downward API wiring that was never carried over to Docker Compose; see komodo/docker-compose.yml's header comment).
 	StreamingListenPort     int    // StreamingListenPort is the TCP port on which the AudioSocket streaming listener binds (default: 8080).
 
-	// ConfigEncryptionKeys is the master key list of the stored settings
-	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
-	// command line flag. A value that can not be parsed does not stop the service: the stored
-	// secrets can not be used then (they are reported as undecryptable).
-	ConfigEncryptionKeys string
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -79,12 +67,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"streaming_listen_port":     "STREAMING_LISTEN_PORT",
 	}
 
-	// the master key list of the stored settings has no flag: a flag value would show in the
-	// process list.
-	if errBind := viper.BindEnv("transcribe_config_encryption_keys", EnvConfigEncryptionKeys); errBind != nil {
-		return errors.Wrapf(errBind, "could not bind the env. key: %s", EnvConfigEncryptionKeys)
-	}
-
 	for flagKey, envKey := range bindings {
 		if errBind := viper.BindPFlag(flagKey, f.Lookup(flagKey)); errBind != nil {
 			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
@@ -117,7 +99,6 @@ func LoadGlobalConfig() {
 			RedisDatabase:           viper.GetInt("redis_database"),
 			PodIP:                   viper.GetString("pod_ip"),
 			StreamingListenPort:     viper.GetInt("streaming_listen_port"),
-			ConfigEncryptionKeys:    viper.GetString("transcribe_config_encryption_keys"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

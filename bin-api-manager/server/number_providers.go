@@ -12,7 +12,7 @@ import (
 )
 
 // numberProviderMaxBodyBytes caps the request body of the number provider updates. The largest
-// valid body (a secret of 1024 bytes, or 8 config entries) is far below it.
+// valid body (8 config entries) is far below it.
 const numberProviderMaxBodyBytes = 8 * 1024
 
 // bindNumberProviderBody reads the JSON body into req. On failure it answers the request and
@@ -104,67 +104,6 @@ func (h *server) PutNumberProvidersProviderName(c *gin.Context, providerName str
 	res, err := h.serviceHandler.NumberProviderUpdate(c.Request.Context(), a, providerName, req.Enabled, req.Priority, config)
 	if err != nil {
 		log.Infof("Could not update the number provider. err: %v", err)
-		abortWithServiceError(c, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, res)
-}
-
-func (h *server) PutNumberProvidersProviderNameSecret(c *gin.Context, providerName string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "PutNumberProvidersProviderNameSecret",
-		"request_address": c.ClientIP(),
-		"provider_name":   providerName,
-	})
-
-	a, ok := getAuthIdentity(c)
-	if !ok {
-		log.Errorf("Could not find auth identity.")
-		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
-		return
-	}
-
-	// req holds the secret: it is never logged or attached to an error
-	var req openapi_server.PutNumberProvidersProviderNameSecretJSONRequestBody
-	if !bindNumberProviderBody(c, log, &req) {
-		return
-	}
-
-	// the generated type cannot require a write-only field
-	if req.Secret == nil {
-		log.Info("The secret is missing.")
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON."))
-		return
-	}
-
-	res, err := h.serviceHandler.NumberProviderUpdateSecret(c.Request.Context(), a, providerName, *req.Secret)
-	if err != nil {
-		log.Infof("Could not store the number provider secret. err: %v", err)
-		abortWithServiceError(c, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, res)
-}
-
-func (h *server) DeleteNumberProvidersProviderNameSecret(c *gin.Context, providerName string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "DeleteNumberProvidersProviderNameSecret",
-		"request_address": c.ClientIP(),
-		"provider_name":   providerName,
-	})
-
-	a, ok := getAuthIdentity(c)
-	if !ok {
-		log.Errorf("Could not find auth identity.")
-		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
-		return
-	}
-
-	res, err := h.serviceHandler.NumberProviderDeleteSecret(c.Request.Context(), a, providerName)
-	if err != nil {
-		log.Infof("Could not delete the number provider secret. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}

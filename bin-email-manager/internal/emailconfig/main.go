@@ -1,53 +1,20 @@
 // Package emailconfig wires the configuration of bin-email-manager: the suppliers that hand the
-// provider credentials to the email handler at the time of use, and the master key and registry of
-// the stored settings code.
+// provider credentials to the email handler at the time of use.
 //
 // A credential is read from its environment variable only (SENDGRID_API_KEY, MAILGUN_API_KEY,
-// MAILGUN_WEBHOOK_SIGNING_KEY). The stored settings are not read.
+// MAILGUN_WEBHOOK_SIGNING_KEY).
 package emailconfig
 
 import (
 	"context"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-common-handler/pkg/confighandler"
 	"monorepo/bin-common-handler/pkg/envsecret"
-	"monorepo/bin-common-handler/pkg/secretcrypto"
 
-	"monorepo/bin-email-manager/internal/config"
 	"monorepo/bin-email-manager/internal/configkeys"
 	"monorepo/bin-email-manager/pkg/emailhandler"
 )
-
-const (
-	// maxSecretPlaintext is the longest secret the cipher accepts. It is the second guard behind
-	// the MaxLen of each key and fits the column (2048 bytes minus nonce and tag).
-	maxSecretPlaintext = 2020
-)
-
-// New creates the config handler of the stored settings (the control commands and the admin API)
-// on the given store. No read path of the service consumes it.
-//
-// An unparsable master key list never stops the service: the error is logged (without any key
-// text) and the handler works without a master key. Secrets can not be written then, and a stored
-// secret is reported as undecryptable.
-// The only error is an invalid registry, which is a programming error.
-func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Option) (confighandler.Handler, error) {
-	reg, err := configkeys.NewRegistry()
-	if err != nil {
-		return nil, errors.Wrap(err, "could not create the config registry")
-	}
-
-	crypto, errCrypto := secretcrypto.New(cfg.ConfigEncryptionKeys, secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
-	if errCrypto != nil {
-		logrus.WithField("func", "New").Errorf("The %s value is invalid, so stored secrets can not be used. err: %v", config.EnvConfigEncryptionKeys, errCrypto)
-		crypto, _ = secretcrypto.New("", secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
-	}
-
-	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
-}
 
 // Supplier returns the function that hands the secret of one environment variable to the email
 // handler at the time of use. It reads the variable on every call and keeps nothing. A variable that

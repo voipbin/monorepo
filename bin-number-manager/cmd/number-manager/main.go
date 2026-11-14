@@ -146,16 +146,7 @@ func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	// A malformed key set must not stop the daemon: other services depend on the numbers. The
-	// key set only protects the stored provider secrets, which are not used: the provider secrets
-	// come from the environment.
-	crypto, errCrypto := providerhandler.NewSecretCrypto(config.Get().NumberSecretEncryptionKeys)
-	if errCrypto != nil {
-		logrus.Errorf("The number secret encryption keys are malformed. A provider secret cannot be stored. err: %v", errCrypto)
-		crypto, _ = providerhandler.NewSecretCrypto("")
-	}
-
-	providerHandler := providerhandler.NewProviderHandler(reqHandler, db, crypto)
+	providerHandler := providerhandler.NewProviderHandler(reqHandler, db)
 
 	providerhandler.LogStates()
 	logPurchaseReadiness(context.Background(), providerHandler)

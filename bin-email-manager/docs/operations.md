@@ -24,14 +24,6 @@
 ./bin/email-control email list --customer_id <uuid> [--limit 100] [--token]
 ```
 
-**Stored settings of the provider credentials (database only; the service does not read them):**
-```bash
-./bin/email-control config list     # stored state of each key; never a value; says nothing about the variables
-printf '%s' "$VALUE" | ./bin/email-control config set --key mailgun.api_key --actor-id <uuid>
-./bin/email-control config clear --key mailgun.api_key --actor-id <uuid>
-```
-The value is read from stdin only. `set` and `clear` print a note on stderr that names the variable that the service reads. The tables are created by the daemon's migration at its start (on a local database run `./bin/email-control migrate up` first). `EMAIL_CONFIG_ENCRYPTION_KEYS` must be set for `set`.
-
 The credentials are read from the environment at the time of use (see the table of variables below); a database outage does not affect a send. A variable that is not set, is empty, or holds an unresolved placeholder (a value that starts with `[[`, the text of a deployment variable that does not exist) means the key is not configured. The placeholder is never sent to a provider. The start logs one line per variable: set (info), not set (warning) and unresolved placeholder (warning); the variable name and its state only, never a value. In the compose definition the value is `[[BIN_MANAGER__<variable name>]]` with the same name as the variable; a missing deployment variable leaves the placeholder. In Kubernetes `SENDGRID_API_KEY` and `MAILGUN_API_KEY` are optional keys of the `voipbin` secret (a missing key means not configured); `MAILGUN_WEBHOOK_SIGNING_KEY` is passed by the compose definition only.
 
 **Delete an email:**
@@ -101,13 +93,11 @@ All flags can also be set via environment variable (uppercase, underscores).
 | (no flag) | `SENDGRID_API_KEY` | not configured | SendGrid API key (environment only, never a flag, never logged) |
 | (no flag) | `MAILGUN_API_KEY` | not configured | Mailgun API key (environment only, never a flag, never logged) |
 | (no flag) | `MAILGUN_WEBHOOK_SIGNING_KEY` | not configured | Key that verifies the Mailgun webhook signature (environment only, never a flag, never logged). Not set: every Mailgun webhook is rejected |
-| `email_config_encryption_keys` | `EMAIL_CONFIG_ENCRYPTION_KEYS` | `""` (environment only, no flag) | Master key list for the stored settings, `<version>:<base64 of 32 bytes>[,...]`, the entry with the highest version encrypts. The service does not use it to read a provider credential |
+| `email_config_encryption_keys` | `EMAIL_CONFIG_ENCRYPTION_KEYS` | `""` (environment only, no flag) | Not read by the code. The deployment definition still passes it; a later change removes the line |
 
-**Stored settings:** the provider credentials can still be stored in `email_configs` (`email-control config set` or the admin API), but the service does not read them; the code that stores them and the admin API stay until a later removal. A stored value that is left behind is stale after a rotation of the variable.
+**Stored settings:** nothing is stored in the database. The tables `email_configs` and `email_config_histories` are no longer read or written by the code.
 
-**Rollout and rollback:** every variable above must exist in the deployment before this version is deployed (new names: `MAILGUN_WEBHOOK_SIGNING_KEY` replaces the earlier deployment variable that had a service prefix). The previous image reads the stored settings and this image the variables, and both run during a rolling update, so a credential must hold the same value in both places until the update ends. Rollback is the previous image together with the previous deployment definition. The previous image reads the last stored value, which is stale if a variable was rotated after this change: store the current value with `email-control config set` before the rollback. The new variables stay unused.
-
-**Upgrade note:** a stored secret written by an earlier version (its ciphertext was bound to its row) cannot be decrypted by this version; this matters only to the stored settings, which this version does not read.
+**Rollout and rollback:** every variable above must exist in the deployment. Rollback is the previous image together with the previous deployment definition; the previous image reads the same variables.
 
 **Mailgun webhook signature:** a Mailgun webhook is processed only when its `signature` (hex HMAC-SHA256 of `timestamp` + `token` with the signing key) matches and its `timestamp` is within 24 hours in the past and 5 minutes in the future. A request that fails the check changes no email status and publishes no `email_updated` event. If the signing key is not configured, every Mailgun webhook is rejected and the service logs a warning at start.
 

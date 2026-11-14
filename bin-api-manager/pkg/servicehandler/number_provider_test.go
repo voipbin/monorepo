@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"reflect"
-	"strings"
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -21,8 +20,7 @@ import (
 )
 
 const (
-	testProviderActor  = "550e8400-e29b-41d4-a716-446655440000"
-	testProviderSecret = "test-secret-value-9f3a"
+	testProviderActor = "550e8400-e29b-41d4-a716-446655440000"
 )
 
 func testProviderSuperAdmin() *auth.AuthIdentity {
@@ -68,17 +66,14 @@ func testProviderDenied() map[string]struct {
 }
 
 func testProviderInfo() *nmprovider.Info {
-	actor := uuid.FromStringOrNil(testProviderActor)
 	return &nmprovider.Info{
 		ProviderName:     "telnyx",
 		Enabled:          true,
 		Priority:         10,
 		Config:           map[string]string{"connection_id": "test-connection"},
 		HasSecret:        true,
-		KeyVersion:       1,
-		CredentialSource: nmprovider.CredentialSourceDB,
+		CredentialSource: nmprovider.CredentialSourceEnv,
 		Usable:           true,
-		SecretUpdatedBy:  &actor,
 	}
 }
 
@@ -178,46 +173,6 @@ func Test_NumberProviderUpdate(t *testing.T) {
 	}
 }
 
-func Test_NumberProviderUpdateSecret(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	h := &serviceHandler{reqHandler: mockReq}
-	ctx := context.Background()
-
-	mockReq.EXPECT().NumberV1NumberProviderUpdateSecret(ctx, nmnumber.ProviderName("telnyx"), uuid.FromStringOrNil(testProviderActor), testProviderSecret).Return(testProviderInfo(), nil)
-
-	res, err := h.NumberProviderUpdateSecret(ctx, testProviderSuperAdmin(), "telnyx", testProviderSecret)
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-
-	if !reflect.DeepEqual(testProviderInfo().ConvertWebhookMessage(), res) {
-		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", testProviderInfo().ConvertWebhookMessage(), res)
-	}
-}
-
-func Test_NumberProviderDeleteSecret(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	h := &serviceHandler{reqHandler: mockReq}
-	ctx := context.Background()
-
-	mockReq.EXPECT().NumberV1NumberProviderDeleteSecret(ctx, nmnumber.ProviderName("telnyx"), uuid.FromStringOrNil(testProviderActor)).Return(testProviderInfo(), nil)
-
-	res, err := h.NumberProviderDeleteSecret(ctx, testProviderSuperAdmin(), "telnyx")
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-
-	if !reflect.DeepEqual(testProviderInfo().ConvertWebhookMessage(), res) {
-		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", testProviderInfo().ConvertWebhookMessage(), res)
-	}
-}
-
 // every method refuses the identities that are not the project super admin before any rpc,
 // and a bad provider name is refused after the permission check, also before any rpc
 func Test_NumberProvider_authorization(t *testing.T) {
@@ -232,14 +187,6 @@ func Test_NumberProvider_authorization(t *testing.T) {
 		},
 		"update": func(h *serviceHandler, a *auth.AuthIdentity, name string) error {
 			_, err := h.NumberProviderUpdate(context.Background(), a, name, nil, nil, nil)
-			return err
-		},
-		"update secret": func(h *serviceHandler, a *auth.AuthIdentity, name string) error {
-			_, err := h.NumberProviderUpdateSecret(context.Background(), a, name, testProviderSecret)
-			return err
-		},
-		"delete secret": func(h *serviceHandler, a *auth.AuthIdentity, name string) error {
-			_, err := h.NumberProviderDeleteSecret(context.Background(), a, name)
 			return err
 		},
 	}
@@ -312,71 +259,7 @@ func Test_NumberProvider_agentWithoutIDIsRefused(t *testing.T) {
 	h := &serviceHandler{reqHandler: requesthandler.NewMockRequestHandler(mc)}
 	a := &auth.AuthIdentity{Type: auth.TypeAgent}
 
-	if _, err := h.NumberProviderUpdateSecret(context.Background(), a, "telnyx", testProviderSecret); !errors.Is(err, serviceerrors.ErrPermissionDenied) {
+	if _, err := h.NumberProviderUpdate(context.Background(), a, "telnyx", nil, nil, nil); !errors.Is(err, serviceerrors.ErrPermissionDenied) {
 		t.Errorf("Wrong match. expect: %v, got: %v", serviceerrors.ErrPermissionDenied, err)
-	}
-}
-
-// the secret appears in no log entry, on the success path and on the error path
-func Test_NumberProviderUpdateSecret_logsHaveNoSecret(t *testing.T) {
-	tests := []struct {
-		name      string
-		rpcErr    error
-		expectMsg string
-	}{
-		{"success", nil, ""},
-		{"rpc error", requesthandler.ErrServiceUnavailable, "Could not store the number provider secret"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			hook := newSecretLogHook(t)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			h := &serviceHandler{reqHandler: mockReq}
-			ctx := context.Background()
-
-			var info *nmprovider.Info
-			if tt.rpcErr == nil {
-				info = testProviderInfo()
-			}
-			mockReq.EXPECT().NumberV1NumberProviderUpdateSecret(ctx, nmnumber.ProviderName("telnyx"), gomock.Any(), testProviderSecret).Return(info, tt.rpcErr)
-
-			_, err := h.NumberProviderUpdateSecret(ctx, testProviderSuperAdmin(), "telnyx", testProviderSecret)
-			if !errors.Is(err, tt.rpcErr) {
-				t.Fatalf("Wrong match. expect: %v, got: %v", tt.rpcErr, err)
-			}
-
-			if tt.expectMsg != "" {
-				assertNoSecretInLogs(t, hook, tt.expectMsg, testProviderSecret)
-				return
-			}
-			for _, entry := range hook.AllEntries() {
-				if entry.Message != "" && strings.Contains(entry.Message, testProviderSecret) {
-					t.Errorf("secret leaked into the log message: %q", entry.Message)
-				}
-			}
-		})
-	}
-}
-
-// a refused request logs no secret either
-func Test_NumberProviderUpdateSecret_refusedLogsHaveNoSecret(t *testing.T) {
-	for who, tt := range testProviderDenied() {
-		t.Run(who, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			hook := newSecretLogHook(t)
-			h := &serviceHandler{reqHandler: requesthandler.NewMockRequestHandler(mc)}
-
-			if _, err := h.NumberProviderUpdateSecret(context.Background(), tt.a, "telnyx", testProviderSecret); !errors.Is(err, tt.err) {
-				t.Fatalf("Wrong match. expect: %v, got: %v", tt.err, err)
-			}
-
-			assertNoSecretInLogs(t, hook, "The request is not allowed.", testProviderSecret)
-		})
 	}
 }

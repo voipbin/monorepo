@@ -10,7 +10,6 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
-	"monorepo/bin-transcribe-manager/internal/config"
 	"monorepo/bin-transcribe-manager/internal/configkeys"
 )
 
@@ -102,15 +101,6 @@ func k8sEnvironment(t *testing.T) map[string]envEntry {
 
 	t.Fatalf("Wrong match. expect: a Deployment")
 	return nil
-}
-
-// The deployment definition must pass the master key list to the container under the name that the
-// service reads (the stored settings can not be written without it).
-func Test_komodoComposePassesTheMasterKeyList(t *testing.T) {
-	got, ok := composeEnvironment(t)[config.EnvConfigEncryptionKeys]
-	if !ok || got != "[[BIN_MANAGER__TRANSCRIBE_MANAGER_CONFIG_ENCRYPTION_KEYS]]" {
-		t.Errorf("Wrong match. expect: the master key list variable, got: %q %v", got, ok)
-	}
 }
 
 // The AWS pair comes from the environment: each variable is in the compose definition with the

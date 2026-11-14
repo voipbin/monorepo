@@ -1,60 +1,6 @@
 package configkeys
 
-import (
-	"strings"
-	"testing"
-
-	"monorepo/bin-common-handler/pkg/confighandler"
-)
-
-func Test_NewRegistry(t *testing.T) {
-	reg, err := NewRegistry()
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	if len(reg.Keys()) != 8 {
-		t.Errorf("Wrong match. expect: 8 keys, got: %d", len(reg.Keys()))
-	}
-}
-
-// Test_goldenKinds pins the name, kind, type and length of every key, and that no key declares an
-// environment name. A key name is never moved to another kind: rows and history that exist under
-// the old meaning would be read as the new one. A key without a stored row has no value.
-func Test_goldenKinds(t *testing.T) {
-	expect := []struct {
-		name   string
-		maxLen int
-	}{
-		{"openai.api_key", 512},
-		{"deepgram.api_key", 512},
-		{"cartesia.api_key", 512},
-		{"xai.api_key", 512},
-		{"elevenlabs.api_key", 512},
-		{"google.api_key", 512},
-		{"openrouter.api_key", 512},
-		{"local_llm.endpoints", 2020},
-	}
-
-	keys := Keys()
-	if len(keys) != len(expect) {
-		t.Fatalf("Wrong match. expect: %d keys, got: %d", len(expect), len(keys))
-	}
-	for i, e := range expect {
-		k := keys[i]
-		if k.Name != e.name || k.Env != "" || k.MaxLen != e.maxLen {
-			t.Errorf("Wrong match. key %d expect: %+v, got: %+v", i, e, k)
-		}
-		if k.Kind != confighandler.KindSecret || k.Type != confighandler.TypeString {
-			t.Errorf("Wrong match. %s must be a secret string, got: %v %v", k.Name, k.Kind, k.Type)
-		}
-		if k.Default != nil {
-			t.Errorf("Wrong match. %s must have no default", k.Name)
-		}
-		if k.Group != "" {
-			t.Errorf("Wrong match. %s must have no group, got: %q", k.Name, k.Group)
-		}
-	}
-}
+import "testing"
 
 // The key names are the keys of platform_keys in the request to the runner.
 func Test_wireNames(t *testing.T) {
@@ -72,23 +18,5 @@ func Test_wireNames(t *testing.T) {
 		if got != expect {
 			t.Errorf("Wrong match. expect: %s, got: %s", expect, got)
 		}
-	}
-}
-
-// Every key has a one line description for operators, and it never names a value.
-func Test_descriptions(t *testing.T) {
-	for _, k := range Keys() {
-		if k.Description == "" {
-			t.Errorf("Wrong match. %s has no description", k.Name)
-		}
-		if strings.ContainsAny(k.Description, "\r\n") || len(k.Description) > 300 {
-			t.Errorf("Wrong match. %s: the description must be one short line, got: %q", k.Name, k.Description)
-		}
-	}
-}
-
-func Test_tableNames(t *testing.T) {
-	if Table != "pipecat_configs" || HistoryTable != "pipecat_config_histories" {
-		t.Errorf("Wrong match. the table names are part of the stored secret contract: %s %s", Table, HistoryTable)
 	}
 }

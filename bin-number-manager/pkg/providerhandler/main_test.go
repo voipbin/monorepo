@@ -2,8 +2,6 @@ package providerhandler
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"reflect"
@@ -23,18 +21,6 @@ var (
 
 	errTestDB = errors.New("db failure")
 )
-
-func testKeys(versions ...int) string {
-	items := []string{}
-	for _, v := range versions {
-		k := make([]byte, 32)
-		for i := range k {
-			k[i] = byte(v)
-		}
-		items = append(items, fmt.Sprintf("%d:%s", v, base64.StdEncoding.EncodeToString(k)))
-	}
-	return strings.Join(items, ",")
-}
 
 // fakeDB keeps the provider rows in memory. Only the provider methods are implemented.
 type fakeDB struct {
@@ -99,99 +85,55 @@ func (f *fakeDB) NumberProviderUpdate(_ context.Context, name number.ProviderNam
 			row.Priority = v.(int)
 		case provider.FieldConfig:
 			row.Config = v.(map[string]string)
-		case provider.FieldSecretCiphertext:
-			row.SecretCiphertext = v.([]byte)
-		case provider.FieldKeyVersion:
-			row.KeyVersion = v.(int)
 		case provider.FieldUpdatedBy:
 			a := v.(uuid.UUID)
 			row.UpdatedBy = &a
-		case provider.FieldSecretUpdatedBy:
-			a := v.(uuid.UUID)
-			row.SecretUpdatedBy = &a
-		case provider.FieldTMSecretUpdate:
-			tm := v.(*time.Time)
-			row.TMSecretUpdate = tm
 		}
 	}
 	f.updates = append(f.updates, cols)
 	return nil
 }
 
-func newTestHandler(t *testing.T, db *fakeDB, keys string) *providerHandler {
+func newTestHandler(t *testing.T, db *fakeDB) *providerHandler {
 	t.Helper()
 
-	crypto, err := NewSecretCrypto(keys)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	h, ok := NewProviderHandler(nil, db, crypto).(*providerHandler)
+	h, ok := NewProviderHandler(nil, db).(*providerHandler)
 	if !ok {
 		t.Fatal("wrong type")
 	}
 	return h
 }
 
-// seedRow stores a row with an encrypted secret, sealed with the key list testKeys(1).
+// seedRow stores a row.
 func seedRow(t *testing.T, db *fakeDB, name number.ProviderName, enabled bool, priority int, config map[string]string) {
 	t.Helper()
 
-	crypto, err := NewSecretCrypto(testKeys(1))
-	if err != nil {
-		t.Fatal(err)
-	}
-	ct, ver, err := crypto.Encrypt("db-token")
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	db.rows[name] = &provider.Provider{
-		ProviderName:     name,
-		Enabled:          enabled,
-		Priority:         priority,
-		Config:           config,
-		SecretCiphertext: ct,
-		KeyVersion:       ver,
+		ProviderName: name,
+		Enabled:      enabled,
+		Priority:     priority,
+		Config:       config,
 	}
 }
 
-// seedTelnyx stores an enabled Telnyx row with a secret and the connection id.
+// seedTelnyx stores an enabled Telnyx row with the connection id.
 func seedTelnyx(t *testing.T, db *fakeDB) {
 	t.Helper()
 	seedRow(t, db, number.ProviderNameTelnyx, true, 10, map[string]string{configConnectionID: "db-conn"})
 }
 
-// legacyAADRow returns a row whose secret was sealed with the provider name as associated data by
-// an earlier layout (the fixed vector of secret_test.go). It does not decrypt.
-func legacyAADRow(t *testing.T, config map[string]string) *provider.Provider {
-	t.Helper()
-
-	ct, err := hex.DecodeString(legacyAADVectorTwoKeyA)
-	if err != nil {
-		t.Fatalf("Wrong match. bad vector: %v", err)
-	}
-
-	return &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, Priority: 5, Config: config, SecretCiphertext: ct, KeyVersion: 2}
-}
-
 func Test_resolve(t *testing.T) {
 	ctx := context.Background()
 
-	// a row with a stored secret: the ciphertext is never read
-	cryptoV1, _ := NewSecretCrypto(testKeys(1))
-	ct, ver, _ := cryptoV1.Encrypt("db-token")
-
-	storedRow := func(enabled bool, config map[string]string) *provider.Provider {
-		return &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: enabled, Priority: 5, Config: config, SecretCiphertext: ct, KeyVersion: ver}
+	row := func(enabled bool, config map[string]string) *provider.Provider {
+		return &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: enabled, Priority: 5, Config: config}
 	}
 
 	tests := []struct {
 		name string
 
-		row  *provider.Provider
-		keys string
-		env  map[string]string
+		row *provider.Provider
+		env map[string]string
 
 		expectSource   provider.CredentialSource
 		expectUsable   bool
@@ -202,51 +144,32 @@ func Test_resolve(t *testing.T) {
 	}{
 		{
 			name:         "no row and no variable: telnyx defaults, no credential",
-			keys:         testKeys(1),
 			expectSource: provider.CredentialSourceNone, expectUsable: false, expectEnabled: true, expectPriority: 10,
 		},
 		{
 			name:         "row without a variable has no credential and its config is ignored",
 			row:          &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, Priority: 3, Config: map[string]string{"connection_id": "row-conn"}},
-			keys:         testKeys(1),
 			expectSource: provider.CredentialSourceNone, expectUsable: false, expectEnabled: true, expectPriority: 3,
 		},
 		{
-			name:         "a stored secret is not used without the variable",
-			row:          storedRow(true, map[string]string{"connection_id": "row-conn"}),
-			keys:         testKeys(1),
-			expectSource: provider.CredentialSourceNone, expectUsable: false, expectEnabled: true, expectPriority: 5,
-		},
-		{
 			name:         "a row with the variable uses the variable and the row config",
-			row:          storedRow(true, map[string]string{"connection_id": "row-conn"}),
-			keys:         testKeys(1),
+			row:          row(true, map[string]string{"connection_id": "row-conn"}),
 			env:          map[string]string{envTelnyxAPIKey: "env-token"},
 			expectSource: provider.CredentialSourceEnv, expectUsable: true, expectEnabled: true, expectPriority: 5,
 			expectSecret: "env-token", expectConn: "row-conn",
 		},
 		{
 			name:         "the variable without the required config is not usable",
-			row:          storedRow(true, map[string]string{}),
-			keys:         testKeys(1),
+			row:          row(true, map[string]string{}),
 			env:          map[string]string{envTelnyxAPIKey: "env-token"},
 			expectSource: provider.CredentialSourceEnv, expectUsable: false, expectEnabled: true, expectPriority: 5,
 			expectSecret: "env-token",
 		},
 		{
 			name:         "disabled row is not usable",
-			row:          storedRow(false, map[string]string{"connection_id": "row-conn"}),
-			keys:         testKeys(1),
+			row:          row(false, map[string]string{"connection_id": "row-conn"}),
 			env:          map[string]string{envTelnyxAPIKey: "env-token"},
 			expectSource: provider.CredentialSourceEnv, expectUsable: false, expectEnabled: false, expectPriority: 5,
-			expectSecret: "env-token", expectConn: "row-conn",
-		},
-		{
-			name:         "a ciphertext of an earlier layout or a missing key does not matter",
-			row:          legacyAADRow(t, map[string]string{"connection_id": "row-conn"}),
-			keys:         "",
-			env:          map[string]string{envTelnyxAPIKey: "env-token"},
-			expectSource: provider.CredentialSourceEnv, expectUsable: true, expectEnabled: true, expectPriority: 5,
 			expectSecret: "env-token", expectConn: "row-conn",
 		},
 	}
@@ -259,7 +182,7 @@ func Test_resolve(t *testing.T) {
 			if tt.row != nil {
 				db.rows[number.ProviderNameTelnyx] = tt.row
 			}
-			h := newTestHandler(t, db, tt.keys)
+			h := newTestHandler(t, db)
 
 			r, err := h.resolve(ctx, number.ProviderNameTelnyx)
 			if err != nil {
@@ -280,7 +203,7 @@ func Test_resolve_errors(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("unknown provider", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), "")
+		h := newTestHandler(t, newFakeDB())
 		if _, err := h.resolve(ctx, "nope"); !errors.Is(err, dbhandler.ErrNotFound) {
 			t.Errorf("Wrong match. expect: not found, got: %v", err)
 		}
@@ -289,7 +212,7 @@ func Test_resolve_errors(t *testing.T) {
 	t.Run("a db read error is never treated as no row", func(t *testing.T) {
 		db := newFakeDB()
 		db.getErr = errTestDB
-		h := newTestHandler(t, db, "")
+		h := newTestHandler(t, db)
 		if _, err := h.resolve(ctx, number.ProviderNameTelnyx); !errors.Is(err, errTestDB) {
 			t.Errorf("Wrong match. expect: db failure, got: %v", err)
 		}
@@ -306,7 +229,7 @@ func Test_PurchaseCandidates(t *testing.T) {
 	t.Run("a Telnyx row with a secret is the only candidate", func(t *testing.T) {
 		db := newFakeDB()
 		seedTelnyx(t, db)
-		h := newTestHandler(t, db, testKeys(1))
+		h := newTestHandler(t, db)
 
 		res, err := h.PurchaseCandidates(ctx)
 		if err != nil || len(res) != 1 || res[0].Name != number.ProviderNameTelnyx {
@@ -316,7 +239,7 @@ func Test_PurchaseCandidates(t *testing.T) {
 
 	t.Run("without any row and without the variable there is no candidate", func(t *testing.T) {
 		setCredentialEnv(t, nil)
-		h := newTestHandler(t, newFakeDB(), "")
+		h := newTestHandler(t, newFakeDB())
 
 		res, err := h.PurchaseCandidates(ctx)
 		if err != nil || len(res) != 0 {
@@ -327,7 +250,7 @@ func Test_PurchaseCandidates(t *testing.T) {
 	t.Run("an enabled twilio row without the variable is not a candidate", func(t *testing.T) {
 		db := newFakeDB()
 		db.rows[number.ProviderNameTwilio] = &provider.Provider{ProviderName: number.ProviderNameTwilio, Enabled: true, Priority: 1, Config: map[string]string{configSID: testTwilioSID, configTrunkSID: "TK1"}}
-		h := newTestHandler(t, db, testKeys(1))
+		h := newTestHandler(t, db)
 
 		res, _ := h.PurchaseCandidates(ctx)
 		for _, c := range res {
@@ -340,7 +263,7 @@ func Test_PurchaseCandidates(t *testing.T) {
 	t.Run("a disabled telnyx is not a candidate", func(t *testing.T) {
 		db := newFakeDB()
 		db.rows[number.ProviderNameTelnyx] = &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: false, Priority: 1}
-		h := newTestHandler(t, db, "")
+		h := newTestHandler(t, db)
 
 		if res, _ := h.PurchaseCandidates(ctx); len(res) != 0 {
 			t.Errorf("Wrong match. expect: none, got: %v", res)
@@ -358,7 +281,7 @@ func Test_sortOrder(t *testing.T) {
 	seedTelnyx(t, db)
 	seedRow(t, db, "alpha", true, 10, nil)
 	seedRow(t, db, "beta", true, 5, nil)
-	h := newTestHandler(t, db, testKeys(1))
+	h := newTestHandler(t, db)
 
 	h.registry["alpha"] = Descriptor{Factory: h.registry[number.ProviderNameTelnyx].Factory, EnvSecret: envTelnyxAPIKey, Purchasable: true, DefaultEnabled: true, DefaultPriority: 10}
 	h.registry["beta"] = Descriptor{Factory: h.registry[number.ProviderNameTelnyx].Factory, EnvSecret: envTelnyxAPIKey, Purchasable: true, DefaultEnabled: true, DefaultPriority: 5}
@@ -386,7 +309,7 @@ func Test_ForRelease(t *testing.T) {
 	t.Run("a disabled provider with the variable can release", func(t *testing.T) {
 		db := newFakeDB()
 		seedRow(t, db, number.ProviderNameTelnyx, false, 10, map[string]string{configConnectionID: "db-conn"})
-		h := newTestHandler(t, db, testKeys(1))
+		h := newTestHandler(t, db)
 
 		if p, err := h.ForRelease(ctx, number.ProviderNameTelnyx); err != nil || p == nil {
 			t.Errorf("Wrong match. expect: provider, got: %v, %v", p, err)
@@ -394,11 +317,9 @@ func Test_ForRelease(t *testing.T) {
 	})
 
 	t.Run("the variable without the required config can still release and search", func(t *testing.T) {
-		cryptoV1, _ := NewSecretCrypto(testKeys(1))
-		ct, ver, _ := cryptoV1.Encrypt("db-token")
 		db := newFakeDB()
-		db.rows[number.ProviderNameTelnyx] = &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, SecretCiphertext: ct, KeyVersion: ver, Config: map[string]string{}}
-		h := newTestHandler(t, db, testKeys(1))
+		db.rows[number.ProviderNameTelnyx] = &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, Config: map[string]string{}}
+		h := newTestHandler(t, db)
 
 		if _, err := h.ForSearch(ctx); err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -407,7 +328,7 @@ func Test_ForRelease(t *testing.T) {
 
 	t.Run("no credential", func(t *testing.T) {
 		setCredentialEnv(t, nil)
-		h := newTestHandler(t, newFakeDB(), "")
+		h := newTestHandler(t, newFakeDB())
 
 		if _, err := h.ForRelease(ctx, number.ProviderNameTelnyx); err == nil {
 			t.Errorf("Wrong match. expect: error, got: nil")
@@ -421,20 +342,7 @@ func Test_ForRelease(t *testing.T) {
 		setCredentialEnv(t, nil)
 		db := newFakeDB()
 		db.rows[number.ProviderNameTelnyx] = &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, Config: map[string]string{configConnectionID: "row-conn"}}
-		h := newTestHandler(t, db, testKeys(1))
-
-		if _, err := h.ForRelease(ctx, number.ProviderNameTelnyx); err == nil {
-			t.Errorf("Wrong match. expect: error, got: nil")
-		}
-	})
-
-	t.Run("a stored secret is not a credential, whatever its key state", func(t *testing.T) {
-		setCredentialEnv(t, nil)
-		cryptoV1, _ := NewSecretCrypto(testKeys(1))
-		ct, ver, _ := cryptoV1.Encrypt("db-token")
-		db := newFakeDB()
-		db.rows[number.ProviderNameTelnyx] = &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, SecretCiphertext: ct, KeyVersion: ver}
-		h := newTestHandler(t, db, testKeys(2))
+		h := newTestHandler(t, db)
 
 		if _, err := h.ForRelease(ctx, number.ProviderNameTelnyx); err == nil {
 			t.Errorf("Wrong match. expect: error, got: nil")
@@ -442,7 +350,7 @@ func Test_ForRelease(t *testing.T) {
 	})
 
 	t.Run("unknown provider is not found", func(t *testing.T) {
-		h := newTestHandler(t, newFakeDB(), "")
+		h := newTestHandler(t, newFakeDB())
 
 		if _, err := h.ForRelease(ctx, "nope"); !errors.Is(err, dbhandler.ErrNotFound) {
 			t.Errorf("Wrong match. expect: not found, got: %v", err)
@@ -459,12 +367,6 @@ func Test_Credentials_redaction(t *testing.T) {
 		}
 	}
 
-	p := provider.Provider{ProviderName: "telnyx", SecretCiphertext: []byte("very-secret-ciphertext")}
-	for _, out := range []string{fmt.Sprintf("%v", p), fmt.Sprintf("%+v", p), fmt.Sprintf("%#v", p), fmt.Sprint(&p)} {
-		if strings.Contains(out, "very-secret-ciphertext") {
-			t.Errorf("A format verb prints the ciphertext: %s", out)
-		}
-	}
 }
 
 func Test_PurchaseCandidates_factoryFailure(t *testing.T) {
@@ -473,7 +375,7 @@ func Test_PurchaseCandidates_factoryFailure(t *testing.T) {
 	db := newFakeDB()
 	seedTelnyx(t, db)
 	seedRow(t, db, "broken", true, 1, nil)
-	h := newTestHandler(t, db, testKeys(1))
+	h := newTestHandler(t, db)
 
 	h.registry["broken"] = Descriptor{
 		Factory:         func(provider.Credentials) (Provider, error) { return nil, errors.New("factory failure") },

@@ -16,8 +16,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-common-handler/pkg/confighandler"
-
 	"monorepo/bin-billing-manager/internal/logtest"
 	"monorepo/bin-billing-manager/models/account"
 )
@@ -115,7 +113,7 @@ func Test_VerifyWebhook_noKeyIsRejected(t *testing.T) {
 				if !errors.Is(err, ErrCredentialNotConfigured) {
 					t.Fatalf("Wrong match. expect: ErrCredentialNotConfigured, got: %v", err)
 				}
-				if errors.Is(err, ErrSignatureInvalid) || errors.Is(err, ErrKeyUnavailable) || errors.Is(err, confighandler.ErrKeyNotConfigured) {
+				if errors.Is(err, ErrSignatureInvalid) || errors.Is(err, ErrKeyUnavailable) {
 					t.Errorf("Wrong match. the error must not look like another kind of error: %v", err)
 				}
 			}

@@ -42,7 +42,6 @@ func Test_LoadGlobalConfig(t *testing.T) {
 	viper.Set("database_dsn", "test-dsn")
 	viper.Set("redis_address", "cache-host-test")
 	viper.Set("redis_database", 3)
-	viper.Set("billing_config_encryption_keys", "1:test-master-keys")
 	viper.Set("paddle_price_id_basic", "pri_basic_test")
 	viper.Set("paddle_price_id_professional", "pri_pro_test")
 
@@ -55,7 +54,6 @@ func Test_LoadGlobalConfig(t *testing.T) {
 		DatabaseDSN:               "test-dsn",
 		RedisAddress:              "cache-host-test",
 		RedisDatabase:             3,
-		ConfigEncryptionKeys:      "1:test-master-keys",
 		PaddlePriceIDBasic:        "pri_basic_test",
 		PaddlePriceIDProfessional: "pri_pro_test",
 	}

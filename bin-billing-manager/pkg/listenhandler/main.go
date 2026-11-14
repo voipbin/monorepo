@@ -10,7 +10,6 @@ import (
 
 	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -47,10 +46,6 @@ type listenHandler struct {
 	billingHandler     billinghandler.BillingHandler
 	paddleHandler      paddlehandler.PaddleHandler
 	failedEventHandler failedeventhandler.FailedEventHandler
-
-	// configServer answers the config requests (/v1/configs). It may be nil: no config route is
-	// served then.
-	configServer *configrpc.Server
 }
 
 var (
@@ -157,7 +152,6 @@ func NewListenHandler(
 	billingHandler billinghandler.BillingHandler,
 	paddleHandler paddlehandler.PaddleHandler,
 	failedEventHandler failedeventhandler.FailedEventHandler,
-	configServer *configrpc.Server,
 ) ListenHandler {
 	h := &listenHandler{
 		sockHandler:        sockHandler,
@@ -166,7 +160,6 @@ func NewListenHandler(
 		billingHandler:     billingHandler,
 		paddleHandler:      paddleHandler,
 		failedEventHandler: failedEventHandler,
-		configServer:       configServer,
 	}
 
 	return h
@@ -195,14 +188,6 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 // processRequest handles all of requests of the listen queue.
 func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
-	// The config requests are routed BEFORE the log entry below exists: the body of a secret
-	// request is a secret, and the entry holds the whole request. A request that looks like a
-	// config request but is not one is answered here as well, so that its body can not reach
-	// another route or the log of the default branch. See processConfig.
-	if h.configServer.Match(m) || configrpc.LogSafe(m) != m {
-		return h.processConfig(m)
-	}
-
 	var requestType string
 	var err error
 	var response *sock.Response

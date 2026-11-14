@@ -25,13 +25,10 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				Priority:         10,
 				Config:           map[string]string{"connection_id": "test-connection"},
 				HasSecret:        true,
-				KeyVersion:       2,
 				CredentialSource: CredentialSourceDB,
 				Usable:           true,
 				UpdatedBy:        &actor,
-				SecretUpdatedBy:  &actor,
 				TMUpdate:         &tm,
-				TMSecretUpdate:   &tm,
 			},
 		},
 		{

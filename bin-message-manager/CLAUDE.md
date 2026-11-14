@@ -21,7 +21,7 @@ After message creation, provider send runs in a **goroutine** — it is non-bloc
 
 ## Database migrations
 
-The schema of the tables `message_messages`, `message_configs` and `message_config_histories` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. The full rules, the baseline text rules and the verification script are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md); `bin-tag-manager/CLAUDE.md` is the reference service.
+The schema of the tables `message_messages`, `message_configs` and `message_config_histories` (no longer read or written by the code) is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`). It does not use Alembic. The full rules, the baseline text rules and the verification script are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md); `bin-tag-manager/CLAUDE.md` is the reference service.
 
 - Files: `migrations/NNNNNN_<table>_<verb>_<type>_<items>.up.sql` and `.down.sql` (six digits, from 000001 without gaps). `000001_baseline` is the schema at the time of the conversion. Version table: `message_schema_migrations`.
 - `cmd/message-manager` runs `migrationhandler.Run` right after the database connection, before the cache and RabbitMQ. Failure stops the start (non-zero exit).
@@ -42,11 +42,6 @@ go test -coverprofile cp.out -v $(go list ./...)
 # Verification (mandatory before commit)
 go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 
-# message-control config — the stored settings of the provider tokens (database and master key only; the value is read from stdin; the service does not read them, it reads MESSAGEBIRD_API_KEY and TELNYX_API_KEY)
-./bin/message-control config list
-printf '%s' "$NEW_TOKEN" | ./bin/message-control config set --key provider.telnyx.auth_token --actor-id <uuid>
-./bin/message-control config clear --key provider.telnyx.auth_token --actor-id <uuid>
-
 # message-control — direct DB/cache access, bypasses RabbitMQ (the migrate command opens only the database)
 ./bin/message-control migrate status
 ./bin/message-control message get --id <uuid>
@@ -62,7 +57,7 @@ REDIS_ADDRESS="127.0.0.1:6379" \
 
 ## CRITICAL: Provider tokens are read per request
 
-The MessageBird and Telnyx tokens are read from the environment variables `MESSAGEBIRD_API_KEY` and `TELNYX_API_KEY` only (`bin-common-handler/pkg/envsecret`: not set, empty or an unresolved `[[...]]` placeholder means not configured, an empty token and no error). The stored settings (`message_configs`, `message-control config`, the admin API) are kept but never read by a send; `config set` and `clear` print a note on stderr. `requestexternal` receives a supplier function (`messageconfig.MessagebirdToken()`, `TelnyxToken()`) and calls it for every provider request. Never read the token from `config.Get()` in a send path and never cache it. `TELNYX_API_KEY` is shared with `bin-number-manager`; both must hold the same value (see docs/operations.md, "Provider tokens"). Roll back the image together with its deployment definition. The admin API route `/v1/configs` is handled before the request log entry exists and logs nothing of the request (the body of a secret write is the secret).
+The MessageBird and Telnyx tokens are read from the environment variables `MESSAGEBIRD_API_KEY` and `TELNYX_API_KEY` only (`bin-common-handler/pkg/envsecret`: not set, empty or an unresolved `[[...]]` placeholder means not configured, an empty token and no error). Nothing is stored in the database and no admin API writes them. `requestexternal` receives a supplier function (`messageconfig.MessagebirdToken()`, `TelnyxToken()`) and calls it for every provider request. Never read the token from `config.Get()` in a send path and never cache it. `TELNYX_API_KEY` is shared with `bin-number-manager`; both must hold the same value (see docs/operations.md, "Provider tokens"). The code does not read `MESSAGE_CONFIG_ENCRYPTION_KEYS`; the deployment definition still passes it until a later change removes the line. Roll back the image together with its deployment definition.
 
 ## Architecture Summary
 

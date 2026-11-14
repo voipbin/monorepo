@@ -2,7 +2,7 @@ get:
   summary: List the number providers
   description: |
     Returns every number provider the platform supports, with its current setting. A provider that was never changed is listed with its default setting.
-    The response never contains a secret. `has_secret` tells only whether a secret is stored.
+    The response never contains a secret. `has_secret` tells only whether the provider has a secret in the platform environment.
     Requires the project super admin permission.
   tags:
     - NumberProvider

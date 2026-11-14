@@ -15,13 +15,6 @@ var (
 	once         sync.Once
 )
 
-// Names of the environment variables that the service reads without a flag.
-const (
-	// EnvConfigEncryptionKeys is the environment variable of the master key list of the stored
-	// settings.
-	EnvConfigEncryptionKeys = "TTS_CONFIG_ENCRYPTION_KEYS"
-)
-
 // Config holds process-wide configuration values loaded from command-line
 // flags and environment variables for the service.
 type Config struct {
@@ -34,11 +27,6 @@ type Config struct {
 	RedisPassword           string // RedisPassword is the Redis server password.
 	RedisDB                 int    // RedisDB is the Redis database number.
 
-	// ConfigEncryptionKeys is the master key list of the stored settings
-	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
-	// command line flag. A value that can not be parsed does not stop the service: stored
-	// secrets can not be used then (they are reported as undecryptable).
-	ConfigEncryptionKeys string
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -76,12 +64,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_db":                  "REDIS_DB",
 	}
 
-	// the master key list of the stored settings has no flag: a flag value would show in the
-	// process list.
-	if errBind := viper.BindEnv("tts_config_encryption_keys", EnvConfigEncryptionKeys); errBind != nil {
-		return errors.Wrapf(errBind, "could not bind the env. key: %s", EnvConfigEncryptionKeys)
-	}
-
 	for flagKey, envKey := range bindings {
 		if errBind := viper.BindPFlag(flagKey, f.Lookup(flagKey)); errBind != nil {
 			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
@@ -113,7 +95,6 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDB:                 viper.GetInt("redis_db"),
-			ConfigEncryptionKeys:    viper.GetString("tts_config_encryption_keys"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

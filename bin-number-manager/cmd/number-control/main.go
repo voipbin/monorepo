@@ -68,24 +68,9 @@ func initNumberHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (numberha
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	providerHandler, err := newProviderHandler(reqHandler, db)
-	if err != nil {
-		return nil, err
-	}
+	providerHandler := providerhandler.NewProviderHandler(reqHandler, db)
 
 	return numberhandler.NewNumberHandler(reqHandler, db, notifyHandler, providerHandler), nil
-}
-
-// newProviderHandler creates the provider handler from the global config. It is the single place
-// that wires the key set and the credentials, shared by the number commands and the provider commands.
-func newProviderHandler(reqHandler requesthandler.RequestHandler, db dbhandler.DBHandler) (providerhandler.ProviderHandler, error) {
-	// the CLI rejects a malformed key set at once (the daemon only logs it)
-	crypto, err := providerhandler.NewSecretCrypto(config.Get().NumberSecretEncryptionKeys)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not parse the number secret encryption keys")
-	}
-
-	return providerhandler.NewProviderHandler(reqHandler, db, crypto), nil
 }
 
 func initCommand() *cobra.Command {

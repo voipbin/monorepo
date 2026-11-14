@@ -7,7 +7,7 @@
 ```
 Pod: tts-manager
 ├── Container: tts-manager (Go)
-│   ├── RabbitMQ listener (pkg/listenhandler; the shared queue also serves /v1/configs)
+│   ├── RabbitMQ listener (pkg/listenhandler)
 │   ├── AudioSocket TCP server :8080 (pkg/streaminghandler)
 │   └── Prometheus metrics :2112
 └── Container: http-server (Python)
@@ -24,9 +24,9 @@ Key packages:
 | `pkg/audiohandler` | Multi-provider TTS synthesis (GCP Cloud TTS, AWS Polly) |
 | `pkg/buckethandler` | Local file storage for generated audio in `/shared-data` |
 | `pkg/cachehandler` | Redis cache for TTS metadata |
-| `pkg/dbhandler` | MySQL persistence, and the store of the configs tables (`config_store.go`) |
-| `internal/configkeys`, `internal/ttsconfig` | The provider keys come from `AWS_ACCESS_KEY`, `AWS_SECRET_KEY` and `ELEVENLABS_API_KEY` (environment only, via `bin-common-handler/pkg/envsecret`). `ttsconfig.AWSCredentials()` and `ttsconfig.ElevenlabsKey()` return functions that read the variables when they are called (nothing is cached); `audiohandler` and `streaminghandler` call them per request; `LogStates` logs the variable states at start. The stored settings (`aws.access_key`, `aws.secret_key`, `elevenlabs.api_key`, encrypted) are kept for the config commands and the admin API and are not read by a request. The Polly client built from the last key pair is reused while the pair is unchanged |
-| `migrations` | Embedded golang-migrate SQL files (service-owned schema of `tts_manager_speaking` and of the stored settings `tts_configs` and `tts_config_histories`); applied by `cmd/tts-manager` through `bin-common-handler/pkg/migrationhandler` right after the database connection, before the cache and RabbitMQ; `tts-control migrate` is the recovery tool |
+| `pkg/dbhandler` | MySQL persistence |
+| `internal/configkeys`, `internal/ttsconfig` | The provider keys come from `AWS_ACCESS_KEY`, `AWS_SECRET_KEY` and `ELEVENLABS_API_KEY` (environment only, via `bin-common-handler/pkg/envsecret`). `ttsconfig.AWSCredentials()` and `ttsconfig.ElevenlabsKey()` return functions that read the variables when they are called (nothing is cached); `audiohandler` and `streaminghandler` call them per request; `LogStates` logs the variable states at start. Nothing is stored in the database. The Polly client built from the last key pair is reused while the pair is unchanged |
+| `migrations` | Embedded golang-migrate SQL files (service-owned schema of `tts_manager_speaking` and of `tts_configs` and `tts_config_histories`, which the code no longer reads or writes); applied by `cmd/tts-manager` through `bin-common-handler/pkg/migrationhandler` right after the database connection, before the cache and RabbitMQ; `tts-control migrate` is the recovery tool |
 | `models/tts` | Batch TTS structs |
 | `models/streaming` | Streaming session structs |
 | `pkg/notifyhandler` (shared) | Publishes events to the global topic exchange `bin-manager.event` — topic-only since VOIP-1407 removed fanout publishing |
@@ -58,10 +58,6 @@ This service uses two queues simultaneously:
 | Method | URI Pattern | Handler |
 |--------|-------------|---------|
 | POST | `/v1/speeches` | `v1SpeechesPost` — synthesize speech (batch) |
-| GET | `/v1/configs` | List the provider config keys with their resolved state (admin, no secret material), served by `configrpc`. Routed before the request log entry, nothing of a config request is logged |
-| PUT | `/v1/configs/<key>/secret` | Store a secret, write-only, with an expected revision (admin; `actor_id` required) |
-| DELETE | `/v1/configs/<key>` | Delete the stored value, with an expected revision (admin; `actor_id` required) |
-| GET | `/v1/configs/<key>/histories` | Page the change history of a key, newest first |
 | GET/POST | `/v1/speakings` | `v1SpeakingsGet/Post` — batch TTS operations |
 | GET | `/v1/speakings/{uuid}` | `v1SpeakingsIDGet` — get TTS session |
 | POST | `/v1/speakings/{uuid}/say` | `v1SpeakingsIDSayPost` |

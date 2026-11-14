@@ -27,7 +27,7 @@ Key packages:
 | `pkg/notifyhandler` | Publishes events to the global topic exchange `bin-manager.event`; as of VOIP-1407 this is the sole publish path (the fanout exchange `bin-manager.transcribe-manager.event` is no longer published to) |
 | `models/transcribe` | Transcribe session struct, status enum |
 | `internal/config` | Cobra + Viper configuration (singleton pattern) |
-| `internal/transcribeconfig` | Resolves the AWS credential for each streaming start from `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` (environment only, via `bin-common-handler/pkg/envsecret`); the two variables are used only together; `LogStates` logs their states at start. The stored settings (table `transcribe_configs`, encrypted) are kept for the config commands and the admin API and are not read by a start |
+| `internal/transcribeconfig` | Resolves the AWS credential for each streaming start from `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` (environment only, via `bin-common-handler/pkg/envsecret`); the two variables are used only together; `LogStates` logs their states at start. Nothing is stored in the database |
 | `internal/configkeys` | The declared config keys (`aws.access_key`, `aws.secret_key`) |
 
 ## Layer Responsibilities
@@ -69,10 +69,6 @@ This service uses two queues simultaneously:
 | GET | `/v1/transcribes?` | `v1TranscribesGet` — list transcription sessions |
 | GET | `/v1/transcribes/{uuid}` | `v1TranscribesIDGet` — get session by ID |
 | GET | `/v1/transcripts?` | `v1TranscriptsGet` — list transcript segments |
-| GET | `/v1/configs` | List the AWS credential config keys with their resolved state (admin, no secret material), served by `configrpc` (routed before the request log entry, nothing of a config request is logged) |
-| PUT | `/v1/configs/<key>/secret` | Store a secret, write-only, with an expected revision (admin; `actor_id` required) |
-| DELETE | `/v1/configs/<key>` | Delete the stored value, with an expected revision (admin; `actor_id` required) |
-| GET | `/v1/configs/<key>/histories` | Page the change history of a key, newest first |
 
 **Per-pod queue** `bin-manager.transcribe-manager-<host_id>.request` — must reach the pod owning the session:
 

@@ -1,7 +1,5 @@
 // Package aiconfig wires the configuration of bin-ai-manager: the platform LLM keys and the OAuth
-// app of each MCP vendor, which are read from environment variables when a call needs them, and
-// the config handler of the stored settings (the master key, the registry) that only the admin API
-// and ai-control use.
+// app of each MCP vendor, which are read from environment variables when a call needs them.
 package aiconfig
 
 import (
@@ -12,27 +10,20 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-common-handler/pkg/confighandler"
 	"monorepo/bin-common-handler/pkg/envsecret"
-	"monorepo/bin-common-handler/pkg/secretcrypto"
 
-	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/internal/configkeys"
 )
 
 const (
-	// maxSecretPlaintext is the longest secret the cipher accepts. It is the second guard behind
-	// the MaxLen of each key and fits the column (2048 bytes minus nonce and tag).
-	maxSecretPlaintext = 2020
-
 	// geminiURLMarker marks the base URL of the Gemini OpenAI compatible endpoint. It is the rule
 	// that picks the key of a provider, and it is written here only.
 	geminiURLMarker = "generativelanguage"
 )
 
 // ErrKeyUnavailable is returned when a platform key could not be read. An environment read can not
-// fail, so the suppliers of this package no longer return it; builderhandler and the stored settings
-// code still name it. The error holds no key text.
+// fail, so the suppliers of this package never return it; no producer remains, and builderhandler
+// still maps it. The error holds no key text.
 var ErrKeyUnavailable = errors.New("the platform LLM key could not be read")
 
 // ErrMCPOAuthIncomplete is returned when the client_secret of an MCP OAuth app is set and the
@@ -43,33 +34,6 @@ var ErrMCPOAuthIncomplete = errors.New("the MCP OAuth app is configured incomple
 // KeyFunc hands a platform key to a handler at the time of use. An empty value with no error means
 // "not configured" (the variable is not set, is empty, or still holds an unresolved placeholder).
 type KeyFunc = func(ctx context.Context) (string, error)
-
-// New creates the config handler of the service on the given store.
-//
-// An unparsable master key list never stops the service: the error is logged (without any key
-// text) and the handler works without a master key. Secrets can not be written then, and a stored
-// secret is reported as undecryptable. The two
-// older key lists of this service stop the start on an error; this one does not, so that a
-// mistake in a list that is new does not take the LLM calls down.
-// The only error is an invalid registry, which is a programming error.
-//
-// The handler is for the admin API and ai-control only. It is built without an environment lookup
-// and no read path of the service uses it: the keys are read by Supplier, KeyForBaseURL, GeminiKey
-// and MCPOAuthClient from the environment.
-func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Option) (confighandler.Handler, error) {
-	reg, err := configkeys.NewRegistry()
-	if err != nil {
-		return nil, errors.Wrap(err, "could not create the config registry")
-	}
-
-	crypto, errCrypto := secretcrypto.New(cfg.ConfigEncryptionKeys, secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
-	if errCrypto != nil {
-		logrus.WithField("func", "New").Errorf("The %s value is invalid, so stored secrets can not be used. err: %v", config.EnvConfigEncryptionKeys, errCrypto)
-		crypto, _ = secretcrypto.New("", secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
-	}
-
-	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
-}
 
 // Supplier returns the function that hands the value of the environment variable to a handler at
 // the time of use. It reads the variable on every call and keeps nothing. A variable that is not

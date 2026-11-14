@@ -25,7 +25,6 @@ import (
 	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
 	caoutplan "monorepo/bin-campaign-manager/models/outplan"
 	commonaddress "monorepo/bin-common-handler/models/address"
-	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
@@ -900,14 +899,6 @@ type ServiceHandler interface {
 	NumberProviderList(ctx context.Context, a *auth.AuthIdentity) ([]*nmprovider.WebhookMessage, error)
 	NumberProviderGet(ctx context.Context, a *auth.AuthIdentity, name string) (*nmprovider.WebhookMessage, error)
 	NumberProviderUpdate(ctx context.Context, a *auth.AuthIdentity, name string, enabled *bool, priority *int, config map[string]string) (*nmprovider.WebhookMessage, error)
-	NumberProviderUpdateSecret(ctx context.Context, a *auth.AuthIdentity, name string, secret string) (*nmprovider.WebhookMessage, error)
-	NumberProviderDeleteSecret(ctx context.Context, a *auth.AuthIdentity, name string) (*nmprovider.WebhookMessage, error)
-
-	// service configs
-	ServiceConfigGet(ctx context.Context, a *auth.AuthIdentity, service string) (*configrpc.Service, error)
-	ServiceConfigKeySecretSet(ctx context.Context, a *auth.AuthIdentity, service, key, secret string, revision int64) (*configrpc.Key, error)
-	ServiceConfigKeyClear(ctx context.Context, a *auth.AuthIdentity, service, key string, revision int64) (*configrpc.Key, error)
-	ServiceConfigKeyHistoryList(ctx context.Context, a *auth.AuthIdentity, service, key, pageToken string, pageSize int) (*configrpc.HistoryList, error)
 
 	// providercall handlers
 	ProviderCallCreate(

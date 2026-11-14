@@ -76,11 +76,8 @@ its variables from its own container and uses the key of a request first,
 when the request carries one. A session that needs a key that is not set
 fails (the runner answers ``<vendor> is not configured``).
 
-Values that were stored through the ``config set`` commands or the Service
-Config API (see Service Config) are not read by these services now. A
-``config set`` or ``clear`` of such a key prints a notice that names the
-variable that is read, and the stored value has no effect. After a rotation
-through the variable, a stored value that is left behind is stale.
+The services read these keys from the environment only. The services have
+no ``config`` command and no API that stores a provider key.
 
 AI voice agent providers
 ----------------------------
@@ -358,8 +355,7 @@ Telephony and messaging providers
      - ``message-manager``
 
 ``number-manager`` reads the carrier secret (``TELNYX_API_KEY`` or
-``TWILIO_AUTH_TOKEN``) from the environment only. A secret that is stored
-through the Number Provider API is not used. The ``enabled``, ``priority``
+``TWILIO_AUTH_TOKEN``) from the environment only. The ``enabled``, ``priority``
 and ``config`` of the Number Provider settings are still read from the
 database. The three variables ``TELNYX_CONNECTION_ID``,
 ``TELNYX_PROFILE_ID`` and ``TWILIO_ACCOUNT_SID`` fill a ``config`` key that
@@ -369,8 +365,7 @@ setting works with the variables alone; a value that is stored in the
 hides a changed variable, so check ``config`` after a change). ``trunk_sid``
 of Twilio has no variable and is set in the ``config``. Without the secret
 variable no number can be purchased or released and the available number
-search fails. The Number Provider API still accepts a secret, but the
-stored value is not used (see Number Provider).
+search fails. The Number Provider API does not accept a secret.
 ``message-manager`` reads its MessageBird and Telnyx keys the same way
 (``MESSAGEBIRD_API_KEY`` and ``TELNYX_API_KEY``). Without ``TELNYX_API_KEY``
 the SMS and MMS sends of ``message-manager`` fail at the provider.

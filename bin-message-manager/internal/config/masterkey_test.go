@@ -44,14 +44,13 @@ func Test_Config_removedFields(t *testing.T) {
 
 // Test_providerVariablesAreNotLoaded checks that the provider token variables are read at the time
 // of use by messageconfig and are not part of the process configuration: the load succeeds with
-// them exported, no flag exists for them, no value reaches the Config, and the master key and the
+// them exported, no flag exists for them, no value reaches the Config, and the
 // other fields are not affected.
 func Test_providerVariablesAreNotLoaded(t *testing.T) {
 	resetLoadState(t)
 
 	t.Setenv("MESSAGEBIRD_API_KEY", "provider-fake-mb")
 	t.Setenv("TELNYX_API_KEY", "provider-fake-tn")
-	t.Setenv("MESSAGE_CONFIG_ENCRYPTION_KEYS", "1:fake-master")
 	t.Setenv("DATABASE_DSN", "fake-dsn")
 	t.Setenv("REDIS_DATABASE", "3")
 
@@ -62,7 +61,7 @@ func Test_providerVariablesAreNotLoaded(t *testing.T) {
 	LoadGlobalConfig()
 
 	cfg := Get()
-	if cfg.ConfigEncryptionKeys != "1:fake-master" || cfg.DatabaseDSN != "fake-dsn" || cfg.RedisDatabase != 3 {
+	if cfg.DatabaseDSN != "fake-dsn" || cfg.RedisDatabase != 3 {
 		t.Errorf("Wrong match. the other fields are affected: %+v", cfg)
 	}
 	for _, name := range []string{"messagebird_api_key", "telnyx_api_key", "authtoken_messagebird", "authtoken_telnyx"} {
@@ -73,44 +72,5 @@ func Test_providerVariablesAreNotLoaded(t *testing.T) {
 	// none of the provider values is held by the config
 	if s := fmt.Sprintf("%+v", *cfg); strings.Contains(s, "provider-fake") {
 		t.Errorf("Wrong match. a provider value reached the config: %s", s)
-	}
-}
-
-// Test_masterKeyIsEnvOnly checks that the master key list is read from the prefixed variable only,
-// that an unprefixed variable is ignored, and that no command line flag exists for it.
-func Test_masterKeyIsEnvOnly(t *testing.T) {
-	resetLoadState(t)
-
-	t.Setenv("CONFIG_ENCRYPTION_KEYS", "9:unprefixed-must-be-ignored")
-	t.Setenv("MESSAGE_CONFIG_ENCRYPTION_KEYS", "1:prefixed-value")
-
-	cmd := &cobra.Command{}
-	if err := Bootstrap(cmd); err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	LoadGlobalConfig()
-
-	if got := Get().ConfigEncryptionKeys; got != "1:prefixed-value" {
-		t.Errorf("Wrong match. expect: the prefixed value, got: %q", got)
-	}
-	for _, name := range []string{"message_config_encryption_keys", "config_encryption_keys"} {
-		if cmd.PersistentFlags().Lookup(name) != nil {
-			t.Errorf("Wrong match. a flag %q exists for the master key list", name)
-		}
-	}
-}
-
-func Test_masterKeyUnprefixedIgnored(t *testing.T) {
-	resetLoadState(t)
-
-	t.Setenv("CONFIG_ENCRYPTION_KEYS", "9:unprefixed-must-be-ignored")
-
-	if err := Bootstrap(&cobra.Command{}); err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	LoadGlobalConfig()
-
-	if got := Get().ConfigEncryptionKeys; got != "" {
-		t.Errorf("Wrong match. expect: empty, got: %q", got)
 	}
 }

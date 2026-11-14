@@ -17,13 +17,6 @@ var (
 	once         sync.Once
 )
 
-// Names of the environment variables that the service reads without a flag.
-const (
-	// EnvConfigEncryptionKeys is the environment variable of the master key list of the stored
-	// settings.
-	EnvConfigEncryptionKeys = "BILLING_CONFIG_ENCRYPTION_KEYS"
-)
-
 // Config holds process-wide configuration values loaded from command-line
 // flags and environment variables for the service.
 type Config struct {
@@ -38,11 +31,6 @@ type Config struct {
 	PaddlePriceIDBasic        string // PaddlePriceIDBasic is the Paddle price ID for the basic plan.
 	PaddlePriceIDProfessional string // PaddlePriceIDProfessional is the Paddle price ID for the professional plan.
 
-	// ConfigEncryptionKeys is the master key list of the stored settings
-	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
-	// command line flag. A value that can not be parsed does not stop the service: the stored
-	// secrets can not be used then (they are reported as undecryptable).
-	ConfigEncryptionKeys string
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -83,12 +71,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"paddle_price_id_professional": "PADDLE_PRICE_ID_PROFESSIONAL",
 	}
 
-	// the master key list of the stored settings has no flag: a flag value would show in the
-	// process list.
-	if errBind := viper.BindEnv("billing_config_encryption_keys", EnvConfigEncryptionKeys); errBind != nil {
-		return errors.Wrapf(errBind, "could not bind the env. key: %s", EnvConfigEncryptionKeys)
-	}
-
 	for flagKey, envKey := range bindings {
 		if errBind := viper.BindPFlag(flagKey, f.Lookup(flagKey)); errBind != nil {
 			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
@@ -122,8 +104,6 @@ func LoadGlobalConfig() {
 
 			PaddlePriceIDBasic:        viper.GetString("paddle_price_id_basic"),
 			PaddlePriceIDProfessional: viper.GetString("paddle_price_id_professional"),
-
-			ConfigEncryptionKeys: viper.GetString("billing_config_encryption_keys"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

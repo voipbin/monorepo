@@ -15,8 +15,8 @@ cmd/email-manager/main.go
 ```
 
 Supporting binary:
-- `cmd/email-control/` — CLI for direct DB/cache operations, bypasses RabbitMQ RPC; `migrate` command for the schema migrations (database only); `config list|set|clear` for the stored settings of the provider credentials (database only; the service reads the environment variables, not these values).
-- `migrations/` — embedded golang-migrate SQL files (service-owned schema of `email_emails`, `email_configs` and `email_config_histories`), applied by `cmd/email-manager` right after the DB connection and before the cache and RabbitMQ.
+- `cmd/email-control/` — CLI for direct DB/cache operations, bypasses RabbitMQ RPC; `migrate` command for the schema migrations (database only).
+- `migrations/` — embedded golang-migrate SQL files (service-owned schema of `email_emails`, `email_configs` and `email_config_histories`; the code no longer reads or writes the two configs tables), applied by `cmd/email-manager` right after the DB connection and before the cache and RabbitMQ.
 
 **No SubscribeHandler.** Provider delivery status events arrive via inbound `POST /v1/hooks` webhooks forwarded through `bin-hook-manager`.
 
@@ -52,8 +52,4 @@ The `listenhandler` consumes from queue `QueueNameEmailRequest` and dispatches b
 | GET | `/v1/emails/{uuid}` | Get email details |
 | DELETE | `/v1/emails/{uuid}` | Delete email |
 | POST | `/v1/hooks` | Process provider delivery webhook (SendGrid or Mailgun) |
-| GET | `/v1/configs` | List the config keys with their resolved state (admin, no secret material), served by `configrpc` |
-| PUT | `/v1/configs/{key}/secret` | Store a secret, write-only, with an expected revision (admin; `actor_id` required) |
-| DELETE | `/v1/configs/{key}` | Delete the stored value, with an expected revision (admin; `actor_id` required) |
-| GET | `/v1/configs/{key}/histories` | Page the change history of a key, newest first |
 

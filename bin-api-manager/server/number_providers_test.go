@@ -15,7 +15,6 @@ import (
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-common-handler/pkg/requesthandler"
 	nmprovider "monorepo/bin-number-manager/models/provider"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +42,6 @@ func testNumberProviderMessage() *nmprovider.WebhookMessage {
 		Enabled:          true,
 		Priority:         10,
 		HasSecret:        true,
-		KeyVersion:       1,
 		CredentialSource: nmprovider.CredentialSourceEnv,
 		Usable:           true,
 	}
@@ -123,7 +121,7 @@ func Test_numberProvidersGet(t *testing.T) {
 		t.Fatalf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 	}
 
-	expect := `{"result":[{"provider_name":"telnyx","enabled":true,"priority":10,"has_secret":true,"key_version":1,"credential_source":"env","usable":true}],"next_page_token":""}`
+	expect := `{"result":[{"provider_name":"telnyx","enabled":true,"priority":10,"has_secret":true,"credential_source":"env","usable":true}],"next_page_token":""}`
 	if w.Body.String() != expect {
 		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", expect, w.Body.String())
 	}
@@ -164,7 +162,7 @@ func Test_numberProvidersIDGet(t *testing.T) {
 		t.Fatalf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 	}
 
-	expect := `{"provider_name":"telnyx","enabled":true,"priority":10,"has_secret":true,"key_version":1,"credential_source":"env","usable":true}`
+	expect := `{"provider_name":"telnyx","enabled":true,"priority":10,"has_secret":true,"credential_source":"env","usable":true}`
 	if w.Body.String() != expect {
 		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", expect, w.Body.String())
 	}
@@ -248,190 +246,6 @@ func Test_numberProvidersIDPut_badBody(t *testing.T) {
 	}
 }
 
-func Test_numberProvidersIDSecretPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	hook := newNumberProviderLogHook(t)
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-	a := testNumberProviderAgent()
-	r, w, accessLog, recoveryLog, ginErrors := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
-
-	mockSvc.EXPECT().NumberProviderUpdateSecret(gomock.Any(), a, "telnyx", testNumberProviderSecret).Return(testNumberProviderMessage(), nil)
-
-	req, _ := http.NewRequest("PUT", "/number_providers/telnyx/secret", bytes.NewBufferString(`{"secret":"`+testNumberProviderSecret+`"}`))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Fatalf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-	}
-
-	// the response has no secret field at all, only has_secret
-	var res map[string]any
-	if err := json.Unmarshal(w.Body.Bytes(), &res); err != nil {
-		t.Fatal(err)
-	}
-	for _, key := range []string{"secret", "secret_ciphertext", "ciphertext"} {
-		if _, ok := res[key]; ok {
-			t.Errorf("The response has the field %s", key)
-		}
-	}
-	if res["has_secret"] != true {
-		t.Errorf("Wrong match. expect: has_secret true, got: %v", res["has_secret"])
-	}
-
-	assertNoNumberProviderSecret(t, hook, w.Body.String(), accessLog.String(), recoveryLog.String())
-	if *ginErrors != 0 {
-		t.Errorf("The context holds %d errors, which the access log would print.", *ginErrors)
-	}
-	if accessLog.Len() == 0 {
-		t.Error("The access log is empty, so the secret check on it would be vacuous.")
-	}
-}
-
-// the body limit is 8 KiB: a body just below it reaches the service handler, a body above it does not
-func Test_numberProvidersIDSecretPut_bodyLimit(t *testing.T) {
-	if numberProviderMaxBodyBytes != 8192 {
-		t.Fatalf("Wrong match. expect: 8192, got: %d", numberProviderMaxBodyBytes)
-	}
-
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-	a := testNumberProviderAgent()
-	r, w, _, _, _ := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
-
-	// number-manager decides the length of the secret, so it answers 400 for this one
-	secret := strings.Repeat("a", 8000)
-	mockSvc.EXPECT().NumberProviderUpdateSecret(gomock.Any(), a, "telnyx", secret).Return(nil, requesthandler.ErrBadRequest)
-
-	req, _ := http.NewRequest("PUT", "/number_providers/telnyx/secret", bytes.NewBufferString(`{"secret":"`+secret+`"}`))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
-	}
-}
-
-func Test_numberProvidersIDSecretPut_failures(t *testing.T) {
-	tests := []struct {
-		name string
-		body string
-
-		serviceErr   error
-		expectCall   bool
-		expectStatus int
-	}{
-		{name: "malformed body holding the secret", body: `{"secret":"` + testNumberProviderSecret + `"`, expectStatus: http.StatusBadRequest},
-		{name: "wrong type", body: `{"secret":["` + testNumberProviderSecret + `"]}`, expectStatus: http.StatusBadRequest},
-		{name: "missing secret", body: `{}`, expectStatus: http.StatusBadRequest},
-		{name: "null secret", body: `{"secret":null}`, expectStatus: http.StatusBadRequest},
-		{name: "too large body", body: `{"secret":"` + testNumberProviderSecret + strings.Repeat("a", 9000) + `"}`, expectStatus: http.StatusBadRequest},
-		{name: "number-manager rejects it", body: `{"secret":"` + testNumberProviderSecret + `"}`, serviceErr: requesthandler.ErrBadRequest, expectCall: true, expectStatus: http.StatusBadRequest},
-		{name: "encryption key is not configured", body: `{"secret":"` + testNumberProviderSecret + `"}`, serviceErr: requesthandler.ErrServiceUnavailable, expectCall: true, expectStatus: http.StatusServiceUnavailable},
-		{name: "provider is unknown", body: `{"secret":"` + testNumberProviderSecret + `"}`, serviceErr: requesthandler.ErrNotFound, expectCall: true, expectStatus: http.StatusNotFound},
-		{name: "not allowed", body: `{"secret":"` + testNumberProviderSecret + `"}`, serviceErr: serviceerrors.ErrPermissionDenied, expectCall: true, expectStatus: http.StatusForbidden},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			hook := newNumberProviderLogHook(t)
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-			a := testNumberProviderAgent()
-			r, w, accessLog, recoveryLog, ginErrors := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
-
-			if tt.expectCall {
-				mockSvc.EXPECT().NumberProviderUpdateSecret(gomock.Any(), a, "telnyx", testNumberProviderSecret).Return(nil, tt.serviceErr)
-			}
-
-			req, _ := http.NewRequest("PUT", "/number_providers/telnyx/secret", bytes.NewBufferString(tt.body))
-			req.Header.Set("Content-Type", "application/json")
-			r.ServeHTTP(w, req)
-
-			if w.Code != tt.expectStatus {
-				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectStatus, w.Code)
-			}
-
-			assertNoNumberProviderSecret(t, hook, w.Body.String(), accessLog.String(), recoveryLog.String())
-			if *ginErrors != 0 {
-				t.Errorf("The context holds %d errors, which the access log would print.", *ginErrors)
-			}
-
-			// a binding error text can quote the input, so a rejected body is logged with a fixed message only
-			if !tt.expectCall {
-				for _, entry := range hook.AllEntries() {
-					if entry.Message != "Could not parse the request body." && entry.Message != "The secret is missing." {
-						t.Errorf("A rejected body was logged with an unexpected message: %q", entry.Message)
-					}
-				}
-			}
-		})
-	}
-}
-
-// a panic below the handler is caught by the recovery, whose dump must not hold the body
-func Test_numberProvidersIDSecretPut_panic(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	hook := newNumberProviderLogHook(t)
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-	a := testNumberProviderAgent()
-	r, w, accessLog, recoveryLog, _ := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
-
-	mockSvc.EXPECT().NumberProviderUpdateSecret(gomock.Any(), a, "telnyx", testNumberProviderSecret).
-		DoAndReturn(func(_ any, _ *auth.AuthIdentity, _ string, _ string) (*nmprovider.WebhookMessage, error) {
-			panic("test panic")
-		})
-
-	req, _ := http.NewRequest("PUT", "/number_providers/telnyx/secret", bytes.NewBufferString(`{"secret":"`+testNumberProviderSecret+`"}`))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-
-	if w.Code != http.StatusInternalServerError {
-		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusInternalServerError, w.Code)
-	}
-	if recoveryLog.Len() == 0 {
-		t.Error("The recovery log is empty, so the secret check on it would be vacuous.")
-	}
-
-	assertNoNumberProviderSecret(t, hook, w.Body.String(), accessLog.String(), recoveryLog.String())
-}
-
-func Test_numberProvidersIDSecretDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-	a := testNumberProviderAgent()
-	r, w, _, _, _ := newNumberProviderRouter(&server{serviceHandler: mockSvc}, a)
-
-	msg := testNumberProviderMessage()
-	msg.HasSecret = false
-	msg.KeyVersion = 0
-	msg.CredentialSource = nmprovider.CredentialSourceNone
-	msg.Usable = false
-	mockSvc.EXPECT().NumberProviderDeleteSecret(gomock.Any(), a, "telnyx").Return(msg, nil)
-
-	req, _ := http.NewRequest("DELETE", "/number_providers/telnyx/secret", nil)
-	r.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Fatalf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-	}
-
-	expect := `{"provider_name":"telnyx","enabled":true,"priority":10,"has_secret":false,"key_version":0,"credential_source":"none","usable":false}`
-	if w.Body.String() != expect {
-		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", expect, w.Body.String())
-	}
-}
-
 // every route answers 401 without an auth identity, before any service handler call
 func Test_numberProviders_unauthenticated(t *testing.T) {
 	routes := []struct {
@@ -442,8 +256,6 @@ func Test_numberProviders_unauthenticated(t *testing.T) {
 		{"GET", "/number_providers", ""},
 		{"GET", "/number_providers/telnyx", ""},
 		{"PUT", "/number_providers/telnyx", `{"enabled":true}`},
-		{"PUT", "/number_providers/telnyx/secret", `{"secret":"` + testNumberProviderSecret + `"}`},
-		{"DELETE", "/number_providers/telnyx/secret", ""},
 	}
 
 	for _, route := range routes {

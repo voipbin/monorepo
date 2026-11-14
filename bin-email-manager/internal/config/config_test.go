@@ -221,7 +221,6 @@ func Test_Bootstrap_providerVariablesAreNotBoundToConfig(t *testing.T) {
 	t.Setenv("MAILGUN_WEBHOOK_SIGNING_KEY", "synthetic-signing")
 	t.Setenv("RABBITMQ_ADDRESS", "amqp://test-rabbitmq:5672")
 	t.Setenv("REDIS_DATABASE", "3")
-	t.Setenv("EMAIL_CONFIG_ENCRYPTION_KEYS", "1:synthetic-master")
 
 	cmd := &cobra.Command{}
 	if err := Bootstrap(cmd); err != nil {
@@ -240,7 +239,7 @@ func Test_Bootstrap_providerVariablesAreNotBoundToConfig(t *testing.T) {
 	}
 
 	cfg := Get()
-	if cfg.RabbitMQAddress != "amqp://test-rabbitmq:5672" || cfg.RedisDatabase != 3 || cfg.ConfigEncryptionKeys != "1:synthetic-master" {
+	if cfg.RabbitMQAddress != "amqp://test-rabbitmq:5672" || cfg.RedisDatabase != 3 {
 		t.Errorf("Wrong match. the other fields were affected: %+v", cfg)
 	}
 	if cfg.DatabaseDSN != "" || cfg.RedisAddress != "" || cfg.RedisPassword != "" {

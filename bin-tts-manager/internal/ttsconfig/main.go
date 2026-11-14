@@ -1,7 +1,6 @@
-// Package ttsconfig wires the configuration of bin-tts-manager: the handler of the stored settings
-// (the master key and the registry, used by the config commands and the admin API) and the
-// suppliers that hand the provider credentials to the handlers at the time of use. The credentials
-// come from the environment only; the stored settings are not read.
+// Package ttsconfig wires the configuration of bin-tts-manager: the suppliers that hand the
+// provider credentials to the handlers at the time of use. The credentials come from the
+// environment only.
 package ttsconfig
 
 import (
@@ -11,17 +10,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-common-handler/pkg/confighandler"
 	"monorepo/bin-common-handler/pkg/envsecret"
-	"monorepo/bin-common-handler/pkg/secretcrypto"
 
-	"monorepo/bin-tts-manager/internal/config"
 	"monorepo/bin-tts-manager/internal/configkeys"
 )
-
-// maxSecretPlaintext is the longest secret the cipher accepts. It is the second guard behind the
-// MaxLen of each key and fits the column (2048 bytes minus nonce and tag).
-const maxSecretPlaintext = 2020
 
 // ErrKeyUnavailable is returned when a provider key is refused: an AWS pair of which only one
 // variable is set. It is never replaced by an empty value. A key that is simply not configured is
@@ -40,30 +32,8 @@ type KeyFunc func(ctx context.Context) (string, error)
 // error mean "not configured".
 type AWSCredentialsFunc func(ctx context.Context) (accessKey, secretKey string, err error)
 
-// New creates the config handler of the service on the given store.
-//
-// An unparsable master key list never stops the service: the error is logged (without any key
-// text) and the handler works without a master key. Secrets can not be written then, and a stored
-// secret is reported as undecryptable. The only error is an invalid registry, which is a
-// programming error.
-func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Option) (confighandler.Handler, error) {
-	reg, err := configkeys.NewRegistry()
-	if err != nil {
-		return nil, errors.Wrap(err, "could not create the config registry")
-	}
-
-	crypto, errCrypto := secretcrypto.New(cfg.ConfigEncryptionKeys, secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
-	if errCrypto != nil {
-		logrus.WithField("func", "New").Errorf("The %s value is invalid, so stored secrets can not be used. err: %v", config.EnvConfigEncryptionKeys, errCrypto)
-		crypto, _ = secretcrypto.New("", secretcrypto.WithMaxPlaintext(maxSecretPlaintext))
-	}
-
-	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
-}
-
 // ElevenlabsKey returns the supplier of the ElevenLabs key. The key is the value of
-// ELEVENLABS_API_KEY at the time of use; the supplier keeps nothing and the stored value is not
-// read. A variable that is not set, is empty or holds an unresolved placeholder is not configured:
+// ELEVENLABS_API_KEY at the time of use; the supplier keeps nothing. A variable that is not set, is empty or holds an unresolved placeholder is not configured:
 // an empty value and no error.
 func ElevenlabsKey() KeyFunc {
 	return func(ctx context.Context) (string, error) {
@@ -74,7 +44,7 @@ func ElevenlabsKey() KeyFunc {
 }
 
 // AWSCredentials returns the supplier of the AWS key pair. It reads both variables on every call
-// and keeps nothing; the stored settings are not read. Both set: the pair. Neither set (not set,
+// and keeps nothing. Both set: the pair. Neither set (not set,
 // empty or an unresolved placeholder): not configured, empty values and no error. Exactly one
 // set: ErrKeyUnavailable wrapping ErrAWSPairIncomplete, a half pair is refused.
 func AWSCredentials() AWSCredentialsFunc {

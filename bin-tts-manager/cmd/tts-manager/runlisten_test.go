@@ -32,7 +32,7 @@ func Test_runListenNormal_success(t *testing.T) {
 		},
 	)
 
-	if err := runListenNormal(mockSock, nil, nil, nil, nil); err != nil {
+	if err := runListenNormal(mockSock, nil, nil, nil); err != nil {
 		t.Fatalf("Wrong match. expected: nil, got: %v", err)
 	}
 
@@ -51,7 +51,7 @@ func Test_runListenNormal_queueCreateError(t *testing.T) {
 	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockSock.EXPECT().QueueCreate(testQueueName, "normal").Return(errors.New("boom"))
 
-	err := runListenNormal(mockSock, nil, nil, nil, nil)
+	err := runListenNormal(mockSock, nil, nil, nil)
 	if err == nil {
 		t.Fatal("Wrong match. expected: error, got: nil")
 	}
@@ -115,7 +115,7 @@ func Test_runListen_panicsOnNormalFailure(t *testing.T) {
 		}
 	}()
 
-	runListen(mockSock, nil, nil, nil, "pod-1", nil)
+	runListen(mockSock, nil, nil, nil, "pod-1")
 }
 
 // Test_runListen_panicsOnPodFailure verifies runListen panics when the
@@ -150,7 +150,7 @@ func Test_runListen_panicsOnPodFailure(t *testing.T) {
 		}
 	}()
 
-	runListen(mockSock, nil, nil, nil, "pod-1", nil)
+	runListen(mockSock, nil, nil, nil, "pod-1")
 }
 
 // Test_runListenPod_configRequestNotServed verifies the pod queue has no config server: a config
@@ -183,7 +183,7 @@ func Test_runListenPod_configRequestNotServed(t *testing.T) {
 		t.Fatal("ConsumeRPC was not reached")
 	}
 
-	res, err := cb(&sock.Request{URI: "/v1/configs", Method: sock.RequestMethodGet})
+	res, err := cb(&sock.Request{URI: "/v1/unknown", Method: sock.RequestMethodGet})
 	if err != nil || res == nil {
 		t.Fatalf("Wrong match. got: %v %v", res, err)
 	}

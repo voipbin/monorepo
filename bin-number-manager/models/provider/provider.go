@@ -22,9 +22,6 @@ var (
 	// error, timeout, 5xx, lookup failure after the order). The purchase must not fall back.
 	ErrPurchaseUnconfirmed = errors.New("purchase result is unconfirmed")
 
-	// ErrSecretKeyNotConfigured means no encryption key is configured, so a secret cannot be stored.
-	ErrSecretKeyNotConfigured = errors.New("secret encryption key is not configured")
-
 	// ErrNotImplemented means the provider does not implement the operation.
 	ErrNotImplemented = errors.New("not implemented by the provider")
 
@@ -71,25 +68,10 @@ type Provider struct {
 	Priority int               `json:"priority" db:"priority"`
 	Config   map[string]string `json:"config,omitempty" db:"config,json"`
 
-	SecretCiphertext []byte `json:"-" db:"secret_ciphertext"`
-	KeyVersion       int    `json:"key_version" db:"key_version"`
+	UpdatedBy *uuid.UUID `json:"updated_by,omitempty" db:"updated_by,uuid"`
 
-	UpdatedBy       *uuid.UUID `json:"updated_by,omitempty" db:"updated_by,uuid"`
-	SecretUpdatedBy *uuid.UUID `json:"secret_updated_by,omitempty" db:"secret_updated_by,uuid"`
-
-	TMSecretUpdate *time.Time `json:"tm_secret_update,omitempty" db:"tm_secret_update"`
-	TMCreate       *time.Time `json:"tm_create,omitempty" db:"tm_create"`
-	TMUpdate       *time.Time `json:"tm_update,omitempty" db:"tm_update"`
-}
-
-// String implements fmt.Stringer and hides the ciphertext.
-func (p Provider) String() string {
-	return "Provider{ProviderName:" + string(p.ProviderName) + ", SecretCiphertext:" + redacted + "}"
-}
-
-// GoString implements fmt.GoStringer and hides the ciphertext.
-func (p Provider) GoString() string {
-	return p.String()
+	TMCreate *time.Time `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update,omitempty" db:"tm_update"`
 }
 
 // Info is the admin-facing view of a provider: the stored row merged with the registry
@@ -102,13 +84,10 @@ type Info struct {
 	Config   map[string]string `json:"config,omitempty"`
 
 	HasSecret        bool             `json:"has_secret"`
-	KeyVersion       int              `json:"key_version"`
 	CredentialSource CredentialSource `json:"credential_source"`
 	Usable           bool             `json:"usable"`
 
-	UpdatedBy       *uuid.UUID `json:"updated_by,omitempty"`
-	SecretUpdatedBy *uuid.UUID `json:"secret_updated_by,omitempty"`
+	UpdatedBy *uuid.UUID `json:"updated_by,omitempty"`
 
-	TMUpdate       *time.Time `json:"tm_update,omitempty"`
-	TMSecretUpdate *time.Time `json:"tm_secret_update,omitempty"`
+	TMUpdate *time.Time `json:"tm_update,omitempty"`
 }

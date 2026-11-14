@@ -638,7 +638,7 @@ Services receive configuration through multiple sources:
          |       o Port number
          |       o Log level
          |
-         +-------> Database / Service Config
+         +-------> Database
          |       o Feature flags
          |       o Business logic config
          |

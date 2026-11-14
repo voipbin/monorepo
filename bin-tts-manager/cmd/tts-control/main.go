@@ -8,7 +8,6 @@ import (
 
 	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -33,20 +32,12 @@ func main() {
 	}
 }
 
-// openTTSHandler creates the handler of the create command and the function that releases what it
-// opened. Tests replace it.
+// openTTSHandler creates the handler of the create command. Tests replace it.
 var openTTSHandler = initHandler
 
-// initHandler connects to the database as before and creates the TTS handler. The provider keys are
-// read the same way as the daemon reads them: from the environment only. The returned function
-// closes the database.
-func initHandler() (ttshandler.TTSHandler, func(), error) {
-	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "could not connect to the database")
-	}
-	closeFunc := func() { commondatabasehandler.Close(db) }
-
+// initHandler creates the TTS handler. The provider keys are read the same way as the daemon reads
+// them: from the environment only. The handler does not use the database.
+func initHandler() (ttshandler.TTSHandler, error) {
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
@@ -61,11 +52,10 @@ func initHandler() (ttshandler.TTSHandler, func(), error) {
 	)
 
 	if handler == nil {
-		closeFunc()
-		return nil, nil, errors.New("failed to create TTS handler")
+		return nil, errors.New("failed to create TTS handler")
 	}
 
-	return handler, closeFunc, nil
+	return handler, nil
 }
 
 func initCommand() *cobra.Command {
@@ -85,7 +75,6 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdCreate())
 
 	cmdRoot.AddCommand(cmdSub)
-	cmdRoot.AddCommand(cmdConfig())
 	// the migrate commands open only the database, so they do not depend on Redis or RabbitMQ
 	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {
 		return migrationhandler.New(config.Get().DatabaseDSN, migrations.FS, migrations.VersionTable)
@@ -175,11 +164,10 @@ func runCreate(cmd *cobra.Command, args []string) error {
 
 	voiceID := viper.GetString("voice-id")
 
-	handler, closeFunc, err := openTTSHandler()
+	handler, err := openTTSHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
-	defer closeFunc()
 
 	res, err := handler.Create(
 		context.Background(),

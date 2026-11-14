@@ -47,7 +47,7 @@ REDIS_ADDRESS="127.0.0.1:6379" \
 
 ## Database Migrations
 
-The schema of `billing_accounts`, `billing_billings`, `billing_failed_events`, `billing_configs` and `billing_config_histories` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`, shared code in `bin-common-handler/pkg/migrationhandler`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax. The full rules (file naming, one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract, baseline text rules) are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md).
+The schema of `billing_accounts`, `billing_billings`, `billing_failed_events`, `billing_configs` and `billing_config_histories` is owned by this service and applied at startup (golang-migrate, embedded with `go:embed`, shared code in `bin-common-handler/pkg/migrationhandler`). It does not use Alembic. Tested engines: MariaDB and MySQL 8.0, so do not use engine specific syntax. The full rules (file naming, one DDL statement per file, `-- DESTRUCTIVE:` and `-- DOWN-LOSSY:` markers, immutable merged files, expand/contract, baseline text rules) are in [docs/workflows/service-owned-migrations.md](../docs/workflows/service-owned-migrations.md). `billing_configs` and `billing_config_histories` are no longer read or written by the code.
 
 - Files: `migrations/NNNNNN_<table>_<verb>_<type>_<items>.up.sql` and `.down.sql`. `000001_baseline` is the schema at the time of the conversion (`CREATE TABLE IF NOT EXISTS`, no table options; its down is the no-op `SELECT 1`). Version table: `billing_schema_migrations`.
 - `cmd/billing-manager` runs `migrationhandler.Run` right after the database connection, before the cache and RabbitMQ. Failure stops the start (non-zero exit).
@@ -58,11 +58,11 @@ The schema of `billing_accounts`, `billing_billings`, `billing_failed_events`, `
 
 ## Paddle credentials are read from the environment
 
-The Paddle API key (`PADDLE_API_KEY`) and the Paddle webhook secret (`PADDLE_WEBHOOK_SECRET`) are read from environment variables, for every use, through `internal/billingconfig` (`Supplier`, `PaddleKeys`, which use `bin-common-handler/pkg/envsecret`). The names are the `Env...` constants of `internal/configkeys`. Never cache the values and never read the stored settings (`paddle.api_key`, `paddle.webhook_secret_key`, table `billing_configs`) for a use: the stored settings code and the admin API stay until a later removal, `billingconfig.New` still builds that handler with a nil environment lookup, and the keys declare no `Env` (the admin listing must not suggest an environment source). A variable that is unset, empty or an unresolved placeholder (`[[...`) is not configured: the supplier returns an empty value without an error, and the caller answers with `paddlehandler.ErrCredentialNotConfigured`. `billingconfig.LogStates` logs the state of each variable once at start (never a value).
+The Paddle API key (`PADDLE_API_KEY`) and the Paddle webhook secret (`PADDLE_WEBHOOK_SECRET`) are read from environment variables, for every use, through `internal/billingconfig` (`Supplier`, `PaddleKeys`, which use `bin-common-handler/pkg/envsecret`). The names are the `Env...` constants of `internal/configkeys`. Never cache the values. Nothing is stored in the database and no admin API writes them. A variable that is unset, empty or an unresolved placeholder (`[[...`) is not configured: the supplier returns an empty value without an error, and the caller answers with `paddlehandler.ErrCredentialNotConfigured`. `billingconfig.LogStates` logs the state of each variable once at start (never a value).
 
 - The API key is read by `paddlehandler.CreatePortalSession` before the HTTP request is built; a key that is not configured means no request leaves.
 - `processV1HooksPaddlePost` calls `paddleHandler.VerifyWebhook` after the hook envelope is parsed. This is the only signature check (the hook service does not verify it). No secret is `ErrCredentialNotConfigured` and a 500 (fail closed), a rejected signature is 401. Never log the signature or the body in this path: use a new `WithField("func", ...)` entry, not the entry that holds `"request": m`.
-- The stored settings can be written with `billing-control config` or the admin API (`/service_configs/billing`, served as `/v1/configs` by the shared `configrpc`), but they have no effect on reads; `config set` and `config clear` print a note that names the variable. That route is handled at the top of `processRequest`, before the request log entry exists, and must never log the request, because the body of a secret write is the secret. The master key list is `BILLING_CONFIG_ENCRYPTION_KEYS` (environment only, no flag).
+- The code does not read `BILLING_CONFIG_ENCRYPTION_KEYS`; the deployment definition still passes it until a later change removes the line.
 - The `PaddleAPIKey` config field and the `--paddle_api_key` flag do not exist.
 - Both variables must exist in the deployment before this version is deployed; rollback is the previous image together with the previous deployment definition. See docs/operations.md, "Paddle credentials".
 
@@ -86,5 +86,5 @@ go test -v ./pkg/accounthandler -run Test_IsValidBalance
 - `billing_accounts` — billing accounts with balance (soft-delete with `tm_delete`)
 - `billing_billings` — billing records per event (soft-delete with `tm_delete`)
 - `billing_failed_events` — retry queue (hard-deleted on success)
-- `billing_configs`: stored platform settings (the Paddle credentials, secrets encrypted)
-- `billing_config_histories`: change history of the stored settings (no secret material)
+- `billing_configs`: no longer read or written by the code (earlier stored platform settings)
+- `billing_config_histories`: no longer read or written by the code

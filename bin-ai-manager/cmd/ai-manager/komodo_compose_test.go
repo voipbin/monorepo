@@ -124,14 +124,13 @@ func Test_komodoComposeHasThePlatformKeyVariables(t *testing.T) {
 	}
 }
 
-// The master keys and the other settings stay as they are.
+// The customer owned master keys and the other settings stay as they are.
 func Test_komodoComposeKeepsTheOtherLines(t *testing.T) {
 	env := composeEnvironment(t)
 
 	expect := map[string]string{
 		"MCP_SECRET_ENCRYPTION_KEYS":      "[[BIN_MANAGER__MCP_SECRET_ENCRYPTION_KEYS]]",
 		"ENGINE_BASE_KEY_ENCRYPTION_KEYS": "[[BIN_MANAGER__AI_MANAGER_ENGINE_BASE_KEY_ENCRYPTION_KEYS]]",
-		"AI_CONFIG_ENCRYPTION_KEYS":       "[[BIN_MANAGER__AI_MANAGER_CONFIG_ENCRYPTION_KEYS]]",
 		"LOCAL_LLM_MODELS":                "[[BIN_MANAGER__LOCAL_LLM_MODELS]]",
 	}
 	for name, want := range expect {

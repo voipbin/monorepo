@@ -7,7 +7,6 @@ import (
 	"database/sql"
 	"errors"
 
-	"monorepo/bin-common-handler/pkg/confighandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-tts-manager/models/speaking"
 	"monorepo/bin-tts-manager/models/streaming"
@@ -31,9 +30,6 @@ type DBHandler interface {
 	SpeakingGets(ctx context.Context, token string, size uint64, filters map[speaking.Field]any) ([]*speaking.Speaking, error)
 	SpeakingUpdate(ctx context.Context, id uuid.UUID, fields map[speaking.Field]any) error
 	SpeakingDelete(ctx context.Context, id uuid.UUID) error
-
-	// ConfigStore returns the store of the configs tables (provider credentials).
-	ConfigStore() confighandler.Store
 }
 
 type dbHandler struct {

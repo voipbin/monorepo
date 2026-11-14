@@ -12,7 +12,6 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 
-	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -150,12 +149,7 @@ func run(db *sql.DB) error {
 	dbHandler := dbhandler.NewDBHandler(db, cacheHandler)
 
 	// the provider keys are read per use from the environment (AWS_ACCESS_KEY, AWS_SECRET_KEY,
-	// ELEVENLABS_API_KEY). The handler of the stored settings serves the config commands and the
-	// admin API only; its values are not read by a request.
-	configHandler, err := ttsconfig.New(config.Get(), dbHandler.ConfigStore())
-	if err != nil {
-		return errors.Wrapf(err, "could not create the config handler")
-	}
+	// ELEVENLABS_API_KEY).
 	ttsconfig.LogStates()
 	awsCreds := ttsconfig.AWSCredentials()
 	elevenlabsKey := ttsconfig.ElevenlabsKey()
@@ -173,16 +167,16 @@ func run(db *sql.DB) error {
 	speakingHandler := speakinghandler.NewSpeakingHandler(dbHandler, streamingHandler, notifyHandler, podID)
 
 	// run listener
-	go runListen(sockHandler, ttsHandler, streamingHandler, speakingHandler, podID, configrpc.NewServer(configHandler, serviceName))
+	go runListen(sockHandler, ttsHandler, streamingHandler, speakingHandler, podID)
 
 	log.Debug("All handlers started successfully")
 	return nil
 }
 
 // runListen run the listener
-func runListen(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, speakingHandler speakinghandler.SpeakingHandler, podID string, configServer *configrpc.Server) {
+func runListen(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, speakingHandler speakinghandler.SpeakingHandler, podID string) {
 
-	if errRun := runListenNormal(sockHandler, ttsHandler, streamingHandler, speakingHandler, configServer); errRun != nil {
+	if errRun := runListenNormal(sockHandler, ttsHandler, streamingHandler, speakingHandler); errRun != nil {
 		panic(errors.Wrapf(errRun, "could not run listen handler in normal mode"))
 	}
 
@@ -191,9 +185,9 @@ func runListen(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHan
 	}
 }
 
-func runListenNormal(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, speakingHandler speakinghandler.SpeakingHandler, configServer *configrpc.Server) error {
+func runListenNormal(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, speakingHandler speakinghandler.SpeakingHandler) error {
 
-	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler, speakingHandler, configServer)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler, speakingHandler)
 
 	// run
 	if errRun := listenHandler.Run(string(commonoutline.QueueNameTTSRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
@@ -203,10 +197,9 @@ func runListenNormal(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.
 	return nil
 }
 
-// runListenPod run the listener of the queue of this pod. It carries the streaming control only, so
-// it has no config server: a config request on it is answered with a fixed 404.
+// runListenPod run the listener of the queue of this pod. It carries the streaming control only.
 func runListenPod(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTSHandler, streamingHandler streaminghandler.StreamingHandler, speakingHandler speakinghandler.SpeakingHandler, podID string) error {
-	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler, speakingHandler, nil)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler, streamingHandler, speakingHandler)
 
 	queueName := fmt.Sprintf("%s.%s", commonoutline.QueueNameTTSRequest, podID)
 	if err := listenHandler.Run(queueName, string(commonoutline.QueueNameDelay)); err != nil {

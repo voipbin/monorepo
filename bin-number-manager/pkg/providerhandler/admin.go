@@ -2,10 +2,8 @@ package providerhandler
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -33,11 +31,8 @@ func (r *resolved) toInfo() *provider.Info {
 
 	if r.row != nil {
 		res.Config = r.row.Config
-		res.KeyVersion = r.row.KeyVersion
 		res.UpdatedBy = r.row.UpdatedBy
-		res.SecretUpdatedBy = r.row.SecretUpdatedBy
 		res.TMUpdate = r.row.TMUpdate
-		res.TMSecretUpdate = r.row.TMSecretUpdate
 	}
 
 	return res
@@ -128,10 +123,9 @@ func validateConfig(desc Descriptor, config map[string]string) error {
 }
 
 // mergeConfig merges the changes into the config of the row: a key with an empty value is
-// deleted. A row that holds a stored secret (which is not used for a credential, but is part of the
-// row) must keep its required keys. The variables that fill an empty config key are not part of the
-// row and are not counted here.
-func mergeConfig(desc Descriptor, row *provider.Provider, changes map[string]string) (map[string]string, error) {
+// deleted. The variables that fill an empty config key are not part of the row. Whether the
+// provider can be used without a required key is decided by the resolution (usable).
+func mergeConfig(row *provider.Provider, changes map[string]string) map[string]string {
 	merged := map[string]string{}
 	for k, v := range row.Config {
 		merged[k] = v
@@ -144,13 +138,7 @@ func mergeConfig(desc Descriptor, row *provider.Provider, changes map[string]str
 		}
 	}
 
-	if hasDBSecret(row) {
-		if key, missing := requiredConfigMissing(desc, merged); missing {
-			return nil, invalid("the config misses a required key: %s", key)
-		}
-	}
-
-	return merged, nil
+	return merged
 }
 
 // Update changes the enabled flag, the priority and the config of the provider.
@@ -199,12 +187,7 @@ func (h *providerHandler) Update(ctx context.Context, name number.ProviderName, 
 		changed = append(changed, "priority")
 	}
 	if len(config) > 0 {
-		merged, err := mergeConfig(desc, row, config)
-		if err != nil {
-			return nil, err
-		}
-
-		fields[provider.FieldConfig] = merged
+		fields[provider.FieldConfig] = mergeConfig(row, config)
 		changed = append(changed, "config")
 	}
 
@@ -212,100 +195,6 @@ func (h *providerHandler) Update(ctx context.Context, name number.ProviderName, 
 		return nil, fmt.Errorf("could not update the provider row: %w", err)
 	}
 	log.WithField("changed", changed).Info("The provider setting has been changed.")
-
-	h.warnIfNoPurchaseCandidate(ctx)
-
-	return h.Get(ctx, name)
-}
-
-// UpdateSecret stores the secret of the provider, encrypted under the latest key.
-func (h *providerHandler) UpdateSecret(ctx context.Context, name number.ProviderName, actor uuid.UUID, secret string) (*provider.Info, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "UpdateSecret",
-		"provider_name": name,
-		"actor_id":      actor,
-	})
-
-	desc, ok := h.registry[name]
-	if !ok {
-		return nil, fmt.Errorf("unknown provider. provider_name: %s: %w", name, dbhandler.ErrNotFound)
-	}
-	if err := h.validateActor(actor); err != nil {
-		return nil, err
-	}
-	// a secret pasted with a trailing newline or spaces would break the Authorization header
-	secret = strings.TrimSpace(secret)
-	if secret == "" {
-		return nil, invalid("secret is required")
-	}
-	if len(secret) > maxSecretBytes {
-		return nil, invalid("secret is too long")
-	}
-
-	// encrypt first, so that a missing key does not leave a row behind
-	ciphertext, keyVersion, err := encryptSecret(h.crypto, secret)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := h.ensureRow(ctx, name); err != nil {
-		return nil, err
-	}
-	row, err := h.db.NumberProviderGet(ctx, name)
-	if err != nil {
-		return nil, fmt.Errorf("could not get the provider row: %w", err)
-	}
-	if key, missing := requiredConfigMissing(desc, row.Config); missing {
-		return nil, invalid("set the config first, it misses a required key: %s", key)
-	}
-
-	fields := map[provider.Field]any{
-		provider.FieldSecretCiphertext: ciphertext,
-		provider.FieldKeyVersion:       keyVersion,
-		provider.FieldSecretUpdatedBy:  actor,
-		provider.FieldTMSecretUpdate:   h.utilHandler.TimeNow(),
-	}
-	if err := h.db.NumberProviderUpdate(ctx, name, fields); err != nil {
-		return nil, fmt.Errorf("could not update the provider secret: %w", err)
-	}
-	log.WithField("key_version", keyVersion).Info("The provider secret has been changed.")
-
-	h.warnIfNoPurchaseCandidate(ctx)
-
-	return h.Get(ctx, name)
-}
-
-// DeleteSecret removes the stored secret of the row. The stored secret is not used for a credential, so
-// the credential state afterwards is that of the environment: the source stays env while the secret
-// variable is set, and is none otherwise.
-func (h *providerHandler) DeleteSecret(ctx context.Context, name number.ProviderName, actor uuid.UUID) (*provider.Info, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "DeleteSecret",
-		"provider_name": name,
-		"actor_id":      actor,
-	})
-
-	if _, ok := h.registry[name]; !ok {
-		return nil, fmt.Errorf("unknown provider. provider_name: %s: %w", name, dbhandler.ErrNotFound)
-	}
-	if err := h.validateActor(actor); err != nil {
-		return nil, err
-	}
-
-	fields := map[provider.Field]any{
-		provider.FieldSecretCiphertext: []byte(nil),
-		provider.FieldKeyVersion:       0,
-		provider.FieldSecretUpdatedBy:  actor,
-		provider.FieldTMSecretUpdate:   h.utilHandler.TimeNow(),
-	}
-	if err := h.db.NumberProviderUpdate(ctx, name, fields); err != nil {
-		// ErrNotFound (no row) is passed through
-		if errors.Is(err, dbhandler.ErrNotFound) {
-			return nil, err
-		}
-		return nil, fmt.Errorf("could not delete the provider secret: %w", err)
-	}
-	log.Info("The provider secret has been deleted.")
 
 	h.warnIfNoPurchaseCandidate(ctx)
 

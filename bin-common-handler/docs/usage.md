@@ -41,23 +41,15 @@ rootCmd.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrat
 }))
 ```
 
-### Stored settings and secrets (`secretcrypto`, `confighandler`)
+### Platform secrets (`envsecret`) and customer secrets (`secretcrypto`)
 
 ```go
-reg, _ := confighandler.NewRegistry(keys)          // declarations: name, kind, type, env name
-crypto, _ := secretcrypto.New(masterKeyList, secretcrypto.WithMaxPlaintext(2020))
-h := confighandler.NewHandler(reg, store, crypto, envLookup)
-secret, resolved, err := h.Secret(ctx, "provider.api_key") // db, then env, then default
+value, state := envsecret.Lookup("OPENAI_API_KEY") // trimmed value and state (Unset, Set, Placeholder)
 ```
 
-- The ai, billing, email, message, pipecat, transcribe and tts services declare no environment name and pass no environment lookup. They read their platform secrets from environment variables through `pkg/envsecret` and do not read the stored values.
-- The service provides the `Store` (two tables: `<svc>_configs` and `<svc>_config_histories`) and the migrations; the library provides the registry, the resolver and the cipher. Reference: `bin-email-manager/internal/configkeys`, `internal/emailconfig`, `pkg/dbhandler/config_store.go`.
-- A read error is an error, not "no row". A stored secret that can not be decrypted is never replaced by the environment value.
-- A general on/off flag is not a setting of this library; bool keys exist only as a provider selection inside an atomic group.
-- Writes take `confighandler.ExpectRevision(n)`: the write succeeds only when the stored revision is `n` (0 means no row), is attempted once, and returns `ErrStale` (wrapping `ErrConflict`) otherwise. `Histories` pages the change history newest first with a (tm_create, id) cursor, and the `Store` implements `ListHistories` (the key index must serve it).
-- `pkg/confighandler/configrpc` serves `/v1/configs` of a service on its listener (`Server.Match`/`Handle`) and owns the wire models, the log-safe copy of a request (`LogSafe`) and the error mapping. The listener must log only `LogSafe(m)` or nothing of the request (bin-ai-manager routes these requests before its request log entry exists and logs nothing of them). `requesthandler.ConfigV1*` is the client; adding a service is one case in `requesthandler/config.go`, one name in the api-manager service handler and the mount of `configrpc` in the listener of the service (bin-email-manager, bin-ai-manager, bin-message-manager, bin-tts-manager, bin-transcribe-manager, bin-billing-manager and bin-pipecat-manager are mounted).
-- `pkg/confighandler/storetest` holds an in-memory store and the contract every `Store` must pass.
-- `secretcrypto` is used by bin-email-manager, bin-number-manager, bin-ai-manager, bin-tts-manager, bin-transcribe-manager, bin-billing-manager and bin-pipecat-manager. `confighandler` was added while only bin-email-manager used it. That is a deviation from the 3 services rule, not a precedent.
+- The platform secrets of the services (ai, billing, email, message, number, transcribe, tts; the pipecat runner reads its own environment) are read from environment variables through `pkg/envsecret` for every use. A variable that is not set, is empty or holds an unresolved deployment placeholder (`[[...`) is not configured. Nothing is stored in a database table and no admin API writes them.
+- `secretcrypto` encrypts customer owned secrets at rest (the engine base key and the MCP server and OAuth secrets of bin-ai-manager). The master key lists are `ENGINE_BASE_KEY_ENCRYPTION_KEYS` and `MCP_SECRET_ENCRYPTION_KEYS`. After the removal of the stored platform settings, bin-ai-manager is its only service user, which is a deviation from the 3 services rule.
+- The variables `<SVC>_CONFIG_ENCRYPTION_KEYS` and `NUMBER_SECRET_ENCRYPTION_KEYS` are not read by the code. The deployment definitions still carry them until a later change removes the lines.
 
 ## Common Patterns
 

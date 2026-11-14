@@ -558,18 +558,13 @@
 <li class="toctree-l2"><a class="reference internal" href="billing_struct_billing.html">Billing</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="service_config.html">Service Config</a><input aria-label="Toggle navigation of Service Config" class="toctree-checkbox" id="toctree-checkbox-41" name="toctree-checkbox-41" role="switch" type="checkbox"/><label for="toctree-checkbox-41"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="service_config_overview.html">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="service_config_struct_service_config.html">Service Config</a></li>
-</ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="storage.html">Storage</a><input aria-label="Toggle navigation of Storage" class="toctree-checkbox" id="toctree-checkbox-42" name="toctree-checkbox-42" role="switch" type="checkbox"/><label for="toctree-checkbox-42"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="storage.html">Storage</a><input aria-label="Toggle navigation of Storage" class="toctree-checkbox" id="toctree-checkbox-41" name="toctree-checkbox-41" role="switch" type="checkbox"/><label for="toctree-checkbox-41"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="storage_overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="storage_struct_account.html">Account</a></li>
 <li class="toctree-l2"><a class="reference internal" href="storage_struct_file.html">File</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="tag.html">Tag</a><input aria-label="Toggle navigation of Tag" class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" role="switch" type="checkbox"/><label for="toctree-checkbox-43"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tag.html">Tag</a><input aria-label="Toggle navigation of Tag" class="toctree-checkbox" id="toctree-checkbox-42" name="toctree-checkbox-42" role="switch" type="checkbox"/><label for="toctree-checkbox-42"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="tag_overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tag_struct_tag.html">Tag</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tag_tutorial.html">Tutorial</a></li>
@@ -578,7 +573,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="architecture.html">Architecture</a><input aria-label="Toggle navigation of Architecture" class="toctree-checkbox" id="toctree-checkbox-44" name="toctree-checkbox-44" role="switch" type="checkbox"/><label for="toctree-checkbox-44"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="architecture.html">Architecture</a><input aria-label="Toggle navigation of Architecture" class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" role="switch" type="checkbox"/><label for="toctree-checkbox-43"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="architecture_overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="architecture_backend.html">Backend Microservices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="architecture_communication.html">Inter-Service Communication</a></li>
@@ -591,7 +586,7 @@
 <li class="toctree-l2"><a class="reference internal" href="architecture_security.html">Security Architecture</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="websocket.html">Websocket</a><input aria-label="Toggle navigation of Websocket" class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" role="switch" type="checkbox"/><label for="toctree-checkbox-45"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="websocket.html">Websocket</a><input aria-label="Toggle navigation of Websocket" class="toctree-checkbox" id="toctree-checkbox-44" name="toctree-checkbox-44" role="switch" type="checkbox"/><label for="toctree-checkbox-44"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="websocket_overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="websocket_struct.html">Structures</a></li>
 <li class="toctree-l2"><a class="reference internal" href="websocket_tutorial.html">Tutorial</a></li>
@@ -1597,7 +1592,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><code class="docutils literal notranslate"><span class="pre">destinations</span></code> (Array of Object): Array of destination addresses. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">subject</span></code> (String): Email subject line.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">content</span></code> (String): Email body content. Supports <code class="docutils literal notranslate"><span class="pre">${variable}</span></code> substitution.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">attachments</span></code> (Array of Object, optional): Attachments to include with the email, at most 5 and at most 18 MiB in total. Each is <code class="docutils literal notranslate"><span class="pre">{"reference_type":</span> <span class="pre">"recording"</span> <span class="pre">|</span> <span class="pre">"file",</span> <span class="pre">"reference_id":</span> <span class="pre">"&lt;uuid&gt;"}</span></code> and must belong to the customer of the flow. See <a class="reference internal" href="email_struct_attachment.html#email-struct-attachment"><span class="std std-ref">Attachment</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">attachments</span></code> (Array of Object, optional): Attachments to include with the email, at most 5 and at most 18 MiB in total. Each is <code class="docutils literal notranslate"><span class="pre">{&quot;reference_type&quot;:</span> <span class="pre">&quot;recording&quot;</span> <span class="pre">|</span> <span class="pre">&quot;file&quot;,</span> <span class="pre">&quot;reference_id&quot;:</span> <span class="pre">&quot;&lt;uuid&gt;&quot;}</span></code> and must belong to the customer of the flow. See <a class="reference internal" href="email_struct_attachment.html#email-struct-attachment"><span class="std std-ref">Attachment</span></a>.</p></li>
 </ul>
 </section>
 </section>
