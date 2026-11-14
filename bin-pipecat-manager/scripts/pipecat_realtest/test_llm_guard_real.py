@@ -21,8 +21,6 @@ import pytest
 
 HERE = os.path.dirname(__file__)
 sys.path.insert(0, os.path.abspath(os.path.join(HERE, "..", "pipecat")))
-for k in ("DEEPGRAM_API_KEY", "CARTESIA_API_KEY", "ELEVENLABS_API_KEY", "GOOGLE_API_KEY", "OPENAI_API_KEY"):
-    os.environ.setdefault(k, "x")
 warnings.simplefilter("ignore")
 
 from aiohttp import web  # noqa: E402

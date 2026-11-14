@@ -762,8 +762,9 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
     service_name = service_name.lower()
     platform_keys = options.get("platform_keys")
     # Source of the key: the key of the customer (openai, grok, gemini only), then the platform key of
-    # the request. Neither is "not configured" and the session is rejected. The environment of this
-    # process is never a source. platform_openrouter and local never use the key of the customer.
+    # the request. If neither is set the vendor is "not configured" and the session is rejected. The
+    # environment of this process is never a source. platform_openrouter and local never use the key
+    # of the customer.
     if service_name == "openai":
         api_key = key or _platform_key(platform_keys, PK_OPENAI, "OpenAI")
         llm = OpenAILLMService(api_key=api_key, model=model_name)
