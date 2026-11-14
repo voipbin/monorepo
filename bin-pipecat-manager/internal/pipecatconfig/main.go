@@ -1,5 +1,8 @@
-// Package pipecatconfig wires the stored configuration of bin-pipecat-manager: the master key,
-// the registry and the resolver that hands the platform keys of a session to the runner request.
+// Package pipecatconfig wires the stored configuration of bin-pipecat-manager: the master key, the
+// registry and the resolver that hands the platform keys of a session to the runner request. The
+// runner reads the platform keys from the environment variables of its own container, so the
+// resolver and LogSources are not called by any service or command at present; they stay until the
+// stored settings code is removed.
 package pipecatconfig
 
 import (
@@ -35,8 +38,7 @@ const (
 // New creates the config handler of the service on the given store.
 //
 // The handler gets no environment lookup and no key declares an environment variable, so the
-// database is the only source of a key. A key without a stored row has no value. The runner uses
-// the keys of its request only.
+// handler resolves stored rows only. The runner does not use them: it reads its own environment.
 //
 // An unparsable master key list never stops the service: the error is logged (without any key
 // text) and the handler works without a master key. Secrets can not be written then, and a stored
@@ -57,14 +59,15 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
 }
 
-// KeyResolver resolves the platform keys of a session. It implements
-// pipecatcallhandler.PlatformKeyResolver.
+// KeyResolver resolves the stored platform keys of a session. It implements
+// pipecatcallhandler.PlatformKeyResolver. It is not called at present (no service wires it, so no
+// key is sent to the runner); it stays until the stored settings code is removed.
 type KeyResolver struct {
 	h       confighandler.Handler
 	timeout time.Duration
 }
 
-// NewKeyResolver creates the resolver on a config handler.
+// NewKeyResolver creates the resolver on a config handler. It is not called at present.
 func NewKeyResolver(h confighandler.Handler) *KeyResolver {
 	return &KeyResolver{h: h, timeout: readTimeout}
 }
@@ -149,7 +152,8 @@ func uniqueSorted(in []string) []string {
 	return out
 }
 
-// LogSources logs, once, where each key comes from (key name and source only, never a value). A
+// LogSources logs, once, where each stored key comes from (key name and source only, never a value). It is
+// not called at present. A
 // key that is not configured is an info line, because every vendor key is optional. A read error
 // is logged as a warning: the service starts anyway.
 func LogSources(ctx context.Context, h confighandler.Handler) {

@@ -42,11 +42,12 @@ func useConfigHarness(t *testing.T, cfg *config.Config, stdin string) (*storetes
 	}
 
 	out := &bytes.Buffer{}
-	savedOpen, savedIn, savedOut := openConfigHandler, configIn, configOut
+	savedOpen, savedIn, savedOut, savedErr := openConfigHandler, configIn, configOut, configErr
 	openConfigHandler = func() (confighandler.Handler, error) { return h, nil }
 	configIn = strings.NewReader(stdin)
 	configOut = out
-	t.Cleanup(func() { openConfigHandler, configIn, configOut = savedOpen, savedIn, savedOut })
+	configErr = &bytes.Buffer{}
+	t.Cleanup(func() { openConfigHandler, configIn, configOut, configErr = savedOpen, savedIn, savedOut, savedErr })
 
 	return store, out
 }
@@ -100,54 +101,93 @@ func Test_config_set_list_clear(t *testing.T) {
 	}
 }
 
-// With the old variables exported and no stored row, a listed key is none (never env).
-func Test_config_list_ignoresOldEnvironment(t *testing.T) {
-	t.Setenv("ENGINE_KEY_CHATGPT", "synthetic-old-env-openai")
-	t.Setenv("GOOGLE_API_KEY", "synthetic-old-env-gemini")
+// The listing shows the stored settings only: with the variables exported and no stored row, every
+// key is none (never env) and no value or environment field is shown.
+func Test_config_list_ignoresTheVariables(t *testing.T) {
+	t.Setenv("OPENAI_API_KEY", "synthetic-env-openai")
+	t.Setenv("GOOGLE_API_KEY", "synthetic-env-gemini")
+	t.Setenv("GITHUB_MCP_OAUTH_CLIENT_ID", "synthetic-env-id")
+	t.Setenv("GITHUB_MCP_OAUTH_CLIENT_SECRET", "synthetic-env-secret")
 
 	_, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, "")
 	if err := runConfigCommand("list"); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 
-	// The LLM keys declare no environment name, so they are none whatever the old variables hold.
-	// The 8 keys of the MCP OAuth apps are none here too, as their variables are not exported.
 	s := out.String()
 	if strings.Count(s, `"source": "none"`) != 10 || strings.Contains(s, `"source": "env"`) ||
-		strings.Contains(s, `"env_shadowed": true`) || strings.Contains(s, "env_name") || strings.Contains(s, "synthetic-old-env") {
+		strings.Contains(s, `"env_shadowed": true`) || strings.Contains(s, "env_name") || strings.Contains(s, "synthetic-env") {
 		t.Errorf("Wrong match. expect: ten keys with source none and no env fields, got: %s", s)
 	}
 }
 
-// The MCP OAuth keys declare no environment name either: with their old variables exported, every
-// key is still none and no value or environment field is shown.
-func Test_config_list_ignoresMcpOAuthEnvironment(t *testing.T) {
-	t.Setenv("MCP_OAUTH_GITHUB_CLIENT_ID", "synthetic-env-id")
-	t.Setenv("MCP_OAUTH_GITHUB_CLIENT_SECRET", "synthetic-env-secret")
+// After a set or a clear one line on stderr names the variable that is read and says that the
+// stored value is not used. It never holds the value.
+func Test_config_setAndClearPrintTheVariableNotice(t *testing.T) {
+	const secret = "synthetic-credential-value"
 
-	_, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, "")
-	if err := runConfigCommand("list"); err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	tests := []struct {
+		key    string
+		expect string
+	}{
+		{"llm.openai_compat.api_key", "OPENAI_API_KEY"},
+		{"llm.gemini.api_key", "GOOGLE_API_KEY"},
+		{"mcp_oauth.github.client_id", "GITHUB_MCP_OAUTH_CLIENT_ID"},
+		{"mcp_oauth.hubspot.client_secret", "HUBSPOT_MCP_OAUTH_CLIENT_SECRET"},
 	}
+	for _, tt := range tests {
+		t.Run(tt.key, func(t *testing.T) {
+			_, _ = useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, secret+"\n")
+			errOut := &bytes.Buffer{}
+			configErr = errOut
 
-	s := out.String()
-	if strings.Count(s, `"source": "none"`) != 10 || strings.Contains(s, `"source": "env"`) || strings.Contains(s, "env_name") ||
-		strings.Contains(s, `"env_shadowed": true`) || strings.Contains(s, "synthetic-env") {
-		t.Errorf("Wrong match. expect: ten keys with source none and no env fields or values, got: %s", s)
+			if err := runConfigCommand("set", "--key", tt.key, "--actor-id", testActor); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			got := errOut.String()
+			if strings.Count(got, "\n") != 1 || !strings.Contains(got, tt.expect) || !strings.Contains(got, "not used") || strings.Contains(got, secret) {
+				t.Errorf("Wrong match. set expect: one line with %s and 'not used', got: %q", tt.expect, got)
+			}
+
+			errOut.Reset()
+			if err := runConfigCommand("clear", "--key", tt.key, "--actor-id", testActor); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			got = errOut.String()
+			if strings.Count(got, "\n") != 1 || !strings.Contains(got, tt.expect) || !strings.Contains(got, "not used") {
+				t.Errorf("Wrong match. clear expect: one line with %s and 'not used', got: %q", tt.expect, got)
+			}
+		})
 	}
 }
 
-// The help text of the config command no longer describes an environment fallback, and names the
-// error of a vendor whose app is not stored.
-func Test_config_helpTextHasNoEnvironmentFallback(t *testing.T) {
+// A failed set prints no notice.
+func Test_config_failedSetPrintsNoNotice(t *testing.T) {
+	_, _ = useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, "x\n")
+	errOut := &bytes.Buffer{}
+	configErr = errOut
+
+	if err := runConfigCommand("set", "--key", "not.a.key", "--actor-id", testActor); err == nil {
+		t.Fatalf("Wrong match. expect: an error")
+	}
+	if errOut.Len() != 0 {
+		t.Errorf("Wrong match. expect: no notice, got: %q", errOut.String())
+	}
+}
+
+// The help text names the variables that are read, says that the stored value is not used, and
+// names the error of a vendor whose app is not configured.
+func Test_config_helpTextNamesTheVariables(t *testing.T) {
 	long := cmdConfig().Long
-	for _, s := range []string{"environment of this process", "environment of\nthe daemon", "MCP_OAUTH_<VENDOR>_CLIENT"} {
+	for _, s := range []string{"OPENAI_API_KEY", "GOOGLE_API_KEY", "<VENDOR>_MCP_OAUTH_CLIENT_ID", "<VENDOR>_MCP_OAUTH_CLIENT_SECRET", "not used", "MCP_OAUTH_VENDOR_NOT_CONFIGURED"} {
+		if !strings.Contains(long, s) {
+			t.Errorf("Wrong match. expect: %q in the help text", s)
+		}
+	}
+	for _, s := range []string{"stored in the database only", "A change is used by the next call, with no restart"} {
 		if strings.Contains(long, s) {
 			t.Errorf("Wrong match. expect: no %q in the help text", s)
 		}
-	}
-	if !strings.Contains(long, "MCP_OAUTH_VENDOR_NOT_CONFIGURED") {
-		t.Error("Wrong match. expect: the not configured reason in the help text")
 	}
 }
 

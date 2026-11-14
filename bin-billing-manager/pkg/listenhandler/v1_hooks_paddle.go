@@ -98,8 +98,8 @@ func (h *listenHandler) processV1HooksPaddlePost(ctx context.Context, m *sock.Re
 		return simpleResponse(400), nil
 	}
 
-	// Verify the signature of the webhook with the secret that is stored for this service. No
-	// stored secret is an error answer (fail closed): the webhook is rejected, and the sender may
+	// Verify the signature of the webhook with the secret of this service (the environment). No
+	// secret is an error answer (fail closed): the webhook is rejected, and the sender may
 	// retry it later. A secret that can not be read is an error answer too, never a skipped check.
 	// The signature and the body are not logged here: the log entry above holds the whole request,
 	// so this check logs through its own entry.
@@ -111,7 +111,7 @@ func (h *listenHandler) processV1HooksPaddlePost(ctx context.Context, m *sock.Re
 		}
 
 		if errors.Is(errVerify, paddlehandler.ErrCredentialNotConfigured) {
-			logSig.Errorf("The Paddle webhook secret is not stored, so the webhook is rejected. Store paddle.webhook_secret_key. err: %v", errVerify)
+			logSig.Errorf("The Paddle webhook secret is not configured, so the webhook is rejected. Set PADDLE_WEBHOOK_SECRET. err: %v", errVerify)
 			return simpleResponse(500), nil
 		}
 

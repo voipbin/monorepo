@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"net/http"
 	"os"
 	"os/signal"
@@ -16,7 +15,6 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-email-manager/internal/config"
-	"monorepo/bin-email-manager/internal/configkeys"
 	"monorepo/bin-email-manager/internal/emailconfig"
 	"monorepo/bin-email-manager/migrations"
 	"monorepo/bin-email-manager/pkg/emailhandler"
@@ -152,22 +150,18 @@ func run(dbHandler dbhandler.DBHandler, cfg *config.Config) {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameEmailEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	// the provider credentials are resolved at the time of use: the stored value only (a key without a row
-	// is not configured). Only an invalid registry (a programming error) fails here; a bad master
-	// key or an unreadable table never does.
+	// the provider credentials are read from the environment at the time of use (a variable that is
+	// not set is not configured). The stored settings handler serves the admin API only. Only an
+	// invalid registry (a programming error) fails here; a bad master key never does.
 	configHandler, errConfig := emailconfig.New(cfg, dbHandler.ConfigStore())
 	if errConfig != nil {
 		log.Errorf("Could not create the config handler. err: %v", errConfig)
 		return
 	}
-	emailconfig.LogSources(context.Background(), configHandler)
+	emailconfig.LogStates()
 
-	emailHandler := emailhandler.NewEmailHandler(
-		dbHandler, reqHandler, notifyHandler,
-		emailconfig.Supplier(configHandler, configkeys.KeySendgridAPIKey),
-		emailconfig.Supplier(configHandler, configkeys.KeyMailgunAPIKey),
-		emailconfig.Supplier(configHandler, configkeys.KeyMailgunWebhookSigningKey),
-	)
+	sendgridKey, mailgunKey, mailgunSigningKey := emailconfig.Suppliers()
+	emailHandler := emailhandler.NewEmailHandler(dbHandler, reqHandler, notifyHandler, sendgridKey, mailgunKey, mailgunSigningKey)
 
 	// run listen
 	configServer := configrpc.NewServer(configHandler, serviceName)

@@ -136,9 +136,11 @@ services:
     depends_on:
       pipecat-manager-1:
         condition: service_healthy
-    # The runner gets no vendor key and no local endpoint as a variable: the keys
-    # are stored in the database by pipecat-manager and reach the runner in the
-    # start request (VOIP-1728).
+    # The vendor keys and the local endpoints are variables of this runner
+    # container: it reads them itself and the Go service sends no key in the
+    # start request. The Go containers get none of these variables. A variable
+    # without a value stays the unresolved placeholder and the runner treats
+    # the key as not configured.
     #
     # VOIP-1482: Cloud TTS/STT take no api_key: GoogleTTSService/GoogleSTTService
     # fall back to Application Default Credentials, which on GKE came from the
@@ -148,6 +150,14 @@ services:
       - source: gcp_sa_json
         target: google_service_account.json
     environment:
+      - CARTESIA_API_KEY=[[BIN_MANAGER__CARTESIA_API_KEY]]
+      - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
+      - OPENAI_API_KEY=[[BIN_MANAGER__OPENAI_API_KEY]]
+      - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
+      - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
+      - GOOGLE_API_KEY=[[BIN_MANAGER__GOOGLE_API_KEY]]
+      - OPENROUTER_API_KEY=[[BIN_MANAGER__OPENROUTER_API_KEY]]
+      - LOCAL_LLM_ENDPOINTS=[[BIN_MANAGER__LOCAL_LLM_ENDPOINTS]]
       - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/google_service_account.json
     command: ["python", "/app/scripts/pipecat/main.py"]
 
@@ -199,9 +209,11 @@ services:
     depends_on:
       pipecat-manager-2:
         condition: service_healthy
-    # The runner gets no vendor key and no local endpoint as a variable: the keys
-    # are stored in the database by pipecat-manager and reach the runner in the
-    # start request (VOIP-1728).
+    # The vendor keys and the local endpoints are variables of this runner
+    # container: it reads them itself and the Go service sends no key in the
+    # start request. The Go containers get none of these variables. A variable
+    # without a value stays the unresolved placeholder and the runner treats
+    # the key as not configured.
     #
     # VOIP-1482: Cloud TTS/STT take no api_key: GoogleTTSService/GoogleSTTService
     # fall back to Application Default Credentials, which on GKE came from the
@@ -211,6 +223,14 @@ services:
       - source: gcp_sa_json
         target: google_service_account.json
     environment:
+      - CARTESIA_API_KEY=[[BIN_MANAGER__CARTESIA_API_KEY]]
+      - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
+      - OPENAI_API_KEY=[[BIN_MANAGER__OPENAI_API_KEY]]
+      - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
+      - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
+      - GOOGLE_API_KEY=[[BIN_MANAGER__GOOGLE_API_KEY]]
+      - OPENROUTER_API_KEY=[[BIN_MANAGER__OPENROUTER_API_KEY]]
+      - LOCAL_LLM_ENDPOINTS=[[BIN_MANAGER__LOCAL_LLM_ENDPOINTS]]
       - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/google_service_account.json
     command: ["python", "/app/scripts/pipecat/main.py"]
 networks:

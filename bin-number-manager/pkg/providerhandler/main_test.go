@@ -178,11 +178,11 @@ func legacyAADRow(t *testing.T, config map[string]string) *provider.Provider {
 func Test_resolve(t *testing.T) {
 	ctx := context.Background()
 
-	// a row with a DB secret is built by the handler itself, so it is encrypted with the test keys
+	// a row with a stored secret: the ciphertext is never read
 	cryptoV1, _ := NewSecretCrypto(testKeys(1))
 	ct, ver, _ := cryptoV1.Encrypt("db-token")
 
-	dbRow := func(enabled bool, config map[string]string) *provider.Provider {
+	storedRow := func(enabled bool, config map[string]string) *provider.Provider {
 		return &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: enabled, Priority: 5, Config: config, SecretCiphertext: ct, KeyVersion: ver}
 	}
 
@@ -191,6 +191,7 @@ func Test_resolve(t *testing.T) {
 
 		row  *provider.Provider
 		keys string
+		env  map[string]string
 
 		expectSource   provider.CredentialSource
 		expectUsable   bool
@@ -200,59 +201,60 @@ func Test_resolve(t *testing.T) {
 		expectConn     string
 	}{
 		{
-			name:         "no row: telnyx defaults, no credential",
+			name:         "no row and no variable: telnyx defaults, no credential",
 			keys:         testKeys(1),
 			expectSource: provider.CredentialSourceNone, expectUsable: false, expectEnabled: true, expectPriority: 10,
 		},
 		{
-			name:         "row without secret has no credential and its config is ignored",
+			name:         "row without a variable has no credential and its config is ignored",
 			row:          &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, Priority: 3, Config: map[string]string{"connection_id": "row-conn"}},
 			keys:         testKeys(1),
 			expectSource: provider.CredentialSourceNone, expectUsable: false, expectEnabled: true, expectPriority: 3,
 		},
 		{
-			name:         "row with secret uses the DB secret and the row config only",
-			row:          dbRow(true, map[string]string{"connection_id": "row-conn"}),
+			name:         "a stored secret is not used without the variable",
+			row:          storedRow(true, map[string]string{"connection_id": "row-conn"}),
 			keys:         testKeys(1),
-			expectSource: provider.CredentialSourceDB, expectUsable: true, expectEnabled: true, expectPriority: 5,
-			expectSecret: "db-token", expectConn: "row-conn",
+			expectSource: provider.CredentialSourceNone, expectUsable: false, expectEnabled: true, expectPriority: 5,
 		},
 		{
-			name:         "row with secret and without the required config is not usable",
-			row:          dbRow(true, map[string]string{}),
+			name:         "a row with the variable uses the variable and the row config",
+			row:          storedRow(true, map[string]string{"connection_id": "row-conn"}),
 			keys:         testKeys(1),
-			expectSource: provider.CredentialSourceDB, expectUsable: false, expectEnabled: true, expectPriority: 5,
-			expectSecret: "db-token",
+			env:          map[string]string{envTelnyxAPIKey: "env-token"},
+			expectSource: provider.CredentialSourceEnv, expectUsable: true, expectEnabled: true, expectPriority: 5,
+			expectSecret: "env-token", expectConn: "row-conn",
+		},
+		{
+			name:         "the variable without the required config is not usable",
+			row:          storedRow(true, map[string]string{}),
+			keys:         testKeys(1),
+			env:          map[string]string{envTelnyxAPIKey: "env-token"},
+			expectSource: provider.CredentialSourceEnv, expectUsable: false, expectEnabled: true, expectPriority: 5,
+			expectSecret: "env-token",
 		},
 		{
 			name:         "disabled row is not usable",
-			row:          dbRow(false, map[string]string{"connection_id": "row-conn"}),
+			row:          storedRow(false, map[string]string{"connection_id": "row-conn"}),
 			keys:         testKeys(1),
-			expectSource: provider.CredentialSourceDB, expectUsable: false, expectEnabled: false, expectPriority: 5,
-			expectSecret: "db-token", expectConn: "row-conn",
+			env:          map[string]string{envTelnyxAPIKey: "env-token"},
+			expectSource: provider.CredentialSourceEnv, expectUsable: false, expectEnabled: false, expectPriority: 5,
+			expectSecret: "env-token", expectConn: "row-conn",
 		},
 		{
-			name:         "undecryptable secret is unusable",
-			row:          dbRow(true, map[string]string{"connection_id": "row-conn"}),
-			keys:         testKeys(2),
-			expectSource: provider.CredentialSourceDBUndecryptable, expectUsable: false, expectEnabled: true, expectPriority: 5,
-		},
-		{
-			name:         "secret sealed with associated data by an earlier layout is undecryptable and is unusable",
+			name:         "a ciphertext of an earlier layout or a missing key does not matter",
 			row:          legacyAADRow(t, map[string]string{"connection_id": "row-conn"}),
-			keys:         fakeKeyList(1, 2),
-			expectSource: provider.CredentialSourceDBUndecryptable, expectUsable: false, expectEnabled: true, expectPriority: 5,
-		},
-		{
-			name:         "no key configured: a DB secret is undecryptable",
-			row:          dbRow(true, map[string]string{"connection_id": "row-conn"}),
 			keys:         "",
-			expectSource: provider.CredentialSourceDBUndecryptable, expectUsable: false, expectEnabled: true, expectPriority: 5,
+			env:          map[string]string{envTelnyxAPIKey: "env-token"},
+			expectSource: provider.CredentialSourceEnv, expectUsable: true, expectEnabled: true, expectPriority: 5,
+			expectSecret: "env-token", expectConn: "row-conn",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			setCredentialEnv(t, tt.env)
+
 			db := newFakeDB()
 			if tt.row != nil {
 				db.rows[number.ProviderNameTelnyx] = tt.row
@@ -299,6 +301,7 @@ func Test_resolve_errors(t *testing.T) {
 
 func Test_PurchaseCandidates(t *testing.T) {
 	ctx := context.Background()
+	setCredentialEnv(t, map[string]string{envTelnyxAPIKey: "env-token"})
 
 	t.Run("a Telnyx row with a secret is the only candidate", func(t *testing.T) {
 		db := newFakeDB()
@@ -311,7 +314,8 @@ func Test_PurchaseCandidates(t *testing.T) {
 		}
 	})
 
-	t.Run("without any row there is no candidate (no environment fallback)", func(t *testing.T) {
+	t.Run("without any row and without the variable there is no candidate", func(t *testing.T) {
+		setCredentialEnv(t, nil)
 		h := newTestHandler(t, newFakeDB(), "")
 
 		res, err := h.PurchaseCandidates(ctx)
@@ -320,7 +324,7 @@ func Test_PurchaseCandidates(t *testing.T) {
 		}
 	})
 
-	t.Run("an enabled twilio row without a secret is not a candidate", func(t *testing.T) {
+	t.Run("an enabled twilio row without the variable is not a candidate", func(t *testing.T) {
 		db := newFakeDB()
 		db.rows[number.ProviderNameTwilio] = &provider.Provider{ProviderName: number.ProviderNameTwilio, Enabled: true, Priority: 1, Config: map[string]string{configSID: testTwilioSID, configTrunkSID: "TK1"}}
 		h := newTestHandler(t, db, testKeys(1))
@@ -347,6 +351,8 @@ func Test_PurchaseCandidates(t *testing.T) {
 func Test_sortOrder(t *testing.T) {
 	ctx := context.Background()
 
+	setCredentialEnv(t, map[string]string{envTelnyxAPIKey: "env-token"})
+
 	// a second purchasable provider is registered to exercise the ordering
 	db := newFakeDB()
 	seedTelnyx(t, db)
@@ -354,8 +360,8 @@ func Test_sortOrder(t *testing.T) {
 	seedRow(t, db, "beta", true, 5, nil)
 	h := newTestHandler(t, db, testKeys(1))
 
-	h.registry["alpha"] = Descriptor{Factory: h.registry[number.ProviderNameTelnyx].Factory, Purchasable: true, DefaultEnabled: true, DefaultPriority: 10}
-	h.registry["beta"] = Descriptor{Factory: h.registry[number.ProviderNameTelnyx].Factory, Purchasable: true, DefaultEnabled: true, DefaultPriority: 5}
+	h.registry["alpha"] = Descriptor{Factory: h.registry[number.ProviderNameTelnyx].Factory, EnvSecret: envTelnyxAPIKey, Purchasable: true, DefaultEnabled: true, DefaultPriority: 10}
+	h.registry["beta"] = Descriptor{Factory: h.registry[number.ProviderNameTelnyx].Factory, EnvSecret: envTelnyxAPIKey, Purchasable: true, DefaultEnabled: true, DefaultPriority: 5}
 
 	res, err := h.PurchaseCandidates(ctx)
 	if err != nil {
@@ -375,8 +381,9 @@ func Test_sortOrder(t *testing.T) {
 
 func Test_ForRelease(t *testing.T) {
 	ctx := context.Background()
+	setCredentialEnv(t, map[string]string{envTelnyxAPIKey: "env-token"})
 
-	t.Run("a disabled provider with a secret can release", func(t *testing.T) {
+	t.Run("a disabled provider with the variable can release", func(t *testing.T) {
 		db := newFakeDB()
 		seedRow(t, db, number.ProviderNameTelnyx, false, 10, map[string]string{configConnectionID: "db-conn"})
 		h := newTestHandler(t, db, testKeys(1))
@@ -386,7 +393,7 @@ func Test_ForRelease(t *testing.T) {
 		}
 	})
 
-	t.Run("a DB secret without the required config can still release and search", func(t *testing.T) {
+	t.Run("the variable without the required config can still release and search", func(t *testing.T) {
 		cryptoV1, _ := NewSecretCrypto(testKeys(1))
 		ct, ver, _ := cryptoV1.Encrypt("db-token")
 		db := newFakeDB()
@@ -399,6 +406,7 @@ func Test_ForRelease(t *testing.T) {
 	})
 
 	t.Run("no credential", func(t *testing.T) {
+		setCredentialEnv(t, nil)
 		h := newTestHandler(t, newFakeDB(), "")
 
 		if _, err := h.ForRelease(ctx, number.ProviderNameTelnyx); err == nil {
@@ -409,7 +417,8 @@ func Test_ForRelease(t *testing.T) {
 		}
 	})
 
-	t.Run("a row without a secret has no credential", func(t *testing.T) {
+	t.Run("a row without the variable has no credential", func(t *testing.T) {
+		setCredentialEnv(t, nil)
 		db := newFakeDB()
 		db.rows[number.ProviderNameTelnyx] = &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, Config: map[string]string{configConnectionID: "row-conn"}}
 		h := newTestHandler(t, db, testKeys(1))
@@ -419,7 +428,8 @@ func Test_ForRelease(t *testing.T) {
 		}
 	})
 
-	t.Run("undecryptable secret", func(t *testing.T) {
+	t.Run("a stored secret is not a credential, whatever its key state", func(t *testing.T) {
+		setCredentialEnv(t, nil)
 		cryptoV1, _ := NewSecretCrypto(testKeys(1))
 		ct, ver, _ := cryptoV1.Encrypt("db-token")
 		db := newFakeDB()
@@ -459,6 +469,7 @@ func Test_Credentials_redaction(t *testing.T) {
 
 func Test_PurchaseCandidates_factoryFailure(t *testing.T) {
 	ctx := context.Background()
+	setCredentialEnv(t, map[string]string{envTelnyxAPIKey: "env-token"})
 	db := newFakeDB()
 	seedTelnyx(t, db)
 	seedRow(t, db, "broken", true, 1, nil)
@@ -466,6 +477,7 @@ func Test_PurchaseCandidates_factoryFailure(t *testing.T) {
 
 	h.registry["broken"] = Descriptor{
 		Factory:         func(provider.Credentials) (Provider, error) { return nil, errors.New("factory failure") },
+		EnvSecret:       envTelnyxAPIKey,
 		Purchasable:     true,
 		DefaultEnabled:  true,
 		DefaultPriority: 1,

@@ -53,6 +53,18 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: REDIS_DATABASE
+            - name: MESSAGEBIRD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: MESSAGEBIRD_API_KEY
+                  optional: true
+            - name: TELNYX_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: TELNYX_API_KEY
+                  optional: true
             - name: CLICKHOUSE_ADDRESS
               valueFrom:
                 secretKeyRef:

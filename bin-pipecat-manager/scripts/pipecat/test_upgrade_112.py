@@ -10,7 +10,7 @@ import pytest
 
 import run
 
-# The platform keys of a request. The factories reject a vendor key that is not in the request.
+# The platform keys of a request. They win over the environment variables of the runner.
 KEYS = {run.PK_CARTESIA: "request-value", run.PK_ELEVENLABS: "request-value", run.PK_DEEPGRAM: "request-value"}
 
 

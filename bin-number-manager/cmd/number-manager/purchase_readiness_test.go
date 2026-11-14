@@ -27,7 +27,7 @@ func Test_logPurchaseReadiness(t *testing.T) {
 			name:        "no usable provider is a warning",
 			candidates:  nil,
 			expectLevel: "level=warning",
-			expectText:  "No provider is usable for a number purchase",
+			expectText:  "Set TELNYX_API_KEY and TELNYX_CONNECTION_ID",
 		},
 		{
 			name:        "a usable provider is info",

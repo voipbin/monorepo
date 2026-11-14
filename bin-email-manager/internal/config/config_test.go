@@ -7,6 +7,10 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"monorepo/bin-common-handler/pkg/envsecret"
+
+	"monorepo/bin-email-manager/internal/configkeys"
 )
 
 func TestGet(t *testing.T) {
@@ -187,7 +191,8 @@ func TestRegisterFlags(t *testing.T) {
 	}
 }
 
-// The provider credentials are stored in the database only: Config has no field for them any more.
+// The provider credentials are read from the environment by emailconfig, not through Config: Config
+// has no field for them.
 func Test_Config_noProviderSecretFields(t *testing.T) {
 	removed := []string{"SendgridAPIKey", "MailgunAPIKey", "MailgunWebhookSigningKey"}
 
@@ -202,9 +207,10 @@ func Test_Config_noProviderSecretFields(t *testing.T) {
 	}
 }
 
-// A deployment that still exports the old variables starts normally: the variables are not read,
-// no flag exists for them, and no other field is affected.
-func Test_Bootstrap_oldProviderVariablesAreIgnored(t *testing.T) {
+// The provider variables are the source of the credentials, but not through Config: the bootstrap
+// binds no flag and no field for them, leaves the other fields alone, and the variables stay
+// visible to envsecret.
+func Test_Bootstrap_providerVariablesAreNotBoundToConfig(t *testing.T) {
 	viper.Reset()
 	defer viper.Reset()
 	once = sync.Once{}
@@ -222,6 +228,16 @@ func Test_Bootstrap_oldProviderVariablesAreIgnored(t *testing.T) {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 	LoadGlobalConfig()
+
+	for env, want := range map[string]string{
+		configkeys.EnvSendgridAPIKey:           "synthetic-sendgrid",
+		configkeys.EnvMailgunAPIKey:            "synthetic-mailgun",
+		configkeys.EnvMailgunWebhookSigningKey: "synthetic-signing",
+	} {
+		if got, state := envsecret.Lookup(env); got != want || state != envsecret.Set {
+			t.Errorf("Wrong match. %s expect: the environment value to be visible, got state: %s", env, state)
+		}
+	}
 
 	cfg := Get()
 	if cfg.RabbitMQAddress != "amqp://test-rabbitmq:5672" || cfg.RedisDatabase != 3 || cfg.ConfigEncryptionKeys != "1:synthetic-master" {

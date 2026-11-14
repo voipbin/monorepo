@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"net/http"
@@ -156,13 +155,14 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
 
-	// The AWS credential is stored in the database (a key without a row is not configured)
-	// and is read when a streaming starts, so a changed key is used by the next start.
+	// The AWS credential is read from the environment (AWS_ACCESS_KEY, AWS_SECRET_KEY) when a
+	// streaming starts. The handler of the stored settings serves the config commands and the admin
+	// API only; its values are not read by a start.
 	configHandler, errConfig := transcribeconfig.New(config.Get(), dbhandler.NewConfigStore(sqlDB))
 	if errConfig != nil {
 		return errors.Wrapf(errConfig, "could not create the config handler")
 	}
-	transcribeconfig.LogSources(context.Background(), configHandler)
+	transcribeconfig.LogStates()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	// VOIP-1404: transcribe-manager is the pilot publisher of the global topic exchange
@@ -170,7 +170,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// events exist on the topic exchange" contract holds regardless of which process published.
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTranscribeEvent, commonoutline.ServiceNameTranscribeManager, notifyhandler.WithGlobalTopicPublish())
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler)
-	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, transcribeconfig.AWSKeys(configHandler))
+	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, transcribeconfig.AWSKeys())
 	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID)
 
 	// run request listener

@@ -29,7 +29,7 @@ func resetLoadState(t *testing.T) {
 }
 
 // Test_Config_removedFields checks that the provider token fields and the EnvValue method are gone:
-// the tokens are read from the database only, never from the process configuration.
+// the tokens are read from the environment at the time of use, never held by the process configuration.
 func Test_Config_removedFields(t *testing.T) {
 	typ := reflect.TypeOf(Config{})
 	for _, name := range []string{"AuthtokenMessagebird", "AuthtokenTelnyx"} {
@@ -42,14 +42,15 @@ func Test_Config_removedFields(t *testing.T) {
 	}
 }
 
-// Test_legacyProviderVariablesAreIgnored checks that a deployment that still exports the old
-// provider variables starts normally: the load succeeds, no flag exists for them, and the master
-// key and the other fields are not affected.
-func Test_legacyProviderVariablesAreIgnored(t *testing.T) {
+// Test_providerVariablesAreNotLoaded checks that the provider token variables are read at the time
+// of use by messageconfig and are not part of the process configuration: the load succeeds with
+// them exported, no flag exists for them, no value reaches the Config, and the master key and the
+// other fields are not affected.
+func Test_providerVariablesAreNotLoaded(t *testing.T) {
 	resetLoadState(t)
 
-	t.Setenv("AUTHTOKEN_MESSAGEBIRD", "legacy-fake-mb")
-	t.Setenv("AUTHTOKEN_TELNYX", "legacy-fake-tn")
+	t.Setenv("MESSAGEBIRD_API_KEY", "provider-fake-mb")
+	t.Setenv("TELNYX_API_KEY", "provider-fake-tn")
 	t.Setenv("MESSAGE_CONFIG_ENCRYPTION_KEYS", "1:fake-master")
 	t.Setenv("DATABASE_DSN", "fake-dsn")
 	t.Setenv("REDIS_DATABASE", "3")
@@ -64,14 +65,14 @@ func Test_legacyProviderVariablesAreIgnored(t *testing.T) {
 	if cfg.ConfigEncryptionKeys != "1:fake-master" || cfg.DatabaseDSN != "fake-dsn" || cfg.RedisDatabase != 3 {
 		t.Errorf("Wrong match. the other fields are affected: %+v", cfg)
 	}
-	for _, name := range []string{"authtoken_messagebird", "authtoken_telnyx"} {
+	for _, name := range []string{"messagebird_api_key", "telnyx_api_key", "authtoken_messagebird", "authtoken_telnyx"} {
 		if cmd.PersistentFlags().Lookup(name) != nil {
 			t.Errorf("Wrong match. a flag %q exists", name)
 		}
 	}
-	// none of the loaded values is a legacy value
-	if s := fmt.Sprintf("%+v", *cfg); strings.Contains(s, "legacy-fake") {
-		t.Errorf("Wrong match. a legacy value reached the config: %s", s)
+	// none of the provider values is held by the config
+	if s := fmt.Sprintf("%+v", *cfg); strings.Contains(s, "provider-fake") {
+		t.Errorf("Wrong match. a provider value reached the config: %s", s)
 	}
 }
 

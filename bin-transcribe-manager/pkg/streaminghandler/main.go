@@ -95,9 +95,8 @@ type streamingHandler struct {
 // NewStreamingHandler define
 //
 // The GCP client is created here, once (it uses application default credentials). The AWS
-// credential is read by awsKeys for every Start, so a deployment that has the credential in the
-// database only is not left without a provider, and a changed credential is used by the next
-// Start. The handler is always the real one: when no provider is available Start answers
+// credential is read by awsKeys for every Start, so a deployment that has only the AWS pair
+// is not left without a provider, and a changed pair is used by the next Start. The handler is always the real one: when no provider is available Start answers
 // STT_NOT_CONFIGURED, and nothing is decided at start up.
 func NewStreamingHandler(
 	reqHandler requesthandler.RequestHandler,
@@ -172,7 +171,7 @@ func (h *streamingHandler) awsClientFor(ctx context.Context) (*transcribestreami
 
 	// Two Starts that read different pairs around a key change can replace each other's cache entry
 	// here. Each one still uses the client of the pair it read, and the next Start compares again
-	// and builds the client of the pair that is stored then, so nothing stays wrong.
+	// and builds the client of the pair that is read then, so nothing stays wrong.
 	if h.awsClient != nil && h.awsAccess == accessKey && h.awsSecret == secretKey {
 		return h.awsClient, nil
 	}

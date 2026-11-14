@@ -7,11 +7,9 @@ import (
 	"strings"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	logrustest "github.com/sirupsen/logrus/hooks/test"
 
 	"monorepo/bin-common-handler/pkg/confighandler"
 	"monorepo/bin-common-handler/pkg/confighandler/storetest"
@@ -51,240 +49,7 @@ func setSecret(t *testing.T, h confighandler.Handler, key, value string) {
 	}
 }
 
-// delayStore waits before each read, so that two reads together take longer than one.
-type delayStore struct {
-	confighandler.Store
-	delay time.Duration
-}
-
-func (s delayStore) Get(ctx context.Context, key string) (*confighandler.Row, error) {
-	select {
-	case <-time.After(s.delay):
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	}
-
-	return s.Store.Get(ctx, key)
-}
-
-type blockingStore struct {
-	confighandler.Store
-}
-
-func (blockingStore) Get(ctx context.Context, key string) (*confighandler.Row, error) {
-	<-ctx.Done()
-	return nil, ctx.Err()
-}
-
-func Test_AWSCredentials_sources(t *testing.T) {
-	tests := []struct {
-		name string
-
-		stored map[string]string
-
-		expectAccess string
-		expectSecret string
-		expectMixed  bool
-	}{
-		{
-			name:         "db and db",
-			stored:       map[string]string{configkeys.KeyAWSAccessKey: "db-access", configkeys.KeyAWSSecretKey: "db-secret"},
-			expectAccess: "db-access",
-			expectSecret: "db-secret",
-		},
-		{
-			name: "none and none",
-		},
-		{
-			name:        "none and db",
-			stored:      map[string]string{configkeys.KeyAWSSecretKey: "db-secret"},
-			expectMixed: true,
-		},
-		{
-			name:        "db and none",
-			stored:      map[string]string{configkeys.KeyAWSAccessKey: "db-access"},
-			expectMixed: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
-			for k, v := range tt.stored {
-				setSecret(t, h, k, v)
-			}
-
-			access, secret, err := AWSCredentials(h)(context.Background())
-			if tt.expectMixed {
-				if !errors.Is(err, ErrKeyUnavailable) || !errors.Is(err, ErrAWSSourceMismatch) || access != "" || secret != "" {
-					t.Errorf("Wrong match. expect: unavailable with mismatch and no value, got: %q %q %v", access, secret, err)
-				}
-				return
-			}
-			if err != nil || access != tt.expectAccess || secret != tt.expectSecret {
-				t.Errorf("Wrong match. expect: %q %q, got: %q %q %v", tt.expectAccess, tt.expectSecret, access, secret, err)
-			}
-		})
-	}
-}
-
-// A read error is an error, never an empty pair.
-func Test_AWSCredentials_readError(t *testing.T) {
-	for _, key := range []string{configkeys.KeyAWSAccessKey, configkeys.KeyAWSSecretKey} {
-		t.Run(key, func(t *testing.T) {
-			store := storetest.NewMemory()
-			store.GetErrByKey = map[string]error{key: errors.New("database is down")}
-			h := newTestHandler(t, &config.Config{}, store)
-
-			access, secret, err := AWSCredentials(h)(context.Background())
-			if !errors.Is(err, ErrKeyUnavailable) || access != "" || secret != "" {
-				t.Errorf("Wrong match. expect: unavailable and no value, got: %q %q %v", access, secret, err)
-			}
-		})
-	}
-}
-
-// A stored value that can not be decrypted is an error, not an empty pair.
-func Test_AWSCredentials_undecryptable(t *testing.T) {
-	store := storetest.NewMemory()
-	writer := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
-	setSecret(t, writer, configkeys.KeyAWSAccessKey, "stored-access")
-	setSecret(t, writer, configkeys.KeyAWSSecretKey, "stored-secret")
-
-	for _, keys := range []string{"", "not-a-key-list"} {
-		reader := newTestHandler(t, &config.Config{ConfigEncryptionKeys: keys}, store)
-		access, secret, err := AWSCredentials(reader)(context.Background())
-		if !errors.Is(err, confighandler.ErrUndecryptable) || !errors.Is(err, ErrKeyUnavailable) || access != "" || secret != "" {
-			t.Errorf("Wrong match. keys %q expect: undecryptable and no value, got: %q %q %v", keys, access, secret, err)
-		}
-	}
-}
-
-// One time bound covers the whole pair: two reads of 40 ms do not fit in 60 ms.
-func Test_AWSCredentials_oneTimeoutForPair(t *testing.T) {
-	h := newTestHandler(t, &config.Config{}, delayStore{Store: storetest.NewMemory(), delay: 40 * time.Millisecond})
-
-	_, _, err := AWSCredentials(h, WithTimeout(60*time.Millisecond))(context.Background())
-	if !errors.Is(err, ErrKeyUnavailable) || !errors.Is(err, context.DeadlineExceeded) {
-		t.Errorf("Wrong match. expect: unavailable by the deadline, got: %v", err)
-	}
-
-	if _, _, err := AWSCredentials(h, WithTimeout(time.Second))(context.Background()); err != nil {
-		t.Errorf("Wrong match. expect: ok with a long bound, got: %v", err)
-	}
-}
-
-func Test_Suppliers_timeout(t *testing.T) {
-	h := newTestHandler(t, &config.Config{}, blockingStore{Store: storetest.NewMemory()})
-
-	started := time.Now()
-	if _, _, err := AWSCredentials(h, WithTimeout(20*time.Millisecond))(context.Background()); err == nil || time.Since(started) > 2*time.Second {
-		t.Errorf("Wrong match. expect: a prompt error, got: %v after %v", err, time.Since(started))
-	}
-
-	started = time.Now()
-	if _, err := ElevenlabsKey(h, WithTimeout(20*time.Millisecond))(context.Background()); err == nil || time.Since(started) > 2*time.Second {
-		t.Errorf("Wrong match. expect: a prompt error, got: %v after %v", err, time.Since(started))
-	}
-}
-
-// A row written between two calls is used by the next call, and a clear ends in an empty pair
-// (no environment value comes back). The suppliers are made once, as the service does.
-func Test_AWSCredentials_changeReflected(t *testing.T) {
-	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
-	supplier := AWSCredentials(h)
-	actor := uuid.Must(uuid.NewV4())
-
-	if a, s, err := supplier(context.Background()); err != nil || a != "" || s != "" {
-		t.Fatalf("Wrong match. expect: empty pair, got: %q %q %v", a, s, err)
-	}
-
-	setSecret(t, h, configkeys.KeyAWSAccessKey, "db-access-1")
-	setSecret(t, h, configkeys.KeyAWSSecretKey, "db-secret-1")
-	if a, s, err := supplier(context.Background()); err != nil || a != "db-access-1" || s != "db-secret-1" {
-		t.Errorf("Wrong match. expect: stored pair, got: %q %q %v", a, s, err)
-	}
-
-	setSecret(t, h, configkeys.KeyAWSAccessKey, "db-access-2")
-	setSecret(t, h, configkeys.KeyAWSSecretKey, "db-secret-2")
-	if a, s, err := supplier(context.Background()); err != nil || a != "db-access-2" || s != "db-secret-2" {
-		t.Errorf("Wrong match. expect: rotated pair, got: %q %q %v", a, s, err)
-	}
-
-	for _, k := range []string{configkeys.KeyAWSAccessKey, configkeys.KeyAWSSecretKey} {
-		if _, err := h.Clear(context.Background(), actor, k); err != nil {
-			t.Fatalf("Wrong match. expect: ok, got: %v", err)
-		}
-	}
-	if a, s, err := supplier(context.Background()); err != nil || a != "" || s != "" {
-		t.Errorf("Wrong match. expect: empty pair after the clear, got: %q %q %v", a, s, err)
-	}
-}
-
-func Test_ElevenlabsKey_stored(t *testing.T) {
-	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
-	setSecret(t, h, configkeys.KeyElevenlabsAPIKey, "db-eleven")
-
-	got, err := ElevenlabsKey(h)(context.Background())
-	if err != nil || got != "db-eleven" {
-		t.Errorf("Wrong match. expect: db-eleven, got: %q %v", got, err)
-	}
-}
-
-func Test_ElevenlabsKey_notConfiguredIsEmpty(t *testing.T) {
-	h := newTestHandler(t, &config.Config{}, storetest.NewMemory())
-
-	got, err := ElevenlabsKey(h)(context.Background())
-	if err != nil || got != "" {
-		t.Errorf("Wrong match. expect: empty, got: %q %v", got, err)
-	}
-}
-
-func Test_ElevenlabsKey_readError(t *testing.T) {
-	store := storetest.NewMemory()
-	store.GetErr = errors.New("database is down")
-	h := newTestHandler(t, &config.Config{}, store)
-
-	got, err := ElevenlabsKey(h)(context.Background())
-	if !errors.Is(err, ErrKeyUnavailable) || got != "" {
-		t.Errorf("Wrong match. expect: unavailable and no value, got: %q %v", got, err)
-	}
-}
-
-func Test_ElevenlabsKey_undecryptable(t *testing.T) {
-	store := storetest.NewMemory()
-	writer := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
-	setSecret(t, writer, configkeys.KeyElevenlabsAPIKey, "stored-eleven")
-
-	reader := newTestHandler(t, &config.Config{}, store)
-	got, err := ElevenlabsKey(reader)(context.Background())
-	if !errors.Is(err, confighandler.ErrUndecryptable) || got != "" {
-		t.Errorf("Wrong match. expect: undecryptable and no value, got: %q %v", got, err)
-	}
-}
-
-func Test_ElevenlabsKey_changeReflected(t *testing.T) {
-	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
-	supplier := ElevenlabsKey(h)
-	actor := uuid.Must(uuid.NewV4())
-
-	setSecret(t, h, configkeys.KeyElevenlabsAPIKey, "db-one")
-	if got, _ := supplier(context.Background()); got != "db-one" {
-		t.Errorf("Wrong match. expect: db-one, got: %q", got)
-	}
-	setSecret(t, h, configkeys.KeyElevenlabsAPIKey, "db-two")
-	if got, _ := supplier(context.Background()); got != "db-two" {
-		t.Errorf("Wrong match. expect: db-two, got: %q", got)
-	}
-	if _, err := h.Clear(context.Background(), actor, configkeys.KeyElevenlabsAPIKey); err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	if got, err := supplier(context.Background()); err != nil || got != "" {
-		t.Errorf("Wrong match. expect: empty after the clear, got: %q %v", got, err)
-	}
-}
-
-// Without a master key the service works: secrets can not be written, and a key without a row is
-// simply not configured.
+// Without a master key the service works: secrets can not be written.
 func Test_New_noMasterKey(t *testing.T) {
 	h := newTestHandler(t, &config.Config{}, storetest.NewMemory())
 
@@ -293,9 +58,6 @@ func Test_New_noMasterKey(t *testing.T) {
 	}
 	if _, err := h.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), configkeys.KeyElevenlabsAPIKey, "x"); !errors.Is(err, confighandler.ErrKeyNotConfigured) {
 		t.Errorf("Wrong match. expect: key not configured, got: %v", err)
-	}
-	if got, err := ElevenlabsKey(h)(context.Background()); err != nil || got != "" {
-		t.Errorf("Wrong match. expect: empty, got: %q %v", got, err)
 	}
 }
 
@@ -318,40 +80,178 @@ func Test_New_badMasterKeyIsLoggedWithoutTheText(t *testing.T) {
 	}
 }
 
-// The old environment variables are ignored by a handler made with New: with no row the keys are
-// none, the suppliers return empty values and no error, and no log line holds the old values.
-func Test_New_oldEnvironmentIgnored(t *testing.T) {
-	t.Setenv("AWS_ACCESS_KEY", "synthetic-old-access")
-	t.Setenv("AWS_SECRET_KEY", "synthetic-old-secret")
-	t.Setenv("ELEVENLABS_API_KEY", "synthetic-old-eleven")
-
-	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
-
-	list, err := h.Describe(context.Background())
-	if err != nil || len(list) != 3 {
-		t.Fatalf("Wrong match. expect: 3 keys, got: %v %v", list, err)
-	}
-	for _, r := range list {
-		if r.Source != confighandler.SourceNone || r.HasSecret || r.EnvShadowed {
-			t.Errorf("Wrong match. %s expect: none without secret, got: %+v", r.Key, r)
+// levelOf returns the level of the first captured entry whose message contains the text, or false.
+func levelOf(logs *logtest.Capture, text string) (logrus.Level, bool) {
+	for _, e := range logs.Entries() {
+		if strings.Contains(e.Message, text) {
+			return e.Level, true
 		}
 	}
 
-	if got, err := ElevenlabsKey(h)(context.Background()); err != nil || got != "" {
-		t.Errorf("Wrong match. expect: empty, got: %q %v", got, err)
-	}
-	if a, s, err := AWSCredentials(h)(context.Background()); err != nil || a != "" || s != "" {
-		t.Errorf("Wrong match. expect: empty pair, got: %q %q %v", a, s, err)
-	}
-
-	logs := logtest.New(t)
-	LogSources(context.Background(), h)
-	logs.AssertAbsent(t, "synthetic-old-access", "synthetic-old-secret", "synthetic-old-eleven")
+	return 0, false
 }
 
-// A lookup function handed straight to the handler, even one that answers the old variable names,
-// supplies nothing, because the keys of the service declare no environment name. A stored value
-// is used even when the lookup answers.
+// untouchedStore is a store that fails the test when any method is called: the tokens come from the
+// environment and the stored settings are never read.
+type untouchedStore struct {
+	t *testing.T
+}
+
+func (s untouchedStore) fail(name string) {
+	s.t.Helper()
+	s.t.Errorf("Wrong match. the store must not be touched, got a call of %s", name)
+}
+
+func (s untouchedStore) Get(context.Context, string) (*confighandler.Row, error) {
+	s.fail("Get")
+	return nil, errors.New("must not be called")
+}
+
+func (s untouchedStore) List(context.Context) ([]*confighandler.Row, error) {
+	s.fail("List")
+	return nil, errors.New("must not be called")
+}
+
+func (s untouchedStore) Insert(context.Context, *confighandler.Row, *confighandler.History) error {
+	s.fail("Insert")
+	return errors.New("must not be called")
+}
+
+func (s untouchedStore) Update(context.Context, *confighandler.Row, uint32, *confighandler.History) error {
+	s.fail("Update")
+	return errors.New("must not be called")
+}
+
+func (s untouchedStore) Delete(context.Context, string, uint32, *confighandler.History) error {
+	s.fail("Delete")
+	return errors.New("must not be called")
+}
+
+func (s untouchedStore) ListHistories(context.Context, string, confighandler.HistoryCursor, int) ([]*confighandler.History, error) {
+	s.fail("ListHistories")
+	return nil, errors.New("must not be called")
+}
+
+// Test_ElevenlabsKey checks the environment value: set, trimmed, unset, empty and an unresolved
+// placeholder. A key that is not configured is an empty value and no error. A store that fails when
+// it is touched lives next to the supplier.
+func Test_ElevenlabsKey(t *testing.T) {
+	tests := []struct {
+		name string
+
+		value string
+
+		expect string
+	}{
+		{name: "unset"},
+		{name: "set", value: "fake-eleven", expect: "fake-eleven"},
+		{name: "spaces are trimmed", value: "  fake-eleven\n", expect: "fake-eleven"},
+		{name: "empty and white space", value: "   "},
+		{name: "placeholder", value: "[[BIN_MANAGER__ELEVENLABS_API_KEY]]"},
+		{name: "placeholder is only a prefix rule", value: "fake-[[mid", expect: "fake-[[mid"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv(configkeys.EnvElevenlabsAPIKey, tt.value)
+
+			if _, err := New(&config.Config{ConfigEncryptionKeys: testKeyList(1)}, untouchedStore{t: t}); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			got, err := ElevenlabsKey()(context.Background())
+			if err != nil || got != tt.expect {
+				t.Errorf("Wrong match. expect: %q, got: %q %v", tt.expect, got, err)
+			}
+		})
+	}
+}
+
+// Test_AWSCredentials checks the environment pair: both set is the pair (trimmed), neither or a
+// placeholder is not configured (an empty pair, no error), exactly one set is refused with
+// ErrKeyUnavailable wrapping ErrAWSPairIncomplete (and an empty pair).
+func Test_AWSCredentials(t *testing.T) {
+	tests := []struct {
+		name string
+
+		access string
+		secret string
+
+		expectAccess string
+		expectSecret string
+		expectHalf   bool
+	}{
+		{name: "unset"},
+		{name: "both set", access: "fake-access", secret: "fake-secret", expectAccess: "fake-access", expectSecret: "fake-secret"},
+		{name: "spaces are trimmed", access: " fake-access\n", secret: "  fake-secret ", expectAccess: "fake-access", expectSecret: "fake-secret"},
+		{name: "both empty", access: "  ", secret: ""},
+		{name: "both placeholder", access: "[[BIN_MANAGER__AWS_ACCESS_KEY]]", secret: "[[BIN_MANAGER__AWS_SECRET_KEY]]"},
+		{name: "access only", access: "fake-access", expectHalf: true},
+		{name: "secret only", secret: "fake-secret", expectHalf: true},
+		{name: "access set and secret placeholder", access: "fake-access", secret: "[[BIN_MANAGER__AWS_SECRET_KEY]]", expectHalf: true},
+		{name: "access placeholder and secret set", access: "[[BIN_MANAGER__AWS_ACCESS_KEY]]", secret: "fake-secret", expectHalf: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv(configkeys.EnvAWSAccessKey, tt.access)
+			t.Setenv(configkeys.EnvAWSSecretKey, tt.secret)
+
+			if _, err := New(&config.Config{ConfigEncryptionKeys: testKeyList(1)}, untouchedStore{t: t}); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			a, s, err := AWSCredentials()(context.Background())
+			if tt.expectHalf {
+				if !errors.Is(err, ErrKeyUnavailable) || !errors.Is(err, ErrAWSPairIncomplete) || a != "" || s != "" {
+					t.Errorf("Wrong match. expect: ErrKeyUnavailable wrapping ErrAWSPairIncomplete and an empty pair, got: %q %q %v", a, s, err)
+				}
+				if err != nil && (strings.Contains(err.Error(), "fake-access") || strings.Contains(err.Error(), "fake-secret")) {
+					t.Errorf("Wrong match. the error holds a value: %v", err)
+				}
+				return
+			}
+			if err != nil || a != tt.expectAccess || s != tt.expectSecret {
+				t.Errorf("Wrong match. expect: %q %q, got: %q %q %v", tt.expectAccess, tt.expectSecret, a, s, err)
+			}
+		})
+	}
+}
+
+// The suppliers keep nothing, and the stored values are not read: a changed variable is the next
+// call's result, and a stored row next to an unset variable gives the empty value.
+func Test_suppliers_nextCallSeesTheChange(t *testing.T) {
+	t.Setenv(configkeys.EnvAWSAccessKey, "")
+	t.Setenv(configkeys.EnvAWSSecretKey, "")
+	t.Setenv(configkeys.EnvElevenlabsAPIKey, "")
+
+	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
+	setSecret(t, h, configkeys.KeyAWSAccessKey, "stored-access")
+	setSecret(t, h, configkeys.KeyAWSSecretKey, "stored-secret")
+	setSecret(t, h, configkeys.KeyElevenlabsAPIKey, "stored-eleven")
+
+	aws := AWSCredentials()
+	eleven := ElevenlabsKey()
+	ctx := context.Background()
+
+	if a, s, err := aws(ctx); err != nil || a != "" || s != "" {
+		t.Fatalf("Wrong match. expect: an empty pair, got: %q %q %v", a, s, err)
+	}
+	if e, err := eleven(ctx); err != nil || e != "" {
+		t.Fatalf("Wrong match. expect: empty, got: %q %v", e, err)
+	}
+
+	t.Setenv(configkeys.EnvAWSAccessKey, "env-access")
+	t.Setenv(configkeys.EnvAWSSecretKey, "env-secret")
+	t.Setenv(configkeys.EnvElevenlabsAPIKey, "env-eleven")
+	if a, s, _ := aws(ctx); a != "env-access" || s != "env-secret" {
+		t.Errorf("Wrong match. expect: the environment pair, got: %q %q", a, s)
+	}
+	if e, _ := eleven(ctx); e != "env-eleven" {
+		t.Errorf("Wrong match. expect: the environment value, got: %q", e)
+	}
+}
+
+// The handler of the stored settings does not read the environment: the keys declare no Env, so
+// a lookup that serves the variable names is never asked and supplies nothing.
 func Test_registry_fakeLookupIgnored(t *testing.T) {
 	reg, err := configkeys.NewRegistry()
 	if err != nil {
@@ -366,14 +266,13 @@ func Test_registry_fakeLookupIgnored(t *testing.T) {
 	lookup := func(name string) (string, bool) {
 		asked = append(asked, name)
 		switch name {
-		case "AWS_ACCESS_KEY", "AWS_SECRET_KEY", "ELEVENLABS_API_KEY":
+		case configkeys.EnvAWSAccessKey, configkeys.EnvAWSSecretKey, configkeys.EnvElevenlabsAPIKey:
 			return "synthetic-lookup-" + name, true
 		}
 		return "", false
 	}
 
-	store := storetest.NewMemory()
-	h := confighandler.NewHandler(reg, store, crypto, lookup)
+	h := confighandler.NewHandler(reg, storetest.NewMemory(), crypto, lookup)
 
 	for _, key := range []string{configkeys.KeyAWSAccessKey, configkeys.KeyAWSSecretKey, configkeys.KeyElevenlabsAPIKey} {
 		secret, res, err := h.Secret(context.Background(), key)
@@ -384,189 +283,87 @@ func Test_registry_fakeLookupIgnored(t *testing.T) {
 	if len(asked) != 0 {
 		t.Errorf("Wrong match. expect: the lookup is not asked, got: %v", asked)
 	}
-
-	// a stored row wins and the lookup value is not used
-	setSecret(t, h, configkeys.KeyElevenlabsAPIKey, "db-eleven")
-	got, err := ElevenlabsKey(h)(context.Background())
-	if err != nil || got != "db-eleven" {
-		t.Errorf("Wrong match. expect: db-eleven, got: %q %v", got, err)
-	}
-	_, res, _ := h.Secret(context.Background(), configkeys.KeyElevenlabsAPIKey)
-	if res.Source != confighandler.SourceDB || res.EnvShadowed {
-		t.Errorf("Wrong match. expect: db and not shadowed, got: %+v", res)
-	}
 }
 
-// entriesByKey returns the captured entries of LogSources that carry the key field.
-func entriesByKey(hook *logrustest.Hook) map[string]*logrus.Entry {
-	res := map[string]*logrus.Entry{}
-	for _, e := range hook.AllEntries() {
-		if k, ok := e.Data["key"].(string); ok {
-			res[k] = e
-		}
-	}
+// LogStates: one line per variable. A variable that is not set is an info line (every provider key is
+// optional); a placeholder is a warning with the words "unresolved placeholder"; a set variable is
+// an info line; exactly one AWS variable set adds one warning. No line holds a value.
+func Test_LogStates(t *testing.T) {
+	const (
+		unsetText       = "The variable is not set. variable: "
+		placeholderText = "The variable holds an unresolved placeholder. variable: "
+		setText         = "The variable is set. variable: "
+		halfText        = "Only one of the two AWS variables is set, so the AWS credentials are refused."
+	)
 
-	return res
-}
-
-func Test_LogSources_levels(t *testing.T) {
 	tests := []struct {
 		name string
 
-		stored map[string]string
+		access string
+		secret string
+		eleven string
 
-		expectLevel map[string]logrus.Level
-		expectWarn  int
-		expectText  []string
+		expectAccess logrus.Level
+		expectSecret logrus.Level
+		expectEleven logrus.Level
+		expectTexts  [3]string
+		expectHalf   bool
 	}{
-		{
-			name: "nothing stored is info for every key",
-			expectLevel: map[string]logrus.Level{
-				configkeys.KeyAWSAccessKey:     logrus.InfoLevel,
-				configkeys.KeyAWSSecretKey:     logrus.InfoLevel,
-				configkeys.KeyElevenlabsAPIKey: logrus.InfoLevel,
-			},
-			expectText: []string{"not configured", `"source":"none"`},
-		},
-		{
-			name:   "a stored key is info",
-			stored: map[string]string{configkeys.KeyElevenlabsAPIKey: "db-eleven-sentinel"},
-			expectLevel: map[string]logrus.Level{
-				configkeys.KeyAWSAccessKey:     logrus.InfoLevel,
-				configkeys.KeyAWSSecretKey:     logrus.InfoLevel,
-				configkeys.KeyElevenlabsAPIKey: logrus.InfoLevel,
-			},
-			expectText: []string{"source: db"},
-		},
-		{
-			name:   "both aws keys stored is info only",
-			stored: map[string]string{configkeys.KeyAWSAccessKey: "db-access-sentinel", configkeys.KeyAWSSecretKey: "db-secret-sentinel"},
-			expectLevel: map[string]logrus.Level{
-				configkeys.KeyAWSAccessKey: logrus.InfoLevel,
-				configkeys.KeyAWSSecretKey: logrus.InfoLevel,
-			},
-		},
-		{
-			name:       "only one aws key stored warns",
-			stored:     map[string]string{configkeys.KeyAWSAccessKey: "db-access-sentinel"},
-			expectWarn: 1,
-			expectText: []string{"Only one of the two AWS keys is stored"},
-		},
+		{name: "unset", expectAccess: logrus.InfoLevel, expectSecret: logrus.InfoLevel, expectEleven: logrus.InfoLevel, expectTexts: [3]string{unsetText, unsetText, unsetText}},
+		{name: "all set", access: "log-fake-a", secret: "log-fake-s", eleven: "log-fake-e", expectAccess: logrus.InfoLevel, expectSecret: logrus.InfoLevel, expectEleven: logrus.InfoLevel, expectTexts: [3]string{setText, setText, setText}},
+		{name: "placeholders", access: "[[A]]", secret: "[[S]]", eleven: "[[E]]", expectAccess: logrus.WarnLevel, expectSecret: logrus.WarnLevel, expectEleven: logrus.WarnLevel, expectTexts: [3]string{placeholderText, placeholderText, placeholderText}},
+		{name: "access only", access: "log-fake-a", expectAccess: logrus.InfoLevel, expectSecret: logrus.InfoLevel, expectEleven: logrus.InfoLevel, expectTexts: [3]string{setText, unsetText, unsetText}, expectHalf: true},
+		{name: "secret only", secret: "log-fake-s", expectAccess: logrus.InfoLevel, expectSecret: logrus.InfoLevel, expectEleven: logrus.InfoLevel, expectTexts: [3]string{unsetText, setText, unsetText}, expectHalf: true},
+		{name: "access set and secret placeholder", access: "log-fake-a", secret: "[[S]]", expectAccess: logrus.InfoLevel, expectSecret: logrus.WarnLevel, expectEleven: logrus.InfoLevel, expectTexts: [3]string{setText, placeholderText, unsetText}, expectHalf: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			store := storetest.NewMemory()
-			h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
-			for k, v := range tt.stored {
-				setSecret(t, h, k, v)
-			}
+			t.Setenv(configkeys.EnvAWSAccessKey, tt.access)
+			t.Setenv(configkeys.EnvAWSSecretKey, tt.secret)
+			t.Setenv(configkeys.EnvElevenlabsAPIKey, tt.eleven)
 
 			logs := logtest.New(t)
-			hook := logrustest.NewLocal(logrus.StandardLogger())
-			LogSources(context.Background(), h)
+			LogStates()
 
-			entries := entriesByKey(hook)
-			for key, level := range tt.expectLevel {
-				e, ok := entries[key]
-				if !ok || e.Level != level {
-					t.Errorf("Wrong match. %s expect: level %v, got: %+v", key, level, e)
-				}
+			expectLines := 3
+			if tt.expectHalf {
+				expectLines = 4
 			}
-			if logs.Count(logrus.WarnLevel) != tt.expectWarn || logs.Count(logrus.ErrorLevel) != 0 {
-				t.Errorf("Wrong match. expect: %d warnings and no error, got: %d and %d", tt.expectWarn, logs.Count(logrus.WarnLevel), logs.Count(logrus.ErrorLevel))
+			if logs.Len() != expectLines {
+				t.Errorf("Wrong match. expect: %d lines, got: %s", expectLines, logs.Dump())
 			}
 
-			dump := logs.Dump()
-			for _, want := range tt.expectText {
-				if !strings.Contains(dump, want) {
-					t.Errorf("Wrong match. expect to contain: %q, got: %q", want, dump)
+			checks := []struct {
+				name   string
+				text   string
+				expect logrus.Level
+			}{
+				{configkeys.EnvAWSAccessKey, tt.expectTexts[0], tt.expectAccess},
+				{configkeys.EnvAWSSecretKey, tt.expectTexts[1], tt.expectSecret},
+				{configkeys.EnvElevenlabsAPIKey, tt.expectTexts[2], tt.expectEleven},
+			}
+			for _, c := range checks {
+				if lv, ok := levelOf(logs, c.text+c.name); !ok || lv != c.expect {
+					t.Errorf("Wrong match. %s expect: %v, got: %v %v, %s", c.name, c.expect, lv, ok, logs.Dump())
 				}
 			}
-			if logs.HasField("env_shadowed") || strings.Contains(dump, "env_shadowed") {
-				t.Errorf("Wrong match. the log must not hold env_shadowed: %q", dump)
+
+			lv, ok := levelOf(logs, halfText)
+			if ok != tt.expectHalf || (ok && lv != logrus.WarnLevel) {
+				t.Errorf("Wrong match. half pair expect: %v warn, got: %v %v", tt.expectHalf, lv, ok)
 			}
-			for _, bad := range []string{"db-eleven-sentinel", "db-access-sentinel", "db-secret-sentinel"} {
-				if strings.Contains(dump, bad) {
-					t.Errorf("Wrong match. must not contain: %q, got: %q", bad, dump)
-				}
-			}
+			logs.AssertAbsent(t, "log-fake", "[[A]]", "[[S]]", "[[E]]")
 		})
-	}
-}
-
-// A database read error is a warning and LogSources returns normally.
-func Test_LogSources_readError(t *testing.T) {
-	store := storetest.NewMemory()
-	store.ListErr = errors.New("database is down")
-	h := newTestHandler(t, &config.Config{}, store)
-
-	logs := logtest.New(t)
-	LogSources(context.Background(), h)
-
-	if logs.Count(logrus.WarnLevel) != 1 || logs.Count(logrus.ErrorLevel) != 0 || !strings.Contains(logs.Dump(), "Could not read the config sources") {
-		t.Errorf("Wrong match. expect: one warning, got: %q", logs.Dump())
-	}
-}
-
-func Test_LogSources_unusableRow(t *testing.T) {
-	store := storetest.NewMemory()
-	writer := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
-	setSecret(t, writer, configkeys.KeyElevenlabsAPIKey, "stored-one")
-
-	logs := logtest.New(t)
-	LogSources(context.Background(), newTestHandler(t, &config.Config{}, store))
-
-	dump := logs.Dump()
-	if logs.Count(logrus.ErrorLevel) != 1 || !strings.Contains(dump, "can not be used") || strings.Contains(dump, "stored-one") {
-		t.Errorf("Wrong match. got: %q", dump)
-	}
-}
-
-// A key is never part of an error text or a log line of the suppliers and of LogSources.
-func Test_noSecretInErrorsOrLogs(t *testing.T) {
-	const sentinel = "sentinel-key-value-9f3"
-
-	store := storetest.NewMemory()
-	healthy := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
-	for _, k := range []string{configkeys.KeyAWSAccessKey, configkeys.KeyAWSSecretKey, configkeys.KeyElevenlabsAPIKey} {
-		setSecret(t, healthy, k, sentinel)
-	}
-
-	store.GetErr = errors.New("database is down")
-
-	logs := logtest.New(t)
-	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
-
-	_, _, errAWS := AWSCredentials(h)(context.Background())
-	_, errEleven := ElevenlabsKey(h)(context.Background())
-	LogSources(context.Background(), h)
-
-	for _, err := range []error{errAWS, errEleven} {
-		if err == nil || strings.Contains(err.Error(), sentinel) {
-			t.Errorf("Wrong match. expect: an error without the key, got: %v", err)
-		}
-	}
-	if strings.Contains(logs.Dump(), sentinel) {
-		t.Errorf("Wrong match. the key reached the log")
-	}
-
-	// the healthy path logs sources only
-	store.GetErr = nil
-	logs2 := logtest.New(t)
-	LogSources(context.Background(), newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store))
-	if strings.Contains(logs2.Dump(), sentinel) {
-		t.Errorf("Wrong match. the key reached the log")
 	}
 }
 
 // Parallel reads are safe.
 func Test_suppliers_concurrent(t *testing.T) {
-	h := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, storetest.NewMemory())
-	setSecret(t, h, configkeys.KeyAWSAccessKey, "a")
-	setSecret(t, h, configkeys.KeyAWSSecretKey, "s")
-	setSecret(t, h, configkeys.KeyElevenlabsAPIKey, "e")
-	aws := AWSCredentials(h)
-	eleven := ElevenlabsKey(h)
+	t.Setenv(configkeys.EnvAWSAccessKey, "a")
+	t.Setenv(configkeys.EnvAWSSecretKey, "s")
+	t.Setenv(configkeys.EnvElevenlabsAPIKey, "e")
+	aws := AWSCredentials()
+	eleven := ElevenlabsKey()
 
 	var wg sync.WaitGroup
 	for i := 0; i < 20; i++ {

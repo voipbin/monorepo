@@ -17,13 +17,13 @@ With the Number Provider API you can:
 - List the carriers the platform supports and see which of them can serve now
 - Enable or disable a carrier for number purchase
 - Set the purchase order (a lower ``priority`` is tried first)
-- Store the carrier credentials (write-only) and the non-secret settings of the carrier
-- Delete the stored credentials (the carrier cannot serve until a new secret is stored)
+- Set the non-secret settings of the carrier (``config``)
+- See whether the carrier secret is present (the secret itself is set as an environment variable of the platform, not through this API)
 
 
 How Providers Are Chosen
 ------------------------
-When a number is purchased, VoIPBin tries the carriers that are *usable* in ascending ``priority`` (ties are ordered by ``provider_name``). A carrier is usable when it is enabled, has a stored credential, and has all the ``config`` keys it requires (``twilio`` needs ``sid`` and ``trunk_sid``).
+When a number is purchased, VoIPBin tries the carriers that are *usable* in ascending ``priority`` (ties are ordered by ``provider_name``). A carrier is usable when it is enabled, has its secret in the environment, and has all the ``config`` keys it requires (``twilio`` needs ``sid`` and ``trunk_sid``).
 
 VoIPBin falls back to the next carrier only when the current carrier definitively refused the order. If the outcome of an order is unknown (for example a timeout), the purchase stops instead of ordering from another carrier, so a number is never bought twice. To route around a failing carrier, disable it.
 
@@ -31,24 +31,29 @@ A fallback is useful only when the next carrier holds the same number. The avail
 
 .. note:: **AI Implementation Hint**
 
-   ``telnyx`` and ``twilio`` can purchase numbers. ``twilio`` is listed with ``enabled`` false and takes part in a purchase only after an administrator enters its ``config`` (``sid`` and ``trunk_sid``) and secret, and enables it. Enter the ``config`` before the secret; the secret is refused until both keys exist. A carrier without a stored secret cannot purchase, release or search; there is no platform environment credential.
+   ``telnyx`` and ``twilio`` can purchase numbers. ``twilio`` is listed with ``enabled`` false and takes part in a purchase only after its ``TWILIO_AUTH_TOKEN`` is set on the platform, its ``config`` (``sid`` and ``trunk_sid``) is complete (``sid`` can come from ``TWILIO_ACCOUNT_SID``), and an administrator enables it. A carrier without its secret variable cannot purchase, release or search.
 
 
 Credentials
 -----------
-The credentials of a carrier come from the stored setting only:
+The secret of a carrier is read from the environment of ``number-manager`` only: ``TELNYX_API_KEY`` for ``telnyx`` and ``TWILIO_AUTH_TOKEN`` for ``twilio``. A secret that was stored through ``PUT /number_providers/{provider_name}/secret`` is not read and not used. The request is still accepted and changes the stored row only, so it has no effect on purchases, releases and searches. Change the environment variable and restart ``number-manager`` to rotate a secret.
 
-* ``db``: the secret stored through ``PUT /number_providers/{provider_name}/secret``, together with the ``config`` of the provider.
-* ``none``: no secret is stored. The carrier is not usable until one is stored.
-* ``db_undecryptable``: a secret is stored but cannot be decrypted (for example the encryption key was removed). The provider is unusable and is **not** replaced by any other credential. Restore the key, or delete the stored secret with ``DELETE /number_providers/{provider_name}/secret``.
+The non-secret ``config`` of the stored setting is used first. A ``config`` key that the stored setting does not have (or has empty) is filled from the environment: ``connection_id`` from ``TELNYX_CONNECTION_ID``, ``profile_id`` from ``TELNYX_PROFILE_ID`` and ``sid`` from ``TWILIO_ACCOUNT_SID``. ``trunk_sid`` has no variable. An unset, empty or unresolved placeholder variable (a value that starts with ``[[``) counts as not set. The ``config`` in a response shows the stored setting only, so a provider that is usable only through the variables shows an empty ``config``. A ``config`` value that is stored hides a changed variable, so check the ``config`` after a change of ``TELNYX_CONNECTION_ID``, ``TELNYX_PROFILE_ID`` or ``TWILIO_ACCOUNT_SID``.
 
-The secret is write-only. It is never returned, logged or sent in an event. A response only tells ``has_secret``, the ``key_version`` of the key that encrypted it, and who changed it.
+``credential_source`` tells where the secret comes from:
+
+* ``env``: the secret variable of the provider is set.
+* ``none``: the secret variable is not set. The carrier is not usable until it is set.
+
+``db`` and ``db_undecryptable`` are no longer returned, because a stored secret is not read. They stay in the list of values so that an older client keeps working.
+
+``has_secret`` tells whether the secret variable holds a value; a stored secret does not count. After a ``DELETE`` of the stored secret, ``has_secret`` stays true while the variable is set. The secret is never returned, logged or sent in an event.
 
 .. warning:: **Changing the account**
 
-   Numbers are released through the account that purchased them. Replacing the stored secret with the token of another account (or, for ``twilio``, the ``sid`` of another account), or deleting the stored secret, makes the release of the numbers bought through the previous account fail. Change the account only when no number of that provider remains, or when the new secret belongs to the same account.
+   Numbers are released through the account that purchased them. Replacing the secret variable with the token of another account (or, for ``twilio``, the ``sid`` of another account) makes the release of the numbers bought through the previous account fail. Change the account only when no number of that provider remains, or when the new secret belongs to the same account.
 
-Storing a secret needs the encryption key to be configured on the platform. Without it the request is answered with ``503 Service Unavailable``.
+Storing a secret through the API still needs the encryption key to be configured on the platform. Without it the request is answered with ``503 Service Unavailable``. The stored secret is not used.
 
 
 Errors

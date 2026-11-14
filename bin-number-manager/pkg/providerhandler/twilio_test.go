@@ -50,9 +50,11 @@ func candidateNames(res []*Candidate) []number.ProviderName {
 
 func Test_Twilio_purchaseCandidates(t *testing.T) {
 	ctx := context.Background()
+	setCredentialEnv(t, map[string]string{envTelnyxAPIKey: "env-token", envTwilioAuthToken: "env-twilio-token"})
 	full := map[string]string{"sid": testTwilioSID, "trunk_sid": testTwilioTrunk}
 
 	t.Run("without any row there is no candidate: twilio is disabled by default and telnyx has no secret", func(t *testing.T) {
+		setCredentialEnv(t, nil)
 		h := newTestHandler(t, newFakeDB(), "")
 
 		res, err := h.PurchaseCandidates(ctx)
@@ -61,7 +63,7 @@ func Test_Twilio_purchaseCandidates(t *testing.T) {
 		}
 	})
 
-	t.Run("an enabled twilio with a DB secret and the sid and trunk_sid is a candidate, ordered by priority", func(t *testing.T) {
+	t.Run("an enabled twilio with the variable and the sid and trunk_sid is a candidate, ordered by priority", func(t *testing.T) {
 		db := newFakeDB()
 		seedTelnyx(t, db)
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, true, 1, full)
@@ -153,7 +155,8 @@ func Test_Twilio_purchaseCandidates(t *testing.T) {
 		}
 	})
 
-	t.Run("an enabled twilio row without a secret is counted as unusable (no_secret)", func(t *testing.T) {
+	t.Run("an enabled twilio row without the variable is counted as unusable (no_secret)", func(t *testing.T) {
+		setCredentialEnv(t, nil)
 		db := newFakeDB()
 		seedTelnyx(t, db)
 		db.rows[number.ProviderNameTwilio] = &provider.Provider{ProviderName: number.ProviderNameTwilio, Enabled: true, Priority: 1}
@@ -181,8 +184,9 @@ func Test_Twilio_purchaseCandidates(t *testing.T) {
 
 func Test_Twilio_releaseAndSearchNeedTheSidOnly(t *testing.T) {
 	ctx := context.Background()
+	setCredentialEnv(t, map[string]string{envTwilioAuthToken: "env-twilio-token"})
 
-	t.Run("a DB secret with the sid only can release although it cannot purchase", func(t *testing.T) {
+	t.Run("the variable with the sid only can release although it cannot purchase", func(t *testing.T) {
 		db := newFakeDB()
 		db.rows[number.ProviderNameTwilio] = twilioRow(t, true, 1, map[string]string{"sid": testTwilioSID})
 		h := newTestHandler(t, db, testKeys(1))
@@ -192,8 +196,8 @@ func Test_Twilio_releaseAndSearchNeedTheSidOnly(t *testing.T) {
 		}
 
 		info, err := h.Get(ctx, number.ProviderNameTwilio)
-		if err != nil || info.Usable || info.CredentialSource != provider.CredentialSourceDB {
-			t.Errorf("Wrong match. expect: db source and not usable, got: %+v, %v", info, err)
+		if err != nil || info.Usable || info.CredentialSource != provider.CredentialSourceEnv {
+			t.Errorf("Wrong match. expect: env source and not usable, got: %+v, %v", info, err)
 		}
 	})
 
@@ -242,6 +246,7 @@ func Test_Twilio_releaseAndSearchNeedTheSidOnly(t *testing.T) {
 
 func Test_Twilio_adminRequiresTheConfigBeforeTheSecret(t *testing.T) {
 	ctx := context.Background()
+	setCredentialEnv(t, nil)
 
 	t.Run("the secret is refused until the sid and trunk_sid are set", func(t *testing.T) {
 		h := newTestHandler(t, newFakeDB(), testKeys(1))
@@ -259,8 +264,8 @@ func Test_Twilio_adminRequiresTheConfigBeforeTheSecret(t *testing.T) {
 			t.Fatal(err)
 		}
 		info, err := h.UpdateSecret(ctx, number.ProviderNameTwilio, testActor, "fake-twilio")
-		if err != nil || !info.HasSecret || info.Enabled {
-			t.Errorf("Wrong match. expect: stored and disabled, got: %+v, %v", info, err)
+		if err != nil || info.HasSecret || info.Enabled {
+			t.Errorf("Wrong match. expect: stored (has_secret follows the variable, which is unset) and disabled, got: %+v, %v", info, err)
 		}
 	})
 
@@ -285,10 +290,11 @@ func Test_Twilio_adminRequiresTheConfigBeforeTheSecret(t *testing.T) {
 
 func Test_Twilio_storedValuesWithWhitespace(t *testing.T) {
 	ctx := context.Background()
+	setCredentialEnv(t, map[string]string{envTwilioAuthToken: "  env-twilio-token\r\n", envTwilioAccountSID: " " + testTwilioSID + "\n"})
 	db := newFakeDB()
 	h := newTestHandler(t, db, testKeys(1))
 
-	// the sid is trimmed by the factory, the secret by UpdateSecret
+	// the sid of the row is trimmed by the factory, the secret by UpdateSecret and by the variable read
 	db.rows[number.ProviderNameTwilio] = &provider.Provider{
 		ProviderName: number.ProviderNameTwilio,
 		Config:       map[string]string{"sid": " " + testTwilioSID + "\n", "trunk_sid": testTwilioTrunk},
@@ -296,10 +302,14 @@ func Test_Twilio_storedValuesWithWhitespace(t *testing.T) {
 	if _, err := h.UpdateSecret(ctx, number.ProviderNameTwilio, testActor, " twilio-token\r\n"); err != nil {
 		t.Fatal(err)
 	}
+	stored, err := decryptSecret(h.crypto, db.rows[number.ProviderNameTwilio].SecretCiphertext, db.rows[number.ProviderNameTwilio].KeyVersion)
+	if err != nil || stored != "twilio-token" {
+		t.Fatalf("Wrong match. the stored secret must be trimmed. got: %v", err)
+	}
 
 	r, err := h.resolve(ctx, number.ProviderNameTwilio)
-	if err != nil || r.creds.Secret != "twilio-token" {
-		t.Fatalf("Wrong match. the secret must be trimmed. got: %v", err)
+	if err != nil || r.creds.Secret != "env-twilio-token" {
+		t.Fatalf("Wrong match. the secret must come from the variable, trimmed. got: %v", err)
 	}
 	if p, err := h.ForRelease(ctx, number.ProviderNameTwilio); err != nil || p == nil {
 		t.Errorf("Wrong match. a sid with surrounding whitespace must work. got: %v, %v", p, err)

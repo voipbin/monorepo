@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"net/http"
@@ -143,22 +142,23 @@ func run(db *sql.DB) error {
 	localAddress := os.Getenv("POD_IP")
 	podID := os.Getenv("HOSTNAME")
 
-	// initialize cache and db handlers. They come first: the provider keys are read from the
-	// database at the time of use.
+	// initialize cache and db handlers.
 	cacheHandler := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDB)
 	if err := cacheHandler.Connect(); err != nil {
 		logrus.Fatalf("Could not connect to cache. err: %v", err)
 	}
 	dbHandler := dbhandler.NewDBHandler(db, cacheHandler)
 
-	// the stored settings: the provider keys are read per use, the stored value only
+	// the provider keys are read per use from the environment (AWS_ACCESS_KEY, AWS_SECRET_KEY,
+	// ELEVENLABS_API_KEY). The handler of the stored settings serves the config commands and the
+	// admin API only; its values are not read by a request.
 	configHandler, err := ttsconfig.New(config.Get(), dbHandler.ConfigStore())
 	if err != nil {
 		return errors.Wrapf(err, "could not create the config handler")
 	}
-	ttsconfig.LogSources(context.Background(), configHandler)
-	awsCreds := ttsconfig.AWSCredentials(configHandler)
-	elevenlabsKey := ttsconfig.ElevenlabsKey(configHandler)
+	ttsconfig.LogStates()
+	awsCreds := ttsconfig.AWSCredentials()
+	elevenlabsKey := ttsconfig.ElevenlabsKey()
 
 	ttsHandler := ttshandler.NewTTSHandler(awsCreds, config.Get().GCPTTSEndpoint, "/shared-data", localAddress, reqHandler)
 	if ttsHandler == nil {

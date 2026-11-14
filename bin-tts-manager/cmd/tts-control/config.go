@@ -17,6 +17,7 @@ import (
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-tts-manager/internal/config"
+	"monorepo/bin-tts-manager/internal/configkeys"
 	"monorepo/bin-tts-manager/internal/ttsconfig"
 	"monorepo/bin-tts-manager/pkg/dbhandler"
 )
@@ -30,6 +31,9 @@ const maxStdinBytes = 4096
 
 // configOut is where the config commands print. Tests replace it.
 var configOut io.Writer = os.Stdout
+
+// configErr is where the notice after a change is printed. Tests replace it.
+var configErr io.Writer = os.Stderr
 
 // configIn is where the secret value is read from. Tests replace it.
 var configIn io.Reader = os.Stdin
@@ -61,14 +65,15 @@ func cmdConfig() *cobra.Command {
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			return loadConfig(cmd)
 		},
-		Short: "Stored configuration (the TTS provider keys)",
-		Long: `Stored configuration: the keys of the TTS providers (the AWS access key and secret key of
-Amazon Polly, and the ElevenLabs API key). The two AWS keys are stored together: while only one of
-them is stored, AWS requests fail.
+		Short: "Stored settings of the TTS provider keys (not read by the service)",
+		Long: `Stored settings of the keys of the TTS providers (the AWS access key and secret key of Amazon
+Polly, and the ElevenLabs API key).
 
-The keys are stored in the database only; a key that is cleared is not configured. A change is
-used by the next request, with no restart. The daemon applies the table migration at its start; on a
-local database run "migrate up" first. The master key list is read from the environment
+The service does not read these stored values. It reads the environment variables AWS_ACCESS_KEY,
+AWS_SECRET_KEY (the same variables as the transcribe service) and ELEVENLABS_API_KEY, so a key is
+rotated in the deployment variables and a change here has no effect on a request. A stored value
+that is left behind is read only by an older image. The daemon applies the table migration at its
+start; on a local database run "migrate up" first. The master key list is read from the environment
 (TTS_CONFIG_ENCRYPTION_KEYS) and is never a flag. These commands need the database and the master
 key list only.`,
 	}
@@ -266,8 +271,16 @@ func setConfig(h confighandler.Handler, key string, actor uuid.UUID) error {
 		return errors.Wrap(err, "failed to store the value")
 	}
 
+	printEnvNotice(key)
+
 	out := toOutput(res)
 	return printConfig(&out)
+}
+
+// printEnvNotice tells on stderr which variable the service reads, so that a stored value is not
+// mistaken for the key in use. The stdout stays the JSON only.
+func printEnvNotice(key string) {
+	_, _ = fmt.Fprintf(configErr, "Note: the service reads the environment variable %s; the stored value is not used.\n", configkeys.EnvName(key))
 }
 
 func runConfigClear(cmd *cobra.Command, args []string) error {
@@ -289,6 +302,8 @@ func runConfigClear(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to clear the value")
 	}
+
+	printEnvNotice(key)
 
 	out := toOutput(res)
 	return printConfig(&out)

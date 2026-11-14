@@ -66,3 +66,33 @@ func Test_tableNames(t *testing.T) {
 		t.Errorf("Wrong match. the table names are part of the stored secret contract: %s %s", Table, HistoryTable)
 	}
 }
+
+// The variable names are the contract with the deployment definition. They are not declared on the
+// keys (Key.Env stays empty, so the admin listing does not suggest an environment source).
+func Test_envNames(t *testing.T) {
+	tests := []struct {
+		key    string
+		expect string
+		ok     bool
+	}{
+		{KeySendgridAPIKey, "SENDGRID_API_KEY", true},
+		{KeyMailgunAPIKey, "MAILGUN_API_KEY", true},
+		{KeyMailgunWebhookSigningKey, "MAILGUN_WEBHOOK_SIGNING_KEY", true},
+		{"no.such", "", false},
+	}
+	for _, tt := range tests {
+		got, ok := EnvName(tt.key)
+		if got != tt.expect || ok != tt.ok {
+			t.Errorf("Wrong match. %s expect: %q %v, got: %q %v", tt.key, tt.expect, tt.ok, got, ok)
+		}
+	}
+	if EnvSendgridAPIKey != "SENDGRID_API_KEY" || EnvMailgunAPIKey != "MAILGUN_API_KEY" || EnvMailgunWebhookSigningKey != "MAILGUN_WEBHOOK_SIGNING_KEY" {
+		t.Errorf("Wrong match. got: %s %s %s", EnvSendgridAPIKey, EnvMailgunAPIKey, EnvMailgunWebhookSigningKey)
+	}
+
+	for _, k := range Keys() {
+		if k.Env != "" {
+			t.Errorf("Wrong match. %s must declare no environment name, got: %s", k.Name, k.Env)
+		}
+	}
+}

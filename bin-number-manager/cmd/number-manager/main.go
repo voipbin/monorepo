@@ -147,16 +147,17 @@ func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	// A malformed key set must not stop the daemon: other services depend on the numbers. The
-	// provider secrets of the DB stay unusable (fail closed): no provider can purchase, release or
-	// search until the key set is repaired, because no credential is read from the environment.
+	// key set only protects the stored provider secrets, which are not used: the provider secrets
+	// come from the environment.
 	crypto, errCrypto := providerhandler.NewSecretCrypto(config.Get().NumberSecretEncryptionKeys)
 	if errCrypto != nil {
-		logrus.Errorf("The number secret encryption keys are malformed. The provider secrets cannot be used, so no provider can purchase, release or search. err: %v", errCrypto)
+		logrus.Errorf("The number secret encryption keys are malformed. A provider secret cannot be stored. err: %v", errCrypto)
 		crypto, _ = providerhandler.NewSecretCrypto("")
 	}
 
 	providerHandler := providerhandler.NewProviderHandler(reqHandler, db, crypto)
 
+	providerhandler.LogStates()
 	logPurchaseReadiness(context.Background(), providerHandler)
 
 	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler, providerHandler)
@@ -211,9 +212,9 @@ func logStartup(log *logrus.Entry, cfg *config.Config) {
 	}).Info("Starting number-manager...")
 }
 
-// logPurchaseReadiness logs once at start whether a provider can be used for a purchase. The
-// credentials come from number_providers only, so an empty table would otherwise show up first as a
-// failed purchase. A read error is logged and never stops the start.
+// logPurchaseReadiness logs once at start whether a provider can be used for a purchase. A missing
+// credential variable would otherwise show up first as a failed purchase. A read error is logged
+// and never stops the start.
 func logPurchaseReadiness(ctx context.Context, providerHandler providerhandler.ProviderHandler) {
 	log := logrus.WithField("func", "logPurchaseReadiness")
 
@@ -224,7 +225,7 @@ func logPurchaseReadiness(ctx context.Context, providerHandler providerhandler.P
 	}
 
 	if len(candidates) == 0 {
-		log.Warn("No provider is usable for a number purchase. Store a provider secret with the provider admin API.")
+		log.Warn("No provider is usable for a number purchase. Set TELNYX_API_KEY and TELNYX_CONNECTION_ID, or TWILIO_AUTH_TOKEN and TWILIO_ACCOUNT_SID with the trunk_sid of the provider config.")
 		return
 	}
 	log.Infof("The providers usable for a number purchase. count: %d", len(candidates))

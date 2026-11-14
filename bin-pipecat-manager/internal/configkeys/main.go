@@ -1,10 +1,10 @@
 // Package configkeys declares the configuration keys of bin-pipecat-manager.
 //
-// The keys are the platform keys of the vendors that the python runner talks to. The Go service
-// resolves the keys that a session uses when the session starts and hands them to the runner in
-// the request (platform_keys). The runner never reads the database and uses the keys of its
-// request only. The keys declare no environment variable and have no default: a key without a
-// stored value is not configured.
+// The keys are the platform keys of the vendors that the python runner talks to. The runner reads
+// them from the environment variables of its own container (the names are in scripts/pipecat/run.py),
+// not from these stored values, and the Go service sends no key in the request. The declarations
+// stay for the stored settings code (the config commands and the admin API) until it is removed.
+// The keys declare no environment variable and have no default.
 package configkeys
 
 import (
@@ -40,8 +40,8 @@ const (
 	maxEndpointsLen = 2020
 )
 
-// Keys returns the declarations. Every key is a secret. A key declares no environment variable,
-// so a key without a stored row has no value.
+// Keys returns the declarations. Every key is a secret. A key declares no environment variable:
+// the stored settings handler resolves stored rows only.
 func Keys() []confighandler.Key {
 	return []confighandler.Key{
 		{Name: KeyOpenAIAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "OpenAI API key of the platform. Used by sessions that run an OpenAI model without a key of the customer.", MaxLen: maxKeyLen},

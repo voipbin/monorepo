@@ -161,8 +161,9 @@ func Test_Update(t *testing.T) {
 
 func Test_UpdateSecret(t *testing.T) {
 	ctx := context.Background()
+	setCredentialEnv(t, nil)
 
-	t.Run("normal flow: config first, then the secret; the response carries no secret", func(t *testing.T) {
+	t.Run("normal flow: config first, then the secret; the stored secret is not an effective secret", func(t *testing.T) {
 		db := newFakeDB()
 		h := newTestHandler(t, db, testKeys(1, 2))
 
@@ -174,7 +175,7 @@ func Test_UpdateSecret(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if !info.HasSecret || info.KeyVersion != 2 || info.CredentialSource != provider.CredentialSourceDB || !info.Usable {
+		if info.HasSecret || info.KeyVersion != 2 || info.CredentialSource != provider.CredentialSourceNone || info.Usable {
 			t.Errorf("Wrong info. got: %+v", info)
 		}
 		if info.SecretUpdatedBy == nil || *info.SecretUpdatedBy != testActor || info.TMSecretUpdate == nil {
@@ -187,9 +188,10 @@ func Test_UpdateSecret(t *testing.T) {
 			t.Errorf("The secret is not stored as a ciphertext")
 		}
 
-		// resolving gives back the secret from the DB, not the env one
+		// resolving never gives back the stored secret: only the variable counts
+		t.Setenv(envTelnyxAPIKey, "env-token")
 		r, _ := h.resolve(ctx, number.ProviderNameTelnyx)
-		if r.creds.Secret != "fake-db-token" || r.source != provider.CredentialSourceDB {
+		if r.creds.Secret != "env-token" || r.source != provider.CredentialSourceEnv {
 			t.Errorf("Wrong resolution. source: %s", r.source)
 		}
 	})
@@ -229,7 +231,7 @@ func Test_UpdateSecret(t *testing.T) {
 		addPlain(h)
 
 		info, err := h.UpdateSecret(ctx, plainProvider, testActor, "fake-twilio")
-		if err != nil || !info.HasSecret || info.Enabled {
+		if err != nil || info.HasSecret || info.Enabled || len(db.rows[plainProvider].SecretCiphertext) == 0 {
 			t.Errorf("Wrong match. got: %+v, %v", info, err)
 		}
 	})
@@ -269,8 +271,9 @@ func Test_UpdateSecret(t *testing.T) {
 
 func Test_DeleteSecret(t *testing.T) {
 	ctx := context.Background()
+	setCredentialEnv(t, nil)
 
-	t.Run("deleting leaves the provider without a credential (no environment fallback)", func(t *testing.T) {
+	t.Run("deleting leaves the provider without a credential when the variable is not set", func(t *testing.T) {
 		db := newFakeDB()
 		h := newTestHandler(t, db, testKeys(1))
 
@@ -293,7 +296,7 @@ func Test_DeleteSecret(t *testing.T) {
 		}
 	})
 
-	t.Run("an undecryptable secret can be deleted to recover", func(t *testing.T) {
+	t.Run("a stored secret that no key decrypts can be deleted", func(t *testing.T) {
 		db := newFakeDB()
 		h := newTestHandler(t, db, testKeys(1))
 		_, _ = h.Update(ctx, number.ProviderNameTelnyx, testActor, nil, nil, map[string]string{"connection_id": "c1"})
@@ -301,13 +304,13 @@ func Test_DeleteSecret(t *testing.T) {
 
 		// the key of the stored secret is gone
 		h2 := newTestHandler(t, db, testKeys(2))
-		if r, _ := h2.resolve(ctx, number.ProviderNameTelnyx); r.source != provider.CredentialSourceDBUndecryptable {
-			t.Fatalf("expect an undecryptable secret, got: %s", r.source)
-		}
 
 		info, err := h2.DeleteSecret(ctx, number.ProviderNameTelnyx, testActor)
 		if err != nil || info.CredentialSource != provider.CredentialSourceNone || info.Usable {
 			t.Errorf("Wrong match. got: %+v, %v", info, err)
+		}
+		if len(db.rows[number.ProviderNameTelnyx].SecretCiphertext) != 0 {
+			t.Errorf("Wrong match. the stored secret is still there")
 		}
 	})
 
@@ -425,8 +428,8 @@ func Test_UpdateSecret_trimsWhitespace(t *testing.T) {
 	if _, err := h.UpdateSecret(ctx, plainProvider, testActor, "  fake-token\n"); err != nil {
 		t.Fatal(err)
 	}
-	r, _ := h.resolve(ctx, plainProvider)
-	if r.creds.Secret != "fake-token" {
+	row := db.rows[plainProvider]
+	if stored, err := decryptSecret(h.crypto, row.SecretCiphertext, row.KeyVersion); err != nil || stored != "fake-token" {
 		t.Errorf("The stored secret keeps the surrounding whitespace")
 	}
 

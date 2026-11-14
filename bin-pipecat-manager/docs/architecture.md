@@ -40,10 +40,10 @@ scripts/pipecat/  (Python, port 8000)
 
 | Layer | Package | Responsibility |
 |-------|---------|----------------|
-| Transport (Go) | `pkg/listenhandler` | Shared queue: create/get pipecatcall, `/v1/configs` (stored platform keys). Per-pod queue: stop, message-send, ping |
+| Transport (Go) | `pkg/listenhandler` | Shared queue: create/get pipecatcall, `/v1/configs` (stored settings, not read by the runner). Per-pod queue: stop, message-send, ping |
 | Transport (Go) | `pkg/httphandler` | WebSocket upgrade for Pipecat Python; tool execution callbacks from Python |
-| Session (Go) | `pkg/pipecatcallhandler` | In-memory session registry; audio bridge between Asterisk and Python; resolves the stored platform keys of a session for the runner request |
-| Config (Go) | `internal/pipecatconfig`, `internal/configkeys` | Stored platform keys: registry, master key, resolver (database only, no environment fallback) |
+| Session (Go) | `pkg/pipecatcallhandler` | In-memory session registry; audio bridge between Asterisk and Python; sends no platform key (the runner reads its environment variables) |
+| Config (Go) | `internal/pipecatconfig`, `internal/configkeys` | Stored settings: registry, master key, resolver (the resolver is not wired; the runner reads its own environment variables) |
 | Pipeline (Python) | `scripts/pipecat/` | STT → LLM → TTS execution via pipecat-ai library |
 | Data (Go) | `pkg/dbhandler` | MySQL: pipecatcall records and the config store (`pipecat_configs`, `pipecat_config_histories`); Redis: session cache |
 
@@ -57,7 +57,7 @@ ListenHandler routes over two queues:
 |---------|--------|---------|
 | `/v1/pipecatcalls$` | POST | Create pipecatcall — starts a new session |
 | `/v1/pipecatcalls/{{UUID}}$` | GET | Get pipecatcall by ID |
-| `/v1/configs` (and below) | GET, PUT, DELETE | Stored platform keys: list, write a secret, remove, history (served by `configrpc`; routed before the request log entry exists, so no body is logged). The per-pod queue handles the same requests too, because both queues use one handler; the API reaches the shared queue |
+| `/v1/configs` (and below) | GET, PUT, DELETE | Stored settings (not read by the runner): list, write a secret, remove, history (served by `configrpc`; routed before the request log entry exists, so no body is logged). The per-pod queue handles the same requests too, because both queues use one handler; the API reaches the shared queue |
 
 **Per-pod queue** `bin-manager.pipecat-manager.request.<POD_IP>` (volatile, auto-deletes on pod death):
 
@@ -77,8 +77,7 @@ POST /v1/pipecatcalls
     ↓ RPC to call-manager → get external media URI
     ↓ Go dials Asterisk WebSocket at MediaURI
     ↓ wait for MEDIA_START text message
-    ↓ resolve the stored platform keys the session uses (database only; 2 s bound)
-    ↓ HTTP POST localhost:8000/run (with platform_keys) → Python starts Pipecat pipeline
+    ↓ HTTP POST localhost:8000/run (no platform key) → Python reads its vendor keys from its environment and starts the Pipecat pipeline
     ↓ Python connects back to Go via WebSocket (frames.proto)
     ↓ bidirectional audio + tool call frames
     ↓ ConnAstDone closes on Asterisk disconnect → cleanup

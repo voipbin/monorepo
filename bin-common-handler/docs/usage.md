@@ -50,6 +50,7 @@ h := confighandler.NewHandler(reg, store, crypto, envLookup)
 secret, resolved, err := h.Secret(ctx, "provider.api_key") // db, then env, then default
 ```
 
+- The ai, billing, email, message, pipecat, transcribe and tts services declare no environment name and pass no environment lookup. They read their platform secrets from environment variables through `pkg/envsecret` and do not read the stored values.
 - The service provides the `Store` (two tables: `<svc>_configs` and `<svc>_config_histories`) and the migrations; the library provides the registry, the resolver and the cipher. Reference: `bin-email-manager/internal/configkeys`, `internal/emailconfig`, `pkg/dbhandler/config_store.go`.
 - A read error is an error, not "no row". A stored secret that can not be decrypted is never replaced by the environment value.
 - A general on/off flag is not a setting of this library; bool keys exist only as a provider selection inside an atomic group.

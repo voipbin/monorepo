@@ -42,7 +42,7 @@ go test -coverprofile cp.out -v $(go list ./...)
 # Verification (mandatory before commit)
 go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 
-# message-control config — the stored provider tokens (database and master key only; the value is read from stdin)
+# message-control config — the stored settings of the provider tokens (database and master key only; the value is read from stdin; the service does not read them, it reads MESSAGEBIRD_API_KEY and TELNYX_API_KEY)
 ./bin/message-control config list
 printf '%s' "$NEW_TOKEN" | ./bin/message-control config set --key provider.telnyx.auth_token --actor-id <uuid>
 ./bin/message-control config clear --key provider.telnyx.auth_token --actor-id <uuid>
@@ -62,7 +62,7 @@ REDIS_ADDRESS="127.0.0.1:6379" \
 
 ## CRITICAL: Provider tokens are read per request
 
-The MessageBird and Telnyx tokens are stored settings (`message_configs`; the stored value only, a key without a row is empty, and `AUTHTOKEN_MESSAGEBIRD` / `AUTHTOKEN_TELNYX` are not read any more). `requestexternal` receives a supplier function (`messageconfig.MessagebirdToken`, `TelnyxToken`) and calls it for every provider request. Never read the token from `config.Get()` in a send path and never cache it: a changed token must be used by the next request. A token that can not be read is an error (never replaced by an empty token). The Telnyx token here is not the one of `bin-number-manager`; a Telnyx key rotation needs both (see docs/operations.md, "Provider tokens"). The admin API route `/v1/configs` is handled before the request log entry exists and logs nothing of the request (the body of a secret write is the secret).
+The MessageBird and Telnyx tokens are read from the environment variables `MESSAGEBIRD_API_KEY` and `TELNYX_API_KEY` only (`bin-common-handler/pkg/envsecret`: not set, empty or an unresolved `[[...]]` placeholder means not configured, an empty token and no error). The stored settings (`message_configs`, `message-control config`, the admin API) are kept but never read by a send; `config set` and `clear` print a note on stderr. `requestexternal` receives a supplier function (`messageconfig.MessagebirdToken()`, `TelnyxToken()`) and calls it for every provider request. Never read the token from `config.Get()` in a send path and never cache it. `TELNYX_API_KEY` is shared with `bin-number-manager`; both must hold the same value (see docs/operations.md, "Provider tokens"). Roll back the image together with its deployment definition. The admin API route `/v1/configs` is handled before the request log entry exists and logs nothing of the request (the body of a secret write is the secret).
 
 ## Architecture Summary
 

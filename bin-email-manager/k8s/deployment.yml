@@ -61,6 +61,18 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: REDIS_DATABASE
+            - name: SENDGRID_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: SENDGRID_API_KEY
+                  optional: true
+            - name: MAILGUN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: MAILGUN_API_KEY
+                  optional: true
             - name: CLICKHOUSE_ADDRESS
               valueFrom:
                 secretKeyRef:

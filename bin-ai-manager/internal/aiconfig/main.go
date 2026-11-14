@@ -1,18 +1,19 @@
-// Package aiconfig wires the stored configuration of bin-ai-manager: the master key, the
-// registry, the suppliers that hand the platform LLM keys to the handlers at the time of use, and
-// the resolver of the MCP OAuth app of a vendor.
+// Package aiconfig wires the configuration of bin-ai-manager: the platform LLM keys and the OAuth
+// app of each MCP vendor, which are read from environment variables when a call needs them, and
+// the config handler of the stored settings (the master key, the registry) that only the admin API
+// and ai-control use.
 package aiconfig
 
 import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/pkg/confighandler"
+	"monorepo/bin-common-handler/pkg/envsecret"
 	"monorepo/bin-common-handler/pkg/secretcrypto"
 
 	"monorepo/bin-ai-manager/internal/config"
@@ -24,28 +25,23 @@ const (
 	// the MaxLen of each key and fits the column (2048 bytes minus nonce and tag).
 	maxSecretPlaintext = 2020
 
-	// defaultReadTimeout bounds one read of a key. The read runs inside the deadline of the call
-	// that needs the key when there is one, so this is only the upper bound.
-	defaultReadTimeout = 5 * time.Second
-
 	// geminiURLMarker marks the base URL of the Gemini OpenAI compatible endpoint. It is the rule
 	// that picks the key of a provider, and it is written here only.
 	geminiURLMarker = "generativelanguage"
 )
 
-// ErrKeyUnavailable is returned when a platform key could not be read: a database read error, a
-// stored secret that can not be decrypted, or a read that ran out of time. It is never replaced by
-// an empty value. A key that is simply not configured is not an error (an empty
-// value). The error holds no key text.
+// ErrKeyUnavailable is returned when a platform key could not be read. An environment read can not
+// fail, so the suppliers of this package no longer return it; builderhandler and the stored settings
+// code still name it. The error holds no key text.
 var ErrKeyUnavailable = errors.New("the platform LLM key could not be read")
 
-// ErrMCPOAuthIncomplete is returned when the client_secret of an MCP OAuth app has a stored row
-// but the client_id has none (or an empty one). The group is then read from the database only, so
-// the pair is not usable. The error holds no value.
-var ErrMCPOAuthIncomplete = errors.New("the MCP OAuth app is stored incompletely")
+// ErrMCPOAuthIncomplete is returned when the client_secret of an MCP OAuth app is set and the
+// client_id is not (or is empty, or an unresolved placeholder), so the pair is not usable. The error
+// holds no value.
+var ErrMCPOAuthIncomplete = errors.New("the MCP OAuth app is configured incompletely")
 
 // KeyFunc hands a platform key to a handler at the time of use. An empty value with no error means
-// "not configured".
+// "not configured" (the variable is not set, is empty, or still holds an unresolved placeholder).
 type KeyFunc = func(ctx context.Context) (string, error)
 
 // New creates the config handler of the service on the given store.
@@ -57,8 +53,9 @@ type KeyFunc = func(ctx context.Context) (string, error)
 // mistake in a list that is new does not take the LLM calls down.
 // The only error is an invalid registry, which is a programming error.
 //
-// No key reads the environment: the handler is built without an environment lookup, so every key
-// (the platform LLM keys and the MCP OAuth app keys) is resolved from the database only.
+// The handler is for the admin API and ai-control only. It is built without an environment lookup
+// and no read path of the service uses it: the keys are read by Supplier, KeyForBaseURL, GeminiKey
+// and MCPOAuthClient from the environment.
 func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Option) (confighandler.Handler, error) {
 	reg, err := configkeys.NewRegistry()
 	if err != nil {
@@ -74,105 +71,41 @@ func New(cfg *config.Config, store confighandler.Store, opts ...confighandler.Op
 	return confighandler.NewHandler(reg, store, crypto, nil, opts...), nil
 }
 
-// supplierConfig is the setting of a supplier.
-type supplierConfig struct {
-	timeout time.Duration
-}
+// Supplier returns the function that hands the value of the environment variable to a handler at
+// the time of use. It reads the variable on every call and keeps nothing. A variable that is not
+// set, is empty or still holds an unresolved placeholder gives an empty value and no error.
+func Supplier(envName string) KeyFunc {
+	return func(_ context.Context) (string, error) {
+		value, _ := envsecret.Lookup(envName)
 
-// SupplierOption configures Supplier.
-type SupplierOption func(*supplierConfig)
-
-// WithTimeout sets the timeout of one read of the key (default 5 seconds).
-func WithTimeout(d time.Duration) SupplierOption {
-	return func(c *supplierConfig) {
-		c.timeout = d
+		return value, nil
 	}
 }
 
-// Supplier returns the function that hands the secret of the given key to a handler at the time of
-// use. It reads the key on every call and keeps nothing, so a changed key is used by the next call
-// on every replica. A source of none gives an empty value. A read error is returned as an error
-// (ErrKeyUnavailable) and is never turned into an empty value.
-func Supplier(h confighandler.Handler, key string, opts ...SupplierOption) KeyFunc {
-	c := &supplierConfig{timeout: defaultReadTimeout}
-	for _, opt := range opts {
-		opt(c)
-	}
-
-	return func(ctx context.Context) (string, error) {
-		cctx, cancel := context.WithTimeout(ctx, c.timeout)
-		defer cancel()
-
-		secret, _, err := h.Secret(cctx, key)
-		if err != nil {
-			return "", fmt.Errorf("%w: %w", ErrKeyUnavailable, err)
-		}
-
-		return secret.Reveal(), nil
-	}
-}
-
-// mcpOAuthReadAttempts is the number of times the pair is read when the two reads disagree about
-// the source of the group (a write landed between them).
-const mcpOAuthReadAttempts = 2
-
-// MCPOAuthClient resolves the (client_id, client_secret) pair of the MCP OAuth app of a vendor.
+// MCPOAuthClient resolves the (client_id, client_secret) pair of the MCP OAuth app of a vendor from
+// its environment variables.
 //
-// The pair is read from the database only, and only when the client_secret (the anchor of the group)
-// has a stored row. With a stored client_secret and no stored client_id the result is
-// ErrMCPOAuthIncomplete. A read error or a stored value that can not be decrypted is returned as
-// ErrKeyUnavailable. Nothing stored is not an error: the result is an empty pair ("not configured"),
-// and so is a client_id row alone, because the client_id of a group without an anchor row is not
-// read.
-// An unknown vendor is an error. No value is part of an error text.
-func MCPOAuthClient(ctx context.Context, h confighandler.Handler, vendor string, opts ...SupplierOption) (clientID, clientSecret string, err error) {
-	secretKey, ok := configkeys.MCPOAuthClientSecretKey(vendor)
-	idKey, _ := configkeys.MCPOAuthClientIDKey(vendor)
+// The client_secret is read first. With a client_secret, the client_id is required: without one
+// the result is ErrMCPOAuthIncomplete. Without a client_secret the result is the empty pair ("not
+// configured"), and so is a client_id alone. An unknown vendor is an error. No value is part of an
+// error text.
+func MCPOAuthClient(vendor string) (clientID, clientSecret string, err error) {
+	idName, secretName, ok := configkeys.MCPOAuthEnvNames(vendor)
 	if !ok {
 		return "", "", fmt.Errorf("unknown MCP OAuth vendor: %q", vendor)
 	}
 
-	c := &supplierConfig{timeout: defaultReadTimeout}
-	for _, opt := range opts {
-		opt(c)
+	secret, _ := envsecret.Lookup(secretName)
+	if secret == "" {
+		return "", "", nil
 	}
 
-	cctx, cancel := context.WithTimeout(ctx, c.timeout)
-	defer cancel()
-
-	for attempt := 0; attempt < mcpOAuthReadAttempts; attempt++ {
-		secret, rs, errSecret := h.Secret(cctx, secretKey)
-		if errSecret != nil {
-			return "", "", fmt.Errorf("%w: %w", ErrKeyUnavailable, errSecret)
-		}
-
-		id, ri, errID := h.String(cctx, idKey)
-		if errID != nil {
-			return "", "", fmt.Errorf("%w: %w", ErrKeyUnavailable, errID)
-		}
-
-		switch {
-		case rs.Source == confighandler.SourceDB:
-			// The group is read from the database only.
-			if ri.Source != confighandler.SourceDB || id == "" {
-				return "", "", fmt.Errorf("%w: key %s has no stored client_id", ErrMCPOAuthIncomplete, secretKey)
-			}
-
-			return id, secret.Reveal(), nil
-
-		case ri.Source == confighandler.SourceDB:
-			// The client_secret had no row but the client_id has one: the client_secret row was
-			// written between the two reads. Read the pair again.
-			continue
-
-		default:
-			// Nothing stored for the pair (the client_id of a group without an anchor row is not
-			// read): an empty pair, "not configured".
-			return id, secret.Reveal(), nil
-		}
+	id, _ := envsecret.Lookup(idName)
+	if id == "" {
+		return "", "", fmt.Errorf("%w: %s is not set", ErrMCPOAuthIncomplete, idName)
 	}
 
-	return "", "", fmt.Errorf("%w: the MCP OAuth app of %q changed while it was read", ErrKeyUnavailable, vendor)
+	return id, secret, nil
 }
 
 // IsGeminiBaseURL tells whether a base URL is the Gemini OpenAI compatible endpoint.
@@ -183,18 +116,18 @@ func IsGeminiBaseURL(baseURL string) bool {
 // KeyForBaseURL returns the supplier of the key that belongs to the provider at the base URL: the
 // Gemini key for the Gemini endpoint, the OpenAI compatible key otherwise (the OpenAI default and
 // any other compatible provider). It is the one place of this rule.
-func KeyForBaseURL(h confighandler.Handler, baseURL string, opts ...SupplierOption) KeyFunc {
+func KeyForBaseURL(baseURL string) KeyFunc {
 	if IsGeminiBaseURL(baseURL) {
-		return GeminiKey(h, opts...)
+		return GeminiKey()
 	}
 
-	return Supplier(h, configkeys.KeyOpenAICompatAPIKey, opts...)
+	return Supplier(configkeys.EnvOpenAIAPIKey)
 }
 
 // GeminiKey returns the supplier of the Gemini key, for the handlers that always call the Gemini
 // endpoint (audit and prompt proposal).
-func GeminiKey(h confighandler.Handler, opts ...SupplierOption) KeyFunc {
-	return Supplier(h, configkeys.KeyGeminiAPIKey, opts...)
+func GeminiKey() KeyFunc {
+	return Supplier(configkeys.EnvGoogleAPIKey)
 }
 
 // Configured tells whether the key has a value now. A read error is returned as an error.
@@ -207,31 +140,24 @@ func Configured(ctx context.Context, f KeyFunc) (bool, error) {
 	return v != "", nil
 }
 
-// LogSources logs, once, where each key comes from (key name and source only, never a value) and
-// warns about the keys that are not configured. A read error is logged as a warning: the service
-// starts anyway.
-func LogSources(ctx context.Context, h confighandler.Handler) {
-	log := logrus.WithField("func", "LogSources")
+// LogStates logs, once, the state of each environment variable of the platform keys (the variable
+// name and the state only, never a value or a part of one). A variable that is not set is a warning,
+// like a key that was not stored before, and so is an unresolved placeholder of the deployment. The
+// service starts anyway.
+func LogStates() {
+	log := logrus.WithField("func", "LogStates")
 
-	cctx, cancel := context.WithTimeout(ctx, defaultReadTimeout)
-	defer cancel()
+	for _, name := range configkeys.EnvNames() {
+		_, state := envsecret.Lookup(name)
+		entry := log.WithFields(logrus.Fields{"env": name, "state": state.String()})
 
-	list, err := h.Describe(cctx)
-	if err != nil {
-		log.Warnf("Could not read the config sources. err: %v", err)
-		return
-	}
-
-	for _, r := range list {
-		entry := log.WithFields(logrus.Fields{"key": r.Key, "source": r.Source})
-
-		switch r.Source {
-		case confighandler.SourceNone:
-			entry.Warnf("The config key is not configured. key: %s", r.Key)
-		case confighandler.SourceDBUndecryptable, confighandler.SourceDBInvalid:
-			entry.Errorf("The stored config value can not be used. key: %s, source: %s", r.Key, r.Source)
+		switch state {
+		case envsecret.Set:
+			entry.Infof("Platform key variable. env: %s, state: set", name)
+		case envsecret.Placeholder:
+			entry.Warnf("The platform key variable holds an unresolved placeholder, so it is not configured. env: %s", name)
 		default:
-			entry.Infof("Config key. key: %s, source: %s", r.Key, r.Source)
+			entry.Warnf("The platform key variable is not set, so the key is not configured. env: %s", name)
 		}
 	}
 }

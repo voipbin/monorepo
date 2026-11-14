@@ -37,7 +37,7 @@ An in-memory real-time TTS session anchored to one pod. Coordinates ElevenLabs W
 
 The `audiohandler` attempts TTS providers in sequence:
 1. **Google Cloud TTS** (primary): Uses Application Default Credentials (ADC). Regional endpoint: `eu-texttospeech.googleapis.com:443`.
-2. **AWS Polly** (fallback): Uses the stored `aws.access_key` and `aws.secret_key` credentials.
+2. **AWS Polly** (fallback): Uses the `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` credentials of the environment.
 
 If the primary provider fails, the fallback is tried automatically. The `speech_fallback_total` metric counts fallback invocations.
 

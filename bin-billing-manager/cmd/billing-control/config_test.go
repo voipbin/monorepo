@@ -65,12 +65,19 @@ func runConfigCommand(args ...string) error {
 func Test_config_set_list_clear(t *testing.T) {
 	const secret = "synthetic-credential-value"
 
-	// a variable of the former fallback is not read
-	t.Setenv("PADDLE_WEBHOOK_SECRET_KEY", "env-value")
+	// the variable is the source; the stored value is not read, and the list does not show it
+	t.Setenv("PADDLE_WEBHOOK_SECRET", "env-value")
 	store, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, secret+"\n")
+	errOut := &bytes.Buffer{}
+	savedErr := configErr
+	configErr = errOut
+	t.Cleanup(func() { configErr = savedErr })
 
 	if err := runConfigCommand("set", "--key", "paddle.webhook_secret_key", "--actor-id", testActor); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if !strings.Contains(errOut.String(), "PADDLE_WEBHOOK_SECRET") || !strings.Contains(errOut.String(), "not used") || strings.Contains(errOut.String(), secret) {
+		t.Errorf("Wrong match. expect: a note that names the variable, got: %q", errOut.String())
 	}
 	if strings.Contains(out.String(), secret) || !strings.Contains(out.String(), `"source": "db"`) {
 		t.Errorf("Wrong match. set output: %s", out.String())
@@ -94,8 +101,12 @@ func Test_config_set_list_clear(t *testing.T) {
 	}
 
 	out.Reset()
+	errOut.Reset()
 	if err := runConfigCommand("clear", "--key", "paddle.webhook_secret_key", "--actor-id", testActor); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if !strings.Contains(errOut.String(), "PADDLE_WEBHOOK_SECRET") || !strings.Contains(errOut.String(), "not used") {
+		t.Errorf("Wrong match. expect: a note that names the variable, got: %q", errOut.String())
 	}
 	// the key has no value again (the variable is not a fallback), and its value is not printed
 	if !strings.Contains(out.String(), `"source": "none"`) || strings.Contains(out.String(), "env-value") {

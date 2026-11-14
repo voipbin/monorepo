@@ -19,19 +19,20 @@ func invalid(format string, args ...any) error {
 	return fmt.Errorf("%w: %s", provider.ErrInvalidArgument, fmt.Sprintf(format, args...))
 }
 
-// toInfo builds the admin view. It carries no secret material.
+// toInfo builds the admin view. It carries no secret material. The config is the config of the
+// row only: a value filled from a variable would be frozen into the row by a write back.
 func (r *resolved) toInfo() *provider.Info {
 	res := &provider.Info{
 		ProviderName:     r.name,
 		Enabled:          r.enabled,
 		Priority:         r.priority,
 		CredentialSource: r.source,
+		HasSecret:        r.hasSecret,
 		Usable:           r.usable,
 	}
 
 	if r.row != nil {
 		res.Config = r.row.Config
-		res.HasSecret = hasDBSecret(r.row)
 		res.KeyVersion = r.row.KeyVersion
 		res.UpdatedBy = r.row.UpdatedBy
 		res.SecretUpdatedBy = r.row.SecretUpdatedBy
@@ -127,7 +128,9 @@ func validateConfig(desc Descriptor, config map[string]string) error {
 }
 
 // mergeConfig merges the changes into the config of the row: a key with an empty value is
-// deleted. A row that already holds a DB secret must keep its required keys.
+// deleted. A row that holds a stored secret (which is not used for a credential, but is part of the
+// row) must keep its required keys. The variables that fill an empty config key are not part of the
+// row and are not counted here.
 func mergeConfig(desc Descriptor, row *provider.Provider, changes map[string]string) (map[string]string, error) {
 	merged := map[string]string{}
 	for k, v := range row.Config {
@@ -272,8 +275,9 @@ func (h *providerHandler) UpdateSecret(ctx context.Context, name number.Provider
 	return h.Get(ctx, name)
 }
 
-// DeleteSecret removes the DB secret of the provider. The provider has no credential afterwards (the
-// source is none) until a new secret is stored: it is not usable and cannot release or search.
+// DeleteSecret removes the stored secret of the row. The stored secret is not used for a credential, so
+// the credential state afterwards is that of the environment: the source stays env while the secret
+// variable is set, and is none otherwise.
 func (h *providerHandler) DeleteSecret(ctx context.Context, name number.ProviderName, actor uuid.UUID) (*provider.Info, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "DeleteSecret",

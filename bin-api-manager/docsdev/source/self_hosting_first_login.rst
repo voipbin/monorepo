@@ -27,8 +27,8 @@ Works immediately, no email provider required.
 
 **Path B: email-based signup**, the same flow the hosted service at
 ``voipbin.net`` uses (``POST /auth/signup``). This only works if you have
-already configured an email provider (the stored key ``sendgrid.api_key`` or
-``mailgun.api_key``, see Provider configuration) so the verification
+already configured an email provider (the variable ``SENDGRID_API_KEY`` or
+``MAILGUN_API_KEY``, see Provider configuration) so the verification
 email can actually be delivered. Without one, the signup call succeeds
 but the verification email never arrives. Use this path only if you have
 already set up email delivery; otherwise use Path A.

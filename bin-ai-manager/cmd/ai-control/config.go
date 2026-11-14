@@ -18,6 +18,7 @@ import (
 
 	"monorepo/bin-ai-manager/internal/aiconfig"
 	"monorepo/bin-ai-manager/internal/config"
+	"monorepo/bin-ai-manager/internal/configkeys"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 )
 
@@ -30,6 +31,9 @@ const maxStdinBytes = 4096
 
 // configOut is where the config commands print. Tests replace it.
 var configOut io.Writer = os.Stdout
+
+// configErr is where the notice after a set or a clear is printed. Tests replace it.
+var configErr io.Writer = os.Stderr
 
 // configIn is where the secret value is read from. Tests replace it.
 var configIn io.Reader = os.Stdin
@@ -59,23 +63,26 @@ func cmdConfig() *cobra.Command {
 		// configuration but skip config.Validate and config.ConfigureLocalModels. The commands
 		// need the database and the master key list only, and a mistake in an unrelated setting
 		// (for example a builder value) must not stop an urgent key change. The stored keys are
-		// declared in internal/configkeys and are checked on write.
+		// declared in internal/configkeys and are checked on write. The service does not read the stored values of the platform keys.
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			return loadConfig(cmd)
 		},
-		Short: "Stored platform configuration (the LLM API keys and the MCP OAuth apps)",
+		Short: "Stored platform configuration (the LLM API keys and the MCP OAuth apps); the service does not read it",
 		Long: `Stored platform configuration: the API keys of the platform LLM provider (OpenAI compatible
 and Gemini) and the OAuth apps (client_id and client_secret) of the MCP vendors. These are platform
 settings. They are not the engine key of a customer AI ("ai create --engine-key"), which belongs to
 the customer and is stored on the AI.
 
-All keys are stored in the database only; a key that is cleared is not configured. The OAuth app of
-a vendor is configured when its client_secret and client_id are both stored; a vendor whose app is
-not stored refuses a connection with MCP_OAUTH_VENDOR_NOT_CONFIGURED. Store the client_id before
-the client_secret, and clear both. A change is used by the next call, with no restart. The daemon
-applies the table migration at its start; on a local database run "migrate up" first. The master key list is read from the environment
-(AI_CONFIG_ENCRYPTION_KEYS) and is never a flag. These commands need the database and the master
-key list only; they do not validate the rest of the configuration.`,
+The service reads these keys from environment variables only, and a stored value is not used:
+OPENAI_API_KEY (the OpenAI compatible key), GOOGLE_API_KEY (the Gemini key), and for each MCP
+vendor (GITHUB, LINEAR, ASANA, HUBSPOT) <VENDOR>_MCP_OAUTH_CLIENT_ID and
+<VENDOR>_MCP_OAUTH_CLIENT_SECRET. A variable that is not set (or is an unresolved placeholder of the
+deployment) is not configured; the OAuth app of a vendor needs both variables, and a vendor whose app
+is not configured refuses a connection with MCP_OAUTH_VENDOR_NOT_CONFIGURED. Rotate a key by changing
+the variable and restarting the service. These commands change and list the stored rows only; the list
+shows what is stored, never a value. The master key list of the stored rows is read from the
+environment (AI_CONFIG_ENCRYPTION_KEYS) and is never a flag. These commands need the database and the
+master key list only; they do not validate the rest of the configuration.`,
 	}
 
 	cmd.AddCommand(cmdConfigList())
@@ -272,7 +279,24 @@ func setConfig(h confighandler.Handler, key string, actor uuid.UUID) error {
 	}
 
 	out := toOutput(res)
-	return printConfig(&out)
+	if errPrint := printConfig(&out); errPrint != nil {
+		return errPrint
+	}
+
+	printEnvNotice(key)
+
+	return nil
+}
+
+// printEnvNotice tells on stderr which variable the service reads for the key and that the stored
+// value is not used. It is printed after a change only, so a failed change prints nothing.
+func printEnvNotice(key string) {
+	name, ok := configkeys.EnvNameOfKey(key)
+	if !ok {
+		return
+	}
+
+	_, _ = fmt.Fprintf(configErr, "note: the service reads this key from the environment variable %s; the stored value is not used.\n", name)
 }
 
 func runConfigClear(cmd *cobra.Command, args []string) error {
@@ -296,7 +320,13 @@ func runConfigClear(cmd *cobra.Command, args []string) error {
 	}
 
 	out := toOutput(res)
-	return printConfig(&out)
+	if errPrint := printConfig(&out); errPrint != nil {
+		return errPrint
+	}
+
+	printEnvNotice(key)
+
+	return nil
 }
 
 func printJSONTo(w io.Writer, v any) error {

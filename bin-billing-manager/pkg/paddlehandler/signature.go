@@ -23,15 +23,14 @@ var (
 	ErrSignatureInvalid = errors.New("the webhook signature is not valid")
 
 	// ErrCredentialNotConfigured is returned when a Paddle credential is needed and no value is
-	// stored for it: the webhook secret for the signature check, the API key for a portal session.
+	// configured for it: the webhook secret for the signature check, the API key for a portal session.
 	// It is not ErrKeyUnavailable (a value that could not be read) and not a rejected signature.
 	// The error holds no key text.
 	ErrCredentialNotConfigured = errors.New("the paddle credential is not configured")
 
-	// ErrKeyUnavailable is returned when a Paddle credential could not be read: a database read
-	// error, a stored secret that can not be decrypted, or a read that ran out of time. It is never
-	// replaced by an empty key or by the environment. A credential that is simply not configured is
-	// not an error. The error holds no key text.
+	// ErrKeyUnavailable is returned when a Paddle credential could not be read (a supplier that
+	// can fail). The suppliers of the environment never return it. A credential that is simply
+	// not configured is not an error. The error holds no key text.
 	ErrKeyUnavailable = errors.New("the paddle key could not be read")
 )
 
@@ -56,7 +55,7 @@ func (h *paddleHandler) readKey(ctx context.Context, f KeyFunc) (string, error) 
 // VerifyWebhook checks the Paddle-Signature header of a webhook against the body that was
 // received. The secret is read for every call and kept nowhere.
 //
-//   - No secret is stored: ErrCredentialNotConfigured. The webhook is rejected (fail closed),
+//   - No secret is configured: ErrCredentialNotConfigured. The webhook is rejected (fail closed),
 //     whatever the signature is.
 //   - The secret can not be read: ErrKeyUnavailable. The caller must not treat it as "no secret".
 //   - A secret exists: nil for a valid signature, ErrSignatureInvalid for every other case.

@@ -3,12 +3,9 @@ package main
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
-
-	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/confighandler/storetest"
 
 	"monorepo/bin-ai-manager/internal/aiconfig"
 	"monorepo/bin-ai-manager/internal/config"
@@ -17,24 +14,18 @@ import (
 
 const geminiURL = "https://generativelanguage.googleapis.com/v1beta/openai/"
 
-// testKeyFunc builds the key supplier of the analysis engine the way run() does, on a store that
-// holds the given rows (key name to stored value). A key without a row is not configured.
-func testKeyFunc(t *testing.T, cfg *config.Config, stored map[string]string) aiconfig.KeyFunc {
+// testKeyFunc builds the key supplier of the analysis engine the way run() does, with the given
+// variables (name to value). A variable that is not given is not set.
+func testKeyFunc(t *testing.T, cfg *config.Config, env map[string]string) aiconfig.KeyFunc {
 	t.Helper()
 
-	c := *cfg
-	c.ConfigEncryptionKeys = testMasterKeyList()
-	h, err := aiconfig.New(&c, storetest.NewMemory())
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	for k, v := range stored {
-		if _, errSet := h.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), k, v); errSet != nil {
-			t.Fatalf("Wrong match. expect: ok, got: %v", errSet)
-		}
+	t.Setenv(configkeys.EnvOpenAIAPIKey, "")
+	t.Setenv(configkeys.EnvGoogleAPIKey, "")
+	for k, v := range env {
+		t.Setenv(k, v)
 	}
 
-	return newPlatformKeys(h, cfg).analysis
+	return newPlatformKeys(cfg).analysis
 }
 
 func Test_builderSettings_keyConfigured(t *testing.T) {
@@ -44,12 +35,12 @@ func Test_builderSettings_keyConfigured(t *testing.T) {
 		rows map[string]string
 		want bool
 	}{
-		{"gemini url with a stored gemini key", config.Config{AnalysisEngineBaseURL: geminiURL}, map[string]string{configkeys.KeyGeminiAPIKey: "g"}, true},
-		{"gemini url with only a stored openai key", config.Config{AnalysisEngineBaseURL: geminiURL}, map[string]string{configkeys.KeyOpenAICompatAPIKey: "o"}, false},
-		{"gemini url with no row", config.Config{AnalysisEngineBaseURL: geminiURL}, nil, false},
-		{"openai url with a stored openai key", config.Config{AnalysisEngineBaseURL: "https://api.openai.com/v1"}, map[string]string{configkeys.KeyOpenAICompatAPIKey: "o"}, true},
-		{"openai url with only a stored gemini key", config.Config{AnalysisEngineBaseURL: "https://api.openai.com/v1"}, map[string]string{configkeys.KeyGeminiAPIKey: "g"}, false},
-		{"openai url with no row", config.Config{AnalysisEngineBaseURL: "https://api.openai.com/v1"}, nil, false},
+		{"gemini url with a gemini variable", config.Config{AnalysisEngineBaseURL: geminiURL}, map[string]string{configkeys.EnvGoogleAPIKey: "g"}, true},
+		{"gemini url with only the openai variable", config.Config{AnalysisEngineBaseURL: geminiURL}, map[string]string{configkeys.EnvOpenAIAPIKey: "o"}, false},
+		{"gemini url with no variable", config.Config{AnalysisEngineBaseURL: geminiURL}, nil, false},
+		{"openai url with a openai variable", config.Config{AnalysisEngineBaseURL: "https://api.openai.com/v1"}, map[string]string{configkeys.EnvOpenAIAPIKey: "o"}, true},
+		{"openai url with only a gemini variable", config.Config{AnalysisEngineBaseURL: "https://api.openai.com/v1"}, map[string]string{configkeys.EnvGoogleAPIKey: "g"}, false},
+		{"openai url with no variable", config.Config{AnalysisEngineBaseURL: "https://api.openai.com/v1"}, nil, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -107,7 +98,7 @@ func Test_builderSettings_mapsEverySetting(t *testing.T) {
 		AIBuilderMaxConcurrent:     33,
 		AIBuilderLLMTimeoutSeconds: 44,
 	}
-	bc, opts := builderSettings(&cfg, testKeyFunc(t, &cfg, map[string]string{configkeys.KeyGeminiAPIKey: "g"}))
+	bc, opts := builderSettings(&cfg, testKeyFunc(t, &cfg, map[string]string{configkeys.EnvGoogleAPIKey: "g"}))
 
 	if bc.Model != "model-x" || bc.ReasoningEffort != "low" || bc.MaxOutputTokens != 1111 {
 		t.Errorf("config: %+v", bc)
@@ -149,5 +140,24 @@ func Test_builderStartupNotes(t *testing.T) {
 				t.Errorf("got infos %v and warnings %v, want %d and %d", infos, warns, tt.wantInfos, tt.wantWarns)
 			}
 		})
+	}
+}
+
+// The hint of a builder without a key names the variables that are read, and not the stored
+// settings.
+func Test_builderStartupNotes_hintNamesTheVariables(t *testing.T) {
+	infos, _ := builderStartupNotes(&config.Config{AnalysisEngineBaseURL: geminiURL}, false, nil)
+	if len(infos) != 1 {
+		t.Fatalf("Wrong match. expect: 1 info, got: %v", infos)
+	}
+	for _, want := range []string{configkeys.EnvGoogleAPIKey, configkeys.EnvOpenAIAPIKey} {
+		if !strings.Contains(infos[0], want) {
+			t.Errorf("Wrong match. expect the hint to name %s, got: %q", want, infos[0])
+		}
+	}
+	for _, bad := range []string{"ai-control", "admin API"} {
+		if strings.Contains(infos[0], bad) {
+			t.Errorf("Wrong match. expect the hint not to mention %q, got: %q", bad, infos[0])
+		}
 	}
 }

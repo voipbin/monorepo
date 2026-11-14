@@ -15,7 +15,6 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-pipecat-manager/internal/config"
-	"monorepo/bin-pipecat-manager/internal/pipecatconfig"
 	"monorepo/bin-pipecat-manager/migrations"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/pkg/cachehandler"
@@ -71,16 +70,9 @@ func initPipecatcallHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (pip
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, outline.QueueNamePipecatEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	toolHandler := toolhandler.NewToolHandler(reqHandler)
 
-	// the same platform key rule as the daemon: the stored key only
-	cfg := config.Get()
-	configHandler, err := pipecatconfig.New(&cfg, dbhandler.NewConfigStore(sqlDB))
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not create the config handler")
-	}
-
+	// the same rule as the daemon: no platform key is read or sent, the runner reads its own environment
 	return pipecatcallhandler.NewPipecatcallHandler(
 		reqHandler, notifyHandler, db, toolHandler, "cli-host",
-		pipecatcallhandler.WithPlatformKeyResolver(pipecatconfig.NewKeyResolver(configHandler)),
 	), nil
 }
 

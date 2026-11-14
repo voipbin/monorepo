@@ -1,5 +1,6 @@
 import asyncio
 import importlib
+import os
 import re
 import sys
 import json
@@ -212,8 +213,8 @@ async def init_pipeline(
 ) -> dict:
     """Initialize the pipeline. Returns context dict. Raises on failure.
 
-    platform_keys holds the stored platform keys that the Go service resolved for this session
-    (see PK_* below). It is passed down as an argument and is never stored in a module variable
+    platform_keys holds the platform keys that the request carries, if any (see PK_* below); a vendor
+    that has no key there falls back to the environment variable of the container. It is passed down as an argument and is never stored in a module variable
     or in the returned context, so concurrent sessions can not see each other's keys."""
     if resolved_team:
         ctx = await init_team_pipeline(
@@ -507,8 +508,10 @@ def _parse_language(language_str: str) -> Language:
         return Language.EN_US
 
 
-# Names of the stored platform keys in the platform_keys of a request. They are the key names of
-# the Go service (internal/configkeys) and are part of the wire contract.
+# Names of the platform keys in the platform_keys of a request (the key names of the Go service,
+# internal/configkeys, part of the wire contract). The Go service no longer sends them: the runner
+# reads the environment variables of its own container (ENV_* below). A key of the request still
+# wins, so that a runner next to an older Go service keeps working.
 PK_OPENAI = "openai.api_key"
 PK_DEEPGRAM = "deepgram.api_key"
 PK_CARTESIA = "cartesia.api_key"
@@ -518,15 +521,50 @@ PK_GOOGLE = "google.api_key"  # Gemini LLM only. Google STT and TTS use a servic
 PK_OPENROUTER = "openrouter.api_key"  # the platform OpenRouter key only, never a customer key
 PK_LOCAL_ENDPOINTS = "local_llm.endpoints"
 
+# Environment variables of the runner container (the compose value is [[BIN_MANAGER__<name>]]).
+ENV_OPENAI = "OPENAI_API_KEY"
+ENV_DEEPGRAM = "DEEPGRAM_API_KEY"
+ENV_CARTESIA = "CARTESIA_API_KEY"
+ENV_XAI = "XAI_API_KEY"
+ENV_ELEVENLABS = "ELEVENLABS_API_KEY"
+ENV_GOOGLE = "GOOGLE_API_KEY"
+ENV_OPENROUTER = "OPENROUTER_API_KEY"
+ENV_LOCAL_ENDPOINTS = "LOCAL_LLM_ENDPOINTS"
+PLATFORM_ENV_NAMES = (
+    ENV_OPENAI, ENV_DEEPGRAM, ENV_CARTESIA, ENV_XAI,
+    ENV_ELEVENLABS, ENV_GOOGLE, ENV_OPENROUTER, ENV_LOCAL_ENDPOINTS,
+)
 
-def _platform_key(platform_keys, name: str, vendor: str) -> str:
-    """The platform key `name` of the request. The process environment is never a source.
 
-    An empty value counts as not set. A key that is not set is rejected here, before the vendor SDK
-    object is built: the SDK clients read their own environment variable when they get None or an
-    empty key, so such a value must never reach them. The message names the vendor only and the
-    value is never logged."""
-    value = (platform_keys or {}).get(name)
+def _env_value(env_name: str) -> str:
+    """The trimmed value of the environment variable, or "" when it is not set, empty or an
+    unresolved deployment placeholder (starts with "[["). Read at the time of the call."""
+    value = os.environ.get(env_name, "").strip()
+    if value.startswith("[["):
+        return ""
+    return value
+
+
+def log_env_state() -> None:
+    """Log once whether each platform variable is set, not set or an unresolved placeholder. Never a value."""
+    for env_name in PLATFORM_ENV_NAMES:
+        raw = os.environ.get(env_name, "").strip()
+        if not raw:
+            logger.info(f"Platform variable {env_name}: not set")
+        elif raw.startswith("[["):
+            logger.warning(f"Platform variable {env_name}: unresolved placeholder")
+        else:
+            logger.info(f"Platform variable {env_name}: set")
+
+
+def _platform_key(platform_keys, name: str, vendor: str, env_name: str) -> str:
+    """The platform key: the value `name` of the request, else the environment variable `env_name`.
+
+    An empty value, and for the variable an unresolved placeholder, counts as not set. A key that is
+    not set is rejected here, before the vendor SDK object is built: the SDK clients read their own
+    environment variable when they get None or an empty key, so such a value must never reach them.
+    The message names the vendor only and the value is never logged."""
+    value = (platform_keys or {}).get(name) or _env_value(env_name)
     if not value:
         raise ValueError(f"{vendor} is not configured")
     return value
@@ -540,7 +578,7 @@ def create_tts_service(name: str, **options):
 
     if name == "cartesia":
         return _keep_usable(CartesiaTTSService(
-            api_key=_platform_key(platform_keys, PK_CARTESIA, "Cartesia"),
+            api_key=_platform_key(platform_keys, PK_CARTESIA, "Cartesia", ENV_CARTESIA),
             voice_id=voice_id,
             model="sonic-3.5",
             language=language,
@@ -548,7 +586,7 @@ def create_tts_service(name: str, **options):
         ))
     elif name == "elevenlabs":
         return _keep_usable(ElevenLabsTTSService(
-            api_key=_platform_key(platform_keys, PK_ELEVENLABS, "ElevenLabs"),
+            api_key=_platform_key(platform_keys, PK_ELEVENLABS, "ElevenLabs", ENV_ELEVENLABS),
             voice_id=voice_id,
             model="eleven_turbo_v2_5",
             language=language,
@@ -587,7 +625,7 @@ def create_stt_service(name: str, **options):
             profanity_filter=True,
         )
         return _keep_usable(_harden_deepgram(DeepgramSTTService(
-            api_key=_platform_key(platform_keys, PK_DEEPGRAM, "Deepgram"),
+            api_key=_platform_key(platform_keys, PK_DEEPGRAM, "Deepgram", ENV_DEEPGRAM),
             live_options=live_options,
         )))
     elif name == "google":
@@ -682,7 +720,7 @@ def _build_openrouter_llm(api_key: str, model_name: str):
 
 # --- Operator-registered local (self-hosted OpenAI-compatible) endpoints ---
 # The local endpoints are a secret JSON object that comes in the request (platform_keys, key
-# local_llm.endpoints). The process environment is not a source:
+# local_llm.endpoints), else from the variable LOCAL_LLM_ENDPOINTS of the container:
 #   {"<endpoint>": {"base_url": "http://host:8000/v1", "api_key": ""}}
 # Every failure below raises or logs a FIXED message: the URL, the key and any JSON
 # fragment must never reach an exception text (main.py returns str(e) to the caller
@@ -740,10 +778,10 @@ def parse_local_endpoints(raw) -> tuple:
 
 
 def _local_endpoints_for(platform_keys) -> dict:
-    """The local endpoints of one session: the value in the request, parsed for this call only, so
-    no module state is kept and a concurrent session is not affected. Without a value there is no
-    endpoint (the caller rejects the model with the fixed message)."""
-    raw = (platform_keys or {}).get(PK_LOCAL_ENDPOINTS)
+    """The local endpoints of one session: the value in the request, else the environment variable,
+    parsed for this call only, so no module state is kept and a concurrent session is not affected.
+    Without a value there is no endpoint (the caller rejects the model with the fixed message)."""
+    raw = (platform_keys or {}).get(PK_LOCAL_ENDPOINTS) or _env_value(ENV_LOCAL_ENDPOINTS)
     if raw:
         return parse_local_endpoints(raw)[0]
     return {}
@@ -762,11 +800,11 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
     service_name = service_name.lower()
     platform_keys = options.get("platform_keys")
     # Source of the key: the key of the customer (openai, grok, gemini only), then the platform key of
-    # the request. If neither is set the vendor is "not configured" and the session is rejected. The
-    # environment of this process is never a source. platform_openrouter and local never use the key
+    # the request, then the environment variable of this container. If none is set the vendor is
+    # "not configured" and the session is rejected. platform_openrouter and local never use the key
     # of the customer.
     if service_name == "openai":
-        api_key = key or _platform_key(platform_keys, PK_OPENAI, "OpenAI")
+        api_key = key or _platform_key(platform_keys, PK_OPENAI, "OpenAI", ENV_OPENAI)
         llm = OpenAILLMService(api_key=api_key, model=model_name)
 
         # Universal LLMContext + LLMContextAggregatorPair (the legacy
@@ -781,7 +819,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         return llm, aggregator
 
     elif service_name == "grok":
-        api_key = key or _platform_key(platform_keys, PK_XAI, "xAI")
+        api_key = key or _platform_key(platform_keys, PK_XAI, "xAI", ENV_XAI)
         llm = OpenAILLMService(
             api_key=api_key,
             model=model_name,
@@ -796,7 +834,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         return llm, aggregator
 
     elif service_name == "gemini":
-        api_key = key or _platform_key(platform_keys, PK_GOOGLE, "Google")
+        api_key = key or _platform_key(platform_keys, PK_GOOGLE, "Google", ENV_GOOGLE)
         llm = GoogleLLMService(api_key=api_key, model=model_name, stream_idle_timeout_secs=None)
 
         # Use universal LLMContext so GeminiLLMAdapter properly converts
@@ -824,8 +862,8 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
     elif service_name == "platform_openrouter":
         # Internal service name emitted only by the Go resolver
         # (platform_openrouter.<slug>). The key argument is intentionally
-        # ignored: the platform key comes from the request only.
-        api_key = _platform_key(platform_keys, PK_OPENROUTER, "OpenRouter")
+        # ignored: the platform key comes from the request or the environment variable.
+        api_key = _platform_key(platform_keys, PK_OPENROUTER, "OpenRouter", ENV_OPENROUTER)
         llm = _build_openrouter_llm(api_key, model_name)
 
         standard_tools = _openai_tools_to_standard(tools)

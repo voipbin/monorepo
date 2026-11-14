@@ -31,6 +31,32 @@ const maxStdinBytes = 4096
 // configOut is where the config commands print. Tests replace it.
 var configOut io.Writer = os.Stdout
 
+// configErr is where the note of set and clear goes. Tests replace it.
+var configErr io.Writer = os.Stderr
+
+// platformEnvNames maps a stored key to the environment variable that the runner container reads
+// for it. The stored value is not used by the runner; the note below tells the operator.
+var platformEnvNames = map[string]string{
+	"openai.api_key":      "OPENAI_API_KEY",
+	"deepgram.api_key":    "DEEPGRAM_API_KEY",
+	"cartesia.api_key":    "CARTESIA_API_KEY",
+	"xai.api_key":         "XAI_API_KEY",
+	"elevenlabs.api_key":  "ELEVENLABS_API_KEY",
+	"google.api_key":      "GOOGLE_API_KEY",
+	"openrouter.api_key":  "OPENROUTER_API_KEY",
+	"local_llm.endpoints": "LOCAL_LLM_ENDPOINTS",
+}
+
+// noteEnvironmentVariable prints the one line that says which variable is read for the key.
+func noteEnvironmentVariable(key string) {
+	name, ok := platformEnvNames[key]
+	if !ok {
+		return
+	}
+
+	_, _ = fmt.Fprintf(configErr, "note: the runner container reads the environment variable %s for this key; the stored value is not used.\n", name)
+}
+
 // configIn is where the secret value is read from. Tests replace it.
 var configIn io.Reader = os.Stdin
 
@@ -60,17 +86,17 @@ func cmdConfig() *cobra.Command {
 		// The root PersistentPreRunE only binds the flags and loads the configuration; it does not
 		// connect to Redis or RabbitMQ, so these commands need the database and the master key
 		// list only. The stored keys are declared in internal/configkeys and are checked on write.
-		Short: "Stored platform keys (the API keys of the vendors that the runner uses)",
+		Short: "Stored platform keys (not read by the runner; see the long text)",
 		Long: `Stored platform keys: the API keys of the vendors that the pipecat runner talks to (openai, deepgram,
 cartesia, xai, elevenlabs, google, openrouter) and the local llm endpoints (local_llm.endpoints, one
 line of JSON, at most 2020 bytes). They are platform keys; a key that a customer brings is not
 part of this.
 
-The stored value is the only source of a key: there is no environment variable fallback. A key
-without a stored value is not configured, and a session that needs it is rejected. A change is used
-by the next session that starts, with no restart; a session that is running keeps the value it
-started with. The daemon reads the keys that a session uses and hands them to the runner with the
-start request, so the runner needs no database access and no master key.
+The runner does not read these stored values. It reads the environment variable of its own
+container for each key (OPENAI_API_KEY, DEEPGRAM_API_KEY, CARTESIA_API_KEY, XAI_API_KEY,
+ELEVENLABS_API_KEY, GOOGLE_API_KEY, OPENROUTER_API_KEY, LOCAL_LLM_ENDPOINTS); rotate a key there.
+"set" and "clear" print a note with the variable name. The commands remain until the stored settings
+are removed.
 
 "list" shows the source of each key (stored in the database, or none).
 
@@ -247,7 +273,12 @@ func runConfigSet(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	return setConfig(h, key, actor)
+	if errSet := setConfig(h, key, actor); errSet != nil {
+		return errSet
+	}
+	noteEnvironmentVariable(key)
+
+	return nil
 }
 
 func setConfig(h confighandler.Handler, key string, actor uuid.UUID) error {
@@ -297,7 +328,12 @@ func runConfigClear(cmd *cobra.Command, args []string) error {
 	}
 
 	out := toOutput(res)
-	return printConfig(&out)
+	if errPrint := printConfig(&out); errPrint != nil {
+		return errPrint
+	}
+	noteEnvironmentVariable(key)
+
+	return nil
 }
 
 func printJSONTo(w io.Writer, v any) error {

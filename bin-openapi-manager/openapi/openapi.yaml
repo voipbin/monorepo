@@ -6598,15 +6598,18 @@ components:
       type: string
       description: |
         Where the credentials of the number provider come from.
-        `db` is the secret stored through the API, `none` means no secret is stored (the provider is not usable until one is stored),
-        and `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).
-      example: "db"
+        `env` is the secret of the platform environment (the service reads it from an environment variable) and is the only source of a usable credential,
+        and `none` means the platform environment has no secret for the provider (the provider is not usable until it is set).
+        `db` and `db_undecryptable` are kept in the response for older readers: the service does not produce them, because it no longer reads a secret stored through the API.
+      example: "env"
       enum:
         - db
+        - env
         - none
         - db_undecryptable
       x-enum-varnames:
         - NumberManagerNumberProviderCredentialSourceDB
+        - NumberManagerNumberProviderCredentialSourceEnv
         - NumberManagerNumberProviderCredentialSourceNone
         - NumberManagerNumberProviderCredentialSourceDBUndecryptable
     ServiceConfigServiceName:
@@ -6883,16 +6886,16 @@ components:
           type: object
           additionalProperties:
             type: string
-          description: The non-secret settings of the provider (for example the Telnyx `connection_id`). Omitted when empty.
+          description: The non-secret settings stored for the provider (for example the Telnyx `connection_id`). Omitted when empty. It shows the stored values only. A setting that the stored values do not have (or have empty) is taken from the platform environment when the provider is used, so a provider that is configured only through the environment shows no `config`.
           example:
             connection_id: "1234567890123456789"
         has_secret:
           type: boolean
-          description: Whether a secret is stored through the API. The secret itself is never returned.
+          description: Whether the provider has a secret in the platform environment. A secret stored through the API does not count, because the service does not use it. The secret itself is never returned.
           example: true
         key_version:
           type: integer
-          description: The version of the encryption key that encrypted the stored secret. 0 when no secret is stored.
+          description: The version of the encryption key that encrypted the secret stored through the API (legacy, the stored secret is not used). 0 when no secret is stored.
           example: 1
         credential_source:
           $ref: '#/components/schemas/NumberManagerNumberProviderCredentialSource'

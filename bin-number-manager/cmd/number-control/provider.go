@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -130,7 +131,10 @@ and the secret may be 1024 bytes at most.
 The provider needs its required config first (Telnyx: connection_id; Twilio: sid and trunk_sid), see
 "provider update". A stored secret is overwritten without being read. Do not change the account of a
 provider that still has numbers (a different token or Twilio sid): releasing a number needs the
-account it was bought on.`,
+account it was bought on.
+
+The service reads the provider secret from an environment variable (telnyx: TELNYX_API_KEY, twilio:
+TWILIO_AUTH_TOKEN); the stored value is not used. Rotate the secret in the environment of the service.`,
 		Args: noPositionalArgs,
 		RunE: runProviderSecretSet,
 	}
@@ -148,7 +152,9 @@ func cmdProviderSecretDelete() *cobra.Command {
 		Short: "Delete the stored secret of a provider",
 		Long: `Delete the stored secret of a provider. The config of the row is kept. The credential_source in
 the output tells which credential the provider uses afterwards. A provider that has no row yet is
-reported as not found. Do not change the account of a provider that still has numbers.`,
+reported as not found. Do not change the account of a provider that still has numbers. The service
+reads the provider secret from an environment variable, not from the stored value, so the deletion
+does not remove the credential of the service.`,
 		Args: noPositionalArgs,
 		RunE: runProviderSecretDelete,
 	}
@@ -341,6 +347,8 @@ func runProviderSecretSet(cmd *cobra.Command, args []string) error {
 		return pkgerrors.Wrap(err, "failed to store the provider secret")
 	}
 
+	printSecretNotice(cmd, name)
+
 	return printJSON(res)
 }
 
@@ -364,5 +372,19 @@ func runProviderSecretDelete(cmd *cobra.Command, args []string) error {
 		return pkgerrors.Wrap(err, "failed to delete the provider secret")
 	}
 
+	printSecretNotice(cmd, name)
+
 	return printJSON(res)
+}
+
+// secretEnvNames is the environment variable that holds the secret of each provider.
+var secretEnvNames = map[number.ProviderName]string{
+	number.ProviderNameTelnyx: "TELNYX_API_KEY",
+	number.ProviderNameTwilio: "TWILIO_AUTH_TOKEN",
+}
+
+// printSecretNotice tells the operator where the provider secret is read from: the stored value
+// is not used, so a change of the stored secret does not change the credential of the service.
+func printSecretNotice(cmd *cobra.Command, name number.ProviderName) {
+	_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "The provider secret is read from the environment variable %s; the stored value is not used.\n", secretEnvNames[name])
 }

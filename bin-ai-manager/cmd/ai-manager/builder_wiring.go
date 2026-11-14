@@ -44,8 +44,7 @@ func builderSettings(cfg *config.Config, analysisKey aiconfig.KeyFunc) (builderh
 // Builder (design 4.6). infos are notices (a missing key: the Builder is
 // optional and many deploys never use it) and warns are things that look wrong.
 //
-// keyConfigured and errKey are the result of the key check at startup. The key can be set or
-// changed later with ai-control config set, so this is the state at startup only.
+// keyConfigured and errKey are the result of the key check at startup. The variable is read on every call, so this is the state at startup only.
 //
 // These cases are checked. A missing key otherwise fails silently: the status
 // route just reports available=false and the cause is nowhere in the logs. A key that can not be
@@ -62,7 +61,7 @@ func builderStartupNotes(cfg *config.Config, keyConfigured bool, errKey error) (
 	}
 
 	if !keyConfigured {
-		return []string{"the optional assistant builder is unavailable because the analysis engine has no API key (the Gemini key for a Gemini base URL, the OpenAI compatible key otherwise; set it with ai-control config set or the admin API); the admin UI hides it until one is set"}, nil
+		return []string{"the optional assistant builder is unavailable because the analysis engine has no API key (the Gemini key for a Gemini base URL, the OpenAI compatible key otherwise; set the environment variable GOOGLE_API_KEY or OPENAI_API_KEY of the service); the admin UI hides it until one is set"}, nil
 	}
 
 	isGeminiURL := aiconfig.IsGeminiBaseURL(cfg.AnalysisEngineBaseURL)

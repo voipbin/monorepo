@@ -96,7 +96,7 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | ai_aicalls | bin-ai-manager | Active AI call sessions |
 | ai_ais | bin-ai-manager | AI configuration records |
 | ai_config_histories | bin-ai-manager | Change history of the platform-wide stored settings (no values) |
-| ai_configs | bin-ai-manager | Platform-wide stored settings (platform LLM API keys, encrypted) |
+| ai_configs | bin-ai-manager | Platform-wide stored settings (platform LLM API keys, encrypted; not read, the keys come from environment variables) |
 | ai_mcp_oauth_states | bin-ai-manager | OAuth state for MCP server authorization |
 | ai_mcp_servers | bin-ai-manager | MCP server registrations used by AI configurations |
 | ai_messages | bin-ai-manager | AI conversation messages |
@@ -137,7 +137,7 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | customer_customers | bin-customer-manager | Customer account records |
 | direct_directs | bin-direct-manager | Direct SIP trunk definitions |
 | email_config_histories | bin-email-manager | Change history of the stored settings (never a value) |
-| email_configs | bin-email-manager | Platform-wide stored settings (provider credentials, encrypted) |
+| email_configs | bin-email-manager | Platform-wide stored settings (provider credentials, encrypted; not read, the keys come from environment variables) |
 | email_emails | bin-email-manager | Outbound email records |
 | flow_activeflows | bin-flow-manager | Currently executing flow instances |
 | flow_flows | bin-flow-manager | Flow definitions |
@@ -181,7 +181,7 @@ This list is derived from the `CREATE TABLE` statements in each service's `migra
 | transcribe_transcribes | bin-transcribe-manager | Transcription job records |
 | transcribe_transcripts | bin-transcribe-manager | STT transcription results (linked to transcribes) |
 | tts_config_histories | bin-tts-manager | Change history of the platform-wide stored settings (no values) |
-| tts_configs | bin-tts-manager | Platform-wide stored settings (TTS provider keys, encrypted) |
+| tts_configs | bin-tts-manager | Platform-wide stored settings (TTS provider keys, encrypted; not read, the keys come from environment variables) |
 | tts_manager_speaking | bin-tts-manager | Text-to-speech speaking sessions |
 | webchat_messages | bin-webchat-manager | Individual inbound/outbound webchat messages |
 | webchat_sessions | bin-webchat-manager | Visitor conversation sessions per widget |

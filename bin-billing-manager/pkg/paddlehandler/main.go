@@ -28,7 +28,7 @@ type PaddleHandler interface {
 
 	// VerifyWebhook checks the signature header of a Paddle webhook against the body that was
 	// received. It returns nil only when the signature is valid. ErrSignatureInvalid means that the
-	// signature was rejected, ErrCredentialNotConfigured means that no webhook secret is stored
+	// signature was rejected, ErrCredentialNotConfigured means that no webhook secret is configured
 	// (the webhook is rejected), and ErrKeyUnavailable means that the secret could not be read.
 	VerifyWebhook(ctx context.Context, signature string, body []byte) error
 }

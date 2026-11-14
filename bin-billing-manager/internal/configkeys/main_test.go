@@ -80,3 +80,33 @@ func Test_tableNames(t *testing.T) {
 		t.Errorf("Wrong match. the table names are part of the stored secret contract: %s %s", Table, HistoryTable)
 	}
 }
+
+// The variable names are the contract with the deployment definition. They are not declared on the
+// keys (Key.Env stays empty, so the admin listing does not suggest an environment source).
+func Test_envNames(t *testing.T) {
+	if EnvPaddleAPIKey != "PADDLE_API_KEY" || EnvPaddleWebhookSecret != "PADDLE_WEBHOOK_SECRET" {
+		t.Errorf("Wrong match. got: %s %s", EnvPaddleAPIKey, EnvPaddleWebhookSecret)
+	}
+
+	tests := []struct {
+		key    string
+		expect string
+		ok     bool
+	}{
+		{KeyPaddleAPIKey, "PADDLE_API_KEY", true},
+		{KeyPaddleWebhookSecretKey, "PADDLE_WEBHOOK_SECRET", true},
+		{"no.such", "", false},
+	}
+	for _, tt := range tests {
+		got, ok := EnvName(tt.key)
+		if got != tt.expect || ok != tt.ok {
+			t.Errorf("Wrong match. %s expect: %q %v, got: %q %v", tt.key, tt.expect, tt.ok, got, ok)
+		}
+	}
+
+	for _, k := range Keys() {
+		if k.Env != "" {
+			t.Errorf("Wrong match. %s must declare no environment name, got: %s", k.Name, k.Env)
+		}
+	}
+}

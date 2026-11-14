@@ -2559,6 +2559,7 @@ func (e NumberManagerAvailableNumberFeature) Valid() bool {
 const (
 	NumberManagerNumberProviderCredentialSourceDB              NumberManagerNumberProviderCredentialSource = "db"
 	NumberManagerNumberProviderCredentialSourceDBUndecryptable NumberManagerNumberProviderCredentialSource = "db_undecryptable"
+	NumberManagerNumberProviderCredentialSourceEnv             NumberManagerNumberProviderCredentialSource = "env"
 	NumberManagerNumberProviderCredentialSourceNone            NumberManagerNumberProviderCredentialSource = "none"
 )
 
@@ -2568,6 +2569,8 @@ func (e NumberManagerNumberProviderCredentialSource) Valid() bool {
 	case NumberManagerNumberProviderCredentialSourceDB:
 		return true
 	case NumberManagerNumberProviderCredentialSourceDBUndecryptable:
+		return true
+	case NumberManagerNumberProviderCredentialSourceEnv:
 		return true
 	case NumberManagerNumberProviderCredentialSourceNone:
 		return true
@@ -8882,17 +8885,18 @@ type NumberManagerNumber struct {
 
 // NumberManagerNumberProvider The setting of a number provider. It never contains a secret.
 type NumberManagerNumberProvider struct {
-	// Config The non-secret settings of the provider (for example the Telnyx `connection_id`). Omitted when empty.
+	// Config The non-secret settings stored for the provider (for example the Telnyx `connection_id`). Omitted when empty. It shows the stored values only. A setting that the stored values do not have (or have empty) is taken from the platform environment when the provider is used, so a provider that is configured only through the environment shows no `config`.
 	//
 	// Example: {"connection_id":"1234567890123456789"}
 	Config *map[string]string `json:"config,omitempty"`
 
 	// CredentialSource Where the credentials of the number provider come from.
-	// `db` is the secret stored through the API, `none` means no secret is stored (the provider is not usable until one is stored),
-	// and `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).
+	// `env` is the secret of the platform environment (the service reads it from an environment variable) and is the only source of a usable credential,
+	// and `none` means the platform environment has no secret for the provider (the provider is not usable until it is set).
+	// `db` and `db_undecryptable` are kept in the response for older readers: the service does not produce them, because it no longer reads a secret stored through the API.
 	//
 	//
-	// Example: db
+	// Example: env
 	CredentialSource *NumberManagerNumberProviderCredentialSource `json:"credential_source,omitempty"`
 
 	// Enabled Whether the provider takes part in the number purchase.
@@ -8900,12 +8904,12 @@ type NumberManagerNumberProvider struct {
 	// Example: true
 	Enabled *bool `json:"enabled,omitempty"`
 
-	// HasSecret Whether a secret is stored through the API. The secret itself is never returned.
+	// HasSecret Whether the provider has a secret in the platform environment. A secret stored through the API does not count, because the service does not use it. The secret itself is never returned.
 	//
 	// Example: true
 	HasSecret *bool `json:"has_secret,omitempty"`
 
-	// KeyVersion The version of the encryption key that encrypted the stored secret. 0 when no secret is stored.
+	// KeyVersion The version of the encryption key that encrypted the secret stored through the API (legacy, the stored secret is not used). 0 when no secret is stored.
 	//
 	// Example: 1
 	KeyVersion *int `json:"key_version,omitempty"`
@@ -8947,10 +8951,11 @@ type NumberManagerNumberProvider struct {
 }
 
 // NumberManagerNumberProviderCredentialSource Where the credentials of the number provider come from.
-// `db` is the secret stored through the API, `none` means no secret is stored (the provider is not usable until one is stored),
-// and `db_undecryptable` means a stored secret exists but cannot be decrypted (the provider is unusable until the encryption key is restored or the stored secret is deleted).
+// `env` is the secret of the platform environment (the service reads it from an environment variable) and is the only source of a usable credential,
+// and `none` means the platform environment has no secret for the provider (the provider is not usable until it is set).
+// `db` and `db_undecryptable` are kept in the response for older readers: the service does not produce them, because it no longer reads a secret stored through the API.
 //
-// Example: db
+// Example: env
 type NumberManagerNumberProviderCredentialSource string
 
 // NumberManagerNumberProviderName The provider name for the number.

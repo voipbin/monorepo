@@ -9,9 +9,8 @@
 | Webhook not processed | Target status never updates | `bin-hook-manager` not forwarding; or provider webhook URL misconfigured |
 | Inbound MMS has no `medias` | `message_updated` with attachments never arrives for an inbound `mms` | See the `inbound_media_total` results: `host` or `auth` means the media host of the provider is not the assumed one or needs credentials (change `mediaAllowedHostSuffixes` in `media_fetcher.go`), `storage` means bin-storage-manager failed or its quota is full, `busy` means more ingests than slots, `size` and `type` mean the attachment is outside the limits. The host name is in the logs for `host`, `auth` and `network`; URLs are never logged. |
 | MMS target `failed` | A message of type `mms` has a target in `failed` and the others are `queued` or `sent` | The provider refused the media or the destination (the `mms_target_failed_total` counter shows the provider and the reason), or the destination is outside the US and Canada and Telnyx refused it |
-| MessageBird auth failure | Targets fail with 401 | The stored MessageBird token (`provider.messagebird.auth_token`) is expired, wrong or not configured |
-| Telnyx auth failure | Telnyx answers 401, which counts as a refusal, so the targets go on to MessageBird and fail only when MessageBird refuses them as well | The stored Telnyx token (`provider.telnyx.auth_token`) is expired, wrong or not configured |
-| Targets `failed` with no provider answer | The log has `the provider token could not be read, so the request was not sent` | The stored token could not be read (database error, or `db_undecryptable`). See [Provider tokens](#provider-tokens) |
+| MessageBird auth failure | Targets fail with 401 | The `MESSAGEBIRD_API_KEY` variable is expired, wrong or not configured (see [Provider tokens](#provider-tokens)) |
+| Telnyx auth failure | Telnyx answers 401, which counts as a refusal, so the targets go on to MessageBird and fail only when MessageBird refuses them as well | The `TELNYX_API_KEY` variable is expired, wrong or not configured (see [Provider tokens](#provider-tokens)) |
 | Cache stale | Stale message data returned | Redis out of sync; restart clears cache |
 
 ## Schema Migration Failures
@@ -103,32 +102,35 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `redis_database` | `REDIS_DATABASE` | `0` | Redis DB index |
 | `prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | `/metrics` | Metrics path |
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | Metrics listen address |
+| (no flag) | `MESSAGEBIRD_API_KEY` | `""` | MessageBird access key. Environment only, never a flag; read at the time of use. Not set, empty or an unresolved `[[...]]` placeholder means not configured |
+| (no flag) | `TELNYX_API_KEY` | `""` | Telnyx API key of the SMS and MMS sends. Environment only, never a flag; the same variable and value as in `bin-number-manager`. Not set, empty or an unresolved placeholder means not configured |
 | (no flag) | `MESSAGE_CONFIG_ENCRYPTION_KEYS` | `""` | Master key list of the stored tokens: comma-separated `<version>:<base64 32 bytes>`. Environment only, never a flag. A malformed or empty value does not stop the start: the service logs the problem (never the value), refuses to store a secret and reports the stored tokens as undecryptable |
 
 ## Provider tokens
 
-The two provider tokens are stored settings, read from the database only (the shared `bin-common-handler/pkg/confighandler`, tables `message_configs` and `message_config_histories`).
+The two provider tokens are read from environment variables, and only from there. The stored settings (`message_configs`, the `message-control config` commands and the admin API) remain, but their values are not read by a send.
 
-| Key | Used for |
-|-----|----------|
-| `provider.messagebird.auth_token` | SMS and MMS sent through MessageBird (the targets that Telnyx refused) |
-| `provider.telnyx.auth_token` | SMS and MMS sent through Telnyx |
+| Variable | Used for |
+|----------|----------|
+| `MESSAGEBIRD_API_KEY` | SMS and MMS sent through MessageBird (the targets that Telnyx refused) |
+| `TELNYX_API_KEY` | SMS and MMS sent through Telnyx |
 
-- **Source:** the stored value only. The environment variables `AUTHTOKEN_MESSAGEBIRD` and `AUTHTOKEN_TELNYX` are not read by this service any more (VOIP-1721): a key without a stored row is an empty token, and the start logs a warning for the Telnyx token and an info line for the MessageBird token when they are not configured (key name only). Enter both tokens with `message-control config set` or the admin API before the deploy of this version. The keys are independent.
-- **Read per send, no cache:** the token is read from the database for every provider request (SMS and MMS, MessageBird and Telnyx), each read bounded to 2 seconds. A token that was changed is used by the next request on every replica, with no restart. There is no cache, so a change needs nothing else.
-- **A token that can not be read is an error:** a database error, a read that ran out of time, or a stored value that can not be decrypted (`db_undecryptable`) fails the send of that target (the target is marked `failed`, no request goes to the provider and the other provider is not tried). It is never replaced by an empty token. A key whose source is `none` is an empty token.
-- **Telnyx has two settings:** `bin-number-manager` reads its own Telnyx secret (the stored number provider secret only) and this service reads `provider.telnyx.auth_token`. They come from different places and one does not follow the other. When the Telnyx account key is rotated, change both: the number provider secret through the number provider API and the message token with `message-control config set`. Changing only one leaves the other service on the old key.
+- **Source:** the environment variable only. A variable that is not set, is empty or still holds an unresolved deployment placeholder (a value that starts with `[[`) means that the token is not configured: the supplier gives an empty token and no error, and the request is sent with that empty credential and refused by the provider. The placeholder is never sent as a token. At start the service logs one line per variable (name and state only, never a value): a warning for `TELNYX_API_KEY` that is not set, an info line for `MESSAGEBIRD_API_KEY` that is not set, and a warning with the words "unresolved placeholder" for a placeholder.
+- **Read per send, no cache:** the variable is read for every provider request. The environment of a container changes with a new deployment only, so a rotation takes effect when the replicas restart.
+- **One variable for Telnyx:** `TELNYX_API_KEY` is the variable that `bin-number-manager` reads for its Telnyx secret too, so one rotation of the deployment variable covers both services. The two services must hold the same value; this is checked in the deployment variables, not in the code.
+- **Stored values are not used:** `message-control config set` and `clear` and the admin API still write the stored row, and `message-control config` prints one line on stderr that names the variable that is read and says that the stored value is not used. A stored value that is left behind is not rotated with the variable; an older image that reads the stored settings would use it.
+- **Rollback:** roll back the image together with its deployment definition. The variables above stay in the deployment variable store and are unused by an older image.
 
 ### Commands
 
 ```bash
-# the keys with their source (never a value): db, none, db_undecryptable, db_invalid
+# the stored settings with their source (never a value); the service does not read them
 message-control config list
 
-# store a value: the value comes from stdin only (never an argument); --actor-id is required
+# store a value (not used by the service): the value comes from stdin only; --actor-id is required
 printf '%s' "$NEW_TOKEN" | message-control config set --key provider.telnyx.auth_token --actor-id <uuid>
 
-# remove the stored value (the key is then not configured)
+# remove the stored value
 message-control config clear --key provider.telnyx.auth_token --actor-id <uuid>
 ```
 
@@ -136,15 +138,14 @@ message-control config clear --key provider.telnyx.auth_token --actor-id <uuid>
 
 ### Rotation order
 
-1. Check that every replica runs an image that has this feature. During a rolling deploy two replicas run different images: **do not store a value until every replica runs the new image**, because an old replica ignores the stored value and would keep sending with the token it has.
-2. Store the new value (`config set`). The next request uses it.
-3. Check the result without sending a message: `config list` must show the key with source `db` and `has_secret` true. This shows that the value is stored and readable, not that the provider accepts it; a wrong value shows up as an authentication failure (401) at the next real send, so watch `request_external_process_time` and the log of the first sends. Do not send a test message for the check: a send costs money.
-4. If the value is wrong, store the right one (`config clear` leaves the key not configured). An image from before VOIP-1721 reads the two environment variables again when a key has no stored row, and a token rotated in the database only is not rotated for that image; keep the old token valid until the rollback window has ended. For such an image, the deployment does not inject the variables any more (VOIP-1730), so a rollback to such an image first restores those lines in the deployment definitions (revert of that change); this change does not delete the variables or secret keys of the deployment platform, so a restored line supplies the value again.
-5. For Telnyx, repeat the change in the number service (see above).
+1. Change `MESSAGEBIRD_API_KEY` or `TELNYX_API_KEY` in the deployment variable store and redeploy the service. For Telnyx, `bin-number-manager` reads the same variable, so redeploy it as well; the two services must end with the same value. During a rolling deploy two replicas can hold different values until the deploy ends.
+2. Check the result without sending a message: the start log of each replica shows the variable as set (never the value). The provider accepting the value shows only at the next real send (an authentication failure is a 401): watch `request_external_process_time` and the log of the first sends. Do not send a test message for the check: a send costs money.
+3. If the value is wrong, correct the deployment variable and redeploy.
+4. Stored values (`config set`) do not change what is sent. Do not use them to rotate a token.
 
 ### Master key list
 
-Losing or mistyping `MESSAGE_CONFIG_ENCRYPTION_KEYS` does not stop the service. A stored token then reports `db_undecryptable` and its sends fail (see above), while a key with no row is not configured. Recover by restoring the list (the stored values are readable again), or by `config clear` of the affected keys and `config set` again: the stored value is lost. `config set` is refused while the list is missing or invalid. A retired master key version must stay in the list until no row uses it (`key_version` in `config list`). The deployment definition must pass the variable to the container, and the variable must exist in the deployment system before the deploy. A missing variable does not stop the container: Komodo passes the unreplaced `[[...]]` text and the service behaves as for a malformed value.
+Losing or mistyping `MESSAGE_CONFIG_ENCRYPTION_KEYS` does not stop the service. A stored row then reports `db_undecryptable` in `config list`; the sends are not affected, because they read the environment. Recover by restoring the list (the stored values are readable again), or by `config clear` of the affected keys and `config set` again: the stored value is lost. `config set` is refused while the list is missing or invalid. A retired master key version must stay in the list until no row uses it (`key_version` in `config list`). The deployment definition must pass the variable to the container, and the variable must exist in the deployment system before the deploy. A missing variable does not stop the container: Komodo passes the unreplaced `[[...]]` text and the service behaves as for a malformed value.
 
 ## Prometheus Metrics
 

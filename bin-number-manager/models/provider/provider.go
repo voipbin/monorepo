@@ -35,8 +35,10 @@ var (
 // CredentialSource tells where the credentials of a provider come from.
 type CredentialSource string
 
-// list of credential sources
+// list of credential sources. Resolution produces env and none only: the stored secret is not
+// read any more, db and db_undecryptable stay for readers of older responses.
 const (
+	CredentialSourceEnv             CredentialSource = "env"
 	CredentialSourceDB              CredentialSource = "db"
 	CredentialSourceNone            CredentialSource = "none"
 	CredentialSourceDBUndecryptable CredentialSource = "db_undecryptable"

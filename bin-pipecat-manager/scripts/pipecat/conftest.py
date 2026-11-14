@@ -134,3 +134,18 @@ _mocks = {
 for mod_name, mock_obj in _mocks.items():
     if mod_name not in sys.modules:
         sys.modules[mod_name] = mock_obj
+
+
+import pytest
+
+PLATFORM_ENV_NAMES = (
+    "OPENAI_API_KEY", "DEEPGRAM_API_KEY", "CARTESIA_API_KEY", "XAI_API_KEY",
+    "ELEVENLABS_API_KEY", "GOOGLE_API_KEY", "OPENROUTER_API_KEY", "LOCAL_LLM_ENDPOINTS",
+)
+
+
+@pytest.fixture(autouse=True)
+def _no_platform_env(monkeypatch):
+    """The runner reads these variables of its own container: a test starts without them."""
+    for name in PLATFORM_ENV_NAMES:
+        monkeypatch.delenv(name, raising=False)

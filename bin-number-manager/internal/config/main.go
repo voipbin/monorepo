@@ -26,7 +26,7 @@ type Config struct {
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
 
-	NumberSecretEncryptionKeys string // NumberSecretEncryptionKeys is the key set that encrypts the provider secrets stored in the DB, as <version>:<base64 32 bytes>[,...].
+	NumberSecretEncryptionKeys string // NumberSecretEncryptionKeys is the key set that encrypts the provider secrets that the admin API stores in the DB, as <version>:<base64 32 bytes>[,...]. The provider credentials themselves are read from TELNYX_API_KEY, TELNYX_CONNECTION_ID, TELNYX_PROFILE_ID, TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN by the provider handler, not through this config.
 }
 
 func Bootstrap(cmd *cobra.Command) error {

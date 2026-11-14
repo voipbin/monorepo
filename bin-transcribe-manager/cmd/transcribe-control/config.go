@@ -17,6 +17,7 @@ import (
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-transcribe-manager/internal/config"
+	"monorepo/bin-transcribe-manager/internal/configkeys"
 	"monorepo/bin-transcribe-manager/internal/transcribeconfig"
 	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
@@ -30,6 +31,9 @@ const maxStdinBytes = 4096
 
 // configOut is where the config commands print. Tests replace it.
 var configOut io.Writer = os.Stdout
+
+// configErr is where the notice after a change is printed. Tests replace it.
+var configErr io.Writer = os.Stderr
 
 // configIn is where the secret value is read from. Tests replace it.
 var configIn io.Reader = os.Stdin
@@ -58,16 +62,17 @@ func cmdConfig() *cobra.Command {
 		// The root PersistentPreRunE only binds the flags and loads the configuration; it does not
 		// connect to Redis or RabbitMQ, so these commands need the database and the master key
 		// list only. The stored keys are declared in internal/configkeys and are checked on write.
-		Short: "Stored platform configuration (the AWS credential of AWS Transcribe)",
-		Long: `Stored platform configuration: the AWS credential (access key and secret access key) of the AWS
-Transcribe provider. It is a platform credential.
+		Short: "Stored settings of the AWS credential (not read by the service)",
+		Long: `Stored settings of the AWS credential (access key and secret access key) of the AWS Transcribe
+provider (aws.access_key, aws.secret_key).
 
-The keys are stored in the database only, and the two keys are used only together: AWS is not
-available while only one of them is stored. A change is
-used by the next streaming start, with no restart. The daemon applies the table migration at its
-start; on a local database run "migrate up" first. The master key list is read from the environment
-(TRANSCRIBE_CONFIG_ENCRYPTION_KEYS) and is never a flag. These commands need the database and the
-master key list only.`,
+The service does not read these stored values. It reads the environment variables AWS_ACCESS_KEY and
+AWS_SECRET_KEY (the same variables as the tts service), and uses them only together, so the
+credential is rotated in the deployment variables and a change here has no effect on a transcribe
+start. A stored value that is left behind is read only by an older image. The daemon applies the
+table migration at its start; on a local database run "migrate up" first. The master key list is
+read from the environment (TRANSCRIBE_CONFIG_ENCRYPTION_KEYS) and is never a flag. These commands
+need the database and the master key list only.`,
 	}
 
 	cmd.AddCommand(cmdConfigList())
@@ -263,8 +268,16 @@ func setConfig(h confighandler.Handler, key string, actor uuid.UUID) error {
 		return errors.Wrap(err, "failed to store the value")
 	}
 
+	printEnvNotice(key)
+
 	out := toOutput(res)
 	return printConfig(&out)
+}
+
+// printEnvNotice tells on stderr which variable the service reads, so that a stored value is not
+// mistaken for the credential in use. The stdout stays the JSON only.
+func printEnvNotice(key string) {
+	_, _ = fmt.Fprintf(configErr, "Note: the service reads the environment variable %s; the stored value is not used.\n", configkeys.EnvName(key))
 }
 
 func runConfigClear(cmd *cobra.Command, args []string) error {
@@ -286,6 +299,8 @@ func runConfigClear(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to clear the value")
 	}
+
+	printEnvNotice(key)
 
 	out := toOutput(res)
 	return printConfig(&out)

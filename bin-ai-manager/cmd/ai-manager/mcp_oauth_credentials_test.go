@@ -5,12 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/confighandler/storetest"
-
 	"monorepo/bin-ai-manager/internal/aiconfig"
-	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/internal/configkeys"
 	"monorepo/bin-ai-manager/pkg/mcpoauthhandler"
 )
@@ -35,68 +30,44 @@ func Test_mcpOAuthVendorsMatchTheHandler(t *testing.T) {
 	}
 }
 
-// The adapter reads the real config handler: no row gives an empty pair even with an environment
-// pair set (the environment is not read), a stored pair gives the stored pair, and a stored
-// client_secret without a client_id is an error.
+// The adapter reads the environment of the vendor: no variable gives an empty pair, a pair gives
+// the pair, a secret without an id is an error, and an id alone is the empty pair.
 func Test_mcpOAuthCredentials(t *testing.T) {
-	t.Setenv("MCP_OAUTH_ASANA_CLIENT_ID", "env-id")
-	t.Setenv("MCP_OAUTH_ASANA_CLIENT_SECRET", "env-secret")
-
-	h, err := aiconfig.New(&config.Config{ConfigEncryptionKeys: testMasterKeyList()}, storetest.NewMemory())
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	for _, vendor := range configkeys.MCPOAuthVendors() {
+		idName, secretName, _ := configkeys.MCPOAuthEnvNames(vendor)
+		t.Setenv(idName, "")
+		t.Setenv(secretName, "")
 	}
-	fn := mcpOAuthCredentials(h)
+
+	fn := mcpOAuthCredentials()
 	ctx := context.Background()
 
-	got, err := fn(ctx, mcpoauthhandler.VendorAsana)
-	if err != nil || got != (mcpoauthhandler.Credentials{}) {
-		t.Errorf("Wrong match. expect: an empty pair although the environment is set, got: %+v %v", got, err)
-	}
-
 	// Not configured: an empty pair and no error.
-	got, err = fn(ctx, mcpoauthhandler.VendorGitHub)
+	got, err := fn(ctx, mcpoauthhandler.VendorGitHub)
 	if err != nil || got != (mcpoauthhandler.Credentials{}) {
 		t.Errorf("Wrong match. expect: an empty pair, got: %+v %v", got, err)
 	}
 
-	actor := uuid.Must(uuid.NewV4())
-	if _, err := h.SetSecret(ctx, actor, "mcp_oauth.asana.client_secret", "db-secret"); err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
+	t.Setenv("ASANA_MCP_OAUTH_CLIENT_SECRET", "env-secret")
 	_, err = fn(ctx, mcpoauthhandler.VendorAsana)
 	if !errors.Is(err, aiconfig.ErrMCPOAuthIncomplete) {
 		t.Errorf("Wrong match. expect: ErrMCPOAuthIncomplete, got: %v", err)
 	}
 
-	if _, err := h.Set(ctx, actor, "mcp_oauth.asana.client_id", "db-id"); err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
+	t.Setenv("ASANA_MCP_OAUTH_CLIENT_ID", "env-id")
 	got, err = fn(ctx, mcpoauthhandler.VendorAsana)
-	if err != nil || got != (mcpoauthhandler.Credentials{ClientID: "db-id", ClientSecret: "db-secret"}) {
-		t.Errorf("Wrong match. expect: the stored pair, got: %+v %v", got, err)
+	if err != nil || got != (mcpoauthhandler.Credentials{ClientID: "env-id", ClientSecret: "env-secret"}) {
+		t.Errorf("Wrong match. expect: the pair, got: %+v %v", got, err)
+	}
+
+	t.Setenv("HUBSPOT_MCP_OAUTH_CLIENT_ID", "env-id-alone")
+	got, err = fn(ctx, mcpoauthhandler.VendorHubSpot)
+	if err != nil || got != (mcpoauthhandler.Credentials{}) {
+		t.Errorf("Wrong match. expect: the empty pair for an id alone, got: %+v %v", got, err)
 	}
 
 	// An unknown vendor is an error, not an empty pair.
 	if _, err := fn(ctx, "not-a-vendor"); err == nil {
 		t.Error("Wrong match. expect: an error for an unknown vendor")
-	}
-}
-
-// A read error is passed on as ErrKeyUnavailable and never turned into an empty pair.
-func Test_mcpOAuthCredentials_readErrorIsPassedOn(t *testing.T) {
-	t.Setenv("MCP_OAUTH_GITHUB_CLIENT_ID", "env-id")
-	t.Setenv("MCP_OAUTH_GITHUB_CLIENT_SECRET", "env-secret")
-
-	store := storetest.NewMemory()
-	store.GetErr = errors.New("database is down")
-	h, err := aiconfig.New(&config.Config{ConfigEncryptionKeys: testMasterKeyList()}, store)
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-
-	got, err := mcpOAuthCredentials(h)(context.Background(), mcpoauthhandler.VendorGitHub)
-	if !errors.Is(err, aiconfig.ErrKeyUnavailable) || got != (mcpoauthhandler.Credentials{}) {
-		t.Errorf("Wrong match. expect: ErrKeyUnavailable and an empty pair, got: %+v %v", got, err)
 	}
 }

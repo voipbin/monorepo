@@ -31,8 +31,8 @@ func newErrSTTNotConfigured() error {
 }
 
 // ErrSTTKeyUnavailableReason is the VoipbinError reason returned by Start when no GCP client
-// exists and the AWS credential could not be read (a database error, or a stored secret that can
-// not be decrypted). It differs from ErrSTTNotConfiguredReason because the credential may exist:
+// exists and the supplier of the AWS credential returned an error (the environment supplier of
+// the service never does; the reason stays for other suppliers). It differs from ErrSTTNotConfiguredReason because the credential may exist:
 // a read that failed is not "not configured", and the caller may retry. Stop never returns it
 // (Stop does not read the credential).
 const ErrSTTKeyUnavailableReason = "STT_KEY_UNAVAILABLE"

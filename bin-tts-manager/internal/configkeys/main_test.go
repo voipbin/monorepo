@@ -74,3 +74,25 @@ func Test_Keys_noEnvName(t *testing.T) {
 		}
 	}
 }
+
+// The variable names are the contract with the deployment definition. The keys declare no Env: the
+// handler of the stored settings never reads the environment.
+func Test_envNames(t *testing.T) {
+	if EnvAWSAccessKey != "AWS_ACCESS_KEY" || EnvAWSSecretKey != "AWS_SECRET_KEY" || EnvElevenlabsAPIKey != "ELEVENLABS_API_KEY" {
+		t.Errorf("Wrong match. got: %q %q %q", EnvAWSAccessKey, EnvAWSSecretKey, EnvElevenlabsAPIKey)
+	}
+
+	expect := map[string]string{
+		KeyAWSAccessKey:     "AWS_ACCESS_KEY",
+		KeyAWSSecretKey:     "AWS_SECRET_KEY",
+		KeyElevenlabsAPIKey: "ELEVENLABS_API_KEY",
+	}
+	for key, env := range expect {
+		if got := EnvName(key); got != env {
+			t.Errorf("Wrong match. %s expect: %s, got: %s", key, env, got)
+		}
+	}
+	if got := EnvName("no.such"); got != "" {
+		t.Errorf("Wrong match. expect: empty, got: %s", got)
+	}
+}

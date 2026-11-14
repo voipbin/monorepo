@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"os"
 	"os/signal"
@@ -128,16 +127,16 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	// The Paddle credentials are read from the database only. They are read when they are used,
-	// so a changed key is used by the next call. A key that is not stored is not configured (a
-	// webhook is rejected, a portal session fails), and a read error is an error.
+	// The Paddle credentials are read from the environment, when they are used, so nothing is
+	// cached. A variable that is not set is not configured (a webhook is rejected, a portal session
+	// fails). The stored settings handler serves the admin API only.
 	configHandler, errConfig := billingconfig.New(config.Get(), dbhandler.NewConfigStore(sqlDB))
 	if errConfig != nil {
 		return errors.Wrapf(errConfig, "could not create the config handler")
 	}
-	billingconfig.LogSources(context.Background(), configHandler)
+	billingconfig.LogStates()
 
-	apiKey, webhookSecret := billingconfig.PaddleKeys(configHandler)
+	apiKey, webhookSecret := billingconfig.PaddleKeys()
 	paddleHandler := paddlehandler.NewPaddleHandler(
 		apiKey,
 		webhookSecret,

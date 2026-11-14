@@ -1,14 +1,12 @@
 package main
 
 import (
-	"monorepo/bin-common-handler/pkg/confighandler"
-
 	"monorepo/bin-ai-manager/internal/aiconfig"
 	"monorepo/bin-ai-manager/internal/config"
 )
 
-// platformKeys are the suppliers of the platform LLM keys, one per consumer. Each one reads the key
-// when it is called (nothing is kept), so a changed key is used by the next call.
+// platformKeys are the suppliers of the platform LLM keys, one per consumer. Each one reads the environment
+// variable when it is called (nothing is kept), so a changed key is used by the next call.
 type platformKeys struct {
 	// conversation is the key of the conversational engine (the OpenAI default endpoint).
 	conversation aiconfig.KeyFunc
@@ -24,11 +22,11 @@ type platformKeys struct {
 
 // newPlatformKeys picks the supplier of each consumer. It is the one place where a consumer is
 // tied to a key, apart from the provider rule itself (aiconfig.KeyForBaseURL).
-func newPlatformKeys(h confighandler.Handler, cfg *config.Config) platformKeys {
+func newPlatformKeys(cfg *config.Config) platformKeys {
 	return platformKeys{
-		conversation: aiconfig.KeyForBaseURL(h, ""),
-		summary:      aiconfig.KeyForBaseURL(h, cfg.SummaryEngineBaseURL),
-		analysis:     aiconfig.KeyForBaseURL(h, cfg.AnalysisEngineBaseURL),
-		gemini:       aiconfig.GeminiKey(h),
+		conversation: aiconfig.KeyForBaseURL(""),
+		summary:      aiconfig.KeyForBaseURL(cfg.SummaryEngineBaseURL),
+		analysis:     aiconfig.KeyForBaseURL(cfg.AnalysisEngineBaseURL),
+		gemini:       aiconfig.GeminiKey(),
 	}
 }

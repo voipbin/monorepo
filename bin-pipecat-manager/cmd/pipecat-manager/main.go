@@ -150,19 +150,17 @@ func run() error {
 		}
 	}()
 
-	// The platform keys of the vendors are stored in the database (a key without a row is not
-	// configured). They are read when a session starts and are sent to the runner with
-	// the start request, so a changed key is used by the next session.
+	// The runner container reads the platform keys of the vendors from its own environment
+	// variables, so no key is read here and none is sent in the start request. The config handler
+	// stays for the config RPC server (the stored settings code, not read by the runner).
 	startupConfig := config.Get()
 	configHandler, errConfig := pipecatconfig.New(&startupConfig, dbhandler.NewConfigStore(sqlDB))
 	if errConfig != nil {
 		return errors.Wrapf(errConfig, "could not create the config handler")
 	}
-	pipecatconfig.LogSources(context.Background(), configHandler)
 
 	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(
 		requestHandler, notifyHandler, dbHandler, toolHandler, listenIP,
-		pipecatcallhandler.WithPlatformKeyResolver(pipecatconfig.NewKeyResolver(configHandler)),
 	)
 	httpHandler := httphandler.NewHTTPHandler(requestHandler, pipecatcallHandler)
 

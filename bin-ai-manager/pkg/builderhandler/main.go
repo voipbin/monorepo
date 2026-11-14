@@ -120,8 +120,9 @@ const (
 	resultDailyLimit  = "daily_limit"
 	resultBusy        = "busy"
 	resultUnavailable = "unavailable"
-	// resultKeyError is a platform key that could not be read (database error, a stored secret
-	// that can not be decrypted, or a read that ran out of time). It is kept apart from
+	// resultKeyError is a platform key that could not be read. The environment read of the platform
+	// keys does not fail, so the suppliers do not return this today; the label stays so that the
+	// metric series do not change. It is kept apart from
 	// unavailable (the key is not configured) and llm_error (the provider answered).
 	resultKeyError        = "key_error"
 	resultInvalidResponse = "invalid_response"
