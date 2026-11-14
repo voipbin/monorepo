@@ -559,3 +559,9 @@ def test_idless_parallel_calls_are_dropped():  # S5 id-less, CHAR (remaining lim
 def test_unanswerable_call_between_stops_the_hoist_scan():  # S5, characterises the scan rule
     ca, cx, s, ra = _assistant_call("a"), _assistant_call("x"), _say(), _tool_result("a")
     _check([ca, cx, s, ra], [ca, ra, s])
+
+
+def test_repeated_id_inside_one_call_row_needs_one_result_per_entry():  # S5, CHAR
+    _check([_multi_call("a", "a"), _tool_result("a")], [])
+    msgs = [_multi_call("a", "a"), _tool_result("a", "1"), _tool_result("a", "2")]
+    _check(msgs, msgs)

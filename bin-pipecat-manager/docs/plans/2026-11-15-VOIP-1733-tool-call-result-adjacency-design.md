@@ -139,6 +139,8 @@ Results:
 The existing two-pass pairing check stays as it is and runs after this step; it only sees well formed
 pairs. The function does not mutate its input and returns the same row objects (rows repaired by the id-less step are new dicts).
 
+A call row with several ids stays one assistant row followed by one tool row per id. The Gemini adapter turns it into one turn with several function_call parts and one function_response turn per result; that is the adapter's existing behaviour for an already adjacent history and is not changed here.
+
 Id-less rows: `_repair_idless_pairs` runs first. Its adjacency test `j == i + 1` becomes "every row between
 the call and the result is a plain row (not a tool row, not an assistant row with `tool_calls`)", so a
 sentence or user row stored between an id-less call and its result no longer hides the executed call.
@@ -240,7 +242,7 @@ its own copy (the directory is isolated from `scripts/pipecat`, see S16).
 
 ### 3.4 Scenario coverage (T)
 
-Python function names are the ones of the 3.3 table (file `scripts/pipecat/test_message_filters.py`).
+Python function names are the ones of the 3.3 table (file `scripts/pipecat/test_message_filters.py`). This table maps the scenarios; a few extra tests (the scan-stop case, a repeated id inside one call row, and the existing id-less tests) are not listed.
 
 | S | Scenario | Test |
 |---|---|---|

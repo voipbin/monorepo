@@ -144,7 +144,7 @@ def _restore_tool_adjacency(candidates: list[dict]) -> list[dict]:
         while k < last:
             if k in claimed:
                 k += 1
-            elif candidates[k].get("role") == "assistant" and not candidates[k].get("tool_calls") and k not in hoisted_rows:
+            elif candidates[k].get("role") == "assistant" and not candidates[k].get("tool_calls"):
                 rows.append(k)
                 hoisted_rows.add(k)
                 k += 1
