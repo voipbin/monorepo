@@ -10,7 +10,6 @@ import (
 
 	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -38,9 +37,6 @@ type listenHandler struct {
 	ttsHandler       ttshandler.TTSHandler
 	streamingHandler streaminghandler.StreamingHandler
 	speakingHandler  speakinghandler.SpeakingHandler
-
-	// configServer serves the /v1/configs requests. It may be nil: the requests are not found then.
-	configServer *configrpc.Server
 }
 
 var (
@@ -126,15 +122,12 @@ func NewListenHandler(
 	ttsHandler ttshandler.TTSHandler,
 	streamingHandler streaminghandler.StreamingHandler,
 	speakingHandler speakinghandler.SpeakingHandler,
-	configServer *configrpc.Server,
 ) ListenHandler {
 	h := &listenHandler{
 		sockHandler:      sockHandler,
 		ttsHandler:       ttsHandler,
 		streamingHandler: streamingHandler,
 		speakingHandler:  speakingHandler,
-
-		configServer: configServer,
 	}
 
 	return h
@@ -161,14 +154,6 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 // processRequest
 func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
-	// The config requests are routed BEFORE the log entry below exists: the entry holds the whole
-	// request, and the body of a secret request is a secret. A request that looks like a config
-	// request but is not one is answered here as well, so that its body can not reach another
-	// route (the patterns of the other routes are not anchored at the start). See processConfig.
-	if h.configServer.Match(m) || configrpc.LogSafe(m) != m {
-		return h.processConfig(m)
-	}
-
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processRequest",
 		"request": m,

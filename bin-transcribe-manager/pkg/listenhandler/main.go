@@ -10,7 +10,6 @@ import (
 
 	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -47,9 +46,6 @@ type listenHandler struct {
 	reqHandler        requesthandler.RequestHandler
 	transcribeHandler transcribehandler.TranscribeHandler
 	transcriptHandler transcripthandler.TranscriptHandler
-
-	// configServer serves the /v1/configs requests. It may be nil: the requests are not found then.
-	configServer *configrpc.Server
 }
 
 var (
@@ -129,7 +125,6 @@ func NewListenHandler(
 	reqHandler requesthandler.RequestHandler,
 	transcribeHandler transcribehandler.TranscribeHandler,
 	transcriptHandler transcripthandler.TranscriptHandler,
-	configServer *configrpc.Server,
 ) ListenHandler {
 	h := &listenHandler{
 		hostID:      hostID,
@@ -139,8 +134,6 @@ func NewListenHandler(
 		reqHandler:        reqHandler,
 		transcribeHandler: transcribeHandler,
 		transcriptHandler: transcriptHandler,
-
-		configServer: configServer,
 	}
 
 	return h
@@ -213,14 +206,6 @@ func (h *listenHandler) Run(queue, queueVolatile, exchangeDelay string) error {
 
 // processRequest handles all of requests of the listen queue.
 func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
-	// The config requests are routed BEFORE the log entry below exists: the body of a secret
-	// request is a secret, and the entry holds the whole request. A request that looks like a
-	// config request but is not one is answered here as well, so that its body can not reach
-	// another route or the log of the default branch. See processConfig.
-	if h.configServer.Match(m) || configrpc.LogSafe(m) != m {
-		return h.processConfig(m)
-	}
-
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processRequest",
 		"request": m,

@@ -9,7 +9,6 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -18,7 +17,6 @@ import (
 	"monorepo/bin-message-manager/pkg/requestexternal"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -160,18 +158,13 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler, cfg *config.Confi
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	// The provider tokens are read from the environment (MESSAGEBIRD_API_KEY, TELNYX_API_KEY) when a
-	// message is sent. The handler of the stored settings serves the config commands and the admin
-	// API only; its values are not read by a send.
-	configHandler, errConfig := messageconfig.New(cfg, dbhandler.NewConfigStore(sqlDB))
-	if errConfig != nil {
-		return errors.Wrapf(errConfig, "could not create the config handler")
-	}
+	// message is sent.
 	messageconfig.LogStates()
 
 	requestExternal := requestexternal.NewRequestExternal(messageconfig.MessagebirdToken(), messageconfig.TelnyxToken())
 
 	messageHandler := messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, requestExternal)
-	listenHandler := listenhandler.NewListenHandler(sockHandler, messageHandler, configrpc.NewServer(configHandler, serviceName))
+	listenHandler := listenhandler.NewListenHandler(sockHandler, messageHandler)
 
 	// run
 	if errRun := listenHandler.Run(string(commonoutline.QueueNameMessageRequest), string(commonoutline.QueueNameDelay)); errRun != nil {

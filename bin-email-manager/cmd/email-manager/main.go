@@ -8,7 +8,6 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -151,21 +150,14 @@ func run(dbHandler dbhandler.DBHandler, cfg *config.Config) {
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameEmailEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	// the provider credentials are read from the environment at the time of use (a variable that is
-	// not set is not configured). The stored settings handler serves the admin API only. Only an
-	// invalid registry (a programming error) fails here; a bad master key never does.
-	configHandler, errConfig := emailconfig.New(cfg, dbHandler.ConfigStore())
-	if errConfig != nil {
-		log.Errorf("Could not create the config handler. err: %v", errConfig)
-		return
-	}
+	// not set is not configured).
 	emailconfig.LogStates()
 
 	sendgridKey, mailgunKey, mailgunSigningKey := emailconfig.Suppliers()
 	emailHandler := emailhandler.NewEmailHandler(dbHandler, reqHandler, notifyHandler, sendgridKey, mailgunKey, mailgunSigningKey)
 
 	// run listen
-	configServer := configrpc.NewServer(configHandler, serviceName)
-	if errListen := runListen(sockHandler, emailHandler, configServer); errListen != nil {
+	if errListen := runListen(sockHandler, emailHandler); errListen != nil {
 		log.Errorf("Could not run the listen correctly. err: %v", errListen)
 		return
 	}
@@ -177,11 +169,10 @@ func runListen(
 	sockListen sockhandler.SockHandler,
 
 	emailHandler emailhandler.EmailHandler,
-	configServer *configrpc.Server,
 ) error {
 	log := logrus.WithField("func", "runListen")
 
-	listenHandler := listenhandler.NewListenHandler(sockListen, emailHandler, configServer)
+	listenHandler := listenhandler.NewListenHandler(sockListen, emailHandler)
 
 	// run the service
 	if errRun := listenHandler.Run(string(commonoutline.QueueNameEmailRequest), string(commonoutline.QueueNameDelay)); errRun != nil {

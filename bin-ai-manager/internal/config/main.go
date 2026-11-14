@@ -22,13 +22,6 @@ var (
 	once         sync.Once
 )
 
-// Names of the environment variables that the service reads without a flag.
-const (
-	// EnvConfigEncryptionKeys is the environment variable of the master key list of the stored
-	// platform settings.
-	EnvConfigEncryptionKeys = "AI_CONFIG_ENCRYPTION_KEYS"
-)
-
 // Config holds process-wide configuration values loaded from command-line
 // flags and environment variables for the service.
 type Config struct {
@@ -93,14 +86,8 @@ type Config struct {
 	// Customer-Configured MCP Tool Integration (docs/plans/
 	// 2026-09-11-mcp-tool-integration-design.md §6, §13).
 	EngineBaseKeyEncryptionKeys string // Comma-separated "<version>:<base64-32-byte-key>" pairs for customer endpoint keys (same format as MCP); the highest version encrypts, all listed versions decrypt.
-	// ConfigEncryptionKeys is the master key list of the stored platform settings
-	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
-	// command line flag. A value that can not be parsed does not stop the service (unlike the two
-	// lists above): the stored secrets can not be used then (they are reported as undecryptable).
-	ConfigEncryptionKeys string
-
-	McpSecretEncryptionKeys   string // Comma-separated "<version>:<base64-32-byte-key>" pairs; the highest version is used for new writes, all listed versions remain available for decrypting existing rows.
-	McpToolCallTimeoutSeconds int    // Bounds one whole MCP call (tools/list or tools/call): its handshake, the method and one re-initialisation; the session close may run up to 250 ms past it.
+	McpSecretEncryptionKeys     string // Comma-separated "<version>:<base64-32-byte-key>" pairs; the highest version is used for new writes, all listed versions remain available for decrypting existing rows.
+	McpToolCallTimeoutSeconds   int    // Bounds one whole MCP call (tools/list or tools/call): its handshake, the method and one re-initialisation; the session close may run up to 250 ms past it.
 
 	// McpToolExposureEnabled is the global rollback switch for PR B2 (design
 	// docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md §8, B27).
@@ -247,12 +234,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"ai_builder_llm_timeout_seconds": "AI_BUILDER_LLM_TIMEOUT_SECONDS",
 	}
 
-	// the master key list of the stored settings has no flag: a flag value would show in the
-	// process list.
-	if errBind := viper.BindEnv("ai_config_encryption_keys", EnvConfigEncryptionKeys); errBind != nil {
-		return errors.Wrapf(errBind, "could not bind the env. key: %s", EnvConfigEncryptionKeys)
-	}
-
 	for flagKey, envKey := range bindings {
 		if errBind := viper.BindPFlag(flagKey, f.Lookup(flagKey)); errBind != nil {
 			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
@@ -326,7 +307,6 @@ func LoadGlobalConfig() {
 			AnalysisMaxOutputTokens: viper.GetInt("analysis_max_output_tokens"),
 
 			EngineBaseKeyEncryptionKeys: viper.GetString("engine_base_key_encryption_keys"),
-			ConfigEncryptionKeys:        viper.GetString("ai_config_encryption_keys"),
 			McpSecretEncryptionKeys:     viper.GetString("mcp_secret_encryption_keys"),
 			McpToolCallTimeoutSeconds:   viper.GetInt("mcp_tool_call_timeout_seconds"),
 			McpToolExposureEnabled:      viper.GetBool("mcp_tool_exposure_enabled"),

@@ -79,7 +79,7 @@ func Test_runListen(t *testing.T) {
 				}
 			}
 
-			err := runListen(mockSock, hostID, mockReq, mockTranscript, mockTranscribe, nil)
+			err := runListen(mockSock, hostID, mockReq, mockTranscript, mockTranscribe)
 			if tt.expectErr != "" {
 				if err == nil || !strings.Contains(err.Error(), tt.expectErr) {
 					t.Fatalf("Wrong match. expect error containing: %q, got: %v", tt.expectErr, err)

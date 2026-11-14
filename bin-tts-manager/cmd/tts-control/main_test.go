@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"io"
+	"monorepo/bin-tts-manager/models/tts"
+	"monorepo/bin-tts-manager/pkg/ttshandler"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/spf13/viper"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_resolveUUID(t *testing.T) {
@@ -140,5 +144,32 @@ func Test_runCreate_inputValidation(t *testing.T) {
 				t.Fatalf("Wrong error. expected to contain %q, got: %v", tt.expectErr, err)
 			}
 		})
+	}
+}
+
+// runCreate takes the handler from openTTSHandler.
+func Test_runCreate_usesTheOpenedHandler(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockTTS := ttshandler.NewMockTTSHandler(mc)
+	mockTTS.EXPECT().Create(gomock.Any(), gomock.Any(), "hello", "en-US", tts.Provider(""), "").Return(&tts.TTS{}, nil)
+
+	saved := openTTSHandler
+	openTTSHandler = func() (ttshandler.TTSHandler, error) { return mockTTS, nil }
+	t.Cleanup(func() { openTTSHandler = saved })
+
+	viper.Reset()
+	t.Cleanup(viper.Reset)
+	out := &bytes.Buffer{}
+	cmd := initCommand()
+	cmd.SetArgs([]string{"tts", "create", "--call-id", "a1b2c3d4-0000-4000-8000-000000000001", "--text", "hello", "--lang", "en-US"})
+	cmd.SilenceUsage = true
+	cmd.SilenceErrors = true
+	cmd.SetOut(out)
+	cmd.SetErr(out)
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 }

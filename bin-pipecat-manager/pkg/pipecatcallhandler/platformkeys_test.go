@@ -98,9 +98,10 @@ func Test_platformKeyNames_coversEveryKey(t *testing.T) {
 		[]string{"cartesia", "elevenlabs"},
 	)
 
-	expect := []string{}
-	for _, k := range configkeys.Keys() {
-		expect = append(expect, k.Name)
+	expect := []string{
+		configkeys.KeyOpenAIAPIKey, configkeys.KeyDeepgramAPIKey, configkeys.KeyCartesiaAPIKey,
+		configkeys.KeyXAIAPIKey, configkeys.KeyElevenLabsAPIKey, configkeys.KeyGoogleAPIKey,
+		configkeys.KeyOpenRouterAPIKey, configkeys.KeyLocalLLMEndpoints,
 	}
 	if len(got) != len(expect) {
 		t.Fatalf("Wrong match. expect: %d names, got: %v", len(expect), got)

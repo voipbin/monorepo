@@ -4,8 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"monorepo/bin-common-handler/pkg/confighandler"
-
 	"monorepo/bin-ai-manager/internal/aiconfig"
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/internal/configkeys"
@@ -89,33 +87,10 @@ func Test_newPlatformKeys_notConfigured(t *testing.T) {
 	}
 }
 
-// failingStore fails the test when the stored settings are read: the platform keys come from the
-// environment only. The methods that are not listed panic through the nil Store.
-type failingStore struct {
-	confighandler.Store
-	t *testing.T
-}
-
-func (s failingStore) Get(context.Context, string) (*confighandler.Row, error) {
-	s.t.Errorf("Wrong match. the stored settings must not be read")
-	return nil, confighandler.ErrNotFound
-}
-
-func (s failingStore) List(context.Context) ([]*confighandler.Row, error) {
-	s.t.Errorf("Wrong match. the stored settings must not be read")
-	return nil, nil
-}
-
-// The suppliers have no store, and the handler built on a store that fails when it is touched is
-// not touched by them, whatever the variables hold.
-func Test_platformKeys_neverReadTheStore(t *testing.T) {
+// The suppliers read the environment of the process and nothing else, whatever the variables hold.
+func Test_platformKeys_readTheEnvironment(t *testing.T) {
 	t.Setenv(configkeys.EnvOpenAIAPIKey, "openai-value")
 	t.Setenv(configkeys.EnvGoogleAPIKey, "")
-
-	h, err := aiconfig.New(&config.Config{}, failingStore{t: t})
-	if err != nil || h == nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
 
 	keys := newPlatformKeys(&config.Config{})
 	if got, errKey := keys.conversation(context.Background()); errKey != nil || got != "openai-value" {

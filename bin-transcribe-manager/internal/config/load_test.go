@@ -105,7 +105,7 @@ func Test_LoadGlobalConfig_once(t *testing.T) {
 }
 
 // Test_Config_removedFields checks that the provider secrets are not fields of the Config any
-// more: the stored settings are the only source of them.
+// more: they are read from the environment by transcribeconfig.
 func Test_Config_removedFields(t *testing.T) {
 	typ := reflect.TypeOf(Config{})
 	for _, name := range []string{"AWSAccessKey", "AWSSecretKey"} {
@@ -127,7 +127,6 @@ func Test_LoadGlobalConfig_oldVariablesIgnored(t *testing.T) {
 		t.Setenv("RABBITMQ_ADDRESS", "amqp://rabbit.example.invalid:5672")
 		t.Setenv("REDIS_DATABASE", "3")
 		t.Setenv("STREAMING_LISTEN_PORT", "9090")
-		t.Setenv("TRANSCRIBE_CONFIG_ENCRYPTION_KEYS", "1:master-fake")
 
 		return *loadForTest(t)
 	}
@@ -142,7 +141,7 @@ func Test_LoadGlobalConfig_oldVariablesIgnored(t *testing.T) {
 	if got != base {
 		t.Errorf("Wrong match. the old variables changed the config.\nexpect: %+v\ngot: %+v", base, got)
 	}
-	if got.ConfigEncryptionKeys != "1:master-fake" || got.RabbitMQAddress != "amqp://rabbit.example.invalid:5672" || got.RedisDatabase != 3 || got.StreamingListenPort != 9090 {
+	if got.RabbitMQAddress != "amqp://rabbit.example.invalid:5672" || got.RedisDatabase != 3 || got.StreamingListenPort != 9090 {
 		t.Errorf("Wrong match. got: %+v", got)
 	}
 }

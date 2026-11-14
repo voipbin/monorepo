@@ -139,7 +139,6 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -1133,12 +1132,6 @@ type RequestHandler interface {
 	// email-manager hooks
 	EmailV1Hooks(ctx context.Context, hm *hmhook.Hook) error
 
-	// configs of a service (the service name picks the manager)
-	ConfigV1ServiceGet(ctx context.Context, service string) (*configrpc.Service, error)
-	ConfigV1KeySecretSet(ctx context.Context, service, key string, actorID uuid.UUID, secret string, revision uint32) (*configrpc.Key, error)
-	ConfigV1KeyClear(ctx context.Context, service, key string, actorID uuid.UUID, revision uint32) (*configrpc.Key, error)
-	ConfigV1KeyHistoryList(ctx context.Context, service, key, pageToken string, pageSize int) (*configrpc.HistoryList, error)
-
 	// flow-manager action
 	FlowV1ActionGet(ctx context.Context, flowID, actionID uuid.UUID) (*fmaction.Action, error)
 
@@ -1229,8 +1222,6 @@ type RequestHandler interface {
 	NumberV1NumberProviderList(ctx context.Context) ([]*nmprovider.Info, error)
 	NumberV1NumberProviderGet(ctx context.Context, name nmnumber.ProviderName) (*nmprovider.Info, error)
 	NumberV1NumberProviderUpdate(ctx context.Context, name nmnumber.ProviderName, actorID uuid.UUID, enabled *bool, priority *int, config map[string]string) (*nmprovider.Info, error)
-	NumberV1NumberProviderUpdateSecret(ctx context.Context, name nmnumber.ProviderName, actorID uuid.UUID, secret string) (*nmprovider.Info, error)
-	NumberV1NumberProviderDeleteSecret(ctx context.Context, name nmnumber.ProviderName, actorID uuid.UUID) (*nmprovider.Info, error)
 
 	// outdial-manager outdial
 	OutdialV1OutdialCreate(ctx context.Context, customerID, campaignID uuid.UUID, name, detail, data string) (*omoutdial.Outdial, error)

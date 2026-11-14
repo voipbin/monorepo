@@ -7,8 +7,6 @@ import (
 	"testing"
 
 	"go.yaml.in/yaml/v3"
-
-	"monorepo/bin-pipecat-manager/internal/config"
 )
 
 // composeServiceBlocks splits the services of the compose file into blocks by the key of the
@@ -47,57 +45,6 @@ func composeServiceBlocks(t *testing.T) map[string]string {
 	}
 
 	return blocks
-}
-
-// The deployment definition passes the master key list to the two Go services (the stored
-// platform keys can not be written or read without it) and to nothing else. The python runner
-// never gets it: it does not read the database.
-func Test_komodoComposePassesTheMasterKeyListToTheGoServicesOnly(t *testing.T) {
-	blocks := composeServiceBlocks(t)
-	want := "- " + config.EnvConfigEncryptionKeys + "=[[BIN_MANAGER__PIPECAT_MANAGER_CONFIG_ENCRYPTION_KEYS]]"
-
-	for _, name := range []string{"pipecat-manager-1", "pipecat-manager-2"} {
-		block, ok := blocks[name]
-		if !ok {
-			t.Fatalf("Wrong match. the service %s is missing", name)
-		}
-		if got := strings.Count(block, want); got != 1 {
-			t.Errorf("Wrong match. %s expect the line once: %s, got: %d", name, want, got)
-		}
-		if !strings.Contains(block, "command: ./pipecat-manager") {
-			t.Errorf("Wrong match. %s is expected to be the Go service", name)
-		}
-	}
-
-	for _, name := range []string{"pipecat-script-runner-1", "pipecat-script-runner-2"} {
-		block, ok := blocks[name]
-		if !ok {
-			t.Fatalf("Wrong match. the service %s is missing", name)
-		}
-		if strings.Contains(block, config.EnvConfigEncryptionKeys) || strings.Contains(block, "CONFIG_ENCRYPTION_KEYS") {
-			t.Errorf("Wrong match. the runner %s must not get the master key list", name)
-		}
-		if !strings.Contains(block, "scripts/pipecat/main.py") {
-			t.Errorf("Wrong match. %s is expected to be the python runner", name)
-		}
-	}
-
-	if len(blocks) != 4 {
-		t.Errorf("Wrong match. expect: 4 services, got: %d", len(blocks))
-	}
-}
-
-// The master key list is mapped once per Go service and never to another variable name.
-func Test_komodoComposeMasterKeyOccurrences(t *testing.T) {
-	raw, err := os.ReadFile("../../komodo/docker-compose.yml")
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-
-	if got := strings.Count(string(raw), "CONFIG_ENCRYPTION_KEYS"); got != 4 {
-		// two variable names per line: the container variable and the Komodo variable
-		t.Errorf("Wrong match. expect: 4 mentions (2 lines), got: %d", got)
-	}
 }
 
 // composeEnvironment returns the environment of each service of the compose file as a map of

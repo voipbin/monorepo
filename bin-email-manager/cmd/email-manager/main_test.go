@@ -190,7 +190,7 @@ func Test_runListen(t *testing.T) {
 			}
 
 			// runListen logs the listen error and returns nil in both cases
-			if err := runListen(mockSock, mockEmail, nil); err != nil {
+			if err := runListen(mockSock, mockEmail); err != nil {
 				t.Errorf("Wrong match. expect: nil, got: %v", err)
 			}
 

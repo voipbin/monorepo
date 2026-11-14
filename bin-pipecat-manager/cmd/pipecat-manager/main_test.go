@@ -187,7 +187,7 @@ func Test_runListen(t *testing.T) {
 				return nil
 			})
 
-		if err := runListen(mockSock, hostID, mockPipecat, nil); err != nil {
+		if err := runListen(mockSock, hostID, mockPipecat); err != nil {
 			t.Fatalf("Wrong error. expect: nil, got: %v", err)
 		}
 
@@ -213,7 +213,7 @@ func Test_runListen(t *testing.T) {
 		// no consumer starts when the first queue can not be created, so the mock has no ConsumeRPC.
 		mockSock.EXPECT().QueueCreate("bin-manager.pipecat-manager.request", "normal").Return(errors.New("broker down"))
 
-		err := runListen(mockSock, hostID, mockPipecat, nil)
+		err := runListen(mockSock, hostID, mockPipecat)
 		if err == nil || !strings.Contains(err.Error(), "could not run the listenhandler correctly") {
 			t.Errorf("Wrong error. expect: could not run the listenhandler correctly, got: %v", err)
 		}
@@ -221,12 +221,12 @@ func Test_runListen(t *testing.T) {
 }
 
 func Test_createDBHandler_databaseFailure(t *testing.T) {
-	res, sqlDB, err := createDBHandler()
+	res, err := createDBHandler()
 	if err == nil {
 		t.Fatalf("Wrong error. expect: error, got: nil")
 	}
-	if res != nil || sqlDB != nil {
-		t.Errorf("Wrong result. expect: nil handler and nil connection")
+	if res != nil {
+		t.Errorf("Wrong result. expect: nil handler")
 	}
 }
 

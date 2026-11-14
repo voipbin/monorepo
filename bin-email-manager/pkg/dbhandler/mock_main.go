@@ -11,7 +11,6 @@ package dbhandler
 
 import (
 	context "context"
-	confighandler "monorepo/bin-common-handler/pkg/confighandler"
 	email "monorepo/bin-email-manager/models/email"
 	reflect "reflect"
 
@@ -41,20 +40,6 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
-}
-
-// ConfigStore mocks base method.
-func (m *MockDBHandler) ConfigStore() confighandler.Store {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfigStore")
-	ret0, _ := ret[0].(confighandler.Store)
-	return ret0
-}
-
-// ConfigStore indicates an expected call of ConfigStore.
-func (mr *MockDBHandlerMockRecorder) ConfigStore() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigStore", reflect.TypeOf((*MockDBHandler)(nil).ConfigStore))
 }
 
 // EmailCreate mocks base method.

@@ -64,10 +64,9 @@ func loadForTest(t *testing.T) (*cobra.Command, Config) {
 }
 
 // The variables of the platform keys are not part of the loaded configuration: the load succeeds,
-// the names are not flags, and the master key and every other field are the same as without them.
+// the names are not flags, and every field is the same as without them.
 // The old name of the OpenAI key is not read by anything either.
 func Test_LoadGlobalConfig_platformKeyVariablesAreNotConfig(t *testing.T) {
-	t.Setenv(EnvConfigEncryptionKeys, "1:prefixed-value")
 	t.Setenv("DATABASE_DSN", "user:pass@tcp(127.0.0.1:3306)/db")
 
 	_, without := loadForTest(t)
@@ -78,8 +77,8 @@ func Test_LoadGlobalConfig_platformKeyVariablesAreNotConfig(t *testing.T) {
 
 	cmd, with := loadForTest(t)
 
-	if with.ConfigEncryptionKeys != "1:prefixed-value" || with.DatabaseDSN != "user:pass@tcp(127.0.0.1:3306)/db" {
-		t.Errorf("Wrong match. expect: the master key and the DSN as set, got: %q %q", with.ConfigEncryptionKeys, with.DatabaseDSN)
+	if with.DatabaseDSN != "user:pass@tcp(127.0.0.1:3306)/db" {
+		t.Errorf("Wrong match. expect: the DSN as set, got: %q", with.DatabaseDSN)
 	}
 	if !reflect.DeepEqual(without, with) {
 		t.Errorf("Wrong match. expect: the variables change no field, got: %+v and %+v", without, with)

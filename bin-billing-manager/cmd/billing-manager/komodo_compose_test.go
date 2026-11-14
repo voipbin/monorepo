@@ -7,7 +7,6 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
-	"monorepo/bin-billing-manager/internal/config"
 	"monorepo/bin-billing-manager/internal/configkeys"
 )
 
@@ -98,16 +97,6 @@ func k8sEnvironment(t *testing.T) map[string]k8sEnvEntry {
 	return res
 }
 
-// The deployment definition must pass the master key list to the container under the name that the
-// service reads (the stored settings can not be written without it).
-func Test_komodoComposePassesTheMasterKeyList(t *testing.T) {
-	env := composeEnvironment(t)
-
-	if got := env[config.EnvConfigEncryptionKeys]; got != "[[BIN_MANAGER__BILLING_MANAGER_CONFIG_ENCRYPTION_KEYS]]" {
-		t.Errorf("Wrong match. got: %q", got)
-	}
-}
-
 // The Paddle credentials are passed under the name that the service reads, and the deployment
 // variable has the same name.
 func Test_komodoComposePassesThePlatformSecrets(t *testing.T) {
@@ -120,13 +109,13 @@ func Test_komodoComposePassesThePlatformSecrets(t *testing.T) {
 	}
 }
 
-// The Kubernetes definition passes the master key list and the Paddle credentials as optional
+// The Kubernetes definition passes the Paddle credentials as optional
 // secret references: a cluster whose secret has no such key still starts the pod (the key is then
 // not configured).
 func Test_k8sDeploymentPassesTheSecretsAsOptionalReferences(t *testing.T) {
 	env := k8sEnvironment(t)
 
-	for _, name := range []string{config.EnvConfigEncryptionKeys, configkeys.EnvPaddleAPIKey, configkeys.EnvPaddleWebhookSecret} {
+	for _, name := range []string{configkeys.EnvPaddleAPIKey, configkeys.EnvPaddleWebhookSecret} {
 		e, ok := env[name]
 		if !ok {
 			t.Errorf("Wrong match. %s is missing", name)

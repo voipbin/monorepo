@@ -89,7 +89,6 @@ func initCommand() *cobra.Command {
 	cmdRoot.AddCommand(cmdTopUp)
 
 	// the stored platform configuration (the Paddle credentials)
-	cmdRoot.AddCommand(cmdConfig())
 
 	// the migrate commands open only the database, so they do not depend on Redis or RabbitMQ
 	cmdRoot.AddCommand(migrationhandler.NewMigrateCommand("migrate", func() (*migrationhandler.Migrator, error) {

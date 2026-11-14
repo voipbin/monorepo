@@ -23,7 +23,6 @@ import (
 	participant "monorepo/bin-ai-manager/models/participant"
 	summary "monorepo/bin-ai-manager/models/summary"
 	team "monorepo/bin-ai-manager/models/team"
-	confighandler "monorepo/bin-common-handler/pkg/confighandler"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -551,20 +550,6 @@ func (m *MockDBHandler) AIcallUpdateNoTouchTMUpdate(ctx context.Context, id uuid
 func (mr *MockDBHandlerMockRecorder) AIcallUpdateNoTouchTMUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateNoTouchTMUpdate", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateNoTouchTMUpdate), ctx, id, fields)
-}
-
-// ConfigStore mocks base method.
-func (m *MockDBHandler) ConfigStore() confighandler.Store {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfigStore")
-	ret0, _ := ret[0].(confighandler.Store)
-	return ret0
-}
-
-// ConfigStore indicates an expected call of ConfigStore.
-func (mr *MockDBHandlerMockRecorder) ConfigStore() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigStore", reflect.TypeOf((*MockDBHandler)(nil).ConfigStore))
 }
 
 // McpOAuthStateCreate mocks base method.
