@@ -156,7 +156,7 @@ Rotation:
 1. Create the new key at the provider. Keep the old key valid.
 2. Make sure every replica runs the image of this feature. Do not enter a value while a rolling deploy is half done, with the command line or the admin API: an older replica ignores the stored value (and does not serve the admin API), so the replicas would use different keys.
 3. Store the new value (both AWS keys, one after the other), check with `config list`, and place one test request.
-4. Revoke the old key at the provider. An image from before VOIP-1721 reads `AWS_ACCESS_KEY`, `AWS_SECRET_KEY` and `ELEVENLABS_API_KEY` from the environment again when a key has no stored row; a credential rotated in the database only is not rotated for such an image. Keep the variables of the deployment in step until the rollback window has ended.
+4. Revoke the old key at the provider. An image from before VOIP-1721 reads `AWS_ACCESS_KEY`, `AWS_SECRET_KEY` and `ELEVENLABS_API_KEY` from the environment again when a key has no stored row; a credential rotated in the database only is not rotated for such an image. Keep the old key valid until the rollback window has ended. For such an image, the deployment does not inject the variables any more (VOIP-1730), so a rollback to such an image first restores those lines in the deployment definitions (revert of that change); the variables and secret keys of the deployment platform are not deleted, so a restored line supplies the value again.
 
 Recovery: `tts-control config clear --key <key> --actor-id <uuid>` removes the stored value; the key is then not configured until it is stored again.
 

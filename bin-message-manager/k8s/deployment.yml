@@ -53,16 +53,6 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: REDIS_DATABASE
-            - name: AUTHTOKEN_MESSAGEBIRD
-              valueFrom:
-                secretKeyRef:
-                  name: voipbin
-                  key: AUTHTOKEN_MESSAGEBIRD
-            - name: AUTHTOKEN_TELNYX
-              valueFrom:
-                secretKeyRef:
-                  name: voipbin
-                  key: TELNYX_TOKEN
             - name: CLICKHOUSE_ADDRESS
               valueFrom:
                 secretKeyRef:
