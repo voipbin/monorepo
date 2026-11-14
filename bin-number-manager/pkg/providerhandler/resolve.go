@@ -34,11 +34,6 @@ type resolved struct {
 	usable bool
 }
 
-// hasDBSecret returns true if the row holds an encrypted secret.
-func hasDBSecret(row *provider.Provider) bool {
-	return row != nil && len(row.SecretCiphertext) > 0
-}
-
 // requiredConfigMissing returns the first required config key the config does not have.
 func requiredConfigMissing(desc Descriptor, config map[string]string) (string, bool) {
 	for _, k := range desc.RequiredConfig {
@@ -51,7 +46,7 @@ func requiredConfigMissing(desc Descriptor, config map[string]string) (string, b
 
 // resolve merges the registry defaults, the row and the credentials of the provider.
 //
-// The secret comes from the environment only (the stored ciphertext is not read). A provider
+// The secret comes from the environment only. A provider
 // without a secret has the source none and is not usable. The config is the config of the row,
 // where a key without a value is filled from its environment variable.
 func (h *providerHandler) resolve(ctx context.Context, name number.ProviderName) (*resolved, error) {

@@ -3,13 +3,10 @@ package main
 import (
 	"bytes"
 	"database/sql"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"os"
-	"path/filepath"
 	"reflect"
 	"regexp"
 	"sort"
@@ -21,8 +18,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"go.uber.org/mock/gomock"
-
-	"monorepo/bin-common-handler/pkg/secretcrypto"
 
 	"monorepo/bin-number-manager/internal/config"
 	"monorepo/bin-number-manager/models/number"
@@ -36,15 +31,6 @@ import (
 const canary = "CANARY-fake-provider-secret-0001"
 
 const providerTestActor = "11111111-2222-4333-8444-555555555555"
-
-func providerTestKeys() string {
-	raw := make([]byte, 32)
-	for i := range raw {
-		raw[i] = byte(0x40 + i)
-	}
-
-	return "1:" + base64.StdEncoding.EncodeToString(raw)
-}
 
 type providerRun struct {
 	stdout string
@@ -62,18 +48,16 @@ func (r providerRun) all() string {
 	return s
 }
 
-// execProvider runs the real command tree (the root pre-run hook included) with the handler and
-// the stdin replaced. The logs are captured at the level the CLI sets (debug).
-func execProvider(t *testing.T, open func() (providerhandler.ProviderHandler, error), stdin string, args ...string) providerRun {
+// execProvider runs the real command tree (the root pre-run hook included) with the handler replaced. The logs are captured at the level the CLI sets (debug).
+func execProvider(t *testing.T, open func() (providerhandler.ProviderHandler, error), args ...string) providerRun {
 	t.Helper()
 
 	resetViper(t)
 	restoreLog(t)
 
-	savedOpen, savedIn := openProviderHandler, providerIn
+	savedOpen := openProviderHandler
 	openProviderHandler = open
-	providerIn = strings.NewReader(stdin)
-	t.Cleanup(func() { openProviderHandler, providerIn = savedOpen, savedIn })
+	t.Cleanup(func() { openProviderHandler = savedOpen })
 
 	savedOut := logrus.StandardLogger().Out
 	logs := &bytes.Buffer{}
@@ -120,11 +104,8 @@ func Test_providerCommandTree(t *testing.T) {
 		return res
 	}
 
-	if got := names(find("provider")); !reflect.DeepEqual(got, []string{"list", "secret", "update"}) {
+	if got := names(find("provider")); !reflect.DeepEqual(got, []string{"list", "update"}) {
 		t.Errorf("Wrong match. provider subcommands: %v", got)
-	}
-	if got := names(find("provider", "secret")); !reflect.DeepEqual(got, []string{"delete", "set"}) {
-		t.Errorf("Wrong match. provider secret subcommands: %v", got)
 	}
 
 	flagSet := func(c *cobra.Command) []string {
@@ -134,15 +115,13 @@ func Test_providerCommandTree(t *testing.T) {
 		return res
 	}
 
-	// the secret is never a flag: the exact set is pinned so that an added flag is caught
+	// the exact set of flags is pinned so that an added flag is caught (no secret is a flag)
 	tests := []struct {
 		path   []string
 		expect []string
 	}{
 		{[]string{"provider", "list"}, []string{}},
 		{[]string{"provider", "update"}, []string{"actor-id", "config", "enabled", "name", "priority"}},
-		{[]string{"provider", "secret", "set"}, []string{"actor-id", "name"}},
-		{[]string{"provider", "secret", "delete"}, []string{"actor-id", "name"}},
 	}
 	for _, tt := range tests {
 		if got := flagSet(find(tt.path...)); !reflect.DeepEqual(got, tt.expect) {
@@ -153,92 +132,6 @@ func Test_providerCommandTree(t *testing.T) {
 	if f := find("provider", "update").Flags().Lookup("config"); f.Value.Type() != "stringArray" {
 		t.Errorf("Wrong match. config flag type expect: stringArray, got: %s", f.Value.Type())
 	}
-}
-
-func Test_readSecret(t *testing.T) {
-	tests := []struct {
-		name string
-
-		in string
-
-		expect    string
-		expectErr string
-	}{
-		{name: "plain", in: "abc", expect: "abc"},
-		{name: "one trailing newline", in: "abc\n", expect: "abc"},
-		{name: "one trailing crlf", in: "abc\r\n", expect: "abc"},
-		{name: "empty", in: "", expect: ""},
-		{name: "two lines", in: "abc\ndef\n", expectErr: "more than one line"},
-		{name: "two trailing newlines", in: "abc\n\n", expectErr: "more than one line"},
-		{name: "too long", in: strings.Repeat("a", maxSecretStdinBytes+1), expectErr: "too long"},
-		{name: "longest", in: strings.Repeat("a", maxSecretStdinBytes), expect: strings.Repeat("a", maxSecretStdinBytes)},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := readSecret(strings.NewReader(tt.in))
-			if tt.expectErr != "" {
-				if err == nil || !strings.Contains(err.Error(), tt.expectErr) {
-					t.Errorf("Wrong match. expect error containing: %s, got: %v", tt.expectErr, err)
-				}
-				return
-			}
-			if err != nil || got != tt.expect {
-				t.Errorf("Wrong match. expect: %q, got: %q, err: %v", tt.expect, got, err)
-			}
-		})
-	}
-}
-
-func Test_readSecret_files(t *testing.T) {
-	// a character device (a terminal, /dev/null) is refused
-	devNull, err := os.Open(os.DevNull)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = devNull.Close() }()
-	if _, err := readSecret(devNull); err == nil || !strings.Contains(err.Error(), "stdin must be a pipe or a file") {
-		t.Errorf("Wrong match. expect the character device to be refused, got: %v", err)
-	}
-
-	// a pipe is accepted
-	r, w, err := os.Pipe()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := w.WriteString("from-pipe\n"); err != nil {
-		t.Fatal(err)
-	}
-	_ = w.Close()
-	if got, err := readSecret(r); err != nil || got != "from-pipe" {
-		t.Errorf("Wrong match. pipe expect: from-pipe, got: %q, err: %v", got, err)
-	}
-	_ = r.Close()
-
-	// a file is accepted
-	path := filepath.Join(t.TempDir(), "secret")
-	if err := os.WriteFile(path, []byte("from-file\n"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	f, err := os.Open(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = f.Close() }()
-	if got, err := readSecret(f); err != nil || got != "from-file" {
-		t.Errorf("Wrong match. file expect: from-file, got: %q, err: %v", got, err)
-	}
-}
-
-type failingReader struct{}
-
-func (failingReader) Read([]byte) (int, error) { return 0, errors.New("read failure") }
-
-func Test_readSecret_readError(t *testing.T) {
-	if _, err := readSecret(failingReader{}); err == nil || !strings.Contains(err.Error(), "could not read the secret from stdin") {
-		t.Errorf("Wrong match. got: %v", err)
-	}
-	_ = io.EOF
 }
 
 func Test_parseConfigEntries(t *testing.T) {
@@ -286,8 +179,7 @@ func Test_provider_calls(t *testing.T) {
 	tests := []struct {
 		name string
 
-		stdin string
-		args  []string
+		args []string
 
 		expectCall func(m *providerhandler.MockProviderHandler)
 	}{
@@ -314,23 +206,6 @@ func Test_provider_calls(t *testing.T) {
 					Return(&provider.Info{ProviderName: number.ProviderNameTwilio}, nil)
 			},
 		},
-		{
-			name:  "secret set passes the value of stdin",
-			stdin: canary + "\n",
-			args:  []string{"provider", "secret", "set", "--name", "telnyx", "--actor-id", actor},
-			expectCall: func(m *providerhandler.MockProviderHandler) {
-				m.EXPECT().UpdateSecret(gomock.Any(), number.ProviderNameTelnyx, gomock.Any(), canary).
-					Return(&provider.Info{ProviderName: number.ProviderNameTelnyx, HasSecret: true}, nil)
-			},
-		},
-		{
-			name: "secret delete",
-			args: []string{"provider", "secret", "delete", "--name", "twilio", "--actor-id", actor},
-			expectCall: func(m *providerhandler.MockProviderHandler) {
-				m.EXPECT().DeleteSecret(gomock.Any(), number.ProviderNameTwilio, gomock.Any()).
-					Return(&provider.Info{ProviderName: number.ProviderNameTwilio}, nil)
-			},
-		},
 	}
 
 	for _, tt := range tests {
@@ -341,7 +216,7 @@ func Test_provider_calls(t *testing.T) {
 			m := providerhandler.NewMockProviderHandler(mc)
 			tt.expectCall(m)
 
-			res := execProvider(t, openMock(m), tt.stdin, tt.args...)
+			res := execProvider(t, openMock(m), tt.args...)
 			if res.err != nil {
 				t.Fatalf("Wrong match. expect: ok, got: %v", res.err)
 			}
@@ -357,15 +232,15 @@ func Test_provider_actorIsPassed(t *testing.T) {
 	defer mc.Finish()
 
 	m := providerhandler.NewMockProviderHandler(mc)
-	m.EXPECT().DeleteSecret(gomock.Any(), number.ProviderNameTelnyx, gomock.Any()).DoAndReturn(
-		func(_ any, _ number.ProviderName, actor any) (*provider.Info, error) {
+	m.EXPECT().Update(gomock.Any(), number.ProviderNameTelnyx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ any, _ number.ProviderName, actor any, _ *bool, _ *int, _ map[string]string) (*provider.Info, error) {
 			if fmt.Sprint(actor) != providerTestActor {
 				t.Errorf("Wrong match. expect actor: %s, got: %v", providerTestActor, actor)
 			}
 			return &provider.Info{}, nil
 		})
 
-	res := execProvider(t, openMock(m), "", "provider", "secret", "delete", "--name", "telnyx", "--actor-id", providerTestActor)
+	res := execProvider(t, openMock(m), "provider", "update", "--name", "telnyx", "--actor-id", providerTestActor, "--priority", "1")
 	if res.err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", res.err)
 	}
@@ -377,9 +252,8 @@ func Test_provider_rejected(t *testing.T) {
 	tests := []struct {
 		name string
 
-		env   map[string]string
-		stdin string
-		args  []string
+		env  map[string]string
+		args []string
 
 		expectErr string
 	}{
@@ -390,11 +264,6 @@ func Test_provider_rejected(t *testing.T) {
 		{name: "update with nothing to change", args: []string{"provider", "update", "--name", "telnyx", "--actor-id", providerTestActor}, expectErr: "at least one of"},
 		{name: "update with a bad config entry", args: []string{"provider", "update", "--name", "telnyx", "--actor-id", providerTestActor, "--config", canary}, expectErr: "invalid --config entry"},
 		{name: "update with a positional argument (bool flag with a space)", args: []string{"provider", "update", "--name", "telnyx", "--actor-id", providerTestActor, "--enabled", canary}, expectErr: "unexpected argument"},
-		{name: "secret set with the secret as an argument", stdin: "x\n", args: []string{"provider", "secret", "set", "--name", "telnyx", "--actor-id", providerTestActor, canary}, expectErr: "unexpected argument"},
-		{name: "secret set with two lines", stdin: canary + "\n" + canary + "\n", args: []string{"provider", "secret", "set", "--name", "telnyx", "--actor-id", providerTestActor}, expectErr: "more than one line"},
-		{name: "secret set too long", stdin: strings.Repeat(canary, 200), args: []string{"provider", "secret", "set", "--name", "telnyx", "--actor-id", providerTestActor}, expectErr: "too long"},
-		{name: "secret set without name", stdin: canary, args: []string{"provider", "secret", "set", "--actor-id", providerTestActor}, expectErr: "name is required"},
-		{name: "secret delete with unknown name", args: []string{"provider", "secret", "delete", "--name", "messagebird", "--actor-id", providerTestActor}, expectErr: "unknown provider name"},
 		{name: "list with an argument", args: []string{"provider", "list", canary}, expectErr: "unexpected argument"},
 		// the environment must not fill a missing flag (the pre-run hook binds the flags to viper
 		// with AutomaticEnv, so a viper based reader would take these)
@@ -411,7 +280,7 @@ func Test_provider_rejected(t *testing.T) {
 			defer mc.Finish()
 			m := providerhandler.NewMockProviderHandler(mc)
 
-			res := execProvider(t, openMock(m), tt.stdin, tt.args...)
+			res := execProvider(t, openMock(m), tt.args...)
 			if res.err == nil || !strings.Contains(res.err.Error(), tt.expectErr) {
 				t.Fatalf("Wrong match. expect error containing: %s, got: %v", tt.expectErr, res.err)
 			}
@@ -427,12 +296,13 @@ func Test_provider_rejected(t *testing.T) {
 func Test_provider_groupWithArgument(t *testing.T) {
 	for _, args := range [][]string{
 		{"provider", canary},
-		{"provider", "secret", canary},
+		// the secret commands do not exist any more
+		{"provider", "secret", "set", canary},
 	} {
 		mc := gomock.NewController(t)
 		m := providerhandler.NewMockProviderHandler(mc)
 
-		res := execProvider(t, openMock(m), "", args...)
+		res := execProvider(t, openMock(m), args...)
 		if strings.Contains(res.all(), canary) {
 			t.Errorf("Wrong match. args %v: a given value is echoed: %s", args, res.all())
 		}
@@ -446,10 +316,8 @@ func Test_provider_openFailure(t *testing.T) {
 	for _, args := range [][]string{
 		{"provider", "list"},
 		{"provider", "update", "--name", "telnyx", "--actor-id", providerTestActor, "--priority", "1"},
-		{"provider", "secret", "set", "--name", "telnyx", "--actor-id", providerTestActor},
-		{"provider", "secret", "delete", "--name", "telnyx", "--actor-id", providerTestActor},
 	} {
-		res := execProvider(t, open, "value\n", args...)
+		res := execProvider(t, open, args...)
 		if res.err == nil || !strings.Contains(res.err.Error(), "failed to initialize handlers: cannot open") {
 			t.Errorf("Wrong match. args %v: got: %v", args, res.err)
 		}
@@ -462,8 +330,7 @@ func Test_provider_handlerFailure(t *testing.T) {
 	tests := []struct {
 		name string
 
-		stdin string
-		args  []string
+		args []string
 
 		expectCall func(m *providerhandler.MockProviderHandler)
 		expectErr  string
@@ -484,23 +351,6 @@ func Test_provider_handlerFailure(t *testing.T) {
 			},
 			expectErr: "failed to update the provider",
 		},
-		{
-			name:  "secret set",
-			stdin: "value\n",
-			args:  []string{"provider", "secret", "set", "--name", "telnyx", "--actor-id", providerTestActor},
-			expectCall: func(m *providerhandler.MockProviderHandler) {
-				m.EXPECT().UpdateSecret(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, boom)
-			},
-			expectErr: "failed to store the provider secret",
-		},
-		{
-			name: "secret delete",
-			args: []string{"provider", "secret", "delete", "--name", "telnyx", "--actor-id", providerTestActor},
-			expectCall: func(m *providerhandler.MockProviderHandler) {
-				m.EXPECT().DeleteSecret(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, boom)
-			},
-			expectErr: "failed to delete the provider secret",
-		},
 	}
 
 	for _, tt := range tests {
@@ -511,7 +361,7 @@ func Test_provider_handlerFailure(t *testing.T) {
 			m := providerhandler.NewMockProviderHandler(mc)
 			tt.expectCall(m)
 
-			res := execProvider(t, openMock(m), tt.stdin, tt.args...)
+			res := execProvider(t, openMock(m), tt.args...)
 			if res.err == nil || !strings.Contains(res.err.Error(), tt.expectErr) || !errors.Is(res.err, boom) {
 				t.Errorf("Wrong match. expect error containing: %s wrapping the cause, got: %v", tt.expectErr, res.err)
 			}
@@ -535,43 +385,15 @@ func Test_initProviderHandler_databaseUnreachable(t *testing.T) {
 	}
 }
 
-func Test_newProviderHandler(t *testing.T) {
-	setTestConfig(t, config.Config{NumberSecretEncryptionKeys: "not-a-key-list"})
-
-	res, err := newProviderHandler(nil, nil)
-	if err == nil || !strings.Contains(err.Error(), "could not parse the number secret encryption keys") {
-		t.Errorf("Wrong match. got: %v", err)
-	}
-	if res != nil {
-		t.Errorf("Wrong match. expect: nil handler, got: %v", res)
-	}
-	if err != nil && strings.Contains(err.Error(), "not-a-key-list") {
-		t.Errorf("Wrong match. the error holds the key text: %v", err)
-	}
-
-	setTestConfig(t, config.Config{NumberSecretEncryptionKeys: providerTestKeys()})
-	if res, err := newProviderHandler(nil, nil); err != nil || res == nil {
-		t.Errorf("Wrong match. expect: handler, got: %v, err: %v", res, err)
-	}
-
-	// an empty key list is accepted: the commands that need a key fail later
-	setTestConfig(t, config.Config{})
-	if res, err := newProviderHandler(nil, nil); err != nil || res == nil {
-		t.Errorf("Wrong match. expect: handler, got: %v, err: %v", res, err)
-	}
-}
-
 // providerE2E wires the real provider handler on an in-memory database. The handler comes from
-// newProviderHandler, so the key and credential wiring of the commands is the tested one.
+// NewProviderHandler, so the credential wiring of the commands is the tested one.
 type providerE2E struct {
 	db   *sql.DB
 	open func() (providerhandler.ProviderHandler, error)
 }
 
-func newProviderE2E(t *testing.T, keys string) *providerE2E {
+func newProviderE2E(t *testing.T) *providerE2E {
 	t.Helper()
-
-	setTestConfig(t, config.Config{NumberSecretEncryptionKeys: keys})
 
 	name := regexp.MustCompile(`[^A-Za-z0-9_]`).ReplaceAllString(t.Name(), "_")
 	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s?mode=memory&cache=shared", name))
@@ -592,14 +414,14 @@ func newProviderE2E(t *testing.T, keys string) *providerE2E {
 	return &providerE2E{
 		db: db,
 		open: func() (providerhandler.ProviderHandler, error) {
-			return newProviderHandler(nil, dbhandler.NewHandler(db, nil))
+			return providerhandler.NewProviderHandler(nil, dbhandler.NewHandler(db, nil)), nil
 		},
 	}
 }
 
-func (e *providerE2E) run(t *testing.T, stdin string, args ...string) providerRun {
+func (e *providerE2E) run(t *testing.T, args ...string) providerRun {
 	t.Helper()
-	return execProvider(t, e.open, stdin, args...)
+	return execProvider(t, e.open, args...)
 }
 
 func jsonKeys(t *testing.T, raw string) []string {
@@ -629,10 +451,10 @@ func clearCredentialEnv(t *testing.T) {
 
 func Test_provider_e2e(t *testing.T) {
 	clearCredentialEnv(t)
-	e := newProviderE2E(t, providerTestKeys())
+	e := newProviderE2E(t)
 
 	// a provider without a row: the defaults, a literal key set (no secret field can slip in)
-	res := e.run(t, "", "provider", "list")
+	res := e.run(t, "provider", "list")
 	if res.err != nil {
 		t.Fatalf("Wrong match. list expect: ok, got: %v", res.err)
 	}
@@ -646,142 +468,46 @@ func Test_provider_e2e(t *testing.T) {
 			keys = append(keys, k)
 		}
 		sort.Strings(keys)
-		expect := []string{"credential_source", "enabled", "has_secret", "key_version", "priority", "provider_name", "usable"}
+		expect := []string{"credential_source", "enabled", "has_secret", "priority", "provider_name", "usable"}
 		if !reflect.DeepEqual(keys, expect) {
 			t.Errorf("Wrong match. default view keys expect: %v, got: %v", expect, keys)
 		}
 	}
 
-	// the config first
-	res = e.run(t, "", "provider", "update", "--name", "telnyx", "--actor-id", providerTestActor, "--config", "connection_id=conn-fake-1")
+	res = e.run(t, "provider", "update", "--name", "telnyx", "--actor-id", providerTestActor, "--config", "connection_id=conn-fake-1")
 	if res.err != nil {
 		t.Fatalf("Wrong match. update expect: ok, got: %v", res.err)
 	}
-	expectUpdateKeys := []string{"config", "credential_source", "enabled", "has_secret", "key_version", "priority", "provider_name", "tm_update", "updated_by", "usable"}
+	expectUpdateKeys := []string{"config", "credential_source", "enabled", "has_secret", "priority", "provider_name", "tm_update", "updated_by", "usable"}
 	if got := jsonKeys(t, res.stdout); !reflect.DeepEqual(got, expectUpdateKeys) {
 		t.Errorf("Wrong match. update view keys expect: %v, got: %v", expectUpdateKeys, got)
 	}
-
-	// then the secret
-	res = e.run(t, canary+"\n", "provider", "secret", "set", "--name", "telnyx", "--actor-id", providerTestActor)
-	if res.err != nil {
-		t.Fatalf("Wrong match. secret set expect: ok, got: %v", res.err)
-	}
-	expectSetKeys := []string{"config", "credential_source", "enabled", "has_secret", "key_version", "priority", "provider_name", "secret_updated_by", "tm_secret_update", "tm_update", "updated_by", "usable"}
-	if got := jsonKeys(t, res.stdout); !reflect.DeepEqual(got, expectSetKeys) {
-		t.Errorf("Wrong match. secret set view keys expect: %v, got: %v", expectSetKeys, got)
-	}
 	view := map[string]any{}
 	_ = json.Unmarshal([]byte(res.stdout), &view)
-	// the stored secret is not used: the view follows the variable, which is not set here
-	if view["has_secret"] != false || view["credential_source"] != "none" || view["key_version"] != float64(1) || view["usable"] != false {
-		t.Errorf("Wrong match. secret set view: %v", view)
-	}
-	if !strings.Contains(res.stderr, "TELNYX_API_KEY") || !strings.Contains(res.stderr, "stored value is not used") {
-		t.Errorf("Wrong match. the notice of the variable is missing: %q", res.stderr)
-	}
-
-	// the positive control: the captured log is not empty, so its silence about the secret means something
-	if res.stdout == "" || !strings.Contains(res.logs, "The provider secret has been changed.") {
-		t.Errorf("Wrong match. the capture is broken. stdout: %q, logs: %q", res.stdout, res.logs)
-	}
-	if strings.Contains(res.all(), canary) {
-		t.Errorf("Wrong match. the secret is in the output: %s", res.all())
-	}
-
-	// the stored value is the secret, encrypted
-	var blob []byte
-	var version int
-	if err := e.db.QueryRow("select secret_ciphertext, key_version from number_providers where provider_name = 'telnyx'").Scan(&blob, &version); err != nil {
-		t.Fatal(err)
-	}
-	if bytes.Contains(blob, []byte(canary)) {
-		t.Errorf("Wrong match. the ciphertext holds the plaintext")
-	}
-	c, err := secretcrypto.New(providerTestKeys(), secretcrypto.WithMaxPlaintext(1024))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if plain, err := c.Decrypt(blob, version); err != nil || plain != canary {
-		t.Errorf("Wrong match. the stored secret does not decrypt to the input. err: %v", err)
-	}
-
-	// the same command again succeeds (the stored secret is overwritten)
-	res = e.run(t, canary+"\n", "provider", "secret", "set", "--name", "telnyx", "--actor-id", providerTestActor)
-	if res.err != nil {
-		t.Errorf("Wrong match. second secret set expect: ok, got: %v", res.err)
+	// the view follows the variable, which is not set here
+	if view["has_secret"] != false || view["credential_source"] != "none" || view["usable"] != false {
+		t.Errorf("Wrong match. update view: %v", view)
 	}
 
 	// list shows the state only
-	res = e.run(t, "", "provider", "list")
-	if res.err != nil || strings.Contains(res.all(), canary) || !strings.Contains(res.stdout, `"has_secret": false`) {
-		t.Errorf("Wrong match. list after set: err: %v, output: %s", res.err, res.stdout)
+	res = e.run(t, "provider", "list")
+	if res.err != nil || !strings.Contains(res.stdout, `"has_secret": false`) {
+		t.Errorf("Wrong match. list after update: err: %v, output: %s", res.err, res.stdout)
 	}
 
-	// delete: the secret goes, the config stays
-	res = e.run(t, "", "provider", "secret", "delete", "--name", "telnyx", "--actor-id", providerTestActor)
-	if res.err != nil {
-		t.Fatalf("Wrong match. secret delete expect: ok, got: %v", res.err)
-	}
-	view = map[string]any{}
-	_ = json.Unmarshal([]byte(res.stdout), &view)
-	if view["has_secret"] != false || view["credential_source"] != "none" {
-		t.Errorf("Wrong match. secret delete view: %v", view)
-	}
-	if !strings.Contains(res.stderr, "TELNYX_API_KEY") || !strings.Contains(res.stderr, "stored value is not used") {
-		t.Errorf("Wrong match. the notice of the variable is missing: %q", res.stderr)
-	}
-	if cfg, _ := view["config"].(map[string]any); cfg["connection_id"] != "conn-fake-1" {
-		t.Errorf("Wrong match. the config must stay: %v", view["config"])
-	}
-
-	// a provider that never had a row is not found
-	res = e.run(t, "", "provider", "secret", "delete", "--name", "twilio", "--actor-id", providerTestActor)
-	if res.err == nil || !strings.Contains(res.err.Error(), "failed to delete the provider secret") {
-		t.Errorf("Wrong match. delete without a row expect an error, got: %v", res.err)
+	// the secret commands do not exist any more
+	res = e.run(t, "provider", "secret", "set", canary)
+	if strings.Contains(res.all(), canary) || strings.Contains(res.stdout, "has_secret") {
+		t.Errorf("Wrong match. the removed command echoed the value or ran: %s", res.all())
 	}
 }
 
 func Test_provider_e2e_failures(t *testing.T) {
-	t.Run("no key list", func(t *testing.T) {
-		e := newProviderE2E(t, "")
-
-		res := e.run(t, canary+"\n", "provider", "secret", "set", "--name", "telnyx", "--actor-id", providerTestActor)
-		if !errors.Is(res.err, provider.ErrSecretKeyNotConfigured) {
-			t.Fatalf("Wrong match. expect: ErrSecretKeyNotConfigured, got: %v", res.err)
-		}
-		if strings.Contains(res.all(), canary) {
-			t.Errorf("Wrong match. the secret is in the output: %s", res.all())
-		}
-
-		// nothing was stored
-		var n int
-		if err := e.db.QueryRow("select count(*) from number_providers").Scan(&n); err != nil || n != 0 {
-			t.Errorf("Wrong match. expect no row, got: %d, err: %v", n, err)
-		}
-	})
-
-	t.Run("required config missing", func(t *testing.T) {
-		e := newProviderE2E(t, providerTestKeys())
-
-		res := e.run(t, canary+"\n", "provider", "secret", "set", "--name", "telnyx", "--actor-id", providerTestActor)
-		if !errors.Is(res.err, provider.ErrInvalidArgument) || !strings.Contains(res.err.Error(), "connection_id") {
-			t.Fatalf("Wrong match. expect: invalid argument naming connection_id, got: %v", res.err)
-		}
-		if strings.Contains(res.all(), canary) {
-			t.Errorf("Wrong match. the secret is in the output: %s", res.all())
-		}
-
-		var n int
-		if err := e.db.QueryRow("select count(*) from number_providers where secret_ciphertext is not null and length(secret_ciphertext) > 0").Scan(&n); err != nil || n != 0 {
-			t.Errorf("Wrong match. expect no stored secret, got: %d, err: %v", n, err)
-		}
-	})
 
 	t.Run("a config value is not echoed", func(t *testing.T) {
-		e := newProviderE2E(t, providerTestKeys())
+		e := newProviderE2E(t)
 
-		res := e.run(t, "", "provider", "update", "--name", "telnyx", "--actor-id", providerTestActor, "--config", "bogus_key="+canary)
+		res := e.run(t, "provider", "update", "--name", "telnyx", "--actor-id", providerTestActor, "--config", "bogus_key="+canary)
 		if res.err == nil || !strings.Contains(res.err.Error(), "config key is not allowed") {
 			t.Fatalf("Wrong match. expect: config key is not allowed, got: %v", res.err)
 		}
@@ -790,36 +516,12 @@ func Test_provider_e2e_failures(t *testing.T) {
 		}
 	})
 
-	t.Run("a malformed key list stops the command", func(t *testing.T) {
-		e := newProviderE2E(t, "not-a-key-list")
-
-		for _, args := range [][]string{
-			{"provider", "list"},
-			{"provider", "secret", "delete", "--name", "telnyx", "--actor-id", providerTestActor},
-		} {
-			res := e.run(t, "", args...)
-			if res.err == nil || !strings.Contains(res.err.Error(), "could not parse the number secret encryption keys") {
-				t.Errorf("Wrong match. args %v: got: %v", args, res.err)
-			}
-			if strings.Contains(res.all(), "not-a-key-list") {
-				t.Errorf("Wrong match. args %v: the key text is echoed: %s", args, res.all())
-			}
-		}
-	})
-
 	t.Run("a malformed twilio sid does not panic the warning path", func(t *testing.T) {
-		e := newProviderE2E(t, providerTestKeys())
+		e := newProviderE2E(t)
 
-		res := e.run(t, "", "provider", "update", "--name", "twilio", "--actor-id", providerTestActor, "--enabled=true", "--config", "sid=bad", "--config", "trunk_sid=bad")
+		res := e.run(t, "provider", "update", "--name", "twilio", "--actor-id", providerTestActor, "--enabled=true", "--config", "sid=bad", "--config", "trunk_sid=bad")
 		if res.err != nil {
 			t.Fatalf("Wrong match. expect: ok, got: %v", res.err)
-		}
-		res = e.run(t, canary+"\n", "provider", "secret", "set", "--name", "twilio", "--actor-id", providerTestActor)
-		if res.err != nil {
-			t.Fatalf("Wrong match. expect: ok, got: %v", res.err)
-		}
-		if strings.Contains(res.all(), canary) {
-			t.Errorf("Wrong match. the secret is in the output: %s", res.all())
 		}
 	})
 }
@@ -829,13 +531,13 @@ func Test_provider_e2e_failures(t *testing.T) {
 // shown as it is, and no secret value appears in the output.
 func Test_provider_e2e_environmentCredentials(t *testing.T) {
 	clearCredentialEnv(t)
-	e := newProviderE2E(t, providerTestKeys())
+	e := newProviderE2E(t)
 	t.Setenv("TELNYX_API_KEY", "env-fake-telnyx-token")
 	t.Setenv("TELNYX_CONNECTION_ID", "env-fake-connection")
 	t.Setenv("TWILIO_AUTH_TOKEN", "env-fake-twilio-token")
 	t.Setenv("TWILIO_ACCOUNT_SID", "env-fake-sid")
 
-	res := e.run(t, "", "provider", "list")
+	res := e.run(t, "provider", "list")
 	if res.err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", res.err)
 	}

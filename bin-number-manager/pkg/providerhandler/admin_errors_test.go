@@ -32,7 +32,7 @@ func (f *failOnCall) NumberProviderGet(ctx context.Context, name number.Provider
 func Test_List_readError(t *testing.T) {
 	db := newFakeDB()
 	db.getErr = errTestDB
-	h := newTestHandler(t, db, testKeys(1))
+	h := newTestHandler(t, db)
 
 	res, err := h.List(context.Background())
 	if !errors.Is(err, errTestDB) {
@@ -45,7 +45,7 @@ func Test_List_readError(t *testing.T) {
 
 func Test_ensureRow_unknownProvider(t *testing.T) {
 	db := newFakeDB()
-	h := newTestHandler(t, db, testKeys(1))
+	h := newTestHandler(t, db)
 
 	err := h.ensureRow(context.Background(), "nope")
 	if !errors.Is(err, dbhandler.ErrNotFound) {
@@ -62,7 +62,7 @@ func Test_Update_rowErrors(t *testing.T) {
 	t.Run("the row cannot be created", func(t *testing.T) {
 		db := newFakeDB()
 		db.ensureErr = errTestDB
-		h := newTestHandler(t, db, testKeys(1))
+		h := newTestHandler(t, db)
 
 		_, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, boolPtr(true), nil, nil)
 		if !errors.Is(err, errTestDB) {
@@ -76,7 +76,7 @@ func Test_Update_rowErrors(t *testing.T) {
 	t.Run("the row cannot be read", func(t *testing.T) {
 		db := newFakeDB()
 		db.getErr = errTestDB
-		h := newTestHandler(t, db, testKeys(1))
+		h := newTestHandler(t, db)
 
 		_, err := h.Update(ctx, number.ProviderNameTelnyx, testActor, boolPtr(true), nil, nil)
 		if err == nil || !errors.Is(err, errTestDB) || !strings.Contains(err.Error(), "could not get the provider row") {
@@ -89,7 +89,7 @@ func Test_Update_rowErrors(t *testing.T) {
 
 	t.Run("a failed candidate check after the change does not fail the update", func(t *testing.T) {
 		db := newFakeDB()
-		h := newTestHandler(t, db, testKeys(1))
+		h := newTestHandler(t, db)
 		// call 1 reads the row, call 2 is the candidate check, call 3 builds the result
 		h.db = &failOnCall{fakeDB: db, failAt: 2}
 
@@ -102,38 +102,6 @@ func Test_Update_rowErrors(t *testing.T) {
 		}
 		if len(db.updates) != 1 {
 			t.Errorf("Wrong match. expect: one update, got: %v", db.updates)
-		}
-	})
-}
-
-func Test_UpdateSecret_rowErrors(t *testing.T) {
-	ctx := context.Background()
-
-	t.Run("the row cannot be created", func(t *testing.T) {
-		db := newFakeDB()
-		db.ensureErr = errTestDB
-		h := newTestHandler(t, db, testKeys(1))
-
-		_, err := h.UpdateSecret(ctx, number.ProviderNameTelnyx, testActor, "fake-secret-value")
-		if !errors.Is(err, errTestDB) {
-			t.Errorf("Wrong match. expect: %v, got: %v", errTestDB, err)
-		}
-		if len(db.updates) != 0 {
-			t.Errorf("Wrong match. expect: no update, got: %v", db.updates)
-		}
-	})
-
-	t.Run("the row cannot be read", func(t *testing.T) {
-		db := newFakeDB()
-		db.getErr = errTestDB
-		h := newTestHandler(t, db, testKeys(1))
-
-		_, err := h.UpdateSecret(ctx, number.ProviderNameTelnyx, testActor, "fake-secret-value")
-		if err == nil || !errors.Is(err, errTestDB) || !strings.Contains(err.Error(), "could not get the provider row") {
-			t.Errorf("Wrong match. expect the row read error, got: %v", err)
-		}
-		if len(db.updates) != 0 {
-			t.Errorf("Wrong match. expect: no update, got: %v", db.updates)
 		}
 	})
 }

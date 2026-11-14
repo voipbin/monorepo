@@ -27,7 +27,6 @@ func TestLoadGlobalConfig(t *testing.T) {
 	viper.Set("redis_address", "localhost:6379")
 	viper.Set("redis_password", "test_pass")
 	viper.Set("redis_database", 1)
-	viper.Set("number_secret_encryption_keys", "1:test")
 
 	// Reset the once to allow re-execution
 	once = *new(sync.Once)
@@ -55,9 +54,6 @@ func TestLoadGlobalConfig(t *testing.T) {
 	}
 	if config.RedisDatabase != 1 {
 		t.Errorf("Expected RedisDatabase to be 1, got %d", config.RedisDatabase)
-	}
-	if config.NumberSecretEncryptionKeys != "1:test" {
-		t.Errorf("Expected NumberSecretEncryptionKeys to be '1:test', got '%s'", config.NumberSecretEncryptionKeys)
 	}
 }
 
@@ -102,7 +98,6 @@ func TestBindConfig(t *testing.T) {
 		"redis_address",
 		"redis_password",
 		"redis_database",
-		"number_secret_encryption_keys",
 	}
 
 	for _, flagName := range expectedFlags {

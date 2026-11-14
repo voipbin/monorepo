@@ -10,8 +10,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
-	"monorepo/bin-common-handler/pkg/secretcrypto"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-number-manager/models/availablenumber"
 	"monorepo/bin-number-manager/models/number"
@@ -81,14 +79,10 @@ type ProviderHandler interface {
 	List(ctx context.Context) ([]*provider.Info, error)
 	Get(ctx context.Context, name number.ProviderName) (*provider.Info, error)
 	Update(ctx context.Context, name number.ProviderName, actor uuid.UUID, enabled *bool, priority *int, config map[string]string) (*provider.Info, error)
-	UpdateSecret(ctx context.Context, name number.ProviderName, actor uuid.UUID, secret string) (*provider.Info, error)
-	DeleteSecret(ctx context.Context, name number.ProviderName, actor uuid.UUID) (*provider.Info, error)
 }
 
 type providerHandler struct {
-	utilHandler utilhandler.UtilHandler
-	db          dbhandler.DBHandler
-	crypto      *secretcrypto.Crypto
+	db dbhandler.DBHandler
 
 	registry map[number.ProviderName]Descriptor
 }
@@ -135,18 +129,15 @@ func ObservePurchase(name number.ProviderName, result string) {
 	promProviderPurchase.WithLabelValues(string(name), result).Inc()
 }
 
-// NewProviderHandler returns a ProviderHandler. The credentials of a provider come from its row in
-// number_providers only.
+// NewProviderHandler returns a ProviderHandler. The secret of a provider comes from its
+// environment variable, the non-secret settings from its row in number_providers.
 func NewProviderHandler(
 	r requesthandler.RequestHandler,
 	db dbhandler.DBHandler,
-	crypto *secretcrypto.Crypto,
 ) ProviderHandler {
 	return &providerHandler{
-		utilHandler: utilhandler.NewUtilHandler(),
-		db:          db,
-		crypto:      crypto,
-		registry:    newRegistry(r, db),
+		db:       db,
+		registry: newRegistry(r, db),
 	}
 }
 

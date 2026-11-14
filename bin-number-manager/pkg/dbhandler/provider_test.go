@@ -57,7 +57,7 @@ func Test_NumberProvider_EnsureGetUpdate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !res.Enabled || res.Priority != 10 || len(res.SecretCiphertext) != 0 || res.UpdatedBy != nil || res.SecretUpdatedBy != nil || res.TMSecretUpdate != nil || res.TMCreate == nil {
+	if !res.Enabled || res.Priority != 10 || res.UpdatedBy != nil || res.TMCreate == nil {
 		t.Errorf("Wrong created row. got: %+v", res)
 	}
 
@@ -71,44 +71,52 @@ func Test_NumberProvider_EnsureGetUpdate(t *testing.T) {
 		t.Errorf("The existing row was overwritten. got: %+v", res)
 	}
 
-	// update writes only the given columns, with NULL-able audit columns
-	mockUtil.EXPECT().TimeNow().Return(&later).Times(2)
+	// the columns of the stored secret (kept in the table, not part of the model) hold values that
+	// an earlier version wrote
+	if _, err := dbTest.Exec("update number_providers set secret_ciphertext = ?, key_version = 3, secret_updated_by = ?, tm_secret_update = ? where provider_name = 'telnyx'", []byte{0x01, 0x02, 0xff}, actor.Bytes(), later); err != nil {
+		t.Fatal(err)
+	}
+
+	// the row is read and updated through the model without the legacy columns, which keep their values
+	mockUtil.EXPECT().TimeNow().Return(&later)
 	if err := h.NumberProviderUpdate(ctx, number.ProviderNameTelnyx, map[provider.Field]any{
-		provider.FieldPriority:         20,
-		provider.FieldConfig:           map[string]string{"connection_id": "c1"},
-		provider.FieldSecretCiphertext: []byte{0x01, 0x02, 0xff},
-		provider.FieldKeyVersion:       3,
-		provider.FieldSecretUpdatedBy:  actor,
-		provider.FieldTMSecretUpdate:   &later,
+		provider.FieldPriority:  20,
+		provider.FieldConfig:    map[string]string{"connection_id": "c1"},
+		provider.FieldUpdatedBy: actor,
 	}); err != nil {
 		t.Fatal(err)
 	}
 
-	res, _ = h.NumberProviderGet(ctx, number.ProviderNameTelnyx)
-	if !res.Enabled || res.Priority != 20 || res.KeyVersion != 3 || !reflect.DeepEqual(res.Config, map[string]string{"connection_id": "c1"}) {
+	res, err = h.NumberProviderGet(ctx, number.ProviderNameTelnyx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !res.Enabled || res.Priority != 20 || !reflect.DeepEqual(res.Config, map[string]string{"connection_id": "c1"}) {
 		t.Errorf("Wrong updated row. got: %+v", res)
 	}
-	if !reflect.DeepEqual(res.SecretCiphertext, []byte{0x01, 0x02, 0xff}) {
-		t.Errorf("The ciphertext did not round trip as raw bytes. got: %v", res.SecretCiphertext)
-	}
-	if res.SecretUpdatedBy == nil || *res.SecretUpdatedBy != actor || res.UpdatedBy != nil || res.TMSecretUpdate == nil || res.TMUpdate == nil {
+	if res.UpdatedBy == nil || *res.UpdatedBy != actor || res.TMUpdate == nil {
 		t.Errorf("Wrong audit columns. got: %+v", res)
 	}
 
-	// clearing the secret stores NULL
-	if err := h.NumberProviderUpdate(ctx, number.ProviderNameTelnyx, map[provider.Field]any{
-		provider.FieldSecretCiphertext: []byte(nil),
-		provider.FieldKeyVersion:       0,
-	}); err != nil {
+	var blob []byte
+	var version int
+	if err := dbTest.QueryRow("select secret_ciphertext, key_version from number_providers where provider_name = 'telnyx'").Scan(&blob, &version); err != nil {
 		t.Fatal(err)
 	}
-	res, _ = h.NumberProviderGet(ctx, number.ProviderNameTelnyx)
-	if len(res.SecretCiphertext) != 0 || res.KeyVersion != 0 {
-		t.Errorf("The secret was not cleared. got: %+v", res)
+	if !reflect.DeepEqual(blob, []byte{0x01, 0x02, 0xff}) || version != 3 {
+		t.Errorf("The legacy columns were changed. got: %v %d", blob, version)
 	}
-	var isNull bool
-	if err := dbTest.QueryRow("select secret_ciphertext is null from number_providers where provider_name = 'telnyx'").Scan(&isNull); err != nil || !isNull {
-		t.Errorf("The cleared secret must be NULL. err: %v", err)
+
+	// a row inserted through the model leaves the legacy columns at their defaults
+	mockUtil.EXPECT().TimeNow().Return(&now)
+	if err := h.NumberProviderEnsure(ctx, &provider.Provider{ProviderName: number.ProviderNameTwilio, Enabled: false, Priority: 30}); err != nil {
+		t.Fatal(err)
+	}
+	if err := dbTest.QueryRow("select secret_ciphertext, key_version from number_providers where provider_name = 'twilio'").Scan(&blob, &version); err != nil {
+		t.Fatal(err)
+	}
+	if len(blob) != 0 || version != 0 {
+		t.Errorf("The legacy columns of a new row are not at the defaults. got: %v %d", blob, version)
 	}
 }
 

@@ -41,7 +41,7 @@ func newProviderListenHandler(t *testing.T) (*listenHandler, *providerhandler.Mo
 }
 
 func Test_processRequest_numberProviders(t *testing.T) {
-	info := &provider.Info{ProviderName: number.ProviderNameTelnyx, Enabled: true, Priority: 10, HasSecret: true, KeyVersion: 2, CredentialSource: provider.CredentialSourceDB, Usable: true}
+	info := &provider.Info{ProviderName: number.ProviderNameTelnyx, Enabled: true, Priority: 10, HasSecret: true, CredentialSource: provider.CredentialSourceEnv, Usable: true}
 
 	tests := []struct {
 		name string
@@ -105,70 +105,21 @@ func Test_processRequest_numberProviders(t *testing.T) {
 			expectStatus: 400,
 		},
 		{
-			name: "secret put",
+			name: "the removed secret put is not routed",
 			request: &sock.Request{
 				URI: "/v1/number_providers/telnyx/secret", Method: sock.RequestMethodPut,
 				Data: []byte(`{"actor_id":"a0000000-0000-4000-8000-0000000000a1","secret":"fake-secret-value"}`),
 			},
-			setup: func(m *providerhandler.MockProviderHandler) {
-				m.EXPECT().UpdateSecret(gomock.Any(), number.ProviderNameTelnyx, testActor, "fake-secret-value").Return(info, nil)
-			},
-			expectStatus: 200,
-		},
-		{
-			name: "secret put without a key is 503",
-			request: &sock.Request{
-				URI: "/v1/number_providers/telnyx/secret", Method: sock.RequestMethodPut,
-				Data: []byte(`{"actor_id":"a0000000-0000-4000-8000-0000000000a1","secret":"fake-secret-value"}`),
-			},
-			setup: func(m *providerhandler.MockProviderHandler) {
-				m.EXPECT().UpdateSecret(gomock.Any(), number.ProviderNameTelnyx, testActor, "fake-secret-value").Return(nil, provider.ErrSecretKeyNotConfigured)
-			},
-			expectStatus: 503,
-		},
-		{
-			name: "secret put with an internal failure is 500",
-			request: &sock.Request{
-				URI: "/v1/number_providers/telnyx/secret", Method: sock.RequestMethodPut,
-				Data: []byte(`{"actor_id":"a0000000-0000-4000-8000-0000000000a1","secret":"fake-secret-value"}`),
-			},
-			setup: func(m *providerhandler.MockProviderHandler) {
-				m.EXPECT().UpdateSecret(gomock.Any(), number.ProviderNameTelnyx, testActor, "fake-secret-value").Return(nil, errors.New("db failure"))
-			},
-			expectStatus: 500,
-		},
-		{
-			name:         "secret put with a broken body is 400",
-			request:      &sock.Request{URI: "/v1/number_providers/telnyx/secret", Method: sock.RequestMethodPut, Data: []byte(`{"secret":"fake-secret-value"`)},
 			setup:        func(m *providerhandler.MockProviderHandler) {},
-			expectStatus: 400,
+			expectStatus: 404,
 		},
 		{
-			name: "secret delete",
+			name: "the removed secret delete is not routed",
 			request: &sock.Request{
 				URI: "/v1/number_providers/telnyx/secret", Method: sock.RequestMethodDelete,
 				Data: []byte(`{"actor_id":"a0000000-0000-4000-8000-0000000000a1"}`),
 			},
-			setup: func(m *providerhandler.MockProviderHandler) {
-				m.EXPECT().DeleteSecret(gomock.Any(), number.ProviderNameTelnyx, testActor).Return(info, nil)
-			},
-			expectStatus: 200,
-		},
-		{
-			name:         "secret delete with a broken body is 400",
-			request:      &sock.Request{URI: "/v1/number_providers/telnyx/secret", Method: sock.RequestMethodDelete, Data: []byte(`{`)},
 			setup:        func(m *providerhandler.MockProviderHandler) {},
-			expectStatus: 400,
-		},
-		{
-			name: "secret delete without a row is 404",
-			request: &sock.Request{
-				URI: "/v1/number_providers/telnyx/secret", Method: sock.RequestMethodDelete,
-				Data: []byte(`{"actor_id":"a0000000-0000-4000-8000-0000000000a1"}`),
-			},
-			setup: func(m *providerhandler.MockProviderHandler) {
-				m.EXPECT().DeleteSecret(gomock.Any(), number.ProviderNameTelnyx, testActor).Return(nil, dbhandler.ErrNotFound)
-			},
 			expectStatus: 404,
 		},
 		{
@@ -202,7 +153,7 @@ func Test_processRequest_numberProviders(t *testing.T) {
 				t.Errorf("Wrong status. expect: %d, got: %d", tt.expectStatus, res.StatusCode)
 			}
 
-			// no response may carry a secret or a ciphertext field
+			// no response may carry a secret field or a removed field
 			if res.StatusCode == http.StatusOK {
 				var raw map[string]any
 				if err := json.Unmarshal(res.Data, &raw); err != nil {
@@ -212,7 +163,7 @@ func Test_processRequest_numberProviders(t *testing.T) {
 					}
 					raw = list[0]
 				}
-				for _, k := range []string{"secret", "secret_ciphertext", "ciphertext"} {
+				for _, k := range []string{"secret", "secret_ciphertext", "ciphertext", "key_version", "secret_updated_by", "tm_secret_update"} {
 					if _, ok := raw[k]; ok {
 						t.Errorf("The response has the field %q", k)
 					}
@@ -236,6 +187,8 @@ func Test_processRequest_numberProviders_routing(t *testing.T) {
 		{"/v1/number_providers/telnyx/other", sock.RequestMethodGet},
 		{"/v1/number_providers/telnyx/secret", sock.RequestMethodGet},
 		{"/v1/number_providers/telnyx/secret", sock.RequestMethodPost},
+		{"/v1/number_providers/telnyx/secret", sock.RequestMethodPut},
+		{"/v1/number_providers/telnyx/secret", sock.RequestMethodDelete},
 		{"/v1/number_providers", sock.RequestMethodPut},
 		{"/x/v1/number_providers", sock.RequestMethodGet},
 		{"/v1/number_providers/" + strings.Repeat("a", 33), sock.RequestMethodGet},
@@ -254,8 +207,9 @@ func Test_processRequest_numberProviders_routing(t *testing.T) {
 	}
 }
 
-// the body of a secret request must not reach any log line, whatever the outcome
-func Test_processRequest_secretNotLogged(t *testing.T) {
+// the body of a request on the number provider prefix must not reach any log line, whatever the
+// outcome. A secret that an older client still sends to the removed secret route is such a body.
+func Test_processRequest_bodyNotLogged(t *testing.T) {
 	const secret = "fake-secret-must-not-be-logged"
 
 	hook := logrustest.NewGlobal()
@@ -267,54 +221,33 @@ func Test_processRequest_secretNotLogged(t *testing.T) {
 	})
 
 	body := []byte(`{"actor_id":"a0000000-0000-4000-8000-0000000000a1","secret":"` + secret + `"}`)
-	badBody := []byte(`{"secret":"` + secret + `"`)
 
 	tests := []struct {
 		name    string
 		request *sock.Request
-		setup   func(m *providerhandler.MockProviderHandler, stored *string)
+		setup   func(m *providerhandler.MockProviderHandler)
 	}{
 		{
-			name:    "success: the secret still reaches the handler",
+			name:    "the removed secret route",
 			request: &sock.Request{URI: "/v1/number_providers/telnyx/secret", Method: sock.RequestMethodPut, Data: body},
-			setup: func(m *providerhandler.MockProviderHandler, stored *string) {
-				m.EXPECT().UpdateSecret(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
-					func(_ any, _ number.ProviderName, _ uuid.UUID, s string) (*provider.Info, error) {
-						*stored = s
-						return &provider.Info{}, nil
-					})
-			},
-		},
-		{
-			name:    "handler failure",
-			request: &sock.Request{URI: "/v1/number_providers/telnyx/secret", Method: sock.RequestMethodPut, Data: body},
-			setup: func(m *providerhandler.MockProviderHandler, stored *string) {
-				m.EXPECT().UpdateSecret(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
-					func(_ any, _ number.ProviderName, _ uuid.UUID, s string) (*provider.Info, error) {
-						*stored = s
-						return nil, errors.New("db failure")
-					})
-			},
-		},
-		{
-			name:    "broken body",
-			request: &sock.Request{URI: "/v1/number_providers/telnyx/secret", Method: sock.RequestMethodPut, Data: badBody},
-			setup:   func(m *providerhandler.MockProviderHandler, stored *string) {},
+			setup:   func(m *providerhandler.MockProviderHandler) {},
 		},
 		{
 			name:    "unrouted method on the secret URI",
 			request: &sock.Request{URI: "/v1/number_providers/telnyx/secret", Method: sock.RequestMethodPost, Data: body},
-			setup:   func(m *providerhandler.MockProviderHandler, stored *string) {},
+			setup:   func(m *providerhandler.MockProviderHandler) {},
 		},
 		{
 			name:    "unrouted mixed case URI",
 			request: &sock.Request{URI: "/v1/Number_Providers/telnyx/Secret", Method: sock.RequestMethodPut, Data: body},
-			setup:   func(m *providerhandler.MockProviderHandler, stored *string) {},
+			setup:   func(m *providerhandler.MockProviderHandler) {},
 		},
 		{
-			name:    "unrouted URI of another prefix that ends with secret",
-			request: &sock.Request{URI: "/v1/other/secret", Method: sock.RequestMethodPut, Data: body},
-			setup:   func(m *providerhandler.MockProviderHandler, stored *string) {},
+			name:    "update failure",
+			request: &sock.Request{URI: "/v1/number_providers/telnyx", Method: sock.RequestMethodPut, Data: body},
+			setup: func(m *providerhandler.MockProviderHandler) {
+				m.EXPECT().Update(gomock.Any(), number.ProviderNameTelnyx, testActor, nil, nil, nil).Return(nil, errors.New("db failure"))
+			},
 		},
 	}
 
@@ -322,9 +255,7 @@ func Test_processRequest_secretNotLogged(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hook.Reset()
 			h, m := newProviderListenHandler(t)
-
-			stored := ""
-			tt.setup(m, &stored)
+			tt.setup(m)
 
 			if _, err := h.processRequest(tt.request); err != nil {
 				t.Fatalf("Wrong match. expect: ok, got: %v", err)
@@ -339,25 +270,7 @@ func Test_processRequest_secretNotLogged(t *testing.T) {
 				asJSON, _ := (&logrus.JSONFormatter{}).Format(e)
 				asText, _ := e.String()
 				if bytes.Contains(asJSON, []byte(secret)) || strings.Contains(asText, secret) {
-					t.Errorf("A log line holds the secret: %s", asText)
-				}
-			}
-
-			if tt.name == "broken body" {
-				found := false
-				for _, e := range hook.AllEntries() {
-					if _, ok := e.Data["func"]; ok && strings.Contains(e.Message, "Could not unmarshal the data. err_type:") {
-						found = true
-					}
-				}
-				if !found {
-					t.Errorf("The unmarshal failure must be logged by the type of the error only")
-				}
-			}
-
-			if strings.Contains(tt.name, "success") || strings.Contains(tt.name, "handler failure") {
-				if stored != secret {
-					t.Errorf("The secret did not reach the handler. got: %q", stored)
+					t.Errorf("A log line holds the body: %s", asText)
 				}
 			}
 		})
@@ -370,10 +283,10 @@ func Test_logSafeRequest(t *testing.T) {
 		t.Errorf("A non provider request must be logged as it is")
 	}
 
-	secret := &sock.Request{URI: "/v1/number_providers/telnyx/secret", Method: sock.RequestMethodPut, Data: []byte(`{"secret":"x"}`)}
-	safe := logSafeRequest(secret)
-	if string(safe.Data) != `"[REDACTED]"` || string(secret.Data) != `{"secret":"x"}` {
-		t.Errorf("Wrong redaction. safe: %s, original: %s", safe.Data, secret.Data)
+	body := &sock.Request{URI: "/v1/number_providers/telnyx/secret", Method: sock.RequestMethodPut, Data: []byte(`{"secret":"x"}`)}
+	safe := logSafeRequest(body)
+	if string(safe.Data) != `"[REDACTED]"` || string(body.Data) != `{"secret":"x"}` {
+		t.Errorf("Wrong redaction. safe: %s, original: %s", safe.Data, body.Data)
 	}
 }
 
@@ -384,7 +297,6 @@ func Test_errorResponse_provider(t *testing.T) {
 	}{
 		{provider.ErrInvalidArgument, http.StatusBadRequest},
 		{fmt.Errorf("wrapped: %w", provider.ErrInvalidArgument), http.StatusBadRequest},
-		{provider.ErrSecretKeyNotConfigured, http.StatusServiceUnavailable},
 		{fmt.Errorf("wrapped: %w", dbhandler.ErrNotFound), http.StatusNotFound},
 		{errors.New("other"), http.StatusInternalServerError},
 	}

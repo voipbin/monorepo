@@ -58,9 +58,8 @@ var (
 	regV1AvailableNumbers = regexp.MustCompile("/v1/available_numbers")
 
 	// number providers (admin). Anchored on both ends, so they cannot overlap each other
-	regV1NumberProviders         = regexp.MustCompile(`^/v1/number_providers$`)
-	regV1NumberProvidersID       = regexp.MustCompile(`^/v1/number_providers/([a-z0-9_]{1,32})$`)
-	regV1NumberProvidersIDSecret = regexp.MustCompile(`^/v1/number_providers/([a-z0-9_]{1,32})/secret$`)
+	regV1NumberProviders   = regexp.MustCompile(`^/v1/number_providers$`)
+	regV1NumberProvidersID = regexp.MustCompile(`^/v1/number_providers/([a-z0-9_]{1,32})$`)
 
 	// numbers
 	regV1NumbersGet                    = regexp.MustCompile(`/v1/numbers\?`)
@@ -128,23 +127,18 @@ func errorResponse(err error) *sock.Response {
 		return simpleResponse(http.StatusBadRequest)
 	}
 
-	if stderrors.Is(err, provider.ErrSecretKeyNotConfigured) {
-		return simpleResponse(http.StatusServiceUnavailable)
-	}
-
 	return simpleResponse(http.StatusInternalServerError)
 }
 
-// redactedData is the body that replaces the body of a request that may hold a secret.
+// redactedData is the body that replaces the body of a number provider request.
 var redactedData = json.RawMessage(`"[REDACTED]"`)
 
-// logSafeRequest returns the request to be logged. The body of the number provider requests
-// (the secret input in particular) is replaced, so that no log line can hold it. It decides by
-// the URI alone, independent of the routing, so an unrouted or mistyped secret request is
-// redacted too.
+// logSafeRequest returns the request to be logged. The body of the number provider requests is
+// replaced, so that no log line can hold it. It decides by the URI alone, independent of the
+// routing, so an unrouted or mistyped request is redacted too.
 func logSafeRequest(m *sock.Request) *sock.Request {
 	uri := strings.ToLower(m.URI)
-	if !strings.HasPrefix(uri, "/v1/number_providers") && !strings.HasSuffix(uri, "/secret") {
+	if !strings.HasPrefix(uri, "/v1/number_providers") {
 		return m
 	}
 
@@ -236,16 +230,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1NumberProvidersID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1NumberProvidersIDPut(ctx, m, logM, regV1NumberProvidersID.FindStringSubmatch(m.URI))
 		requestType = "/v1/number_providers/<name>"
-
-	// PUT /number_providers/<name>/secret
-	case regV1NumberProvidersIDSecret.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
-		response, err = h.processV1NumberProvidersIDSecretPut(ctx, m, logM, regV1NumberProvidersIDSecret.FindStringSubmatch(m.URI))
-		requestType = "/v1/number_providers/<name>/secret"
-
-	// DELETE /number_providers/<name>/secret
-	case regV1NumberProvidersIDSecret.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
-		response, err = h.processV1NumberProvidersIDSecretDelete(ctx, m, logM, regV1NumberProvidersIDSecret.FindStringSubmatch(m.URI))
-		requestType = "/v1/number_providers/<name>/secret"
 
 	////////////////////
 	// numbers
