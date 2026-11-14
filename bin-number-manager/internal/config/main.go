@@ -25,8 +25,6 @@ type Config struct {
 	RedisAddress            string // RedisAddress is the address (including host and port) of the Redis server.
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
-
-	NumberSecretEncryptionKeys string // NumberSecretEncryptionKeys is the key set that encrypts the provider secrets that the admin API stores in the DB, as <version>:<base64 32 bytes>[,...]. The provider credentials themselves are read from TELNYX_API_KEY, TELNYX_CONNECTION_ID, TELNYX_PROFILE_ID, TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN by the provider handler, not through this config.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -51,7 +49,6 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
-	f.String("number_secret_encryption_keys", "", "Encryption keys of the provider secrets, <version>:<base64 32 bytes>[,...]")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -61,8 +58,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
-
-		"number_secret_encryption_keys": "NUMBER_SECRET_ENCRYPTION_KEYS",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -95,8 +90,6 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDatabase:           viper.GetInt("redis_database"),
-
-			NumberSecretEncryptionKeys: viper.GetString("number_secret_encryption_keys"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

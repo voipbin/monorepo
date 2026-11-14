@@ -7,7 +7,6 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
-	"monorepo/bin-email-manager/internal/config"
 	"monorepo/bin-email-manager/internal/configkeys"
 )
 
@@ -112,9 +111,6 @@ func Test_komodoComposePassesThePlatformSecrets(t *testing.T) {
 		if strings.Contains(value, "EMAIL_MANAGER_MAILGUN") {
 			t.Errorf("Wrong match. %s uses the former deployment variable name: %s", name, value)
 		}
-	}
-	if got := env[config.EnvConfigEncryptionKeys]; got != "[[BIN_MANAGER__EMAIL_MANAGER_CONFIG_ENCRYPTION_KEYS]]" {
-		t.Errorf("Wrong match. the master key list got: %q", got)
 	}
 }
 

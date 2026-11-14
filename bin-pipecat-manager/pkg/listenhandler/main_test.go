@@ -26,7 +26,7 @@ func TestNewListenHandler(t *testing.T) {
 	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockPipecatcall := pipecatcallhandler.NewMockPipecatcallHandler(mc)
 
-	h := NewListenHandler(mockSock, mockPipecatcall, nil)
+	h := NewListenHandler(mockSock, mockPipecatcall)
 	if h == nil {
 		t.Errorf("NewListenHandler returned nil")
 	}

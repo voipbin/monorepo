@@ -14,7 +14,6 @@ import (
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -140,13 +139,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// The platform LLM keys and the MCP OAuth apps are read from environment variables when a
-	// call needs them (a variable that is not set is not configured). The config handler is for
-	// the admin API only.
-	configHandler, errConfig := aiconfig.New(cfg, db.ConfigStore())
-	if errConfig != nil {
-		log.Errorf("Could not create the config handler. err: %v", errConfig)
-		return errConfig
-	}
+	// call needs them (a variable that is not set is not configured).
 	aiconfig.LogStates()
 	keys := newPlatformKeys(cfg)
 
@@ -258,7 +251,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aipromptproposalHandler.SweepStaleProposals(context.Background())
 
 	// run listen
-	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler, analysisHandler, mcpServerHandler, mcpOAuthHandler, builderHandler, flowBuilderHandler, configrpc.NewServer(configHandler, serviceName)); errListen != nil {
+	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler, analysisHandler, mcpServerHandler, mcpOAuthHandler, builderHandler, flowBuilderHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
@@ -315,7 +308,6 @@ func runListen(
 	mcpOAuthHandler mcpoauthhandler.McpOAuthHandler,
 	builderHandler builderhandler.BuilderHandler,
 	flowBuilderHandler builderhandler.FlowBuilderHandler,
-	configServer *configrpc.Server,
 ) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	toolHandler := toolhandler.NewToolHandler()
@@ -340,7 +332,6 @@ func runListen(
 		mcpOAuthHandler,
 		builderHandler,
 		flowBuilderHandler,
-		configServer,
 	)
 
 	// run

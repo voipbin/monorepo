@@ -36,12 +36,6 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 ./bin/email-control email list --customer_id <uuid> [--limit 100] [--token]
 ./bin/email-control email delete --id <uuid>
 
-# Stored settings of the provider credentials (database only; NOT read by the service, which reads the
-# environment variables; the value is read from stdin, never from an argument)
-./bin/email-control config list
-./bin/email-control config set --key mailgun.api_key --actor-id <uuid> < value-file
-./bin/email-control config clear --key mailgun.api_key --actor-id <uuid>
-
 # Migration status (database only, no Redis or RabbitMQ)
 ./bin/email-control migrate status
 
@@ -90,13 +84,12 @@ The schema of `email_emails` is owned by this service and applied at startup (go
 ## Database Tables
 
 - `email_emails` — email records with provider info, status, attachments (soft-delete with `tm_delete`)
-- `email_configs` — platform-wide stored settings: provider credentials, encrypted with the master key. One row per key (`config_key`), optimistic lock by `revision`
-- `email_config_histories` — one row per change (action, actor, key versions, time). Never holds a value, a hash or a length of a secret
+- `email_configs` — no longer read or written by the code (earlier stored platform settings)
+- `email_config_histories` — no longer read or written by the code
 
 ## Provider credentials
 
-The SendGrid API key, the Mailgun API key and the Mailgun webhook signing key are read from environment variables when they are used (`SENDGRID_API_KEY`, `MAILGUN_API_KEY`, `MAILGUN_WEBHOOK_SIGNING_KEY`), through `emailconfig.Supplier` (which uses `bin-common-handler/pkg/envsecret`); nothing is cached. The stored settings (`email_configs`, `email-control config`, the admin API) are not read for a use: never read them in a supplier. The names are the `Env...` constants of `internal/configkeys`; the keys declare no `Env` (the admin listing must not suggest an environment source), and `config set` and `config clear` print a note that names the variable.
+The SendGrid API key, the Mailgun API key and the Mailgun webhook signing key are read from environment variables when they are used (`SENDGRID_API_KEY`, `MAILGUN_API_KEY`, `MAILGUN_WEBHOOK_SIGNING_KEY`), through `emailconfig.Supplier` (which uses `bin-common-handler/pkg/envsecret`); nothing is cached. Nothing is stored in the database and no admin API writes them. The names are the `Env...` constants of `internal/configkeys`.
 
 - A variable that is unset, empty or an unresolved placeholder (`[[...`) is not configured: the supplier returns an empty value without an error. `emailconfig.LogStates` logs the state of each variable once at start (never a value). A Mailgun webhook is rejected while the signing key is not configured (the provider retries).
-- Master key list: environment variable `EMAIL_CONFIG_ENCRYPTION_KEYS` (`<version>:<base64 of 32 bytes>[,...]`, the entry with the highest version encrypts). It is environment only, there is no flag. Without it the service starts, secrets can not be stored and a stored secret is reported as undecryptable.
-- Adding a setting means a new key in `internal/configkeys` and the golden test there; a key never changes its kind.
+- The code does not read `EMAIL_CONFIG_ENCRYPTION_KEYS`; the deployment definition still passes it until a later change removes the line.

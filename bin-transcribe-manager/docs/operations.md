@@ -94,7 +94,7 @@ Service uses Cobra and Viper (`internal/config/main.go`). Configuration loaded o
 | `redis_database` / `REDIS_DATABASE` | Redis DB index | optional |
 | (no flag) / `AWS_ACCESS_KEY` | AWS Transcribe access key. Environment only, never a flag; read at the time of use. Not set, empty or an unresolved `[[...]]` placeholder means not configured | optional |
 | (no flag) / `AWS_SECRET_KEY` | AWS Transcribe secret key. Same rules as `AWS_ACCESS_KEY`; the two are used only together | optional |
-| `transcribe_config_encryption_keys` / `TRANSCRIBE_CONFIG_ENCRYPTION_KEYS` | Master key list that encrypts the stored settings of the AWS keys (environment only, never a flag, never logged). Without it the service starts, a stored secret is reported as undecryptable, and storing a secret is refused. The stored settings are not read by a transcribe start | optional |
+| `transcribe_config_encryption_keys` / `TRANSCRIBE_CONFIG_ENCRYPTION_KEYS` | Not read by the code. The deployment definition still passes it; a later change removes the line | optional |
 | `pod_ip` / `POD_IP` | Pod IP (Kubernetes Downward API); config field is intended for the AudioSocket streaming listener bind address — **not** the per-pod queue `host_id`, which is a random UUID generated at process startup independent of `POD_IP` | required |
 | `streaming_listen_port` / `STREAMING_LISTEN_PORT` | Port for WebSocket streaming connections | required |
 | `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics HTTP path | `/metrics` |
@@ -104,7 +104,7 @@ GCP authentication uses Application Default Credentials. Neither STT provider is
 
 ## AWS credential
 
-The AWS credential is read from two environment variables, and only from there: `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` (the same variables and values as `bin-tts-manager`). The stored settings (`aws.access_key`, `aws.secret_key`, the `transcribe-control config` commands and the admin API) remain, but their values are not read by a transcribe start.
+The AWS credential is read from two environment variables, and only from there: `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` (the same variables and values as `bin-tts-manager`). Nothing is stored in the database and no admin API or command writes them.
 
 | Variable | Used by |
 |----------|---------|
@@ -112,19 +112,6 @@ The AWS credential is read from two environment variables, and only from there: 
 | `AWS_SECRET_KEY` | AWS Transcribe streaming |
 
 The two variables are one credential and are used only together. A variable that is not set, is empty or still holds an unresolved deployment placeholder (a value that starts with `[[`) means that it is not configured; a pair with one variable missing is "AWS not available" (an empty pair and no error, so a deployment with GCP goes on without AWS and one with no GCP refuses the start with `STT_NOT_CONFIGURED`). At start the service logs one line per variable (name and state only, never a value): an info line for a variable that is not set (AWS is optional), a warning with the words "unresolved placeholder" for a placeholder, and one more warning when exactly one of the two is set. Nothing is logged per call. The pair is read for every transcribe start and the AWS client is built again only when the pair changed; an environment changes with a new deployment only, so a rotation takes effect when the replicas restart. A stream that is already running keeps the client it started with.
-
-### Stored settings
-
-```bash
-# the stored settings with their source (never a value); the service does not read them
-./transcribe-control config list
-# store a value (not used by the service): the value comes from stdin only; --actor-id is required
-printf '%s\n' "$NEW_ACCESS_KEY" | ./transcribe-control config set --key aws.access_key --actor-id <uuid>
-# remove a stored value
-./transcribe-control config clear --key aws.access_key --actor-id <uuid>
-```
-
-`config set` and `config clear` print one line on stderr that names the variable that is read and says that the stored value is not used. The same keys can also be stored, deleted and read through the admin API of api-manager (`/service_configs/transcribe`, project super admin only), which reaches this service as `/v1/configs` requests; the history records the source `api` for the admin API and `cli` for the command line. The request body of a secret is never logged, and a request that looks like a config request is not routed to any other handler. The master key list is `TRANSCRIBE_CONFIG_ENCRYPTION_KEYS` (environment only, passed by the deployment definition); without it `config list` and `config clear` work and `config set` is refused. A stored value that is left behind is not rotated with the variables; an older image that reads the stored settings would use it.
 
 ### Rotation
 
@@ -135,7 +122,7 @@ printf '%s\n' "$NEW_ACCESS_KEY" | ./transcribe-control config set --key aws.acce
 
 Shared variables: `bin-tts-manager` reads the same two variables, so a rotation changes both services. The values must be equal in both; this is checked in the deployment variables, not in the code. Redeploy both services before the old credential is revoked, check a transcribe start and a TTS call after the change, and revoke the old credential last.
 
-Recovery: a variable that holds an unresolved placeholder or only one variable set shows up in the start log; fix the deployment variable and redeploy. The master key list does not matter to a transcribe start.
+Recovery: a variable that holds an unresolved placeholder or only one variable set shows up in the start log; fix the deployment variable and redeploy.
 
 ## Prometheus Metrics
 

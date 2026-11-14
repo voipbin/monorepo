@@ -44,8 +44,7 @@ providers are configured through their own keys. Most are variables in
 ``number-manager``, ``transcribe-manager``, ``tts-manager``,
 ``billing-manager`` and the voice AI runner of ``pipecat-manager`` are
 environment variables of the service container, such as ``OPENAI_API_KEY``,
-``SENDGRID_API_KEY``, ``TELNYX_API_KEY`` or ``PADDLE_API_KEY``; a value that
-was stored with ``config set`` or the Service Config API is not read). See
+``SENDGRID_API_KEY``, ``TELNYX_API_KEY`` or ``PADDLE_API_KEY``). See
 the Provider configuration section for the full list of keys, which
 service to restart after setting each, and the AI-provider-specific
 details (shared credentials, multi-service consumers). Until a

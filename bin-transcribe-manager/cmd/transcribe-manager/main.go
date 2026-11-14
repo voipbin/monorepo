@@ -11,7 +11,6 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -156,12 +155,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// The AWS credential is read from the environment (AWS_ACCESS_KEY, AWS_SECRET_KEY) when a
-	// streaming starts. The handler of the stored settings serves the config commands and the admin
-	// API only; its values are not read by a start.
-	configHandler, errConfig := transcribeconfig.New(config.Get(), dbhandler.NewConfigStore(sqlDB))
-	if errConfig != nil {
-		return errors.Wrapf(errConfig, "could not create the config handler")
-	}
+	// streaming starts.
 	transcribeconfig.LogStates()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
@@ -174,7 +168,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID)
 
 	// run request listener
-	if errListen := runListen(sockHandler, hostID, reqHandler, transcriptHandler, transcribeHandler, configrpc.NewServer(configHandler, serviceName)); errListen != nil {
+	if errListen := runListen(sockHandler, hostID, reqHandler, transcriptHandler, transcribeHandler); errListen != nil {
 		return errors.Wrapf(errListen, "could not run the listen handler")
 	}
 
@@ -198,14 +192,13 @@ func runListen(
 	reqHandler requesthandler.RequestHandler,
 	transcriptHandler transcripthandler.TranscriptHandler,
 	transcribeHandler transcribehandler.TranscribeHandler,
-	configServer *configrpc.Server,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
 	log.Debugf("Running listen handler")
 
-	listenHandler := listenhandler.NewListenHandler(hostID, sockHandler, reqHandler, transcribeHandler, transcriptHandler, configServer)
+	listenHandler := listenhandler.NewListenHandler(hostID, sockHandler, reqHandler, transcribeHandler, transcriptHandler)
 
 	// run
 	listenQueue := fmt.Sprintf("bin-manager.transcribe-manager-%s.request", hostID)

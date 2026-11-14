@@ -141,9 +141,4 @@ func Test_deploymentPassesTheProviderCredentials(t *testing.T) {
 			t.Errorf("Wrong match. k8s passes %s", old)
 		}
 	}
-
-	// the key list of the stored secrets stays
-	if got := compose["NUMBER_SECRET_ENCRYPTION_KEYS"]; got != "[[BIN_MANAGER__NUMBER_MANAGER_SECRET_ENCRYPTION_KEYS]]" {
-		t.Errorf("Wrong match. compose NUMBER_SECRET_ENCRYPTION_KEYS: %q", got)
-	}
 }

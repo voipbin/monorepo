@@ -12,7 +12,6 @@ import (
 
 	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-email-manager/pkg/dbhandler"
@@ -38,9 +37,6 @@ type listenHandler struct {
 	sockHandler sockhandler.SockHandler
 
 	emailHandler emailhandler.EmailHandler
-
-	// configServer serves the /v1/configs requests. It may be nil: the requests are not found then.
-	configServer *configrpc.Server
 }
 
 var (
@@ -114,14 +110,12 @@ func errorResponse(err error) *sock.Response {
 func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	emailHandler emailhandler.EmailHandler,
-	configServer *configrpc.Server,
 ) ListenHandler {
 	h := &listenHandler{
 		utilHandler: utilhandler.NewUtilHandler(),
 		sockHandler: sockHandler,
 
 		emailHandler: emailHandler,
-		configServer: configServer,
 	}
 
 	return h
@@ -150,12 +144,9 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 }
 
 func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
-	// every log line uses logM, never m: the body of a config request may hold a secret
-	logM := configrpc.LogSafe(m)
-
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processRequest",
-		"request": logM,
+		"request": m,
 	})
 
 	ctx := context.Background()
@@ -173,11 +164,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	switch {
 
 	// v1
-	// configs
-	case h.configServer.Match(m):
-		requestType = "/configs"
-		response, err = h.configServer.Handle(ctx, m)
-
 	// emails
 	case regV1EmailsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/emails"
@@ -202,7 +188,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		requestType = "/v1/hooks"
 
 	default:
-		log.Errorf("Could not find corresponded request handler. data: %s", logM.Data)
+		log.Errorf("Could not find corresponded request handler. data: %s", m.Data)
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"

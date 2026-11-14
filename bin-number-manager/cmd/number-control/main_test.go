@@ -329,7 +329,7 @@ func Test_initCommand(t *testing.T) {
 		t.Errorf("Wrong match. expect: %v, got: %v", expectSubs, subs)
 	}
 
-	for _, flagName := range []string{"database_dsn", "redis_address", "rabbitmq_address", "number_secret_encryption_keys"} {
+	for _, flagName := range []string{"database_dsn", "redis_address", "rabbitmq_address"} {
 		if cmd.PersistentFlags().Lookup(flagName) == nil {
 			t.Errorf("Wrong match. persistent flag %s is missing", flagName)
 		}

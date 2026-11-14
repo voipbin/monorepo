@@ -10,13 +10,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Names of the environment variables that the service reads without a flag.
-const (
-	// EnvConfigEncryptionKeys is the environment variable of the master key list of the stored
-	// settings.
-	EnvConfigEncryptionKeys = "MESSAGE_CONFIG_ENCRYPTION_KEYS"
-)
-
 // Config holds all configuration for the message-manager service
 type Config struct {
 	DatabaseDSN             string // DatabaseDSN is the data source name used to connect to the primary database.
@@ -27,11 +20,6 @@ type Config struct {
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 
-	// ConfigEncryptionKeys is the master key list of the stored settings
-	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
-	// command line flag. A value that can not be parsed does not stop the service: the stored
-	// secrets can not be used then (they are reported as undecryptable).
-	ConfigEncryptionKeys string
 }
 
 var (
@@ -74,12 +62,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_database":            "REDIS_DATABASE",
 	}
 
-	// the master key list of the stored settings has no flag: a flag value would show in the
-	// process list.
-	if errBind := viper.BindEnv("message_config_encryption_keys", EnvConfigEncryptionKeys); errBind != nil {
-		return errors.Wrapf(errBind, "could not bind the env. key: %s", EnvConfigEncryptionKeys)
-	}
-
 	for flagKey, envKey := range bindings {
 		if errBind := viper.BindPFlag(flagKey, f.Lookup(flagKey)); errBind != nil {
 			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
@@ -111,7 +93,6 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDatabase:           viper.GetInt("redis_database"),
-			ConfigEncryptionKeys:    viper.GetString("message_config_encryption_keys"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

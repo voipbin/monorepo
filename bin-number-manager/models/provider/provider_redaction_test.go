@@ -7,9 +7,8 @@ import (
 )
 
 // Test_format_redactsSecretMaterial checks that every formatting verb prints the redacted form
-// only, for values and pointers.
+// of the credentials only, for values and pointers.
 func Test_format_redactsSecretMaterial(t *testing.T) {
-	p := Provider{ProviderName: "telnyx", SecretCiphertext: []byte("fake-ciphertext-bytes"), KeyVersion: 2}
 	c := Credentials{Secret: "fake-secret-value", Config: map[string]string{"connection_id": "c1"}}
 
 	tests := []struct {
@@ -20,18 +19,6 @@ func Test_format_redactsSecretMaterial(t *testing.T) {
 
 		expect string
 	}{
-		{
-			name:    "provider with %v",
-			value:   p,
-			secrets: []string{"fake-ciphertext-bytes"},
-			expect:  "Provider{ProviderName:telnyx, SecretCiphertext:[REDACTED]}",
-		},
-		{
-			name:    "provider pointer with %v",
-			value:   &p,
-			secrets: []string{"fake-ciphertext-bytes"},
-			expect:  "Provider{ProviderName:telnyx, SecretCiphertext:[REDACTED]}",
-		},
 		{
 			name:    "credentials with %v",
 			value:   c,
@@ -63,13 +50,7 @@ func Test_format_redactsSecretMaterial(t *testing.T) {
 	}
 }
 
-func Test_Provider_String_GoString(t *testing.T) {
-	if got := (Provider{ProviderName: "twilio"}).String(); got != "Provider{ProviderName:twilio, SecretCiphertext:[REDACTED]}" {
-		t.Errorf("Wrong match. got: %s", got)
-	}
-	if got := (Provider{ProviderName: "twilio"}).GoString(); got != "Provider{ProviderName:twilio, SecretCiphertext:[REDACTED]}" {
-		t.Errorf("Wrong match. got: %s", got)
-	}
+func Test_Credentials_GoString(t *testing.T) {
 	if got := (Credentials{}).GoString(); got != "Credentials{Secret:[REDACTED]}" {
 		t.Errorf("Wrong match. got: %s", got)
 	}

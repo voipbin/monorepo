@@ -15,7 +15,7 @@ All Go flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
 | `log_level` | `LOG_LEVEL` | Log level: `debug`, `info`, `warn` or `error` (case-insensitive). Debug lines are written only when this is `debug`. Debug lines carry ids and lengths, never conversation text, prompts or model answers (VOIP-1633). Applies to the Go service and its control CLI only | `info` |
 | `local_llm_models` | `LOCAL_LLM_MODELS` | JSON list of operator-registered local models (no URL or key); same value as ai-manager. Read through `config.LocalLLMModels()`, deliberately not a `Config` field, so a log of the whole `Config` can never include it. Invalid entries are skipped and logged as an error (counts only). | no |
-| (no flag) | `PIPECAT_CONFIG_ENCRYPTION_KEYS` | Master key list that encrypts the stored settings (not read by the runner) (`<version>:<base64 32 bytes>[,...]`). Environment only, never a flag, never logged. Mapped to the Go containers `pipecat-manager-1` and `-2` only; the Python runner containers do not get it. Without a valid list the service starts, the stored secrets are reported as undecryptable and nothing can be written | no |
+| (no flag) | `PIPECAT_CONFIG_ENCRYPTION_KEYS` | Not read by the code. The deployment definition still passes it to the Go containers; a later change removes the line | no |
 | `POD_IP` | `POD_IP` | Per-container identity (`pipecat-manager-1` / `-2` in `komodo/docker-compose.yml`); used as HostID for per-pod routing | yes |
 
 Python environment variables (set in `.env` or exported). The runner reads the vendor API keys and the local endpoints from its environment (see "Platform keys"); they are not repeated here.
@@ -56,11 +56,7 @@ The runner answers a rejected session with HTTP 400 and the fixed text above, wh
 
 At start the runner logs one line per variable (`Platform variable <name>: set`, `not set`, or `unresolved placeholder` at warning level), after `load_dotenv(override=True)`, so it shows the values that the runner uses. Never a value or a part of it. The repository has no `.env` file in `scripts/pipecat` (the file name is git-ignored), so an image built from a clean checkout has none and the container environment is the only source. A `.env` file that is present in a local build context would override the container environment (`load_dotenv(override=True)`).
 
-The stored settings (tables `pipecat_configs` and `pipecat_config_histories`, `pipecat-control config list|set|clear`, the admin API `/service_configs/pipecat`) still exist but the runner does not read them. `config set` and `config clear` print one line to stderr that names the variable that is read. `NewKeyResolver` and `LogSources` of `internal/pipecatconfig` are not called by any service; they and the stored settings are removed together later.
-
-```bash
-./pipecat-control config list
-```
+Nothing is stored in the database (the tables `pipecat_configs` and `pipecat_config_histories` are no longer read or written by the code) and no admin API or command writes the keys.
 
 Behavior to know:
 
@@ -72,7 +68,7 @@ Prerequisites before this version runs (a key that is not set makes the sessions
 
 1. Create a Komodo variable `BIN_MANAGER__<variable>` for each variable of the table that the platform uses, with the same value as before. A missing variable does not stop the containers: Komodo passes the unreplaced `[[...]]` text as the value, the runner logs `unresolved placeholder` and treats the key as not configured.
 2. Deploy the runner containers with the variables before, or in the same deployment as, the Go service that stops sending keys. A new runner next to an old Go service is fine (the key of the request wins).
-3. While an old and a new image run together, a key has to hold the same value in the stored settings and in the variable. Rollback is the previous image together with the previous stack definition; the new variables stay unused.
+3. Rollback is the previous image together with the previous stack definition; the new variables stay unused.
 4. Check one session of each vendor that you set a key for.
 
 ## Prometheus Metrics
@@ -127,7 +123,7 @@ The Go side handles every RTVI `error` message from the runner (pipecat's pipeli
 ./bin/pipecat-control pipecatcall send-message --id <uuid> --message <text>
 ```
 
-Stored settings (database only, no Redis or RabbitMQ; the runner does not read them, see "Platform keys"): `./bin/pipecat-control config list|set|clear`. A `pipecatcall start` from this CLI sends no key either; the runner reads its environment.
+A `pipecatcall start` from `pipecat-control` sends no key; the runner reads its environment.
 
 Migration status (database only, no Redis or RabbitMQ): `./bin/pipecat-control migrate status`.
 

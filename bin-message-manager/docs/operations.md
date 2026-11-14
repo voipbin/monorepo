@@ -104,11 +104,11 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | Metrics listen address |
 | (no flag) | `MESSAGEBIRD_API_KEY` | `""` | MessageBird access key. Environment only, never a flag; read at the time of use. Not set, empty or an unresolved `[[...]]` placeholder means not configured |
 | (no flag) | `TELNYX_API_KEY` | `""` | Telnyx API key of the SMS and MMS sends. Environment only, never a flag; the same variable and value as in `bin-number-manager`. Not set, empty or an unresolved placeholder means not configured |
-| (no flag) | `MESSAGE_CONFIG_ENCRYPTION_KEYS` | `""` | Master key list of the stored tokens: comma-separated `<version>:<base64 32 bytes>`. Environment only, never a flag. A malformed or empty value does not stop the start: the service logs the problem (never the value), refuses to store a secret and reports the stored tokens as undecryptable |
+| (no flag) | `MESSAGE_CONFIG_ENCRYPTION_KEYS` | `""` | Not read by the code. The deployment definition still passes it; a later change removes the line |
 
 ## Provider tokens
 
-The two provider tokens are read from environment variables, and only from there. The stored settings (`message_configs`, the `message-control config` commands and the admin API) remain, but their values are not read by a send.
+The two provider tokens are read from environment variables, and only from there. Nothing is stored in the database (the tables `message_configs` and `message_config_histories` are no longer read or written by the code) and no admin API writes them.
 
 | Variable | Used for |
 |----------|----------|
@@ -118,34 +118,13 @@ The two provider tokens are read from environment variables, and only from there
 - **Source:** the environment variable only. A variable that is not set, is empty or still holds an unresolved deployment placeholder (a value that starts with `[[`) means that the token is not configured: the supplier gives an empty token and no error, and the request is sent with that empty credential and refused by the provider. The placeholder is never sent as a token. At start the service logs one line per variable (name and state only, never a value): a warning for `TELNYX_API_KEY` that is not set, an info line for `MESSAGEBIRD_API_KEY` that is not set, and a warning with the words "unresolved placeholder" for a placeholder.
 - **Read per send, no cache:** the variable is read for every provider request. The environment of a container changes with a new deployment only, so a rotation takes effect when the replicas restart.
 - **One variable for Telnyx:** `TELNYX_API_KEY` is the variable that `bin-number-manager` reads for its Telnyx secret too, so one rotation of the deployment variable covers both services. The two services must hold the same value; this is checked in the deployment variables, not in the code.
-- **Stored values are not used:** `message-control config set` and `clear` and the admin API still write the stored row, and `message-control config` prints one line on stderr that names the variable that is read and says that the stored value is not used. A stored value that is left behind is not rotated with the variable; an older image that reads the stored settings would use it.
 - **Rollback:** roll back the image together with its deployment definition. The variables above stay in the deployment variable store and are unused by an older image.
-
-### Commands
-
-```bash
-# the stored settings with their source (never a value); the service does not read them
-message-control config list
-
-# store a value (not used by the service): the value comes from stdin only; --actor-id is required
-printf '%s' "$NEW_TOKEN" | message-control config set --key provider.telnyx.auth_token --actor-id <uuid>
-
-# remove the stored value
-message-control config clear --key provider.telnyx.auth_token --actor-id <uuid>
-```
-
-`message-control config` needs only the database and the master key list. The same keys can be managed through the admin API (`/service_configs/message`, history source `api`).
 
 ### Rotation order
 
 1. Change `MESSAGEBIRD_API_KEY` or `TELNYX_API_KEY` in the deployment variable store and redeploy the service. For Telnyx, `bin-number-manager` reads the same variable, so redeploy it as well; the two services must end with the same value. During a rolling deploy two replicas can hold different values until the deploy ends.
 2. Check the result without sending a message: the start log of each replica shows the variable as set (never the value). The provider accepting the value shows only at the next real send (an authentication failure is a 401): watch `request_external_process_time` and the log of the first sends. Do not send a test message for the check: a send costs money.
 3. If the value is wrong, correct the deployment variable and redeploy.
-4. Stored values (`config set`) do not change what is sent. Do not use them to rotate a token.
-
-### Master key list
-
-Losing or mistyping `MESSAGE_CONFIG_ENCRYPTION_KEYS` does not stop the service. A stored row then reports `db_undecryptable` in `config list`; the sends are not affected, because they read the environment. Recover by restoring the list (the stored values are readable again), or by `config clear` of the affected keys and `config set` again: the stored value is lost. `config set` is refused while the list is missing or invalid. A retired master key version must stay in the list until no row uses it (`key_version` in `config list`). The deployment definition must pass the variable to the container, and the variable must exist in the deployment system before the deploy. A missing variable does not stop the container: Komodo passes the unreplaced `[[...]]` text and the service behaves as for a malformed value.
 
 ## Prometheus Metrics
 

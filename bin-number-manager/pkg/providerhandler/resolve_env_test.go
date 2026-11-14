@@ -26,18 +26,6 @@ func setCredentialEnv(t *testing.T, values map[string]string) {
 	}
 }
 
-// garbageRow returns a row whose stored ciphertext cannot be decrypted by any key.
-func garbageRow(name number.ProviderName, enabled bool, config map[string]string) *provider.Provider {
-	return &provider.Provider{
-		ProviderName:     name,
-		Enabled:          enabled,
-		Priority:         5,
-		Config:           config,
-		SecretCiphertext: []byte("not-a-ciphertext"),
-		KeyVersion:       9,
-	}
-}
-
 func Test_resolve_env(t *testing.T) {
 	ctx := context.Background()
 
@@ -107,24 +95,6 @@ func Test_resolve_env(t *testing.T) {
 			expectSource: provider.CredentialSourceNone, expectHasSecret: false, expectUsable: false,
 		},
 		{
-			name:         "the stored ciphertext is not read: a garbage ciphertext without a variable is none",
-			providerName: number.ProviderNameTelnyx,
-			env:          map[string]string{},
-			row:          garbageRow(number.ProviderNameTelnyx, true, map[string]string{"connection_id": "row-conn"}),
-
-			expectSource: provider.CredentialSourceNone, expectHasSecret: false, expectUsable: false,
-		},
-		{
-			name:         "the stored ciphertext is not read: a garbage ciphertext does not affect the variable",
-			providerName: number.ProviderNameTelnyx,
-			env:          map[string]string{envTelnyxAPIKey: fakeEnvTelnyxKey},
-			row:          garbageRow(number.ProviderNameTelnyx, true, map[string]string{"connection_id": "row-conn"}),
-
-			expectSource: provider.CredentialSourceEnv, expectHasSecret: true, expectUsable: true,
-			expectSecret: fakeEnvTelnyxKey,
-			expectConfig: map[string]string{"connection_id": "row-conn"},
-		},
-		{
 			name:         "a disabled row is not usable",
 			providerName: number.ProviderNameTelnyx,
 			env:          map[string]string{envTelnyxAPIKey: fakeEnvTelnyxKey, envTelnyxConnectionID: "env-conn"},
@@ -171,9 +141,7 @@ func Test_resolve_env(t *testing.T) {
 			if tt.row != nil {
 				db.rows[tt.providerName] = tt.row
 			}
-			h := newTestHandler(t, db, "")
-			// the stored ciphertext is never decrypted: a call of the crypto would panic
-			h.crypto = nil
+			h := newTestHandler(t, db)
 
 			r, err := h.resolve(ctx, tt.providerName)
 			if err != nil {
@@ -204,7 +172,7 @@ func Test_resolve_env_doesNotWriteTheRow(t *testing.T) {
 	db := newFakeDB()
 	rowConfig := map[string]string{}
 	db.rows[number.ProviderNameTelnyx] = &provider.Provider{ProviderName: number.ProviderNameTelnyx, Enabled: true, Priority: 5, Config: rowConfig}
-	h := newTestHandler(t, db, "")
+	h := newTestHandler(t, db)
 
 	if _, err := h.resolve(context.Background(), number.ProviderNameTelnyx); err != nil {
 		t.Fatal(err)
@@ -220,7 +188,7 @@ func Test_Info_env(t *testing.T) {
 	t.Run("has_secret follows the effective secret and the config is the row only", func(t *testing.T) {
 		setCredentialEnv(t, map[string]string{envTelnyxAPIKey: fakeEnvTelnyxKey, envTelnyxConnectionID: "env-conn"})
 
-		info, err := newTestHandler(t, newFakeDB(), "").Get(ctx, number.ProviderNameTelnyx)
+		info, err := newTestHandler(t, newFakeDB()).Get(ctx, number.ProviderNameTelnyx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -232,29 +200,11 @@ func Test_Info_env(t *testing.T) {
 		}
 	})
 
-	t.Run("a stored ciphertext does not count as a secret", func(t *testing.T) {
-		setCredentialEnv(t, map[string]string{})
-
-		db := newFakeDB()
-		db.rows[number.ProviderNameTelnyx] = garbageRow(number.ProviderNameTelnyx, true, map[string]string{"connection_id": "row-conn"})
-
-		info, err := newTestHandler(t, db, testKeys(1)).Get(ctx, number.ProviderNameTelnyx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if info.HasSecret || info.CredentialSource != provider.CredentialSourceNone || info.Usable {
-			t.Errorf("Wrong match. got has_secret=%v source=%s usable=%v", info.HasSecret, info.CredentialSource, info.Usable)
-		}
-		if info.Config["connection_id"] != "row-conn" {
-			t.Errorf("Wrong match. the config of the row is not shown: %v", info.Config)
-		}
-	})
-
 	t.Run("a read and write back of the config does not freeze a variable value into the row", func(t *testing.T) {
 		setCredentialEnv(t, map[string]string{envTelnyxAPIKey: fakeEnvTelnyxKey, envTelnyxConnectionID: "env-conn", envTelnyxProfileID: "env-profile"})
 
 		db := newFakeDB()
-		h := newTestHandler(t, db, "")
+		h := newTestHandler(t, db)
 
 		info, err := h.Get(ctx, number.ProviderNameTelnyx)
 		if err != nil {
@@ -269,28 +219,12 @@ func Test_Info_env(t *testing.T) {
 			t.Errorf("Wrong match. the row config holds %s=%q", k, v)
 		}
 	})
-
-	t.Run("deleting the stored secret keeps has_secret true while the variable is set", func(t *testing.T) {
-		setCredentialEnv(t, map[string]string{envTelnyxAPIKey: fakeEnvTelnyxKey, envTelnyxConnectionID: "env-conn"})
-
-		db := newFakeDB()
-		seedTelnyx(t, db)
-		h := newTestHandler(t, db, testKeys(1))
-
-		info, err := h.DeleteSecret(ctx, number.ProviderNameTelnyx, testActor)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !info.HasSecret || info.CredentialSource != provider.CredentialSourceEnv {
-			t.Errorf("Wrong match. got has_secret=%v source=%s", info.HasSecret, info.CredentialSource)
-		}
-	})
 }
 
 func Test_PurchaseCandidates_env(t *testing.T) {
 	setCredentialEnv(t, map[string]string{envTelnyxAPIKey: fakeEnvTelnyxKey, envTelnyxConnectionID: "env-conn"})
 
-	res, err := newTestHandler(t, newFakeDB(), "").PurchaseCandidates(context.Background())
+	res, err := newTestHandler(t, newFakeDB()).PurchaseCandidates(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -8,7 +8,6 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/confighandler/configrpc"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/migrationhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -16,7 +15,6 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
@@ -129,11 +127,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// The Paddle credentials are read from the environment, when they are used, so nothing is
 	// cached. A variable that is not set is not configured (a webhook is rejected, a portal session
-	// fails). The stored settings handler serves the admin API only.
-	configHandler, errConfig := billingconfig.New(config.Get(), dbhandler.NewConfigStore(sqlDB))
-	if errConfig != nil {
-		return errors.Wrapf(errConfig, "could not create the config handler")
-	}
+	// fails).
 	billingconfig.LogStates()
 
 	apiKey, webhookSecret := billingconfig.PaddleKeys()
@@ -153,7 +147,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	subHandler, failedHandler := buildFailedEventHandler(db, sockHandler, accountHandler, billingHandler)
 
 	// run listen
-	if err := runListen(sockHandler, accountHandler, billingHandler, paddleHandler, failedHandler, configrpc.NewServer(configHandler, serviceName)); err != nil {
+	if err := runListen(sockHandler, accountHandler, billingHandler, paddleHandler, failedHandler); err != nil {
 		return err
 	}
 
@@ -206,12 +200,12 @@ func runSubscribe(subHandler subscribehandler.SubscribeHandler) error {
 }
 
 // runListen runs the listen handler
-func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler, paddleHandler paddlehandler.PaddleHandler, failedHandler failedeventhandler.FailedEventHandler, configServer *configrpc.Server) error {
+func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler, paddleHandler paddlehandler.PaddleHandler, failedHandler failedeventhandler.FailedEventHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
 
-	listenHandler := listenhandler.NewListenHandler(sockHandler, accoutHandler, billingHandler, paddleHandler, failedHandler, configServer)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, accoutHandler, billingHandler, paddleHandler, failedHandler)
 
 	if err := listenHandler.Run(string(commonoutline.QueueNameBillingRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		log.Errorf("Could not run the listenhandler correctly. err: %v", err)

@@ -102,7 +102,7 @@ All flags can also be set via environment variable (uppercase, underscores). No 
 | `paddle_price_id_professional` | `PADDLE_PRICE_ID_PROFESSIONAL` | required | Paddle price ID for professional plan |
 | (no flag) | `PADDLE_API_KEY` | optional | Paddle API key (customer portal session). Environment only, never a flag, never logged. Unset, empty or an unresolved placeholder (`[[...`) means not configured |
 | (no flag) | `PADDLE_WEBHOOK_SECRET` | required for webhooks | Secret that signs the Paddle webhooks. Environment only, never a flag, never logged. Unset, empty or an unresolved placeholder means not configured: every Paddle webhook is rejected |
-| (no flag) | `BILLING_CONFIG_ENCRYPTION_KEYS` | optional | Master key list of the stored settings code (environment only, never a flag, never logged). The service does not use it to read a Paddle credential |
+| (no flag) | `BILLING_CONFIG_ENCRYPTION_KEYS` | optional | Not read by the code. The deployment definition still passes it; a later change removes the line |
 
 ## Paddle credentials
 
@@ -113,7 +113,7 @@ The Paddle credentials are read from two environment variables of this service:
 | `PADDLE_API_KEY` | The Paddle API call that creates a customer portal session |
 | `PADDLE_WEBHOOK_SECRET` | The signature check of the Paddle webhooks (`/v1/hooks/paddle`) |
 
-The variables are the only source. The stored settings (`paddle.api_key`, `paddle.webhook_secret_key`, table `billing_configs`) are not read; the code that stores them and the admin API stay until a later removal. The compose value is `[[BIN_MANAGER__<variable name>]]` with the same name as the variable; in Kubernetes the variable is an optional key of the `voipbin` secret with the same name.
+The variables are the only source. Nothing is stored in the database (the tables `billing_configs` and `billing_config_histories` are no longer read or written by the code). The compose value is `[[BIN_MANAGER__<variable name>]]` with the same name as the variable; in Kubernetes the variable is an optional key of the `voipbin` secret with the same name.
 
 Resolution, for every use (nothing is cached, so a replica restart is the only way a value changes):
 
@@ -121,18 +121,7 @@ Resolution, for every use (nothing is cached, so a replica restart is the only w
 2. A variable that is not set, is empty, or holds an unresolved placeholder (a value that starts with `[[`, the text of a deployment variable that does not exist) means the key is not configured. The caller decides what that means: the webhook is rejected (500), the portal session call stops before any request to Paddle. The placeholder is never sent anywhere.
 3. A deployment variable that is missing leaves the placeholder in the compose value. The start log says so once per variable (`unresolved placeholder`, the variable name, never a value).
 
-The stored settings can still be written with `billing-control config` or the admin API (`/service_configs/billing`, served as `/v1/configs` by the shared `configrpc`), but a stored value is not used: `config set` and `config clear` print a note on stderr that names the variable. Rotate a credential in the deployment variable, not there. A stored value that is left behind is stale after a rotation, and an image rollback reads it (see "Deployment order and rollback"). The history records the source `api` for the admin API and `cli` for the command line. The request body of a secret is never logged, and a request that looks like a config request is not routed to any other handler.
-
-```bash
-# the stored settings only; the service does not read them
-printf '%s\n' "$NEW_VALUE" | ./billing-control config set --key paddle.api_key --actor-id <uuid>
-./billing-control config list
-./billing-control config clear --key paddle.webhook_secret_key --actor-id <uuid>
-```
-
-`config list` shows the stored state of each key (`db`, `none`, `db_undecryptable`, `db_invalid`) and never a value; it says nothing about the variables. The start of the service logs one line per variable with its state (set, not set, placeholder; name and state only). A webhook secret that is not set is a warning (every Paddle webhook is rejected), and an API key that is not set is an info line (a portal session can not be created). An unresolved placeholder is a warning for both.
-
-The request body limit of the admin API is 4 KB, counted in bytes of the JSON text. A secret that grows beyond it through JSON escaping (quotes, backslashes, non-ASCII) is rejected with `INVALID_JSON_BODY` (400).
+The start of the service logs one line per variable with its state (set, not set, placeholder; name and state only). A webhook secret that is not set is a warning (every Paddle webhook is rejected), and an API key that is not set is an info line (a portal session can not be created). An unresolved placeholder is a warning for both.
 
 ### Webhook signature check
 
@@ -158,13 +147,7 @@ Whether Paddle retries a rejected webhook (4xx and 5xx) and whether a retry carr
 #### Deployment order and rollback
 
 - Deploy the billing service first and wait until every replica runs the new image, then the hook service (it does not verify the signature).
-- During a rolling update the old image reads the stored settings and the new one reads the variables, so a credential must hold the same value in both places until the update ends.
-- Rollback is the previous image together with the previous deployment definition. The old image reads the last stored value, which is stale if the variable was rotated after this change: store the current value with `config set` before the rollback. The new variables stay unused.
-- `config clear` on a Paddle key does not change what the new image reads.
-
-#### Master key rotation
-
-The master key list `BILLING_CONFIG_ENCRYPTION_KEYS` encrypts the stored settings only. Its rotation (versions `<version>:<base64 key>[,...]`; add the new version, re-enter every stored value, remove the old version after `config list` shows the new `key_version`) matters only to the stored settings an older image reads.
+- Rollback is the previous image together with the previous deployment definition. The previous image reads the same variables.
 
 ## Prometheus Metrics
 

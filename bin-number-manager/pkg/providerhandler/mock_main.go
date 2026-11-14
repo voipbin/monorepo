@@ -127,21 +127,6 @@ func (m *MockProviderHandler) EXPECT() *MockProviderHandlerMockRecorder {
 	return m.recorder
 }
 
-// DeleteSecret mocks base method.
-func (m *MockProviderHandler) DeleteSecret(ctx context.Context, name number.ProviderName, actor uuid.UUID) (*provider.Info, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSecret", ctx, name, actor)
-	ret0, _ := ret[0].(*provider.Info)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DeleteSecret indicates an expected call of DeleteSecret.
-func (mr *MockProviderHandlerMockRecorder) DeleteSecret(ctx, name, actor any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSecret", reflect.TypeOf((*MockProviderHandler)(nil).DeleteSecret), ctx, name, actor)
-}
-
 // ForRelease mocks base method.
 func (m *MockProviderHandler) ForRelease(ctx context.Context, name number.ProviderName) (Provider, error) {
 	m.ctrl.T.Helper()
@@ -230,19 +215,4 @@ func (m *MockProviderHandler) Update(ctx context.Context, name number.ProviderNa
 func (mr *MockProviderHandlerMockRecorder) Update(ctx, name, actor, enabled, priority, config any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockProviderHandler)(nil).Update), ctx, name, actor, enabled, priority, config)
-}
-
-// UpdateSecret mocks base method.
-func (m *MockProviderHandler) UpdateSecret(ctx context.Context, name number.ProviderName, actor uuid.UUID, secret string) (*provider.Info, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateSecret", ctx, name, actor, secret)
-	ret0, _ := ret[0].(*provider.Info)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateSecret indicates an expected call of UpdateSecret.
-func (mr *MockProviderHandlerMockRecorder) UpdateSecret(ctx, name, actor, secret any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSecret", reflect.TypeOf((*MockProviderHandler)(nil).UpdateSecret), ctx, name, actor, secret)
 }

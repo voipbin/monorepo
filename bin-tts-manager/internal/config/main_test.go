@@ -132,7 +132,7 @@ func TestLoadGlobalConfig(t *testing.T) {
 	}
 }
 
-// The provider keys are stored in the database only: Config has no field for them, and no flag
+// The provider keys are read from the environment only: Config has no field for them, and no flag
 // of the old names exists.
 func Test_removedProviderFields(t *testing.T) {
 	typ := reflect.TypeOf(Config{})
@@ -177,7 +177,6 @@ func Test_oldProviderVariablesIgnored(t *testing.T) {
 	t.Setenv("ELEVENLABS_API_KEY", "synthetic-old-eleven")
 	t.Setenv("RABBITMQ_ADDRESS", "amqp://synthetic-host:5672")
 	t.Setenv("GCP_TTS_ENDPOINT", "synthetic-gcp:443")
-	t.Setenv("TTS_CONFIG_ENCRYPTION_KEYS", "1:synthetic-master")
 
 	cmd := &cobra.Command{}
 	if err := Bootstrap(cmd); err != nil {
@@ -186,7 +185,7 @@ func Test_oldProviderVariablesIgnored(t *testing.T) {
 	LoadGlobalConfig()
 
 	got := Get()
-	if got.RabbitMQAddress != "amqp://synthetic-host:5672" || got.GCPTTSEndpoint != "synthetic-gcp:443" || got.ConfigEncryptionKeys != "1:synthetic-master" {
+	if got.RabbitMQAddress != "amqp://synthetic-host:5672" || got.GCPTTSEndpoint != "synthetic-gcp:443" {
 		t.Errorf("Wrong match. the other fields are affected: %+v", got)
 	}
 
@@ -196,55 +195,5 @@ func Test_oldProviderVariablesIgnored(t *testing.T) {
 		if v.Field(i).Kind() == reflect.String && strings.Contains(v.Field(i).String(), "synthetic-old-") {
 			t.Errorf("Wrong match. the field %s holds an old variable value", v.Type().Field(i).Name)
 		}
-	}
-}
-
-// Test_masterKeyIsEnvOnly checks that the master key list is read from the prefixed variable only,
-// that an unprefixed variable is ignored, and that no command line flag exists for it.
-func Test_masterKeyIsEnvOnly(t *testing.T) {
-	viper.Reset()
-	ResetForTest()
-	t.Cleanup(func() {
-		viper.Reset()
-		ResetForTest()
-	})
-
-	t.Setenv("CONFIG_ENCRYPTION_KEYS", "9:unprefixed-must-be-ignored")
-	t.Setenv("TTS_CONFIG_ENCRYPTION_KEYS", "1:prefixed-value")
-
-	cmd := &cobra.Command{}
-	if err := Bootstrap(cmd); err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	LoadGlobalConfig()
-
-	if got := Get().ConfigEncryptionKeys; got != "1:prefixed-value" {
-		t.Errorf("Wrong match. expect: the prefixed value, got: %q", got)
-	}
-	for _, name := range []string{"tts_config_encryption_keys", "config_encryption_keys"} {
-		if cmd.PersistentFlags().Lookup(name) != nil {
-			t.Errorf("Wrong match. a flag %q exists for the master key list", name)
-		}
-	}
-}
-
-func Test_masterKeyUnprefixedIgnored(t *testing.T) {
-	viper.Reset()
-	ResetForTest()
-	t.Cleanup(func() {
-		viper.Reset()
-		ResetForTest()
-	})
-
-	t.Setenv("CONFIG_ENCRYPTION_KEYS", "9:unprefixed-must-be-ignored")
-
-	cmd := &cobra.Command{}
-	if err := Bootstrap(cmd); err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	LoadGlobalConfig()
-
-	if got := Get().ConfigEncryptionKeys; got != "" {
-		t.Errorf("Wrong match. expect: empty, got: %q", got)
 	}
 }

@@ -40,12 +40,12 @@ scripts/pipecat/  (Python, port 8000)
 
 | Layer | Package | Responsibility |
 |-------|---------|----------------|
-| Transport (Go) | `pkg/listenhandler` | Shared queue: create/get pipecatcall, `/v1/configs` (stored settings, not read by the runner). Per-pod queue: stop, message-send, ping |
+| Transport (Go) | `pkg/listenhandler` | Shared queue: create/get pipecatcall. Per-pod queue: stop, message-send, ping |
 | Transport (Go) | `pkg/httphandler` | WebSocket upgrade for Pipecat Python; tool execution callbacks from Python |
 | Session (Go) | `pkg/pipecatcallhandler` | In-memory session registry; audio bridge between Asterisk and Python; sends no platform key (the runner reads its environment variables) |
-| Config (Go) | `internal/pipecatconfig`, `internal/configkeys` | Stored settings: registry, master key, resolver (the resolver is not wired; the runner reads its own environment variables) |
+| Config (Go) | `internal/configkeys` | The key names of the `platform_keys` map of the runner request (the runner reads its own environment variables) |
 | Pipeline (Python) | `scripts/pipecat/` | STT → LLM → TTS execution via pipecat-ai library |
-| Data (Go) | `pkg/dbhandler` | MySQL: pipecatcall records and the config store (`pipecat_configs`, `pipecat_config_histories`); Redis: session cache |
+| Data (Go) | `pkg/dbhandler` | MySQL: pipecatcall records; Redis: session cache |
 
 ## Request Routing
 
@@ -57,7 +57,6 @@ ListenHandler routes over two queues:
 |---------|--------|---------|
 | `/v1/pipecatcalls$` | POST | Create pipecatcall — starts a new session |
 | `/v1/pipecatcalls/{{UUID}}$` | GET | Get pipecatcall by ID |
-| `/v1/configs` (and below) | GET, PUT, DELETE | Stored settings (not read by the runner): list, write a secret, remove, history (served by `configrpc`; routed before the request log entry exists, so no body is logged). The per-pod queue handles the same requests too, because both queues use one handler; the API reaches the shared queue |
 
 **Per-pod queue** `bin-manager.pipecat-manager.request.<POD_IP>` (volatile, auto-deletes on pod death):
 
