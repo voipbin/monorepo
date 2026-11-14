@@ -22,10 +22,9 @@ Config encryption keys, `DATABASE_DSN`, `POD_IP`, ai `LOCAL_LLM_MODELS`, `MCP_OA
 ## Verification
 
 1. Before the change, `git grep` of the names in the six services with pathspec excludes `:!*_test.go`, `:!*.md`, `:!*/vendor/*`, `:!*/komodo/docker-compose.yml`, `:!*/k8s/deployment.yml` returns nothing (no code reads them).
-2. A script removes by name and asserts: each entry is removed exactly once per file (and zero times where the design says none), the set of removed names equals the list above, the environment name sets before and after differ only by the removed names, and both files parse as YAML; the other lines and the kept names (`DATABASE_DSN`, `POD_IP`, `GCP_SA_JSON`, `GOOGLE_APPLICATION_CREDENTIALS`, `*_CONFIG_ENCRYPTION_KEYS`, number `NUMBER_SECRET_ENCRYPTION_KEYS`, ai `LOCAL_LLM_MODELS`, `MCP_OAUTH_*`) are still present, `bin-pipecat-manager` has no diff, and both files parse as YAML.
+2. A script removes by name and asserts: each entry is removed exactly once per file (and zero times where the design says none), the set of removed names equals the list above, the environment name sets before and after differ only by the removed names; the other lines and the kept names (`DATABASE_DSN`, `POD_IP`, `GCP_SA_JSON`, `GOOGLE_APPLICATION_CREDENTIALS`, `*_CONFIG_ENCRYPTION_KEYS`, number `NUMBER_SECRET_ENCRYPTION_KEYS`, ai `LOCAL_LLM_MODELS`, `MCP_OAUTH_*`) are still present and `bin-pipecat-manager` has no diff (checked with `git diff`); both files still parse as YAML.
 3. `go test` of the six services (including the compose definition tests of message and transcribe).
 4. After the change, `git grep` of the names in `*/komodo/docker-compose.yml` and `*/k8s/deployment.yml` of the six services returns nothing.
-
 5. `git diff --numstat` shows only deletions in the twelve manifest files and no change in `bin-pipecat-manager`; the script writes nothing unless every check passes. After the document change, `git grep -nE "in step|still injects" -- 'bin-*-manager/docs/operations.md'` finds none of the old sentences, and `git grep -n "environment pair" -- bin-transcribe-manager/docs/operations.md` shows the restored-lines wording.
 
 ## Documents
