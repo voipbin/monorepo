@@ -147,6 +147,9 @@ or another id-less tool row in between, an id-less call row with several calls, 
 row cannot be paired without guessing, and all id-less rows are dropped as before (the call history is
 then not shown to the model). Tests cover id-less variants of S3, S5 and S8.
 
+Behaviour change: a result row placed before its call used to pass the pairing check (it only looked for the
+id anywhere) and is now dropped together with the call; OpenAI rejected that input as well.
+
 Window cut and `deleted` rows are as in 1.3: only the fetched rows are reordered and an orphan half is dropped.
 
 ### 2.4 Not changed
@@ -184,7 +187,7 @@ its own copy (the directory is isolated from `scripts/pipecat`, see S16).
 ### 3.3 RED plan (test first)
 
 1. Write all new Python tests first, run `pytest scripts/pipecat/test_message_filters.py` against the
-   unchanged `message_filters.py` (origin/main), and save the failing output as the RED evidence on the card.
+   unchanged `message_filters.py` (origin/main), and keep the failing output as the RED evidence (listed in the PR description).
 2. Concrete Python tests, input, expected output and class against origin/main (U user, A answer, S
    sentence, `C(x)` call with id x, `R(x)` its result, `C0`/`R0` id-less; classes were checked by running
    the current filter on a scratch copy):
@@ -217,7 +220,7 @@ its own copy (the directory is isolated from `scripts/pipecat`, see S16).
    | id-less call without result | S8 | `[U, C0, S, U2]` | `[U, S, U2]` | CHAR | `test_idless_call_without_result_is_dropped` |
    | id-less parallel (remaining limit) | S5 | `[C0, C0, R0, R0]` | `[]` | CHAR | `test_idless_parallel_calls_are_dropped` |
 
-   The RED evidence file on the card lists the actual pass or fail per test of step 1.
+   The actual pass or fail per test of step 1 is listed in the PR description.
 3. Mutation checks on a scratch copy, each must turn the named function red:
    - remove the hoist (step B): `test_sentence_between_call_and_result_moves_before_call`, `test_serial_calls_sentence_in_first_pair`;
    - drop of a tool row that no block claimed (step C, tool side) removed: `test_result_before_its_call_is_dropped`, `test_duplicate_result_keeps_first`;
@@ -256,6 +259,6 @@ Python function names are the ones of the 3.3 table (file `scripts/pipecat/test_
 | S13 | `emit_info_card` blocks and args | Go existing `strips blocks from role:tool message content on history rebuild`, `neuters emit_info_card tool_calls Arguments while keeping the entry`, `full card turn: strips blocks and neuters tool_calls together` + new Go case `sentence stored between a card call and its result keeps stored order and both transformations`; Python `test_card_call_and_result_pass_through_unchanged` |
 | S14 | MCP and built-in mixed | Python `test_parallel_rows_with_sentence_mixed_tool_names` + new Go case `mcp_ and built-in tool call rows pass through with ids and arguments unchanged` |
 | S15 | idempotent, input unchanged | `test_filter_is_idempotent_and_does_not_mutate_input` |
-| S16 | provider conversion | new `scripts/pipecat_realtest/test_message_order_real.py` (real pipecat 1.12.0, no network, `pytest --noconftest`, not run by CI like the other files in that directory, run by hand and the result is on the card): `test_stored_order_is_invalid_for_openai_and_gemini` (negative control through the real adapters), `test_filtered_order_is_valid_for_openai_and_gemini`, `test_gemini_keeps_the_sentence_as_a_model_text_turn`. The CI-run guarantee of the same invariant is the Python checker of 3.2 |
+| S16 | provider conversion | new `scripts/pipecat_realtest/test_message_order_real.py` (real pipecat 1.12.0, no network, `pytest --noconftest`, not run by CI like the other files in that directory, run by hand and the result is listed in the PR description): `test_stored_order_is_invalid_for_openai_and_gemini` (negative control through the real adapters), `test_filtered_order_is_valid_for_openai_and_gemini`, `test_gemini_keeps_the_sentence_as_a_model_text_turn`. The CI-run guarantee of the same invariant is the Python checker of 3.2 |
 
 A3 (real provider calls) is separate and needs API keys.

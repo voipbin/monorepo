@@ -57,7 +57,8 @@ def _repair_idless_pairs(candidates: list[dict]) -> list[dict]:
         if p + 1 >= len(idless):
             break
         j = idless[p + 1]
-        if not _only_plain_rows_between(candidates, i, j) or len(call["tool_calls"]) != 1 or not _is_idless_result(candidates[j]):
+        paired = _only_plain_rows_between(candidates, i, j) and len(call["tool_calls"]) == 1 and _is_idless_result(candidates[j])
+        if not paired:
             pairs = []
             break
         pairs.append((i, j))
@@ -98,7 +99,8 @@ def _restore_tool_adjacency(candidates: list[dict]) -> list[dict]:
     C. Emit once: a block call is emitted as hoisted rows, call, results (in tool_calls order). Rows that sat
        between a call and its results stay in their order after the block. Unanswerable calls and tool rows
        no block claimed (orphan, placed before their call, duplicate) are dropped.
-    The result is idempotent and the input is not mutated; the same row objects are returned.
+    The result is idempotent and the input is not mutated; the same row objects are returned. A result
+    placed before its call is dropped with the call (it used to pass the pairing check below).
     """
     n = len(candidates)
 
