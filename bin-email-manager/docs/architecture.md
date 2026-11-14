@@ -26,7 +26,7 @@ Supporting binary:
 |-------|---------|---------------|
 | Entry | `cmd/email-manager` | pflag + Viper config, dependency wiring, daemon start |
 | Listen | `pkg/listenhandler` | RabbitMQ RPC routing; dispatches to emailhandler |
-| Business | `pkg/emailhandler` | Email create/send, provider failover, attachment fetch, webhook processing |
+| Business | `pkg/emailhandler` | Email create/send, provider failover, attachment check and fetch, webhook processing |
 | Provider | `pkg/emailhandler/engine_sendgrid.go` | SendGrid API send implementation |
 | Provider | `pkg/emailhandler/engine_mailgun.go` | Mailgun API send implementation |
 | Data | `pkg/dbhandler` | Squirrel SQL builder queries for email records |

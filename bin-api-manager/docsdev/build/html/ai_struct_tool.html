@@ -868,8 +868,8 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
             <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
                 <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">"reference_type"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"enum"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"recording"</span><span class="p">]</span> <span class="p">},</span>
-                    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"UUID of the attachment"</span> <span class="p">}</span>
+                    <span class="s2">"reference_type"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"enum"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"recording"</span><span class="p">,</span> <span class="s2">"file"</span><span class="p">]</span> <span class="p">},</span>
+                    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"UUID of the recording or of the storage file"</span> <span class="p">}</span>
                 <span class="p">}</span>
             <span class="p">}</span>
         <span class="p">}</span>
@@ -877,6 +877,11 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
     <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"destinations"</span><span class="p">,</span> <span class="s2">"subject"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">attachments</span></code> takes at most 5 entries and at most 18 MiB in total. <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> <code class="docutils literal notranslate"><span class="pre">recording</span></code> takes a recording id and <code class="docutils literal notranslate"><span class="pre">file</span></code> takes a storage file id (a file of type <code class="docutils literal notranslate"><span class="pre">talk</span></code>, <code class="docutils literal notranslate"><span class="pre">media</span></code> or <code class="docutils literal notranslate"><span class="pre">recording</span></code>). The LLM must use only ids that it was given in its instructions or by the caller and must not invent an id. A resource that does not exist or does not belong to your account makes the tool call fail and no email is sent.</p>
 </div>
 </section>
 <section id="send-message">

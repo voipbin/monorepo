@@ -879,7 +879,7 @@ Parameters
 * ``destinations`` (Array of Object): Array of destination addresses. See :ref:`Address <common-struct-address-address>`.
 * ``subject`` (String): Email subject line.
 * ``content`` (String): Email body content. Supports ``${variable}`` substitution.
-* ``attachments`` (Array of Object, optional): Attachments to include with the email.
+* ``attachments`` (Array of Object, optional): Attachments to include with the email, at most 5 and at most 18 MiB in total. Each is ``{"reference_type": "recording" | "file", "reference_id": "<uuid>"}`` and must belong to the customer of the flow. See :ref:`Attachment <email-struct-attachment>`.
 
 .. _flow-struct-action-external_media_start:
 

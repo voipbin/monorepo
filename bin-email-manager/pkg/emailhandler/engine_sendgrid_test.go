@@ -75,7 +75,7 @@ func newTestEngineSendgrid(t *testing.T, reqHandler requesthandler.RequestHandle
 
 func testSendgridEmail(attachments []email.Attachment) *email.Email {
 	return &email.Email{
-		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("5e8f0f0a-1111-4111-8111-000000000001")},
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("5e8f0f0a-1111-4111-8111-000000000001"), CustomerID: testAttachmentCustomerID},
 		Source: &commonaddress.Address{
 			Type:       commonaddress.TypeEmail,
 			Target:     "service@example.com",
@@ -191,7 +191,7 @@ func Test_engineSendgrid_Send_attachment(t *testing.T) {
 		{
 			name:        "unknown_reference_type",
 			attachments: []email.Attachment{{ReferenceType: email.AttachmentReferenceType("unknown"), ReferenceID: recordingID}},
-			expectErr:   "unknown attachment reference type",
+			expectErr:   "ATTACHMENT_REFERENCE_INVALID",
 		},
 	}
 
@@ -221,6 +221,7 @@ func Test_engineSendgrid_Send_attachment(t *testing.T) {
 			defer server.Close()
 
 			if tt.attachments[0].ReferenceType == email.AttachmentReferenceTypeRecording {
+				mockReq.EXPECT().StorageV1FileList(gomock.Any(), "", uint64(100), testRecordingFilters(testAttachmentCustomerID, recordingID)).Return(testRecordingFiles(testAttachmentCustomerID, 100, 200), nil)
 				if tt.lookupErr {
 					mockReq.EXPECT().StorageV1RecordingGet(gomock.Any(), recordingID, 60000).Return(nil, fmt.Errorf("lookup failed"))
 				} else {

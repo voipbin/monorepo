@@ -1597,7 +1597,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><code class="docutils literal notranslate"><span class="pre">destinations</span></code> (Array of Object): Array of destination addresses. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">subject</span></code> (String): Email subject line.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">content</span></code> (String): Email body content. Supports <code class="docutils literal notranslate"><span class="pre">${variable}</span></code> substitution.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">attachments</span></code> (Array of Object, optional): Attachments to include with the email.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">attachments</span></code> (Array of Object, optional): Attachments to include with the email, at most 5 and at most 18 MiB in total. Each is <code class="docutils literal notranslate"><span class="pre">{"reference_type":</span> <span class="pre">"recording"</span> <span class="pre">|</span> <span class="pre">"file",</span> <span class="pre">"reference_id":</span> <span class="pre">"&lt;uuid&gt;"}</span></code> and must belong to the customer of the flow. See <a class="reference internal" href="email_struct_attachment.html#email-struct-attachment"><span class="std std-ref">Attachment</span></a>.</p></li>
 </ul>
 </section>
 </section>

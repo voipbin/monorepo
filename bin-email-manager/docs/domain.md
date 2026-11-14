@@ -26,8 +26,16 @@ A file attachment linked to an email via a reference to `bin-storage-manager`.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `reference_type` | string | `recording` — links to a call recording |
-| `reference_id` | UUID | ID of the referenced resource (e.g. recording ID) |
+| `reference_type` | string | `recording` (a call recording) or `file` (a storage file of type `talk`, `media` or `recording`). Any other value, including empty, is refused. |
+| `reference_id` | UUID | Recording ID for `recording`, storage file ID for `file` |
+
+Rules checked by `Create` before anything is stored (`pkg/emailhandler/attachment.go`), with the limits as constants in that file:
+
+- At most 5 attachments, no duplicate (type, id), and the sum of the original sizes (`Filesize` of the files; for a recording the sum of its files) at most 18 MiB (18 MiB itself passes).
+- The attachment must belong to the customer of the email. A `file` must exist, not be deleted and have the customer id of the email; a `recording` is checked by listing its files with the customer id (empty list: not found; a list of 100 files is refused because it may be cut). A missing, deleted and foreign resource give the same answer (404 `ATTACHMENT_NOT_FOUND`).
+- A `file` of type `rag` or of an empty type is refused (400 `ATTACHMENT_FILE_TYPE_INVALID`). Other refusals are 400 (`ATTACHMENT_REFERENCE_INVALID`, `ATTACHMENT_DUPLICATE`, `ATTACHMENT_TOO_MANY`, `ATTACHMENT_TOO_LARGE`, `ATTACHMENT_SIZE_INVALID`).
+- All storage requests of the check share one deadline of 2 seconds. A storage error or the deadline gives 503 `ATTACHMENT_CHECK_UNAVAILABLE` and no email is created.
+- The `bin-storage-manager` download request of a recording does not take a customer, so the check here is the only ownership check. The engines check the attachment again when they send (a file deleted after `Create` is not attached).
 
 ## Key Business Rules
 
@@ -35,7 +43,7 @@ A file attachment linked to an email via a reference to `bin-storage-manager`.
 
 1. Email record created in database with status `initiated`.
 2. `email.EventTypeCreated` published.
-3. Attachments resolved: `emailhandler` calls `bin-storage-manager` to fetch file URLs.
+3. Attachments resolved by each provider engine when it sends: the attachment is checked again, then `emailhandler` calls `bin-storage-manager` to get a download URL (`StorageV1FileDownloadURIRefresh` for a `file`, `StorageV1RecordingGet` for a `recording`) and downloads the content. The attachment file name is the file name of the storage file without path parts (`<recording id>.zip` for a recording); a second attachment with the same name gets a `-1`, `-2` suffix.
 4. Provider failover loop attempts delivery:
    - Mailgun attempted first
    - SendGrid attempted if Mailgun fails

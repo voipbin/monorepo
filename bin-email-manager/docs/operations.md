@@ -7,7 +7,8 @@
 | Email not delivered | Status stays `initiated` | Both Mailgun and SendGrid APIs failing; check credentials |
 | Mailgun auth failure | Primary provider rejected; SendGrid is tried | stored `mailgun.api_key` invalid, expired or not configured (check `email-control config list`: source `db`, `has_secret` true) |
 | SendGrid auth failure | Fallback also fails; email stuck | stored `sendgrid.api_key` invalid, expired or not configured (check `email-control config list`: source `db`, `has_secret` true) |
-| Attachment failure | Email stays `initiated`; no provider sends it | `bin-storage-manager` RPC failed, recording not found or download failed |
+| Attachment failure | Email stays `initiated`; no provider sends it | `bin-storage-manager` RPC failed, recording or file not found or deleted after the email was created, or download failed |
+| Attachment refused | `POST /v1/emails` answers 400, 404 or 503 and no email is created | 400: more than 5 attachments, more than 18 MiB in total, duplicate, unknown `reference_type`, or a file of type `rag`; 404: the recording or file does not exist, is deleted or belongs to another customer; 503: storage did not answer within 2 seconds (the request can be retried) |
 | Webhook status not updated | Email stays at `initiated` or `processed` | `bin-hook-manager` not forwarding; or provider webhook URL misconfigured; or (Mailgun) the stored `mailgun.webhook_signing_key` empty or different from the key in the Mailgun account (look for `Rejected the mailgun webhook` warnings, which name the reason only) |
 | Cache stale | Old email data returned | Redis out of sync; restart clears cache |
 

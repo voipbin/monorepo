@@ -47,6 +47,11 @@ func (h *emailHandler) Create(
 		return nil, fmt.Errorf("customer identity verification required to send email")
 	}
 
+	// validate the attachments (owner, state, count and total size) before anything is created.
+	if err := validateAttachments(ctx, h.reqHandler, customerID, attachments); err != nil {
+		return nil, err
+	}
+
 	// validate balance before sending
 	valid, err := h.reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID, bmbilling.ReferenceTypeEmail, "", len(destinations))
 	if err != nil {

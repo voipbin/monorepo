@@ -4,7 +4,9 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	"context"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -299,6 +301,49 @@ func Test_v1EmailsPost(t *testing.T) {
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+// The refusal of an attachment reaches the caller with its own status code, not as a bad request.
+func Test_v1EmailsPost_attachmentErrors(t *testing.T) {
+	tests := []struct {
+		name string
+
+		responseErr error
+
+		expectStatus int
+	}{
+		{"invalid_argument", cerrors.InvalidArgument(commonoutline.ServiceNameEmailManager, "ATTACHMENT_TOO_MANY", "too many"), 400},
+		{"not_found", cerrors.NotFound(commonoutline.ServiceNameEmailManager, "ATTACHMENT_NOT_FOUND", "not found"), 404},
+		{"unavailable", cerrors.Unavailable(commonoutline.ServiceNameEmailManager, "ATTACHMENT_CHECK_UNAVAILABLE", "unavailable"), 503},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockEmail := emailhandler.NewMockEmailHandler(mc)
+			h := &listenHandler{
+				sockHandler:  sockhandler.NewMockSockHandler(mc),
+				emailHandler: mockEmail,
+			}
+
+			mockEmail.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, tt.responseErr)
+
+			res, err := h.processRequest(&sock.Request{
+				URI:      "/v1/emails",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"ad4682ec-00c8-11f0-8781-af3ef9b0ddfe","destinations":[{"type":"email","target":"test@voipbin.net"}],"subject":"s","content":"c","attachments":[{"reference_type":"file","reference_id":"ad9dee1a-00c8-11f0-b90b-1be758235eec"}]}`),
+			})
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res.StatusCode != tt.expectStatus {
+				t.Errorf("Wrong status. expect: %d, got: %d", tt.expectStatus, res.StatusCode)
 			}
 		})
 	}

@@ -16,14 +16,14 @@ This service has **no SubscribeHandler** and subscribes to no external events. P
 
 | Target Service | When | Purpose |
 |----------------|------|---------|
-| `bin-storage-manager` | During email send (if attachments present) | Fetch file URLs for attachment resolution |
+| `bin-storage-manager` | In `Create` and when the email is sent (if attachments present) | Check the owner, state and size of each attachment (`StorageV1FileGet` for a file, `StorageV1FileList` with the customer id for a recording) and fetch the download URL (`StorageV1FileDownloadURIRefresh`, `StorageV1RecordingGet`) |
 
 ## Local Monorepo Dependencies
 
 | Module | Purpose |
 |--------|---------|
 | `monorepo/bin-common-handler` | sockhandler, requesthandler, notifyhandler, databasehandler |
-| `monorepo/bin-storage-manager` | BucketFile models for attachment resolution |
+| `monorepo/bin-storage-manager` | File and BucketFile models for attachment checks and resolution |
 | `monorepo/bin-billing-manager` | Billing models (indirect dependency) |
 | `monorepo/bin-agent-manager` | Agent models (indirect dependency) |
 | `monorepo/bin-call-manager` | Call models (indirect dependency) |

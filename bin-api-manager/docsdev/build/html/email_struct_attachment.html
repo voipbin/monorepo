@@ -663,7 +663,7 @@
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The type of resource this attachment references. See <a class="reference internal" href="#email-struct-attachment-type"><span class="std std-ref">Type</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The unique identifier of the referenced resource. For example, if <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> is <code class="docutils literal notranslate"><span class="pre">recording</span></code>, this is the recording’s ID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The unique identifier of the referenced resource. If <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> is <code class="docutils literal notranslate"><span class="pre">recording</span></code>, this is the recording’s ID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>. If it is <code class="docutils literal notranslate"><span class="pre">file</span></code>, this is the storage file’s ID obtained from <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage_files</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files</span></code>. The resource must belong to the customer that sends the email.</p></li>
 </ul>
 </section>
 <section id="type">
@@ -681,11 +681,15 @@
 <td><p>No type set. Default when no reference is specified.</p></td>
 </tr>
 <tr class="row-odd"><td><p>recording</p></td>
-<td><p>A call recording file. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> corresponds to a recording ID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>.</p></td>
+<td><p>A call recording file. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> corresponds to a recording ID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>. The files of the recording are attached as one zip file.</p></td>
+</tr>
+<tr class="row-even"><td><p>file</p></td>
+<td><p>A storage file of type <code class="docutils literal notranslate"><span class="pre">talk</span></code>, <code class="docutils literal notranslate"><span class="pre">media</span></code> or <code class="docutils literal notranslate"><span class="pre">recording</span></code>. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> corresponds to a storage file ID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files</span></code>. Files of type <code class="docutils literal notranslate"><span class="pre">rag</span></code> are refused.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<p>An email can have at most 5 attachments, and the total size of the original files can be at most 18 MiB.</p>
 </section>
 </section>
 

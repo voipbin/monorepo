@@ -138,18 +138,18 @@ run_llm: Set true to confirm ("I've sent that to your email"), false for silent 
 				},
 				"attachments": map[string]any{
 					"type":        "array",
-					"description": "Optional list of attachments",
+					"description": "Optional list of attachments, at most 5 and at most 18 MiB in total. Each one must belong to the customer. Never invent an id.",
 					"items": map[string]any{
 						"type": "object",
 						"properties": map[string]any{
 							"reference_type": map[string]any{
 								"type":        "string",
-								"enum":        []string{"recording"},
-								"description": "Type of attachment reference",
+								"enum":        []string{"recording", "file"},
+								"description": "Type of attachment reference: recording (a call recording) or file (a storage file of type talk, media or recording)",
 							},
 							"reference_id": map[string]any{
 								"type":        "string",
-								"description": "UUID of the referenced object to attach",
+								"description": "UUID of the recording (for recording) or of the storage file (for file) to attach",
 							},
 						},
 						"required": []string{"reference_type", "reference_id"},

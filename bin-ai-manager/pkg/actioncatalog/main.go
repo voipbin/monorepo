@@ -163,7 +163,7 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Email recipients. type is email."},
 		{Name: "subject", Type: "string", Required: true, Description: "Email subject."},
 		{Name: "content", Type: "string", Required: true, Description: "Email body (HTML or plain text)."},
-		{Name: "attachments", Type: "array of attachment objects {reference_type,reference_id}", Required: false, Description: "Optional attachments."},
+		{Name: "attachments", Type: "array of attachment objects {reference_type,reference_id}", Required: false, Description: "Optional attachments, at most 5 and at most 18 MiB in total. reference_type is recording (reference_id is a recording id) or file (reference_id is a storage file id of type talk, media or recording). Each must belong to the customer."},
 	}},
 	{Type: fmaction.TypeExternalMediaStart, Summary: "Start streaming external media (advanced/infra).", Options: []actionOptionField{
 		{Name: "external_host", Type: "string", Required: true, Description: "External media target host address."},
