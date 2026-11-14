@@ -2052,6 +2052,194 @@ func Test_getPipecatcallMessages(t *testing.T) {
 			},
 		},
 		{
+			// VOIP-1733. The rows are returned in stored order and getPipecatcallMessages does not reorder
+			// them: bin-pipecat-manager restores "result directly after its call" before the provider
+			// sees the history. A notification row stored between a call row and its result row is only
+			// skipped, so the call and the result stay next to each other in the output.
+			name: "notification row between a tool call and its result is skipped",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c1733000-0001-11f0-8888-000000000001"),
+				},
+			},
+
+			// newest-first
+			responseMessages: []*message.Message{
+				{Role: message.RoleAssistant, Content: "Your booking is confirmed."},
+				{Role: message.RoleTool, Content: `{"result":"success"}`, ToolCallID: "call_get_1"},
+				{Role: message.RoleNotification, Content: `{"type":"member_switched"}`},
+				{
+					Role: message.RoleAssistant,
+					ToolCalls: []message.ToolCall{
+						{
+							ID:   "call_get_1",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      "get_variables",
+								Arguments: `{}`,
+							},
+						},
+					},
+				},
+				{Role: message.RoleUser, Content: "Check my booking."},
+			},
+			expectRes: []map[string]any{
+				{"role": "user", "content": "Check my booking."},
+				{
+					"role":    "assistant",
+					"content": "",
+					"tool_calls": []message.ToolCall{
+						{
+							ID:   "call_get_1",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      "get_variables",
+								Arguments: `{}`,
+							},
+						},
+					},
+				},
+				{"role": "tool", "content": `{"result":"success"}`, "tool_call_id": "call_get_1"},
+				{"role": "assistant", "content": "Your booking is confirmed."},
+			},
+		},
+		{
+			// VOIP-1733. A bot sentence stored between an emit_info_card call row and its result row
+			// (the order that makes the provider reject the history) is passed through in stored
+			// order, and both emit_info_card transformations still apply: the call arguments are
+			// replaced by the placeholder and the result loses its "blocks" key.
+			name: "sentence stored between a card call and its result keeps stored order and both transformations",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c1733000-0002-11f0-8888-000000000001"),
+				},
+			},
+
+			// newest-first
+			responseMessages: []*message.Message{
+				{Role: message.RoleAssistant, Content: "Here is the summary."},
+				{
+					Role:       message.RoleTool,
+					Content:    `{"result":"success","blocks":[{"type":"info","title":"Contact Summary"}]}`,
+					ToolCallID: "call_card_2",
+				},
+				{Role: message.RoleAssistant, Content: "I'll show you now."},
+				{
+					Role: message.RoleAssistant,
+					ToolCalls: []message.ToolCall{
+						{
+							ID:   "call_card_2",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      "emit_info_card",
+								Arguments: `{"title":"Contact Summary"}`,
+							},
+						},
+					},
+				},
+				{Role: message.RoleUser, Content: "Show the summary."},
+			},
+			expectRes: []map[string]any{
+				{"role": "user", "content": "Show the summary."},
+				{
+					"role":    "assistant",
+					"content": "",
+					"tool_calls": []message.ToolCall{
+						{
+							ID:   "call_card_2",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      "emit_info_card",
+								Arguments: `{}`,
+							},
+						},
+					},
+				},
+				{"role": "assistant", "content": "I'll show you now."},
+				{"role": "tool", "content": `{"result":"success"}`, "tool_call_id": "call_card_2"},
+				{"role": "assistant", "content": "Here is the summary."},
+			},
+		},
+		{
+			// VOIP-1733. MCP tools ("mcp_" prefix) and built-in tools in one turn: ids, names and
+			// arguments pass through unchanged, and no row is dropped or reordered on this side.
+			name: "mcp_ and built-in tool call rows pass through with ids and arguments unchanged",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c1733000-0003-11f0-8888-000000000001"),
+				},
+			},
+
+			// newest-first
+			responseMessages: []*message.Message{
+				{Role: message.RoleTool, Content: `{"result":"success"}`, ToolCallID: "call_set_1"},
+				{Role: message.RoleTool, Content: `{"result":"success","items":2}`, ToolCallID: "call_mcp_1"},
+				{
+					Role: message.RoleAssistant,
+					ToolCalls: []message.ToolCall{
+						{
+							ID:   "call_set_1",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      "set_variables",
+								Arguments: `{"variables":{"choice":"A"}}`,
+							},
+						},
+					},
+				},
+				{
+					Role: message.RoleAssistant,
+					ToolCalls: []message.ToolCall{
+						{
+							ID:   "call_mcp_1",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      "mcp_search_flights",
+								Arguments: `{"from":"X","to":"Y"}`,
+							},
+						},
+					},
+				},
+				{Role: message.RoleUser, Content: "Find flights and save my choice."},
+			},
+			expectRes: []map[string]any{
+				{"role": "user", "content": "Find flights and save my choice."},
+				{
+					"role":    "assistant",
+					"content": "",
+					"tool_calls": []message.ToolCall{
+						{
+							ID:   "call_mcp_1",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      "mcp_search_flights",
+								Arguments: `{"from":"X","to":"Y"}`,
+							},
+						},
+					},
+				},
+				{
+					"role":    "assistant",
+					"content": "",
+					"tool_calls": []message.ToolCall{
+						{
+							ID:   "call_set_1",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      "set_variables",
+								Arguments: `{"variables":{"choice":"A"}}`,
+							},
+						},
+					},
+				},
+				{"role": "tool", "content": `{"result":"success","items":2}`, "tool_call_id": "call_mcp_1"},
+				{"role": "tool", "content": `{"result":"success"}`, "tool_call_id": "call_set_1"},
+			},
+		},
+		{
 			// VOIP-1484. Rows older than the session boundary are dropped from
 			// BOTH fetches, and the boundary row itself (TMCreate == boundary,
 			// the first system row the refresh wrote) is KEPT -- dropping it
