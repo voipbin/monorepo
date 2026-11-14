@@ -167,7 +167,7 @@ Window cut and `deleted` rows are as in 1.3: only the fetched rows are reordered
 
 `message_filters.py`: new `_restore_tool_adjacency(candidates)` (steps A to C of 2.3); `_repair_idless_pairs`
 adjacency relaxed; `filter_valid_messages` becomes repair id-less, restore adjacency, then the existing
-two-pass pairing. Linear with an index of result rows by id. The red input of the defect test is the
+two-pass pairing. Claiming scans the later rows of each call, so it is O(n^2) in the worst case; the replayed window is a few hundred rows at most, so this is not a concern. The red input of the defect test is the
 hypothesised stored order of 1.1; the same tests also cover the other shapes of 1.3, which do not depend on that hypothesis.
 
 An existing test changes: `test_ambiguous_idless_rows_are_all_dropped`, case `"text between call and
@@ -257,7 +257,7 @@ Python function names are the ones of the 3.3 table (file `scripts/pipecat/test_
 | S9 | orphan result | existing `test_drops_orphaned_tool_result`, `test_result_before_its_call_is_dropped` |
 | S10 | window cut | existing `test_partial_pairing_drops_both`, `test_no_wrong_pairing_for_window_cut_alone_or_lost_results_alone` (id-less) + `test_id_bearing_window_cut_drops_only_the_orphan_result` |
 | S11 | non-LLM role between call and result | existing Go case `filters out notification role messages` (skip) + new Go case named `notification row between a tool call and its result is skipped` + Python `test_user_row_between_call_and_result_moves_after_result`, `test_idless_pair_with_user_row_between_is_kept` |
-| S12 | listen-internal rows | Go `Test_getPipecatcallMessages_TwoFetch` (start_test.go:6143), which pins the `origin != listen_internal` filter of the second fetch (helper `pipecatRestMessageFilters`). The exclusion is an SQL filter, so no such row reaches Python; no new test |
+| S12 | listen-internal rows | Go `Test_getPipecatcallMessages_TwoFetch` , which pins the `origin != listen_internal` filter of the second fetch (helper `pipecatRestMessageFilters`). The exclusion is an SQL filter, so no such row reaches Python; no new test |
 | S13 | `emit_info_card` blocks and args | Go existing `strips blocks from role:tool message content on history rebuild`, `neuters emit_info_card tool_calls Arguments while keeping the entry`, `full card turn: strips blocks and neuters tool_calls together` + new Go case `sentence stored between a card call and its result keeps stored order and both transformations`; Python `test_card_call_and_result_pass_through_unchanged` |
 | S14 | MCP and built-in mixed | Python `test_parallel_rows_with_sentence_mixed_tool_names` + new Go case `mcp_ and built-in tool call rows pass through with ids and arguments unchanged` |
 | S15 | idempotent, input unchanged | `test_filter_is_idempotent_and_does_not_mutate_input` |
