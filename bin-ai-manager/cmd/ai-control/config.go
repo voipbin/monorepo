@@ -72,8 +72,8 @@ the customer and is stored on the AI.
 All keys are stored in the database only; a key that is cleared is not configured. The OAuth app of
 a vendor is configured when its client_secret and client_id are both stored; a vendor whose app is
 not stored refuses a connection with MCP_OAUTH_VENDOR_NOT_CONFIGURED. Store the client_id before
-the client_secret, and clear both. A change is used by the next call, with no restart. The daemon applies the table migration at its start; on a
-local database run "migrate up" first. The master key list is read from the environment
+the client_secret, and clear both. A change is used by the next call, with no restart. The daemon
+applies the table migration at its start; on a local database run "migrate up" first. The master key list is read from the environment
 (AI_CONFIG_ENCRYPTION_KEYS) and is never a flag. These commands need the database and the master
 key list only; they do not validate the rest of the configuration.`,
 	}
