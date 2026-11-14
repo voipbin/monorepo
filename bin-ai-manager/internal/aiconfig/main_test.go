@@ -98,7 +98,7 @@ func Test_Supplier_noRowIsNoneWhateverTheOldEnvironmentHolds(t *testing.T) {
 	}
 }
 
-// The LLM keys of the registry have no environment name. A handler built straight from it with a
+// No key of the registry has an environment name. A handler built straight from it with a
 // lookup that serves the old variable names still resolves none without a row, and a stored row
 // wins when the lookup serves a value.
 func Test_registry_lookupWithOldNamesIsNotUsed(t *testing.T) {
@@ -157,11 +157,9 @@ func Test_registry_lookupWithOldNamesIsNotUsed(t *testing.T) {
 		})
 	}
 
-	// Only the MCP OAuth keys declare an environment name. The names of the LLM keys are never asked.
-	for _, name := range asked {
-		if !strings.HasPrefix(name, "MCP_OAUTH_") {
-			t.Errorf("Wrong match. expect: only MCP_OAUTH_ names asked, got: %q", name)
-		}
+	// No key declares an environment name, so no variable name is ever asked.
+	if len(asked) != 0 {
+		t.Errorf("Wrong match. expect: no environment name asked, got: %v", asked)
 	}
 }
 

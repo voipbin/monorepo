@@ -111,9 +111,9 @@ func Test_processRequest_configs(t *testing.T) {
 	names := []string{}
 	for _, k := range service.Keys {
 		names = append(names, k.Key)
-		// The LLM keys have no environment name; the MCP OAuth keys have one each.
+		// No key has an environment name.
 		isMCP := strings.HasPrefix(k.Key, "mcp_oauth.")
-		if k.Description == "" || (k.EnvName != "") != isMCP || (k.Kind != "secret" && (!isMCP || k.Kind != "param")) {
+		if k.Description == "" || k.EnvName != "" || (k.Kind != "secret" && (!isMCP || k.Kind != "param")) {
 			t.Errorf("Wrong match. got: %+v", k)
 		}
 	}

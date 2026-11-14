@@ -69,12 +69,10 @@ and Gemini) and the OAuth apps (client_id and client_secret) of the MCP vendors.
 settings. They are not the engine key of a customer AI ("ai create --engine-key"), which belongs to
 the customer and is stored on the AI.
 
-The LLM keys are stored in the database only; a key that is cleared is not configured. The OAuth app
-of a vendor is read from the database when its client_secret is stored, and from the environment of
-the daemon (MCP_OAUTH_<VENDOR>_CLIENT_ID and _CLIENT_SECRET) otherwise. Store the client_id before the
-client_secret, and clear both. "list" reads the environment of this process, not the one of the
-daemon, so an app that the daemon reads from its environment can show as none here. A change is
-used by the next call, with no restart. The daemon applies the table migration at its start; on a
+All keys are stored in the database only; a key that is cleared is not configured. The OAuth app of
+a vendor is configured when its client_secret and client_id are both stored; a vendor whose app is
+not stored refuses a connection with MCP_OAUTH_VENDOR_NOT_CONFIGURED. Store the client_id before
+the client_secret, and clear both. A change is used by the next call, with no restart. The daemon applies the table migration at its start; on a
 local database run "migrate up" first. The master key list is read from the environment
 (AI_CONFIG_ENCRYPTION_KEYS) and is never a flag. These commands need the database and the master
 key list only; they do not validate the rest of the configuration.`,

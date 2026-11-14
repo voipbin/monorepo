@@ -10,9 +10,8 @@ import (
 )
 
 // mcpOAuthCredentials adapts the config handler to the function the MCP OAuth handler calls each
-// time a request needs the OAuth app of a vendor. It adds nothing: the pair comes from one source
-// (database when the client_secret has a row, environment otherwise), and an error is passed on as
-// it is, so a failed read is never answered with an environment value.
+// time a request needs the OAuth app of a vendor. It adds nothing: the pair comes from the database
+// only, and an error is passed on as it is, so a failed read is never answered with an empty value.
 func mcpOAuthCredentials(h confighandler.Handler) mcpoauthhandler.CredentialsFunc {
 	return func(ctx context.Context, vendor string) (mcpoauthhandler.Credentials, error) {
 		id, secret, err := aiconfig.MCPOAuthClient(ctx, h, vendor)

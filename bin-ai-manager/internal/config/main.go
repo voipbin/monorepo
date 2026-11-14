@@ -114,8 +114,7 @@ type Config struct {
 
 	// The MCP OAuth app credentials of the vendors are not fields of this
 	// struct: they are config keys (internal/configkeys, "mcp_oauth.<vendor>.*")
-	// read per request through internal/aiconfig, from the database or from the
-	// MCP_OAUTH_<VENDOR>_CLIENT_{ID,SECRET} environment variables.
+	// read per request through internal/aiconfig, from the database only.
 
 	// Assistant Builder (docs/plans/2026-10-01-conversational-assistant-builder-design.md
 	// 4.6). There is no on/off setting; it is available when the key is set. The model, reasoning effort, token cap, concurrency

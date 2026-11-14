@@ -35,9 +35,9 @@ func Test_mcpOAuthVendorsMatchTheHandler(t *testing.T) {
 	}
 }
 
-// The adapter reads the real config handler: no row and an environment pair gives the environment
-// pair, a stored pair gives the stored pair, and a stored client_secret without a client_id is an
-// error that does not fall back to the environment.
+// The adapter reads the real config handler: no row gives an empty pair even with an environment
+// pair set (the environment is not read), a stored pair gives the stored pair, and a stored
+// client_secret without a client_id is an error.
 func Test_mcpOAuthCredentials(t *testing.T) {
 	t.Setenv("MCP_OAUTH_ASANA_CLIENT_ID", "env-id")
 	t.Setenv("MCP_OAUTH_ASANA_CLIENT_SECRET", "env-secret")
@@ -50,8 +50,8 @@ func Test_mcpOAuthCredentials(t *testing.T) {
 	ctx := context.Background()
 
 	got, err := fn(ctx, mcpoauthhandler.VendorAsana)
-	if err != nil || got != (mcpoauthhandler.Credentials{ClientID: "env-id", ClientSecret: "env-secret"}) {
-		t.Errorf("Wrong match. expect: the environment pair, got: %+v %v", got, err)
+	if err != nil || got != (mcpoauthhandler.Credentials{}) {
+		t.Errorf("Wrong match. expect: an empty pair although the environment is set, got: %+v %v", got, err)
 	}
 
 	// Not configured: an empty pair and no error.
@@ -83,7 +83,7 @@ func Test_mcpOAuthCredentials(t *testing.T) {
 	}
 }
 
-// A read error is passed on as ErrKeyUnavailable and never turned into the environment pair.
+// A read error is passed on as ErrKeyUnavailable and never turned into an empty pair.
 func Test_mcpOAuthCredentials_readErrorIsPassedOn(t *testing.T) {
 	t.Setenv("MCP_OAUTH_GITHUB_CLIENT_ID", "env-id")
 	t.Setenv("MCP_OAUTH_GITHUB_CLIENT_SECRET", "env-secret")

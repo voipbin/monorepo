@@ -37,7 +37,7 @@ cmd/ai-manager/main.go
 | Domain | `pkg/toolhandler` | LLM tool definitions; dispatches tool calls to downstream managers |
 | Engine | `pkg/engine_openai_handler` | OpenAI Chat Completions API (also Grok via base URL override) |
 | Engine | `pkg/engine_dialogflow_handler` | Google Dialogflow CX/ES |
-| Config | `internal/aiconfig`, `internal/configkeys`, `pkg/dbhandler/config_store.go` | Stored platform LLM keys (encrypted, database only) and the MCP OAuth app of each vendor (`client_id` and `client_secret`, database when the `client_secret` is stored, environment otherwise). `aiconfig.KeyForBaseURL` and `GeminiKey` return a function that reads the key when it is called (nothing is cached); the engines, the Gemini handlers and the Builder availability check call it per request. `aiconfig.MCPOAuthClient` resolves the pair of a vendor for `pkg/mcpoauthhandler` (through the `CredentialsFunc` wired in `cmd/ai-manager`) at the time of use |
+| Config | `internal/aiconfig`, `internal/configkeys`, `pkg/dbhandler/config_store.go` | Stored platform LLM keys (encrypted, database only) and the MCP OAuth app of each vendor (`client_id` and `client_secret`, database only; a vendor without a stored pair is not configured). `aiconfig.KeyForBaseURL` and `GeminiKey` return a function that reads the key when it is called (nothing is cached); the engines, the Gemini handlers and the Builder availability check call it per request. `aiconfig.MCPOAuthClient` resolves the pair of a vendor for `pkg/mcpoauthhandler` (through the `CredentialsFunc` wired in `cmd/ai-manager`) at the time of use |
 | Data | `pkg/dbhandler` | MySQL CRUD via Squirrel SQL builder |
 | Data | `pkg/cachehandler` | Redis cache for AI/AIcall lookups |
 

@@ -410,6 +410,12 @@ Reasons fired by MCP server endpoints (``/mcpservers``, ``/mcpservers/{id}``, ``
    * - ``MCP_OAUTH_VENDOR_UNAVAILABLE``
      - 500
      - The flow was started against a vendor that is no longer configured on the platform, so the pending authorization can no longer be completed. This is a platform-side condition, not a malformed request. **Fix:** Start the flow again with a currently supported vendor; if it recurs, contact support@voipbin.net.
+   * - ``MCP_OAUTH_VENDOR_NOT_CONFIGURED``
+     - 500
+     - ``POST /mcpservers/oauth/start`` or ``POST /mcpservers/oauth/complete`` was called for a vendor whose OAuth app is not stored on the platform (the client ID and client secret are both required), so the connection can neither start nor complete. Nothing is created: no authorization URL is returned, and a pending authorization is kept. This is a platform-side condition, not a malformed request. **Fix:** Try again later or choose another vendor; if it persists, contact support@voipbin.net.
+   * - ``MCP_OAUTH_CREDENTIALS_UNAVAILABLE``
+     - 500
+     - The OAuth app of the vendor could not be read, or is stored incompletely, so the connection can neither start nor complete. A failed read is not counted against the connected server, and the next request tries again. This is a platform-side condition, not a malformed request. **Fix:** Retry; if it recurs, contact support@voipbin.net.
    * - ``MCP_OAUTH_STATE_NOT_FOUND``
      - 404
      - The ``state`` (the ``link_token`` from ``POST /mcpservers/oauth/start``) is not usable. It is deliberately indistinguishable between unknown, already used, expired, and belonging to another customer, so that the token cannot be probed. A token is single-use and expires 10 minutes after it is issued, so a consent screen left open past that window ends here. **Fix:** Call ``POST /mcpservers/oauth/start`` again for a fresh token and complete the flow without a long pause.

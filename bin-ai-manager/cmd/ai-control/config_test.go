@@ -119,11 +119,11 @@ func Test_config_list_ignoresOldEnvironment(t *testing.T) {
 	}
 }
 
-// The MCP OAuth keys declare an environment name, so this process shows them as env when its own
-// environment holds them. The daemon reads its own environment, which may differ from the one of
-// the process that runs the command, so a key can be none here and env in the daemon.
-func Test_config_list_showsMcpOAuthEnvironment(t *testing.T) {
+// The MCP OAuth keys declare no environment name either: with their old variables exported, every
+// key is still none and no value or environment field is shown.
+func Test_config_list_ignoresMcpOAuthEnvironment(t *testing.T) {
 	t.Setenv("MCP_OAUTH_GITHUB_CLIENT_ID", "synthetic-env-id")
+	t.Setenv("MCP_OAUTH_GITHUB_CLIENT_SECRET", "synthetic-env-secret")
 
 	_, out := useConfigHarness(t, &config.Config{ConfigEncryptionKeys: testMasterKeys()}, "")
 	if err := runConfigCommand("list"); err != nil {
@@ -131,8 +131,23 @@ func Test_config_list_showsMcpOAuthEnvironment(t *testing.T) {
 	}
 
 	s := out.String()
-	if strings.Count(s, `"source": "env"`) != 1 || strings.Count(s, `"source": "none"`) != 9 || strings.Contains(s, "synthetic-env-id") {
-		t.Errorf("Wrong match. expect: one key with source env and no value, got: %s", s)
+	if strings.Count(s, `"source": "none"`) != 10 || strings.Contains(s, `"source": "env"`) || strings.Contains(s, "env_name") ||
+		strings.Contains(s, `"env_shadowed": true`) || strings.Contains(s, "synthetic-env") {
+		t.Errorf("Wrong match. expect: ten keys with source none and no env fields or values, got: %s", s)
+	}
+}
+
+// The help text of the config command no longer describes an environment fallback, and names the
+// error of a vendor whose app is not stored.
+func Test_config_helpTextHasNoEnvironmentFallback(t *testing.T) {
+	long := cmdConfig().Long
+	for _, s := range []string{"environment of this process", "environment of\nthe daemon", "MCP_OAUTH_<VENDOR>_CLIENT"} {
+		if strings.Contains(long, s) {
+			t.Errorf("Wrong match. expect: no %q in the help text", s)
+		}
+	}
+	if !strings.Contains(long, "MCP_OAUTH_VENDOR_NOT_CONFIGURED") {
+		t.Error("Wrong match. expect: the not configured reason in the help text")
 	}
 }
 

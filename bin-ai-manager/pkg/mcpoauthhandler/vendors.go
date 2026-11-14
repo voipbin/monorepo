@@ -5,6 +5,9 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 // vendorMeta is one entry of the hand-coded, static vendor catalog
@@ -25,9 +28,10 @@ type Credentials struct {
 }
 
 // CredentialsFunc resolves the Credentials of a vendor at the time of use.
-// An empty pair with no error means "not configured". An error is a failed
-// read or a pair that is stored incompletely; it must never be answered with
-// a value from another source.
+// An empty pair with no error means "not configured": Start and Complete
+// fail closed on it (MCP_OAUTH_VENDOR_NOT_CONFIGURED), the refresh exchange
+// does not. An error is a failed read or a pair that is stored incompletely;
+// it must never be answered with a value from another source.
 type CredentialsFunc func(ctx context.Context, vendor string) (Credentials, error)
 
 // credentialResolveTimeout bounds the resolution made by the detached refresh
@@ -39,6 +43,17 @@ const credentialResolveTimeout = 2 * time.Second
 type vendorConfig struct {
 	vendorMeta
 	Credentials
+}
+
+// configured reports whether the resolved app can be used: both values are present.
+func (vc vendorConfig) configured() bool {
+	return vc.ClientID != "" && vc.ClientSecret != ""
+}
+
+// notConfiguredError is the error of a vendor whose app is not stored. It is a platform side
+// condition (the customer can not fix it) and carries no value.
+func notConfiguredError() error {
+	return cerrors.Internal(commonoutline.ServiceNameAIManager, "MCP_OAUTH_VENDOR_NOT_CONFIGURED", "the oauth app of the vendor is not configured")
 }
 
 // errUnknownVendor is returned for a vendor that is not in the catalog.

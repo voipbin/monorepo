@@ -26,20 +26,19 @@ func Test_goldenKinds(t *testing.T) {
 		kind   confighandler.Kind
 		typ    confighandler.Type
 		maxLen int
-		env    string
 		group  string
 		atomic bool
 	}{
-		{"llm.openai_compat.api_key", confighandler.KindSecret, confighandler.TypeString, 512, "", "", false},
-		{"llm.gemini.api_key", confighandler.KindSecret, confighandler.TypeString, 512, "", "", false},
-		{"mcp_oauth.github.client_secret", confighandler.KindSecret, confighandler.TypeString, 512, "MCP_OAUTH_GITHUB_CLIENT_SECRET", "mcp_oauth.github", true},
-		{"mcp_oauth.github.client_id", confighandler.KindParam, confighandler.TypeString, 256, "MCP_OAUTH_GITHUB_CLIENT_ID", "mcp_oauth.github", true},
-		{"mcp_oauth.linear.client_secret", confighandler.KindSecret, confighandler.TypeString, 512, "MCP_OAUTH_LINEAR_CLIENT_SECRET", "mcp_oauth.linear", true},
-		{"mcp_oauth.linear.client_id", confighandler.KindParam, confighandler.TypeString, 256, "MCP_OAUTH_LINEAR_CLIENT_ID", "mcp_oauth.linear", true},
-		{"mcp_oauth.asana.client_secret", confighandler.KindSecret, confighandler.TypeString, 512, "MCP_OAUTH_ASANA_CLIENT_SECRET", "mcp_oauth.asana", true},
-		{"mcp_oauth.asana.client_id", confighandler.KindParam, confighandler.TypeString, 256, "MCP_OAUTH_ASANA_CLIENT_ID", "mcp_oauth.asana", true},
-		{"mcp_oauth.hubspot.client_secret", confighandler.KindSecret, confighandler.TypeString, 512, "MCP_OAUTH_HUBSPOT_CLIENT_SECRET", "mcp_oauth.hubspot", true},
-		{"mcp_oauth.hubspot.client_id", confighandler.KindParam, confighandler.TypeString, 256, "MCP_OAUTH_HUBSPOT_CLIENT_ID", "mcp_oauth.hubspot", true},
+		{"llm.openai_compat.api_key", confighandler.KindSecret, confighandler.TypeString, 512, "", false},
+		{"llm.gemini.api_key", confighandler.KindSecret, confighandler.TypeString, 512, "", false},
+		{"mcp_oauth.github.client_secret", confighandler.KindSecret, confighandler.TypeString, 512, "mcp_oauth.github", true},
+		{"mcp_oauth.github.client_id", confighandler.KindParam, confighandler.TypeString, 256, "mcp_oauth.github", true},
+		{"mcp_oauth.linear.client_secret", confighandler.KindSecret, confighandler.TypeString, 512, "mcp_oauth.linear", true},
+		{"mcp_oauth.linear.client_id", confighandler.KindParam, confighandler.TypeString, 256, "mcp_oauth.linear", true},
+		{"mcp_oauth.asana.client_secret", confighandler.KindSecret, confighandler.TypeString, 512, "mcp_oauth.asana", true},
+		{"mcp_oauth.asana.client_id", confighandler.KindParam, confighandler.TypeString, 256, "mcp_oauth.asana", true},
+		{"mcp_oauth.hubspot.client_secret", confighandler.KindSecret, confighandler.TypeString, 512, "mcp_oauth.hubspot", true},
+		{"mcp_oauth.hubspot.client_id", confighandler.KindParam, confighandler.TypeString, 256, "mcp_oauth.hubspot", true},
 	}
 
 	keys := Keys()
@@ -54,8 +53,11 @@ func Test_goldenKinds(t *testing.T) {
 		if k.Default != nil {
 			t.Errorf("Wrong match. %s must have no default", k.Name)
 		}
-		if k.Env != e.env || k.Group != e.group || k.Atomic != e.atomic {
-			t.Errorf("Wrong match. key %d expect: env %q group %q atomic %v, got: %q %q %v", i, e.env, e.group, e.atomic, k.Env, k.Group, k.Atomic)
+		if k.Env != "" {
+			t.Errorf("Wrong match. %s expect: no environment name, got: %q", k.Name, k.Env)
+		}
+		if k.Group != e.group || k.Atomic != e.atomic {
+			t.Errorf("Wrong match. key %d expect: group %q atomic %v, got: %q %v", i, e.group, e.atomic, k.Group, k.Atomic)
 		}
 		if k.Sensitive {
 			t.Errorf("Wrong match. %s must not be sensitive", k.Name)
