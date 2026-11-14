@@ -23,11 +23,12 @@ pytest.importorskip("pipecat.flows")
 
 HERE = os.path.dirname(__file__)
 sys.path.insert(0, os.path.abspath(os.path.join(HERE, "..", "pipecat")))
-for k in ("DEEPGRAM_API_KEY", "CARTESIA_API_KEY", "ELEVENLABS_API_KEY", "GOOGLE_API_KEY", "OPENAI_API_KEY"):
-    os.environ.setdefault(k, "x")
 warnings.simplefilter("ignore")
 
 import run  # noqa: E402
+
+# The factories take the vendor keys from the request only (never from the environment).
+KEYS = {run.PK_CARTESIA: "x", run.PK_ELEVENLABS: "x", run.PK_DEEPGRAM: "x"}
 import team_flow, routing_llm, routing_stt, routing_tts, main, tools, task, message_filters, gemini_tool_filter  # noqa
 import pipecat.services.deepgram.stt as dgmod  # noqa: E402
 from pipecat.services.deepgram.stt import DeepgramSTTService, LiveOptions  # noqa: E402
@@ -47,9 +48,9 @@ def test_settings_pins(monkeypatch):
     import pipecat.services.google.tts as gtts
 
     monkeypatch.setattr(gtts, "default", lambda *a, **k: (AnonymousCredentials(), "test-project"))
-    dg = run.create_stt_service("deepgram", language="en")
-    ca = run.create_tts_service("cartesia", voice_id="v")
-    el = run.create_tts_service("elevenlabs", voice_id="v")
+    dg = run.create_stt_service("deepgram", language="en", platform_keys=KEYS)
+    ca = run.create_tts_service("cartesia", voice_id="v", platform_keys=KEYS)
+    el = run.create_tts_service("elevenlabs", voice_id="v", platform_keys=KEYS)
     go = run.create_tts_service("google", voice_id="en-US-Chirp3-HD-Charon")
     kw = dg._build_connect_kwargs()
     assert str(kw.get("profanity_filter")).lower() == "true", kw
@@ -161,7 +162,7 @@ async def _dg_reconnect(port, hold):
     real_ctor = run.DeepgramSTTService
     run.DeepgramSTTService = lambda **kw: real_ctor(base_url=f"ws://127.0.0.1:{port}", **kw)
     try:
-        s = run.create_stt_service("deepgram", language="en-US")
+        s = run.create_stt_service("deepgram", language="en-US", platform_keys=KEYS)
     finally:
         run.DeepgramSTTService = real_ctor
     task = PipelineTask(Pipeline([s]), params=PipelineParams(audio_out_sample_rate=16000), idle_timeout_secs=None)
@@ -204,7 +205,7 @@ async def _dg_reject(port, status, dur):
     real_ctor = run.DeepgramSTTService
     run.DeepgramSTTService = lambda **kw: real_ctor(base_url=f"ws://127.0.0.1:{port}", **kw)
     try:
-        s = run.create_stt_service("deepgram", language="en-US")
+        s = run.create_stt_service("deepgram", language="en-US", platform_keys=KEYS)
     finally:
         run.DeepgramSTTService = real_ctor
     task = PipelineTask(Pipeline([s]), params=PipelineParams(audio_out_sample_rate=16000), idle_timeout_secs=None)

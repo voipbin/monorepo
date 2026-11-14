@@ -18,8 +18,8 @@ import (
 // configuration keys (the constants of configkeys) and returns their values by name.
 //
 // It does not return an error: a key that can not be read is left out of the result (the
-// implementation logs a warning without the value), and the runner then falls back to its own
-// environment for that key. A key without a value is left out too.
+// implementation logs a warning without the value), and the runner then rejects a session that
+// needs that key. A key without a value is left out too.
 type PlatformKeyResolver interface {
 	Resolve(ctx context.Context, pipecatcallID uuid.UUID, keyNames []string) map[string]amai.RedactedString
 }

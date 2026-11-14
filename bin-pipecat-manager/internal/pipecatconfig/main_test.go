@@ -52,6 +52,19 @@ func setSecret(t *testing.T, h confighandler.Handler, key, value string) {
 	}
 }
 
+// legacyEnv is the variable that each key read before the keys were stored. No key declares a
+// variable any more, so the tests set these names to prove that they are ignored.
+var legacyEnv = map[string]string{
+	configkeys.KeyOpenAIAPIKey:      "OPENAI_API_KEY",
+	configkeys.KeyDeepgramAPIKey:    "DEEPGRAM_API_KEY",
+	configkeys.KeyCartesiaAPIKey:    "CARTESIA_API_KEY",
+	configkeys.KeyXAIAPIKey:         "XAI_API_KEY",
+	configkeys.KeyElevenLabsAPIKey:  "ELEVENLABS_API_KEY",
+	configkeys.KeyGoogleAPIKey:      "GOOGLE_API_KEY",
+	configkeys.KeyOpenRouterAPIKey:  "OPENROUTER_API_KEY",
+	configkeys.KeyLocalLLMEndpoints: "LOCAL_LLM_ENDPOINTS",
+}
+
 func allKeyNames() []string {
 	names := []string{}
 	for _, k := range configkeys.Keys() {
@@ -61,21 +74,48 @@ func allKeyNames() []string {
 	return names
 }
 
-// There is no row and the environment of the process has the variable: the value is the
-// environment value. This is the behavior before the keys were stored, and it proves that the
-// handler is built on os.LookupEnv, for one key of every kind.
-func Test_Resolve_noRowEqualsEnv(t *testing.T) {
+// There is no row and the environment of the process has the legacy variable of the key: the key
+// has no value. The environment is not a source, for every key.
+func Test_Resolve_noRowIgnoresEnv(t *testing.T) {
 	for _, k := range configkeys.Keys() {
 		t.Run(k.Name, func(t *testing.T) {
-			t.Setenv(k.Env, "fake-env-"+k.Name)
+			t.Setenv(legacyEnv[k.Name], "fake-env-"+k.Name)
+			logs := logtest.New(t)
 
 			r := NewKeyResolver(newTestHandler(t, &config.Config{}, storetest.NewMemory()))
 			got := r.Resolve(context.Background(), uuid.Must(uuid.NewV4()), []string{k.Name})
 
-			if len(got) != 1 || string(got[k.Name]) != "fake-env-"+k.Name {
-				t.Errorf("Wrong match. expect: the environment value only, got: %d entries", len(got))
+			if got != nil {
+				t.Errorf("Wrong match. expect: nil, got: %d entries", len(got))
+			}
+			if logs.HasLevel(logrus.WarnLevel) || logs.HasLevel(logrus.ErrorLevel) {
+				t.Errorf("Wrong match. expect: no warning, got: %s", logs.Dump())
 			}
 		})
+	}
+}
+
+// With every legacy variable set, no key is declared with an environment name and the handler
+// reports the source none for all of them.
+func Test_envIsNeverASource(t *testing.T) {
+	for name, env := range legacyEnv {
+		t.Setenv(env, "fake-env-"+name)
+	}
+
+	h := newTestHandler(t, &config.Config{}, storetest.NewMemory())
+	list, err := h.Describe(context.Background())
+	if err != nil || len(list) != 8 {
+		t.Fatalf("Wrong match. expect: 8 keys, got: %d %v", len(list), err)
+	}
+	for _, r := range list {
+		if r.Source != confighandler.SourceNone {
+			t.Errorf("Wrong match. %s expect: source none, got: %s", r.Key, r.Source)
+		}
+	}
+	for _, k := range configkeys.Keys() {
+		if k.Env != "" {
+			t.Errorf("Wrong match. %s expect: no environment name, got: %s", k.Name, k.Env)
+		}
 	}
 }
 
@@ -85,7 +125,7 @@ func Test_Resolve_dbWinsOverEnv(t *testing.T) {
 	writer := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
 
 	for _, k := range configkeys.Keys() {
-		t.Setenv(k.Env, "fake-env-"+k.Name)
+		t.Setenv(legacyEnv[k.Name], "fake-env-"+k.Name)
 		setSecret(t, writer, k.Name, "fake-db-"+k.Name)
 	}
 
@@ -103,9 +143,6 @@ func Test_Resolve_dbWinsOverEnv(t *testing.T) {
 }
 
 func Test_Resolve_noRowNoEnv(t *testing.T) {
-	for _, k := range configkeys.Keys() {
-		t.Setenv(k.Env, "")
-	}
 	logs := logtest.New(t)
 
 	r := NewKeyResolver(newTestHandler(t, &config.Config{}, storetest.NewMemory()))
@@ -133,8 +170,8 @@ func Test_Resolve_readErrorWarnsAndOmits(t *testing.T) {
 	r := NewKeyResolver(newTestHandler(t, &config.Config{}, store))
 	got := r.Resolve(context.Background(), id, []string{configkeys.KeyOpenAIAPIKey, configkeys.KeyDeepgramAPIKey})
 
-	if _, ok := got[configkeys.KeyOpenAIAPIKey]; ok || string(got[configkeys.KeyDeepgramAPIKey]) != "fake-deepgram-env" {
-		t.Errorf("Wrong match. expect: only the other key, got: %d entries", len(got))
+	if _, ok := got[configkeys.KeyOpenAIAPIKey]; ok || len(got) != 0 {
+		t.Errorf("Wrong match. expect: no entry (the other key has no row and the environment is no source), got: %d entries", len(got))
 	}
 
 	var warns []*logrus.Entry
@@ -154,9 +191,7 @@ func Test_Resolve_readErrorWarnsAndOmits(t *testing.T) {
 }
 
 // A stored value that can not be decrypted (no master key, or another one) is left out with a
-// warning. The environment value is not used in its place: a stored row decides the source. The
-// runner then uses its own environment for the key; that fallback is the runner's, not this
-// resolver's.
+// warning. The environment value is not used in its place: the environment is no source.
 func Test_Resolve_undecryptableWarnsAndOmits(t *testing.T) {
 	t.Setenv("OPENAI_API_KEY", "fake-openai-env")
 
@@ -298,9 +333,10 @@ func Test_Resolve_nextCallSeesChange(t *testing.T) {
 
 // The values are redacted when printed and plain only in JSON (the request body needs the value).
 func Test_Resolve_resultIsRedacted(t *testing.T) {
-	t.Setenv("GOOGLE_API_KEY", "fake-google-env")
+	store := storetest.NewMemory()
+	setSecret(t, newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store), configkeys.KeyGoogleAPIKey, "fake-google-env")
 
-	r := NewKeyResolver(newTestHandler(t, &config.Config{}, storetest.NewMemory()))
+	r := NewKeyResolver(newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store))
 	got := r.Resolve(context.Background(), uuid.Nil, []string{configkeys.KeyGoogleAPIKey})
 
 	typed := got
@@ -316,9 +352,7 @@ func Test_Resolve_resultIsRedacted(t *testing.T) {
 }
 
 // The local endpoints text is handed over as it is (no parsing, no re-encoding), at the longest
-// accepted size; a longer text can not be stored. A longer text in the environment is passed
-// through unchanged, because the library checks the length when a value is written, not when it
-// is read from the environment.
+// accepted size; a longer text can not be stored.
 func Test_localEndpoints_boundary(t *testing.T) {
 	prefix := `{"vllm-a":{"base_url":"http://h.example.invalid:8000/v1","api_key":"`
 	suffix := `"}}`
@@ -338,14 +372,6 @@ func Test_localEndpoints_boundary(t *testing.T) {
 
 	if _, err := h.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), configkeys.KeyLocalLLMEndpoints, fill(2021)); !errors.Is(err, confighandler.ErrTooLong) {
 		t.Errorf("Wrong match. expect: ErrTooLong for 2021 bytes, got: %v", err)
-	}
-
-	long := fill(3000)
-	t.Setenv("LOCAL_LLM_ENDPOINTS", long)
-	h2 := newTestHandler(t, &config.Config{}, storetest.NewMemory())
-	got = NewKeyResolver(h2).Resolve(context.Background(), uuid.Nil, []string{configkeys.KeyLocalLLMEndpoints})
-	if string(got[configkeys.KeyLocalLLMEndpoints]) != long {
-		t.Errorf("Wrong match. expect: a long environment text passed through unchanged")
 	}
 }
 
@@ -368,7 +394,7 @@ func Test_New_badMasterKeyIsLoggedWithoutTheText(t *testing.T) {
 	}
 }
 
-// Without a master key list the handler is created, the environment still works, and a secret can
+// Without a master key list the handler is created, the environment is no source, and a secret can
 // not be stored. An empty list is not reported as an error.
 func Test_New_noMasterKeyStillStarts(t *testing.T) {
 	t.Setenv("XAI_API_KEY", "fake-xai-env")
@@ -377,8 +403,8 @@ func Test_New_noMasterKeyStillStarts(t *testing.T) {
 	h := newTestHandler(t, &config.Config{}, storetest.NewMemory())
 
 	got := NewKeyResolver(h).Resolve(context.Background(), uuid.Nil, []string{configkeys.KeyXAIAPIKey})
-	if string(got[configkeys.KeyXAIAPIKey]) != "fake-xai-env" {
-		t.Errorf("Wrong match. expect: the environment value")
+	if got != nil {
+		t.Errorf("Wrong match. expect: nil (the environment is no source), got: %d entries", len(got))
 	}
 	if _, err := h.SetSecret(context.Background(), uuid.Must(uuid.NewV4()), configkeys.KeyXAIAPIKey, "x"); !errors.Is(err, confighandler.ErrKeyNotConfigured) {
 		t.Errorf("Wrong match. expect: key not configured, got: %v", err)
@@ -390,11 +416,6 @@ func Test_New_noMasterKeyStillStarts(t *testing.T) {
 
 func Test_LogSources(t *testing.T) {
 	t.Setenv("OPENAI_API_KEY", "env-openai-text")
-	for _, k := range configkeys.Keys() {
-		if k.Env != "OPENAI_API_KEY" {
-			t.Setenv(k.Env, "")
-		}
-	}
 
 	store := storetest.NewMemory()
 	writer := newTestHandler(t, &config.Config{ConfigEncryptionKeys: testKeyList(1)}, store)
@@ -411,7 +432,7 @@ func Test_LogSources(t *testing.T) {
 			}
 			sources[e.Data["key"]] = e.Data["source"]
 		}
-		if len(sources) != 8 || sources[configkeys.KeyOpenAIAPIKey] != confighandler.SourceEnv ||
+		if len(sources) != 8 || sources[configkeys.KeyOpenAIAPIKey] != confighandler.SourceNone ||
 			sources[configkeys.KeyDeepgramAPIKey] != confighandler.SourceDB || sources[configkeys.KeyXAIAPIKey] != confighandler.SourceNone {
 			t.Errorf("Wrong match. got: %v", sources)
 		}

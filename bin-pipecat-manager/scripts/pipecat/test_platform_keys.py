@@ -1,17 +1,22 @@
 """Stored platform keys: the platform_keys of a /run request and how the runner uses them.
 
-Priority of a key (the same table as docs/operations.md):
-- openai, grok, gemini: the key of the customer, then platform_keys, then the environment.
-- cartesia, elevenlabs, deepgram: platform_keys, then the environment.
-- platform_openrouter: platform_keys, then the environment. The key of the customer is ignored.
-- local: platform_keys["local_llm.endpoints"] replaces the environment registry for that session;
-  the key of the customer is ignored.
+Source of a key (the same table as docs/operations.md). The process environment is never a source:
+- openai, grok, gemini: the key of the customer, then platform_keys. Neither: not configured.
+- cartesia, elevenlabs, deepgram: platform_keys. Not there: not configured.
+- platform_openrouter: platform_keys. The key of the customer is ignored.
+- local: platform_keys["local_llm.endpoints"] of the request, parsed for that session only; the key
+  of the customer is ignored.
+A key that is not there is rejected before the vendor SDK object is built, because the SDK clients
+fall back to the process environment when they get None or an empty key.
 
 All keys here are fake. No test calls a vendor.
 """
 import asyncio
 import json
 import os
+import subprocess
+import sys
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -27,13 +32,6 @@ from test_init_pipeline import _member, _run_team_init
 SENTINEL = "PLATFORM-SENTINEL-7f3a"
 SECRET_URL = "http://llm-secret-host.example.invalid:8000/v1"
 FIXED_LOCAL = "local engine model is not available"
-
-
-@pytest.fixture(autouse=True)
-def _restore_endpoints():
-    saved = run._local_endpoints
-    yield
-    run._local_endpoints = saved
 
 
 @pytest.fixture
@@ -60,39 +58,53 @@ def _llm(type_, key="", platform_keys=None, service="OpenAILLMService"):
 # --- priority: llm ----------------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("type_, pk, env, service", [
-    ("openai.gpt-5", run.PK_OPENAI, "OPENAI_API_KEY", "OpenAILLMService"),
-    ("grok.grok-4", run.PK_XAI, "XAI_API_KEY", "OpenAILLMService"),
-    ("gemini.gemini-2.5-flash", run.PK_GOOGLE, "GOOGLE_API_KEY", "GoogleLLMService"),
+def _llm_rejected(type_, key="", platform_keys=None, service="OpenAILLMService"):
+    """The factory must raise before the vendor class is called. Returns (error, mock of the class)."""
+    with patch("run.LLMContextAggregatorPair"), patch("run.LLMContext"), \
+         patch("run.drop_gemini_invalid_tools", side_effect=lambda t, _id: t), \
+         patch(f"run.{service}") as svc:
+        with pytest.raises(ValueError) as e:
+            run.create_llm_service(type_, key, [{"role": "user", "content": "hi"}], [], platform_keys=platform_keys)
+    return e.value, svc
+
+
+@pytest.mark.parametrize("type_, pk, env, service, vendor", [
+    ("openai.gpt-5", run.PK_OPENAI, "OPENAI_API_KEY", "OpenAILLMService", "OpenAI"),
+    ("grok.grok-4", run.PK_XAI, "XAI_API_KEY", "OpenAILLMService", "xAI"),
+    ("gemini.gemini-2.5-flash", run.PK_GOOGLE, "GOOGLE_API_KEY", "GoogleLLMService", "Google"),
 ])
 class TestCustomerKeyServices:
-    def test_customer_key_wins(self, type_, pk, env, service, monkeypatch):
+    def test_customer_key_wins(self, type_, pk, env, service, vendor, monkeypatch):
         monkeypatch.setenv(env, "env-value")
         svc = _llm(type_, key="customer-value", platform_keys={pk: "platform-value"}, service=service)
         assert svc.call_args.kwargs["api_key"] == "customer-value"
 
-    def test_platform_key_beats_env(self, type_, pk, env, service, monkeypatch):
+    def test_customer_key_does_not_look_up_the_platform_key(self, type_, pk, env, service, vendor):
+        with patch("run._platform_key", side_effect=AssertionError("must not be called")):
+            svc = _llm(type_, key="customer-value", platform_keys=None, service=service)
+        assert svc.call_args.kwargs["api_key"] == "customer-value"
+
+    def test_platform_key_is_used_without_a_customer_key(self, type_, pk, env, service, vendor, monkeypatch):
         monkeypatch.setenv(env, "env-value")
         svc = _llm(type_, platform_keys={pk: "platform-value"}, service=service)
         assert svc.call_args.kwargs["api_key"] == "platform-value"
 
-    def test_env_without_platform_keys(self, type_, pk, env, service, monkeypatch):
+    @pytest.mark.parametrize("platform_keys", [None, {}, "empty"])
+    def test_env_is_ignored_and_the_session_is_rejected_before_the_sdk(self, type_, pk, env, service, vendor, platform_keys, monkeypatch):
         monkeypatch.setenv(env, "env-value")
-        assert _llm(type_, platform_keys=None, service=service).call_args.kwargs["api_key"] == "env-value"
-        assert _llm(type_, platform_keys={}, service=service).call_args.kwargs["api_key"] == "env-value"
+        if platform_keys == "empty":
+            platform_keys = {pk: ""}
+        err, svc = _llm_rejected(type_, platform_keys=platform_keys, service=service)
+        assert str(err) == f"{vendor} is not configured"
+        assert "env-value" not in str(err)
+        svc.assert_not_called()
 
-    def test_empty_platform_value_counts_as_not_set(self, type_, pk, env, service, monkeypatch):
+    def test_a_key_of_another_vendor_is_not_used(self, type_, pk, env, service, vendor, monkeypatch):
         monkeypatch.setenv(env, "env-value")
-        assert _llm(type_, platform_keys={pk: ""}, service=service).call_args.kwargs["api_key"] == "env-value"
-
-    def test_a_key_of_another_vendor_is_not_used(self, type_, pk, env, service, monkeypatch):
-        monkeypatch.delenv(env, raising=False)
         other = {k: "other-value" for k in (run.PK_OPENAI, run.PK_XAI, run.PK_GOOGLE) if k != pk}
-        assert _llm(type_, platform_keys=other, service=service).call_args.kwargs["api_key"] is None
-
-    def test_nothing_set_keeps_the_current_behavior(self, type_, pk, env, service, monkeypatch):
-        monkeypatch.delenv(env, raising=False)
-        assert _llm(type_, platform_keys=None, service=service).call_args.kwargs["api_key"] is None
+        err, svc = _llm_rejected(type_, platform_keys=other, service=service)
+        assert str(err) == f"{vendor} is not configured"
+        svc.assert_not_called()
 
 
 class TestOpenRouter:
@@ -104,16 +116,14 @@ class TestOpenRouter:
         assert build.call_args.args[0] == "platform-or"
         assert "customer-or" not in repr(build.call_args)
 
-    def test_env_when_no_platform_key(self, monkeypatch):
+    @pytest.mark.parametrize("platform_keys", [None, {}, {run.PK_OPENROUTER: ""}])
+    def test_env_is_ignored_and_the_session_is_rejected_before_the_sdk(self, platform_keys, monkeypatch):
         monkeypatch.setenv("OPENROUTER_API_KEY", "env-or")
         with patch("run._build_openrouter_llm") as build, patch("run.LLMContextAggregatorPair"), patch("run.LLMContext"):
-            run.create_llm_service("platform_openrouter.m", "customer-or", [], [], platform_keys=None)
-        assert build.call_args.args[0] == "env-or"
-
-    def test_not_configured_is_the_fixed_error(self, monkeypatch):
-        monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
-        with pytest.raises(ValueError, match="OpenRouter is not configured"):
-            run.create_llm_service("platform_openrouter.m", "customer-or", [], [], platform_keys={run.PK_OPENROUTER: ""})
+            with pytest.raises(ValueError) as e:
+                run.create_llm_service("platform_openrouter.m", "customer-or", [], [], platform_keys=platform_keys)
+        assert str(e.value) == "OpenRouter is not configured"
+        build.assert_not_called()
 
     def test_customer_openrouter_never_reads_platform_or_env_keys(self, monkeypatch):
         monkeypatch.setenv("OPENROUTER_API_KEY", "env-or")
@@ -128,29 +138,35 @@ class TestOpenRouter:
 # --- priority: tts and stt --------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("name, pk, env, cls", [
-    ("cartesia", run.PK_CARTESIA, "CARTESIA_API_KEY", "CartesiaTTSService"),
-    ("elevenlabs", run.PK_ELEVENLABS, "ELEVENLABS_API_KEY", "ElevenLabsTTSService"),
+@pytest.mark.parametrize("name, pk, env, cls, vendor", [
+    ("cartesia", run.PK_CARTESIA, "CARTESIA_API_KEY", "CartesiaTTSService", "Cartesia"),
+    ("elevenlabs", run.PK_ELEVENLABS, "ELEVENLABS_API_KEY", "ElevenLabsTTSService", "ElevenLabs"),
 ])
-def test_tts_platform_key_beats_env(name, pk, env, cls, monkeypatch):
+def test_tts_uses_the_platform_key_only(name, pk, env, cls, vendor, monkeypatch):
     monkeypatch.setenv(env, "env-value")
     with patch(f"run.{cls}") as svc, patch("run._keep_usable", side_effect=lambda s: s):
         run.create_tts_service(name, voice_id="v", platform_keys={pk: "platform-value"})
         assert svc.call_args.kwargs["api_key"] == "platform-value"
-        run.create_tts_service(name, voice_id="v")
-        assert svc.call_args.kwargs["api_key"] == "env-value"
-        run.create_tts_service(name.upper(), voice_id="v", platform_keys={pk: ""})
-        assert svc.call_args.kwargs["api_key"] == "env-value"
+        svc.reset_mock()
+        for platform_keys in (None, {}, {pk: ""}):
+            with pytest.raises(ValueError) as e:
+                run.create_tts_service(name.upper(), voice_id="v", platform_keys=platform_keys)
+            assert str(e.value) == f"{vendor} is not configured"
+        svc.assert_not_called()
 
 
-def test_stt_platform_key_beats_env(monkeypatch):
+def test_stt_uses_the_platform_key_only(monkeypatch):
     monkeypatch.setenv("DEEPGRAM_API_KEY", "env-value")
     with patch("run.DeepgramSTTService") as svc, patch("run._keep_usable", side_effect=lambda s: s), \
          patch("run._harden_deepgram", side_effect=lambda s: s), patch("run.LiveOptions"):
         run.create_stt_service("deepgram", language="en-US", platform_keys={run.PK_DEEPGRAM: "platform-value"})
         assert svc.call_args.kwargs["api_key"] == "platform-value"
-        run.create_stt_service("deepgram", language="en-US")
-        assert svc.call_args.kwargs["api_key"] == "env-value"
+        svc.reset_mock()
+        for platform_keys in (None, {}, {run.PK_DEEPGRAM: ""}):
+            with pytest.raises(ValueError) as e:
+                run.create_stt_service("deepgram", language="en-US", platform_keys=platform_keys)
+            assert str(e.value) == "Deepgram is not configured"
+        svc.assert_not_called()
 
 
 def test_google_tts_and_stt_take_no_platform_key():
@@ -177,37 +193,49 @@ def _local(platform_keys, type_="local.vllm-a.qwen3-8b", key="customer-key"):
 
 
 class TestLocalEndpoints:
-    def test_request_value_beats_the_environment_registry(self):
-        run.load_local_endpoints(json.dumps({"vllm-a": {"base_url": "http://env-host.example.invalid/v1", "api_key": "env-key"}}))
+    def test_request_value_is_used(self):
         svc = _local({run.PK_LOCAL_ENDPOINTS: _endpoints()})
         assert svc.call_args.kwargs == {"api_key": "local-key-1", "model": "qwen3-8b", "base_url": SECRET_URL}
 
-    def test_request_value_replaces_the_registry_as_a_whole(self):
-        run.load_local_endpoints(json.dumps({"only-env": {"base_url": "http://env-host.example.invalid/v1"}}))
+    def test_request_value_has_only_its_own_endpoints(self):
         with pytest.raises(ValueError, match=FIXED_LOCAL):
             _local({run.PK_LOCAL_ENDPOINTS: _endpoints()}, type_="local.only-env.m")
 
-    def test_without_a_request_value_the_registry_is_used(self):
-        run.load_local_endpoints(_endpoints())
-        assert _local(None).call_args.kwargs["base_url"] == SECRET_URL
-        assert _local({}).call_args.kwargs["base_url"] == SECRET_URL
-        assert _local({run.PK_LOCAL_ENDPOINTS: ""}).call_args.kwargs["base_url"] == SECRET_URL
+    def test_environment_is_ignored_without_a_request_value(self, monkeypatch):
+        monkeypatch.setenv("LOCAL_LLM_ENDPOINTS", _endpoints())
+        for platform_keys in (None, {}, {run.PK_LOCAL_ENDPOINTS: ""}):
+            with pytest.raises(ValueError) as e:
+                _local(platform_keys)
+            assert str(e.value) == FIXED_LOCAL
+            assert SECRET_URL not in str(e.value)
+
+    def test_the_module_has_no_environment_registry(self):
+        assert not hasattr(run, "load_local_endpoints") and not hasattr(run, "_local_endpoints")
+
+    def test_importing_the_module_does_not_read_the_environment(self):
+        """A fresh interpreter with the variable set: a local model is still rejected."""
+        here = Path(__file__).parent
+        code = (
+            "import conftest, run\n"
+            "from unittest.mock import patch\n"
+            "with patch('run.LLMContextAggregatorPair'), patch('run.LLMContext'), patch('run.OpenAILLMService') as svc:\n"
+            "    try:\n"
+            "        run.create_llm_service('local.vllm-a.qwen3-8b', '', [], [], platform_keys=None)\n"
+            "    except ValueError as e:\n"
+            "        print('REJECTED:' + str(e))\n"
+            "    print('CALLED:' + str(svc.called))\n"
+        )
+        out = subprocess.run([sys.executable, "-c", code], cwd=here, capture_output=True, text=True, timeout=120,
+                             env={**os.environ, "LOCAL_LLM_ENDPOINTS": _endpoints()})
+        assert out.returncode == 0, out.stderr[-500:]
+        assert f"REJECTED:{FIXED_LOCAL}" in out.stdout and "CALLED:False" in out.stdout
 
     @pytest.mark.parametrize("raw", ["not json", "[]", "{}", '{"vllm-a": {"base_url": "ftp://h/v1"}}', '{"A": {"base_url": "http://h/v1"}}'])
-    def test_bad_request_value_is_the_fixed_error_and_does_not_fall_back(self, raw):
-        run.load_local_endpoints(_endpoints())
+    def test_bad_request_value_is_the_fixed_error(self, raw):
         with pytest.raises(ValueError) as e:
             _local({run.PK_LOCAL_ENDPOINTS: raw})
         assert str(e.value) == FIXED_LOCAL
         assert SECRET_URL not in str(e.value)
-
-    def test_the_module_registry_is_not_changed(self):
-        run.load_local_endpoints(_endpoints())
-        before = run._local_endpoints
-        snapshot = json.dumps(before, sort_keys=True)
-        _local({run.PK_LOCAL_ENDPOINTS: _endpoints(**{"other": {"base_url": "http://o.example.invalid/v1"}})})
-        assert run._local_endpoints is before
-        assert json.dumps(run._local_endpoints, sort_keys=True) == snapshot
 
     def test_customer_key_is_never_used(self):
         svc = _local({run.PK_LOCAL_ENDPOINTS: _endpoints()}, key="customer-key")
@@ -228,11 +256,10 @@ class TestLocalEndpoints:
 
         assert asyncio.run(both()) == ["http://a.example.invalid/v1", "http://b.example.invalid/v1"] * 2
 
-    def test_environment_format_is_read_the_same_by_both_paths(self):
-        raw = _endpoints(**{"b": {"base_url": "https://x.example.invalid/v1"}})
+    def test_parse_returns_the_loaded_endpoints_and_the_skipped_count(self):
+        raw = _endpoints(**{"b": {"base_url": "https://x.example.invalid/v1"}, "C": {"base_url": "http://h/v1"}})
         loaded, skipped = run.parse_local_endpoints(raw)
-        assert run.load_local_endpoints(raw) == len(loaded) == 2 and skipped == 0
-        assert run._local_endpoints == loaded
+        assert sorted(loaded) == ["b", "vllm-a"] and skipped == 1
 
     def test_the_longest_stored_text_is_parsed(self):
         prefix = '{"vllm-a":{"base_url":"http://h.example.invalid:8000/v1","api_key":"'
@@ -320,7 +347,8 @@ async def test_init_pipeline_without_platform_keys_passes_none():
 
 @pytest.mark.asyncio
 async def test_a_real_factory_call_through_the_team_path_uses_the_request_key(monkeypatch):
-    """The request key reaches the SDK constructor of a member through the real create_llm_service."""
+    """The request key reaches the SDK constructor of a member through the real create_llm_service
+    (the environment value is set and is not used)."""
     monkeypatch.setenv("OPENAI_API_KEY", "env-value")
     real = run.create_llm_service
     with patch("run.OpenAILLMService") as openai_cls, patch("run.LLMContext"), patch("run.LLMContextAggregatorPair"):
@@ -377,7 +405,6 @@ def test_platform_keys_that_is_not_a_map_is_a_fixed_422(client, logs):
 
 def test_a_validation_failure_of_init_is_a_400_without_the_keys(client, logs):
     """The real factory with a bad local value: the answer and the logs hold the fixed text only."""
-    run.load_local_endpoints("")
     r = client.post("/run", json={
         "id": "p4", "llm_type": "local.vllm-a.m", "llm_messages": [{"role": "user", "content": "hi"}],
         "platform_keys": {run.PK_LOCAL_ENDPOINTS: "{" + SECRET_URL + SENTINEL},

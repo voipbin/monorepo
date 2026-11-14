@@ -107,7 +107,7 @@ instead of the older SSH + `versions.lock` (`ssh-deploy.sh`) path.
 | `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server URL | `amqp://guest:guest@localhost:5672` |
 | `aws_access_key` / `AWS_ACCESS_KEY` | Removed: the service does not read it any more. Store `aws.access_key` with `tts-control config set`; see [Provider keys](#provider-keys) | not read |
 | `aws_secret_key` / `AWS_SECRET_KEY` | Removed: the service does not read it any more. Store `aws.secret_key` together with the access key | not read |
-| `elevenlabs_api_key` / `ELEVENLABS_API_KEY` | Removed: this service does not read it any more (bin-pipecat-manager still reads it from its own environment). Store `elevenlabs.api_key` with `tts-control config set` | not read |
+| `elevenlabs_api_key` / `ELEVENLABS_API_KEY` | Removed: this service does not read it any more (bin-pipecat-manager keeps its own stored `elevenlabs.api_key`). Store `elevenlabs.api_key` with `tts-control config set` | not read |
 | (no flag) / `TTS_CONFIG_ENCRYPTION_KEYS` | Master key list of the stored provider keys: comma-separated `<version>:<base64 32 bytes>`, the highest version encrypts. Environment only, never a flag. A malformed or empty value does not stop the start: the service logs the problem (never the value), refuses to store a secret, and reports the stored keys as undecryptable | optional |
 | `gcp_tts_endpoint` / `GCP_TTS_ENDPOINT` | GCP TTS regional endpoint | `eu-texttospeech.googleapis.com:443` |
 | `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
@@ -150,7 +150,7 @@ The master key list is `TTS_CONFIG_ENCRYPTION_KEYS` (environment only, `<version
 Other services read the same credentials from their own configuration and have separate stored settings:
 
 - The AWS pair is also read by the transcription service. The two services keep separate stored settings, so the same AWS credential must be entered in both when it is rotated (in the same maintenance step). Check each service with its `config list`: `source` of both AWS keys. A mismatch shows as one service authenticating and the other failing at AWS, or as the warning at the start of this service that the two AWS sources differ.
-- The ElevenLabs key is also read by the pipecat runner from the deployment variable `ELEVENLABS_API_KEY` as an environment value (it has no database); this service does not read that variable. Storing a new key here does not change the runner: replace the stored key and rotate the variable and redeploy the pipecat service too, and do not remove the variable while that service uses it.
+- bin-pipecat-manager keeps its own stored `elevenlabs.api_key` (`pipecat-control config set`); neither service reads the variable `ELEVENLABS_API_KEY`. Storing a new key here does not change the pipecat key: rotate the stored key in the pipecat service too.
 
 Rotation:
 1. Create the new key at the provider. Keep the old key valid.

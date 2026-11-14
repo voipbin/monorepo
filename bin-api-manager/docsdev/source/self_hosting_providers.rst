@@ -47,21 +47,19 @@ for them. Without a stored ``paddle.webhook_secret_key`` every Paddle
 webhook is rejected, and without a stored ``paddle.api_key`` the customer
 portal session of Paddle can not be created.
 
-``pipecat-manager`` is different: a stored value is used first, and the
-environment variable is used when no value is stored. It has ``openai.api_key``, ``deepgram.api_key``,
+``pipecat-manager`` has ``openai.api_key``, ``deepgram.api_key``,
 ``cartesia.api_key``, ``xai.api_key``, ``elevenlabs.api_key``,
-``google.api_key``, ``openrouter.api_key`` and ``local_llm.endpoints``
-(the variables ``OPENAI_API_KEY``, ``DEEPGRAM_API_KEY``,
-``CARTESIA_API_KEY``, ``XAI_API_KEY``, ``ELEVENLABS_API_KEY``,
-``GOOGLE_API_KEY``, ``OPENROUTER_API_KEY`` and ``LOCAL_LLM_ENDPOINTS``).
+``google.api_key``, ``openrouter.api_key`` and ``local_llm.endpoints``. They
+are read from the stored value only, like the keys above: neither
+``pipecat-manager`` nor ``pipecat-script-runner`` reads an environment
+variable for them. A session that needs a key that is not stored fails (the
+runner answers ``<vendor> is not configured``).
 Store them with the ``config set`` command of ``billing-control`` or
 ``pipecat-control`` or with the Service Config API (the ``billing`` and
 ``pipecat`` services). A change of a ``pipecat`` key is used from the next
 session. A key that both a manager and the pipecat services use
-(``GOOGLE_API_KEY`` and ``ELEVENLABS_API_KEY``) is a separate setting in
-each service and must be replaced in both. The ``pipecat-script-runner``
-keeps its ``.env`` variables as the fallback for a key that
-``pipecat-manager`` does not pass.
+(the Google and ElevenLabs keys) is a separate setting in
+each service and must be replaced in both.
 
 AI voice agent providers
 ----------------------------
@@ -78,35 +76,37 @@ AI voice agent providers
      - Stored key ``llm.openai_compat.api_key`` (no restart)
    * - LLM / conversation (real-time voice pipeline)
      - OpenAI, Google Gemini, xAI
-     - ``OPENAI_API_KEY``, ``GOOGLE_API_KEY``, ``XAI_API_KEY``
-       (restart ``pipecat-manager``)
+     - Stored keys ``openai.api_key``, ``google.api_key`` and
+       ``xai.api_key`` of ``pipecat-manager`` (no restart)
    * - LLM / conversation (real-time voice pipeline, platform-managed models)
      - OpenRouter (serves the Anthropic Claude, Meta Llama, DeepSeek, Qwen,
        and Mistral models that ``GET /ai_models`` lists with
        ``platform_managed`` set to ``true``)
-     - ``OPENROUTER_API_KEY`` (restart ``pipecat-script-runner``)
+     - Stored key ``openrouter.api_key`` of ``pipecat-manager`` (no restart)
    * - LLM / conversation (real-time voice pipeline, local models)
      - Self-hosted OpenAI-compatible servers (vLLM, llama.cpp, Ollama, and similar)
      - ``LOCAL_LLM_MODELS`` (restart ``ai-manager`` and ``pipecat-manager``),
-       ``LOCAL_LLM_ENDPOINTS`` (restart ``pipecat-script-runner``)
+       stored key ``local_llm.endpoints`` of ``pipecat-manager`` (no restart)
    * - Speech-to-text
      - Deepgram, AWS Transcribe, Google Cloud Speech-to-Text
-     - ``DEEPGRAM_API_KEY``; stored keys ``aws.access_key`` and
+     - Stored key ``deepgram.api_key`` of ``pipecat-manager`` (no
+       restart); stored keys ``aws.access_key`` and
        ``aws.secret_key`` (no restart); ``GOOGLE_APPLICATION_CREDENTIALS``
        (restart ``transcribe-manager``)
    * - Text-to-speech
      - ElevenLabs, Cartesia, AWS Polly, Google Cloud TTS
-     - ``CARTESIA_API_KEY``; stored keys ``elevenlabs.api_key``,
+     - Stored keys ``cartesia.api_key`` of ``pipecat-manager``,
+       ``elevenlabs.api_key``,
        ``aws.access_key`` and ``aws.secret_key`` (no restart);
        ``GOOGLE_APPLICATION_CREDENTIALS`` (restart ``tts-manager``)
 
-``GOOGLE_API_KEY`` and ``GOOGLE_APPLICATION_CREDENTIALS`` are two
-unrelated variables that happen to share the "Google" prefix. Do not
+The stored ``google.api_key`` and ``GOOGLE_APPLICATION_CREDENTIALS`` are two
+unrelated settings that happen to share the "Google" prefix. Do not
 confuse them:
 
-- ``GOOGLE_API_KEY`` is a Gemini API key. ``pipecat-manager``'s
-  real-time voice pipeline reads it from the environment for live Gemini
-  conversations (restart ``pipecat-manager`` after changing it).
+- ``google.api_key`` is a Gemini API key. ``pipecat-manager``'s
+  real-time voice pipeline reads the stored value for live Gemini
+  conversations (no restart after changing it).
   ``ai-manager`` does not read it: its Gemini key (batch audit
   evaluation, prompt proposal and the Gemini based summary, analysis
   and builder calls) is the stored key ``llm.gemini.api_key``.
@@ -117,13 +117,13 @@ confuse them:
   ``storage-manager`` treats a missing value as fatal for signed
   download/upload URLs; ``tts-manager`` falls back to AWS Polly if
   unset. ``pipecat-manager`` does **not** consume this variable in the
-  Docker Compose stack (it only uses ``GOOGLE_API_KEY``, above) --
+  Docker Compose stack (it only uses the stored ``google.api_key``, above) --
   restarting ``pipecat-manager`` for a ``GOOGLE_APPLICATION_CREDENTIALS``
   change has no effect.
 
-``XAI_API_KEY`` has no dedicated feature write-up beyond its
-``.env.template`` entry; it is consumed by ``pipecat-manager``'s
-real-time voice pipeline as an LLM alternative, not by ``ai-manager``.
+The stored ``xai.api_key`` has no dedicated feature write-up; it is
+consumed by ``pipecat-manager``'s real-time voice pipeline as an LLM
+alternative, not by ``ai-manager``.
 
 OpenRouter key for platform-managed models
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,16 +132,16 @@ Models that ``GET /ai_models`` reports with ``platform_managed`` set to
 ``true`` (Anthropic Claude, Meta Llama, DeepSeek, Qwen, and Mistral) do
 not use the per-AI ``engine_key`` that a user enters. In the real-time
 voice pipeline they are served through OpenRouter with a key that you,
-the operator, supply once as ``OPENROUTER_API_KEY`` in ``.env``. Notes
-on how it behaves in this installer's Docker Compose stack:
+the operator, supply once as the stored key ``openrouter.api_key`` of
+``pipecat-manager`` (``pipecat-control config set``). Notes
+on how it behaves:
 
-- The variable is passed to the ``pipecat-script-runner`` service only.
-  ``pipecat-manager`` (the Go service) does not read it, so restarting
-  ``pipecat-manager`` for this key has no effect. Restart
-  ``pipecat-script-runner`` instead.
-- The installer writes ``OPENROUTER_API_KEY=`` empty by default. With an
-  empty key these models stay selectable in the catalog (there is no
-  global on/off switch), but a session that uses one fails when the
+- ``pipecat-manager`` (the Go service) reads the stored key when a
+  session starts and hands it to ``pipecat-script-runner`` in the start
+  request, so a change is used from the next session and needs no restart.
+  The runner reads no environment variable for it.
+- Without a stored key these models stay selectable in the catalog (there
+  is no global on/off switch), but a session that uses one fails when the
   runner initializes the LLM service, with the error
   ``OpenRouter is not configured``. Other models (OpenAI, Gemini, xAI)
   are not affected.
@@ -153,10 +153,9 @@ on how it behaves in this installer's Docker Compose stack:
   ``data_collection`` set to ``deny``, and only to endpoints that
   support tool calling. This is fixed and not configurable.
 - ``pipecat-script-runner`` is pinned by image digest in
-  ``docker-compose.yml.dist``. The key has an effect only after the
-  runner image that contains the platform-managed model support is
-  adopted (for example with ``scripts/sync-compose-images.sh``). Setting the key
-  while the pinned image is older does nothing.
+  ``docker-compose.yml.dist``. The stored key has an effect only after the
+  ``pipecat-manager`` and ``pipecat-script-runner`` images that read the
+  stored keys are adopted (for example with ``scripts/sync-compose-images.sh``).
 
 Local models (self-hosted OpenAI-compatible servers)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -167,15 +166,15 @@ completions API. Registered models appear in ``GET /ai_models`` with vendor
 ``Local`` and an ``id`` of ``local.<endpoint>.<model>``. Users only pick the
 model; the server address and key are never shown. Private network
 addresses and plain ``http`` are allowed, because the server is inside your
-trust boundary. Nothing is listed until you set the variables below. There is
+trust boundary. Nothing is listed until you set the settings below. There is
 no separate on/off switch. This is not the same as the OpenRouter models above:
 ``platform_managed`` only says that you, the operator, supply the connection.
 
-Two variables, kept apart on purpose so that the secret stays in the runner
-only. Write each value as compact JSON (no space after a colon or comma) and
-write a ``$`` character as ``$$`` in Docker Compose.
+Two settings. Write each value as compact JSON (no space after a colon or
+comma); write a ``$`` character as ``$$`` in the Docker Compose variable.
 
-- ``LOCAL_LLM_ENDPOINTS`` (secret, ``pipecat-script-runner`` only): a JSON
+- ``local_llm.endpoints`` (secret, a stored key of ``pipecat-manager``, at
+  most 2020 bytes, set with ``pipecat-control config set``): a JSON
   object that maps an endpoint name to its connection, for example
   ``{"vllm-a":{"base_url":"http://llm.internal:8000/v1","api_key":""}}``.
   The name is lower case letters, digits and ``-`` (up to 32 characters).
@@ -193,9 +192,9 @@ write a ``$`` character as ``$$`` in Docker Compose.
   The endpoint name, ``id`` and ``label`` are shown to users, so do not put
   internal host names in them.
 
-To enable: set both variables, redeploy ``pipecat-manager`` and
-``pipecat-script-runner`` together (same image), then redeploy
-``ai-manager`` last. To remove a model: move the AIs that use it to another
+To enable: store the endpoints, set ``LOCAL_LLM_MODELS``, redeploy
+``pipecat-manager`` and ``pipecat-script-runner`` together (same image),
+then redeploy ``ai-manager`` last. To remove a model: move the AIs that use it to another
 model first, then redeploy ``ai-manager`` first and the pipecat services
 afterwards. A session that uses a removed or unreachable model fails. Do not set
 ``OPENAI_ORG_ID`` or ``OPENAI_PROJECT_ID`` on the runner: the OpenAI client
@@ -258,10 +257,9 @@ consume that specific variable, per the tables above:
 
 .. code-block:: bash
 
-    sudo ./voipbin restart pipecat-manager       # OPENAI_API_KEY, GOOGLE_API_KEY, XAI_API_KEY (real-time)
-    sudo ./voipbin restart pipecat-script-runner # OPENROUTER_API_KEY (platform-managed models)
-    sudo ./voipbin restart transcribe-manager    # DEEPGRAM_API_KEY, GOOGLE_APPLICATION_CREDENTIALS
-    sudo ./voipbin restart tts-manager           # CARTESIA_API_KEY, GOOGLE_APPLICATION_CREDENTIALS
+    sudo ./voipbin restart pipecat-manager       # LOCAL_LLM_MODELS (the pipecat keys are stored settings: no restart)
+    sudo ./voipbin restart transcribe-manager    # GOOGLE_APPLICATION_CREDENTIALS
+    sudo ./voipbin restart tts-manager           # GOOGLE_APPLICATION_CREDENTIALS
     sudo ./voipbin restart rag-manager           # GOOGLE_APPLICATION_CREDENTIALS
     sudo ./voipbin restart storage-manager       # GOOGLE_APPLICATION_CREDENTIALS
     sudo ./voipbin restart api-manager           # GOOGLE_APPLICATION_CREDENTIALS

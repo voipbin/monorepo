@@ -10,11 +10,14 @@ import pytest
 
 import run
 
+# The platform keys of a request. The factories reject a vendor key that is not in the request.
+KEYS = {run.PK_CARTESIA: "request-value", run.PK_ELEVENLABS: "request-value", run.PK_DEEPGRAM: "request-value"}
+
 
 class TestPreservedSettings:
     @patch("run.ElevenLabsTTSService")
     def test_elevenlabs_model_pinned(self, svc):
-        run.create_tts_service("elevenlabs", voice_id="v")
+        run.create_tts_service("elevenlabs", voice_id="v", platform_keys=KEYS)
         assert svc.call_args.kwargs["model"] == "eleven_turbo_v2_5"
         assert svc.call_args.kwargs["max_consecutive_zero_audio_contexts"] == 0
 
@@ -27,7 +30,7 @@ class TestPreservedSettings:
     @patch("run.DeepgramSTTService")
     @patch("run.LiveOptions")
     def test_deepgram_profanity_pinned_and_hardened(self, lo, svc, harden):
-        run.create_stt_service("deepgram", language="en")
+        run.create_stt_service("deepgram", language="en", platform_keys=KEYS)
         assert lo.call_args.kwargs["profanity_filter"] is True
         harden.assert_called_once_with(svc.return_value)
 
@@ -67,14 +70,14 @@ class TestKeepUsable:
     @pytest.mark.parametrize("name,cls", [("cartesia", "CartesiaTTSService"), ("elevenlabs", "ElevenLabsTTSService"), ("google", "GoogleTTSService")])
     def test_every_tts_wrapped(self, name, cls):
         with patch(f"run.{cls}") as svc, patch("run._keep_usable", side_effect=lambda s: s) as ku:
-            run.create_tts_service(name, voice_id="en-US-x")
+            run.create_tts_service(name, voice_id="en-US-x", platform_keys=KEYS)
             ku.assert_called_once_with(svc.return_value)
 
     @pytest.mark.parametrize("name,cls", [("deepgram", "DeepgramSTTService"), ("google", "GoogleSTTService")])
     def test_every_stt_wrapped(self, name, cls):
         with patch(f"run.{cls}") as svc, patch("run._harden_deepgram", side_effect=lambda s: s), \
              patch("run._keep_usable", side_effect=lambda s: s) as ku:
-            run.create_stt_service(name)
+            run.create_stt_service(name, platform_keys=KEYS)
             ku.assert_called_once_with(svc.return_value)
 
 

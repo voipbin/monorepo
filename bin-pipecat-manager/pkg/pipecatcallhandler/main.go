@@ -127,8 +127,8 @@ func NewPipecatcallHandler(
 type Option func(*pipecatcallHandler)
 
 // WithPlatformKeyResolver sets the resolver of the platform keys that are handed to the runner
-// with the start request. Without it no platform key is sent and the runner uses its own
-// environment.
+// with the start request. Without it no platform key is sent and the runner rejects a session
+// that needs one.
 func WithPlatformKeyResolver(r PlatformKeyResolver) Option {
 	return func(h *pipecatcallHandler) {
 		h.platformKeys = r

@@ -150,8 +150,8 @@ func run() error {
 		}
 	}()
 
-	// The platform keys of the vendors are stored in the database (the environment value applies
-	// when there is no row). They are read when a session starts and are sent to the runner with
+	// The platform keys of the vendors are stored in the database (a key without a row is not
+	// configured). They are read when a session starts and are sent to the runner with
 	// the start request, so a changed key is used by the next session.
 	startupConfig := config.Get()
 	configHandler, errConfig := pipecatconfig.New(&startupConfig, dbhandler.NewConfigStore(sqlDB))

@@ -24,7 +24,7 @@ Only secrets can be stored or deleted now. A key that is not a secret is answere
 
 Where a Value Comes From
 ------------------------
-A service uses one source for a key at a time: the value stored through the API, the environment of the service, or the default of the key. This depends on the key. The keys ``llm.openai_compat.api_key`` and ``llm.gemini.api_key`` of ``ai`` and all keys of ``email``, ``message``, ``tts``, ``transcribe`` and ``billing`` are read from the stored value only; the service does not read an environment variable for them. The keys of ``pipecat`` and the ``mcp_oauth`` keys of ``ai`` are read from the stored value first and, when no value is stored, from the environment variable of the service that ``env_name`` names. A stored value takes precedence over the environment variable.
+A service uses one source for a key at a time: the value stored through the API, the environment of the service, or the default of the key. This depends on the key. The keys ``llm.openai_compat.api_key`` and ``llm.gemini.api_key`` of ``ai`` and all keys of ``email``, ``message``, ``tts``, ``transcribe``, ``billing`` and ``pipecat`` are read from the stored value only; the service does not read an environment variable for them. The ``mcp_oauth`` keys of ``ai`` are read from the stored value first and, when no value is stored, from the environment variable of the service that ``env_name`` names. A stored value takes precedence over the environment variable.
 
 .. list-table::
    :header-rows: 1
@@ -34,7 +34,7 @@ A service uses one source for a key at a time: the value stored through the API,
    * - ``db``
      - The value stored through this API is used.
    * - ``env``
-     - No value is stored and the environment of the service is used. Only the keys that have an environment variable use this source (the keys of ``pipecat`` and the ``mcp_oauth`` keys of ``ai``), and ``env_name`` is returned for them. The other keys never have this source, and ``env_name`` is not returned for them. The process that answers sees its own environment, so ``env`` can show ``none`` for a key that a different process of the platform reads from its environment.
+     - No value is stored and the environment of the service is used. Only the keys that have an environment variable use this source (the ``mcp_oauth`` keys of ``ai``), and ``env_name`` is returned for them. The other keys never have this source, and ``env_name`` is not returned for them. The process that answers sees its own environment, so ``env`` can show ``none`` for a key that a different process of the platform reads from its environment.
    * - ``default``
      - No value is stored. The default of the key is used.
    * - ``none``

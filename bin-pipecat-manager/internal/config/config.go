@@ -33,8 +33,8 @@ type Config struct {
 	// ConfigEncryptionKeys is the master key list of the stored platform keys
 	// ("<version>:<base64 32 bytes>[,...]"). It is read from the environment only, never from a
 	// command line flag. A value that can not be parsed does not stop the service: the stored
-	// secrets can not be used then (they are reported as undecryptable and the runner falls back
-	// to its own environment).
+	// secrets can not be used then (they are reported as undecryptable and a session that needs
+	// a key is rejected).
 	ConfigEncryptionKeys string
 }
 

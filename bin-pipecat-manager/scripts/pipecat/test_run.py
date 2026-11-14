@@ -60,26 +60,20 @@ class TestCreateLLMService:
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
     @patch("run.OpenAILLMService")
-    def test_grok_uses_env_var_fallback(self, mock_service, mock_context, mock_pair):
-        """Test Grok falls back to XAI_API_KEY env var."""
+    def test_grok_ignores_the_env_var_and_rejects_without_a_key(self, mock_service, mock_context, mock_pair):
+        """XAI_API_KEY of the process is not a source: no key is a rejection before the SDK."""
         from run import create_llm_service
 
-        mock_llm = MagicMock()
-        mock_service.return_value = mock_llm
-
         with patch.dict(os.environ, {"XAI_API_KEY": "env-xai-key"}):
-            llm, aggregator = create_llm_service(
-                type="grok.grok-3-mini",
-                key="",
-                messages=[],
-                tools=[]
-            )
+            with pytest.raises(ValueError, match="xAI is not configured"):
+                create_llm_service(
+                    type="grok.grok-3-mini",
+                    key="",
+                    messages=[],
+                    tools=[]
+                )
 
-        mock_service.assert_called_once_with(
-            api_key="env-xai-key",
-            model="grok-3-mini",
-            base_url="https://api.x.ai/v1"
-        )
+        mock_service.assert_not_called()
 
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
@@ -103,22 +97,20 @@ class TestCreateLLMService:
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
     @patch("run.GoogleLLMService")
-    def test_gemini_uses_env_var_fallback(self, mock_service, mock_context, mock_pair):
-        """Test Gemini falls back to GOOGLE_API_KEY env var when key is empty."""
+    def test_gemini_ignores_the_env_var_and_rejects_without_a_key(self, mock_service, mock_context, mock_pair):
+        """GOOGLE_API_KEY of the process is not a source: no key is a rejection before the SDK."""
         from run import create_llm_service
 
-        mock_llm = MagicMock()
-        mock_service.return_value = mock_llm
-
         with patch.dict(os.environ, {"GOOGLE_API_KEY": "env-google-key"}):
-            llm, aggregator = create_llm_service(
-                type="gemini.gemini-1.5-pro",
-                key="",
-                messages=[],
-                tools=[]
-            )
+            with pytest.raises(ValueError, match="Google is not configured"):
+                create_llm_service(
+                    type="gemini.gemini-1.5-pro",
+                    key="",
+                    messages=[],
+                    tools=[]
+                )
 
-        mock_service.assert_called_once_with(api_key="env-google-key", model="gemini-1.5-pro", stream_idle_timeout_secs=None)
+        mock_service.assert_not_called()
 
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
@@ -871,8 +863,7 @@ class TestCreateTTSService:
         """Test existing Cartesia provider is not broken."""
         from run import create_tts_service
 
-        with patch.dict(os.environ, {"CARTESIA_API_KEY": "test-key"}):
-            create_tts_service("cartesia", voice_id="test-voice", language="en")
+        create_tts_service("cartesia", voice_id="test-voice", language="en", platform_keys={"cartesia.api_key": "test-key"})
 
         mock_service.assert_called_once_with(
             api_key="test-key",
@@ -961,10 +952,10 @@ class TestCreateSTTService:
         """Test existing Deepgram provider is not broken."""
         from run import create_stt_service
 
-        with patch.dict(os.environ, {"DEEPGRAM_API_KEY": "test-key"}):
-            create_stt_service("deepgram", language="en")
+        create_stt_service("deepgram", language="en", platform_keys={"deepgram.api_key": "test-key"})
 
         mock_service.assert_called_once()
+        assert mock_service.call_args.kwargs["api_key"] == "test-key"
 
     def test_unsupported_stt_raises_error(self):
         """Test unsupported STT provider raises ValueError."""
@@ -974,11 +965,14 @@ class TestCreateSTTService:
             create_stt_service("nonexistent")
 
 
+PLATFORM_OR = {"openrouter.api_key": "request-or-key"}
+
+
 class TestPlatformOpenRouter:
     """platform_openrouter.<slug>: platform-held key, ZDR provider routing.
 
     The customer key argument is ignored by design, and the platform key comes
-    from OPENROUTER_API_KEY only (never from OPENAI_API_KEY). The customer-keyed
+    from the platform_keys of the request only (never from the process environment). The customer-keyed
     `openrouter.<id>` form is covered by TestCustomOpenRouter; the colon form
     `openrouter:<id>` must stay "Unsupported LLM service".
     """
@@ -992,7 +986,7 @@ class TestPlatformOpenRouter:
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
     @patch("run.OpenRouterLLMService")
-    def test_uses_env_key_not_customer_key(self, mock_service, mock_context, mock_pair):
+    def test_uses_request_key_not_customer_key_or_env(self, mock_service, mock_context, mock_pair):
         from run import create_llm_service
 
         with patch.dict(os.environ, {"OPENROUTER_API_KEY": "env-or-key"}):
@@ -1001,11 +995,13 @@ class TestPlatformOpenRouter:
                 key="customer-supplied-key",
                 messages=[{"role": "user", "content": "hello"}],
                 tools=[],
+                platform_keys=PLATFORM_OR,
             )
 
         assert mock_service.call_count == 1
-        assert mock_service.call_args.kwargs["api_key"] == "env-or-key"
+        assert mock_service.call_args.kwargs["api_key"] == "request-or-key"
         assert "customer-supplied-key" not in repr(mock_service.call_args)
+        assert "env-or-key" not in repr(mock_service.call_args)
         assert llm is mock_service.return_value
         assert aggregator is mock_pair.return_value
 
@@ -1021,6 +1017,7 @@ class TestPlatformOpenRouter:
                 key="",
                 messages=[],
                 tools=[],
+                platform_keys=PLATFORM_OR,
             )
 
         settings_cls = mock_service.Settings
@@ -1040,26 +1037,25 @@ class TestPlatformOpenRouter:
         with patch.dict(os.environ, {"OPENROUTER_API_KEY": "env-or-key"}):
             create_llm_service(
                 type="platform_openrouter.anthropic/claude-haiku-4.5",
-                key="", messages=[], tools=[],
+                key="", messages=[], tools=[], platform_keys=PLATFORM_OR,
             )
         assert mock_service.Settings.call_args.kwargs["model"] == "anthropic/claude-haiku-4.5"
 
-    @pytest.mark.parametrize("env", [None, ""])
+    @pytest.mark.parametrize("platform_keys", [None, {}, {"openrouter.api_key": ""}])
     @patch("run.OpenRouterLLMService")
-    def test_missing_or_empty_env_key_raises(self, mock_service, env):
+    def test_missing_or_empty_request_key_raises_whatever_the_env_has(self, mock_service, platform_keys):
         from run import create_llm_service
 
-        environ = {k: v for k, v in os.environ.items() if k != "OPENROUTER_API_KEY"}
-        if env is not None:
-            environ["OPENROUTER_API_KEY"] = env
-        # OPENAI_API_KEY must not rescue a missing platform key either.
+        # Neither OPENROUTER_API_KEY nor OPENAI_API_KEY of the process rescues a missing platform key.
+        environ = {k: v for k, v in os.environ.items()}
+        environ["OPENROUTER_API_KEY"] = "dummy-or-env-not-real"
         environ["OPENAI_API_KEY"] = "dummy-openai-env-not-real"
         with patch.dict(os.environ, environ, clear=True):
             with pytest.raises(ValueError, match="OpenRouter is not configured"):
                 # A customer key must NOT rescue a missing platform key.
                 create_llm_service(
                     type="platform_openrouter.anthropic/claude-haiku-4.5",
-                    key="customer-supplied-key", messages=[], tools=[],
+                    key="customer-supplied-key", messages=[], tools=[], platform_keys=platform_keys,
                 )
         mock_service.assert_not_called()
 
@@ -1083,7 +1079,7 @@ class TestPlatformOpenRouter:
         from run import create_llm_service
 
         with patch.dict(os.environ, {"OPENROUTER_API_KEY": "env-or-key"}):
-            create_llm_service(type="platform_openrouter:a/b", key="", messages=[], tools=[])
+            create_llm_service(type="platform_openrouter:a/b", key="", messages=[], tools=[], platform_keys=PLATFORM_OR)
         assert mock_service.Settings.call_args.kwargs["model"] == "a/b"
 
 

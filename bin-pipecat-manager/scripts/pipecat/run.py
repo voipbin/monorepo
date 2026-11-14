@@ -1,6 +1,5 @@
 import asyncio
 import importlib
-import os
 import re
 import sys
 import json
@@ -520,12 +519,17 @@ PK_OPENROUTER = "openrouter.api_key"  # the platform OpenRouter key only, never 
 PK_LOCAL_ENDPOINTS = "local_llm.endpoints"
 
 
-def _platform_key(platform_keys, name: str, env_name: str):
-    """The platform key `name` of the request, else the environment variable `env_name`.
+def _platform_key(platform_keys, name: str, vendor: str) -> str:
+    """The platform key `name` of the request. The process environment is never a source.
 
-    An empty value counts as not set, as it does for the environment. The value is never logged."""
+    An empty value counts as not set. A key that is not set is rejected here, before the vendor SDK
+    object is built: the SDK clients read their own environment variable when they get None or an
+    empty key, so such a value must never reach them. The message names the vendor only and the
+    value is never logged."""
     value = (platform_keys or {}).get(name)
-    return value if value else os.getenv(env_name)
+    if not value:
+        raise ValueError(f"{vendor} is not configured")
+    return value
 
 
 def create_tts_service(name: str, **options):
@@ -536,7 +540,7 @@ def create_tts_service(name: str, **options):
 
     if name == "cartesia":
         return _keep_usable(CartesiaTTSService(
-            api_key=_platform_key(platform_keys, PK_CARTESIA, "CARTESIA_API_KEY"),
+            api_key=_platform_key(platform_keys, PK_CARTESIA, "Cartesia"),
             voice_id=voice_id,
             model="sonic-3.5",
             language=language,
@@ -544,7 +548,7 @@ def create_tts_service(name: str, **options):
         ))
     elif name == "elevenlabs":
         return _keep_usable(ElevenLabsTTSService(
-            api_key=_platform_key(platform_keys, PK_ELEVENLABS, "ELEVENLABS_API_KEY"),
+            api_key=_platform_key(platform_keys, PK_ELEVENLABS, "ElevenLabs"),
             voice_id=voice_id,
             model="eleven_turbo_v2_5",
             language=language,
@@ -583,7 +587,7 @@ def create_stt_service(name: str, **options):
             profanity_filter=True,
         )
         return _keep_usable(_harden_deepgram(DeepgramSTTService(
-            api_key=_platform_key(platform_keys, PK_DEEPGRAM, "DEEPGRAM_API_KEY"),
+            api_key=_platform_key(platform_keys, PK_DEEPGRAM, "Deepgram"),
             live_options=live_options,
         )))
     elif name == "google":
@@ -677,7 +681,8 @@ def _build_openrouter_llm(api_key: str, model_name: str):
 
 
 # --- Operator-registered local (self-hosted OpenAI-compatible) endpoints ---
-# LOCAL_LLM_ENDPOINTS is a secret JSON object injected into this container only:
+# The local endpoints are a secret JSON object that comes in the request (platform_keys, key
+# local_llm.endpoints). The process environment is not a source:
 #   {"<endpoint>": {"base_url": "http://host:8000/v1", "api_key": ""}}
 # Every failure below raises or logs a FIXED message: the URL, the key and any JSON
 # fragment must never reach an exception text (main.py returns str(e) to the caller
@@ -685,7 +690,6 @@ def _build_openrouter_llm(api_key: str, model_name: str):
 _LOCAL_ENDPOINT_NAME = re.compile(r"^[a-z0-9][a-z0-9-]{0,31}$")
 _LOCAL_PLACEHOLDER_KEY = "local-no-key"  # never None/"": the SDK would fall back to OPENAI_API_KEY
 _LOCAL_ERROR = "local engine model is not available"
-_local_endpoints: dict = {}
 
 
 def _valid_local_base_url(value) -> bool:
@@ -719,7 +723,7 @@ def parse_local_endpoints(raw) -> tuple:
         except ValueError:
             data = None
         if not isinstance(data, dict):
-            logger.error("LOCAL_LLM_ENDPOINTS is not a valid json object. No local endpoint is available.")
+            logger.error("The local endpoints value is not a valid json object. No local endpoint is available.")
             data = {}
         for name, item in data.items():
             if (
@@ -735,33 +739,14 @@ def parse_local_endpoints(raw) -> tuple:
     return loaded, skipped
 
 
-def load_local_endpoints(raw=None) -> int:
-    """Parse LOCAL_LLM_ENDPOINTS (default: the environment) into the module registry.
-
-    Returns the number of loaded endpoints. Never raises and never logs the value."""
-    global _local_endpoints
-    if raw is None:
-        raw = os.getenv("LOCAL_LLM_ENDPOINTS", "")
-    loaded, skipped = parse_local_endpoints(raw)
-    _local_endpoints = loaded
-    logger.info(f"Local llm endpoints loaded: {len(loaded)}, skipped: {skipped}")
-    return len(loaded)
-
-
 def _local_endpoints_for(platform_keys) -> dict:
-    """The local endpoints of one session.
-
-    A stored value in the request replaces the environment registry as a whole (the two are not
-    merged) and is parsed for this call only, so the module registry is not changed and a
-    concurrent session is not affected. Without a value the registry that was loaded from the
-    environment is used."""
+    """The local endpoints of one session: the value in the request, parsed for this call only, so
+    no module state is kept and a concurrent session is not affected. Without a value there is no
+    endpoint (the caller rejects the model with the fixed message)."""
     raw = (platform_keys or {}).get(PK_LOCAL_ENDPOINTS)
     if raw:
         return parse_local_endpoints(raw)[0]
-    return _local_endpoints
-
-
-load_local_endpoints()
+    return {}
 
 
 def create_llm_service(type: str, key: str, messages: list[dict], tools: list[dict], pipeline_id: str = "", **options):
@@ -776,11 +761,11 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
 
     service_name = service_name.lower()
     platform_keys = options.get("platform_keys")
-    # Priority of the key: the key of the customer (openai, grok, gemini only), then the platform
-    # key of the request, then the environment of this process. platform_openrouter and local never
-    # use the key of the customer.
+    # Source of the key: the key of the customer (openai, grok, gemini only), then the platform key of
+    # the request. Neither is "not configured" and the session is rejected. The environment of this
+    # process is never a source. platform_openrouter and local never use the key of the customer.
     if service_name == "openai":
-        api_key = key or _platform_key(platform_keys, PK_OPENAI, "OPENAI_API_KEY")
+        api_key = key or _platform_key(platform_keys, PK_OPENAI, "OpenAI")
         llm = OpenAILLMService(api_key=api_key, model=model_name)
 
         # Universal LLMContext + LLMContextAggregatorPair (the legacy
@@ -795,7 +780,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         return llm, aggregator
 
     elif service_name == "grok":
-        api_key = key or _platform_key(platform_keys, PK_XAI, "XAI_API_KEY")
+        api_key = key or _platform_key(platform_keys, PK_XAI, "xAI")
         llm = OpenAILLMService(
             api_key=api_key,
             model=model_name,
@@ -810,7 +795,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         return llm, aggregator
 
     elif service_name == "gemini":
-        api_key = key or _platform_key(platform_keys, PK_GOOGLE, "GOOGLE_API_KEY")
+        api_key = key or _platform_key(platform_keys, PK_GOOGLE, "Google")
         llm = GoogleLLMService(api_key=api_key, model=model_name, stream_idle_timeout_secs=None)
 
         # Use universal LLMContext so GeminiLLMAdapter properly converts
@@ -838,10 +823,8 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
     elif service_name == "platform_openrouter":
         # Internal service name emitted only by the Go resolver
         # (platform_openrouter.<slug>). The key argument is intentionally
-        # ignored: the platform key comes from the request or the environment only.
-        api_key = _platform_key(platform_keys, PK_OPENROUTER, "OPENROUTER_API_KEY") or ""
-        if not api_key:
-            raise ValueError("OpenRouter is not configured")
+        # ignored: the platform key comes from the request only.
+        api_key = _platform_key(platform_keys, PK_OPENROUTER, "OpenRouter")
         llm = _build_openrouter_llm(api_key, model_name)
 
         standard_tools = _openai_tools_to_standard(tools)

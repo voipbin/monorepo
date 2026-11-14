@@ -71,7 +71,7 @@ func initPipecatcallHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (pip
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, outline.QueueNamePipecatEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	toolHandler := toolhandler.NewToolHandler(reqHandler)
 
-	// the same platform key rule as the daemon: the stored key, else the environment
+	// the same platform key rule as the daemon: the stored key only
 	cfg := config.Get()
 	configHandler, err := pipecatconfig.New(&cfg, dbhandler.NewConfigStore(sqlDB))
 	if err != nil {

@@ -46,8 +46,7 @@ providers are configured through their own keys. Most are variables in
 command of the service or the Service Config API, and are not read from
 ``.env``. The Paddle keys of ``billing-manager`` are stored settings too and are
 not read from ``.env``. The platform keys of the voice AI vendors of
-``pipecat-manager`` can also be stored settings; a stored value is used
-first, and the ``.env`` variable is used when no value is stored. See
+``pipecat-manager`` are stored settings too and are not read from ``.env``. See
 the Provider configuration section for the full list of keys, which
 service to restart after setting each, and the AI-provider-specific
 details (shared credentials, multi-service consumers). Until a

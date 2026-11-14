@@ -17,24 +17,22 @@ func Test_NewRegistry(t *testing.T) {
 	}
 }
 
-// Test_goldenKinds pins the name, kind, type, length and environment name of every key. A key
-// name is never moved to another kind: rows and history that exist under the old meaning would be
-// read as the new one. The environment name is what makes "no row, value in the environment"
-// work, so a typo here is a regression, and it has to be the name that the runner reads.
+// Test_goldenKinds pins the name, kind, type and length of every key, and that no key declares an
+// environment name. A key name is never moved to another kind: rows and history that exist under
+// the old meaning would be read as the new one. A key without a stored row has no value.
 func Test_goldenKinds(t *testing.T) {
 	expect := []struct {
 		name   string
-		env    string
 		maxLen int
 	}{
-		{"openai.api_key", "OPENAI_API_KEY", 512},
-		{"deepgram.api_key", "DEEPGRAM_API_KEY", 512},
-		{"cartesia.api_key", "CARTESIA_API_KEY", 512},
-		{"xai.api_key", "XAI_API_KEY", 512},
-		{"elevenlabs.api_key", "ELEVENLABS_API_KEY", 512},
-		{"google.api_key", "GOOGLE_API_KEY", 512},
-		{"openrouter.api_key", "OPENROUTER_API_KEY", 512},
-		{"local_llm.endpoints", "LOCAL_LLM_ENDPOINTS", 2020},
+		{"openai.api_key", 512},
+		{"deepgram.api_key", 512},
+		{"cartesia.api_key", 512},
+		{"xai.api_key", 512},
+		{"elevenlabs.api_key", 512},
+		{"google.api_key", 512},
+		{"openrouter.api_key", 512},
+		{"local_llm.endpoints", 2020},
 	}
 
 	keys := Keys()
@@ -43,7 +41,7 @@ func Test_goldenKinds(t *testing.T) {
 	}
 	for i, e := range expect {
 		k := keys[i]
-		if k.Name != e.name || k.Env != e.env || k.MaxLen != e.maxLen {
+		if k.Name != e.name || k.Env != "" || k.MaxLen != e.maxLen {
 			t.Errorf("Wrong match. key %d expect: %+v, got: %+v", i, e, k)
 		}
 		if k.Kind != confighandler.KindSecret || k.Type != confighandler.TypeString {

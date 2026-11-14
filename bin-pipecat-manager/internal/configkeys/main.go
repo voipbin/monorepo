@@ -2,9 +2,9 @@
 //
 // The keys are the platform keys of the vendors that the python runner talks to. The Go service
 // resolves the keys that a session uses when the session starts and hands them to the runner in
-// the request (platform_keys). The runner never reads the database. A key without a stored row
-// falls back to the environment variable of the same name, and the runner falls back to its own
-// environment when the request has no value.
+// the request (platform_keys). The runner never reads the database and uses the keys of its
+// request only. The keys declare no environment variable and have no default: a key without a
+// stored value is not configured.
 package configkeys
 
 import (
@@ -40,19 +40,18 @@ const (
 	maxEndpointsLen = 2020
 )
 
-// Keys returns the declarations. Every key is a secret. Env is the name of the variable that the
-// runner reads today, so a key without a stored row is read from the environment of this
-// process (and the runner falls back to its own environment when the request has no value).
+// Keys returns the declarations. Every key is a secret. A key declares no environment variable,
+// so a key without a stored row has no value.
 func Keys() []confighandler.Key {
 	return []confighandler.Key{
-		{Name: KeyOpenAIAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: "OPENAI_API_KEY", Description: "OpenAI API key of the platform. Used by sessions that run an OpenAI model without a key of the customer.", MaxLen: maxKeyLen},
-		{Name: KeyDeepgramAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: "DEEPGRAM_API_KEY", Description: "Deepgram API key of the platform. Used by sessions that transcribe with Deepgram.", MaxLen: maxKeyLen},
-		{Name: KeyCartesiaAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: "CARTESIA_API_KEY", Description: "Cartesia API key of the platform. Used by sessions that speak with Cartesia.", MaxLen: maxKeyLen},
-		{Name: KeyXAIAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: "XAI_API_KEY", Description: "xAI API key of the platform. Used by sessions that run a Grok model without a key of the customer.", MaxLen: maxKeyLen},
-		{Name: KeyElevenLabsAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: "ELEVENLABS_API_KEY", Description: "ElevenLabs API key of the platform. Used by sessions that speak with ElevenLabs.", MaxLen: maxKeyLen},
-		{Name: KeyGoogleAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: "GOOGLE_API_KEY", Description: "Google API key of the platform for Gemini models. Used by sessions that run a Gemini model without a key of the customer.", MaxLen: maxKeyLen},
-		{Name: KeyOpenRouterAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: "OPENROUTER_API_KEY", Description: "OpenRouter API key of the platform. Used by platform OpenRouter models only; a key of the customer is never used for them.", MaxLen: maxKeyLen},
-		{Name: KeyLocalLLMEndpoints, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Env: "LOCAL_LLM_ENDPOINTS", Description: "One line JSON object that maps a local endpoint name to its base_url and api_key. Used by sessions that run a local model.", MaxLen: maxEndpointsLen},
+		{Name: KeyOpenAIAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "OpenAI API key of the platform. Used by sessions that run an OpenAI model without a key of the customer.", MaxLen: maxKeyLen},
+		{Name: KeyDeepgramAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "Deepgram API key of the platform. Used by sessions that transcribe with Deepgram.", MaxLen: maxKeyLen},
+		{Name: KeyCartesiaAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "Cartesia API key of the platform. Used by sessions that speak with Cartesia.", MaxLen: maxKeyLen},
+		{Name: KeyXAIAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "xAI API key of the platform. Used by sessions that run a Grok model without a key of the customer.", MaxLen: maxKeyLen},
+		{Name: KeyElevenLabsAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "ElevenLabs API key of the platform. Used by sessions that speak with ElevenLabs.", MaxLen: maxKeyLen},
+		{Name: KeyGoogleAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "Google API key of the platform for Gemini models. Used by sessions that run a Gemini model without a key of the customer.", MaxLen: maxKeyLen},
+		{Name: KeyOpenRouterAPIKey, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "OpenRouter API key of the platform. Used by platform OpenRouter models only; a key of the customer is never used for them.", MaxLen: maxKeyLen},
+		{Name: KeyLocalLLMEndpoints, Kind: confighandler.KindSecret, Type: confighandler.TypeString, Description: "One line JSON object that maps a local endpoint name to its base_url and api_key. Used by sessions that run a local model.", MaxLen: maxEndpointsLen},
 	}
 }
 
