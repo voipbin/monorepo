@@ -119,7 +119,8 @@ func Test_Update(t *testing.T) {
 	})
 
 	t.Run("deleting a required key is accepted and the provider is not usable without a value", func(t *testing.T) {
-		setCredentialEnv(t, map[string]string{})
+		// the secret variable is set, so only the missing required key makes the provider unusable
+		setCredentialEnv(t, map[string]string{envTelnyxAPIKey: "env-token"})
 
 		db := newFakeDB()
 		h := newTestHandler(t, db)
@@ -135,8 +136,8 @@ func Test_Update(t *testing.T) {
 		if _, ok := db.rows[number.ProviderNameTelnyx].Config["connection_id"]; ok {
 			t.Errorf("The key was not removed from the row")
 		}
-		if info.Usable {
-			t.Errorf("Wrong match. expect: not usable without a connection id, got: %+v", info)
+		if info.Usable || info.CredentialSource != provider.CredentialSourceEnv {
+			t.Errorf("Wrong match. expect: not usable without a connection id and source env, got: %+v", info)
 		}
 	})
 

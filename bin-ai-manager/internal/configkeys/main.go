@@ -39,7 +39,7 @@ const (
 	VendorHubSpot = "hubspot"
 )
 
-// mcpOAuthVendors is the declared vendor list, in the order of Keys().
+// mcpOAuthVendors is the declared vendor list, in declaration order.
 var mcpOAuthVendors = []string{VendorGitHub, VendorLinear, VendorAsana, VendorHubSpot}
 
 // MCPOAuthVendors returns the vendors that have a declared OAuth app, in declaration order.
