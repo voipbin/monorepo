@@ -80,7 +80,7 @@ func Test_send_tokenUnavailable(t *testing.T) {
 	rec := useRecordingTransport(t)
 
 	names := []string{"telnyx sms", "telnyx mms", "messagebird sms", "messagebird mms"}
-	for i, err := range sendAll(NewRequestExternal(failingToken, failingToken)) {
+	for i, err := range sendAll(NewRequestExternal(failingToken, failingToken, TwilioConfig{})) {
 		if !errors.Is(err, errTestToken) {
 			t.Errorf("Wrong match. %s expect: the token error, got: %v", names[i], err)
 		}
@@ -101,7 +101,7 @@ func Test_send_tokenUnavailable(t *testing.T) {
 func Test_send_tokenUnavailableIsPerProvider(t *testing.T) {
 	rec := useRecordingTransport(t)
 
-	errs := sendAll(NewRequestExternal(staticToken("mb-ok"), failingToken))
+	errs := sendAll(NewRequestExternal(staticToken("mb-ok"), failingToken, TwilioConfig{}))
 	if !errors.Is(errs[0], errTestToken) || !errors.Is(errs[1], errTestToken) || errors.Is(errs[2], errTestToken) || errors.Is(errs[3], errTestToken) {
 		t.Errorf("Wrong match. expect: only the telnyx sends fail on the token, got: %v", errs)
 	}
@@ -119,6 +119,7 @@ func Test_send_tokenIsReadPerRequest(t *testing.T) {
 	h := NewRequestExternal(
 		func(context.Context) (string, error) { return mb, nil },
 		func(context.Context) (string, error) { return tn, nil },
+		TwilioConfig{},
 	)
 
 	sendAll(h)

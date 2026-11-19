@@ -2,13 +2,13 @@
 
 ## Component Overview
 
-`bin-message-manager` is a Class A Standard Go RPC Manager that handles SMS messaging through external providers (Telnyx, MessageBird). It manages message creation, asynchronous delivery, per-target status tracking, and inbound provider webhooks for delivery updates.
+`bin-message-manager` is a Class A Standard Go RPC Manager that handles SMS messaging through external providers (Telnyx, MessageBird, Twilio). It manages message creation, asynchronous delivery, per-target status tracking, and inbound provider webhooks for delivery updates.
 
 ```
 cmd/message-manager/main.go
     ├── pkg/cachehandler      (Redis — message lookups)
     ├── pkg/dbhandler         (MySQL via Squirrel query builder)
-    ├── pkg/requestexternal   (HTTP clients for Telnyx/MessageBird APIs)
+    ├── pkg/requestexternal   (HTTP clients for Telnyx/MessageBird/Twilio APIs)
     ├── pkg/messagehandler    (Business logic — send, get, delete, hook)
     └── pkg/listenhandler     (RabbitMQ RPC — messages & hooks API)
 ```
@@ -28,13 +28,16 @@ Supporting binary:
 | Business | `pkg/messagehandler` | Message CRUD, billing validation, provider dispatch, webhook processing |
 | Provider | `pkg/messagehandler/provider_telnyx.go` | Telnyx SMS API send per target |
 | Provider | `pkg/messagehandler/provider_messagebird.go` | MessageBird SMS API send per target |
+| Provider | `pkg/messagehandler/provider_twilio.go` | Twilio SMS and MMS API send per target (used only when the credentials are set) |
+| Order | `pkg/messagehandler/order.go` | The order of the providers of one message (the provider that owns the source number first) and the MMS rule of each provider |
 | External | `pkg/requestexternal` | HTTP client wrapper for provider APIs. The provider tokens are supplied by a function that is called for every request (nothing is cached) |
-| Config | `internal/messageconfig`, `internal/configkeys` | Provider tokens read from `MESSAGEBIRD_API_KEY` and `TELNYX_API_KEY` (environment only, via `bin-common-handler/pkg/envsecret`); `messageconfig.MessagebirdToken` and `TelnyxToken` return the supplier functions, `LogStates` logs the variable states at start. |
+| Config | `internal/messageconfig`, `internal/configkeys` | Provider tokens read from `MESSAGEBIRD_API_KEY`, `TELNYX_API_KEY`, `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN`, and the Twilio callback URL from `TWILIO_STATUS_CALLBACK_URL` (environment only, via `bin-common-handler/pkg/envsecret`); `messageconfig.MessagebirdToken`, `TelnyxToken` and `Twilio` return the supplier functions, `LogStates` logs the variable states at start. |
 | Data | `pkg/dbhandler` | Squirrel SQL builder queries for messages and targets |
 | Cache | `pkg/cachehandler` | Redis caching for message lookups |
 | Models | `models/message` | Message, Type, Direction, ProviderName, Status |
 | Models | `models/target` | Target (recipient) with delivery status |
 | Models | `models/telnyx` | Telnyx webhook payload models |
+| Models | `models/twilio` | Twilio message response model |
 | Models | `models/messagebird` | MessageBird webhook payload models |
 
 ## Event Publishing
@@ -50,8 +53,8 @@ The `listenhandler` consumes from queue `bin-manager.message-manager.request` an
 | Method | URI Pattern | Handler |
 |--------|------------|---------|
 | POST | `/v1/messages` | Send SMS (balance check → create → async dispatch to provider) |
-| POST | `/v1/messages/mms` | Send a message with medias (media check → balance check → signed URL refresh → create → async dispatch, Telnyx first and MessageBird for the targets Telnyx refused) |
+| POST | `/v1/messages/mms` | Send a message with medias (media check → balance check → signed URL refresh → create → async dispatch, the provider that owns the source number first and the other providers for the targets that it refused) |
 | GET | `/v1/messages?` | List messages (pagination) |
 | GET | `/v1/messages/{uuid}` | Get message details |
 | DELETE | `/v1/messages/{uuid}` | Delete message |
-| POST | `/v1/hooks` | Process provider webhook (a Telnyx `message.sent` or `message.finalized` receipt updates the target found by the provider reference id and is answered with 500 only when it must be delivered again; `message.received` creates an inbound message; for an inbound MMS the attachments are stored by a background ingest after the message is created) |
+| POST | `/v1/hooks` | Process provider webhook (a Telnyx `message.sent` or `message.finalized` receipt updates the target found by the provider reference id and is answered with 500 only when it must be delivered again; `message.received` creates an inbound message; a Twilio status callback (URI ending in `/twilio`) is verified with the Twilio signature first and answered with 401 when it is refused; for an inbound MMS the attachments are stored by a background ingest after the message is created) |

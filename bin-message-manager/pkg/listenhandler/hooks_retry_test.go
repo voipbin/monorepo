@@ -27,6 +27,7 @@ func Test_processV1HooksPost_errorAnswers(t *testing.T) {
 		{"a plain error", errors.New("number lookup failed"), 200},
 		{"a receipt retry", fmt.Errorf("%w: db down", messagehandler.ErrReceiptRetry), 500},
 		{"a wrapped receipt retry", fmt.Errorf("could not handle: %w", fmt.Errorf("%w: conflict", messagehandler.ErrReceiptRetry)), 500},
+		{"a hook that could not be verified is refused", fmt.Errorf("could not handle: %w", fmt.Errorf("%w: invalid_signature", messagehandler.ErrHookUnauthorized)), 401},
 	}
 
 	for _, tt := range tests {
@@ -40,7 +41,7 @@ func Test_processV1HooksPost_errorAnswers(t *testing.T) {
 				messageHandler: mockMessageHandler,
 			}
 
-			mockMessageHandler.EXPECT().Hook(gomock.Any(), "hook.voipbin.net/v1.0/messages/telnyx", []byte("{}")).Return(tt.hookErr)
+			mockMessageHandler.EXPECT().Hook(gomock.Any(), "hook.voipbin.net/v1.0/messages/telnyx", []byte("{}"), gomock.Any()).Return(tt.hookErr)
 
 			res, err := h.processRequest(&sock.Request{
 				URI:      "/v1/hooks",

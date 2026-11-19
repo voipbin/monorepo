@@ -1083,7 +1083,7 @@ Client                    API Gateway              Backend Service
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">Webhook</span> <span class="n">Flow</span><span class="p">:</span>
 
 <span class="n">External</span> <span class="n">Provider</span>                       <span class="n">VoIPBin</span> <span class="n">Internal</span>
-<span class="p">(</span><span class="n">Telnyx</span><span class="p">,</span> <span class="n">MessageBird</span><span class="p">)</span>                   <span class="n">Services</span>
+<span class="p">(</span><span class="n">Telnyx</span><span class="p">,</span> <span class="n">MessageBird</span><span class="p">,</span> <span class="n">Twilio</span><span class="p">)</span>           <span class="n">Services</span>
      <span class="o">|</span>                                      <span class="o">|</span>
      <span class="o">|</span> <span class="n">HTTPS</span> <span class="n">POST</span>                           <span class="o">|</span>
      <span class="o">|</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">messages</span>                 <span class="o">|</span>
@@ -1101,7 +1101,7 @@ Client                    API Gateway              Backend Service
 <ul class="simple">
 <li><p><strong>Public Endpoint</strong>: Receives webhooks from external providers</p></li>
 <li><p><strong>Message Routing</strong>: Forwards to internal services via RabbitMQ</p></li>
-<li><p><strong>Provider Support</strong>: Handles Telnyx, MessageBird delivery notifications</p></li>
+<li><p><strong>Provider Support</strong>: Handles Telnyx, MessageBird, Twilio delivery notifications (the Twilio signature is checked by the message service)</p></li>
 <li><p><strong>Thin Proxy</strong>: No business logic, just routing</p></li>
 </ul>
 </section>

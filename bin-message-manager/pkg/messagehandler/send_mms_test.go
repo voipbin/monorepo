@@ -61,11 +61,13 @@ func newDispatchMocks(t *testing.T) *dispatchMocks {
 		bird:   NewMockMMSProvider(mc),
 	}
 	m.handler = &messageHandler{
-		utilHandler:    m.util,
-		db:             m.db,
-		notifyHandler:  m.notify,
-		mmsTelnyx:      m.telnyx,
-		mmsMessagebird: m.bird,
+		utilHandler:   m.util,
+		db:            m.db,
+		notifyHandler: m.notify,
+		mmsProviders: map[message.ProviderName]MMSProvider{
+			message.ProviderNameTelnyx:      m.telnyx,
+			message.ProviderNameMessagebird: m.bird,
+		},
 	}
 
 	return m
@@ -217,7 +219,7 @@ func Test_dispatchMMS(t *testing.T) {
 				m.bird.EXPECT().SendMMS(gomock.Any(), testMessageID, source, tt.expectBirdTargets, "hello", urls, gomock.Any()).Return(tt.birdOutcomes).Times(1)
 			}
 
-			m.handler.dispatchMMS(context.Background(), testMessageID, source, tt.targets, "hello", urls, false)
+			m.handler.dispatchMMS(context.Background(), testMessageID, source, tt.targets, "hello", urls, false, defaultProviderOrder)
 
 			if !reflect.DeepEqual(mem.targets(), tt.expectFinal) {
 				t.Errorf("Wrong final targets.\nexpect: %v\ngot: %v", tt.expectFinal, mem.targets())
@@ -248,7 +250,7 @@ func Test_dispatchMMS_finalWriteSurvivesTheDispatchDeadline(t *testing.T) {
 			return outs(SendOutcomeFailed)
 		})
 
-	m.handler.dispatchMMS(ctx, testMessageID, source, targets, "", []string{"https://example.invalid/a.png"}, false)
+	m.handler.dispatchMMS(ctx, testMessageID, source, targets, "", []string{"https://example.invalid/a.png"}, false, defaultProviderOrder)
 
 	got := mem.targets()
 	if len(got) != 1 || got[0].Status != target.StatusFailed {
@@ -270,7 +272,7 @@ func Test_dispatchMMS_finalWriteFailureIsOnlyLogged(t *testing.T) {
 
 	m.telnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, source, targets, "hello", gomock.Any(), gomock.Any()).Return(outs(SendOutcomeAccepted))
 
-	m.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "hello", []string{"https://example.invalid/a.png"}, false)
+	m.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "hello", []string{"https://example.invalid/a.png"}, false, defaultProviderOrder)
 
 	if mem.mergeCalls != 1 {
 		t.Errorf("Wrong merge calls. expect: 1, got: %d", mem.mergeCalls)
@@ -308,12 +310,14 @@ func newSendMMSFixture(t *testing.T) *sendMMSFixture {
 		bird:   NewMockMMSProvider(mc),
 	}
 	f.handler = &messageHandler{
-		utilHandler:    f.util,
-		db:             f.db,
-		reqHandler:     f.req,
-		notifyHandler:  f.notify,
-		mmsTelnyx:      f.telnyx,
-		mmsMessagebird: f.bird,
+		utilHandler:   f.util,
+		db:            f.db,
+		reqHandler:    f.req,
+		notifyHandler: f.notify,
+		mmsProviders: map[message.ProviderName]MMSProvider{
+			message.ProviderNameTelnyx:      f.telnyx,
+			message.ProviderNameMessagebird: f.bird,
+		},
 	}
 
 	return f
@@ -593,7 +597,7 @@ func Test_dispatchMMS_providerContractViolation(t *testing.T) {
 
 	m.telnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, source, targets, "", gomock.Any(), gomock.Any()).Return(outs(SendOutcomeRejected))
 
-	m.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "", []string{"https://example.invalid/a.png"}, false)
+	m.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "", []string{"https://example.invalid/a.png"}, false, defaultProviderOrder)
 
 	for _, f := range mem.targets() {
 		if f.Status != target.StatusFailed {

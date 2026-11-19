@@ -15,7 +15,7 @@ An SMS message with source/destination addresses and per-target delivery trackin
 | `text` | string | Message body |
 | `type` | string | Message type |
 | `direction` | string | `outbound` or `inbound` |
-| `provider_name` | string | `telnyx` or `messagebird` |
+| `provider_name` | string | `telnyx`, `messagebird` or `twilio` (the first provider of the order of the message when it is created, then the provider that accepted the most targets) |
 | `tm_delete` | timestamp | Soft-delete sentinel (`9999-01-01` = active) |
 
 ### Target
@@ -54,10 +54,11 @@ Before the balance check, `Send` and `SendMMS` (a long text promoted to an MMS g
 
 ### Provider Selection
 
-SMS: an ordered chain, Telnyx first and MessageBird for the targets Telnyx definitively refused (`pkg/messagehandler/dispatch.go`). A result that is unknown is never sent again.
+The order of the providers is a value of each message (`pkg/messagehandler/order.go`). The provider that owns the source number (the `provider_name` of the number row that the source check already read, so there is no extra lookup) comes first when it can send, and the rest of the default order (Telnyx, MessageBird) follows. A number with no owner, or an owner that cannot send, gives the default order. Twilio can answer `0` segments right after the message is queued; the count is then not recorded and the segment mismatch metric does not apply to that target. Twilio can send only when `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN` are both set, and it is in the order of a number that Twilio owns only; it is never a fallback of a Telnyx or MessageBird number.
+SMS: the ordered chain of the message (`pkg/messagehandler/dispatch.go`): the targets that a provider definitively refused go to the next provider. A result that is unknown is never sent again.
 Segments: `pkg/segmenthandler` counts the segments of a text from the GSM-7 and UCS-2 rules (3GPP TS 23.038 and TS 23.040), whatever the provider reports. A text of more than one segment is created as an `mms` without media, charged the MMS rate for each recipient; more than 10 segments is refused as `TEXT_TOO_LONG`. A promoted text is sent as an MMS to a +1 destination from a +1 source (Telnyx, then MessageBird) and as SMS segments otherwise or when the MMS is refused.
 `Target.Parts` is the platform count; `ProviderParts` and `ProviderReferenceID` are internal and removed from the API and the events.
-MMS: Telnyx is the first provider and MessageBird is used only for the targets Telnyx definitively refused (see the MMS Send Flow below).
+MMS: the same order. MessageBird and Twilio send an MMS only when the source and the destination are both `+1` numbers (a target that does not fit is passed over); Telnyx sends to every target (see the MMS Send Flow below).
 The provider identifier is stored on the Message record for webhook routing.
 
 ### Webhook Processing
@@ -65,6 +66,7 @@ The provider identifier is stored on the Message record for webhook routing.
 Provider webhooks arrive at `POST /v1/hooks` via `bin-hook-manager`. The URI suffix identifies the provider:
 - URI ending in `/telnyx` → Telnyx webhook handler
 - URI ending in `/messagebird` → MessageBird webhook handler
+- URI ending in `/twilio` → Twilio delivery callback handler. The request is verified first (the `X-Twilio-Signature` header, forwarded by `bin-hook-manager`, checked with the Auth Token against the configured callback URL; fail-closed: a missing or wrong signature, or a missing Auth Token or callback URL, is refused with 401 and nothing is changed). A verified `sent`, `delivered`, `failed`, `undelivered` or `canceled` status updates the Target found by the Twilio message id and never moves it back. A body without `MessageStatus` (an incoming message) is ignored and no message is created.
 
 Telnyx `message.sent` and `message.finalized` events update the Target found by the provider reference id (status never moves back from a final state; a receipt that cannot be applied is answered with 500 so the provider sends it again). Only `message.received` creates a message.
 
@@ -111,5 +113,5 @@ sq.Select("*").From("messages").Where(sq.Eq{"id": id}).Where(sq.Eq{"tm_delete": 
 3. Balance check with the `mms` billing reference type.
 4. A fresh signed download URL is requested for every media. The URLs are handed to the provider only; they are not stored or logged.
 5. The message is created with type `mms` and the file ids in `medias`, then dispatched in a goroutine.
-6. Every target is sent to Telnyx once. A target that Telnyx definitively refused (HTTP 4xx other than 408), with a `+1` source and destination, is sent once to MessageBird. A target with an unknown result (timeout, 5xx, transport error) is never sent through another provider, so it cannot be delivered twice. A target that no provider accepted becomes `failed`; an MMS is never sent as text only.
+6. Every target is sent to each provider of the order of the message at most once. A target that a provider definitively refused (HTTP 4xx other than 408) goes to the next provider of the order; MessageBird and Twilio only get a target with a `+1` source and destination. A target with an unknown result (timeout, 5xx, transport error) is never sent through another provider, so it cannot be delivered twice. A target that no provider accepted becomes `failed`; an MMS is never sent as text only.
 7. The final target states and the provider that accepted the targets are written once.

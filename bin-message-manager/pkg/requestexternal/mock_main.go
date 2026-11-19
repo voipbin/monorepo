@@ -13,6 +13,8 @@ import (
 	context "context"
 	messagebird "monorepo/bin-message-manager/models/messagebird"
 	telnyx "monorepo/bin-message-manager/models/telnyx"
+	twilio "monorepo/bin-message-manager/models/twilio"
+	url "net/url"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -100,4 +102,62 @@ func (m *MockRequestExternal) TelnyxSendMessage(ctx context.Context, source, des
 func (mr *MockRequestExternalMockRecorder) TelnyxSendMessage(ctx, source, destination, text any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxSendMessage", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxSendMessage), ctx, source, destination, text)
+}
+
+// TwilioAvailable mocks base method.
+func (m *MockRequestExternal) TwilioAvailable(ctx context.Context) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TwilioAvailable", ctx)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// TwilioAvailable indicates an expected call of TwilioAvailable.
+func (mr *MockRequestExternalMockRecorder) TwilioAvailable(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TwilioAvailable", reflect.TypeOf((*MockRequestExternal)(nil).TwilioAvailable), ctx)
+}
+
+// TwilioSendMMS mocks base method.
+func (m *MockRequestExternal) TwilioSendMMS(ctx context.Context, source, destination, text string, mediaURLs []string) (*twilio.MessageResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TwilioSendMMS", ctx, source, destination, text, mediaURLs)
+	ret0, _ := ret[0].(*twilio.MessageResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TwilioSendMMS indicates an expected call of TwilioSendMMS.
+func (mr *MockRequestExternalMockRecorder) TwilioSendMMS(ctx, source, destination, text, mediaURLs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TwilioSendMMS", reflect.TypeOf((*MockRequestExternal)(nil).TwilioSendMMS), ctx, source, destination, text, mediaURLs)
+}
+
+// TwilioSendSMS mocks base method.
+func (m *MockRequestExternal) TwilioSendSMS(ctx context.Context, source, destination, text string) (*twilio.MessageResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TwilioSendSMS", ctx, source, destination, text)
+	ret0, _ := ret[0].(*twilio.MessageResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TwilioSendSMS indicates an expected call of TwilioSendSMS.
+func (mr *MockRequestExternalMockRecorder) TwilioSendSMS(ctx, source, destination, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TwilioSendSMS", reflect.TypeOf((*MockRequestExternal)(nil).TwilioSendSMS), ctx, source, destination, text)
+}
+
+// TwilioValidateCallback mocks base method.
+func (m *MockRequestExternal) TwilioValidateCallback(ctx context.Context, signature string, form url.Values) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TwilioValidateCallback", ctx, signature, form)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TwilioValidateCallback indicates an expected call of TwilioValidateCallback.
+func (mr *MockRequestExternalMockRecorder) TwilioValidateCallback(ctx, signature, form any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TwilioValidateCallback", reflect.TypeOf((*MockRequestExternal)(nil).TwilioValidateCallback), ctx, signature, form)
 }

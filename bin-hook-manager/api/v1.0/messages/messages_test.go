@@ -76,8 +76,9 @@ func Test_MessagesPOST_Error(t *testing.T) {
 	tests := []struct {
 		name string
 
-		reqQuery string
-		reqBody  []byte
+		reqQuery  string
+		reqBody   []byte
+		returnErr error
 
 		expectRes  string
 		expectCode int
@@ -90,6 +91,26 @@ func Test_MessagesPOST_Error(t *testing.T) {
 
 			expectRes:  ``,
 			expectCode: http.StatusInternalServerError,
+		},
+		{
+			name: "a callback that is refused is a client error",
+
+			reqQuery:  "/v1.0/messages/twilio",
+			reqBody:   []byte(`MessageStatus=delivered`),
+			returnErr: &servicehandler.ValidationError{Err: fmt.Errorf("refused")},
+
+			expectRes:  ``,
+			expectCode: http.StatusBadRequest,
+		},
+		{
+			name: "a refusal that is wrapped is a client error",
+
+			reqQuery:  "/v1.0/messages/twilio",
+			reqBody:   []byte(`MessageStatus=delivered`),
+			returnErr: fmt.Errorf("wrapped: %w", &servicehandler.ValidationError{Err: fmt.Errorf("refused")}),
+
+			expectRes:  ``,
+			expectCode: http.StatusBadRequest,
 		},
 	}
 
@@ -111,7 +132,11 @@ func Test_MessagesPOST_Error(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Message(gomock.Any(), gomock.Any()).Return(fmt.Errorf("service handler error"))
+			returnErr := tt.returnErr
+			if returnErr == nil {
+				returnErr = fmt.Errorf("service handler error")
+			}
+			mockSvc.EXPECT().Message(gomock.Any(), gomock.Any()).Return(returnErr)
 
 			r.ServeHTTP(w, req)
 			if w.Code != tt.expectCode {

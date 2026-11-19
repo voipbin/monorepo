@@ -2,6 +2,7 @@ package messages
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -27,6 +28,15 @@ func messagesPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	if err := serviceHandler.Message(ctx, c.Request); err != nil {
 		log.Errorf("Could not handle the message correctly. err: %v", err)
+
+		// a callback that is refused (no signature, a signature that the message-manager refused, a body that is too
+		// large) is a client error and not a server fault. Every other error keeps the 500.
+		var valErr *servicehandler.ValidationError
+		if errors.As(err, &valErr) {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

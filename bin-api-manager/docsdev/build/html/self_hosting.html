@@ -1269,7 +1269,7 @@ variables once at start (the variable name only, never a value).</p>
 <td><p>Email providers</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">email-manager</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">MESSAGEBIRD_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">MESSAGEBIRD_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">TWILIO_ACCOUNT_SID</span></code>, <code class="docutils literal notranslate"><span class="pre">TWILIO_AUTH_TOKEN</span></code>, <code class="docutils literal notranslate"><span class="pre">TWILIO_STATUS_CALLBACK_URL</span></code></p></td>
 <td><p>SMS and MMS providers</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">message-manager</span></code></p></td>
 </tr>
@@ -1603,6 +1603,10 @@ sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class=
 <td><p><code class="docutils literal notranslate"><span class="pre">MESSAGEBIRD_API_KEY</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">message-manager</span></code></p></td>
 </tr>
+<tr class="row-even"><td><p>Twilio (SMS and MMS)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">TWILIO_ACCOUNT_SID</span></code>, <code class="docutils literal notranslate"><span class="pre">TWILIO_AUTH_TOKEN</span></code> and <code class="docutils literal notranslate"><span class="pre">TWILIO_STATUS_CALLBACK_URL</span></code> (optional)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">message-manager</span></code></p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1621,6 +1625,17 @@ search fails. The Number Provider API does not accept a secret.
 <code class="docutils literal notranslate"><span class="pre">message-manager</span></code> reads its MessageBird and Telnyx keys the same way
 (<code class="docutils literal notranslate"><span class="pre">MESSAGEBIRD_API_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code>). Without <code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code>
 the SMS and MMS sends of <code class="docutils literal notranslate"><span class="pre">message-manager</span></code> fail at the provider.
+Messages are sent through the carrier that owns the source number first.
+<code class="docutils literal notranslate"><span class="pre">message-manager</span></code> sends through Twilio only when both
+<code class="docutils literal notranslate"><span class="pre">TWILIO_ACCOUNT_SID</span></code> and <code class="docutils literal notranslate"><span class="pre">TWILIO_AUTH_TOKEN</span></code> are set (the same variables
+that <code class="docutils literal notranslate"><span class="pre">number-manager</span></code> reads; the account SID must be the account of the
+Twilio numbers, and <code class="docutils literal notranslate"><span class="pre">number-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">message-manager</span></code> must hold the
+same account). Without them a Twilio number is sent through the default
+order. <code class="docutils literal notranslate"><span class="pre">TWILIO_STATUS_CALLBACK_URL</span></code> is the public URL of the Twilio status
+callback (for example <code class="docutils literal notranslate"><span class="pre">https://&lt;hook-host&gt;/v1.0/messages/twilio</span></code>): it is
+given to Twilio with every message and the signature of each callback is
+checked against exactly this URL. Without it messages are sent without a
+delivery callback, and every Twilio callback is refused.
 Restart the service after a change of a variable.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>number-manager
 </pre></div>

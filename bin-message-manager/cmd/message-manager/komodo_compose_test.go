@@ -103,10 +103,13 @@ func k8sEnvironment(t *testing.T) map[string]envEntry {
 	return nil
 }
 
-// The provider tokens come from the environment: each variable is in the compose definition with the
+// The provider tokens and the Twilio settings come from the environment: each variable is in the compose definition with the
 // deployment variable of the same name, and in k8s as an optional key of the secret.
 func Test_deploymentPassesTheProviderTokens(t *testing.T) {
-	names := []string{configkeys.EnvMessagebirdAPIKey, configkeys.EnvTelnyxAPIKey}
+	names := []string{
+		configkeys.EnvMessagebirdAPIKey, configkeys.EnvTelnyxAPIKey,
+		configkeys.EnvTwilioAccountSID, configkeys.EnvTwilioAuthToken, configkeys.EnvTwilioStatusCallbackURL,
+	}
 
 	compose := composeEnvironment(t)
 	k8s := k8sEnvironment(t)

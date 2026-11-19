@@ -142,12 +142,15 @@ func TestNewMessageHandler(t *testing.T) {
 		t.Fatal("Expected non-nil handler")
 	}
 
-	// the order of the sms chain is a rule: telnyx first, messagebird for the targets telnyx refused.
-	names := []message.ProviderName{}
-	for _, np := range h.(*messageHandler).smsProviders {
-		names = append(names, np.name)
+	// every provider has an sms and an mms sender, and the default order is a rule: telnyx first, messagebird for the
+	// targets telnyx refused. Twilio is never part of the default order.
+	mh := h.(*messageHandler)
+	for _, name := range []message.ProviderName{message.ProviderNameTelnyx, message.ProviderNameMessagebird, message.ProviderNameTwilio} {
+		if mh.smsProviders[name] == nil || mh.mmsProviders[name] == nil {
+			t.Errorf("Wrong match. expect: sms and mms providers of %s", name)
+		}
 	}
-	if !reflect.DeepEqual(names, []message.ProviderName{message.ProviderNameTelnyx, message.ProviderNameMessagebird}) {
-		t.Errorf("Wrong sms provider order. got: %v", names)
+	if !reflect.DeepEqual(defaultProviderOrder, []message.ProviderName{message.ProviderNameTelnyx, message.ProviderNameMessagebird}) {
+		t.Errorf("Wrong default provider order. got: %v", defaultProviderOrder)
 	}
 }

@@ -205,7 +205,7 @@ func Test_processV1HooksPost_errors(t *testing.T) {
 		h, mockMessage := newErrorPathListenHandler(mc)
 
 		// received_data is base64 of "abc"
-		mockMessage.EXPECT().Hook(gomock.Any(), "hook.example.com/v1.0/messages/telnyx", []byte("abc")).Return(errors.New("hook failed"))
+		mockMessage.EXPECT().Hook(gomock.Any(), "hook.example.com/v1.0/messages/telnyx", []byte("abc"), gomock.Any()).Return(errors.New("hook failed"))
 
 		res, err := h.processRequest(&sock.Request{
 			URI:    "/v1/hooks",

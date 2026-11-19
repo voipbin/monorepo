@@ -50,7 +50,7 @@ variables once at start (the variable name only, never a value).
    * - ``SENDGRID_API_KEY``, ``MAILGUN_API_KEY``, ``MAILGUN_WEBHOOK_SIGNING_KEY``
      - Email providers
      - ``email-manager``
-   * - ``MESSAGEBIRD_API_KEY``, ``TELNYX_API_KEY``
+   * - ``MESSAGEBIRD_API_KEY``, ``TELNYX_API_KEY``, ``TWILIO_ACCOUNT_SID``, ``TWILIO_AUTH_TOKEN``, ``TWILIO_STATUS_CALLBACK_URL``
      - SMS and MMS providers
      - ``message-manager``
    * - ``TELNYX_API_KEY``, ``TELNYX_CONNECTION_ID``, ``TELNYX_PROFILE_ID``, ``TWILIO_ACCOUNT_SID``, ``TWILIO_AUTH_TOKEN``
@@ -353,6 +353,9 @@ Telephony and messaging providers
    * - MessageBird (SMS)
      - ``MESSAGEBIRD_API_KEY``
      - ``message-manager``
+   * - Twilio (SMS and MMS)
+     - ``TWILIO_ACCOUNT_SID``, ``TWILIO_AUTH_TOKEN`` and ``TWILIO_STATUS_CALLBACK_URL`` (optional)
+     - ``message-manager``
 
 ``number-manager`` reads the carrier secret (``TELNYX_API_KEY`` or
 ``TWILIO_AUTH_TOKEN``) from the environment only. The ``enabled``, ``priority``
@@ -369,6 +372,17 @@ search fails. The Number Provider API does not accept a secret.
 ``message-manager`` reads its MessageBird and Telnyx keys the same way
 (``MESSAGEBIRD_API_KEY`` and ``TELNYX_API_KEY``). Without ``TELNYX_API_KEY``
 the SMS and MMS sends of ``message-manager`` fail at the provider.
+Messages are sent through the carrier that owns the source number first.
+``message-manager`` sends through Twilio only when both
+``TWILIO_ACCOUNT_SID`` and ``TWILIO_AUTH_TOKEN`` are set (the same variables
+that ``number-manager`` reads; the account SID must be the account of the
+Twilio numbers, and ``number-manager`` and ``message-manager`` must hold the
+same account). Without them a Twilio number is sent through the default
+order. ``TWILIO_STATUS_CALLBACK_URL`` is the public URL of the Twilio status
+callback (for example ``https://<hook-host>/v1.0/messages/twilio``): it is
+given to Twilio with every message and the signature of each callback is
+checked against exactly this URL. Without it messages are sent without a
+delivery callback, and every Twilio callback is refused.
 Restart the service after a change of a variable.
 
 .. code-block:: bash

@@ -21,6 +21,7 @@ import (
 // list of hook suffix types
 const (
 	hookTelnyx = "telnyx"
+	hookTwilio = "twilio"
 )
 
 // MessageHandler defines
@@ -32,7 +33,8 @@ type MessageHandler interface {
 	Send(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error)
 	SendMMS(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string, medias []uuid.UUID) (*message.Message, error)
 
-	Hook(ctx context.Context, uri string, m []byte) error
+	// Hook handles a hook message. signature is the signature header of the provider request (twilio only).
+	Hook(ctx context.Context, uri string, m []byte, signature string) error
 }
 
 // messageHandler defines
@@ -42,12 +44,17 @@ type messageHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	// smsProviders is the ordered sms provider chain: the first provider gets the sms, and only a definitive refusal
-	// goes on to the next one.
-	smsProviders []namedSMSProvider
+	// smsProviders and mmsProviders are the providers by name. They are written once when the handler is created
+	// and only read afterwards. The order in which the providers are tried belongs to each message (providerOrder),
+	// so these maps are never sorted or changed.
+	smsProviders map[message.ProviderName]SMSProvider
+	mmsProviders map[message.ProviderName]MMSProvider
 
-	mmsTelnyx      MMSProvider
-	mmsMessagebird MMSProvider
+	// reqExternal verifies the signature of the twilio callbacks.
+	reqExternal requestexternal.RequestExternal
+
+	// twilioAvailable tells whether Twilio sending is configured. Nil means not.
+	twilioAvailable func(ctx context.Context) bool
 
 	// mediaFetcher downloads the media of a received message and ingestSlots limits the ingests that run at the same time.
 	mediaFetcher MediaFetcher
@@ -63,13 +70,19 @@ func NewMessageHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHa
 		reqHandler:    r,
 		notifyHandler: n,
 
-		smsProviders: []namedSMSProvider{
-			{name: message.ProviderNameTelnyx, provider: NewSMSTelnyx(requestExternal)},
-			{name: message.ProviderNameMessagebird, provider: NewSMSMessagebird(requestExternal)},
+		smsProviders: map[message.ProviderName]SMSProvider{
+			message.ProviderNameTelnyx:      NewSMSTelnyx(requestExternal),
+			message.ProviderNameMessagebird: NewSMSMessagebird(requestExternal),
+			message.ProviderNameTwilio:      NewSMSTwilio(requestExternal),
+		},
+		mmsProviders: map[message.ProviderName]MMSProvider{
+			message.ProviderNameTelnyx:      NewMMSTelnyx(requestExternal),
+			message.ProviderNameMessagebird: NewMMSMessagebird(requestExternal),
+			message.ProviderNameTwilio:      NewMMSTwilio(requestExternal),
 		},
 
-		mmsTelnyx:      NewMMSTelnyx(requestExternal),
-		mmsMessagebird: NewMMSMessagebird(requestExternal),
+		reqExternal:     requestExternal,
+		twilioAvailable: requestExternal.TwilioAvailable,
 
 		mediaFetcher: NewMediaFetcher(),
 		ingestSlots:  make(chan struct{}, inboundMediaMaxIngest),
@@ -95,6 +108,24 @@ var (
 			Help:      "Total number of send message by type.",
 		},
 		[]string{"type"},
+	)
+
+	promTwilioSendTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "twilio_number_send_total",
+			Help:      "Total number of send message by type.",
+		},
+		[]string{"type"},
+	)
+
+	promTwilioCallbackRejectedTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "twilio_callback_rejected_total",
+			Help:      "Total number of twilio delivery callbacks that were refused, by reason.",
+		},
+		[]string{"reason"},
 	)
 
 	promMMSTargetFailedTotal = prometheus.NewCounterVec(
@@ -189,6 +220,8 @@ func init() {
 	prometheus.MustRegister(
 		promTelnyxSendTotal,
 		promMessagebirdSendTotal,
+		promTwilioSendTotal,
+		promTwilioCallbackRejectedTotal,
 		promMMSTargetFailedTotal,
 		promMMSMediaCheckSeconds,
 		promInboundMediaTotal,

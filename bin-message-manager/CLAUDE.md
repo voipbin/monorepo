@@ -1,6 +1,6 @@
 # bin-message-manager
 
-SMS and MMS messaging service — sends messages via Telnyx and MessageBird (both SMS and MMS go to Telnyx first, and to MessageBird only for the targets Telnyx refused), counts the segments of a text itself (3GPP TS 23.038), sends a text of more than one segment as a text-only MMS, tracks per-target delivery status from the Telnyx receipts, and processes inbound provider webhooks.
+SMS and MMS messaging service — sends messages via Telnyx, MessageBird and Twilio (the provider that owns the source number is tried first, and the other providers only get the targets that it definitively refused), counts the segments of a text itself (3GPP TS 23.038), sends a text of more than one segment as a text-only MMS, tracks per-target delivery status from the Telnyx and Twilio receipts, and processes inbound provider webhooks.
 
 > Cross-cutting rules (verification workflow, branch/commit format, worktrees, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md).
 
@@ -57,13 +57,13 @@ REDIS_ADDRESS="127.0.0.1:6379" \
 
 ## CRITICAL: Provider tokens are read per request
 
-The MessageBird and Telnyx tokens are read from the environment variables `MESSAGEBIRD_API_KEY` and `TELNYX_API_KEY` only (`bin-common-handler/pkg/envsecret`: not set, empty or an unresolved `[[...]]` placeholder means not configured, an empty token and no error). Nothing is stored in the database and no admin API writes them. `requestexternal` receives a supplier function (`messageconfig.MessagebirdToken()`, `TelnyxToken()`) and calls it for every provider request. Never read the token from `config.Get()` in a send path and never cache it. `TELNYX_API_KEY` is shared with `bin-number-manager`; both must hold the same value (see docs/operations.md, "Provider tokens"). The code does not read `MESSAGE_CONFIG_ENCRYPTION_KEYS`; the deployment definition still passes it until a later change removes the line. Roll back the image together with its deployment definition.
+The MessageBird, Telnyx and Twilio credentials are read from the environment variables `MESSAGEBIRD_API_KEY`, `TELNYX_API_KEY`, `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN` only (`bin-common-handler/pkg/envsecret`: not set, empty or an unresolved `[[...]]` placeholder means not configured, an empty token and no error). Nothing is stored in the database and no admin API writes them. `requestexternal` receives a supplier function (`messageconfig.MessagebirdToken()`, `TelnyxToken()`, `Twilio()`) and calls it for every provider request. Never read the token from `config.Get()` in a send path and never cache it. `TELNYX_API_KEY` is shared with `bin-number-manager`; both must hold the same value (see docs/operations.md, "Provider tokens"). The code does not read `MESSAGE_CONFIG_ENCRYPTION_KEYS`; the deployment definition still passes it until a later change removes the line. Roll back the image together with its deployment definition.
 
 ## Architecture Summary
 
 - **No SubscribeHandler** — webhook events arrive via `POST /v1/hooks` from bin-hook-manager
 - **ListenHandler**: consumes `bin-manager.message-manager.request`
-- **Provider dispatch**: an ordered chain, Telnyx first and MessageBird for the targets Telnyx definitively refused (see `pkg/messagehandler/dispatch.go`); a text of more than one segment is promoted to an MMS (`pkg/segmenthandler` counts the segments); goroutine-based async send
+- **Provider dispatch**: an ordered chain that is a value of each message (`pkg/messagehandler/order.go`): the provider that owns the source number first, then the rest of Telnyx, MessageBird; Twilio only for a number that Twilio owns and only when its credentials are set. Never sort or change the shared provider maps (see `pkg/messagehandler/dispatch.go`); a text of more than one segment is promoted to an MMS (`pkg/segmenthandler` counts the segments); goroutine-based async send
 - **Database**: Squirrel SQL builder (not raw SQL); Targets tracked separately per recipient
 
 ## Testing
@@ -79,3 +79,4 @@ go test -v ./pkg/messagehandler -run Test_Send
 Provider webhook endpoints (via bin-hook-manager):
 - MessageBird: `https://hook.voipbin.net/v1.0/messages/messagebird`
 - Telnyx: `https://hook.voipbin.net/v1.0/messages/telnyx`
+- Twilio: `https://hook.voipbin.net/v1.0/messages/twilio` (verified with the Twilio signature; this URL must be the value of `TWILIO_STATUS_CALLBACK_URL`)

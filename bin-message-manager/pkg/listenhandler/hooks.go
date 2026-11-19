@@ -26,13 +26,18 @@ func (h *listenHandler) processV1HooksPost(ctx context.Context, m *sock.Request)
 		return simpleResponse(400), nil
 	}
 
-	if errHook := h.messageHandler.Hook(ctx, req.ReceivedURI, req.ReceivedData); errHook != nil {
+	if errHook := h.messageHandler.Hook(ctx, req.ReceivedURI, req.ReceivedData, req.ReceivedSignature); errHook != nil {
 		log.Errorf("Could not hook the message correctly. err: %v", errHook)
 
 		// only a receipt that could not be stored is answered with an error, so that it can be delivered again. Every
 		// other error is answered with success: a redelivered inbound message would be created twice.
 		if errors.Is(errHook, messagehandler.ErrReceiptRetry) {
 			return simpleResponse(500), nil
+		}
+
+		// a hook that could not be verified is refused, and it is not sent again.
+		if errors.Is(errHook, messagehandler.ErrHookUnauthorized) {
+			return simpleResponse(401), nil
 		}
 	}
 

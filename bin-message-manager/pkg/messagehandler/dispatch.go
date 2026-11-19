@@ -2,6 +2,7 @@ package messagehandler
 
 import (
 	"context"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -15,12 +16,6 @@ import (
 	"monorepo/bin-message-manager/models/target"
 )
 
-// namedSMSProvider is one entry of the ordered sms provider chain.
-type namedSMSProvider struct {
-	name     message.ProviderName
-	provider SMSProvider
-}
-
 // reasons of a promoted target that is sent as sms segments.
 const (
 	fallbackReasonIneligible = "ineligible" // the source or the destination is not a +1 number, so the mms stage is skipped
@@ -32,8 +27,9 @@ const (
 type dispatchSession struct {
 	h         *messageHandler
 	messageID uuid.UUID
-	dests     []string // the destination of each target when the dispatch started, to verify the stored targets
-	parts     []int    // the platform segment count of each target
+	order     []message.ProviderName // the order of the providers of this message, the same for every stage
+	dests     []string               // the destination of each target when the dispatch started, to verify the stored targets
+	parts     []int                  // the platform segment count of each target
 
 	mu         sync.Mutex
 	results    map[int]SendResult // the accepted results by index
@@ -42,10 +38,11 @@ type dispatchSession struct {
 	cbFailures int
 }
 
-func (h *messageHandler) newDispatchSession(messageID uuid.UUID, targets []target.Target) *dispatchSession {
+func (h *messageHandler) newDispatchSession(messageID uuid.UUID, targets []target.Target, order []message.ProviderName) *dispatchSession {
 	s := &dispatchSession{
 		h:         h,
 		messageID: messageID,
+		order:     order,
 		dests:     make([]string, len(targets)),
 		parts:     make([]int, len(targets)),
 		results:   map[int]SendResult{},
@@ -89,14 +86,19 @@ func (s *dispatchSession) fail(i int) {
 	s.failed[i] = true
 }
 
-// providerName returns the provider that accepted the most targets. A tie goes to the first provider of the chain.
+// providerName returns the provider that accepted the most targets. A tie, including no accepted target at all,
+// goes to the provider that is earlier in the order of the message.
 func (s *dispatchSession) providerName() message.ProviderName {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	res := message.ProviderNameTelnyx
+	if len(s.order) == 0 {
+		return message.ProviderNameTelnyx
+	}
+
+	res := s.order[0]
 	best := s.accepted[res]
-	for _, name := range []message.ProviderName{message.ProviderNameMessagebird} {
+	for _, name := range s.order[1:] {
 		if s.accepted[name] > best {
 			res = name
 			best = s.accepted[name]
@@ -256,7 +258,7 @@ func normalizeResults(results []SendResult, count int) []SendResult {
 	return make([]SendResult, count)
 }
 
-// runSMSChain sends the targets at idxs through the ordered sms providers. An accepted target is recorded; a rejected
+// runSMSChain sends the targets at idxs through the sms providers in the order of the message. An accepted target is recorded; a rejected
 // one goes to the next provider; a failed one (result unknown) is not sent again, because it could be a duplicate;
 // what the last provider rejected is failed.
 func (h *messageHandler) runSMSChain(ctx context.Context, s *dispatchSession, source *commonaddress.Address, targets []target.Target, text string, idxs []int) {
@@ -266,23 +268,29 @@ func (h *messageHandler) runSMSChain(ctx context.Context, s *dispatchSession, so
 	})
 
 	remaining := append([]int(nil), idxs...)
-	for _, np := range h.smsProviders {
+	for _, name := range s.order {
 		if len(remaining) == 0 {
 			break
 		}
 
+		provider := h.smsProvider(name)
+		if provider == nil {
+			log.Errorf("There is no sms provider of the name. provider: %s", name)
+			continue
+		}
+
 		stage := remaining
-		results := normalizeResults(np.provider.SendSMS(ctx, s.messageID, source, subset(targets, stage), text, s.callback(ctx, stage)), len(stage))
+		results := normalizeResults(provider.SendSMS(ctx, s.messageID, source, subset(targets, stage), text, s.callback(ctx, stage)), len(stage))
 
 		next := []int{}
 		for j, r := range results {
 			i := stage[j]
 			switch r.Outcome {
 			case SendOutcomeAccepted:
-				s.accept(np.name, i, r)
+				s.accept(name, i, r)
 				if r.ProviderParts > 0 && s.parts[i] > 0 && r.ProviderParts != s.parts[i] {
-					promSegmentMismatchTotal.WithLabelValues(string(np.name)).Inc()
-					log.Infof("The provider counted other segments than the platform. provider: %s, platform: %d, provider_count: %d", np.name, s.parts[i], r.ProviderParts)
+					promSegmentMismatchTotal.WithLabelValues(string(name)).Inc()
+					log.Infof("The provider counted other segments than the platform. provider: %s, platform: %d, provider_count: %d", name, s.parts[i], r.ProviderParts)
 				}
 
 			case SendOutcomeRejected:
@@ -300,12 +308,12 @@ func (h *messageHandler) runSMSChain(ctx context.Context, s *dispatchSession, so
 	}
 }
 
-// dispatchSMS sends an sms through the provider chain and writes the result once.
-func (h *messageHandler) dispatchSMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string) {
+// dispatchSMS sends an sms through the providers in the order of the message and writes the result once.
+func (h *messageHandler) dispatchSMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, order []message.ProviderName) {
 	sendCtx, cancel := context.WithTimeout(ctx, mmsDispatchTimeout)
 	defer cancel()
 
-	s := h.newDispatchSession(messageID, targets)
+	s := h.newDispatchSession(messageID, targets, order)
 
 	idxs := make([]int, len(targets))
 	for i := range idxs {
@@ -328,21 +336,27 @@ func mmsOutcomeLabel(o SendOutcome) string {
 	}
 }
 
-// dispatchMMS sends the targets through telnyx and sends the targets that telnyx refused through messagebird, then
-// writes the final state once. Every target is sent to each provider at most once, and only a definitive refusal leads
-// to the next one, so a target is never sent twice.
+// dispatchMMS sends the targets through the providers in the order of the message, a provider only getting the
+// targets that it may send to and that the providers before it definitively refused, then writes the final state
+// once. Every target is sent to each provider at most once, and only a definitive refusal leads to the next one, so
+// a target is never sent twice.
 //
 // An mms with attached media (promoted == false) never goes out as text only: a target that no provider accepted
 // becomes failed. A promoted message (a text longer than one segment, no media) is different: a target that is not
 // +1 to +1 skips the mms stages, and a target that the mms stages refused is sent as sms segments through the sms
-// provider chain. The price was fixed when the message was created and does not change.
-func (h *messageHandler) dispatchMMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, urls []string, promoted bool) {
+// providers in the same order. The price was fixed when the message was created and does not change.
+func (h *messageHandler) dispatchMMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, urls []string, promoted bool, order []message.ProviderName) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "dispatchMMS",
+		"message_id": messageID,
+	})
+
 	sendCtx, cancel := context.WithTimeout(ctx, mmsDispatchTimeout)
 	defer cancel()
 
-	s := h.newDispatchSession(messageID, targets)
+	s := h.newDispatchSession(messageID, targets, order)
 
-	mmsIdxs := []int{}
+	remaining := []int{}
 	smsIdxs := []int{}
 	for i := range targets {
 		if promoted && !mmsFallbackEligible(source, targets[i]) {
@@ -350,66 +364,90 @@ func (h *messageHandler) dispatchMMS(ctx context.Context, messageID uuid.UUID, s
 			promPromotedFallbackTotal.WithLabelValues(fallbackReasonIneligible, strconv.Itoa(s.parts[i])).Inc()
 			continue
 		}
-		mmsIdxs = append(mmsIdxs, i)
+		remaining = append(remaining, i)
 	}
 
-	// stage 1: telnyx
-	fallbackIdxs := []int{}
-	if len(mmsIdxs) > 0 {
-		results := normalizeResults(h.mmsTelnyx.SendMMS(sendCtx, messageID, source, subset(targets, mmsIdxs), text, urls, s.callback(sendCtx, mmsIdxs)), len(mmsIdxs))
+	// skipped holds the targets for which a provider was passed over because the target does not fit the mms rule
+	// of that provider; lastTried is the last provider that a target was sent to.
+	skipped := map[int]bool{}
+	lastTried := map[int]message.ProviderName{}
+	if len(order) == 0 {
+		order = defaultProviderOrder
+	}
+
+	for _, name := range order {
+		if len(remaining) == 0 {
+			break
+		}
+
+		stage := []int{}
+		for _, i := range remaining {
+			if mmsEligible(name, source, targets[i]) {
+				stage = append(stage, i)
+				continue
+			}
+			skipped[i] = true
+		}
+		if len(stage) == 0 {
+			continue
+		}
+
+		provider := h.mmsProvider(name)
+		if provider == nil {
+			log.Errorf("There is no mms provider of the name. provider: %s", name)
+			continue
+		}
+
+		// the targets that the provider refused stay in remaining for the next provider
+		next := []int{}
+		for _, i := range remaining {
+			if !contains(stage, i) {
+				next = append(next, i)
+			}
+		}
+
+		results := normalizeResults(provider.SendMMS(sendCtx, messageID, source, subset(targets, stage), text, urls, s.callback(sendCtx, stage)), len(stage))
 		for j, r := range results {
-			i := mmsIdxs[j]
+			i := stage[j]
 			if promoted {
-				promPromotedMMSTotal.WithLabelValues("telnyx", mmsOutcomeLabel(r.Outcome)).Inc()
+				promPromotedMMSTotal.WithLabelValues(string(name), mmsOutcomeLabel(r.Outcome)).Inc()
 			}
 
 			switch r.Outcome {
 			case SendOutcomeAccepted:
-				s.accept(message.ProviderNameTelnyx, i, r)
+				s.accept(name, i, r)
 
 			case SendOutcomeRejected:
-				// for a promoted target the split already left only the +1 to +1 targets here.
-				if mmsFallbackEligible(source, targets[i]) {
-					fallbackIdxs = append(fallbackIdxs, i)
-					continue
-				}
-				s.fail(i)
-				promMMSTargetFailedTotal.WithLabelValues("telnyx", "ineligible").Inc()
+				lastTried[i] = name
+				next = append(next, i)
 
 			default:
 				s.fail(i)
-				promMMSTargetFailedTotal.WithLabelValues("telnyx", "error").Inc()
+				promMMSTargetFailedTotal.WithLabelValues(string(name), "error").Inc()
 			}
 		}
+
+		remaining = sortedInts(next)
 	}
 
-	// stage 2: messagebird, only for the targets that telnyx refused
-	if len(fallbackIdxs) > 0 {
-		results := normalizeResults(h.mmsMessagebird.SendMMS(sendCtx, messageID, source, subset(targets, fallbackIdxs), text, urls, s.callback(sendCtx, fallbackIdxs)), len(fallbackIdxs))
-		for j, r := range results {
-			i := fallbackIdxs[j]
-			if promoted {
-				promPromotedMMSTotal.WithLabelValues("messagebird", mmsOutcomeLabel(r.Outcome)).Inc()
-			}
-
-			switch r.Outcome {
-			case SendOutcomeAccepted:
-				s.accept(message.ProviderNameMessagebird, i, r)
-
-			case SendOutcomeRejected:
-				if promoted {
-					smsIdxs = append(smsIdxs, i)
-					promPromotedFallbackTotal.WithLabelValues(fallbackReasonRejected, strconv.Itoa(s.parts[i])).Inc()
-					continue
-				}
-				s.fail(i)
-				promMMSTargetFailedTotal.WithLabelValues("messagebird", "rejected").Inc()
-
-			default:
-				s.fail(i)
-				promMMSTargetFailedTotal.WithLabelValues("messagebird", "error").Inc()
-			}
+	// what no provider accepted: a promoted target goes on as sms segments, a media target is failed
+	for _, i := range remaining {
+		if promoted {
+			smsIdxs = append(smsIdxs, i)
+			promPromotedFallbackTotal.WithLabelValues(fallbackReasonRejected, strconv.Itoa(s.parts[i])).Inc()
+			continue
 		}
+
+		s.fail(i)
+		last, ok := lastTried[i]
+		if !ok {
+			last = order[0]
+		}
+		reason := "rejected"
+		if skipped[i] {
+			reason = "ineligible"
+		}
+		promMMSTargetFailedTotal.WithLabelValues(string(last), reason).Inc()
 	}
 
 	// the promoted targets that were not sent as mms go out as sms segments
@@ -418,4 +456,22 @@ func (h *messageHandler) dispatchMMS(ctx context.Context, messageID uuid.UUID, s
 	}
 
 	h.finalWrite(ctx, s)
+}
+
+// contains tells whether the list has the value.
+func contains(list []int, v int) bool {
+	for _, x := range list {
+		if x == v {
+			return true
+		}
+	}
+
+	return false
+}
+
+// sortedInts sorts the list in place and returns it, so that the targets of a stage keep the order of the message.
+func sortedInts(list []int) []int {
+	sort.Ints(list)
+
+	return list
 }

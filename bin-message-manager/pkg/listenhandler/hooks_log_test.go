@@ -49,7 +49,7 @@ func Test_processRequest_hooksNotLogged(t *testing.T) {
 			mockMessageHandler := messagehandler.NewMockMessageHandler(mc)
 			h := &listenHandler{messageHandler: mockMessageHandler}
 			if tt.callsHk {
-				mockMessageHandler.EXPECT().Hook(gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.hookErr)
+				mockMessageHandler.EXPECT().Hook(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.hookErr)
 			}
 
 			_, _ = h.processRequest(tt.request)
