@@ -56,6 +56,33 @@ func refuseTwilio(reason string) error {
 	return fmt.Errorf("%w: %s", ErrHookUnauthorized, reason)
 }
 
+// verifyTwilioCallback checks the size and the signature of a callback and returns the parsed form. The form is only
+// parsed to compute the signature (fail-closed): any refusal is returned as refuseTwilio does.
+func (h *messageHandler) verifyTwilioCallback(ctx context.Context, data []byte, signature string) (url.Values, error) {
+	if len(data) > twilioCallbackMaxBody {
+		return nil, refuseTwilio(twilioRejectTooLarge)
+	}
+
+	form, err := url.ParseQuery(string(data))
+	if err != nil {
+		return nil, refuseTwilio(twilioRejectMalformed)
+	}
+
+	if h.reqExternal == nil {
+		return nil, refuseTwilio(twilioRejectNotConfigured)
+	}
+	switch errValidate := h.reqExternal.TwilioValidateCallback(ctx, signature, form); {
+	case errValidate == nil:
+		return form, nil
+	case errors.Is(errValidate, requestexternal.ErrTwilioSignatureMissing):
+		return nil, refuseTwilio(twilioRejectMissing)
+	case errors.Is(errValidate, requestexternal.ErrTwilioSignatureInvalid):
+		return nil, refuseTwilio(twilioRejectInvalid)
+	default:
+		return nil, refuseTwilio(twilioRejectNotConfigured)
+	}
+}
+
 // hookTwilio handles a twilio status callback.
 //
 // The request is verified first (fail-closed): the form is only parsed to compute the signature, and without a valid
@@ -67,28 +94,10 @@ func (h *messageHandler) hookTwilio(ctx context.Context, data []byte, signature 
 		"func": "hookTwilio",
 	})
 
-	if len(data) > twilioCallbackMaxBody {
-		return refuseTwilio(twilioRejectTooLarge)
-	}
-
 	// the body carries the numbers, so it is never part of an error or a log line.
-	form, err := url.ParseQuery(string(data))
+	form, err := h.verifyTwilioCallback(ctx, data, signature)
 	if err != nil {
-		return refuseTwilio(twilioRejectMalformed)
-	}
-
-	if h.reqExternal == nil {
-		return refuseTwilio(twilioRejectNotConfigured)
-	}
-	switch errValidate := h.reqExternal.TwilioValidateCallback(ctx, signature, form); {
-	case errValidate == nil:
-		// verified
-	case errors.Is(errValidate, requestexternal.ErrTwilioSignatureMissing):
-		return refuseTwilio(twilioRejectMissing)
-	case errors.Is(errValidate, requestexternal.ErrTwilioSignatureInvalid):
-		return refuseTwilio(twilioRejectInvalid)
-	default:
-		return refuseTwilio(twilioRejectNotConfigured)
+		return err
 	}
 
 	// only a status callback changes a target; an incoming message (no MessageStatus) is out of scope.

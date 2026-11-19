@@ -346,127 +346,158 @@ func mmsOutcomeLabel(o SendOutcome) string {
 // +1 to +1 skips the mms stages, and a target that the mms stages refused is sent as sms segments through the sms
 // providers in the same order. The price was fixed when the message was created and does not change.
 func (h *messageHandler) dispatchMMS(ctx context.Context, messageID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, urls []string, promoted bool, order []message.ProviderName) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "dispatchMMS",
-		"message_id": messageID,
-	})
+	if len(order) == 0 {
+		order = defaultProviderOrder
+	}
 
 	sendCtx, cancel := context.WithTimeout(ctx, mmsDispatchTimeout)
 	defer cancel()
 
-	s := h.newDispatchSession(messageID, targets, order)
-
-	remaining := []int{}
-	smsIdxs := []int{}
-	for i := range targets {
-		if promoted && !mmsFallbackEligible(source, targets[i]) {
-			smsIdxs = append(smsIdxs, i)
-			promPromotedFallbackTotal.WithLabelValues(fallbackReasonIneligible, strconv.Itoa(s.parts[i])).Inc()
-			continue
-		}
-		remaining = append(remaining, i)
+	d := &mmsDispatch{
+		h:         h,
+		s:         h.newDispatchSession(messageID, targets, order),
+		messageID: messageID,
+		source:    source,
+		targets:   targets,
+		text:      text,
+		urls:      urls,
+		promoted:  promoted,
+		skipped:   map[int]bool{},
+		lastTried: map[int]message.ProviderName{},
 	}
 
-	// skipped holds the targets for which a provider was passed over because the target does not fit the mms rule
-	// of that provider; lastTried is the last provider that a target was sent to.
-	skipped := map[int]bool{}
-	lastTried := map[int]message.ProviderName{}
-	if len(order) == 0 {
-		order = defaultProviderOrder
-	}
+	// the targets that skip the mms stages go to the sms chain at once
+	remaining, smsIdxs := d.split()
 
 	for _, name := range order {
 		if len(remaining) == 0 {
 			break
 		}
-
-		stage := []int{}
-		for _, i := range remaining {
-			if mmsEligible(name, source, targets[i]) {
-				stage = append(stage, i)
-				continue
-			}
-			skipped[i] = true
-		}
-		if len(stage) == 0 {
-			continue
-		}
-
-		provider := h.mmsProvider(name)
-		if provider == nil {
-			log.Errorf("There is no mms provider of the name. provider: %s", name)
-			continue
-		}
-
-		// the targets that the provider refused stay in remaining for the next provider
-		next := []int{}
-		for _, i := range remaining {
-			if !contains(stage, i) {
-				next = append(next, i)
-			}
-		}
-
-		results := normalizeResults(provider.SendMMS(sendCtx, messageID, source, subset(targets, stage), text, urls, s.callback(sendCtx, stage)), len(stage))
-		for j, r := range results {
-			i := stage[j]
-			if promoted {
-				promPromotedMMSTotal.WithLabelValues(string(name), mmsOutcomeLabel(r.Outcome)).Inc()
-			}
-
-			switch r.Outcome {
-			case SendOutcomeAccepted:
-				s.accept(name, i, r)
-
-			case SendOutcomeRejected:
-				lastTried[i] = name
-				next = append(next, i)
-
-			default:
-				s.fail(i)
-				promMMSTargetFailedTotal.WithLabelValues(string(name), "error").Inc()
-			}
-		}
-
-		remaining = sortedInts(next)
+		remaining = d.stage(sendCtx, name, remaining)
 	}
 
 	// what no provider accepted: a promoted target goes on as sms segments, a media target is failed
-	for _, i := range remaining {
-		if promoted {
+	smsIdxs = append(smsIdxs, d.finish(remaining, order[0])...)
+
+	// the promoted targets that were not sent as mms go out as sms segments
+	if len(smsIdxs) > 0 {
+		h.runSMSChain(sendCtx, d.s, source, targets, text, smsIdxs)
+	}
+
+	h.finalWrite(ctx, d.s)
+}
+
+// mmsDispatch is the state of one dispatchMMS call. It is used by a single goroutine, so the maps need no lock.
+type mmsDispatch struct {
+	h         *messageHandler
+	s         *dispatchSession
+	messageID uuid.UUID
+	source    *commonaddress.Address
+	targets   []target.Target
+	text      string
+	urls      []string
+	promoted  bool
+
+	// skipped holds the targets for which a provider was passed over because the target does not fit the mms
+	// rule of that provider; lastTried is the last provider that a target was sent to.
+	skipped   map[int]bool
+	lastTried map[int]message.ProviderName
+}
+
+// split returns the targets that go through the mms stages and the targets that skip them: a promoted message
+// is sent as mms only to a +1 to +1 target.
+func (d *mmsDispatch) split() (remaining []int, smsIdxs []int) {
+	remaining = []int{}
+	smsIdxs = []int{}
+	for i := range d.targets {
+		if d.promoted && !mmsFallbackEligible(d.source, d.targets[i]) {
 			smsIdxs = append(smsIdxs, i)
-			promPromotedFallbackTotal.WithLabelValues(fallbackReasonRejected, strconv.Itoa(s.parts[i])).Inc()
+			promPromotedFallbackTotal.WithLabelValues(fallbackReasonIneligible, strconv.Itoa(d.s.parts[i])).Inc()
+			continue
+		}
+		remaining = append(remaining, i)
+	}
+
+	return remaining, smsIdxs
+}
+
+// stage sends the targets that the provider may send to and returns the targets that go on to the next provider:
+// the ones that were passed over and the ones that the provider definitively refused, in the order of the message.
+func (d *mmsDispatch) stage(ctx context.Context, name message.ProviderName, remaining []int) []int {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "dispatchMMS",
+		"message_id": d.messageID,
+	})
+
+	stage := []int{}
+	next := []int{}
+	for _, i := range remaining {
+		if mmsEligible(name, d.source, d.targets[i]) {
+			stage = append(stage, i)
+			continue
+		}
+		d.skipped[i] = true
+		next = append(next, i)
+	}
+	if len(stage) == 0 {
+		return remaining
+	}
+
+	provider := d.h.mmsProvider(name)
+	if provider == nil {
+		log.Errorf("There is no mms provider of the name. provider: %s", name)
+		return remaining
+	}
+
+	results := normalizeResults(provider.SendMMS(ctx, d.messageID, d.source, subset(d.targets, stage), d.text, d.urls, d.s.callback(ctx, stage)), len(stage))
+	for j, r := range results {
+		i := stage[j]
+		if d.promoted {
+			promPromotedMMSTotal.WithLabelValues(string(name), mmsOutcomeLabel(r.Outcome)).Inc()
+		}
+
+		switch r.Outcome {
+		case SendOutcomeAccepted:
+			d.s.accept(name, i, r)
+
+		case SendOutcomeRejected:
+			d.lastTried[i] = name
+			next = append(next, i)
+
+		default:
+			d.s.fail(i)
+			promMMSTargetFailedTotal.WithLabelValues(string(name), "error").Inc()
+		}
+	}
+
+	return sortedInts(next)
+}
+
+// finish handles the targets that no provider accepted. A promoted target is returned to be sent as sms
+// segments; a media target is failed and counted with the last provider that it was sent to (the first provider
+// of the order when none was tried), and with the reason ineligible when a provider was passed over.
+func (d *mmsDispatch) finish(remaining []int, first message.ProviderName) []int {
+	smsIdxs := []int{}
+	for _, i := range remaining {
+		if d.promoted {
+			smsIdxs = append(smsIdxs, i)
+			promPromotedFallbackTotal.WithLabelValues(fallbackReasonRejected, strconv.Itoa(d.s.parts[i])).Inc()
 			continue
 		}
 
-		s.fail(i)
-		last, ok := lastTried[i]
+		d.s.fail(i)
+		last, ok := d.lastTried[i]
 		if !ok {
-			last = order[0]
+			last = first
 		}
 		reason := "rejected"
-		if skipped[i] {
+		if d.skipped[i] {
 			reason = "ineligible"
 		}
 		promMMSTargetFailedTotal.WithLabelValues(string(last), reason).Inc()
 	}
 
-	// the promoted targets that were not sent as mms go out as sms segments
-	if len(smsIdxs) > 0 {
-		h.runSMSChain(sendCtx, s, source, targets, text, smsIdxs)
-	}
-
-	h.finalWrite(ctx, s)
-}
-
-// contains tells whether the list has the value.
-func contains(list []int, v int) bool {
-	for _, x := range list {
-		if x == v {
-			return true
-		}
-	}
-
-	return false
+	return smsIdxs
 }
 
 // sortedInts sorts the list in place and returns it, so that the targets of a stage keep the order of the message.
