@@ -75,7 +75,7 @@ func initMessageHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (message
 }
 
 func newRequestExternal() requestexternal.RequestExternal {
-	return requestexternal.NewRequestExternal(messageconfig.MessagebirdToken(), messageconfig.TelnyxToken())
+	return requestexternal.NewRequestExternal(messageconfig.MessagebirdToken(), messageconfig.TelnyxToken(), messageconfig.Twilio())
 }
 
 func initCommand() *cobra.Command {

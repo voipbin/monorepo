@@ -22,6 +22,7 @@ var digitRun = regexp.MustCompile(`[0-9]{6,}`)
 //
 // Telnyx: {"errors":[{"code":"40301","title":"...","detail":"..."}]}
 // Messagebird: {"errors":[{"code":2,"description":"...","parameter":"..."}]}
+// Twilio: {"code":21211,"message":"...","more_info":"...","status":400}
 func providerErrorDetail(body io.Reader) string {
 	raw, err := io.ReadAll(io.LimitReader(body, providerErrorBodyLimit))
 	if err != nil {
@@ -29,7 +30,9 @@ func providerErrorDetail(body io.Reader) string {
 	}
 
 	var parsed struct {
-		Errors []struct {
+		Code    any    `json:"code"`
+		Message string `json:"message"`
+		Errors  []struct {
 			Code        any    `json:"code"`
 			Title       string `json:"title"`
 			Detail      string `json:"detail"`
@@ -61,6 +64,14 @@ func providerErrorDetail(body io.Reader) string {
 		if text != "" {
 			parts = append(parts, text)
 		}
+	}
+
+	if len(parts) == 0 && parsed.Message != "" {
+		text := parsed.Message
+		if parsed.Code != nil {
+			text = strings.TrimSpace(fmt.Sprintf("code %v %s", parsed.Code, text))
+		}
+		parts = append(parts, text)
 	}
 
 	res := digitRun.ReplaceAllString(strings.Join(parts, "; "), "<num>")

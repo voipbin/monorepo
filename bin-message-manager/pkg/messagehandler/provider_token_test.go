@@ -32,7 +32,7 @@ func Test_classifyError_tokenUnavailable(t *testing.T) {
 // request layer sends nothing (the supplier fails before a request is built).
 func Test_providers_tokenUnavailable(t *testing.T) {
 	failing := func(context.Context) (string, error) { return "", errTestTokenRead }
-	ext := requestexternal.NewRequestExternal(failing, failing)
+	ext := requestexternal.NewRequestExternal(failing, failing, requestexternal.TwilioConfig{})
 
 	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+1555****0001"}
 	targets := testTargets("+1555****0002", "+1555****0003")

@@ -172,7 +172,7 @@ func Test_resolveSource_supplied(t *testing.T) {
 			tt.expect(f)
 
 			src := &commonaddress.Address{Type: commonaddress.TypeTel, Target: testSourceOwned, TargetName: "main"}
-			res, err := f.handler.resolveSource(context.Background(), testCustomerID, src)
+			res, _, err := f.handler.resolveSource(context.Background(), testCustomerID, src)
 
 			if tt.expectReason != "" {
 				if res != nil {
@@ -196,7 +196,7 @@ func Test_resolveSource_cancelledContext(t *testing.T) {
 	f.req.EXPECT().NumberV1NumberList(gomock.Any(), "", uint64(1), gomock.Any()).Return(nil, context.Canceled)
 
 	src := &commonaddress.Address{Type: commonaddress.TypeTel, Target: testSourceOwned}
-	res, err := f.handler.resolveSource(context.Background(), testCustomerID, src)
+	res, _, err := f.handler.resolveSource(context.Background(), testCustomerID, src)
 	if res != nil {
 		t.Errorf("Wrong match. expect: nil, got: %v", res)
 	}
@@ -262,7 +262,7 @@ func Test_resolveSource_default(t *testing.T) {
 			f := newSendFixture(t)
 			tt.expect(f)
 
-			res, err := f.handler.resolveSource(context.Background(), testCustomerID, nil)
+			res, _, err := f.handler.resolveSource(context.Background(), testCustomerID, nil)
 
 			if tt.expectReason != "" {
 				if res != nil {

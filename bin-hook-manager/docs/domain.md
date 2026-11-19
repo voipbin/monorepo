@@ -17,6 +17,8 @@ Forwarded to: `email-manager`
 Inbound SMS/MMS event notifications from carrier/aggregator.
 Forwarded to: `message-manager`
 
+The Twilio delivery callback (`/v1.0/messages/twilio`) is forwarded with its `X-Twilio-Signature` header as `received_signature` (the Telnyx path does not carry it). `bin-hook-manager` does not verify the signature and holds no Twilio secret; the message service verifies it and is the only place that does. A request without the header, a body larger than 64 KiB, or a 401 answer from the message service is returned as 400, so Twilio does not send it again; every other error stays 500.
+
 ### Conversation Webhooks (`/v1.0/conversation`)
 Inbound conversation events (LINE platform webhooks, etc.).
 Forwarded to: `conversation-manager`

@@ -65,8 +65,9 @@ This service has **no SubscribeHandler** and subscribes to no external events. P
 | MySQL | Persistent storage for messages and targets |
 | Redis | Message lookup cache |
 | RabbitMQ | RPC request queue + event publishing |
-| MessageBird API | Primary SMS gateway |
-| Telnyx API | Secondary SMS gateway (fallback) |
+| MessageBird API | SMS and MMS gateway |
+| Telnyx API | SMS and MMS gateway |
+| Twilio API | SMS and MMS gateway (used for the numbers that Twilio owns, when its credentials are set) |
 
 ## Services That Depend on This Service
 

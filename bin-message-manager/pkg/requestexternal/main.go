@@ -5,11 +5,13 @@ package requestexternal
 import (
 	"context"
 	"errors"
+	"net/url"
 
 	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-message-manager/models/messagebird"
 	"monorepo/bin-message-manager/models/telnyx"
+	"monorepo/bin-message-manager/models/twilio"
 )
 
 var (
@@ -44,6 +46,12 @@ type RequestExternal interface {
 	// telnyx
 	TelnyxSendMessage(ctx context.Context, source string, destination string, text string) (*telnyx.MessageResponse, error)
 	TelnyxSendMMS(ctx context.Context, source string, destination string, text string, mediaURLs []string) (*telnyx.MessageResponse, error)
+
+	// twilio
+	TwilioAvailable(ctx context.Context) bool
+	TwilioSendSMS(ctx context.Context, source string, destination string, text string) (*twilio.MessageResponse, error)
+	TwilioSendMMS(ctx context.Context, source string, destination string, text string, mediaURLs []string) (*twilio.MessageResponse, error)
+	TwilioValidateCallback(ctx context.Context, signature string, form url.Values) error
 }
 
 // TokenFunc hands a provider token to the request at the time of use. Nothing is cached by the
@@ -66,13 +74,15 @@ func IsTokenUnavailable(err error) bool {
 type requestExternal struct {
 	authtokenMessagebird TokenFunc // supplies the authentication token for messagebird
 	authtokenTelnyx      TokenFunc // supplies the authentication token for telnyx
+	twilio               TwilioConfig
 }
 
-// NewRequestExternal create RequestExternal. The tokens are asked for on every request.
-func NewRequestExternal(authtokenMessagebird TokenFunc, authtokenTelnyx TokenFunc) RequestExternal {
+// NewRequestExternal create RequestExternal. The tokens and the Twilio settings are asked for on every request.
+func NewRequestExternal(authtokenMessagebird TokenFunc, authtokenTelnyx TokenFunc, twilioConfig TwilioConfig) RequestExternal {
 	h := &requestExternal{
 		authtokenMessagebird: authtokenMessagebird,
 		authtokenTelnyx:      authtokenTelnyx,
+		twilio:               twilioConfig,
 	}
 
 	return h

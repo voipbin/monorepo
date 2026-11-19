@@ -62,10 +62,11 @@ func (h *messageHandler) SendMMS(ctx context.Context, id uuid.UUID, customerID u
 	// the sender must be a number of the customer. The lookups use the parent context and run before the deadline of the
 	// media check starts, so a slow number-manager can neither end the media check with MEDIA_CHECK_TIMEOUT nor skew its
 	// metric.
-	source, err = h.resolveSource(ctx, customerID, preparedSource)
+	source, owner, err := h.resolveSource(ctx, customerID, preparedSource)
 	if err != nil {
 		return nil, err
 	}
+	order := h.providerOrder(ctx, owner)
 
 	// one deadline for the media validation, the balance check in between and the url refresh. A slow
 	// balance check can therefore end the url refresh with MEDIA_CHECK_TIMEOUT, which is safe because
@@ -103,7 +104,7 @@ func (h *messageHandler) SendMMS(ctx context.Context, id uuid.UUID, customerID u
 	}
 	promMMSMediaCheckSeconds.Observe(time.Since(tmStart).Seconds())
 
-	res, err := h.createMMS(ctx, id, customerID, source, targets, text, medias)
+	res, err := h.createMMS(ctx, id, customerID, source, targets, text, medias, order[0])
 	if err != nil {
 		log.Errorf("Could not create a new message. err: %v", err)
 		return nil, err
@@ -112,14 +113,14 @@ func (h *messageHandler) SendMMS(ctx context.Context, id uuid.UUID, customerID u
 	// the goroutine gets its own copies, so it shares nothing with the stored message.
 	sourceCopy := *source
 	targetsCopy := append([]target.Target(nil), targets...)
-	go h.dispatchMMS(ctx, res.ID, &sourceCopy, targetsCopy, text, urls, false)
+	go h.dispatchMMS(ctx, res.ID, &sourceCopy, targetsCopy, text, urls, false, order)
 
 	return res, nil
 }
 
-// createMMS creates the message record of an mms. The provider is the first one that is tried,
+// createMMS creates the message record of an mms. The provider is the first one of the order of the message,
 // and the final write of the dispatch replaces it with the provider that accepted the targets.
-func (h *messageHandler) createMMS(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, medias []uuid.UUID) (*message.Message, error) {
+func (h *messageHandler) createMMS(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string, medias []uuid.UUID, provider message.ProviderName) (*message.Message, error) {
 	if id == uuid.Nil {
 		id = h.utilHandler.UUIDCreate()
 	}
@@ -139,7 +140,7 @@ func (h *messageHandler) createMMS(ctx context.Context, id uuid.UUID, customerID
 		Source:  source,
 		Targets: targets,
 
-		ProviderName: message.ProviderNameTelnyx,
+		ProviderName: provider,
 
 		Text:      text,
 		Medias:    mediaIDs,

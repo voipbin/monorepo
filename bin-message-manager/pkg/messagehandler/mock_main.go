@@ -74,17 +74,17 @@ func (mr *MockMessageHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Hook mocks base method.
-func (m_2 *MockMessageHandler) Hook(ctx context.Context, uri string, m []byte) error {
+func (m_2 *MockMessageHandler) Hook(ctx context.Context, uri string, m []byte, signature string) error {
 	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "Hook", ctx, uri, m)
+	ret := m_2.ctrl.Call(m_2, "Hook", ctx, uri, m, signature)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Hook indicates an expected call of Hook.
-func (mr *MockMessageHandlerMockRecorder) Hook(ctx, uri, m any) *gomock.Call {
+func (mr *MockMessageHandlerMockRecorder) Hook(ctx, uri, m, signature any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hook", reflect.TypeOf((*MockMessageHandler)(nil).Hook), ctx, uri, m)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hook", reflect.TypeOf((*MockMessageHandler)(nil).Hook), ctx, uri, m, signature)
 }
 
 // List mocks base method.

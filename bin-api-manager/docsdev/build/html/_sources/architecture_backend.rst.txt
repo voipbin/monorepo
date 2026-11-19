@@ -421,7 +421,7 @@ This service receives external webhooks and routes them internally:
     External Webhook Flow:
 
     External Provider                       VoIPBin Internal
-    (Telnyx, MessageBird)                   Services
+    (Telnyx, MessageBird, Twilio)           Services
          |                                      |
          | HTTPS POST                           |
          | /v1.0/hooks/messages                 |
@@ -438,7 +438,7 @@ This service receives external webhooks and routes them internally:
 
 * **Public Endpoint**: Receives webhooks from external providers
 * **Message Routing**: Forwards to internal services via RabbitMQ
-* **Provider Support**: Handles Telnyx, MessageBird delivery notifications
+* **Provider Support**: Handles Telnyx, MessageBird, Twilio delivery notifications (the Twilio signature is checked by the message service)
 * **Thin Proxy**: No business logic, just routing
 
 Service Independence

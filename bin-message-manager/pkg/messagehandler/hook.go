@@ -36,8 +36,13 @@ const receiptWindow = 7 * 24 * time.Hour
 // deliver the receipt again; processing a receipt twice is safe because a target only moves forward.
 var ErrReceiptRetry = errors.New("the receipt could not be processed, retry")
 
-// Hook handles hook message
-func (h *messageHandler) Hook(ctx context.Context, uri string, data []byte) error {
+// ErrHookUnauthorized marks a hook message that was refused because it could not be verified: the signature is
+// missing or wrong, the verification is not configured, or the body is malformed. The listen handler answers 401 for
+// it. It is never ErrReceiptRetry: a refused callback must not be sent again.
+var ErrHookUnauthorized = errors.New("the hook message could not be verified")
+
+// Hook handles hook message. signature is the signature header of the provider request; only the twilio hook uses it.
+func (h *messageHandler) Hook(ctx context.Context, uri string, data []byte, signature string) error {
 	var m *message.Message
 	var num *nmnumber.Number
 	var err error
@@ -47,6 +52,12 @@ func (h *messageHandler) Hook(ctx context.Context, uri string, data []byte) erro
 		if err != nil {
 			return errors.Wrapf(err, "Could not handle the hook message. uri: %s", uri)
 		}
+
+	case strings.HasSuffix(uri, "/"+hookTwilio):
+		if err = h.hookTwilio(ctx, data, signature); err != nil {
+			return errors.Wrapf(err, "Could not handle the hook message. uri: %s", uri)
+		}
+		return nil
 
 	default:
 		return fmt.Errorf("unknown hook uri. uri: %s", uri)

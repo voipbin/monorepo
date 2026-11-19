@@ -71,10 +71,11 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 
 	// the sender must be a number of the customer; this is the first check that calls another service, so a rejected
 	// request has no side effect and costs nothing.
-	source, err = h.resolveSource(ctx, customerID, preparedSource)
+	source, owner, err := h.resolveSource(ctx, customerID, preparedSource)
 	if err != nil {
 		return nil, err
 	}
+	order := h.providerOrder(ctx, owner)
 
 	promoted := count.Segments > smsPromoteSegments
 	msgType := message.TypeSMS
@@ -105,9 +106,9 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 		return nil, fmt.Errorf("insufficient balance for message")
 	}
 
-	// the first provider of the chain is recorded; the final write of the dispatch replaces it with the provider that
-	// accepted the most targets.
-	res, err := h.create(ctx, id, customerID, source, targets, message.ProviderNameTelnyx, text, message.DirectionOutbound, msgType)
+	// the first provider of the order of the message is recorded; the final write of the dispatch replaces it with the
+	// provider that accepted the most targets.
+	res, err := h.create(ctx, id, customerID, source, targets, order[0], text, message.DirectionOutbound, msgType)
 	if err != nil {
 		log.Errorf("Could not create a new message. err: %v", err)
 		return nil, err
@@ -121,9 +122,9 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 	sourceCopy := *source
 	targetsCopy := append([]target.Target(nil), targets...)
 	if promoted {
-		go h.dispatchMMS(ctx, res.ID, &sourceCopy, targetsCopy, text, nil, true)
+		go h.dispatchMMS(ctx, res.ID, &sourceCopy, targetsCopy, text, nil, true, order)
 	} else {
-		go h.dispatchSMS(ctx, res.ID, &sourceCopy, targetsCopy, text)
+		go h.dispatchSMS(ctx, res.ID, &sourceCopy, targetsCopy, text, order)
 	}
 
 	return res, nil

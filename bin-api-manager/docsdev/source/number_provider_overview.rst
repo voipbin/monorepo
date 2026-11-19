@@ -34,6 +34,12 @@ A fallback is useful only when the next carrier holds the same number. The avail
    ``telnyx`` and ``twilio`` can purchase numbers. ``twilio`` is listed with ``enabled`` false and takes part in a purchase only after its ``TWILIO_AUTH_TOKEN`` is set on the platform, its ``config`` (``sid`` and ``trunk_sid``) is complete (``sid`` can come from ``TWILIO_ACCOUNT_SID``), and an administrator enables it. A carrier without its secret variable cannot purchase, release or search.
 
 
+Sending Messages
+----------------
+SMS and MMS are sent through the carrier that owns the source number first. The carrier of a number is the ``provider_name`` of the number. The other carriers (``telnyx``, ``messagebird``) only get the targets that the first carrier definitively refused. A number without a carrier, or a carrier that cannot send messages, uses the default order (``telnyx``, then ``messagebird``). If the outcome of a send is unknown (for example a timeout), the target is not sent through another carrier, so a message is never delivered twice.
+
+``twilio`` sends messages only when ``TWILIO_ACCOUNT_SID`` and ``TWILIO_AUTH_TOKEN`` are both set on ``message-manager``, and it is used for the numbers that ``twilio`` owns only (it is not a fallback of a ``telnyx`` or ``messagebird`` number). MMS through ``twilio`` is limited to ``+1`` numbers (the United States and Canada). Delivery status comes back through the Twilio status callback (``/v1.0/messages/twilio`` on the hook endpoint), which is verified with the Twilio signature. The ``priority`` and ``enabled`` of the settings do not apply to sending messages.
+
 Credentials
 -----------
 The secret of a carrier is read from the environment of ``number-manager`` only: ``TELNYX_API_KEY`` for ``telnyx`` and ``TWILIO_AUTH_TOKEN`` for ``twilio``. Change the environment variable and restart ``number-manager`` to rotate a secret.

@@ -157,11 +157,11 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler, cfg *config.Confi
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	// The provider tokens are read from the environment (MESSAGEBIRD_API_KEY, TELNYX_API_KEY) when a
-	// message is sent.
+	// The provider tokens are read from the environment (MESSAGEBIRD_API_KEY, TELNYX_API_KEY, TWILIO_ACCOUNT_SID,
+	// TWILIO_AUTH_TOKEN) when a message is sent.
 	messageconfig.LogStates()
 
-	requestExternal := requestexternal.NewRequestExternal(messageconfig.MessagebirdToken(), messageconfig.TelnyxToken())
+	requestExternal := requestexternal.NewRequestExternal(messageconfig.MessagebirdToken(), messageconfig.TelnyxToken(), messageconfig.Twilio())
 
 	messageHandler := messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, requestExternal)
 	listenHandler := listenhandler.NewListenHandler(sockHandler, messageHandler)

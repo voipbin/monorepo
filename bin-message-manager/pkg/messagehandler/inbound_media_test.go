@@ -426,7 +426,7 @@ func Test_hookTelnyx_mms(t *testing.T) {
 	f.mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), f.customerID, message.EventTypeMessageUpdated, updated).Do(func(_ context.Context, _ uuid.UUID, _ string, _ any) { close(done) })
 
 	body := mmsHookBody("message.received", "MMS", `[{"url":"`+testHookMediaURL+`","content_type":"image/jpeg","size":1234,"sha256":"00"}]`)
-	if err := f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", body); err != nil {
+	if err := f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", body, ""); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 
@@ -470,7 +470,7 @@ func Test_hookTelnyx_noIngest(t *testing.T) {
 				f.expectCreate(t, tt.expectType)
 			}
 
-			if err := f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", mmsHookBody(tt.eventType, tt.msgType, tt.media)); err != nil {
+			if err := f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", mmsHookBody(tt.eventType, tt.msgType, tt.media), ""); err != nil {
 				t.Fatalf("Wrong match. expect: ok, got: %v", err)
 			}
 			time.Sleep(20 * time.Millisecond) // a wrongly started ingest would call a mock that has no expectation
@@ -488,7 +488,7 @@ func Test_hookTelnyx_parseCounter(t *testing.T) {
 
 	before := counterValue(FetchResultParse)
 	body := mmsHookBody("message.received", "MMS", `[{"url":"x","size":"big"},{"url":"y","size":"big"}]`)
-	if err := f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", body); err != nil {
+	if err := f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", body, ""); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 	if got := counterValue(FetchResultParse) - before; got != 2 {
@@ -506,7 +506,7 @@ func Test_hookTelnyx_createError(t *testing.T) {
 	f.mockDB.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).Return(errors.New("simulated"))
 
 	body := mmsHookBody("message.received", "MMS", `[{"url":"`+testHookMediaURL+`","content_type":"image/jpeg"}]`)
-	if err := f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", body); err == nil {
+	if err := f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", body, ""); err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
 	time.Sleep(20 * time.Millisecond)
@@ -522,7 +522,7 @@ func Test_hookTelnyx_logsNoURL(t *testing.T) {
 
 	// an unreadable body that still carries a url: the error text and the logs must not repeat it.
 	bad := []byte(`{"data": {"payload": {"media": [{"url":"` + testHookMediaURL + `"}], "to": 5`)
-	err := f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", bad)
+	err := f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", bad, "")
 	if err == nil {
 		t.Fatalf("Wrong match. expect: error, got: nil")
 	}
@@ -533,7 +533,7 @@ func Test_hookTelnyx_logsNoURL(t *testing.T) {
 	// a body that parses but names an unknown number.
 	f.mockReq.EXPECT().NumberV1NumberList(gomock.Any(), "", uint64(1), gomock.Any()).Return(nil, nil)
 	body := mmsHookBody("message.received", "MMS", `[{"url":"`+testHookMediaURL+`","content_type":"image/jpeg"}]`)
-	err = f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", body)
+	err = f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", body, "")
 	if err == nil {
 		t.Fatalf("Wrong match. expect: error, got: nil")
 	}
@@ -650,7 +650,7 @@ func Test_hookTelnyx_mmsWithoutMedia(t *testing.T) {
 	f.expectCreate(t, message.TypeMMS)
 
 	before := counterValue(FetchResultBusy)
-	if err := f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", mmsHookBody("message.received", "MMS", `[]`)); err != nil {
+	if err := f.h.Hook(context.Background(), "https://hook.example.net/v1.0/hooks/telnyx", mmsHookBody("message.received", "MMS", `[]`), ""); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 	if got := counterValue(FetchResultBusy) - before; got != 0 {

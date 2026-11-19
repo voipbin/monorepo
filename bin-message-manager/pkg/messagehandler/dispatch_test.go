@@ -151,7 +151,7 @@ func Test_dispatchSMS(t *testing.T) {
 				f.smsBird.EXPECT().SendSMS(gomock.Any(), testMessageID, source, tt.expectBird, "hello", gomock.Any()).Return(tt.bird).Times(1)
 			}
 
-			f.handler.dispatchSMS(context.Background(), testMessageID, source, tt.targets, "hello")
+			f.handler.dispatchSMS(context.Background(), testMessageID, source, tt.targets, "hello", defaultProviderOrder)
 
 			got := f.mem.targets()
 			if !reflect.DeepEqual(statusesOf(got), tt.expectStatus) {
@@ -185,7 +185,7 @@ func Test_dispatchSMS_segmentMismatch(t *testing.T) {
 		result(SendOutcomeAccepted, "t-3", 3), // different
 	})
 
-	f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "hello")
+	f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "hello", defaultProviderOrder)
 
 	if got := promValue(t, "message_manager_segment_mismatch_total", map[string]string{"provider": "telnyx"}) - before; got != 2 {
 		t.Errorf("Wrong mismatch count. expect: 2, got: %v", got)
@@ -356,7 +356,7 @@ func Test_dispatchMMS_promoted(t *testing.T) {
 				f.smsBird.EXPECT().SendSMS(gomock.Any(), testMessageID, tt.source, tt.smsBirdTo, "long text", gomock.Any()).Return(tt.smsBird).Times(1)
 			}
 
-			f.handler.dispatchMMS(context.Background(), testMessageID, tt.source, tt.targets, "long text", nil, true)
+			f.handler.dispatchMMS(context.Background(), testMessageID, tt.source, tt.targets, "long text", nil, true, defaultProviderOrder)
 
 			got := f.mem.targets()
 			if !reflect.DeepEqual(statusesOf(got), tt.expectStatus) {
@@ -384,7 +384,7 @@ func Test_dispatchMMS_attachedIsUnchanged(t *testing.T) {
 
 	f.mmsTelnyx.EXPECT().SendMMS(gomock.Any(), testMessageID, source, targets, "hi", []string{"https://example.invalid/a.png"}, gomock.Any()).Return(outs(SendOutcomeRejected))
 
-	f.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "hi", []string{"https://example.invalid/a.png"}, false)
+	f.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "hi", []string{"https://example.invalid/a.png"}, false, defaultProviderOrder)
 
 	if got := f.mem.targets(); got[0].Status != target.StatusFailed {
 		t.Errorf("Wrong status. expect: failed, got: %v", got[0].Status)
@@ -416,7 +416,7 @@ func Test_dispatchMMS_promotedMetrics(t *testing.T) {
 	f.mmsBird.EXPECT().SendMMS(gomock.Any(), testMessageID, source, withParts(testTargets(usDest1), 7), "x", gomock.Nil(), gomock.Any()).Return(outs(SendOutcomeRejected))
 	f.smsTelnyx.EXPECT().SendSMS(gomock.Any(), testMessageID, source, gomock.Any(), "x", gomock.Any()).Return(outs(SendOutcomeAccepted, SendOutcomeAccepted))
 
-	f.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "x", nil, true)
+	f.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "x", nil, true, defaultProviderOrder)
 
 	if mmsRejected()-b1 != 1 || mmsBirdRejected()-b2 != 1 {
 		t.Errorf("Wrong promoted_mms_total. telnyx delta: %v, messagebird delta: %v", mmsRejected()-b1, mmsBirdRejected()-b2)
@@ -454,7 +454,7 @@ func Test_dispatch_callbackStoresTheIdAtOnce(t *testing.T) {
 	f.mmsBird.EXPECT().SendMMS(gomock.Any(), testMessageID, source, withParts(testTargets(usDest1), 2), "x", gomock.Nil(), gomock.Any()).Return(outs(SendOutcomeAccepted))
 	f.smsTelnyx.EXPECT().SendSMS(gomock.Any(), testMessageID, source, withParts(testTargets(krDest), 2), "x", gomock.Any()).Return([]SendResult{result(SendOutcomeAccepted, "s-0", 2)})
 
-	f.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "x", nil, true)
+	f.handler.dispatchMMS(context.Background(), testMessageID, source, targets, "x", nil, true, defaultProviderOrder)
 
 	got := f.mem.targets()
 	if got[2].Status != target.StatusDelivered {
@@ -486,7 +486,7 @@ func Test_dispatch_callbackCircuitBreaker(t *testing.T) {
 			return out
 		})
 
-	f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "x")
+	f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "x", defaultProviderOrder)
 
 	// 3 failed callbacks, the others are skipped, then the final write tries once before the merge.
 	f.mem.mu.Lock()
@@ -520,7 +520,7 @@ func Test_dispatch_finalWrite(t *testing.T) {
 		}
 		f.smsTelnyx.EXPECT().SendSMS(gomock.Any(), testMessageID, source, targets, "x", gomock.Any()).Return([]SendResult{result(SendOutcomeAccepted, "t-1", 1)})
 
-		f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "x")
+		f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "x", defaultProviderOrder)
 
 		got := f.mem.targets()
 		if got[0].Status != target.StatusDelivered || got[0].ProviderReferenceID != "t-1" {
@@ -537,7 +537,7 @@ func Test_dispatch_finalWrite(t *testing.T) {
 		f.mem.setTargets(func(ts []target.Target) { ts[0].Status = target.StatusSent })
 		f.smsTelnyx.EXPECT().SendSMS(gomock.Any(), testMessageID, source, targets, "x", gomock.Any()).Return(outs(SendOutcomeFailed))
 
-		f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "x")
+		f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "x", defaultProviderOrder)
 
 		if got := f.mem.targets(); got[0].Status != target.StatusSent {
 			t.Errorf("Wrong status. expect: sent, got: %v", got[0].Status)
@@ -554,7 +554,7 @@ func Test_dispatch_finalWrite(t *testing.T) {
 		f.mem.forceConflicts = 1 << 30
 		f.smsTelnyx.EXPECT().SendSMS(gomock.Any(), testMessageID, source, targets, "x", gomock.Any()).Return([]SendResult{result(SendOutcomeAccepted, "t-1", 1)})
 
-		f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "x")
+		f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "x", defaultProviderOrder)
 
 		if f.mem.mergeCalls != 1 {
 			t.Errorf("Wrong merge calls. expect: 1, got: %d", f.mem.mergeCalls)
@@ -573,7 +573,7 @@ func Test_dispatch_finalWrite(t *testing.T) {
 		before := promValue(t, "message_manager_dispatch_final_write_failed_total", nil)
 		f.smsTelnyx.EXPECT().SendSMS(gomock.Any(), testMessageID, source, targets, "x", gomock.Any()).Return([]SendResult{result(SendOutcomeAccepted, "t-1", 1)})
 
-		f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "x")
+		f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "x", defaultProviderOrder)
 
 		if f.mem.writes() != 0 {
 			t.Errorf("Nothing may be written. writes: %d", f.mem.writes())
@@ -596,7 +596,7 @@ func Test_dispatch_finalWrite(t *testing.T) {
 				return []SendResult{result(SendOutcomeAccepted, "t-1", 1)}
 			})
 
-		f.handler.dispatchSMS(ctx, testMessageID, source, targets, "x")
+		f.handler.dispatchSMS(ctx, testMessageID, source, targets, "x", defaultProviderOrder)
 
 		f.ev.mu.Lock()
 		defer f.ev.mu.Unlock()
@@ -610,7 +610,7 @@ func Test_dispatch_finalWrite(t *testing.T) {
 		f := newChainFixture(t, targets)
 		f.smsTelnyx.EXPECT().SendSMS(gomock.Any(), testMessageID, source, targets, "x", gomock.Any()).Return([]SendResult{result(SendOutcomeAccepted, "t-1", 3)})
 
-		f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "x")
+		f.handler.dispatchSMS(context.Background(), testMessageID, source, targets, "x", defaultProviderOrder)
 
 		if got := f.mem.targets(); got[0].ProviderReferenceID != "t-1" || got[0].ProviderParts != 3 {
 			t.Errorf("The row lost the provider keys. got: %v", got)

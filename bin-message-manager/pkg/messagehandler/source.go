@@ -68,8 +68,11 @@ func prepareSource(source *commonaddress.Address) (*commonaddress.Address, error
 // number must be a normal, active, not deleted number of the customer, which is checked against number-manager every
 // time because the stored default can be stale (released, deactivated or changed after it was set).
 //
+// The second result is the provider that owns the number (the provider_name of the number row that was read for
+// the check), so the order of the providers of the message is decided without another lookup.
+//
 // A failed lookup is an error and never a pass or a fallback.
-func (h *messageHandler) resolveSource(ctx context.Context, customerID uuid.UUID, prepared *commonaddress.Address) (*commonaddress.Address, error) {
+func (h *messageHandler) resolveSource(ctx context.Context, customerID uuid.UUID, prepared *commonaddress.Address) (*commonaddress.Address, nmnumber.ProviderName, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "resolveSource",
 		"customer_id": customerID,
@@ -85,24 +88,24 @@ func (h *messageHandler) resolveSource(ctx context.Context, customerID uuid.UUID
 		}
 		num, err := h.lookupNumber(ctx, filters)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		if num == nil {
 			log.Info("The source is not a number of the customer.")
-			return nil, cerrors.PermissionDenied(commonoutline.ServiceNameMessageManager, "SOURCE_NOT_OWNED", "The source is not a number of the customer.")
+			return nil, "", cerrors.PermissionDenied(commonoutline.ServiceNameMessageManager, "SOURCE_NOT_OWNED", "The source is not a number of the customer.")
 		}
 
 		res := *prepared
-		return &res, nil
+		return &res, num.ProviderName, nil
 	}
 
 	cfgs, err := h.reqHandler.CallV1OutboundConfigList(ctx, customerID, 1, "")
 	if err != nil {
 		log.Errorf("Could not get the outbound config. err: %v", err)
-		return nil, cerrors.Internal(commonoutline.ServiceNameMessageManager, "SOURCE_LOOKUP_FAILED", "The source could not be verified.").Wrap(err)
+		return nil, "", cerrors.Internal(commonoutline.ServiceNameMessageManager, "SOURCE_LOOKUP_FAILED", "The source could not be verified.").Wrap(err)
 	}
 	if !hasDefaultSource(cfgs) {
-		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameMessageManager, "SOURCE_REQUIRED", "The source is required because the customer has no default outgoing source number.")
+		return nil, "", cerrors.InvalidArgument(commonoutline.ServiceNameMessageManager, "SOURCE_REQUIRED", "The source is required because the customer has no default outgoing source number.")
 	}
 
 	filters := map[nmnumber.Field]any{
@@ -114,17 +117,17 @@ func (h *messageHandler) resolveSource(ctx context.Context, customerID uuid.UUID
 	}
 	num, err := h.lookupNumber(ctx, filters)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	if num == nil {
 		log.Warnf("The default outgoing source number is not valid. number_id: %s", cfgs[0].DefaultOutgoingSourceNumberID)
-		return nil, cerrors.FailedPrecondition(commonoutline.ServiceNameMessageManager, "DEFAULT_SOURCE_INVALID", "The default outgoing source number of the outbound config is not an active number of the customer. Check the outbound config.")
+		return nil, "", cerrors.FailedPrecondition(commonoutline.ServiceNameMessageManager, "DEFAULT_SOURCE_INVALID", "The default outgoing source number of the outbound config is not an active number of the customer. Check the outbound config.")
 	}
 
 	return &commonaddress.Address{
 		Type:   commonaddress.TypeTel,
 		Target: num.Number,
-	}, nil
+	}, num.ProviderName, nil
 }
 
 // hasDefaultSource tells whether the outbound config rows hold a default outgoing source number. The table has one

@@ -1,12 +1,12 @@
 # bin-message-manager
 
-SMS messaging service for VoIPbin. Sends messages via Telnyx and MessageBird, tracks per-target delivery status, and processes provider webhooks for delivery updates.
+SMS messaging service for VoIPbin. Sends messages via Telnyx, MessageBird and Twilio, tracks per-target delivery status, and processes provider webhooks for delivery updates.
 
 ## Key Concepts
 
 - **Message**: Top-level outbound SMS record; references one or more targets
 - **Target**: Per-recipient delivery record with status tracking (`initiating`, `queued`, `sent`, `delivered`, `failed`)
-- **Provider dispatch**: MessageBird primary, Telnyx fallback; send is asynchronous (goroutine) — caller receives success after record creation
+- **Provider dispatch**: the provider that owns the source number first, the other providers for the targets it refused; send is asynchronous (goroutine) — caller receives success after record creation
 - **Webhook**: Delivery status updates arrive from providers via `bin-hook-manager` → `POST /v1/hooks`
 
 ## Public RPC Entrypoints

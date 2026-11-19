@@ -123,7 +123,7 @@ func Test_Hook_receipts(t *testing.T) {
 			f := newReceiptFixture(t, ts)
 			f.expectLookup(receiptRef)
 
-			if err := f.handler.Hook(context.Background(), receiptHook, tt.payload); err != nil {
+			if err := f.handler.Hook(context.Background(), receiptHook, tt.payload, ""); err != nil {
 				t.Fatalf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -158,7 +158,7 @@ func Test_Hook_receipts_unmatched(t *testing.T) {
 	// the lookup finds a row (the LIKE can be wider than an exact id), but no target has this exact id.
 	f.expectLookup(otherRef)
 
-	if err := f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", otherRef, 1, usDest1, "delivered")); err != nil {
+	if err := f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", otherRef, 1, usDest1, "delivered"), ""); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 
@@ -175,7 +175,7 @@ func Test_Hook_receipts_errors(t *testing.T) {
 		f := newReceiptFixture(t, receiptTargets())
 		f.db.EXPECT().MessageListByProviderReference(gomock.Any(), receiptRef, gomock.Any()).Return(nil, errors.New("db down"))
 
-		err := f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", receiptRef, 1, usDest1, "delivered"))
+		err := f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", receiptRef, 1, usDest1, "delivered"), "")
 		if !errors.Is(err, ErrReceiptRetry) {
 			t.Errorf("Wrong match. expect: ErrReceiptRetry, got: %v", err)
 		}
@@ -186,7 +186,7 @@ func Test_Hook_receipts_errors(t *testing.T) {
 		f.expectLookup(receiptRef)
 		f.mem.failIfErr = errors.New("db down")
 
-		err := f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", receiptRef, 1, usDest1, "delivered"))
+		err := f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", receiptRef, 1, usDest1, "delivered"), "")
 		if !errors.Is(err, ErrReceiptRetry) {
 			t.Errorf("Wrong match. expect: ErrReceiptRetry, got: %v", err)
 		}
@@ -197,7 +197,7 @@ func Test_Hook_receipts_errors(t *testing.T) {
 		f.expectLookup(receiptRef)
 		f.mem.forceConflicts = 1 << 30
 
-		err := f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", receiptRef, 1, usDest1, "delivered"))
+		err := f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", receiptRef, 1, usDest1, "delivered"), "")
 		if !errors.Is(err, ErrReceiptRetry) {
 			t.Errorf("Wrong match. expect: ErrReceiptRetry, got: %v", err)
 		}
@@ -211,7 +211,7 @@ func Test_Hook_receipts_errors(t *testing.T) {
 		f.expectLookup(receiptRef)
 		f.mem.forceConflicts = 3
 
-		if err := f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", receiptRef, 1, usDest1, "delivered")); err != nil {
+		if err := f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", receiptRef, 1, usDest1, "delivered"), ""); err != nil {
 			t.Fatalf("Wrong match. expect: ok, got: %v", err)
 		}
 		if got := f.mem.targets()[0].Status; got != target.StatusDelivered {
@@ -227,7 +227,7 @@ func Test_Hook_receipts_errors(t *testing.T) {
 
 		// the write succeeds, then the read for the event fails: the event is dropped and the receipt is answered with
 		// success, because a retried receipt would be a no-op.
-		if err := f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", receiptRef, 1, usDest1, "delivered")); err != nil {
+		if err := f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", receiptRef, 1, usDest1, "delivered"), ""); err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}
 		if f.ev.count() != 0 {
@@ -266,7 +266,7 @@ func Test_Hook_receipts_concurrent(t *testing.T) {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			errs <- f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", ts[i].ProviderReferenceID, 1, numbers[i], "delivered"))
+			errs <- f.handler.Hook(context.Background(), receiptHook, receiptPayload("message.finalized", "outbound", ts[i].ProviderReferenceID, 1, numbers[i], "delivered"), "")
 		}(i)
 	}
 	wg.Wait()

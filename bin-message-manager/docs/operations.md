@@ -61,6 +61,7 @@ DATABASE_DSN='<user>:<password>@tcp(127.0.0.1:3306)/<database>' ./bin/message-co
 ```
 POST https://hook.voipbin.net/v1.0/messages/messagebird
 POST https://hook.voipbin.net/v1.0/messages/telnyx
+POST https://hook.voipbin.net/v1.0/messages/twilio
 ```
 
 **Run service locally:**
@@ -104,6 +105,9 @@ All flags can also be set via environment variable (uppercase, underscores).
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | Metrics listen address |
 | (no flag) | `MESSAGEBIRD_API_KEY` | `""` | MessageBird access key. Environment only, never a flag; read at the time of use. Not set, empty or an unresolved `[[...]]` placeholder means not configured |
 | (no flag) | `TELNYX_API_KEY` | `""` | Telnyx API key of the SMS and MMS sends. Environment only, never a flag; the same variable and value as in `bin-number-manager`. Not set, empty or an unresolved placeholder means not configured |
+| (no flag) | `TWILIO_ACCOUNT_SID` | `""` | Twilio Account SID of the sends. Environment only. It must be the same account as the SID in the number provider settings of the Twilio numbers. Not set or a placeholder means that Twilio sending is off (the default order is used for a Twilio number) |
+| (no flag) | `TWILIO_AUTH_TOKEN` | `""` | Twilio Auth Token of the sends and of the check of the Twilio callbacks. Environment only; the same variable as in `bin-number-manager`. Not set or a placeholder means that Twilio sending is off and every Twilio callback is refused |
+| (no flag) | `TWILIO_STATUS_CALLBACK_URL` | `""` | The public URL of the Twilio callback route, for example `https://hook.voipbin.net/v1.0/messages/twilio`. It is sent to Twilio with every message and it is the URL that the signature of a callback is checked against, so it must be exactly the public URL (scheme, host and path, no query, no explicit default port). Not set or not valid means that messages go out without a callback and the Twilio callbacks are refused (a warning at start) |
 | (no flag) | `MESSAGE_CONFIG_ENCRYPTION_KEYS` | `""` | Not read by the code. The deployment definition still passes it; a later change removes the line |
 
 ## Provider tokens
@@ -112,8 +116,9 @@ The two provider tokens are read from environment variables, and only from there
 
 | Variable | Used for |
 |----------|----------|
-| `MESSAGEBIRD_API_KEY` | SMS and MMS sent through MessageBird (the targets that Telnyx refused) |
+| `MESSAGEBIRD_API_KEY` | SMS and MMS sent through MessageBird |
 | `TELNYX_API_KEY` | SMS and MMS sent through Telnyx |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` | SMS and MMS sent through Twilio, and the signature of the Twilio callbacks (both are needed; the pair is read per send like the other tokens, and a half set pair is the same as none) |
 
 - **Source:** the environment variable only. A variable that is not set, is empty or still holds an unresolved deployment placeholder (a value that starts with `[[`) means that the token is not configured: the supplier gives an empty token and no error, and the request is sent with that empty credential and refused by the provider. The placeholder is never sent as a token. At start the service logs one line per variable (name and state only, never a value): a warning for `TELNYX_API_KEY` that is not set, an info line for `MESSAGEBIRD_API_KEY` that is not set, and a warning with the words "unresolved placeholder" for a placeholder.
 - **Read per send, no cache:** the variable is read for every provider request. The environment of a container changes with a new deployment only, so a rotation takes effect when the replicas restart.
@@ -144,6 +149,8 @@ The two provider tokens are read from environment variables, and only from there
 | `request_external_process_time` | Histogram | `provider`, `method` | Provider API call duration |
 | `messagebird_number_send_total` | Counter | `type` | Total SMS sent via MessageBird |
 | `telnyx_number_send_total` | Counter | `type` | Total SMS sent via Telnyx |
+| `twilio_number_send_total` | Counter | `type` | Total SMS and MMS accepted by Twilio |
+| `twilio_callback_rejected_total` | Counter | `reason` | Twilio callbacks that were refused (`missing_signature`, `invalid_signature`, `not_configured`, `malformed`, `too_large`) |
 
 **Alert guidance:**
 - `inbound_media_total{result="host"}` or `{result="auth"}` rising → the assumptions about the media host or authentication of the provider are wrong; every attachment of a received MMS is skipped.

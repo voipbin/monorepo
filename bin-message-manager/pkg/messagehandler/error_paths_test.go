@@ -394,7 +394,7 @@ func Test_Hook_errorPaths(t *testing.T) {
 				tt.setup(ctx, m)
 			}
 
-			err := h.Hook(ctx, tt.uri, tt.data)
+			err := h.Hook(ctx, tt.uri, tt.data, "")
 			if tt.expectErr && err == nil {
 				t.Errorf("Wrong match. expect: error, got: nil")
 			}
@@ -418,7 +418,7 @@ func Test_Hook_numberFilter(t *testing.T) {
 	}
 	m.req.EXPECT().NumberV1NumberList(ctx, "", uint64(1), expectFilters).Return(nil, errors.New("stop here"))
 
-	if err := h.Hook(ctx, "https://hook.example.com/v1.0/hooks/telnyx", telnyxHookPayload("message.received", "+15550100002", "+15550100003")); err == nil {
+	if err := h.Hook(ctx, "https://hook.example.com/v1.0/hooks/telnyx", telnyxHookPayload("message.received", "+15550100002", "+15550100003"), ""); err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
 }
@@ -536,7 +536,7 @@ func Test_Hook_createsInboundMessage(t *testing.T) {
 	m.db.EXPECT().MessageGet(ctx, messageID).Return(stored, nil)
 	m.notify.EXPECT().PublishWebhookEvent(ctx, customerID, message.EventTypeMessageCreated, stored)
 
-	if err := h.Hook(ctx, "https://hook.example.com/v1.0/hooks/telnyx", data); err != nil {
+	if err := h.Hook(ctx, "https://hook.example.com/v1.0/hooks/telnyx", data, ""); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 

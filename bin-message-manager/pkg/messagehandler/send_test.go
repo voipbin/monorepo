@@ -58,12 +58,14 @@ func newSendFixture(t *testing.T) *sendFixture {
 		db:            f.db,
 		reqHandler:    f.req,
 		notifyHandler: f.notify,
-		smsProviders: []namedSMSProvider{
-			{name: message.ProviderNameTelnyx, provider: f.smsTelnyx},
-			{name: message.ProviderNameMessagebird, provider: f.smsBird},
+		smsProviders: map[message.ProviderName]SMSProvider{
+			message.ProviderNameTelnyx:      f.smsTelnyx,
+			message.ProviderNameMessagebird: f.smsBird,
 		},
-		mmsTelnyx:      f.mmsTelnyx,
-		mmsMessagebird: f.mmsBird,
+		mmsProviders: map[message.ProviderName]MMSProvider{
+			message.ProviderNameTelnyx:      f.mmsTelnyx,
+			message.ProviderNameMessagebird: f.mmsBird,
+		},
 	}
 
 	return f

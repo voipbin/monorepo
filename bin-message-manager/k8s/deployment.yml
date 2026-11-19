@@ -65,6 +65,24 @@ spec:
                   name: voipbin
                   key: TELNYX_API_KEY
                   optional: true
+            - name: TWILIO_ACCOUNT_SID
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: TWILIO_ACCOUNT_SID
+                  optional: true
+            - name: TWILIO_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: TWILIO_AUTH_TOKEN
+                  optional: true
+            - name: TWILIO_STATUS_CALLBACK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: TWILIO_STATUS_CALLBACK_URL
+                  optional: true
             - name: CLICKHOUSE_ADDRESS
               valueFrom:
                 secretKeyRef:

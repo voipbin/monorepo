@@ -132,7 +132,7 @@ func Test_Hook(t *testing.T) {
 			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), message.EventTypeMessageCreated, gomock.Any())
 
-			if errHook := h.Hook(ctx, tt.uri, tt.data); errHook != nil {
+			if errHook := h.Hook(ctx, tt.uri, tt.data, ""); errHook != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errHook)
 			}
 		})
