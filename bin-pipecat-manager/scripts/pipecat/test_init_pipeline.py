@@ -765,7 +765,8 @@ async def test_init_team_pipeline_builds_aggregator_through_helper():
 
     _, mocks = await _run_team_init(team)
 
-    mocks.make_aggregator.assert_called_once_with(mocks.LLMContext.return_value)
+    # No audio input (no request stt_type): no analyzers, today's aggregator (VOIP-1547).
+    mocks.make_aggregator.assert_called_once_with(mocks.LLMContext.return_value, None, None)
 
 
 @pytest.mark.asyncio

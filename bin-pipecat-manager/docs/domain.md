@@ -85,6 +85,18 @@ TTS providers: Cartesia, ElevenLabs, Google
 
 Audio mode is selected by the request-level `stt_type`/`tts_type` that bin-ai-manager sends: both empty means a text-only session (conversation, task, contact_case listen turn) and no STT/TTS or audio input is built; non-empty means a voice call. Both the single-AI and the team pipeline honour this. In team mode each member's TTS/STT is built from that member's own configuration, and only in voice mode (VOIP-1481).
 
+### Voice activity and end of turn (VOIP-1547)
+
+The AI's `vad_config` (`confidence`, `start_secs`, `stop_secs`, `min_volume`) and `smart_turn_enabled` are applied in the runner (`run.py`: `build_user_turn_analyzers`, `_make_aggregator`). In pipecat 1.x the transport params have no VAD or turn fields, so they live in the user aggregator (`LLMUserAggregatorParams.vad_analyzer` and `user_turn_strategies`); the transport is not given them. A voice call builds one Silero VAD analyzer (and one smart-turn analyzer when enabled) per session:
+
+- Turn start (barge-in): VAD speech start, or the first transcript if it comes first.
+- Turn end with `smart_turn_enabled` false: VAD stop (`stop_secs`) plus the library speech timeout (0.6 s); the STT latency safety wait runs in parallel. With a `stop_secs` other than 0.2 pipecat logs one WARN per session ("VAD stop_secs differs from the recommended default"); this is expected.
+- Turn end with `smart_turn_enabled` true: the smart-turn model decides; `stop_secs` is forced to 0.2 (a different configured value is logged and overridden).
+- Team calls use the call level values (one aggregator for the team); the per member values that Go sends are not used.
+- Text-only sessions have no audio input and keep the library defaults without VAD.
+
+Regression guard against the real library: `scripts/pipecat_realtest/test_vad_turn_real.py`.
+
 ## Tool Execution
 
 Tool list at session start (single-AI AIcall sessions): Go resolves the AI's built-in tools itself (`toolHandler.GetByNames`, AI-type whitelist enforced), then calls `bin-ai-manager` `GET /v1/aicalls/<uuid>/tools/mcp` (`AIV1AIcallToolList`) for the AI's MCP tools and appends them, dropping any name that collides with an existing tool. If that call fails, the session starts with built-ins only and `pipecat_manager_mcp_tool_list_fallback_total` is incremented. Team sessions take per-member tools from the team resolution and never call it.

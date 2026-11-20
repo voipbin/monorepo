@@ -79,7 +79,16 @@ _mocks = {
     ),
     "pipecat.processors.aggregators": MagicMock(),
     "pipecat.processors.aggregators.llm_context": _make_mock_module("LLMContext", "NOT_GIVEN"),
-    "pipecat.processors.aggregators.llm_response_universal": _make_mock_module("LLMContextAggregatorPair"),
+    "pipecat.processors.aggregators.llm_response_universal": _make_mock_module(
+        "LLMContextAggregatorPair", "LLMUserAggregatorParams"
+    ),
+    "pipecat.turns": MagicMock(),
+    "pipecat.turns.user_stop": _make_mock_module(
+        "SpeechTimeoutUserTurnStopStrategy", "TurnAnalyzerUserTurnStopStrategy"
+    ),
+    "pipecat.turns.user_turn_strategies": _make_mock_module(
+        "UserTurnStrategies", "default_user_turn_start_strategies"
+    ),
     "pipecat.adapters": MagicMock(),
     "pipecat.adapters.schemas": MagicMock(),
     "pipecat.adapters.schemas.function_schema": _make_mock_module("FunctionSchema"),
