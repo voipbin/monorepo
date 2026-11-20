@@ -38,6 +38,8 @@ from pipecat.adapters.schemas.tools_schema import ToolsSchema
 # pipeline
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
+from pipecat.turns.user_stop import SpeechTimeoutUserTurnStopStrategy, TurnAnalyzerUserTurnStopStrategy
+from pipecat.turns.user_turn_strategies import UserTurnStrategies, default_user_turn_start_strategies
 from pipecat.frames.frames import InterruptionFrame, LLMRunFrame, TextFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
@@ -64,14 +66,37 @@ from team_flow import build_team_flow
 from pipecat.flows import FlowManager
 
 
-def _make_aggregator(ctx):
+def _make_aggregator(ctx, vad_analyzer=None, turn_analyzer=None):
     """Build every LLMContextAggregatorPair the same way (design 2.3).
 
     pipecat 1.12 turns on empty-user-turn recovery by default; pin it off so
     the upgrade is audibly identical to 1.4.x.
+
+    Calls with audio input pass the analyzers (VOIP-1547): in pipecat 1.x the
+    user aggregator owns VAD and the turn strategies (the transport params have
+    no such fields and silently drop them). Without a vad_analyzer (text-only
+    sessions) the parameters stay as they were.
     """
+    if vad_analyzer is None:
+        return LLMContextAggregatorPair(
+            ctx, user_params=LLMUserAggregatorParams(empty_user_turn=None)
+        )
+
+    # Smart turn on: the model decides the end of the turn. Off: the end of the
+    # turn follows VAD stop (vad_config.stop_secs) plus the library speech timeout.
+    if turn_analyzer is not None:
+        stop = [TurnAnalyzerUserTurnStopStrategy(turn_analyzer=turn_analyzer)]
+    else:
+        stop = [SpeechTimeoutUserTurnStopStrategy()]
     return LLMContextAggregatorPair(
-        ctx, user_params=LLMUserAggregatorParams(empty_user_turn=None)
+        ctx,
+        user_params=LLMUserAggregatorParams(
+            empty_user_turn=None,
+            vad_analyzer=vad_analyzer,
+            user_turn_strategies=UserTurnStrategies(
+                start=default_user_turn_start_strategies(), stop=stop
+            ),
+        ),
     )
 
 
@@ -192,6 +217,19 @@ def build_vad_params(vad_config: dict | None, smart_turn_enabled: bool = False) 
     return VADParams(**kwargs)
 
 
+def build_user_turn_analyzers(vad_config: dict | None, smart_turn_enabled: bool = False):
+    """Build the per session (vad_analyzer, turn_analyzer) of a call with audio input.
+
+    turn_analyzer is None unless smart_turn_enabled. Never shared between sessions.
+    """
+    vad_analyzer = SileroVADAnalyzer(params=build_vad_params(vad_config, smart_turn_enabled=smart_turn_enabled))
+    turn_analyzer = None
+    if smart_turn_enabled:
+        from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
+        turn_analyzer = LocalSmartTurnAnalyzerV3()
+    return vad_analyzer, turn_analyzer
+
+
 async def init_pipeline(
     id: str,
     llm_type: str,
@@ -289,21 +327,25 @@ async def init_single_ai_pipeline(
 
     init_tasks = {}
 
+    # The user aggregator (built in init_llm) owns VAD and the turn strategies, so the
+    # analyzers must exist before the init tasks start. No task exists yet on failure.
+    vad_analyzer = turn_analyzer = None
+    if stt_type:
+        try:
+            vad_analyzer, turn_analyzer = build_user_turn_analyzers(vad_config, smart_turn_enabled)
+        except Exception as e:
+            logger.error(f"[INIT] Pipeline initialization failed: {_error_text(e, custom_endpoint)}")
+            raise
+
     if stt_type:
         async def init_stt_and_input_ws():
             start = time.monotonic()
             stt_service = create_stt_service(stt_type, language=stt_language, platform_keys=platform_keys)
-            vad_analyzer = SileroVADAnalyzer(params=build_vad_params(vad_config, smart_turn_enabled=smart_turn_enabled))
-            turn_analyzer = None
-            if smart_turn_enabled:
-                from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
-                turn_analyzer = LocalSmartTurnAnalyzerV3()
-            transport = create_websocket_transport("input", id, vad_analyzer=vad_analyzer, turn_analyzer=turn_analyzer)
+            transport = create_websocket_transport("input", id)
             logger.info(f"[INIT][stt+ws_input] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
             return {
                 "stt_service": stt_service,
                 "transport_input": transport,
-                "vad_analyzer": vad_analyzer,
             }
         init_tasks["stt_input"] = asyncio.create_task(init_stt_and_input_ws())
 
@@ -323,6 +365,7 @@ async def init_single_ai_pipeline(
             llm_type, llm_key, llm_messages, openai_tools, pipeline_id=id,
             customer_id=customer_id, llm_base_url=llm_base_url, llm_base_key=llm_base_key,
             platform_keys=platform_keys,
+            vad_analyzer=vad_analyzer, turn_analyzer=turn_analyzer,
         )
         logger.info(f"[INIT][llm] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
         return {
@@ -333,7 +376,7 @@ async def init_single_ai_pipeline(
 
     async def init_output_ws():
         start = time.monotonic()
-        transport = create_websocket_transport("output", id, vad_analyzer=None)
+        transport = create_websocket_transport("output", id)
         logger.info(f"[INIT][ws_output] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
         return {
             "transport_output": transport,
@@ -814,7 +857,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         standard_tools = _openai_tools_to_standard(tools)
         tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
         ctx = LLMContext(messages=valid_messages, tools=tools_schema)
-        aggregator = _make_aggregator(ctx)
+        aggregator = _make_aggregator(ctx, options.get("vad_analyzer"), options.get("turn_analyzer"))
 
         return llm, aggregator
 
@@ -829,7 +872,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         standard_tools = _openai_tools_to_standard(tools)
         tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
         ctx = LLMContext(messages=valid_messages, tools=tools_schema)
-        aggregator = _make_aggregator(ctx)
+        aggregator = _make_aggregator(ctx, options.get("vad_analyzer"), options.get("turn_analyzer"))
 
         return llm, aggregator
 
@@ -855,7 +898,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         if len(valid_messages) == 1 and valid_messages[0]["role"] == "system":
             valid_messages = [{**valid_messages[0], "role": "user"}]
         ctx = LLMContext(messages=valid_messages, tools=tools_schema)
-        aggregator = _make_aggregator(ctx)
+        aggregator = _make_aggregator(ctx, options.get("vad_analyzer"), options.get("turn_analyzer"))
 
         return llm, aggregator
 
@@ -869,7 +912,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         standard_tools = _openai_tools_to_standard(tools)
         tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
         ctx = LLMContext(messages=valid_messages, tools=tools_schema)
-        aggregator = _make_aggregator(ctx)
+        aggregator = _make_aggregator(ctx, options.get("vad_analyzer"), options.get("turn_analyzer"))
 
         return llm, aggregator
 
@@ -885,7 +928,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         standard_tools = _openai_tools_to_standard(tools)
         tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
         ctx = LLMContext(messages=valid_messages, tools=tools_schema)
-        aggregator = _make_aggregator(ctx)
+        aggregator = _make_aggregator(ctx, options.get("vad_analyzer"), options.get("turn_analyzer"))
 
         return llm, aggregator
 
@@ -905,7 +948,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         standard_tools = _openai_tools_to_standard(tools)
         tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
         ctx = LLMContext(messages=valid_messages, tools=tools_schema)
-        aggregator = _make_aggregator(ctx)
+        aggregator = _make_aggregator(ctx, options.get("vad_analyzer"), options.get("turn_analyzer"))
 
         return llm, aggregator
 
@@ -930,7 +973,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
             standard_tools = _openai_tools_to_standard(tools)
             tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
             ctx = LLMContext(messages=valid_messages, tools=tools_schema)
-            aggregator = _make_aggregator(ctx)
+            aggregator = _make_aggregator(ctx, options.get("vad_analyzer"), options.get("turn_analyzer"))
         except Exception:
             llm.release_slot()
             raise ValueError(ce_net.FIXED_ERROR) from None
@@ -1003,7 +1046,7 @@ class BufferingInputWebsocketClientTransport(WebsocketClientTransport):
         return self._input
 
 
-def create_websocket_transport(direction: str, id: str, vad_analyzer=None, turn_analyzer=None):
+def create_websocket_transport(direction: str, id: str):
     uri = f"{common.PIPECATCALL_WS_URL}/{id}/ws?direction={direction}"
     logger.info(f"Establishing WebSocket connection to URI: {uri}")
 
@@ -1012,8 +1055,6 @@ def create_websocket_transport(direction: str, id: str, vad_analyzer=None, turn_
         audio_in_enabled=True,
         audio_out_enabled=True,
         add_wav_header=False,
-        vad_analyzer=vad_analyzer,
-        turn_analyzer=turn_analyzer,
         session_timeout=common.PIPELINE_SESSION_TIMEOUT,
     )
 
@@ -1145,18 +1186,18 @@ async def init_team_pipeline(
     # always uses the universal adapter, so tools go through
     # ToolsSchema/FunctionSchema for every provider.
     context = LLMContext(messages=start_messages, tools=NOT_GIVEN)
-    context_aggregator = _make_aggregator(context)
+    # One user aggregator for the whole team: it takes the call level vad_config and
+    # smart_turn_enabled (the per member values are not used).
+    vad_analyzer = turn_analyzer = None
+    if routing_stt:
+        vad_analyzer, turn_analyzer = build_user_turn_analyzers(vad_config, smart_turn_enabled)
+    context_aggregator = _make_aggregator(context, vad_analyzer, turn_analyzer)
 
     # --- Step 4: Create transports ---
     transport_input = None
     if routing_stt:
-        vad_analyzer = SileroVADAnalyzer(params=build_vad_params(vad_config, smart_turn_enabled=smart_turn_enabled))
-        turn_analyzer = None
-        if smart_turn_enabled:
-            from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
-            turn_analyzer = LocalSmartTurnAnalyzerV3()
-        transport_input = create_websocket_transport("input", id, vad_analyzer=vad_analyzer, turn_analyzer=turn_analyzer)
-    transport_output = create_websocket_transport("output", id, vad_analyzer=None)
+        transport_input = create_websocket_transport("input", id)
+    transport_output = create_websocket_transport("output", id)
 
     # --- Step 5: Build pipeline ---
     pipeline_stages = []
