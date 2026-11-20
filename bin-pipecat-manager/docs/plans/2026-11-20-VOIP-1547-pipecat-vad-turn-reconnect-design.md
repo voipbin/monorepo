@@ -1,6 +1,6 @@
 # Reconnect vad_config / smart_turn_enabled to the pipecat user aggregator (runner: `scripts/pipecat/`)
 
-Ticket VOIP-1547. Branch `VOIP-1547-Fix-pipecat-vad-smart-turn`. Class: bug fix (settings accepted and stored, but ignored at call time). Option 1 of the ticket (reconnect) is approved; removing the feature is out of scope.
+Ticket VOIP-1547. Branch `VOIP-1547-Fix-pipecat-vad-smart-turn`. Class: bug fix (settings accepted and stored, but ignored at call time). The settings are reconnected; removing the feature is out of scope.
 
 ## 1. Issue analysis
 
@@ -8,7 +8,7 @@ Ticket VOIP-1547. Branch `VOIP-1547-Fix-pipecat-vad-smart-turn`. Class: bug fix 
 
 Verdict: valid.
 
-- `TransportParams` (`pipecat/transports/base_transport.py:66`) declares no `vad_analyzer`, `turn_analyzer` or `session_timeout`, and its `model_config` is `ConfigDict(arbitrary_types_allowed=True)` only (pydantic v2 default `extra=ignore`). `WebsocketClientParams(vad_analyzer=..., turn_analyzer=...)` in `create_websocket_transport` (run.py) therefore drops both without an error. `transports/websocket/client.py` and `base_input.py` never read them either. The same file of pipecat 1.4.0 (the gitignored `scripts/pipecat/.venv` of the main checkout) has none of the three names, so this is not an upgrade regression.
+- `TransportParams` (`pipecat/transports/base_transport.py:66`) declares no `vad_analyzer`, `turn_analyzer` or `session_timeout`, and its `model_config` is `ConfigDict(arbitrary_types_allowed=True)` only (pydantic v2 default `extra=ignore`). `WebsocketClientParams(vad_analyzer=..., turn_analyzer=...)` in `create_websocket_transport` (run.py) therefore drops both without an error. `transports/websocket/client.py` and `base_input.py` never read them either. The same file of pipecat 1.4.0 (a local venv) has none of the three names, so this is not an upgrade regression.
 - The user aggregator is where VAD now lives: `LLMUserAggregatorParams` has `vad_analyzer` and `user_turn_strategies`; `LLMUserAggregator.__init__` builds a `VADController` only when `params.vad_analyzer` is set (`llm_response_universal.py:767`). `_make_aggregator` passes only `empty_user_turn=None`. It is the only place that builds `LLMContextAggregatorPair` (run.py:72); the 7 call sites in `create_llm_service` and the team path (run.py:1110) all go through it.
 - Data path is intact: bin-ai-manager stores `vad_config` / `smart_turn_enabled`; `pkg/pipecatcallhandler/runner.go:115-125` copies them from the aicall (`aicall.AIVADConfig`, `AISmartTurnEnabled`), `pythonrunner.go:104-128` posts them as `vad_config` / `smart_turn_enabled`, `main.py:126-127` (`PipelineRequest`) and `main.py:195-196` hand them to `init_pipeline` / `init_team_pipeline`. The loss is only inside run.py.
 - Team calls: Go also fills per member `vad_config` / `smart_turn_enabled` (`run.go:58-59,265-266`; Python model `ResolvedAI`, main.py:75-76), but `init_team_pipeline` uses only the top-level values (run.py:1115-1120, the aicall's own AI) and builds one aggregator for the whole team (run.py:1110). Per-member values are not read today and stay unused here (a team call has one user aggregator; per-member switching would be a mid-call parameter change, out of scope).
@@ -45,7 +45,7 @@ For calls that have audio input (single AI with `stt_type`; team call when `rout
 5. Docs: `docs/domain.md` (new subsection on VAD and end of turn, including the stop_secs WARN).
 6. Unit-test mocks: `conftest.py` replaces pipecat with MagicMocks; the new imports are added there: parent `pipecat.turns` (MagicMock), `pipecat.turns.user_turn_strategies` (`UserTurnStrategies`, `default_user_turn_start_strategies`), `pipecat.turns.user_stop` (`SpeechTimeoutUserTurnStopStrategy`, `TurnAnalyzerUserTurnStopStrategy`), and `LLMUserAggregatorParams` is added to the existing `llm_response_universal` mock (conftest.py:82 has only `LLMContextAggregatorPair`). Unit tests only assert the wiring (which classes and arguments); real behavior is the job of the real-library guards.
 
-No new flags (hard rule 7): behavior follows the existing two settings.
+No new flags: behavior follows the existing two settings.
 
 ### 2.3 Default behavior change (must be in the PR text)
 
@@ -55,7 +55,7 @@ Default call = `vad_config` empty, `smart_turn_enabled=false`, Deepgram STT (sec
 - Turn splitting: today a gap between STT finals longer than 0.35 s (Deepgram) ends the turn and triggers an LLM run plus an interruption, so the 8.3 s utterance of the harness became 3 turns; after the change it is one turn.
 - First response after the end of speech: about 0.4 s today (last transcript + 0.35 s) vs about 0.8 s (`stop_secs` 0.2 + 0.6 s) with smart turn off; about 0.2 s with smart turn on when the model judges the sentence complete, or the library timeout (3 s) when it judges the phrase incomplete.
 
-Customer notice and whether the 0.6 s should be tuned are decisions for the CEO; reported to default separately.
+Whether the change needs a customer notice and whether the 0.6 s should be tuned are product decisions outside this change.
 
 ### 2.4 Compatibility and risk
 
@@ -66,13 +66,13 @@ Customer notice and whether the 0.6 s should be tuned are decisions for the CEO;
 
 ### 2.5 Alternatives rejected
 
-- Remove the settings (option 2 of the ticket): not selected.
+- Remove the settings: rejected, the feature stays.
 - Pass `vad_analyzer` to the transport: no such field in 1.x.
 - Keep the library default stop strategy for smart-turn-off: it would run smart turn when the customer disabled it.
 
 ## 3. Verification plan
 
-- Unit tests (`scripts/pipecat/test_run.py`, `test_init_pipeline.py`): analyzers built once per audio call and forwarded; a failure of `build_user_turn_analyzers` in the single-AI path logs the `[INIT]` error and raises; text-only and no-STT team calls unchanged; member `create_llm_service` calls get none; transport params no longer carry the two fields.
+- Unit tests (`scripts/pipecat/test_user_turn_wiring.py`, `test_init_pipeline.py`): analyzers built once per audio call and forwarded; a failure of `build_user_turn_analyzers` in the single-AI path logs the `[INIT]` error and raises; text-only and no-STT team calls unchanged; member `create_llm_service` calls get none; transport params no longer carry the two fields.
 - Real-library guards in a new file `scripts/pipecat_realtest/test_vad_turn_real.py` (`pytest --noconftest`, not run by CI like the other files there): (a) `TransportParams.model_fields` has no vad/turn field (the premise); (b) `_make_aggregator` result: `agg._params.vad_analyzer` is the analyzer and `agg._params.user_turn_strategies` has the expected start and stop classes for both `smart_turn_enabled` values, the turn analyzer is the passed instance, and `agg._vad_controller` exists (private attribute, pinned to 1.12 on purpose); (c) VADParams equal `vad_config`; smart turn forces `stop_secs=0.2`; no analyzers gives today's params; (d) behavior test with the real Silero and smart-turn models. A speech clip cannot be synthesized (Silero ignores tones) and is not committed (binary), so (d) takes the clip path from `VOIP1547_SPEECH_WAV` and skips without it; the PR records the measured numbers from that run (section 4), which are the acceptance record for the default-behavior comparison.
 
 ## 4. Measurement
